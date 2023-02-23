@@ -145,7 +145,6 @@ export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   lang,
   created,
   modified,
-
   relationshipType,
   { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   { name: 'start_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },

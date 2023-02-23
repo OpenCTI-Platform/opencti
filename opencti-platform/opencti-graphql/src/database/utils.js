@@ -327,14 +327,14 @@ export const generateUpdateMessage = (inputs) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey = key;
-      if (schemaRelationsRefDefinition.inputNameToStixName[key]) {
-        convertedKey = schemaRelationsRefDefinition.inputNameToStixName[key];
+      if (schemaRelationsRefDefinition.convertInputNameToStixName(key)) {
+        convertedKey = schemaRelationsRefDefinition.convertInputNameToStixName(key);
       }
       const fromArray = Array.isArray(value) ? value : [value];
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
-        if (schemaRelationsRefDefinition.inputNameToStixName[key]) {
+        if (schemaRelationsRefDefinition.convertInputNameToStixName(key)) {
           message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');

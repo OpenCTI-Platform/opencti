@@ -33,7 +33,6 @@ export const stixSightingRelationshipsAttributes: { [k: string]: Array<Attribute
     lang,
     created,
     modified,
-
     relationshipType,
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },

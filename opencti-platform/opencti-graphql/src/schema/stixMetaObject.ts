@@ -39,7 +39,6 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     created,
     modified,
-
     { name: 'definition_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'definition', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
     { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'internal', multiple: false, upsert: false },
@@ -58,7 +57,6 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     created,
     modified,
-
     { name: 'value', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
     { name: 'color', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
@@ -75,7 +73,6 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     created,
     modified,
-
     { name: 'source_name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'url', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -95,7 +92,6 @@ const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     created,
     modified,
-
     { name: 'kill_chain_name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'phase_name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
     { name: 'x_opencti_order', type: 'numeric', mandatoryType: 'internal', multiple: false, upsert: true },

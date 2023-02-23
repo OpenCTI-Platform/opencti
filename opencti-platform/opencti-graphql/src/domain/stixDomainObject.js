@@ -252,7 +252,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
   // Check is a real update was done
   const updateWithoutMeta = R.pipe(
-    R.omit(schemaRelationsRefDefinition.getName()),
+    R.omit(schemaRelationsRefDefinition.getInputNames()),
   )(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {

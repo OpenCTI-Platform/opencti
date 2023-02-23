@@ -115,7 +115,7 @@ import {
   RELATION_SRC,
   RELATION_SRC_PAYLOAD,
   RELATION_TO,
-  RELATION_VALUES, STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  RELATION_VALUES,
 } from '../schema/stixCyberObservableRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -1249,35 +1249,11 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   return true;
 };
 
-// Build map of input fields for all observable types
-// { File: [contains, parent-directory, ...] }
-export const stixCyberObservableFieldsForType = (type: string) => {
-  const entries = Object.entries(stixCyberObservableRelationshipsMapping);
-  const typeFields: { [k: string]: Array<string> } = {};
-  for (let index = 0; index < entries.length; index += 1) {
-    const [fromTo, fields] = entries[index];
-    const [fromType] = fromTo.split('_');
-    const inputFields = fields.map((f) => f.name)
-      .map((f) => schemaRelationsRefDefinition.databaseNameToInputName[f]);
-    if (typeFields[fromType]) {
-      typeFields[fromType].push(...inputFields);
-    } else {
-      typeFields[fromType] = inputFields;
-    }
-  }
-  return typeFields[type] ?? [];
-};
-export const stixNotCyberObservableFields = () => {
-  return schemaRelationsRefDefinition.getName()
-    .filter((name) => !STIX_CYBER_OBSERVABLE_RELATIONSHIPS.map((rel) => rel.inputName).includes(name));
-};
-
 export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
   if (relationshipType === RELATION_LINKED) {
     return true;
   }
-  const data = stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || [];
-  const targetRelations = data.map((r) => r.name);
+  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(fromType).map((ref) => ref.inputName);
   return R.includes(relationshipType, targetRelations);
 };
 

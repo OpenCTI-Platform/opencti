@@ -20,7 +20,10 @@ import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import {
   ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
+  ENTITY_EMAIL_ADDR,
   ENTITY_EMAIL_MESSAGE,
+  ENTITY_EMAIL_MIME_PART_TYPE,
+  ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_IPV4_ADDR,
   ENTITY_IPV6_ADDR,
@@ -30,6 +33,7 @@ import {
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from './stixCyberObservable';
 import type { RelationRefDefinition } from './relationRef-definition';
+import { ENTITY_TYPE_MALWARE } from './stixDomainObject';
 
 // Inputs
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
@@ -94,20 +98,20 @@ export const RELATION_SERVICE_DLL = 'service-dll';
 
 // -- RELATIONS REF ---
 
-// Not used ? TODO: remove
-
-// const operatingSystems: RelationRefDefinition = {
-//   name: INPUT_OPERATING_SYSTEM,
-//   databaseName: RELATION_OPERATING_SYSTEM,
-//   stixName: 'operating_system_refs',
-//   multiple: true,
-// };
-// const sample: RelationRefDefinition = {
-//   name: INPUT_SAMPLE,
-//   databaseName: RELATION_SAMPLE,
-//   stixName: 'sample_ref',
-//   multiple: false,
-// };
+const operatingSystems: RelationRefDefinition = {
+  inputName: INPUT_OPERATING_SYSTEM,
+  databaseName: RELATION_OPERATING_SYSTEM,
+  stixName: 'operating_system_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
+const sample: RelationRefDefinition = {
+  inputName: INPUT_SAMPLE,
+  databaseName: RELATION_SAMPLE,
+  stixName: 'sample_ref',
+  mandatoryType: 'no',
+  multiple: false,
+};
 
 const contains: RelationRefDefinition = {
   inputName: INPUT_CONTAINS,
@@ -277,20 +281,20 @@ const bodyMultipart: RelationRefDefinition = {
   mandatoryType: 'no',
   multiple: true,
 };
-const values: RelationRefDefinition = { // Not in standard
+const values: RelationRefDefinition = {
   inputName: INPUT_VALUES,
   databaseName: RELATION_VALUES,
   stixName: 'values_refs',
   mandatoryType: 'no',
   multiple: true,
 };
-// Not used ? TODO: remove
-// const xOpenctiLinkedTo: RelationRefDefinition = { // Not in standard
-//   name: INPUT_LINKED,
-//   databaseName: RELATION_LINKED,
-//   stixName: 'x_opencti_linked_to_refs',
-//   multiple: true,
-// };
+const xOpenctiLinkedTo: RelationRefDefinition = {
+  inputName: INPUT_LINKED,
+  databaseName: RELATION_LINKED,
+  stixName: 'x_opencti_linked_to_refs',
+  mandatoryType: 'no',
+  multiple: true,
+};
 const serviceDlls: RelationRefDefinition = {
   inputName: INPUT_SERVICE_DLL,
   databaseName: RELATION_SERVICE_DLL,
@@ -300,8 +304,8 @@ const serviceDlls: RelationRefDefinition = {
 };
 
 export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
-  // operatingSystems,
-  // sample,
+  operatingSystems,
+  sample,
   contains,
   resolvesTo,
   belongsTo,
@@ -327,21 +331,25 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
   child,
   bodyMultipart,
   values,
-  // xOpenctiLinkedTo,
+  xOpenctiLinkedTo,
   serviceDlls
 ];
-// schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLE_RELATIONSHIPS);
 
+schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, [xOpenctiLinkedTo]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DIRECTORY, [contains]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [contains, parentDirectory, obsContent]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_STIX_FILE, [contains, parentDirectory, obsContent, bodyRaw]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_DOMAIN_NAME, [resolvesTo, to]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV4_ADDR, [resolvesTo, belongsTo]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_IPV6_ADDR, [resolvesTo, belongsTo]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MESSAGE, [from, sender, to, cc, bcc, rawEmail, bodyRaw, bodyMultipart]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_ADDR, [belongsTo]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_EMAIL_MIME_PART_TYPE, [bodyMultipart]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_NETWORK_TRAFFIC, [src, dst, srcPayload, dstPayload, encapsulates, encapsulatedBy]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PROCESS, [openedConnections, creatorUser, image, parent, child, serviceDlls]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [creatorUser]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [values, creatorUser]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, [values]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_ARTIFACT, [rawEmail, bodyRaw, obsContent]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [sample, operatingSystems]);
 
 // -- TYPES --
 
@@ -362,7 +370,6 @@ const stixCyberObservableRelationshipsAttributes: AttributeDefinition[] = [
   { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
   revoked,
   confidence,
   lang,

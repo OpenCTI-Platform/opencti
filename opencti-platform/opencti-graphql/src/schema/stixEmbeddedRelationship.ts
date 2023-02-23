@@ -7,10 +7,10 @@ import { schemaRelationsRefDefinition } from './schema-relationsRef';
 
 export const isStixEmbeddedRelationship = (type: string): boolean => isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);
 
-export const isSingleStixEmbeddedRelationship = (type: string): boolean => schemaRelationsRefDefinition.getDatabaseName().includes(type)
+export const isSingleStixEmbeddedRelationship = (type: string): boolean => schemaRelationsRefDefinition.getDatabaseNames().includes(type)
   && !schemaRelationsRefDefinition.isMultipleDatabaseName(type);
 
-export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean => schemaRelationsRefDefinition.getName().includes(input)
+export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean => schemaRelationsRefDefinition.getInputNames().includes(input)
   && !schemaRelationsRefDefinition.isMultipleName(input);
 
 // eslint-disable-next-line
@@ -21,7 +21,7 @@ export const instanceMetaRefsExtractor = (relationshipType: string, isInferred: 
   return anyData[field] ?? [];
 };
 const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
-const ALL_STIX_REFS = [...schemaRelationsRefDefinition.stixName, ...RELATIONS_STIX_ATTRIBUTES];
+const ALL_STIX_REFS = [...schemaRelationsRefDefinition.getStixNames(), ...RELATIONS_STIX_ATTRIBUTES];
 // eslint-disable-next-line
 export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: unknown) => string) => {
   return ALL_STIX_REFS.map((key) => {

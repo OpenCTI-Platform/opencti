@@ -144,10 +144,10 @@ describe('identifier', () => {
   });
 
   it('should relation to input name', () => {
-    let name = schemaRelationsRefDefinition.databaseNameToInputName['object-marking'];
+    let name = schemaRelationsRefDefinition.convertDatabaseNameToInputName('object-marking');
     expect(name).toEqual('objectMarking');
     // eslint-disable-next-line dot-notation
-    name = schemaRelationsRefDefinition.databaseNameToInputName.object;
+    name = schemaRelationsRefDefinition.convertDatabaseNameToInputName('object');
     expect(name).toEqual('objects');
   });
 

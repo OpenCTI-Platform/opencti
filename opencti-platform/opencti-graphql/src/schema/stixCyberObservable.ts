@@ -129,7 +129,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'number', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
@@ -147,7 +146,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'path', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
@@ -167,7 +165,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -183,7 +180,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
@@ -200,7 +196,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'is_multipart', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
@@ -222,7 +217,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'body', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -240,7 +234,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'mime_type', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -262,7 +255,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: true },
@@ -289,7 +281,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'hashes', type: 'dictionary', mandatoryType: 'no', multiple: false, upsert: false },
@@ -332,7 +323,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -348,7 +338,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -364,7 +353,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -380,7 +368,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -396,7 +383,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -422,7 +408,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -461,7 +446,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -482,7 +466,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -498,7 +481,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'extensions', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -528,7 +510,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'attribute_key', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -546,7 +527,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -564,7 +544,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -580,7 +559,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -596,7 +574,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -612,7 +589,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -628,7 +604,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -644,7 +619,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'iban', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -662,7 +636,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'value', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
@@ -678,7 +651,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'card_number', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
@@ -697,7 +669,6 @@ const stixCyberObservablesAttributes: { [k: string]: Array<AttributeDefinition> 
     { name: 'i_created_at_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_created_at_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_score', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

@@ -191,31 +191,24 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'x_mitre_platforms', type: 'string', mandatoryType: 'no', multiple: true, upsert: true, label: 'Platforms' },
     { name: 'x_mitre_permissions_required', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
     { name: 'x_mitre_detection', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_mitre_id', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'External ID' },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -225,26 +218,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_first_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
@@ -254,7 +241,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'i_last_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_last_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'objective', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -264,27 +250,22 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     { name: 'abstract', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'attribute_abstract', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Abstract' },
     { name: 'content', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'authors', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'note_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Note types' },
     { name: 'likelihood', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
@@ -294,25 +275,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     { name: 'first_observed', type: 'date', mandatoryType: 'external', multiple: false, upsert: false, label: 'First observed' },
     { name: 'last_observed', type: 'date', mandatoryType: 'external', multiple: false, upsert: false, label: 'Last observed' },
     { name: 'objects', type: 'string', mandatoryType: 'external', multiple: false, upsert: false, label: 'Entities' },
     { name: 'number_observed', type: 'numeric', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'Number observed' },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -322,24 +298,19 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     { name: 'explanation', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'authors', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'opinion', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -349,30 +320,24 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'creator', type: 'runtime', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'report_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Report types' },
     { name: 'published', type: 'date', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'i_published_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_published_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_published_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -382,30 +347,23 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'x_mitre_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_threat_hunting', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_log_sources', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -415,32 +373,25 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'identity_class', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'x_opencti_firstname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_lastname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -450,32 +401,25 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'identity_class', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'x_opencti_organization_type', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'Organization type' },
     { name: 'x_opencti_reliability', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'Reliability' },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -485,30 +429,23 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'identity_class', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -518,30 +455,23 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'contact_information', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'identity_class', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'roles', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -551,23 +481,18 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'pattern_type', type: 'string', mandatoryType: 'external', multiple: false, upsert: false, label: 'Pattern type' },
     { name: 'pattern_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'pattern', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
@@ -584,7 +509,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'x_opencti_detection', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_main_observable_type', type: 'string', mandatoryType: 'external', multiple: false, upsert: true, label: 'Main observable type' },
     { name: 'x_mitre_platforms', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Platforms' },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -594,26 +518,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'infrastructure_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: false, label: 'Infrastructure types' },
     { name: 'first_seen', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'First seen' },
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
@@ -623,7 +541,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'i_last_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_last_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_last_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -633,26 +550,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_first_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
@@ -665,7 +576,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'resource_level', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -675,31 +585,24 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'latitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'longitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'precision', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     entityLocationType,
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -709,31 +612,24 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'latitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'longitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'precision', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     entityLocationType,
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -743,31 +639,24 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'latitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'longitude', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'precision', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     entityLocationType,
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -777,33 +666,26 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'latitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'longitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'precision', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     entityLocationType,
     { name: 'street_address', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'Street address' },
     { name: 'postal_code', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: false, label: 'Postal code' },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -813,26 +695,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'malware_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Malware types' },
     { name: 'is_family', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
@@ -846,7 +722,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'architecture_execution_envs', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'implementation_languages', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'capabilities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -856,26 +731,20 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'threat_actor_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: false, label: 'Threat actor types' },
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
@@ -892,7 +761,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'primary_motivation', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'secondary_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
     { name: 'personal_motivations', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -902,29 +770,22 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'tool_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: false, label: 'Tool types' },
     { name: 'tool_version', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -934,33 +795,26 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     xOpenctiAliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'x_opencti_base_score', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'CVSS3 - Score' },
     { name: 'x_opencti_base_severity', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'CVSS3 - Severity' },
     { name: 'x_opencti_attack_vector', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'CVSS3 - Attack vector' },
     { name: 'x_opencti_integrity_impact', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_availability_impact', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_confidentiality_impact', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -971,55 +825,34 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     xOpenctiStixIds,
     entityType,
     specVersion,
-
     createdAt,
     updatedAt,
     IcreatedAtDay,
     IcreatedAtMonth,
     IcreatedAtYear,
-
     revoked,
     confidence,
     lang,
-
     created,
     modified,
-
     aliases,
     iAliasedIds,
-
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'incident_type', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Incident type' },
-
     { name: 'severity', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'source', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
-
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'i_first_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'i_first_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'last_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
-
     { name: 'i_last_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'i_last_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'i_last_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'objective', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
-
   ],
 };
 R.forEachObjIndexed((value, key) => schemaAttributesDefinition.registerAttributes(key as string, value), stixDomainObjectsAttributes);

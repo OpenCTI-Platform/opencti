@@ -3,15 +3,12 @@ import type { Checker, RelationRefDefinition } from './relationRef-definition';
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, RelationRefDefinition[]>,
 
-  inputName: [] as string[],
-  databaseName: [] as string[],
-  stixName: [] as string[],
+  inputNames: [] as string[],
+  databaseNames: [] as string[],
+  stixNames: [] as string[],
   checker: {} as Record<string, Checker>,
 
   // Map
-  databaseNameToStixName: {} as { [k: string]: string },
-  stixNameToDatabaseName: {} as { [k: string]: string },
-
   databaseNameToInputName: {} as { [k: string]: string },
   inputNameToDatabaseName: {} as { [k: string]: string },
 
@@ -22,16 +19,13 @@ export const schemaRelationsRefDefinition = {
     this.relationsRef[entityType] = [...this.relationsRef[entityType] ?? [], ...relationsRefDefinition];
 
     relationsRefDefinition.forEach((relationRefDefinition) => {
-      if (!this.getName().includes(relationRefDefinition.inputName)) {
-        this.inputName.push(relationRefDefinition.inputName);
-        this.databaseName.push(relationRefDefinition.databaseName);
-        this.stixName.push(relationRefDefinition.stixName);
+      if (!this.getInputNames().includes(relationRefDefinition.inputName)) {
+        this.inputNames.push(relationRefDefinition.inputName);
+        this.databaseNames.push(relationRefDefinition.databaseName);
+        this.stixNames.push(relationRefDefinition.stixName);
         if (relationRefDefinition.checker) {
           this.registerChecker(relationRefDefinition.databaseName, relationRefDefinition.checker);
         }
-
-        this.databaseNameToStixName[relationRefDefinition.databaseName] = relationRefDefinition.stixName;
-        this.stixNameToDatabaseName[relationRefDefinition.stixName] = relationRefDefinition.databaseName;
 
         this.databaseNameToInputName[relationRefDefinition.databaseName] = relationRefDefinition.inputName;
         this.inputNameToDatabaseName[relationRefDefinition.inputName] = relationRefDefinition.databaseName;
@@ -54,12 +48,14 @@ export const schemaRelationsRefDefinition = {
     return this.checker[databaseName];
   },
 
-  getName(): string[] {
-    return this.inputName;
+  getInputNames(): string[] {
+    return this.inputNames;
   },
-
-  getDatabaseName(): string[] {
-    return this.databaseName;
+  getDatabaseNames(): string[] {
+    return this.databaseNames;
+  },
+  getStixNames(): string[] {
+    return this.stixNames;
   },
 
   isMultipleDatabaseName(databaseName: string): boolean {
@@ -67,10 +63,23 @@ export const schemaRelationsRefDefinition = {
       .find((rel) => rel.databaseName === databaseName)
       ?.multiple ?? false;
   },
-
   isMultipleName(name: string): boolean {
     return Object.values(this.relationsRef ?? {}).flat()
       .find((rel) => rel.inputName === name)
       ?.multiple ?? false;
+  },
+
+  convertDatabaseNameToInputName(databaseName: string): string {
+    return this.databaseNameToInputName[databaseName];
+  },
+  convertInputNameToDatabaseName(inputName: string): string {
+    return this.inputNameToDatabaseName[inputName];
+  },
+
+  convertStixNameToInputName(stixName: string): string {
+    return this.stixNameToInputName[stixName];
+  },
+  convertInputNameToStixName(inputName: string): string {
+    return this.inputNameToStixName[inputName];
   }
 };

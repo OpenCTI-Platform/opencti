@@ -99,7 +99,7 @@ const objectMarking: RelationRefDefinition = {
   mandatoryType: 'customizable',
   multiple: true,
   checker: (fromType, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
-  label: 'Marking'
+  label: 'Markings'
 };
 
 const objects: RelationRefDefinition = {
@@ -179,25 +179,7 @@ const RELATIONS_REF_INTERNAL: RelationRefDefinition[] = [
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences]);
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, [objectMarking]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_RELATIONSHIP, [
-  {
-    ...createdBy,
-    mandatoryType: 'no',
-  },
-  {
-    ...objectMarking,
-    mandatoryType: 'no',
-  }, {
-    ...objectLabel,
-    mandatoryType: 'no',
-  }, {
-    ...externalReferences,
-    mandatoryType: 'no',
-  },
-  {
-    ...killChainPhases,
-    mandatoryType: 'no',
-  }]);
+schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_RELATIONSHIP, [createdBy, objectMarking, objectLabel, externalReferences, killChainPhases]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [objects]);
 

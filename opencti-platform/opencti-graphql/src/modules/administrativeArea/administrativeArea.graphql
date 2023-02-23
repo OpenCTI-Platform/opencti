@@ -174,7 +174,7 @@ input AdministrativeAreaAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
-    description: String!
+    description: String
     latitude: Float
     longitude: Float
     x_opencti_aliases: [String]

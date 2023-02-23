@@ -1,9 +1,9 @@
 import Ajv from 'ajv';
-import { isJsonAttribute, schemaAttributesDefinition } from '../schema/schema-attributes';
+import { isJsonAttribute, schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
-import { isNotEmptyField } from './utils';
-import { getEntityValidatorCreation, getEntityValidatorUpdate } from '../schema/validator-register';
+import { isNotEmptyField } from '../database/utils';
+import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 
@@ -63,7 +63,8 @@ const validateMandatoryAttributesOnCreation = (
   entitySetting: BasicStoreEntityEntitySetting
 ) => {
   // Should have all the mandatory keys and the associated values not null
-  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => inputKeys.includes(mandatoryKey) && isNotEmptyField(input[mandatoryKey]);
+  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
+    && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
   validateMandatoryAttributes(input, entitySetting, inputValidValue);
 };
@@ -72,7 +73,8 @@ const validateMandatoryAttributesOnUpdate = (
   entitySetting: BasicStoreEntityEntitySetting
 ) => {
   // If the mandatory key is present the associated value should be not null
-  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => !inputKeys.includes(mandatoryKey) || isNotEmptyField(input[mandatoryKey]);
+  const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
+    || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
   validateMandatoryAttributes(input, entitySetting, inputValidValue);
 };
