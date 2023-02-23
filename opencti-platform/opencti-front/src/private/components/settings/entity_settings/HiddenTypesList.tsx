@@ -19,7 +19,7 @@ const groups = new Map<string, string[]>([
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
   ['Techniques', ['Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source']],
   ['Entities', ['Sector', 'Event', 'Organization', 'System', 'Individual']],
-  ['Locations', ['Region', 'Country', 'City', 'Position']],
+  ['Locations', ['Region', 'Country', 'Administrative-Area', 'City', 'Position']],
 ]);
 const groupKeys = Array.from(groups.keys());
 
