@@ -145,6 +145,7 @@ export const findAllInformationSystems = async (args, dbName, dataSources, selec
   }
 
   let resultList ;
+  let sortBy;
   if (args.orderedBy !== undefined ) {
     if (args.orderedBy === 'top_risk_severity') {
       sortBy = 'risk_score';
