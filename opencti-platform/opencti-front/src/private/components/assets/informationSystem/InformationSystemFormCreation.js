@@ -109,8 +109,8 @@ class InformationSystemFormCreation extends Component {
     return (
       <>
         <Dialog
-          open={InfoSystemCreation === 'form'}
-          keepMounted={true}
+          open={InfoSystemCreation}
+          keepMounted={false}
           className={classes.dialogMain}
         >
           <Formik
@@ -121,7 +121,7 @@ class InformationSystemFormCreation extends Component {
               description: '',
               deployment_model: [],
               cloud_service_model: '',
-              identify_assurance_level: '',
+              identity_assurance_level: '',
               federation_assurance_level: '',
               authenticator_assurance_level: '',
             }}
@@ -156,7 +156,6 @@ class InformationSystemFormCreation extends Component {
                       <Field
                         component={TextField}
                         name="system_name"
-                        disabled={true}
                         fullWidth={true}
                         size="small"
                         containerstyle={{ width: '100%' }}
@@ -276,7 +275,7 @@ class InformationSystemFormCreation extends Component {
                       </div>
                       <div className="clearfix" />
                       <TaskType
-                        name="identify_assurance_level"
+                        name="identity_assurance_level"
                         taskType='IdentityAssuranceLevel'
                         fullWidth={true}
                         style={{ height: '38.09px' }}

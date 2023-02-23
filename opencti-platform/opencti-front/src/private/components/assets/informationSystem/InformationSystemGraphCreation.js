@@ -109,8 +109,8 @@ class InformationSystemGraphCreation extends Component {
     return (
       <>
         <Dialog
-          open={InfoSystemCreation === 'graph'}
-          keepMounted={true}
+          open={InfoSystemCreation}
+          keepMounted={false}
           className={classes.dialogMain}
         >
           <Formik
