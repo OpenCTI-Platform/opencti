@@ -21,7 +21,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const indicatorMutationFieldPatch = graphql`
@@ -86,8 +86,10 @@ const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-const indicatorValidation = (t) => {
-  let shape = {
+const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, enableReferences }) => {
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
@@ -102,19 +104,10 @@ const indicatorValidation = (t) => {
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
     x_opencti_detection: Yup.boolean(),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Indicator', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, enableReferences }) => {
-  const { t } = useFormatter();
-
-  const indicatorValidator = indicatorValidation(t);
+  const indicatorValidator = useYupSschemaBuilder('Indicator', basicShape);
 
   const queries = {
     fieldPatch: indicatorMutationFieldPatch,
@@ -242,6 +235,8 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -430,7 +425,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
                 />
               }
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

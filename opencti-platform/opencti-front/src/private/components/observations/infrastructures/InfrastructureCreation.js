@@ -25,7 +25,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -78,25 +78,6 @@ const infrastructureMutation = graphql`
   }
 `;
 
-const infrastructureValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    infrastructure_types: Yup.array().nullable(),
-    confidence: Yup.number(),
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  };
-
-  shape = useCustomYup('Infrastructure', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -111,6 +92,20 @@ const InfrastructureCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    infrastructure_types: Yup.array().nullable(),
+    confidence: Yup.number(),
+    first_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  };
+  const infrastructureValidator = useYupSschemaBuilder('Infrastructure', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -206,7 +201,7 @@ const InfrastructureCreation = ({ paginationOptions }) => {
               last_seen: null,
               killChainPhases: [],
             }}
-            validationSchema={infrastructureValidation(t)}
+            validationSchema={infrastructureValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

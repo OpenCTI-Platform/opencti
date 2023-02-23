@@ -18,7 +18,7 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 
@@ -117,22 +117,6 @@ const dataSourceEditionOverviewFragment = graphql`
   }
 `;
 
-const dataSourceValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    confidence: Yup.number(),
-    x_mitre_platforms: Yup.array(),
-    collection_layers: Yup.array(),
-    references: Yup.array().required(t('This field is required')),
-  };
-
-  shape = useCustomYup('Data-Source', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface DataSourceEditionOverviewProps {
   data: DataSourceEditionOverview_dataSource$key,
   context: readonly ({
@@ -164,7 +148,17 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
 }) => {
   const { t } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
-  const dataSourceValidator = dataSourceValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    confidence: Yup.number(),
+    x_mitre_platforms: Yup.array(),
+    collection_layers: Yup.array(),
+    references: Yup.array(),
+  };
+  const dataSourceValidator = useYupSschemaBuilder('Data-Source', basicShape);
 
   const queries = {
     fieldPatch: dataSourceMutationFieldPatch,
@@ -243,6 +237,8 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -336,7 +332,7 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
             multiple={true}
             editContext={context}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

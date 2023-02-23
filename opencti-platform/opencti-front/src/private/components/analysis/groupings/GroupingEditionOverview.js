@@ -16,7 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const groupingMutationFieldPatch = graphql`
@@ -79,26 +79,19 @@ const groupingMutationRelationDelete = graphql`
   }
 `;
 
-const groupingValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    context: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Grouping', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const GroupingEditionOverviewComponent = (props) => {
   const { grouping, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const groupingValidator = groupingValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    context: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const groupingValidator = useYupSschemaBuilder('Grouping', basicShape);
 
   const queries = {
     fieldPatch: groupingMutationFieldPatch,
@@ -183,9 +176,10 @@ const GroupingEditionOverviewComponent = (props) => {
       {({
         submitForm,
         isSubmitting,
-
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -270,7 +264,7 @@ const GroupingEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

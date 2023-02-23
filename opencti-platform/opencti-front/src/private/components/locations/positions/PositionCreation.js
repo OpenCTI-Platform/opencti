@@ -20,7 +20,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -73,8 +73,12 @@ const positionMutation = graphql`
   }
 `;
 
-const positionValidation = (t) => {
-  let shape = {
+const PositionCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number()
@@ -86,16 +90,7 @@ const positionValidation = (t) => {
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-
-  shape = useCustomYup('Position', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const PositionCreation = ({ paginationOptions }) => {
-  const classes = useStyles();
-  const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
+  const positionValidator = useYupSschemaBuilder('Position', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -175,7 +170,7 @@ const PositionCreation = ({ paginationOptions }) => {
                 objectLabel: [],
                 externalReferences: [],
               }}
-              validationSchema={positionValidation(t)}
+              validationSchema={positionValidator}
               onSubmit={onSubmit}
               onReset={onReset}
             >

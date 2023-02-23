@@ -17,7 +17,7 @@ import { Option } from '../../common/form/ReferenceField';
 import {
   AdministrativeAreaEditionOverview_administrativeArea$key,
 } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const administrativeAreaMutationFieldPatch = graphql`
@@ -106,25 +106,6 @@ export const administrativeAreaEditionOverviewFragment = graphql`
     }
 `;
 
-const administrativeAreaValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Administrative-Area', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface AdministrativeAreaEditionOverviewProps {
   administrativeAreaRef: AdministrativeAreaEditionOverview_administrativeArea$key,
   context: readonly ({
@@ -148,7 +129,20 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
   const { t } = useFormatter();
 
   const administrativeArea = useFragment(administrativeAreaEditionOverviewFragment, administrativeAreaRef);
-  const administrativeAreaValidator = administrativeAreaValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const administrativeAreaValidator = useYupSschemaBuilder('Administrative-Area', basicShape);
 
   const queries = {
     fieldPatch: administrativeAreaMutationFieldPatch,
@@ -225,6 +219,8 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
               isSubmitting,
               setFieldValue,
               values,
+              isValid,
+              dirty,
             }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                     <Field
@@ -315,7 +311,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                         }
                         onChange={editor.changeMarking}
                     />
-                    {enableReferences && (
+                    {enableReferences && isValid && dirty && (
                         <CommitMessage
                             submitForm={submitForm}
                             disabled={isSubmitting}

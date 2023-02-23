@@ -21,7 +21,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -74,22 +74,17 @@ const intrusionSetMutation = graphql`
   }
 `;
 
-const intrusionSetValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Intrusion-Set', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const IntrusionSetCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+  };
+  const intrusionSetValidator = useYupSschemaBuilder('Intrusion-Set', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -168,7 +163,7 @@ const IntrusionSetCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={intrusionSetValidation(t)}
+            validationSchema={intrusionSetValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

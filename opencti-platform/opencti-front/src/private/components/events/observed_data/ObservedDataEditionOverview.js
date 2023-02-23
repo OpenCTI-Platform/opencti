@@ -16,7 +16,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const observedDataMutationFieldPatch = graphql`
@@ -80,8 +80,11 @@ const observedDataMutationRelationDelete = graphql`
   }
 `;
 
-const observedDataValidation = (t) => {
-  let shape = {
+const ObservedDataEditionOverviewComponent = (props) => {
+  const { observedData, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     first_observed: Yup.date()
       .required(t('This field is required'))
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
@@ -90,20 +93,10 @@ const observedDataValidation = (t) => {
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     number_observed: Yup.number(),
     confidence: Yup.number(),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Observed-Data', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const ObservedDataEditionOverviewComponent = (props) => {
-  const { observedData, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const observedDataValidator = observedDataValidation(t);
+  const observedDataValidator = useYupSschemaBuilder('Observed-Data', basicShape);
 
   const queries = {
     fieldPatch: observedDataMutationFieldPatch,
@@ -194,6 +187,8 @@ const ObservedDataEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <div>
             <Form style={{ margin: '20px 0 20px 0' }}>
@@ -279,7 +274,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 }
                 onChange={editor.changeMarking}
               />
-              {enableReferences && (
+              {enableReferences && isValid && dirty && (
                 <CommitMessage
                   submitForm={submitForm}
                   disabled={isSubmitting}

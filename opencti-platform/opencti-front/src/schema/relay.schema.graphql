@@ -8652,7 +8652,7 @@ input LanguageAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
-  description: String!
+  description: String
   aliases: [String]
   confidence: Int
   revoked: Boolean
@@ -9603,7 +9603,7 @@ input AdministrativeAreaAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
-  description: String!
+  description: String
   latitude: Float
   longitude: Float
   x_opencti_aliases: [String]

@@ -166,6 +166,8 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -228,7 +230,7 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
                 <SubscriptionFocus context={context} fieldName="objective" />
               }
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

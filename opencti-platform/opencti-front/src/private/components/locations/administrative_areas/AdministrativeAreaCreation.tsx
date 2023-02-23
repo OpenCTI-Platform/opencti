@@ -22,7 +22,7 @@ import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -77,23 +77,6 @@ const administrativeAreaMutation = graphql`
   }
 `;
 
-const administrativeAreaValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-  };
-
-  shape = useCustomYup('Administrative-Area', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface AdministrativeAreaAddInput {
   name: string
   description: string
@@ -113,6 +96,19 @@ const AdministrativeAreaCreation = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+  };
+  const administrativeAreaValidator = useYupSschemaBuilder('Administrative-Area', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [commit] = useMutation(administrativeAreaMutation);
@@ -191,7 +187,7 @@ const AdministrativeAreaCreation = ({
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={administrativeAreaValidation(t)}
+            validationSchema={administrativeAreaValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

@@ -16,7 +16,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const regionMutationFieldPatch = graphql`
@@ -116,19 +116,6 @@ const regionEditionOverviewFragment = graphql`
   }
 `;
 
-const regionValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Region', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface RegionEdititionOverviewProps {
   regionRef: RegionEditionOverview_region$key,
   context: readonly ({
@@ -157,7 +144,15 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
 }) => {
   const { t } = useFormatter();
   const region = useFragment(regionEditionOverviewFragment, regionRef);
-  const regionValidator = regionValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+
+  const regionValidator = useYupSschemaBuilder('Region', basicShape);
 
   const queries = {
     fieldPatch: regionMutationFieldPatch,
@@ -237,6 +232,8 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -298,7 +295,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

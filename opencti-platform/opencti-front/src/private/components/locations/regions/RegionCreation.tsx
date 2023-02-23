@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -85,17 +85,6 @@ const regionMutation = graphql`
   }
 `;
 
-const regionValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Region', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface RegionAddInput {
   name: string
   description: string
@@ -111,13 +100,14 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const handleOpen = () => {
-    setOpen(true);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
+  const regionValidator = useYupSschemaBuilder('Region', basicShape);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const [commit] = useMutation(regionMutation);
 
@@ -183,7 +173,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={regionValidation(t)}
+            validationSchema={regionValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

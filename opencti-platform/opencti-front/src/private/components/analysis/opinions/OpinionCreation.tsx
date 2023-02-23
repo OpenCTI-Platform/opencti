@@ -28,7 +28,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { OpinionsLinesPaginationQuery$variables } from './__generated__/OpinionsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -87,18 +87,6 @@ export const opinionCreationMutation = graphql`
   }
 `;
 
-const opinionValidation = (t: (message: string) => string) => {
-  let shape = {
-    opinion: Yup.string().required(t('This field is required')),
-    explanation: Yup.string().nullable(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Opinion', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface OpinionAddInput {
   opinion: string
   explanation: string
@@ -125,6 +113,14 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    opinion: Yup.string().required(t('This field is required')),
+    explanation: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const opinionValidator = useYupSschemaBuilder('Opinion', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -270,7 +266,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
           <div className={classes.container}>
             <Formik<OpinionAddInput>
               initialValues={initialValues}
-              validationSchema={opinionValidation(t)}
+              validationSchema={opinionValidator}
               onSubmit={onSubmit}
               onReset={onReset}
             >

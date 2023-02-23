@@ -17,7 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const toolMutationFieldPatch = graphql`
@@ -79,26 +79,19 @@ const toolMutationRelationDelete = graphql`
   }
 `;
 
-const toolValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    tool_types: Yup.array(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Tool', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const ToolEditionOverviewComponent = (props) => {
   const { tool, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const toolValidator = toolValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+    tool_types: Yup.array(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const toolValidator = useYupSschemaBuilder('Tool', basicShape);
 
   const queries = {
     fieldPatch: toolMutationFieldPatch,
@@ -195,6 +188,8 @@ const ToolEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -284,7 +279,7 @@ const ToolEditionOverviewComponent = (props) => {
               multiple={true}
               editContext={context}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

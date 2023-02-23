@@ -19,7 +19,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const infrastructureMutationFieldPatch = graphql`
@@ -84,8 +84,11 @@ const infrastructureMutationRelationDelete = graphql`
   }
 `;
 
-const infrastructureValidation = (t) => {
-  let shape = {
+const InfrastructureEditionOverviewComponent = (props) => {
+  const { infrastructure, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
@@ -96,20 +99,10 @@ const infrastructureValidation = (t) => {
     last_seen: Yup.date()
       .nullable()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Infrastructure', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const InfrastructureEditionOverviewComponent = (props) => {
-  const { infrastructure, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const infrastructureValidator = infrastructureValidation(t);
+  const infrastructureValidator = useYupSschemaBuilder('Infrastructure', basicShape);
 
   const queries = {
     fieldPatch: infrastructureMutationFieldPatch,
@@ -222,6 +215,8 @@ const InfrastructureEditionOverviewComponent = (props) => {
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -341,7 +336,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

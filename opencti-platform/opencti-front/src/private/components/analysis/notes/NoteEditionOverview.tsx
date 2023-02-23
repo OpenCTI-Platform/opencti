@@ -22,7 +22,7 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/SliderField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
@@ -84,29 +84,6 @@ const noteMutationRelationDelete = graphql`
   }
 `;
 
-const noteValidation = (t: (message: string) => string) => {
-  let shape = {
-    created: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
-    attribute_abstract: Yup.string().nullable(),
-    content: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    note_types: Yup.array(),
-    likelihood: Yup.number()
-      .min(0)
-      .max(100)
-      .transform((value) => (Number.isNaN(value) ? null : value))
-      .nullable(true),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Note', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface NoteEditionOverviewProps {
   note: NoteEditionOverview_note$data;
   context:
@@ -133,7 +110,23 @@ NoteEditionOverviewProps
   const { t } = useFormatter();
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-  const noteValidator = noteValidation(t);
+  const basicShape = {
+    created: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    attribute_abstract: Yup.string().nullable(),
+    content: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    note_types: Yup.array(),
+    likelihood: Yup.number()
+      .min(0)
+      .max(100)
+      .transform((value) => (Number.isNaN(value) ? null : value))
+      .nullable(true),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const noteValidator = useYupSschemaBuilder('Note', basicShape);
 
   const queries = {
     fieldPatch: noteMutationFieldPatch,
@@ -213,6 +206,8 @@ NoteEditionOverviewProps
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -330,7 +325,7 @@ NoteEditionOverviewProps
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

@@ -132,7 +132,7 @@ const stixDomainObjectValidation = (t) => Yup.object().shape({
   description: Yup.string().nullable(),
   aliases: Yup.string().nullable(),
   x_opencti_aliases: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
 });
 
 const StixDomainObjectEditionContainer = (props) => {

@@ -15,7 +15,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const cityMutationFieldPatch = graphql`
@@ -114,25 +114,6 @@ export const cityEditionOverviewFragment = graphql`
   }
 `;
 
-const cityValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable().max(5000, t('The value is too long')),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('City', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface CityEditionOverviewProps {
   cityRef: CityEditionOverview_city$key,
   context: readonly ({
@@ -155,7 +136,20 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
   const { t } = useFormatter();
 
   const city = useFragment(cityEditionOverviewFragment, cityRef);
-  const cityValidator = cityValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const cityValidator = useYupSschemaBuilder('City', basicShape);
 
   const queries = {
     fieldPatch: cityMutationFieldPatch,
@@ -233,6 +227,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -323,7 +319,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

@@ -136,6 +136,8 @@ const AttackPatternEditionDetailsComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -190,7 +192,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
                 />
               }
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

@@ -21,7 +21,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles((theme) => ({
@@ -88,19 +88,6 @@ const channelMutation = graphql`
   }
 `;
 
-const channelValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    channel_types: Yup.array(),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Channel', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -115,6 +102,14 @@ const ChannelCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    channel_types: Yup.array(),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const channelValidator = useYupSschemaBuilder('Channel', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -202,7 +197,7 @@ const ChannelCreation = ({ paginationOptions }) => {
                 externalReferences: [],
                 confidence: 75,
               }}
-              validationSchema={channelValidation(t)}
+              validationSchema={channelValidator}
               onSubmit={onSubmit}
               onReset={onReset}
             >

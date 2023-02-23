@@ -16,7 +16,7 @@ import { CountryEditionOverview_country$key } from './__generated__/CountryEditi
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const countryMutationFieldPatch = graphql`
@@ -116,22 +116,6 @@ const countryEditionOverviewFragment = graphql`
   }
 `;
 
-const countryValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Country', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface CountryEditionOverviewProps {
   countryRef: CountryEditionOverview_country$key,
   context: readonly ({
@@ -160,7 +144,14 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
 }) => {
   const { t } = useFormatter();
   const country = useFragment(countryEditionOverviewFragment, countryRef);
-  const countryValidator = countryValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const countryValidator = useYupSschemaBuilder('Country', basicShape);
 
   const queries = {
     fieldPatch: countryMutationFieldPatch,
@@ -240,6 +231,8 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -301,7 +294,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

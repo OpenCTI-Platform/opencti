@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -76,19 +76,6 @@ const toolMutation = graphql`
   }
 `;
 
-const toolValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    tool_types: Yup.array(),
-  };
-
-  shape = useCustomYup('Tool', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -103,6 +90,14 @@ const ToolCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+    tool_types: Yup.array(),
+  };
+  const toolValidator = useYupSschemaBuilder('Tool', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -190,7 +185,7 @@ const ToolCreation = ({ paginationOptions }) => {
               tool_types: [],
               confidence: 75,
             }}
-            validationSchema={toolValidation(t)}
+            validationSchema={toolValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

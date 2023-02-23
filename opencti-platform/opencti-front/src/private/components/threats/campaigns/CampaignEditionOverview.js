@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const campaignMutationFieldPatch = graphql`
@@ -80,25 +80,18 @@ const campaignMutationRelationDelete = graphql`
   }
 `;
 
-const campaignValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Campaign', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const CampaignEditionOverviewComponent = (props) => {
   const { campaign, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const campaignValidator = campaignValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const campaignValidator = useYupSschemaBuilder('Campaign', basicShape);
 
   const queries = {
     fieldPatch: campaignMutationFieldPatch,
@@ -183,6 +176,8 @@ const CampaignEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -251,7 +246,7 @@ const CampaignEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

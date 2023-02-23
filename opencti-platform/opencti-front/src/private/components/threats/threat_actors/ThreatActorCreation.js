@@ -21,7 +21,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -74,23 +74,18 @@ const threatActorMutation = graphql`
   }
 `;
 
-const threatActorValidation = (t) => {
-  let shape = {
+const ThreatActorCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     threat_actor_types: Yup.array(),
     confidence: Yup.number(),
     description: Yup.string().nullable(),
   };
-
-  shape = useCustomYup('Threat-Actor', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const ThreatActorCreation = ({ paginationOptions }) => {
-  const classes = useStyles();
-  const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
+  const threatActorValidator = useYupSschemaBuilder('Threat-Actor', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -173,7 +168,7 @@ const ThreatActorCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={threatActorValidation(t)}
+            validationSchema={threatActorValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

@@ -16,7 +16,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const channelMutationFieldPatch = graphql`
@@ -75,26 +75,19 @@ const channelMutationRelationDelete = graphql`
   }
 `;
 
-const channelValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    channel_types: Yup.array(),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Channel', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const ChannelEditionOverviewComponent = (props) => {
   const { channel, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const channelValidator = channelValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    channel_types: Yup.array(),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const channelValidator = useYupSschemaBuilder('Channel', basicShape);
 
   const queries = {
     fieldPatch: channelMutationFieldPatch,
@@ -185,6 +178,8 @@ const ChannelEditionOverviewComponent = (props) => {
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -266,7 +261,7 @@ const ChannelEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -80,25 +80,18 @@ const intrusionSetMutationRelationDelete = graphql`
   }
 `;
 
-const intrusionSetValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Intrusion-Set', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const IntrusionSetEditionOverviewComponent = (props) => {
   const { intrusionSet, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const intrusionSetValidator = intrusionSetValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const intrusionSetValidator = useYupSschemaBuilder('Intrusion-Set', basicShape);
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,
@@ -192,6 +185,8 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       isSubmitting,
       setFieldValue,
       values,
+      isValid,
+      dirty,
     }) => (
       <Form style={{ margin: '20px 0 20px 0' }}>
         <Field
@@ -263,7 +258,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           }
           onChange={editor.changeMarking}
         />
-        {enableReferences && (
+        {enableReferences && isValid && dirty && (
           <CommitMessage
             submitForm={submitForm}
             disabled={isSubmitting}

@@ -26,7 +26,7 @@ import RatingField from '../../../../components/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -142,25 +142,6 @@ const feedbackMutationRelationDelete = graphql`
   }
 `;
 
-const caseValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    priority: Yup.string().nullable(),
-    severity: Yup.string().nullable(),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Case', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface FeedbackEditionOverviewProps {
   caseRef: FeedbackEditionOverview_case$key;
   context:
@@ -186,7 +167,17 @@ FeedbackEditionOverviewProps
 > = ({ caseRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const caseData = useFragment(feedbackEditionOverviewFragment, caseRef);
-  const caseValidator = caseValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    priority: Yup.string().nullable(),
+    severity: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    rating: Yup.number(),
+    confidence: Yup.number(),
+  };
+  const caseValidator = useYupSschemaBuilder('Case', basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -272,6 +263,8 @@ FeedbackEditionOverviewProps
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
@@ -382,7 +375,7 @@ FeedbackEditionOverviewProps
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

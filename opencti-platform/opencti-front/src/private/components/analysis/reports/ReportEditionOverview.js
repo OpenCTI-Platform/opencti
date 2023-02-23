@@ -19,7 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const reportMutationFieldPatch = graphql`
@@ -82,8 +82,11 @@ const reportMutationRelationDelete = graphql`
   }
 `;
 
-const reportValidation = (t) => {
-  let shape = {
+const ReportEditionOverviewComponent = (props) => {
+  const { report, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -91,20 +94,10 @@ const reportValidation = (t) => {
     report_types: Yup.array(),
     confidence: Yup.number(),
     description: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Report', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const ReportEditionOverviewComponent = (props) => {
-  const { report, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const reportValidator = reportValidation(t);
+  const reportValidator = useYupSschemaBuilder('Report', basicShape);
 
   const queries = {
     fieldPatch: reportMutationFieldPatch,
@@ -199,6 +192,8 @@ const ReportEditionOverviewComponent = (props) => {
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -298,7 +293,7 @@ const ReportEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

@@ -13,7 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const positionMutationFieldPatch = graphql`
@@ -78,8 +78,11 @@ const positionMutationRelationDelete = graphql`
   }
 `;
 
-const positionValidation = (t) => {
-  let shape = {
+const PositionEditionOverviewComponent = (props) => {
+  const { position, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number()
@@ -90,20 +93,10 @@ const positionValidation = (t) => {
       .nullable(),
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Position', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const PositionEditionOverviewComponent = (props) => {
-  const { position, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const positionValidator = positionValidation(t);
+  const positionValidator = useYupSschemaBuilder('Position', basicShape);
 
   const queries = {
     fieldPatch: positionMutationFieldPatch,
@@ -191,6 +184,8 @@ const PositionEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -301,7 +296,7 @@ const PositionEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

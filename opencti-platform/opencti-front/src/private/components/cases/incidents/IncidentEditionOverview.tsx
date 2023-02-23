@@ -24,7 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 export const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewCaseFieldPatchMutation(
@@ -140,25 +140,6 @@ const incidentMutationRelationDelete = graphql`
   }
 `;
 
-const caseValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    severity: Yup.string().nullable(),
-    priority: Yup.string().nullable(),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Case', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface IncidentEditionOverviewProps {
   caseRef: IncidentEditionOverview_case$key;
   context:
@@ -180,7 +161,17 @@ IncidentEditionOverviewProps
 > = ({ caseRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const caseData = useFragment(incidentEditionOverviewFragment, caseRef);
-  const caseValidator = caseValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    severity: Yup.string().nullable(),
+    priority: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    rating: Yup.number(),
+    confidence: Yup.number(),
+  };
+  const caseValidator = useYupSschemaBuilder('Case', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,

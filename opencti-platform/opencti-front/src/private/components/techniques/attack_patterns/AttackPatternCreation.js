@@ -21,7 +21,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -88,18 +88,6 @@ const attackPatternMutation = graphql`
   }
 `;
 
-const attackPatternValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    x_mitre_id: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Attack-Pattern', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -114,6 +102,13 @@ const AttackPatternCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_mitre_id: Yup.string().nullable(),
+  };
+  const attackPatternValidator = useYupSschemaBuilder('Attack-Pattern', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -200,7 +195,7 @@ const AttackPatternCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={attackPatternValidation(t)}
+            validationSchema={attackPatternValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

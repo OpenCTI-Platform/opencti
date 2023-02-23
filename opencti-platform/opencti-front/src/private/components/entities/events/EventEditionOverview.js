@@ -17,7 +17,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const eventMutationFieldPatch = graphql`
@@ -72,8 +72,11 @@ const eventMutationRelationDelete = graphql`
   }
 `;
 
-const eventValidation = (t) => {
-  let shape = {
+const EventEditionOverviewComponent = (props) => {
+  const { event, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
@@ -83,20 +86,10 @@ const eventValidation = (t) => {
     stop_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Event', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const EventEditionOverviewComponent = (props) => {
-  const { event, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const eventValidator = eventValidation(t);
+  const eventValidator = useYupSschemaBuilder('Event', basicShape);
 
   const queries = {
     fieldPatch: eventMutationFieldPatch,
@@ -187,6 +180,8 @@ const EventEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -287,7 +282,7 @@ const EventEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

@@ -21,7 +21,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -74,18 +74,6 @@ const campaignMutation = graphql`
   }
 `;
 
-const campaignValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Campaign', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -100,6 +88,13 @@ const CampaignCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+  };
+  const campaignValidator = useYupSschemaBuilder('Campaign', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -183,7 +178,7 @@ const CampaignCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={campaignValidation(t)}
+            validationSchema={campaignValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

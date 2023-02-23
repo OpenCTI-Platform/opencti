@@ -54,11 +54,14 @@ const EntitySettingAttributesConfiguration = ({
     nodePath: 'entitySettingByType',
   });
 
-  const attributesConfiguration: AttributeConfiguration[] = JSON.parse(entitySetting.attributes_configuration ?? '');
+  let attributesConfiguration: AttributeConfiguration[] | null = null;
+  if (entitySetting.attributes_configuration) {
+    attributesConfiguration = JSON.parse(entitySetting.attributes_configuration);
+  }
 
   const isMandatoryAttributeConfiguration = (name: string): boolean => {
     return attributesConfiguration?.filter((attr) => attr.mandatory)
-      .map((attr) => attr?.name).includes(name);
+      .map((attr) => attr?.name).includes(name) ?? false;
   };
 
   const [commit] = useMutation(entitySettingsPatch);
@@ -96,7 +99,7 @@ const EntitySettingAttributesConfiguration = ({
     }
   });
 
-  if (subType.mandatoryAttributes.length > 0) {
+  if (attributesConfiguration !== null && subType.mandatoryAttributes.length > 0) {
     return (
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }}>
@@ -106,7 +109,7 @@ const EntitySettingAttributesConfiguration = ({
           <Paper classes={{ root: classes.paper }} variant="outlined">
             {mandatoryAttributesBuiltIn.length > 0
               && <>
-                <Typography variant="h3" gutterBottom={true} style={{ marginBottom: 20 }}>
+                <Typography variant="h3" gutterBottom={true}>
                   {t('Built-in attributes')}
                 </Typography><FormGroup classes={{ root: classes.grid }}>
                 {mandatoryAttributesBuiltIn.map((attr) => (

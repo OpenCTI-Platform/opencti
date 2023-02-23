@@ -20,7 +20,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -85,17 +85,6 @@ const sectorMutation = graphql`
   }
 `;
 
-const sectorValidation = (t) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Sector', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -110,6 +99,12 @@ const SectorCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  };
+  const sectorValidator = useYupSschemaBuilder('Sector', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -185,7 +180,7 @@ const SectorCreation = ({ paginationOptions }) => {
                 objectLabel: [],
                 externalReferences: [],
               }}
-              validationSchema={sectorValidation(t)}
+              validationSchema={sectorValidator}
               onSubmit={onSubmit}
               onReset={onReset}
             >

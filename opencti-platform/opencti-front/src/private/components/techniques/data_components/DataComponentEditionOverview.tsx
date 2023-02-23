@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -114,20 +114,6 @@ const DataComponentEditionOverviewFragment = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Data-Component', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface DataComponentEditionOverviewComponentProps {
   data: DataComponentEditionOverview_dataComponent$key
   context: readonly ({
@@ -158,7 +144,15 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
   const { t } = useFormatter();
 
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
-  const dataComponentValidator = dataComponentValidation(t);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const dataComponentValidator = useYupSschemaBuilder('Data-Component', basicShape);
 
   const queries = {
     fieldPatch: dataComponentMutationFieldPatch,
@@ -237,6 +231,8 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -308,7 +304,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
+          {enableReferences && isValid && dirty && (
             <CommitMessage
               submitForm={submitForm}
               disabled={isSubmitting}

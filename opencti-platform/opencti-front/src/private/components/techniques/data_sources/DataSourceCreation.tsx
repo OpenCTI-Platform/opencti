@@ -29,7 +29,7 @@ import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataS
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,18 +91,6 @@ const dataSourceMutation = graphql`
   }
 `;
 
-const dataSourceValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Data-Source', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface DataSourceAddInput {
   name: string;
   description: string;
@@ -132,6 +120,14 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const dataSourceValidator = useYupSschemaBuilder('Data-Source', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -306,7 +302,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         <div className={classes.container}>
           <Formik<DataSourceAddInput>
             initialValues={initialValues}
-            validationSchema={dataSourceValidation(t)}
+            validationSchema={dataSourceValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -359,7 +355,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <Formik
           initialValues={initialValues}
-          validationSchema={dataSourceValidation(t)}
+          validationSchema={dataSourceValidator}
           onSubmit={onSubmit}
           onReset={onReset}
         >

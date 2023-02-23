@@ -29,7 +29,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -86,8 +86,22 @@ const indicatorMutation = graphql`
   }
 `;
 
-const indicatorValidation = (t) => {
-  let shape = {
+const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
+  const userProxy = store.get(userId);
+  const conn = ConnectionHandler.getConnection(
+    userProxy,
+    'Pagination_indicators',
+    paginationOptions,
+  );
+  ConnectionHandler.insertEdgeBefore(conn, newEdge);
+};
+
+const IndicatorCreation = ({ paginationOptions }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
@@ -108,26 +122,8 @@ const indicatorValidation = (t) => {
     x_opencti_detection: Yup.boolean(),
     createObservables: Yup.boolean(),
   };
+  const indicatorValidator = useYupSschemaBuilder('Indicator', basicShape);
 
-  shape = useCustomYup('Indicator', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_indicators',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const IndicatorCreation = ({ paginationOptions }) => {
-  const { t } = useFormatter();
-  const classes = useStyles();
-  const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
@@ -218,7 +214,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
               x_opencti_detection: false,
               x_opencti_score: 50,
             }}
-            validationSchema={indicatorValidation(t)}
+            validationSchema={indicatorValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

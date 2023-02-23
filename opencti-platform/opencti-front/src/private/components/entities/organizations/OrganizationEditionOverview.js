@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const organizationMutationFieldPatch = graphql`
@@ -80,27 +80,20 @@ const organizationMutationRelationDelete = graphql`
   }
 `;
 
-const organizationValidation = (t) => {
-  let shape = {
+const OrganizationEditionOverviewComponent = (props) => {
+  const { organization, enableReferences, context, handleClose } = props;
+  const { t } = useFormatter();
+
+  const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
-    references: Yup.array().required(t('This field is required')),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-
-  shape = useCustomYup('Organization', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
-const OrganizationEditionOverviewComponent = (props) => {
-  const { organization, enableReferences, context, handleClose } = props;
-  const { t } = useFormatter();
-
-  const organizationValidator = organizationValidation(t);
+  const organizationValidator = useYupSschemaBuilder('Organization', basicShape);
 
   const queries = {
     fieldPatch: organizationMutationFieldPatch,
@@ -187,6 +180,8 @@ const OrganizationEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -307,7 +302,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

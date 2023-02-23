@@ -15,7 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
@@ -77,25 +77,18 @@ const opinionMutationRelationDelete = graphql`
   }
 `;
 
-const opinionValidation = (t) => {
-  let shape = {
-    opinion: Yup.string().required(t('This field is required')),
-    explanation: Yup.string().nullable(),
-    confidence: Yup.number(),
-    references: Yup.array().required(t('This field is required')),
-    x_opencti_workflow_id: Yup.object(),
-  };
-
-  shape = useCustomYup('Opinion', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const opinionValidator = opinionValidation(t);
+  const basicShape = {
+    opinion: Yup.string().required(t('This field is required')),
+    explanation: Yup.string().nullable(),
+    confidence: Yup.number(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const opinionValidator = useYupSschemaBuilder('Opinion', basicShape);
 
   const queries = {
     fieldPatch: opinionMutationFieldPatch,
@@ -180,6 +173,8 @@ const OpinionEditionOverviewComponent = (props) => {
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -252,7 +247,7 @@ const OpinionEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

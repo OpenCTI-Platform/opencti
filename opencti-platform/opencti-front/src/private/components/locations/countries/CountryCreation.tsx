@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -85,18 +85,6 @@ const countryMutation = graphql`
   }
 `;
 
-const countryValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Country', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface CountryAddInput {
   name: string
   description: string
@@ -112,13 +100,14 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const handleOpen = () => {
-    setOpen(true);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
+  const countryValidator = useYupSschemaBuilder('Country', basicShape);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const [commit] = useMutation(countryMutation);
 
@@ -184,7 +173,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={countryValidation(t)}
+            validationSchema={countryValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

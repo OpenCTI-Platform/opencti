@@ -22,7 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -75,23 +75,6 @@ const cityMutation = graphql`
   }
 `;
 
-const cityValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-  };
-
-  shape = useCustomYup('City', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface CityAddInput {
   name: string
   description: string
@@ -108,6 +91,19 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const { t } = useFormatter();
 
   const [open, setOpen] = useState<boolean>(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+  };
+  const cityValidator = useYupSschemaBuilder('City', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -181,7 +177,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={cityValidation(t)}
+            validationSchema={cityValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

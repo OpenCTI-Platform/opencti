@@ -1,7 +1,7 @@
 import { useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
-import { AnySchema } from 'yup/lib/schema';
+import BaseSchema, { AnySchema } from 'yup/lib/schema';
 import useAuth from './useAuth';
 import { entitySettingsFragment } from '../../private/components/settings/sub_types/EntitySetting';
 import { EntitySettingConnection_entitySettings$data, EntitySettingConnection_entitySettings$key } from '../../private/components/settings/sub_types/__generated__/EntitySettingConnection_entitySettings.graphql';
@@ -45,10 +45,12 @@ const useAttributesConfiguration = (id: string): AttributeConfiguration[] | null
   return JSON.parse(entitySetting.attributes_configuration);
 };
 
-export const useCustomYup = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, t: (message: string) => string): TNextShape => {
+export const useYupSschemaBuilder = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape): BaseSchema => {
+  const { t } = useFormatter();
+
   const attributesConfiguration = useAttributesConfiguration(id);
   if (!attributesConfiguration) {
-    return existingShape;
+    return Yup.object().shape(existingShape);
   }
 
   const existingKeys = Object.keys(existingShape);
@@ -71,10 +73,10 @@ export const useCustomYup = <TNextShape extends ObjectShape>(id: string, existin
         return [attrName, validator];
       }),
   );
-  return {
+  return Yup.object().shape({
     ...existingShape,
     ...newShape,
-  };
+  });
 };
 
 export default useEntitySettings;

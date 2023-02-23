@@ -58,7 +58,7 @@ const intrusionSetValidation = (t) => Yup.object().shape({
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
 });
 
 const IntrusionSetEditionDetailsComponent = (props) => {
@@ -168,6 +168,8 @@ const IntrusionSetEditionDetailsComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -250,7 +252,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="goals" />
               }
             />
-            {enableReferences && (
+            {enableReferences && isValid && dirty && (
               <CommitMessage
                 submitForm={submitForm}
                 disabled={isSubmitting}

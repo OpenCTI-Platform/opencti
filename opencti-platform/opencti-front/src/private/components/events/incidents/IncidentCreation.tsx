@@ -30,7 +30,7 @@ import { Option } from '../../common/form/ReferenceField';
 import {
   IncidentsCardsAndLinesPaginationQuery$variables,
 } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -83,21 +83,6 @@ const IncidentMutation = graphql`
   }
 `;
 
-const incidentValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    incident_type: Yup.string(),
-    severity: Yup.string(),
-    source: Yup.string(),
-    description: Yup.string().nullable(),
-  };
-
-  shape = useCustomYup('Incident', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface IncidentAddInput {
   name: string
   description: string
@@ -117,6 +102,17 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const [commit] = useMutation(IncidentMutation);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    incident_type: Yup.string(),
+    severity: Yup.string(),
+    source: Yup.string(),
+    description: Yup.string().nullable(),
+  };
+  const incidentValidator = useYupSschemaBuilder('Incident', basicShape);
+
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const cleanedValues = isEmptyField(values.severity)
       ? R.dissoc('severity', values)
@@ -196,7 +192,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={incidentValidation(t)}
+            validationSchema={incidentValidator}
             onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >

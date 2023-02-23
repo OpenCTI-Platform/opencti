@@ -28,7 +28,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -90,18 +90,6 @@ const dataComponentMutation = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number(),
-  };
-
-  shape = useCustomYup('Data-Component', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface DataComponentAddInput {
   name: string,
   description: string,
@@ -126,6 +114,14 @@ const DataComponentCreation: FunctionComponent<{
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const dataComponentValidator = useYupSschemaBuilder('Data-Component', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -284,7 +280,7 @@ const DataComponentCreation: FunctionComponent<{
         <div className={classes.container}>
           <Formik<DataComponentAddInput>
             initialValues={initialValues}
-            validationSchema={dataComponentValidation(t)}
+            validationSchema={dataComponentValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -341,7 +337,7 @@ const DataComponentCreation: FunctionComponent<{
       >
         <Formik<DataComponentAddInput>
           initialValues={initialValues}
-          validationSchema={dataComponentValidation(t)}
+          validationSchema={dataComponentValidator}
           onSubmit={onSubmit}
           onReset={onReset}
         >

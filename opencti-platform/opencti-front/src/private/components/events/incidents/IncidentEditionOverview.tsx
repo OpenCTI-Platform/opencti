@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
-import { useCustomYup } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const incidentMutationFieldPatch = graphql`
@@ -132,20 +132,6 @@ const incidentEditionOverviewFragment = graphql`
     }
   `;
 
-const incidentValidation = (t: (message: string) => string) => {
-  let shape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
-    description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    references: Yup.array().required(t('This field is required')),
-  };
-
-  shape = useCustomYup('Incident', shape, t);
-
-  return Yup.object().shape(shape);
-};
-
 interface IncidentEditionOverviewProps {
   incidentRef: IncidentEditionOverview_incident$key,
   context: readonly ({
@@ -169,7 +155,14 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   const { t } = useFormatter();
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
 
-  const incidentValidator = incidentValidation(t);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    references: Yup.array(),
+  };
+  const incidentValidator = useYupSschemaBuilder('Incident', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
