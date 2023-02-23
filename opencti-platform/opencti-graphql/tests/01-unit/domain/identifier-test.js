@@ -5,6 +5,8 @@ import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
+import '../../../src/modules/index'; // Need to import registration files
+
 describe('identifier', () => {
   it('should name correctly normalize', () => {
     let normalize = normalizeName('My data %test     ');
