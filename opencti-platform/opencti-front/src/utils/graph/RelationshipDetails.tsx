@@ -5,7 +5,6 @@ import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { InfoOutlined } from '@mui/icons-material';
-import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import useQueryLoading from '../hooks/useQueryLoading';
@@ -120,18 +119,18 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       {stixCoreRelationship?.relationship_type}
       { stixCoreRelationship?.from?.entity_type
         && <Tooltip title={t('View the item')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      to={`${resolveLink(stixCoreRelationship.from.entity_type)}/${
-                        stixCoreRelationship.from.id
-                      }/knowledge/relations/${stixCoreRelationship.id}`}
-                      size="small"
-                    >
-                        <InfoOutlined/>
-                    </IconButton>
-                  </span>
+          <span>
+            <IconButton
+              color="primary"
+              component={Link}
+              to={`${resolveLink(stixCoreRelationship.from.entity_type)}/${
+                stixCoreRelationship.from.id
+              }/knowledge/relations/${stixCoreRelationship.id}`}
+              size="small"
+            >
+                <InfoOutlined/>
+            </IconButton>
+          </span>
         </Tooltip> }
       { stixCoreRelationship?.description
         && <div>
@@ -172,7 +171,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
             {t('Author')}
           </Typography>
           <ItemAuthor
-            createdBy={R.propOr(null, 'createdBy', stixCoreRelationship)}
+            createdBy={stixCoreRelationship.createdBy}
           />
         </div>
       }

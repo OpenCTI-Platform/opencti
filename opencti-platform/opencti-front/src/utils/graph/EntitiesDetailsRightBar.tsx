@@ -48,10 +48,9 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
   const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
     const { value } = event.target;
     const entity = selectedEntities.find((el) => (el.id === value));
-    if (entity === undefined) {
+    if (!entity) {
       setSelectedEntity(selectedEntities[0]);
-    }
-    if (entity) {
+    } else {
       setSelectedEntity(entity);
     }
   };
@@ -69,7 +68,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         fullWidth={true}
       >
         <InputLabel id="entityField" className={classes.label}>
-          {selectedEntities[0].label}
+          {selectedEntity.label}
         </InputLabel>
         <Select
           labelId="entityField"

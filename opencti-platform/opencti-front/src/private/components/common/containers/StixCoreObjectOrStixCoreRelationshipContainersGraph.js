@@ -130,7 +130,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       ),
       numberOfSelectedNodes: 0,
       numberOfSelectedLinks: 0,
-      numberOfSelectedEntities: 0,
       width: null,
       height: null,
       zoomed: false,
@@ -360,7 +359,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
-      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -382,7 +380,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
-      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -392,7 +389,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.setState({
       numberOfSelectedNodes: this.selectedNodes.size,
       numberOfSelectedLinks: this.selectedLinks.size,
-      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
     });
   }
 
@@ -400,8 +396,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
-      numberOfSelectedEntities: this.selectedNodes.size + this.selectedLinks.size,
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size
     });
   }
 

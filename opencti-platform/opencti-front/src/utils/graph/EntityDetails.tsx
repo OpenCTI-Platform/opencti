@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { InfoOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
-import * as R from 'ramda';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
 import { resolveLink } from '../Entity';
@@ -204,80 +203,80 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
 
   return (
     <div className={classes.entity}>
-      <Typography
-        variant="h3"
-        gutterBottom={false}
-        className={classes.nameLabel}
-      >
-        {t('Name')}
-      </Typography>
-      {truncate(stixCoreObject?.name, 30)}
-      { stixCoreObject
-        && <Tooltip title={t('View the item')} >
-                  <span>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      to={`${resolveLink(stixCoreObject.entity_type)}/${
-                        stixCoreObject.id
-                      }`}
-                      size="small"
-                    >
-                        <InfoOutlined/>
-                    </IconButton>
-                  </span>
-        </Tooltip> }
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
-        {t('Type')}
-      </Typography>
-      { stixCoreObject?.entity_type}
-      { stixCoreObject?.description
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('Description')}
-          </Typography>
-         <ExpandableMarkdown
-          source={ stixCoreObject?.description}
-          limit={400}
-        />
-        </div>
-      }
-      { (stixCoreObject?.objectMarking?.edges && stixCoreObject?.objectMarking?.edges.length > 0)
-       && <div>
-        <Typography variant="h3"
-        gutterBottom={true}
-        className={classes.label}
+        <Typography
+          variant="h3"
+          gutterBottom={false}
+          className={classes.nameLabel}
         >
-      {t('Marking')}
+            {t('Name')}
         </Typography>
-         <ItemMarkings
-        markingDefinitionsEdges={ stixCoreObject?.objectMarking.edges}
-        limit={2}
-        />
-      </div>
-      }
-      { stixCoreObject?.createdBy
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor
-            createdBy={R.propOr(null, 'createdBy', stixCoreObject)}
-          />
-        </div>
-      }
+        {truncate(stixCoreObject?.name, 30)}
+        {stixCoreObject
+          && <Tooltip title={t('View the item')}>
+          <span>
+            <IconButton
+              color="primary"
+              component={Link}
+              to={`${resolveLink(stixCoreObject.entity_type)}/${
+                stixCoreObject.id
+              }`}
+              size="small"
+            >
+                <InfoOutlined/>
+            </IconButton>
+          </span>
+          </Tooltip>}
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          className={classes.label}
+        >
+            {t('Type')}
+        </Typography>
+        {stixCoreObject?.entity_type}
+        {stixCoreObject?.description
+          && <div>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                className={classes.label}
+              >
+                  {t('Description')}
+              </Typography>
+              <ExpandableMarkdown
+                source={stixCoreObject?.description}
+                limit={400}
+              />
+          </div>
+        }
+        {(stixCoreObject?.objectMarking?.edges && stixCoreObject?.objectMarking?.edges.length > 0)
+          && <div>
+              <Typography variant="h3"
+                          gutterBottom={true}
+                          className={classes.label}
+              >
+                  {t('Marking')}
+              </Typography>
+              <ItemMarkings
+                markingDefinitionsEdges={stixCoreObject?.objectMarking.edges}
+                limit={2}
+              />
+          </div>
+        }
+        {stixCoreObject?.createdBy
+          && <div>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                className={classes.label}
+              >
+                  {t('Author')}
+              </Typography>
+              <ItemAuthor
+                createdBy={stixCoreObject.createdBy}
+              />
+          </div>
+        }
     </div>
   );
 };
