@@ -31,11 +31,7 @@ export const checkRelationConsistency = (relationshipType: string, from: Consist
         );
       }
     } else if (isStixMetaRelationship(relationshipType)) {
-      if (!checkMetaRelationship(fromType, toType, relationshipType)) {
-        throw FunctionalError(
-          `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-        );
-      }
+      checkMetaRelationship(fromType, toType, relationshipType);
     }
   });
 };

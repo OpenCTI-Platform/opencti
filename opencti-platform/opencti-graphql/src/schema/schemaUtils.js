@@ -144,7 +144,3 @@ export const getParentTypes = (type) => {
   }
   throw DatabaseError(`Type ${type} not supported`);
 };
-
-export const getEntityTypes = (entityType) => {
-  return [entityType, ...getParentTypes(entityType)];
-};

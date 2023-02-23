@@ -8,7 +8,7 @@ export interface RelationRefDefinition {
   stixName: string
   mandatoryType: MandatoryType
   multiple: boolean
-  checker?: Checker
+  checker?: Checker // TODO: after migration checker will be mandatory
   label?: string
   description?: string
 }

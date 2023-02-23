@@ -25,7 +25,11 @@ import {
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
+  ENTITY_DIRECTORY,
   ENTITY_DOMAIN_NAME,
+  ENTITY_EMAIL_ADDR,
+  ENTITY_EMAIL_MESSAGE,
+  ENTITY_EMAIL_MIME_PART_TYPE,
   ENTITY_HASHED_OBSERVABLE_ARTIFACT,
   ENTITY_HASHED_OBSERVABLE_STIX_FILE,
   ENTITY_HOSTNAME,
@@ -33,10 +37,14 @@ import {
   ENTITY_IPV6_ADDR,
   ENTITY_MAC_ADDR,
   ENTITY_MEDIA_CONTENT,
+  ENTITY_NETWORK_TRAFFIC,
+  ENTITY_PROCESS,
   ENTITY_SOFTWARE,
   ENTITY_TEXT,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
+  ENTITY_WINDOWS_REGISTRY_KEY,
+  ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   isStixCyberObservable
 } from '../schema/stixCyberObservable';
 import {
@@ -78,6 +86,37 @@ import {
   RELATION_USES,
   RELATION_VARIANT_OF
 } from '../schema/stixCoreRelationship';
+import {
+  RELATION_BCC,
+  RELATION_BELONGS_TO as OBS_RELATION_BELONGS_TO,
+  RELATION_BODY_MULTIPART,
+  RELATION_BODY_RAW,
+  RELATION_CC,
+  RELATION_CHILD,
+  RELATION_CONTAINS,
+  RELATION_CONTENT as OBS_RELATION_CONTENT,
+  RELATION_CREATOR_USER,
+  RELATION_DST,
+  RELATION_DST_PAYLOAD,
+  RELATION_ENCAPSULATED_BY,
+  RELATION_ENCAPSULATES,
+  RELATION_FROM,
+  RELATION_IMAGE,
+  RELATION_LINKED,
+  RELATION_OPENED_CONNECTION,
+  RELATION_OPERATING_SYSTEM,
+  RELATION_PARENT,
+  RELATION_PARENT_DIRECTORY,
+  RELATION_RAW_EMAIL,
+  RELATION_RESOLVES_TO as OBS_RELATION_RESOLVES_TO,
+  RELATION_SAMPLE,
+  RELATION_SENDER,
+  RELATION_SERVICE_DLL,
+  RELATION_SRC,
+  RELATION_SRC_PAYLOAD,
+  RELATION_TO,
+  RELATION_VALUES
+} from '../schema/stixCyberObservableRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
 import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
@@ -88,6 +127,7 @@ import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
+import { FunctionalError, UnknownError } from '../config/errors';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -999,6 +1039,151 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   // endregion
 };
 
+const stixCyberObservableRelationshipsMapping: RelationshipMappings = {
+  // From DIRECTORY
+  [`${ENTITY_DIRECTORY}_${ENTITY_DIRECTORY}`]: [
+    { name: RELATION_CONTAINS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_DIRECTORY}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: RELATION_CONTAINS, type: REL_BUILT_IN }
+  ],
+  // From DOMAIN_NAME
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_DOMAIN_NAME}`]: [
+    { name: OBS_RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV4_ADDR}`]: [
+    { name: OBS_RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_DOMAIN_NAME}_${ENTITY_IPV6_ADDR}`]: [
+    { name: OBS_RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  // From EMAIL_MESSAGE
+  [`${ENTITY_EMAIL_MESSAGE}_${ENTITY_EMAIL_ADDR}`]: [
+    { name: RELATION_FROM, type: REL_BUILT_IN },
+    { name: RELATION_SENDER, type: REL_BUILT_IN },
+    { name: RELATION_TO, type: REL_BUILT_IN },
+    { name: RELATION_CC, type: REL_BUILT_IN },
+    { name: RELATION_BCC, type: REL_BUILT_IN },
+  ],
+  // From EMAIL_ADDR
+  [`${ENTITY_EMAIL_ADDR}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: OBS_RELATION_BELONGS_TO, type: REL_BUILT_IN }
+  ],
+  // From EMAIL_MIME_PART_TYPE
+  [`${ENTITY_EMAIL_MIME_PART_TYPE}_${ENTITY_EMAIL_MESSAGE}`]: [
+    { name: RELATION_BODY_MULTIPART, type: REL_BUILT_IN }
+  ],
+  // From ARTIFACT
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_EMAIL_MESSAGE}`]: [
+    { name: RELATION_RAW_EMAIL, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_EMAIL_MIME_PART_TYPE}`]: [
+    { name: RELATION_BODY_RAW, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_ARTIFACT}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
+  ],
+  // From MALWARE
+  [`${ENTITY_TYPE_MALWARE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
+    { name: RELATION_SAMPLE, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_MALWARE}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: RELATION_SAMPLE, type: REL_BUILT_IN }
+  ],
+  // From STIX_FILE
+  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ABSTRACT_STIX_CYBER_OBSERVABLE}`]: [
+    { name: RELATION_CONTAINS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_DIRECTORY}`]: [
+    { name: RELATION_PARENT_DIRECTORY, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_EMAIL_MIME_PART_TYPE}`]: [
+    { name: RELATION_BODY_RAW, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_HASHED_OBSERVABLE_STIX_FILE}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
+    { name: RELATION_CONTAINS, type: REL_BUILT_IN },
+    { name: OBS_RELATION_CONTENT, type: REL_BUILT_IN }
+  ],
+  // From IPV4
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
+    { name: OBS_RELATION_BELONGS_TO, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IPV4_ADDR}_${ENTITY_MAC_ADDR}`]: [
+    { name: OBS_RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  // From IPV6
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_AUTONOMOUS_SYSTEM}`]: [
+    { name: OBS_RELATION_BELONGS_TO, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_IPV6_ADDR}_${ENTITY_MAC_ADDR}`]: [
+    { name: OBS_RELATION_RESOLVES_TO, type: REL_BUILT_IN }
+  ],
+  // From NETWORK_TRAFFIC
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [
+    { name: RELATION_SRC_PAYLOAD, type: REL_BUILT_IN },
+    { name: RELATION_DST_PAYLOAD, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_DOMAIN_NAME}`]: [
+    { name: RELATION_SRC, type: REL_BUILT_IN },
+    { name: RELATION_DST, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_IPV4_ADDR}`]: [
+    { name: RELATION_SRC, type: REL_BUILT_IN },
+    { name: RELATION_DST, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_IPV6_ADDR}`]: [
+    { name: RELATION_SRC, type: REL_BUILT_IN },
+    { name: RELATION_DST, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_MAC_ADDR}`]: [
+    { name: RELATION_SRC, type: REL_BUILT_IN },
+    { name: RELATION_DST, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_NETWORK_TRAFFIC}`]: [
+    { name: RELATION_ENCAPSULATES, type: REL_BUILT_IN },
+    { name: RELATION_ENCAPSULATED_BY, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_NETWORK_TRAFFIC}`]: [
+    { name: RELATION_ENCAPSULATES, type: REL_BUILT_IN },
+    { name: RELATION_ENCAPSULATED_BY, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_NETWORK_TRAFFIC}`]: [
+    { name: RELATION_ENCAPSULATES, type: REL_BUILT_IN },
+    { name: RELATION_ENCAPSULATED_BY, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_NETWORK_TRAFFIC}_${ENTITY_NETWORK_TRAFFIC}`]: [
+    { name: RELATION_ENCAPSULATES, type: REL_BUILT_IN },
+    { name: RELATION_ENCAPSULATED_BY, type: REL_BUILT_IN },
+  ],
+  // From PROCESS
+  [`${ENTITY_PROCESS}_${ENTITY_NETWORK_TRAFFIC}`]: [
+    { name: RELATION_OPENED_CONNECTION, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_PROCESS}_${ENTITY_HASHED_OBSERVABLE_STIX_FILE}`]: [
+    { name: RELATION_SERVICE_DLL, type: REL_BUILT_IN },
+    { name: RELATION_IMAGE, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_PROCESS}_${ENTITY_PROCESS}`]: [
+    { name: RELATION_PARENT, type: REL_BUILT_IN },
+    { name: RELATION_CHILD, type: REL_BUILT_IN },
+  ],
+  [`${ENTITY_PROCESS}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
+  ],
+  // From MALWARE
+  [`${ENTITY_TYPE_MALWARE}_${ENTITY_SOFTWARE}`]: [
+    { name: RELATION_OPERATING_SYSTEM, type: REL_BUILT_IN }
+  ],
+  // From USER_ACCOUNT
+  // From WINDOWS_REGISTRY_KEY
+  [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_WINDOWS_REGISTRY_VALUE_TYPE}`]: [
+    { name: RELATION_VALUES, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_WINDOWS_REGISTRY_KEY}_${ENTITY_USER_ACCOUNT}`]: [
+    { name: RELATION_CREATOR_USER, type: REL_BUILT_IN }
+  ],
+};
+
 export const checkStixCoreRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
   // RELATED_TO and REVOKED_BY are available for every entity
   if (relationshipType === RELATION_RELATED_TO || relationshipType === RELATION_REVOKED_BY) {
@@ -1063,16 +1248,50 @@ export const isRelationBuiltin = (instance: StoreRelation): boolean => {
   return true;
 };
 
+// Build map of input fields for all observable types
+// { File: [contains, parent-directory, ...] }
+export const stixCyberObservableFieldsForType = (type: string) => {
+  const entries = Object.entries(stixCyberObservableRelationshipsMapping);
+  const typeFields: { [k: string]: Array<string> } = {};
+  for (let index = 0; index < entries.length; index += 1) {
+    const [fromTo, fields] = entries[index];
+    const [fromType] = fromTo.split('_');
+    const inputFields = fields.map((f) => f.name)
+      .map((f) => schemaRelationsRefDefinition.databaseNameToInputName[f]);
+    if (typeFields[fromType]) {
+      typeFields[fromType].push(...inputFields);
+    } else {
+      typeFields[fromType] = inputFields;
+    }
+  }
+  return typeFields[type] ?? [];
+};
+
 export const checkStixCyberObservableRelationshipMapping = (fromType: string, toType: string, relationshipType: string): boolean => {
-  const targetRelations = schemaRelationsRefDefinition.getRelationsRef(fromType)
-    .map((ref) => ref.inputName);
+  if (relationshipType === RELATION_LINKED) {
+    return true;
+  }
+  const data = stixCyberObservableRelationshipsMapping[`${fromType}_${toType}`] || [];
+  const targetRelations = data.map((r) => r.name);
   return R.includes(relationshipType, targetRelations);
 };
 
-export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
-  const checkMetaRelationshipFn = schemaRelationsRefDefinition.getChecker(relationshipType);
-  if (checkMetaRelationshipFn) {
-    return checkMetaRelationshipFn(fromType, toType);
+export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string) => {
+  const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
+  if (relationRefs.length === 0) {
+    throw FunctionalError(
+      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+    );
   }
-  return false;
+  if (relationRefs.length > 1) {
+    throw UnknownError(`Invalid schema from ${fromType} to ${toType} on ${relationshipType}`, { data: relationRefs });
+  }
+
+  // TODO: after migration checker will be mandatory
+  const checkMetaRelationshipFn = relationRefs[0].checker;
+  if (checkMetaRelationshipFn && !checkMetaRelationshipFn(fromType, toType)) {
+    throw FunctionalError(
+      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+    );
+  }
 };

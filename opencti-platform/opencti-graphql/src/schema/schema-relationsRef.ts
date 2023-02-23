@@ -1,5 +1,5 @@
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
-import { getEntityTypes } from './schemaUtils';
+import { getParentTypes } from './schemaUtils';
 
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, RelationRefDefinition[]>,
@@ -38,7 +38,7 @@ export const schemaRelationsRefDefinition = {
   },
 
   getRelationsRef(entityType: string): RelationRefDefinition[] {
-    const entityTypes = getEntityTypes(entityType);
+    const entityTypes = [entityType, ...getParentTypes(entityType)];
     return entityTypes.map((type) => this.relationsRef[type] ?? []).flat();
   },
 
