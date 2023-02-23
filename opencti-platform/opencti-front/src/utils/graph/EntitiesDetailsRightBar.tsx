@@ -31,6 +31,7 @@ export interface SelectedEntity {
   id: string
   label: string
   relationship_type?: string
+  entity_type: string
 }
 
 interface EntityDetailsRightsBarProps {
@@ -68,7 +69,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         fullWidth={true}
       >
         <InputLabel id="entityField" className={classes.label}>
-          {selectedEntity.label}
+          {selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type}
         </InputLabel>
         <Select
           labelId="entityField"
@@ -77,7 +78,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
         >
           {selectedEntities.map((entity) => (
             <MenuItem key={entity.id} value={entity.id}>
-              {entity.label}
+              {entity.label.length > 1 ? entity.label : entity.entity_type}
             </MenuItem>
           ))}
         </Select>
