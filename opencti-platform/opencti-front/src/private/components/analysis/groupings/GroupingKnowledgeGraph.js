@@ -1018,7 +1018,7 @@ class GroupingKnowledgeGraphComponent extends Component {
         this.state.keyword,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
-      numberOfSelectedLinks: this.selectedLinks.size
+      numberOfSelectedLinks: this.selectedLinks.size,
     });
   }
 
@@ -1090,7 +1090,7 @@ class GroupingKnowledgeGraphComponent extends Component {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
     });
   }
 

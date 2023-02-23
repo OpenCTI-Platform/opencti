@@ -1198,7 +1198,7 @@ class InvestigationGraphComponent extends Component {
         this.selectedNodes.add(node);
         this.setState({
           prevClick: null,
-          numberOfSelectedNodes: this.selectedNodes.size
+          numberOfSelectedNodes: this.selectedNodes.size,
         });
         return this.handleOpenExpandElements();
       }
@@ -1434,7 +1434,7 @@ class InvestigationGraphComponent extends Component {
         this.state.selectedTimeRangeInterval,
       ),
       numberOfSelectedNodes: this.selectedNodes.size,
-      numberOfSelectedLinks: this.selectedLinks.size
+      numberOfSelectedLinks: this.selectedLinks.size,
     });
   }
 
@@ -1504,7 +1504,7 @@ class InvestigationGraphComponent extends Component {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
     });
   }
 
