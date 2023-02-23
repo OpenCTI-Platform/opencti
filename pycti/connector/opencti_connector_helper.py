@@ -16,9 +16,9 @@ from queue import Queue
 from typing import Callable, Dict, List, Optional, Union
 
 import pika
+from filigran_sseclient import SSEClient
 from pika.adapters.asyncio_connection import AsyncioConnection
 from pika.exceptions import NackError, UnroutableError
-from filigran_sseclient import SSEClient
 
 from pycti.api.opencti_api_client import OpenCTIApiClient
 from pycti.connector import LOGGER
