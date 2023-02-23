@@ -6,6 +6,6 @@ python_json_logger~=2.0.4
 PyYAML~=6.0
 requests~=2.28.2
 setuptools~=66.1.1
-git+https://github.com/FiligranHQ/filigran-sseclient.git@1.0.0#egg=sseclient
+filigran_sseclient~=1.0.0
 stix2~=3.0.1
 cachetools~=5.3.0
