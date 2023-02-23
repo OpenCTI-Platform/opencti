@@ -28,10 +28,6 @@ import clusterManager from './manager/clusterManager';
 import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
 
-// region static graphql modules
-import './modules/index';
-// endregion
-
 // region dynamic modules
 const startModules = async () => {
   // region API initialization

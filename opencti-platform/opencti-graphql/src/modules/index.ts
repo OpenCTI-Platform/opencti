@@ -1,3 +1,8 @@
+// region static registration ref, need to be imported before any other modules
+import './relationsRef/stixCyberObservableRelationship-registrationRef';
+import './relationsRef/stixMetaRelationship-registrationRefs';
+// endregion
+
 // region static graphql modules
 import './channel/channel';
 import './language/language';
@@ -11,9 +16,4 @@ import './vocabulary/vocabulary';
 import './administrativeArea/administrativeArea';
 import './case/case';
 import './entitySetting/entitySetting';
-// endregion
-
-// region static registration ref
-import './relationsRef/stixCyberObservableRelationship-registrationRef';
-import './relationsRef/stixMetaRelationship-registrationRefs';
 // endregion

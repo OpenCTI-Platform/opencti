@@ -20,7 +20,7 @@ export const schemaRelationsRefDefinition = {
     this.relationsRef[entityType] = [...this.relationsRef[entityType] ?? [], ...relationsRefDefinition];
 
     relationsRefDefinition.forEach((relationRefDefinition) => {
-      if (!this.getInputNames().includes(relationRefDefinition.inputName)) {
+      if (!this.inputNames.includes(relationRefDefinition.inputName)) {
         this.inputNames.push(relationRefDefinition.inputName);
         this.databaseNames.push(relationRefDefinition.databaseName);
         this.stixNames.push(relationRefDefinition.stixName);
