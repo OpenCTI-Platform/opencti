@@ -12,9 +12,9 @@ import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
+import Switch from '@material-ui/core/Switch';
 import LaunchIcon from '@material-ui/icons/Launch';
 import inject18n from '../../../../components/i18n';
-import Switch from '@material-ui/core/Switch';
 import ResponsiblePartiesPopover from './ResponsiblePartiesPopover'
 
 const styles = (theme) => ({
@@ -51,6 +51,22 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
+  thumb: {
+    '&.MuiSwitch-thumb': {
+      color: 'white',
+    },
+  },
+  switch_track: {
+    backgroundColor: '#D3134A !important',
+    opacity: '1 !important',
+  },
+  switch_base: {
+    color: 'white',
+    '&.Mui-checked + .MuiSwitch-track': {
+      backgroundColor: '#49B8FC !important',
+      opacity: 1,
+    },
+  },
 });
 
 class InformationSystemOverviewComponent extends Component {
@@ -80,7 +96,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {informationSystem.ids && t(informationSystem.ids)}
+              {informationSystem.id && t(informationSystem.id)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -98,7 +114,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.cpe_identifier && t(informationSystem.cpe_identifier)} */}
+              {informationSystem.created && fldt(informationSystem.created)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -115,7 +131,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.implementation_point && t(informationSystem.implementation_point)} */}
+              {informationSystem.modified && fldt(informationSystem.modified)}
             </Grid>
             <Grid item={true} xs={12}>
               <div className={classes.textBase}>
@@ -135,8 +151,8 @@ class InformationSystemOverviewComponent extends Component {
               <div className={classes.scrollBg}>
                 <div className={classes.scrollDiv}>
                   <div className={classes.scrollObj}>
-                    {/* {cyioDomainObject?.description &&
-                      t(cyioDomainObject.description)} */}
+                    {informationSystem?.description &&
+                      t(informationSystem.description)}
                   </div>
                 </div>
               </div>
@@ -156,7 +172,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.license_key && t(informationSystem.license_key)} */}
+              {informationSystem.short_name && t(informationSystem.short_name)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -173,7 +189,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem. date_authorized && fldt(informationSystem. date_authorized)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -190,7 +206,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.operational_status && t(informationSystem.operational_status)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -207,7 +223,20 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <Typography>No</Typography>
+                <Switch
+                  disabled
+                  defaultChecked={informationSystem?.privacy_designation}
+                  classes={{
+                    thumb: classes.thumb,
+                    track: classes.switch_track,
+                    switchBase: classes.switch_base,
+                    colorPrimary: classes.switch_primary,
+                  }}
+                />
+                <Typography>No</Typography>
+              </div>                
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -224,7 +253,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.deployment_model && t(informationSystem.deployment_model)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -241,7 +270,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.cloud_service_model && t(informationSystem.cloud_service_model)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -258,7 +287,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.identity_assurance_level && t(informationSystem.identity_assurance_level)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>
@@ -275,7 +304,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.authenticator_assurance_level && t(informationSystem.authenticator_assurance_level)}
             </Grid>
             <Grid item={true} xs={12}>
               <div className={classes.textBase}>
@@ -292,10 +321,10 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {/* {informationSystem.installation_id && t(informationSystem.installation_id)} */}
+              {informationSystem.federation_assurance_level && t(informationSystem.federation_assurance_level)}
             </Grid>
             <Grid item={true} xs={12}>
-              <ResponsiblePartiesPopover name={'responsible_parties'} />
+              <ResponsiblePartiesPopover name={'responsible_parties'} responsibleParties={informationSystem.responsible_parties}/>
             </Grid>
           </Grid>
         </Paper>
@@ -315,6 +344,21 @@ const InformationSystemOverview = createFragmentContainer(InformationSystemOverv
   informationSystem: graphql`
     fragment InformationSystemOverview_information on InformationSystem {
       id
+      created
+      modified
+      description
+      short_name
+      date_authorized
+      operational_status
+      privacy_designation
+      deployment_model
+      cloud_service_model
+      identity_assurance_level
+      authenticator_assurance_level
+      federation_assurance_level
+      responsible_parties {
+        id
+      }
     }
   `,
 });

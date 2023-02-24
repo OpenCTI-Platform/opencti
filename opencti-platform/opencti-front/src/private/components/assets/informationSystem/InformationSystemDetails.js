@@ -29,6 +29,7 @@ import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopov
 import DataFlowEditionPopover from './DataFlowEditionPopover';
 import HyperLinkField from '../../common/form/HyperLinkField';
 import InformationTypesPopover from './InformationTypesPopover';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   paper: {
@@ -214,7 +215,14 @@ class InformationSystemDetailsComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {/* Content here */}
+                      {informationSystem?.security_sensitivity_level && <RiskLevel
+                      risk={informationSystem?.security_sensitivity_level}
+                    />}
+                    <span style={{ marginLeft: '10px' }}>
+                      {informationSystem?.security_sensitivity_level === 'fips_199_low' && t('Low')}
+                      {informationSystem?.security_sensitivity_level === 'fips_199_moderate' && t('Moderate')}
+                      {informationSystem?.security_sensitivity_level === 'fips_199_high' && t('High')}
+                    </span>
                   </Grid>
                   <Grid item={true} xs={6}>
                     <div className={classes.textBase}>
@@ -235,7 +243,47 @@ class InformationSystemDetailsComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                    {/* Content here */}
+                    <div>
+                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
+                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Confidentiality</div>
+                        <div style={{ minWidth: '10%' }}>
+                        {informationSystem?.security_objective_confidentiality && <RiskLevel
+                          risk={informationSystem?.security_objective_confidentiality}
+                        />}
+                        <span style={{ marginLeft: '10px' }}>
+                        {informationSystem?.security_objective_confidentiality === 'fips_199_low' && t('Low')}
+                          {informationSystem?.security_objective_confidentiality === 'fips_199_moderate' && t('Moderate')}
+                          {informationSystem?.security_objective_confidentiality === 'fips_199_high' && t('High')}
+                        </span>
+                        </div>
+                      </div>
+                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
+                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Integrity</div>
+                        <div style={{ minWidth: '10%' }}>
+                        {informationSystem?.security_objective_integrity && <RiskLevel
+                          risk={informationSystem?.security_objective_integrity}
+                        />}
+                        <span style={{ marginLeft: '10px' }}>
+                          {informationSystem?.security_objective_integrity === 'fips_199_low' && t('Low')}
+                          {informationSystem?.security_objective_integrity === 'fips_199_moderate' && t('Moderate')}
+                          {informationSystem?.security_objective_integrity === 'fips_199_high' && t('High')}
+                        </span>
+                        </div>
+                      </div>
+                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
+                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Availability</div>
+                        <div style={{ minWidth: '10%' }}>
+                        {informationSystem?.security_objective_availability && <RiskLevel
+                          risk={informationSystem?.security_objective_availability}
+                        />}
+                        <span style={{ marginLeft: '10px' }}>
+                          {informationSystem?.security_objective_availability === 'fips_199_low' && t('Low')}
+                          {informationSystem?.security_objective_availability === 'fips_199_moderate' && t('Moderate')}
+                          {informationSystem?.security_objective_availability === 'fips_199_high' && t('High')}
+                        </span>
+                        </div>
+                      </div>
+                    </div>
                   </Grid>
                   <Grid item={true} xs={12}>
                     <Divider />
@@ -429,6 +477,13 @@ const InformationSystemDetails = createFragmentContainer(InformationSystemDetail
   informationSystem: graphql`
     fragment InformationSystemDetails_information on InformationSystem {
       id
+      security_sensitivity_level
+      security_objective_integrity
+      security_objective_availability
+      security_objective_confidentiality
+      information_types {
+        id
+      }
       ...AuthorizationBoundaryPopover_information
       ...NetworkArchitecturePopover_information
       ...DataFlowPopover_information

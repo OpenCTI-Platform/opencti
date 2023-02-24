@@ -9,13 +9,14 @@ import Card from '@material-ui/core/Card';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Checkbox from '@material-ui/core/Checkbox';
+import CheckIcon from '@material-ui/icons/Check';
 import CardActionArea from '@material-ui/core/CardActionArea';
 import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   card: {
@@ -133,9 +134,9 @@ class InformationSystemCardComponent extends Component {
                   {t('Name')}
                 </Typography>
                 <div className="clearfix" />
-                <Typography variant="h2">
+                <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {node.short_name && t(node.short_name)}
+                  {node.system_name && t(node.system_name)}
                 </Typography>
               </div>
               <div>
@@ -157,7 +158,9 @@ class InformationSystemCardComponent extends Component {
                   {t('Severity')}
                 </Typography>
                 <Typography>
-                  {node.cpe_identifier && truncate(t(node.cpe_identifier), 30)}
+                  {node?.risk_level && <RiskLevel
+                    risk={node?.top_risk_severity}
+                  />}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -168,7 +171,9 @@ class InformationSystemCardComponent extends Component {
                 </Typography>
                 <Typography>
                   {/* {t('KK-HWELL-011')} */}
-                  {node.asset_id && truncate(t(node.asset_id), 25)}
+                  {node?.security_sensitivity_level && <RiskLevel
+                    risk={node?.security_sensitivity_level}
+                  />}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -180,19 +185,7 @@ class InformationSystemCardComponent extends Component {
                   {t('Status')}
                 </Typography>
                 <Typography>
-                  {node.version && t(node.version)}
-                </Typography>
-                <div className="clearfix" />
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  style={{ marginTop: '13px' }}
-                  gutterBottom={true}
-                >
-                  {t('Risks')}
-                </Typography>
-                <Typography>
-                  {node.patch_level && t(node.patch_level)}
+                  {node.operational_status && node.operational_status}
                 </Typography>
                 <div className="clearfix" />
               </Grid>
@@ -204,7 +197,7 @@ class InformationSystemCardComponent extends Component {
                   {t('Critical System')}
                 </Typography>
                 <Typography>
-                  {node.vendor_name && t(node.vendor_name)}
+                  {node.critical_system_designation && <CheckIcon />}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -214,7 +207,19 @@ class InformationSystemCardComponent extends Component {
                   {t('Privacy Sensitivity')}
                 </Typography>
                 <Typography>
-                  {node.vendor_name && t(node.vendor_name)}
+                  {node.privacy_designation && <CheckIcon />}
+                </Typography>
+                <div className="clearfix" />
+                <Typography
+                  variant="h3"
+                  color="textSecondary"
+                  style={{ marginTop: '13px' }}
+                  gutterBottom={true}
+                >
+                  {t('Risks')}
+                </Typography>
+                <Typography>
+                  {node.risk_count && node.risk_count}
                 </Typography>
                 <div className="clearfix" />
                 <Typography
@@ -237,10 +242,10 @@ class InformationSystemCardComponent extends Component {
                 gutterBottom={true}>
                 {t('Label')}
               </Typography>
-              {/* <CyioCoreObjectLabels
+              <CyioCoreObjectLabels
                 labels={node.labels}
                 onClick={onLabelClick.bind(this)}
-              /> */}
+              />
             </div>
           </CardContent>
         </CardActionArea>
@@ -265,16 +270,19 @@ const InformationSystemCardFragment = createFragmentContainer(
       fragment InformationSystemCard_node on InformationSystem {
         id
         short_name
+        system_name
         critical_system_designation
-        risk_count
         security_sensitivity_level
         privacy_designation
         operational_status
         created
-        top_risk_severity
         labels {
+          __typename
           id
           name
+          color
+          entity_type
+          description
         }
       }
     `,

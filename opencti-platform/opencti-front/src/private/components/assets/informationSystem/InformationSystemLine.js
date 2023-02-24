@@ -12,7 +12,6 @@ import CheckIcon from '@material-ui/icons/Check';
 import ListItemText from '@material-ui/core/ListItemText';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 import RiskLevel from '../../common/form/RiskLevel';
 
@@ -62,6 +61,7 @@ class InformationSystemLineComponent extends Component {
       onLabelClick,
       onToggleEntity,
       selectedElements,
+      fsd,
     } = this.props;
     return (
       <ListItem
@@ -93,13 +93,13 @@ class InformationSystemLineComponent extends Component {
                 style={{ width: dataColumns.name.width }}
               >
                 {/* KK-HWELL-011 */}
-                {node.short_name && node.short_name}
+                {node.system_name && node.system_name}
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.risks.width }}
               >
-              {node.risk_count && node.risk_count}
+                {node.risk_count && node.risk_count}
               </div>
               <div
                 className={classes.bodyItem}
@@ -119,6 +119,9 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.sensitivity_level.width }}
               >
+                {node?.security_sensitivity_level && <RiskLevel
+                    risk={node?.security_sensitivity_level}
+                  />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -136,17 +139,17 @@ class InformationSystemLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.label_name.width }}
               >
-                {/* <CyioCoreObjectLabels
+                <CyioCoreObjectLabels
                   variant="inList"
                   labels={node.labels}
                   onClick={onLabelClick.bind(this)}
-                /> */}
+                />
               </div>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.date_created.width }}
               >
-                {node.created && node.created}
+                {node.created && fsd(node.created)}
               </div>
             </div>
           }
@@ -170,16 +173,19 @@ const InformationSystemLineFragment = createFragmentContainer(InformationSystemL
     fragment InformationSystemLine_node on InformationSystem {
       id
       short_name
+      system_name
       critical_system_designation
-      risk_count
       security_sensitivity_level
       privacy_designation
       operational_status
       created
-      top_risk_severity
       labels {
-        id
-        name
+        __typename
+          id
+          name
+          color
+          entity_type
+          description
       }
     }
   `,
