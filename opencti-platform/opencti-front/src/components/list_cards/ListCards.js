@@ -98,11 +98,7 @@ class ListCards extends Component {
             />
           </div>
           {availableFilterKeys && availableFilterKeys.length > 0 && (
-            <Filters
-              availableFilterKeys={availableFilterKeys}
-              handleAddFilter={handleAddFilter}
-              usedFilters={filters}
-            />
+            <Filters availableFilterKeys={availableFilterKeys} handleAddFilter={handleAddFilter}/>
           )}
           <InputLabel
             classes={{ root: classes.sortFieldLabel }}

@@ -187,7 +187,6 @@ class ListLines extends Component {
           )}
           {availableFilterKeys && availableFilterKeys.length > 0 && (
             <Filters
-              usedFilters={filters}
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
               availableEntityTypes={availableEntityTypes}
