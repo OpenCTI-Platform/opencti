@@ -70,11 +70,22 @@ const redisOptions = (): RedisOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
-const generateNatMap = (mappings: [{ nat: string; host: string; port: number; }]): Record<string, { host: string; port: number; }> => {
+// From "HOST:PORT" to { host, port }
+export const generateClusterNodes = (nodes: string[]): { host: string; port: number; }[] => {
+  return nodes.map((h: string) => {
+    const [host, port] = h.split(':');
+    return { host, port: parseInt(port, 10) };
+  });
+};
+
+// From "HOST:PORT>HOST:PORT" to { ["HOST:PORT"]: { host, port } }
+export const generateNatMap = (mappings: string[]): Record<string, { host: string; port: number; }> => {
   const natMap: Record<string, { host: string; port: number; }> = {};
   for (let i = 0; i < mappings.length; i += 1) {
     const mapping = mappings[i];
-    natMap[mapping.nat] = { host: mapping.host, port: mapping.port };
+    const [from, to] = mapping.split('>');
+    const [host, port] = to.split(':');
+    natMap[from] = { host, port: parseInt(port, 10) };
   }
   return natMap;
 };
@@ -94,8 +105,8 @@ export const createRedisClient = (provider: string): Cluster | Redis => {
   let client: Cluster | Redis;
   const isCluster = conf.get('redis:mode') === 'cluster';
   if (isCluster) {
-    const startupNodes = conf.get('redis:hostnames');
-    client = new Redis.Cluster(startupNodes, clusterOptions());
+    const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
+    client = new Redis.Cluster(clusterNodes, clusterOptions());
   } else {
     const singleOptions = redisOptions();
     client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
@@ -115,7 +126,10 @@ const redisClients: RedisClients = {
   lock: createRedisClient('lock'),
   pubsub: new RedisPubSub({
     publisher: createRedisClient('publisher'),
-    subscriber: createRedisClient('subscriber')
+    subscriber: createRedisClient('subscriber'),
+    connectionListener: (err) => {
+      logApp.info('[REDIS] Redis pubsub client closed', { error: err });
+    }
   })
 };
 export const shutdownRedisClients = async () => {
