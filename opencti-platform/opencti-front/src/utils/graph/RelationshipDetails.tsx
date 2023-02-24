@@ -121,7 +121,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
         {t('Relation type')}
       </Typography>
       {stixCoreRelationship.relationship_type}
-      { stixCoreRelationship.from?.entity_type
+      { stixCoreRelationship.from.entity_type
         && <Tooltip title={t('View the item')}>
           <span>
             <IconButton
