@@ -47,7 +47,7 @@ const useAttributesConfiguration = (id: string): AttributeConfiguration[] | null
   return JSON.parse(entitySetting.attributes_configuration);
 };
 
-export const useYupSschemaBuilder = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape): BaseSchema => {
+export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape): BaseSchema => {
   const { t } = useFormatter();
 
   const attributesConfiguration = useAttributesConfiguration(id);

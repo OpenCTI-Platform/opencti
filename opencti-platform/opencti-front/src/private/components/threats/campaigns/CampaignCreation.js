@@ -21,7 +21,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -94,7 +94,7 @@ const CampaignCreation = ({ paginationOptions }) => {
     confidence: Yup.number(),
     description: Yup.string().nullable(),
   };
-  const campaignValidator = useYupSschemaBuilder('Campaign', basicShape);
+  const campaignValidator = useYupSchemaBuilder('Campaign', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

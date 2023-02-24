@@ -22,7 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -102,7 +102,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
       .typeError(t('This field must be a number'))
       .nullable(),
   };
-  const cityValidator = useYupSschemaBuilder('City', basicShape);
+  const cityValidator = useYupSchemaBuilder('City', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

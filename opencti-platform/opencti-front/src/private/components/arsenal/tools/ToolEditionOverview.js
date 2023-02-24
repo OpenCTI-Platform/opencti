@@ -17,7 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const toolMutationFieldPatch = graphql`
@@ -91,7 +91,7 @@ const ToolEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const toolValidator = useYupSschemaBuilder('Tool', basicShape);
+  const toolValidator = useYupSchemaBuilder('Tool', basicShape);
 
   const queries = {
     fieldPatch: toolMutationFieldPatch,

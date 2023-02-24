@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -152,7 +152,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const dataComponentValidator = useYupSschemaBuilder('Data-Component', basicShape);
+  const dataComponentValidator = useYupSchemaBuilder('Data-Component', basicShape);
 
   const queries = {
     fieldPatch: dataComponentMutationFieldPatch,

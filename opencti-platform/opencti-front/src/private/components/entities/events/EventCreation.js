@@ -23,7 +23,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -102,7 +102,7 @@ const EventCreation = ({ paginationOptions }) => {
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
   };
-  const eventValidator = useYupSschemaBuilder('Event', basicShape);
+  const eventValidator = useYupSchemaBuilder('Event', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

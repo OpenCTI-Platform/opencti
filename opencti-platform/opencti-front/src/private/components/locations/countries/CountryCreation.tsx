@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -104,7 +104,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const countryValidator = useYupSschemaBuilder('Country', basicShape);
+  const countryValidator = useYupSchemaBuilder('Country', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

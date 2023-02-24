@@ -24,7 +24,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -105,7 +105,7 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const courseOfActionValidator = useYupSschemaBuilder('Course-Of-Action', basicShape);
+  const courseOfActionValidator = useYupSchemaBuilder('Course-Of-Action', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

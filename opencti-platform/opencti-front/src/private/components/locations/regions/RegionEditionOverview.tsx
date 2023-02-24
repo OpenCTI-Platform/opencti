@@ -16,7 +16,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const regionMutationFieldPatch = graphql`
@@ -152,7 +152,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
     x_opencti_workflow_id: Yup.object(),
   };
 
-  const regionValidator = useYupSschemaBuilder('Region', basicShape);
+  const regionValidator = useYupSchemaBuilder('Region', basicShape);
 
   const queries = {
     fieldPatch: regionMutationFieldPatch,

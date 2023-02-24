@@ -30,7 +30,7 @@ import { Option } from '../../common/form/ReferenceField';
 import {
   IncidentsCardsAndLinesPaginationQuery$variables,
 } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -111,7 +111,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
     source: Yup.string(),
     description: Yup.string().nullable(),
   };
-  const incidentValidator = useYupSschemaBuilder('Incident', basicShape);
+  const incidentValidator = useYupSchemaBuilder('Incident', basicShape);
 
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const cleanedValues = isEmptyField(values.severity)

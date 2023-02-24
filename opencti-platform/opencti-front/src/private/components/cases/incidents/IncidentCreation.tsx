@@ -26,7 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -105,7 +105,7 @@ const IncidentCreation = ({
   const basicShape = {
     description: Yup.string().nullable(),
   };
-  const caseValidator = useYupSschemaBuilder('Case', basicShape);
+  const caseValidator = useYupSchemaBuilder('Case', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

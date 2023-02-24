@@ -19,7 +19,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const infrastructureMutationFieldPatch = graphql`
@@ -102,7 +102,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const infrastructureValidator = useYupSschemaBuilder('Infrastructure', basicShape);
+  const infrastructureValidator = useYupSchemaBuilder('Infrastructure', basicShape);
 
   const queries = {
     fieldPatch: infrastructureMutationFieldPatch,

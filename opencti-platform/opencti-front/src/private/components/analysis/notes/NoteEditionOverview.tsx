@@ -22,7 +22,7 @@ import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOvervi
 import SliderField from '../../../../components/SliderField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
@@ -126,7 +126,7 @@ NoteEditionOverviewProps
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const noteValidator = useYupSschemaBuilder('Note', basicShape);
+  const noteValidator = useYupSchemaBuilder('Note', basicShape);
 
   const queries = {
     fieldPatch: noteMutationFieldPatch,

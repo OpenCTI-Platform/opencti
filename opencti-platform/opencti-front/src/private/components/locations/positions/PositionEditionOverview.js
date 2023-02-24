@@ -13,7 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const positionMutationFieldPatch = graphql`
@@ -96,7 +96,7 @@ const PositionEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const positionValidator = useYupSschemaBuilder('Position', basicShape);
+  const positionValidator = useYupSchemaBuilder('Position', basicShape);
 
   const queries = {
     fieldPatch: positionMutationFieldPatch,

@@ -29,7 +29,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -122,7 +122,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
     x_opencti_detection: Yup.boolean(),
     createObservables: Yup.boolean(),
   };
-  const indicatorValidator = useYupSschemaBuilder('Indicator', basicShape);
+  const indicatorValidator = useYupSchemaBuilder('Indicator', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

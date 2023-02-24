@@ -22,7 +22,7 @@ import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -107,7 +107,7 @@ const AdministrativeAreaCreation = ({
       .typeError(t('This field must be a number'))
       .nullable(),
   };
-  const administrativeAreaValidator = useYupSschemaBuilder('Administrative-Area', basicShape);
+  const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

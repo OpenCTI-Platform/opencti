@@ -25,7 +25,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -105,7 +105,7 @@ const InfrastructureCreation = ({ paginationOptions }) => {
       .nullable()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
-  const infrastructureValidator = useYupSschemaBuilder('Infrastructure', basicShape);
+  const infrastructureValidator = useYupSchemaBuilder('Infrastructure', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

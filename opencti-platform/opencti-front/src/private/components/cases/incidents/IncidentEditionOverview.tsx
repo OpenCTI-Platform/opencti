@@ -24,7 +24,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 export const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewCaseFieldPatchMutation(
@@ -171,7 +171,7 @@ IncidentEditionOverviewProps
     rating: Yup.number(),
     confidence: Yup.number(),
   };
-  const caseValidator = useYupSschemaBuilder('Case', basicShape);
+  const caseValidator = useYupSchemaBuilder('Case', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,

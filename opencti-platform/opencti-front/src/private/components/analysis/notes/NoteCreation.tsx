@@ -34,7 +34,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import SliderField from '../../../../components/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -145,7 +145,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     note_types: Yup.array(),
     likelihood: Yup.number().min(0).max(100),
   };
-  const noteValidator = useYupSschemaBuilder('Note', basicShape);
+  const noteValidator = useYupSchemaBuilder('Note', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

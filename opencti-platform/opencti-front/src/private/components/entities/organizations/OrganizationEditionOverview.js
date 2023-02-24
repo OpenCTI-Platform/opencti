@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const organizationMutationFieldPatch = graphql`
@@ -93,7 +93,7 @@ const OrganizationEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const organizationValidator = useYupSschemaBuilder('Organization', basicShape);
+  const organizationValidator = useYupSchemaBuilder('Organization', basicShape);
 
   const queries = {
     fieldPatch: organizationMutationFieldPatch,

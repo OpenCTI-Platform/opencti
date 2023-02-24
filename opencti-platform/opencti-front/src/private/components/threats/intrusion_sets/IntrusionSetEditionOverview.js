@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -91,7 +91,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const intrusionSetValidator = useYupSschemaBuilder('Intrusion-Set', basicShape);
+  const intrusionSetValidator = useYupSchemaBuilder('Intrusion-Set', basicShape);
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,

@@ -16,7 +16,7 @@ import { CountryEditionOverview_country$key } from './__generated__/CountryEditi
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const countryMutationFieldPatch = graphql`
@@ -151,7 +151,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const countryValidator = useYupSschemaBuilder('Country', basicShape);
+  const countryValidator = useYupSchemaBuilder('Country', basicShape);
 
   const queries = {
     fieldPatch: countryMutationFieldPatch,

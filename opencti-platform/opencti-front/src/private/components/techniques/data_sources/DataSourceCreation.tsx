@@ -29,7 +29,7 @@ import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataS
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -126,7 +126,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     description: Yup.string().nullable(),
     confidence: Yup.number(),
   };
-  const dataSourceValidator = useYupSschemaBuilder('Data-Source', basicShape);
+  const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

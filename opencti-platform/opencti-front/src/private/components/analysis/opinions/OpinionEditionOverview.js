@@ -15,7 +15,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
@@ -88,7 +88,7 @@ const OpinionEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const opinionValidator = useYupSschemaBuilder('Opinion', basicShape);
+  const opinionValidator = useYupSchemaBuilder('Opinion', basicShape);
 
   const queries = {
     fieldPatch: opinionMutationFieldPatch,

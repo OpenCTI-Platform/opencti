@@ -13,7 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const sectorMutationFieldPatch = graphql`
@@ -85,7 +85,7 @@ const SectorEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const sectorValidator = useYupSschemaBuilder('Sector', basicShape);
+  const sectorValidator = useYupSchemaBuilder('Sector', basicShape);
 
   const queries = {
     fieldPatch: sectorMutationFieldPatch,

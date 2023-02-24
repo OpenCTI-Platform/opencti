@@ -16,7 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const groupingMutationFieldPatch = graphql`
@@ -91,7 +91,7 @@ const GroupingEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const groupingValidator = useYupSschemaBuilder('Grouping', basicShape);
+  const groupingValidator = useYupSchemaBuilder('Grouping', basicShape);
 
   const queries = {
     fieldPatch: groupingMutationFieldPatch,

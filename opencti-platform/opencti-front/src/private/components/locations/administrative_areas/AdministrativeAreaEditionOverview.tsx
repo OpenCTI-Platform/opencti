@@ -17,7 +17,7 @@ import { Option } from '../../common/form/ReferenceField';
 import {
   AdministrativeAreaEditionOverview_administrativeArea$key,
 } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const administrativeAreaMutationFieldPatch = graphql`
@@ -142,7 +142,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const administrativeAreaValidator = useYupSschemaBuilder('Administrative-Area', basicShape);
+  const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
 
   const queries = {
     fieldPatch: administrativeAreaMutationFieldPatch,

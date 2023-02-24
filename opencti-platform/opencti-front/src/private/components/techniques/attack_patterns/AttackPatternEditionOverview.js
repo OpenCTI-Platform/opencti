@@ -14,7 +14,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const attackPatternMutationFieldPatch = graphql`
@@ -89,7 +89,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const attackPatternValidator = useYupSschemaBuilder('Attack-Pattern', basicShape);
+  const attackPatternValidator = useYupSchemaBuilder('Attack-Pattern', basicShape);
 
   const queries = {
     fieldPatch: attackPatternMutationFieldPatch,

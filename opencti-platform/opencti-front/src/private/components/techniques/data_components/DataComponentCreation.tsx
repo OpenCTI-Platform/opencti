@@ -28,7 +28,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -120,7 +120,7 @@ const DataComponentCreation: FunctionComponent<{
     description: Yup.string().nullable(),
     confidence: Yup.number(),
   };
-  const dataComponentValidator = useYupSschemaBuilder('Data-Component', basicShape);
+  const dataComponentValidator = useYupSchemaBuilder('Data-Component', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

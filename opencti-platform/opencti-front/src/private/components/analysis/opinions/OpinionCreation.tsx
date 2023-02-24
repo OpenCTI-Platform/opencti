@@ -28,7 +28,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { OpinionsLinesPaginationQuery$variables } from './__generated__/OpinionsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useYupSschemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -119,7 +119,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
   };
-  const opinionValidator = useYupSschemaBuilder('Opinion', basicShape);
+  const opinionValidator = useYupSchemaBuilder('Opinion', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -325,7 +325,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            validationSchema={opinionValidation(t)}
+            validationSchema={opinionValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >
