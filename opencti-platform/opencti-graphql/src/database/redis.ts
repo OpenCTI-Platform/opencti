@@ -584,12 +584,12 @@ const processStreamResult = async (results: Array<any>, callback: any, withInter
   const filteredEvents = streamData.filter((s) => {
     return withInternal ? true : (s.data.scope ?? 'external') === 'external';
   });
-  const lastEventId = filteredEvents.length > 0 ? R.last(filteredEvents)?.id : `${new Date().getTime()}-0`;
+  const lastEventId = filteredEvents.length > 0 ? R.last(filteredEvents)?.id : `${new Date().valueOf()}-0`;
   await callback(filteredEvents, lastEventId);
   return lastEventId;
 };
 
-export const STREAM_BATCH_TIME = 5000;
+const STREAM_BATCH_TIME = 5000;
 const MAX_RANGE_MESSAGES = 100;
 
 export interface StreamProcessor {
