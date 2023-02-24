@@ -237,8 +237,8 @@ const createSseMiddleware = () => {
     client.sendConnected({ ...broadcasterInfo, connectionId: client.id });
     broadcastClients[client.id] = client;
   };
-  const createSseChannel = (req, res, startTime) => {
-    let lastEventId = `${utcDate(startTime).valueOf()}-0`;
+  const createSseChannel = (req, res, startId) => {
+    let lastEventId = startId;
     const channel = {
       id: generateInternalId(),
       delay: parseInt(extractQueryParameter(req, 'delay') || req.headers['event-delay'] || 10, 10),
@@ -302,14 +302,13 @@ const createSseMiddleware = () => {
       const sessionUser = req.user;
       const context = executionContext('raw_stream');
       const paramStartFrom = extractQueryParameter(req, 'from') || req.headers.from || req.headers['last-event-id'];
-      const startIsoDate = convertParameterToDate(paramStartFrom);
       const startStreamId = convertParameterToStreamId(paramStartFrom);
       if (!isUserGlobalCapabilityGranted(sessionUser)) {
         res.statusMessage = 'You are not authorized, please check your credentials';
         res.status(401).end();
         return;
       }
-      const { client } = createSseChannel(req, res, startIsoDate);
+      const { client } = createSseChannel(req, res, startStreamId);
       const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
@@ -529,7 +528,7 @@ const createSseMiddleware = () => {
       let { streamFilters, collection } = req;
 
       // Create channel.
-      const { channel, client } = createSseChannel(req, res, startIsoDate);
+      const { channel, client } = createSseChannel(req, res, startStreamId);
       // If empty start date, stream all results corresponding to the filters
       // We need to fetch from this start date until the stream existence
       if (isNotEmptyField(recoverIsoDate) && isEmptyField(startIsoDate)) {
