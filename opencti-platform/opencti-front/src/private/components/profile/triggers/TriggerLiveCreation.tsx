@@ -374,7 +374,6 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           allEntityTypes={undefined}
           type={undefined}
           availableRelationFilterTypes={undefined}
-          usedFilters={undefined}
         />
       </div>
       <FilterIconButton

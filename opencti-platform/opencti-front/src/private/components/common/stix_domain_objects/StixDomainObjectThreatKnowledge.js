@@ -478,7 +478,6 @@ class StixDomainObjectThreatKnowledge extends Component {
               ]}
               handleAddFilter={this.handleAddFilter.bind(this)}
               allEntityTypes={true}
-              usedFilters={filters}
             />
             <IconButton
               color="primary"

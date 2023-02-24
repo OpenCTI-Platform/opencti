@@ -65,10 +65,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
         {availableFilterKeys.filter(
           (n) => noDirectFilters || !directFilters.includes(n),
         ).map((filterKey) => {
-          if (
-            filterKey.endsWith('start_date')
-            || filterKey.endsWith('end_date')
-          ) {
+          if (filterKey.endsWith('start_date') || filterKey.endsWith('end_date')) {
             return (
               <Grid key={filterKey} item={true} xs={6}>
                 <FilterDate

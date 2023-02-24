@@ -505,7 +505,6 @@ TriggerEditionOverviewProps
                   allEntityTypes={undefined}
                   type={undefined}
                   availableRelationFilterTypes={undefined}
-                  usedFilters={undefined}
                 />
               </div>
               <div className="clearfix" />
