@@ -130,7 +130,7 @@ export interface RelationOptions<T extends BasicStoreCommon> extends RelationFil
 }
 
 export const buildAggregationFilter = <T extends BasicStoreCommon>(args: RelationFilters<T>) => {
-  const { elementId = [], isTo = true } = args;
+  const { elementId = [], isTo = null } = args;
   const { fromId, fromRole, fromTypes = [] } = args;
   const { toId, toRole, toTypes = [] } = args;
   const filters = [];
@@ -140,7 +140,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     nestedElement.push({ key: 'internal_id', values: optsElementIds, operator: 'not_eq' });
     filters.push({ key: 'connections', nested: nestedElement });
   }
-  if (isTo === null || isTo === false) {
+  if (isTo === false) {
     const nestedFrom = [];
     if (fromId) {
       nestedFrom.push({ key: 'internal_id', values: Array.isArray(fromId) ? fromId : [fromId] });
@@ -157,7 +157,7 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
       filters.push({ key: 'connections', nested: nestedFrom });
     }
   }
-  if (isTo === null || isTo === true) {
+  if (isTo === true) {
     const nestedTo = [];
     if (toId) {
       nestedTo.push({ key: 'internal_id', values: Array.isArray(toId) ? toId : [toId] });
