@@ -459,7 +459,7 @@ const loadElementWithDependencies = async (context, user, element, args = {}) =>
   return R.mergeRight(element, { ...deps });
 };
 const loadByIdWithDependencies = async (context, user, id, type, args = {}) => {
-  const element = await internalLoadById(context, user, id, { type });
+  const element = await internalLoadById(context, user, id, type);
   if (!element) return null;
   return loadElementWithDependencies(context, user, element, args);
 };
@@ -3313,7 +3313,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
-  const fromThing = await internalLoadById(context, user, fromId, opts);
+  const fromThing = await internalLoadById(context, user, fromId, opts.type);
   // Check mandatory attribute
   const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
   const attributesMandatory = await getMandatoryAttributesForSetting(context, entitySetting);
@@ -3323,7 +3323,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
       throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
     }
   }
-  const toThing = await internalLoadById(context, user, toId, opts);
+  const toThing = await internalLoadById(context, user, toId, opts.type);
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
