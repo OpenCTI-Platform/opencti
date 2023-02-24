@@ -142,7 +142,7 @@ export const createSyncHttpUri = (sync, state, testMode) => {
   return streamUri;
 };
 export const testSync = async (context, user, sync) => {
-  const eventSourceUri = createSyncHttpUri(sync, true);
+  const eventSourceUri = createSyncHttpUri(sync, now(), true);
   const { token, ssl_verify: ssl = false } = sync;
   return new Promise((resolve, reject) => {
     try {

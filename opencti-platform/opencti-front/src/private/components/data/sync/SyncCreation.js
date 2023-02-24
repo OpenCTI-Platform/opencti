@@ -177,7 +177,12 @@ const SyncCreation = ({ paginationOptions }) => {
     const args = { uri, token, ssl_verify: ssl_verify ?? false };
     fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
       const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name, ...s }))];
-      setStreams(resultStreams);
+      if (resultStreams.length === 0) {
+        setErrors({ ...currentErrors, uri: 'No remote live stream available' });
+      } else {
+        setErrors(R.dissoc('uri', currentErrors));
+        setStreams(resultStreams);
+      }
     }).catch((e) => {
       const errors = e.res.errors.map((err) => ({ [err.data.field]: err.data.message }));
       const formError = R.mergeAll(errors);

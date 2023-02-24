@@ -115,7 +115,10 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
     commitMutation({
       mutation: syncCheckMutation,
       variables: {
-        input: values,
+        input: {
+          ...values,
+          user_id: values.user_id.value,
+        },
       },
       onCompleted: (data) => {
         if (data && data.synchronizerTest === 'Connection success') {
