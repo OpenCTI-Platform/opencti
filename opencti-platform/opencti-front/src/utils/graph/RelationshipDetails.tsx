@@ -151,7 +151,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           />
         </div>
       }
-      { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking?.edges.length > 0)
+      { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0)
         && <div>
           <Typography variant="h3"
                       gutterBottom={true}
