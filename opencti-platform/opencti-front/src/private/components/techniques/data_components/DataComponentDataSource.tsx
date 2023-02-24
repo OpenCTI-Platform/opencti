@@ -11,7 +11,12 @@ import IconButton from '@mui/material/IconButton';
 import { LinkOff, StreamOutlined } from '@mui/icons-material';
 import { useFormatter } from '../../../../components/i18n';
 import AddDataSources from './AddDataSources';
-import { DataComponentDataSources_dataComponent$data, DataComponentDataSources_dataComponent$key } from './__generated__/DataComponentDataSources_dataComponent.graphql';
+import {
+  DataComponentDataSources_dataComponent$data,
+  DataComponentDataSources_dataComponent$key,
+} from './__generated__/DataComponentDataSources_dataComponent.graphql';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const dataComponentDataSourcesRemoveMutation = graphql`
   mutation DataComponentDataSourcesRemoveMutation(
@@ -56,10 +61,7 @@ const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> 
     commit({
       variables: {
         id: data.id,
-        input: {
-          key: 'dataSource',
-          value: [null],
-        },
+        input: { key: 'dataSource', value: [null] },
       },
     });
   };
@@ -90,12 +92,14 @@ const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> 
             </ListItemIcon>
             <ListItemText primary={data.dataSource?.name} />
             <ListItemSecondaryAction>
-              <IconButton
-                aria-label="Remove"
-                onClick={removeDataSource}
-                size="large">
-                <LinkOff />
-              </IconButton>
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <IconButton
+                  aria-label="Remove"
+                  onClick={removeDataSource}
+                  size="large">
+                  <LinkOff />
+                </IconButton>
+              </Security>
             </ListItemSecondaryAction>
           </ListItem>
         }
