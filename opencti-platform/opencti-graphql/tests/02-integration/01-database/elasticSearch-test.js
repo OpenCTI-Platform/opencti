@@ -38,7 +38,7 @@ import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '.
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
 import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
-import { buildEntityFilters } from '../../../src/database/middleware-loader';
+import { buildAggregationRelationFilter, buildEntityFilters } from '../../../src/database/middleware-loader';
 
 const elWhiteUser = async () => {
   const opts = { types: ['Marking-Definition'], connectionFormat: false };
@@ -164,12 +164,8 @@ describe('Elasticsearch computation', () => {
   });
   it('should relation aggregation accurate', async () => {
     const testingReport = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
-    const opts = {
-      types: ['stix-meta-relationship'],
-      toTypes: ['Stix-Domain-Object'],
-      fromId: testingReport.internal_id,
-    };
-    const distributionArgs = buildEntityFilters(opts);
+    const opts = { fromId: testingReport.internal_id, toTypes: ['Stix-Domain-Object'] };
+    const distributionArgs = buildAggregationRelationFilter(['stix-meta-relationship'], opts);
     const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Indicator')).toEqual(3);

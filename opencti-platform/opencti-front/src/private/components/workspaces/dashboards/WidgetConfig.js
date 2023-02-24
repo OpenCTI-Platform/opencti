@@ -315,7 +315,7 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     attribute: 'entity_type',
     date_attribute: 'created_at',
     perspective: null,
-    isTo: false,
+    isTo: true,
     filters: {},
     dynamicFrom: {},
     dynamicTo: {},
@@ -1198,18 +1198,14 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                           control={
                             <Switch
                               onChange={() => handleToggleDataValidationIsTo(i)}
-                              checked={dataSelection[i].isTo}
+                              checked={!dataSelection[i].isTo}
                             />
                           }
                           label={t('Display the source')}
                         />
                       )}
                       {dataSelection[i].perspective === 'relationships' && (
-                        <Tooltip
-                          title={t(
-                            'Enable if the displayed data is the source of the relationships.',
-                          )}
-                        >
+                        <Tooltip title={t('Enable if the displayed data is the source of the relationships.')}>
                           <InformationOutline
                             fontSize="small"
                             color="primary"

@@ -1097,6 +1097,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
           throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
         }
         const nestedMust = [];
+        const nestedMustNot = [];
         for (let nestIndex = 0; nestIndex < nested.length; nestIndex += 1) {
           const nestedElement = nested[nestIndex];
           const parentKey = validKeys.at(0);
@@ -1107,6 +1108,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
             const nestedSearchValues = nestedValues[i].toString();
             if (nestedOperator === 'wildcard') {
               nestedShould.push({ query_string: { query: `${nestedSearchValues}`, fields: [nestedFieldKey] } });
+            } else if (nestedOperator === 'not_eq') {
+              nestedMustNot.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
             } else {
               nestedShould.push({ match_phrase: { [nestedFieldKey]: nestedSearchValues } });
             }
@@ -1124,6 +1127,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
           query: {
             bool: {
               must: nestedMust,
+              must_not: nestedMustNot,
             },
           },
         };
@@ -1398,13 +1402,22 @@ export const elAggregationCount = async (context, user, indexName, options = {})
     });
 };
 // field can be "entity_type" or "internal_id"
+const buildAggregationRelationFilters = async (context, user, aggregationFilters) => {
+  const aggBody = await elQueryBodyBuilder(context, user, { ...aggregationFilters, noSize: true, noSort: true });
+  return {
+    bool: {
+      must: aggBody.query.bool.must.map((m) => m.nested.query),
+      must_not: aggBody.query.bool.must_not.map((m) => m.nested.query)
+    },
+  };
+};
 export const elAggregationRelationsCount = async (context, user, indexName, options = {}) => {
-  const { types = [], field = null } = options;
+  const { types = [], field = null, searchOptions, aggregationOptions } = options;
   if (!R.includes(field, ['entity_type', 'internal_id', null])) {
     throw FunctionalError('[SEARCH] Unsupported field', field);
   }
-  const body = await elQueryBodyBuilder(context, user, { ...options, noSize: true, noSort: true });
-  const mustNested = body.query.bool.must.filter((m) => m.nested?.path === 'connections').map((m) => m.nested.query);
+  const body = await elQueryBodyBuilder(context, user, { ...searchOptions, noSize: true, noSort: true });
+  const aggregationFilters = await buildAggregationRelationFilters(context, user, aggregationOptions);
   body.size = MAX_SEARCH_AGGREGATION_SIZE;
   body.aggs = {
     connections: {
@@ -1413,11 +1426,7 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       },
       aggs: {
         filtered: {
-          filter: {
-            bool: {
-              must: mustNested,
-            },
-          },
+          filter: aggregationFilters,
           aggs: {
             genres: {
               terms: {

@@ -672,6 +672,7 @@ describe('Relations distribution', () => {
       relationship_type: ['uses'],
       field: 'entity_type',
       operation: 'count',
+      isTo: null
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, options);
     expect(distribution.length).toEqual(2);
