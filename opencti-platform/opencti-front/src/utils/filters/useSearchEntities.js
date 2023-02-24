@@ -462,10 +462,7 @@ const useSearchEntities = ({
           });
         break;
       case 'markedBy':
-        fetchQuery(markingDefinitionsLinesSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
+        fetchQuery(markingDefinitionsLinesSearchQuery, {})
           .toPromise()
           .then((data) => {
             const markedByEntities = R.pipe(
