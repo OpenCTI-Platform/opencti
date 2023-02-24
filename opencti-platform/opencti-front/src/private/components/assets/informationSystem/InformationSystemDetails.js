@@ -34,10 +34,11 @@ import RiskLevel from '../../common/form/RiskLevel';
 const styles = (theme) => ({
   paper: {
     height: '100%',
-    minHeight: '100%',
+    minHeight: '824px',
     margin: '10px 0 0 0',
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
+    maxHeight: '824px',
   },
   scrollBg: {
     background: theme.palette.header.background,
@@ -64,6 +65,32 @@ const styles = (theme) => ({
     display: 'flex',
     alignItems: 'center',
     marginBottom: 5,
+  },
+  selectOptionMenu: {
+    padding: '20px 10px',
+    marginTop: '50px',
+  },
+  selectMenuItems: {
+    paddingLeft: '30px',
+    paddingRight: '70px',
+  },
+  selectIcons: {
+    marginRight: '20px',
+  },
+  impactContainer: {
+    minWidth: '50px',
+    display: 'flex',
+    flexDirection: 'row',
+  },
+  impactTitle: {
+    marginRight: '30px',
+    minWidth: '30%',
+  },
+  impactContent: {
+    minWidth: '10%',
+  },
+  impactText: {
+    marginLeft: '10px',
   },
 });
 
@@ -124,6 +151,10 @@ class InformationSystemDetailsComponent extends Component {
   }
 
   renderButtons(id, title) {
+    const {
+      classes,
+    } = this.props;
+
     return (
       <>
         <Button
@@ -153,25 +184,51 @@ class InformationSystemDetailsComponent extends Component {
             'aria-labelledby': id,
           }}
           anchorOrigin={{
-            vertical: 'bottom',
+            vertical: 'top',
             horizontal: 'center',
           }}
           transformOrigin={{
             vertical: 'top',
             horizontal: 'center',
           }}
-          style={{ padding: '20px 10px', marginTop: '50px' }}
+          className={classes.selectOptionMenu}
         >
-          <MenuItem onClick={this.handleOpenView.bind(this)} style={{ paddingLeft: '30px', paddingRight: '70px' }}>
-            <VisibilityIcon style={{ marginRight: '20px' }} />
+          <MenuItem onClick={this.handleOpenView.bind(this)} className={classes.selectMenuItems}>
+            <VisibilityIcon className={classes.selectIcons} />
             View
           </MenuItem>
-          <MenuItem onClick={this.handleOpenEdit.bind(this)} style={{ paddingLeft: '30px', paddingRight: '70px' }}>
-            <EditIcon style={{ marginRight: '20px' }} />
+          <MenuItem onClick={this.handleOpenEdit.bind(this)} className={classes.selectMenuItems}>
+            <EditIcon className={classes.selectIcons} />
             Edit
           </MenuItem>
         </Menu>
       </>
+    );
+  }
+
+  renderSecurityImpact(type, impact) {
+    const {
+      t, classes,
+    } = this.props;
+
+    return (
+      <div className={classes.impactContainer}>
+        <div className={classes.impactTitle}>
+          {type}
+        </div>
+        <div className={classes.impactContent}>
+          {impact && (
+            <RiskLevel
+              risk={impact}
+            />
+          )}
+          <span className={classes.impactText}>
+            {impact && impact.includes('low') && t('Low')}
+            {impact && impact.includes('moderate') && t('Moderate')}
+            {impact && impact.includes('high') && t('High')}
+          </span>
+        </div>
+      </div>
     );
   }
 
@@ -206,7 +263,7 @@ class InformationSystemDetailsComponent extends Component {
                       >
                         {t('Security Sensitivity Level')}
                       </Typography>
-                      <Tooltip title={t('Security Sensitivity Level')}>
+                      <Tooltip title={t('Identifies the overall information system sensitivity categorization, such as defined by FIPS-199.')}>
                         <Information
                           style={{ marginLeft: '5px' }}
                           fontSize="inherit"
@@ -219,9 +276,9 @@ class InformationSystemDetailsComponent extends Component {
                       risk={informationSystem?.security_sensitivity_level}
                     />}
                     <span style={{ marginLeft: '10px' }}>
-                      {informationSystem?.security_sensitivity_level === 'fips_199_low' && t('Low')}
-                      {informationSystem?.security_sensitivity_level === 'fips_199_moderate' && t('Moderate')}
-                      {informationSystem?.security_sensitivity_level === 'fips_199_high' && t('High')}
+                      {informationSystem?.security_sensitivity_level.includes('low') && t('Low')}
+                      {informationSystem?.security_sensitivity_level.includes('moderate') && t('Moderate')}
+                      {informationSystem?.security_sensitivity_level.includes('high') && t('High')}
                     </span>
                   </Grid>
                   <Grid item={true} xs={6}>
@@ -234,7 +291,7 @@ class InformationSystemDetailsComponent extends Component {
                       >
                         {t('Security Impact Level')}
                       </Typography>
-                      <Tooltip title={t('Security Impact Level')}>
+                      <Tooltip title={t('Identifies the overall level of expected impact resulting from loss of access to information, based on the sensitivity of information within the system.')}>
                         <Information
                           style={{ marginLeft: '5px' }}
                           fontSize="inherit"
@@ -244,45 +301,9 @@ class InformationSystemDetailsComponent extends Component {
                     </div>
                     <div className="clearfix" />
                     <div>
-                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
-                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Confidentiality</div>
-                        <div style={{ minWidth: '10%' }}>
-                        {informationSystem?.security_objective_confidentiality && <RiskLevel
-                          risk={informationSystem?.security_objective_confidentiality}
-                        />}
-                        <span style={{ marginLeft: '10px' }}>
-                        {informationSystem?.security_objective_confidentiality === 'fips_199_low' && t('Low')}
-                          {informationSystem?.security_objective_confidentiality === 'fips_199_moderate' && t('Moderate')}
-                          {informationSystem?.security_objective_confidentiality === 'fips_199_high' && t('High')}
-                        </span>
-                        </div>
-                      </div>
-                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
-                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Integrity</div>
-                        <div style={{ minWidth: '10%' }}>
-                        {informationSystem?.security_objective_integrity && <RiskLevel
-                          risk={informationSystem?.security_objective_integrity}
-                        />}
-                        <span style={{ marginLeft: '10px' }}>
-                          {informationSystem?.security_objective_integrity === 'fips_199_low' && t('Low')}
-                          {informationSystem?.security_objective_integrity === 'fips_199_moderate' && t('Moderate')}
-                          {informationSystem?.security_objective_integrity === 'fips_199_high' && t('High')}
-                        </span>
-                        </div>
-                      </div>
-                      <div style={{ minWidth: '50px', display: 'flex', flexDirection: 'row' }}>
-                        <div style={{ marginRight: '30px', minWidth: '30%' }}>Availability</div>
-                        <div style={{ minWidth: '10%' }}>
-                        {informationSystem?.security_objective_availability && <RiskLevel
-                          risk={informationSystem?.security_objective_availability}
-                        />}
-                        <span style={{ marginLeft: '10px' }}>
-                          {informationSystem?.security_objective_availability === 'fips_199_low' && t('Low')}
-                          {informationSystem?.security_objective_availability === 'fips_199_moderate' && t('Moderate')}
-                          {informationSystem?.security_objective_availability === 'fips_199_high' && t('High')}
-                        </span>
-                        </div>
-                      </div>
+                      {this.renderSecurityImpact('Confidentiality', informationSystem?.security_objective_confidentiality)}
+                      {this.renderSecurityImpact('Integrity', informationSystem?.security_objective_integrity)}
+                      {this.renderSecurityImpact('Availability', informationSystem?.security_objective_availability)}
                     </div>
                   </Grid>
                   <Grid item={true} xs={12}>
@@ -298,7 +319,7 @@ class InformationSystemDetailsComponent extends Component {
                       >
                         {t('System Implementation')}
                       </Typography>
-                      <Tooltip title={t('System Implementation')}>
+                      <Tooltip title={t('Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows.')}>
                         <Information
                           style={{ marginLeft: '5px' }}
                           fontSize="inherit"
@@ -312,11 +333,11 @@ class InformationSystemDetailsComponent extends Component {
                       variant='outlined'
                       type='hardware'
                       multiple={true}
-                      name="installed_hardware"
+                      name="inventory_items"
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
+                      helperText={'A managed inventory instance contained in a system or environment.  They include concepts such as physical security devices, computing devices, network devices, and networks.'}
                       data={[]}
                       title={'Inventory Items'}
                       setFieldValue={setFieldValue}
@@ -328,11 +349,11 @@ class InformationSystemDetailsComponent extends Component {
                       variant='outlined'
                       type='hardware'
                       multiple={true}
-                      name="installed_hardware"
+                      name="components"
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
+                      helperText={'Type of component that is connected to the information system. They include concepts such as products (e.g. software), services, application programming interfaces (APIs), policies, processes, plans, guidance, standards, or other tangible items that enable security and/or privacy.'}
                       data={[]}
                       title={'Components'}
                       setFieldValue={setFieldValue}
@@ -344,11 +365,11 @@ class InformationSystemDetailsComponent extends Component {
                       variant='outlined'
                       type='hardware'
                       multiple={true}
-                      name="installed_hardware"
+                      name="users"
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
+                      helperText={'Type of user that is connected to the information system.'}
                       data={[]}
                       title={'Users'}
                       setFieldValue={setFieldValue}
@@ -360,11 +381,11 @@ class InformationSystemDetailsComponent extends Component {
                       variant='outlined'
                       type='hardware'
                       multiple={true}
-                      name="installed_hardware"
+                      name="leveraged_authorizations"
                       fullWidth={true}
                       style={{ height: '38.09px' }}
                       containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
+                      helperText={'Identifies a description of this system\'s authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary.'}
                       data={[]}
                       title={'Leveraged Authorization'}
                       setFieldValue={setFieldValue}
@@ -384,7 +405,7 @@ class InformationSystemDetailsComponent extends Component {
                       >
                         {t('System Documentation')}
                       </Typography>
-                      <Tooltip title={t('System Documentation')}>
+                      <Tooltip title={t('Identifies a description of this system\'s authorization boundary, network architecture, and data flow.')}>
                         <Information
                           style={{ marginLeft: '5px' }}
                           fontSize="inherit"

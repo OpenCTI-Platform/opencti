@@ -20,7 +20,7 @@ import ResponsiblePartiesPopover from './ResponsiblePartiesPopover'
 const styles = (theme) => ({
   paper: {
     height: '100%',
-    minHeight: '100%',
+    maxHeight: '824px',
     margin: '10px 0 0 0',
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
@@ -91,7 +91,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Id')}
                 </Typography>
-                <Tooltip title={t('Id')} >
+                <Tooltip title={t('An ID (Identifier) is a unique value used to identify a record')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -109,7 +109,7 @@ class InformationSystemOverviewComponent extends Component {
                   {t('Created')}
                 </Typography>
                 <Tooltip
-                  title={t('Created')}>
+                  title={t('The date and time when the object was first created or instantiated.')}>
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -126,7 +126,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Modified')}
                 </Typography>
-                <Tooltip title={t('Modified')} >
+                <Tooltip title={t('The date and time when the object was last changed or modified.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -143,7 +143,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Description')}
                 </Typography>
-                <Tooltip title={t('Description')} >
+                <Tooltip title={t('The description is used to provide a human-readable explanation or summary of the object, its purpose, and its properties.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -167,7 +167,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Short Name')}
                 </Typography>
-                <Tooltip title={t('Short Name')} >
+                <Tooltip title={t('Identifies a short name for the system, such as an acronym, that is suitable for display in a data table or summary list.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -184,7 +184,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Date Authorized')}
                 </Typography>
-                <Tooltip title={t('Date Authorized')} >
+                <Tooltip title={t('Identifies the date the system received its authorization.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -201,7 +201,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Status')}
                 </Typography>
-                <Tooltip title={t('Status')} >
+                <Tooltip title={t('Indicates the operational status of the information system.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -218,7 +218,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Privacy Sensitive System')}
                 </Typography>
-                <Tooltip title={t('Privacy Sensitive System')} >
+                <Tooltip title={t('Identifies whether this a privacy sensitive system.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -248,7 +248,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Deployment Model')}
                 </Typography>
-                <Tooltip title={t('Deployment Model')} >
+                <Tooltip title={t('Identifies the deployment model for the information system.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -265,7 +265,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Cloud Service Model')}
                 </Typography>
-                <Tooltip title={t('Cloud Service Model')} >
+                <Tooltip title={t('Identifies the type of the cloud service model.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -282,7 +282,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Identity Assurance Level')}
                 </Typography>
-                <Tooltip title={t('Identity Assurance Level')} >
+                <Tooltip title={t('Identifies a category that conveys the degree of confidence that the applicant\'s claimed identity is their real identity as defined by NIST SP 800-63-3.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -299,7 +299,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Authenticator Assurance Level')}
                 </Typography>
-                <Tooltip title={t('Authenticator Assurance Level')} >
+                <Tooltip title={t('Identifies a category describing the strength of the authentication process as defined by NIST SP 800-63-3.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>
@@ -316,7 +316,7 @@ class InformationSystemOverviewComponent extends Component {
                 >
                   {t('Federation Assurance Level')}
                 </Typography>
-                <Tooltip title={t('Federation Assurance Level')} >
+                <Tooltip title={t('Identifies a category describing the assertion protocol used by the federation to communicate authentication and attribute information (if applicable) to an relying party (RP) as defined by NIST SP 800-63-3.')} >
                   <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                 </Tooltip>
               </div>

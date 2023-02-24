@@ -16,6 +16,7 @@ import graphql from 'babel-plugin-relay/macro';
 import TextField from '@material-ui/core/TextField';
 import { Edit } from '@material-ui/icons';
 import Link from '@material-ui/core/Link';
+import LinkIcon from '@material-ui/icons/Link';
 import LaunchIcon from '@material-ui/icons/Launch';
 import Button from '@material-ui/core/Button';
 import IconButton from '@material-ui/core/IconButton';
@@ -287,6 +288,16 @@ class HyperLinkField extends Component {
               onClick={() => this.setState({ open: true })}
             >
               <AddIcon />
+            </IconButton>
+          )}
+          {["components", "inventory_items", "leveraged_authorizations", "users"].includes(
+            this.props.name
+          ) && (
+            <IconButton
+              size="small"
+              onClick={() => this.setState({ open: true })}
+            >
+              <LinkIcon />
             </IconButton>
           )}
         </div>
