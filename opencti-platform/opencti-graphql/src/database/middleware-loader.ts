@@ -150,12 +150,10 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     }
     if (fromRole) {
       nestedFrom.push({ key: 'role', values: [fromRole] });
-    } else if (isTo === false || fromId || (fromTypes && fromTypes.length > 0)) {
+    } else {
       nestedFrom.push({ key: 'role', values: ['*_from'], operator: 'wildcard' });
     }
-    if (nestedFrom.length > 0) {
-      filters.push({ key: 'connections', nested: nestedFrom });
-    }
+    filters.push({ key: 'connections', nested: nestedFrom });
   }
   if (isTo === true) {
     const nestedTo = [];
@@ -167,12 +165,10 @@ export const buildAggregationFilter = <T extends BasicStoreCommon>(args: Relatio
     }
     if (toRole) {
       nestedTo.push({ key: 'role', values: [toRole] });
-    } else if (isTo === true || toId || (toTypes && toTypes.length > 0)) {
+    } else {
       nestedTo.push({ key: 'role', values: ['*_to'], operator: 'wildcard' });
     }
-    if (nestedTo.length > 0) {
-      filters.push({ key: 'connections', nested: nestedTo });
-    }
+    filters.push({ key: 'connections', nested: nestedTo });
   }
   return { filters };
 };
