@@ -151,6 +151,22 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           />
         </div>
       }
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          className={classes.label}
+        >
+          {t('From')}
+        </Typography>
+        {stixCoreRelationship.from.entity_type}
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('To')}
+      </Typography>
+      {stixCoreRelationship.to.entity_type}
       { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0)
         && <div>
           <Typography variant="h3"
