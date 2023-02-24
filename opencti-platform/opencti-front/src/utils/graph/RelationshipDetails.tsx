@@ -19,6 +19,7 @@ import {
   RelationshipDetailsQuery,
 } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
+import ErrorNotFound from '../../components/ErrorNotFound';
 
 const useStyles = makeStyles < Theme >(() => ({
   relation: {
@@ -107,6 +108,9 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
   const entity = usePreloadedQuery<RelationshipDetailsQuery>(relationshipDetailsQuery, queryRef);
   const { stixCoreRelationship } = entity;
 
+  if (!stixCoreRelationship) {
+    return (<ErrorNotFound/>);
+  }
   return (
     <div className={classes.relation}>
       <Typography
@@ -116,8 +120,8 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       >
         {t('Relation type')}
       </Typography>
-      {stixCoreRelationship?.relationship_type}
-      { stixCoreRelationship?.from?.entity_type
+      {stixCoreRelationship.relationship_type}
+      { stixCoreRelationship.from?.entity_type
         && <Tooltip title={t('View the item')}>
           <span>
             <IconButton
@@ -132,7 +136,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
             </IconButton>
           </span>
         </Tooltip> }
-      { stixCoreRelationship?.description
+      { stixCoreRelationship.description
         && <div>
           <Typography
             variant="h3"
@@ -142,12 +146,12 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
             {t('Description')}
           </Typography>
           <ExpandableMarkdown
-            source={ stixCoreRelationship?.description}
+            source={ stixCoreRelationship.description}
             limit={400}
           />
         </div>
       }
-      { (stixCoreRelationship?.objectMarking && stixCoreRelationship?.objectMarking?.edges.length > 0)
+      { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking?.edges.length > 0)
         && <div>
           <Typography variant="h3"
                       gutterBottom={true}
@@ -156,12 +160,12 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
             {t('Marking')}
           </Typography>
          <ItemMarkings
-          markingDefinitionsEdges={ stixCoreRelationship?.objectMarking.edges}
+          markingDefinitionsEdges={ stixCoreRelationship.objectMarking.edges}
           limit={2}
         />
         </div>
       }
-      { stixCoreRelationship?.createdBy
+      { stixCoreRelationship.createdBy
         && <div>
           <Typography
             variant="h3"
@@ -175,7 +179,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           />
         </div>
       }
-      {stixCoreRelationship?.confidence
+      {stixCoreRelationship.confidence
         && <div>
           <Typography
             variant="h3"
@@ -184,7 +188,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           >
             {t('Confidence level')}
           </Typography>
-          <ItemConfidence confidence={stixCoreRelationship?.confidence} />
+          <ItemConfidence confidence={stixCoreRelationship.confidence} />
         </div>
       }
       <Typography
@@ -194,7 +198,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       >
         {t('First seen')}
       </Typography>
-      {fldt(stixCoreRelationship?.start_time)}
+      {fldt(stixCoreRelationship.start_time)}
       <Typography
         variant="h3"
         gutterBottom={true}
@@ -202,7 +206,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
       >
         {t('Last seen')}
       </Typography>
-      {fldt(stixCoreRelationship?.stop_time)}
+      {fldt(stixCoreRelationship.stop_time)}
     </div>
   );
 };

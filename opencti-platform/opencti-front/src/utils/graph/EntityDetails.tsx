@@ -17,6 +17,7 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import { truncate } from '../String';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
+import ErrorNotFound from '../../components/ErrorNotFound';
 
 const useStyles = makeStyles < Theme >(() => ({
   entity: {
@@ -201,6 +202,9 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
   const entity = usePreloadedQuery<EntityDetailsQuery>(entityDetailsQuery, queryRef);
   const { stixCoreObject } = entity;
 
+  if (!stixCoreObject) {
+    return (<ErrorNotFound/>);
+  }
   return (
     <div className={classes.entity}>
         <Typography
@@ -210,9 +214,8 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
         >
             {t('Name')}
         </Typography>
-        {truncate(stixCoreObject?.name, 30)}
-        {stixCoreObject
-          && <Tooltip title={t('View the item')}>
+        {truncate(stixCoreObject.name, 30)}
+        <Tooltip title={t('View the item')}>
           <span>
             <IconButton
               color="primary"
@@ -225,7 +228,7 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
                 <InfoOutlined/>
             </IconButton>
           </span>
-          </Tooltip>}
+          </Tooltip>
         <Typography
           variant="h3"
           gutterBottom={true}
@@ -233,8 +236,8 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
         >
             {t('Type')}
         </Typography>
-        {stixCoreObject?.entity_type}
-        {stixCoreObject?.description
+        {stixCoreObject.entity_type}
+        {stixCoreObject.description
           && <div>
               <Typography
                 variant="h3"
@@ -244,12 +247,12 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
                   {t('Description')}
               </Typography>
               <ExpandableMarkdown
-                source={stixCoreObject?.description}
+                source={stixCoreObject.description}
                 limit={400}
               />
           </div>
         }
-        {(stixCoreObject?.objectMarking?.edges && stixCoreObject?.objectMarking?.edges.length > 0)
+        {(stixCoreObject.objectMarking?.edges && stixCoreObject.objectMarking?.edges.length > 0)
           && <div>
               <Typography variant="h3"
                           gutterBottom={true}
@@ -258,12 +261,12 @@ const EntityDetailsComponent: FunctionComponent<EntityDetailsComponentProps> = (
                   {t('Marking')}
               </Typography>
               <ItemMarkings
-                markingDefinitionsEdges={stixCoreObject?.objectMarking.edges}
+                markingDefinitionsEdges={stixCoreObject.objectMarking.edges}
                 limit={2}
               />
           </div>
         }
-        {stixCoreObject?.createdBy
+        {stixCoreObject.createdBy
           && <div>
               <Typography
                 variant="h3"
