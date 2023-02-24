@@ -40,22 +40,26 @@ interface EntityDetailsRightsBarProps {
 const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedEntities }) => {
   const classes = useStyles();
 
-  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(selectedEntities[0]);
+  const uniqSelectedEntities: SelectedEntity[] = selectedEntities.filter((item, index) => {
+    return (
+      selectedEntities.findIndex((entity) => entity.id === item.id) === index
+    );
+  });
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(uniqSelectedEntities[0]);
   useEffect(() => {
-    if (selectedEntities[0] !== selectedEntity) {
-      setSelectedEntity(selectedEntities[0]);
+    if (uniqSelectedEntities[0] !== selectedEntity) {
+      setSelectedEntity(uniqSelectedEntities[0]);
     }
-  }, [selectedEntities[0].id]);
+  }, [uniqSelectedEntities[0].id]);
   const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
     const { value } = event.target;
     const entity = selectedEntities.find((el) => (el.id === value));
     if (!entity) {
-      setSelectedEntity(selectedEntities[0]);
+      setSelectedEntity(uniqSelectedEntities[0]);
     } else {
       setSelectedEntity(entity);
     }
   };
-  console.log('selectedEntity', selectedEntity);
 
   return (
     <Drawer
@@ -77,7 +81,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
           fullWidth={true}
           onChange={handleSelectEntity}
         >
-          {selectedEntities.map((entity) => (
+          {uniqSelectedEntities.map((entity) => (
             <MenuItem key={entity.id} value={entity.id}>
               {entity.label.length > 1 ? entity.label : entity.entity_type}
             </MenuItem>
