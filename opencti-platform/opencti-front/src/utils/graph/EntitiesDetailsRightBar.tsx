@@ -55,6 +55,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
       setSelectedEntity(entity);
     }
   };
+  console.log('selectedEntity', selectedEntity);
 
   return (
     <Drawer
