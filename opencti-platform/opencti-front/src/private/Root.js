@@ -37,11 +37,11 @@ const rootPrivateQuery = graphql`
 `;
 
 const rootTokenRenewMutation = graphql`
- mutation RootTokenRenewMutation {
-   meTokenRenew {
-     access_token
-   }
- }
+  mutation RootTokenRenewMutation {
+    meTokenRenew {
+      access_token
+    }
+  }
 `;
 
 const logoutMutation = graphql`
