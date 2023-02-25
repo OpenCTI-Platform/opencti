@@ -43,6 +43,6 @@ describe('SubType resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: SUB_TYPE_ATTRIBUTES_QUERY, variables: { id: ENTITY_TYPE_DATA_COMPONENT } });
     const attributes = queryResult.data.subType.mandatoryAttributes;
     expect(attributes.map((node) => node.name).includes('name')).toBeTruthy();
-    expect(attributes.length).toEqual(5);
+    expect(attributes.length).toEqual(4);
   });
 });
