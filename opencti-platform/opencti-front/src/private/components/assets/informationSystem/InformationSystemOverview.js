@@ -189,7 +189,7 @@ class InformationSystemOverviewComponent extends Component {
                 </Tooltip>
               </div>
               <div className="clearfix" />
-              {informationSystem. date_authorized && fldt(informationSystem. date_authorized)}
+              {informationSystem.date_authorized && fldt(informationSystem.date_authorized)}
             </Grid>
             <Grid item={true} xs={6}>
               <div className={classes.textBase}>

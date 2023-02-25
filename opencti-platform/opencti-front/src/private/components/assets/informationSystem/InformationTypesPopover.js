@@ -244,7 +244,7 @@ class InformationTypesPopover extends Component {
     this.setState({ open: false });
   }
 
-  handleDelete(key) {}
+  handleDelete(key) { }
 
   render() {
     const { t, classes, name, history } = this.props;
@@ -405,35 +405,32 @@ class InformationTypesPopover extends Component {
                       />
                     </Grid>
                     <Grid item={true} xs={4}>
-                        <Typography
-                          variant="h3"
-                          color="textSecondary"
-                          gutterBottom={true}
-                          style={{ float: "left" }}
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: "left" }}
+                      >
+                        {t("Categorization System")}
+                      </Typography>
+                      <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                        <Tooltip
+                          title={t(
+                            "Identifies a reference to the role that the party is responsible for."
+                          )}
                         >
-                          {t("Categorization System")}
-                        </Typography>
-                        <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                          <Tooltip
-                            title={t(
-                              "Identifies a reference to the role that the party is responsible for."
-                            )}
-                          >
-                            <Information fontSize="inherit" color="disabled" />
-                          </Tooltip>
-                        </div>
-                        <div className="clearfix" />
-                        <RolesField
-                          variant="outlined"
-                          name="role"
-                          size="small"
-                          fullWidth={true}
-                          style={{ height: "38.09px", marginBottom: "3px" }}
-                          containerstyle={{
-                            width: "100%",
-                            padding: "0 0 1px 0",
-                          }}
-                        />
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="category"
+                        fullWidth={true}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
                     </Grid>
                     <Grid item={true} xs={4}>
                       <Typography
@@ -478,14 +475,13 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <LoggedBy
-                        variant="outlined"
-                        name="parties"
-                        size="small"
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="category"
                         fullWidth={true}
-                        multiple={true}
-                        style={{ height: "38.09px", marginBottom: "3px" }}
-                        containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -546,14 +542,13 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <LoggedBy
-                        variant="outlined"
-                        name="parties"
-                        size="small"
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="category"
                         fullWidth={true}
-                        multiple={true}
-                        style={{ height: "38.09px", marginBottom: "3px" }}
-                        containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={8} item={true}>
@@ -622,7 +617,7 @@ class InformationTypesPopover extends Component {
                           <Information fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
-                      <div className="clearfix" />                      
+                      <div className="clearfix" />
                     </Grid>
                     <Grid item={true} xs={2}>
                       <Typography
@@ -643,14 +638,13 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <LoggedBy
-                        variant="outlined"
-                        name="parties"
-                        size="small"
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="category"
                         fullWidth={true}
-                        multiple={true}
-                        style={{ height: "38.09px", marginBottom: "3px" }}
-                        containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={8} item={true}>
@@ -740,14 +734,13 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <LoggedBy
-                        variant="outlined"
-                        name="parties"
-                        size="small"
+                      <Field
+                        component={SelectField}
+                        variant='outlined'
+                        name="category"
                         fullWidth={true}
-                        multiple={true}
-                        style={{ height: "38.09px", marginBottom: "3px" }}
-                        containerstyle={{ width: "100%", padding: "0 0 1px 0" }}
+                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={8} item={true}>

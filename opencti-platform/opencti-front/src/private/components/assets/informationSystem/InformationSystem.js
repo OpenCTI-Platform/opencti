@@ -57,7 +57,7 @@ class InformationSystemComponent extends Component {
       <div className={classes.container}>
         <CyioDomainObjectHeader
           history={history}
-          name={informationSystem.short_name}
+          name={informationSystem.system_name}
           cyioDomainObject={informationSystem}
           PopoverComponent={<InformationSystemPopover />}
           goBack='/defender HQ/assets/information_systems'

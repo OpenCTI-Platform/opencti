@@ -101,7 +101,7 @@ export const informationSystemLinesQuery = graphql`
     $first: Int!
     $offset: Int!
     $cursor: ID
-    # $orderedBy: InformationSystemOrdering
+    $orderedBy: InformationSystemOrdering
     $orderMode: OrderingMode
     $filters: [InformationSystemFiltering]
     $filterMode: FilterMode
@@ -112,7 +112,7 @@ export const informationSystemLinesQuery = graphql`
         first: $first
         offset: $offset
         cursor: $cursor
-        # orderedBy: $orderedBy
+        orderedBy: $orderedBy
         orderMode: $orderMode
         filters: $filters
         filterMode: $filterMode
@@ -130,7 +130,7 @@ export default createPaginationContainer(
         first: { type: "Int", defaultValue: 50 }
         offset: { type: "Int", defaultValue: 0 }
         cursor: { type: "ID" }
-        # orderedBy: { type: "InformationSystemOrdering", defaultValue: name }
+        orderedBy: { type: "InformationSystemOrdering", defaultValue: name }
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[InformationSystemFiltering]" }
         filterMode: { type: "FilterMode" }
@@ -139,7 +139,7 @@ export default createPaginationContainer(
           search: $search
           first: $first
           offset: $offset
-          # orderedBy: $orderedBy
+          orderedBy: $orderedBy
           orderMode: $orderMode
           filters: $filters
           filterMode: $filterMode

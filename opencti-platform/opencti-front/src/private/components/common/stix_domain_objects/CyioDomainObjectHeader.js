@@ -128,7 +128,7 @@ class CyioDomainObjectAssetHeader extends Component {
                 variant="contained"
                 // onClick={handleDisplayEdit?.bind(this)}
                 className={classes.iconButton}
-                disabled={Boolean(!cyioDomainObject?.id) || disabled}
+                disabled={true}
                 color="primary"
                 size="large"
               >
