@@ -171,7 +171,7 @@ class ResponsiblePartiesPopover extends Component {
             {t('Responsible Parties')}
           </Typography>
           <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
-            <Tooltip title={t('Responsible Parties')}>
+            <Tooltip title={t('Identifies one or more references to a set of organizations or persons that have responsibility for performing a referenced role in the context of the containing object.')}>
               <Information fontSize="inherit" color="disabled" />
             </Tooltip>
           </div>

@@ -29,7 +29,6 @@ import {
 import inject18n from "../../../../components/i18n";
 import HyperLinks from "../../../../components/HyperLinks";
 import MarkDownField from "../../../../components/MarkDownField";
-import DatePickerField from "../../../../components/DatePickerField";
 import RolesField from "../../common/form/RolesField";
 import LoggedBy from "../../common/form/LoggedBy";
 import SelectField from "../../../../components/SelectField";
@@ -124,44 +123,16 @@ class InformationTypesPopover extends Component {
       open: false,
       openAutocomplete: false,
       products: [],
-      productName: 'Windows',
+      productName: '',
       onSubmit: false,
       selectedProduct: {},
       displayCancel: false,
     };
   }
 
-  componentDidMount() {
-    fetchQuery(informationTypesPopoverQuery, {
-      search: this.state.productName,
-      orderedBy: 'name',
-      orderMode: 'asc',
-      filters: [
-        { key: 'object_type', values: ['software'] },
-      ],
-    })
-      .toPromise()
-      .then((data) => {
-        const products = R.pipe(
-          R.pathOr([], ['products', 'edges']),
-          R.map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-          })),
-        )(data);
-        this.setState({
-          products: R.union(this.state.products, products),
-        });
-      })
-      .catch((err) => {
-        const ErrorResponse = err.res.errors;
-        this.setState({ error: ErrorResponse });
-      });
-  }
-
   searchProducts(event, value) {
     this.setState({ productName: value });
-    if (event.type === 'click' && value) {
+    if (event?.type === 'click' && value) {
       const selectedProductValue = this.state.products.filter(
         (product) => product.label === value,
       )[0];
@@ -236,6 +207,10 @@ class InformationTypesPopover extends Component {
     this.setState({ open: false });
   }
 
+  handleAutoCompleteClose() {
+    this.setState({ openAutocomplete: false })
+  }
+
   handleSubmit() {
     this.setState({ onSubmit: true });
   }
@@ -251,66 +226,65 @@ class InformationTypesPopover extends Component {
     const {
       open,
       selectedProduct,
+      openAutocomplete,
+      products,
+      productName
     } = this.state;
-
     return (
       <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={{
-            name: "",
-            created: null,
-            modified: null,
-            role: "",
-            parties: [],
-            marking: [],
-          }}
-          validationSchema={ResponsiblePartyValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-          onReset={this.onReset.bind(this)}
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <Typography variant="h3" color="textSecondary" gutterBottom={true}>
+            {t("Information Type(s)")}
+          </Typography>
+          <div style={{ float: "left", margin: "5px 0 0 5px" }}>
+            <Tooltip title={t("Identifies the details about all information types that are stored, processed, or transmitted by the system, such as privacy information, and those defined in NIST SP 800-60.")}>
+              <Information fontSize="inherit" color="disabled" />
+            </Tooltip>
+          </div>
+          <IconButton
+            size="small"
+            onClick={() => this.setState({ open: true })}
+          >
+            <AddIcon />
+          </IconButton>
+        </div>
+        <Field
+          component={HyperLinks}
+          name={name}
+          fullWidth={true}
+          disabled={true}
+          multiline={true}
+          rows="3"
+          value={[]}
+          variant="outlined"
+          history={history}
+          handleDelete={this.handleDelete.bind(this)}
+        />
+        <Dialog
+          open={open}
+          maxWidth="md"
+          keepMounted={true}
+          className={classes.dialogMain}
         >
-          {({ submitForm, handleReset, isSubmitting }) => (
-            <Form>
-              <div style={{ display: "flex", alignItems: "center" }}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                >
-                  {t("Information Type(s)")}
-                </Typography>
-                <div style={{ float: "left", margin: "5px 0 0 5px" }}>
-                  <Tooltip title={t("Information Type(s)")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <IconButton
-                  size="small"
-                  onClick={() => this.setState({ open: true })}
-                >
-                  <AddIcon />
-                </IconButton>
-              </div>
-              <Field
-                component={HyperLinks}
-                name={name}
-                fullWidth={true}
-                disabled={true}
-                multiline={true}
-                rows="3"
-                value={[]}
-                variant="outlined"
-                history={history}
-                handleDelete={this.handleDelete.bind(this)}
-              />
-              <Dialog
-                open={open}
-                maxWidth='md'
-                keepMounted={true}
-                className={classes.dialogMain}
-              >
+          <Formik
+            enableReinitialize={true}
+            initialValues={{
+              name: "",
+              description: selectedProduct?.vendor || "",
+              created: null,
+              modified: null,
+              role: "",
+              parties: [],
+              marking: [],
+            }}
+            validationSchema={ResponsiblePartyValidation(t)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({ submitForm, handleReset, isSubmitting }) => (
+              <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('Information Type')}
+                  {t("Information Type")}
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
@@ -333,45 +307,43 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Autocomplete
+                      <Field
                         // open={this.state.openAutocomplete}
-                        onClose={() => this.setState({ openAutocomplete: false })}
+                        // onClose={() => this.setState({ openAutocomplete: false })}
+                        component={Autocomplete}
+                        name="name"
                         size="small"
                         loading={selectedProduct.name || false}
-                        loadingText='Searching...'
+                        loadingText="Searching..."
                         className={classes.autocomplete}
+                        inputValue={productName}
                         classes={{
                           popupIndicatorOpen: classes.popupIndicator,
                         }}
-                        noOptionsText={t('No available options')}
-                        popupIcon={<KeyboardArrowDownIcon onClick={this.handleSearchProducts.bind(this)} />}
+                        noOptionsText={t("No available options")}
+                        popupIcon={<KeyboardArrowDownIcon />}
                         options={this.state.products}
-                        getOptionLabel={(option) => (option.label ? option.label : option)}
+                        getOptionLabel={(option) =>
+                          option.label ? option.label : option
+                        }
                         onInputChange={this.searchProducts.bind(this)}
+                        onKeyDown={this.handleSearchProducts.bind(this)}
                         selectOnFocus={true}
                         autoHighlight={true}
                         renderInput={(params) => (
                           <TextField
-                            variant='outlined'
+                            variant="outlined"
                             {...params}
                             inputProps={{
                               ...params.inputProps,
                               onKeyDown: (e) => {
-                                if (e.key === 'Enter') {
+                                if (e.key === "Enter") {
                                   e.stopPropagation();
-                                  this.handleSearchProducts()
+                                  this.handleSearchProducts();
                                 }
                               },
                             }}
                           />
-                          // <Field
-                          //   component={TextField}
-                          //   name="name"
-                          //   fullWidth={true}
-                          //   size="small"
-                          //   containerstyle={{ width: "100%" }}
-                          //   variant="outlined"
-                          // />
                         )}
                       />
                     </Grid>
@@ -792,10 +764,10 @@ class InformationTypesPopover extends Component {
                     {t("Submit")}
                   </Button>
                 </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
       </div>
     );
   }
