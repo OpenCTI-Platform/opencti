@@ -130,7 +130,7 @@ export const externalReferences: RelationRefDefinition = {
   inputName: INPUT_EXTERNAL_REFS,
   databaseName: RELATION_EXTERNAL_REFERENCE,
   stixName: 'external_references',
-  mandatoryType: 'customizable',
+  mandatoryType: 'no',
   multiple: true,
   checker: (fromType, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
   label: 'External references'

@@ -23,6 +23,7 @@ import { AdministrativeAreaCreationMutation$variables } from './__generated__/Ad
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -82,7 +83,7 @@ interface AdministrativeAreaAddInput {
   description: string
   latitude: string
   longitude: string
-  createdBy?: { value: string; label?: string }
+  createdBy: Option | undefined;
   objectMarking: { value: string }[]
   objectLabel: { value: string }[]
   externalReferences: { value: string }[]
@@ -100,12 +101,8 @@ const AdministrativeAreaCreation = ({
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
+    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
   const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
 
@@ -182,7 +179,7 @@ const AdministrativeAreaCreation = ({
               description: '',
               latitude: '',
               longitude: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],

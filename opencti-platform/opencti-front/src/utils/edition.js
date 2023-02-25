@@ -1,9 +1,6 @@
-import * as R from 'ramda';
+import { truncate } from './String';
 
-// -- CONVERTOR --
-
-export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
-  ? ''
+export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null ? ''
   : {
     label: element?.status?.template?.name ?? null,
     color: element?.status?.template?.color ?? null,
@@ -26,45 +23,23 @@ export const convertAssignees = (element) => (element?.objectAssignee?.edges ?? 
   value: n.node.id,
 }));
 
-export const convertOrganizations = (element) => R.pipe(
-  R.pathOr([], ['objectOrganization', 'edges']),
-  R.map((n) => ({
-    label: n.node.name,
-    value: n.node.id,
-  })),
-)(element);
+export const convertOrganizations = (element) => (element?.objectOrganization?.edges ?? []).map((n) => ({
+  label: n.node.name,
+  value: n.node.id,
+}));
 
-export const convertCreatedBy = (element) => (R.pathOr(null, ['createdBy', 'name'], element) === null
-  ? undefined
-  : {
-    label: element?.createdBy?.name ?? null,
-    value: element?.createdBy?.id ?? null,
-  });
+export const convertKillChainPhases = (element) => (element?.killChainPhases?.edges ?? []).map((n) => ({
+  label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
+  value: n.node.id,
+}));
 
-// -- EXTRACTOR --
+export const convertExternalReferences = (element) => (element?.externalReferences?.edges ?? []).map((n) => ({
+  label: `[${n.node.source_name}] ${truncate(
+    n.node.description || n.node.url || n.node.external_id,
+    150,
+  )}`,
+  value: n.node.id,
+}));
 
-export const handleChangesObjectMarking = (element, values) => {
-  const currentMarkingDefinitions = convertMarkings(element);
-  const added = values
-    .filter(
-      (v) => !currentMarkingDefinitions.map((c) => c.value).includes(v.value),
-    )
-    .at(0);
-  const removed = currentMarkingDefinitions
-    .filter((c) => !values.map((v) => v.value).includes(c.value))
-    .at(0);
-  return { added, removed };
-};
-
-export const getUpdatedObjectAssignees = (element, values) => {
-  const currentAssignees = convertAssignees(element);
-  const added = values
-    .filter(
-      (v) => !currentAssignees.map((c) => c.value).includes(v.value),
-    )
-    .at(0);
-  const removed = currentAssignees
-    .filter((c) => !values.map((v) => v.value).includes(c.value))
-    .at(0);
-  return { added, removed };
-};
+export const convertCreatedBy = (element) => (element?.createdBy?.name === null ? undefined
+  : { label: element?.createdBy?.name ?? null, value: element?.createdBy?.id ?? null });

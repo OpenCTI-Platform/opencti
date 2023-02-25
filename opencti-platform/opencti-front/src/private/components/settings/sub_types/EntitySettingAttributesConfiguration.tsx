@@ -53,14 +53,11 @@ const EntitySettingAttributesConfiguration = ({
     queryRef,
     nodePath: 'entitySettingByType',
   });
-
-  let attributesConfiguration: AttributeConfiguration[] | null = null;
-  if (entitySetting.attributes_configuration) {
-    attributesConfiguration = JSON.parse(entitySetting.attributes_configuration);
-  }
+  const attributesConfiguration: AttributeConfiguration[] = entitySetting.attributes_configuration
+    ? JSON.parse(entitySetting.attributes_configuration) : [];
 
   const isMandatoryAttributeConfiguration = (name: string): boolean => {
-    return attributesConfiguration?.filter((attr) => attr.mandatory)
+    return attributesConfiguration.filter((attr) => attr.mandatory)
       .map((attr) => attr?.name).includes(name) ?? false;
   };
 
@@ -70,9 +67,9 @@ const EntitySettingAttributesConfiguration = ({
     let entitySettingsAttributesConfiguration;
 
     if (checked) {
-      entitySettingsAttributesConfiguration = [...attributesConfiguration ?? [], { name: field, mandatory: true }];
+      entitySettingsAttributesConfiguration = [...attributesConfiguration, { name: field, mandatory: true }];
     } else {
-      entitySettingsAttributesConfiguration = attributesConfiguration?.filter((attr) => attr?.name !== field);
+      entitySettingsAttributesConfiguration = attributesConfiguration.filter((attr) => attr?.name !== field);
     }
 
     commit({
@@ -99,7 +96,7 @@ const EntitySettingAttributesConfiguration = ({
     }
   });
 
-  if (attributesConfiguration !== null && subType.mandatoryAttributes.length > 0) {
+  if (subType.mandatoryAttributes.length > 0) {
     return (
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }}>
@@ -122,7 +119,7 @@ const EntitySettingAttributesConfiguration = ({
               </>
             }
             {mandatoryAttributes.length > 0
-              && <>
+              && <div style={{ marginTop: 20 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Customizable attributes')}
                 </Typography>
@@ -139,7 +136,7 @@ const EntitySettingAttributesConfiguration = ({
                     />
                   ))}
                 </FormGroup>
-              </>
+              </div>
             }
           </Paper>
         </div>
