@@ -1,7 +1,8 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -16,19 +17,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
-import HyperLinkField from '../../common/form/HyperLinkField';
+import { adaptFieldValue } from '../../../../utils/String';
 import MarkDownField from '../../../../components/MarkDownField';
+import HyperLinkField from '../../common/form/HyperLinkField';
+import { commitMutation } from '../../../../relay/environment';
+import { toastGenericError } from '../../../../utils/bakedToast';
+import SystemDocumentationDiagram from '../../common/form/SystemDocumentationDiagram';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
-  container: {
-    margin: 0,
-  },
-  menuItem: {
-    padding: '15px 0',
-    width: '152px',
-    margin: '0 20px',
-    justifyContent: 'center',
-  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -37,16 +34,12 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'auto',
     overflowX: 'hidden',
+    // minWidth: '580px',
     minHeight: '550px',
   },
   dialogClosebutton: {
-    float: 'left',
     marginLeft: '15px',
     marginBottom: '20px',
-  },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -56,184 +49,160 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
-    color: theme.palette.header.text,
-  },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
 });
 
+const dataFlowEditionMutation = graphql`
+  mutation DataFlowEditionPopovernMutation($id: ID!, $input: [EditInput]!) {
+    editDescriptionBlock (id: $id, input: $input) {
+      id
+    }
+  }
+`;
+
 class DataFlowEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      close: false,
-    };
+  onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = R.pipe(
+      R.toPairs,
+      R.map((n) => {
+        return {
+          'key': n[0],
+          'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
+        }
+      }),
+    )(values);
+    commitMutation({
+      mutation: dataFlowEditionMutation,
+      variables: {
+        id: this.props.informationSystem.id,
+        input: finalValues,
+      },
+      setSubmitting,
+      pathname: '/defender HQ/assets/information_systems',
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        this.props.history.push('/defender HQ/assets/information_systems');
+      },
+      onError: () => {
+        toastGenericError('Failed to edit Data Flow');
+      },
+    });
   }
 
-  handleCancelOpenClick() {
-    this.setState({ close: true });
-  }
-
-  handleCancelCloseClick() {
-    this.setState({ close: false });
-  }
-
-  handleCloseMain() {
-    this.setState({ close: false });
-    this.props.handleCloseConnection();
+  onReset() {
+    this.props.handleCloseEdit();
   }
 
   render() {
     const {
       t,
       classes,
+      refreshQuery,
       informationSystem,
     } = this.props;
+    const dataFlow = R.pathOr([], ['data_flow'], informationSystem);
     const initialValues = R.pipe(
-      R.assoc('name', informationSystem?.name || ''),
-      R.assoc('description', informationSystem?.description || ''),
+      R.assoc('description', dataFlow?.description || ''),
+      R.assoc('diagram', dataFlow?.diagram || []),
       R.pick([
-        'name',
+        'diagram',
         'description',
       ]),
-    )(informationSystem);
+    )(dataFlow);
     return (
       <>
-      <Dialog open={this.props.openEdit} keepMounted={true}>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          // onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onReset.bind(this)}
-        >
-          {({
-            isSubmitting,
-            setFieldValue,
-          }) => (
-            <Form>
-              <DialogTitle classes={{ root: classes.dialogTitle }}>
-                {t('Edit Authorization Boundary')}
-              </DialogTitle>
-              <DialogContent classes={{ root: classes.dialogContent }}>
-                <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={12}>
-                    <div className={classes.textBase}>
-                      <Typography variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ margin: 0 }}
-                      >
-                        {t('Description')}
+        <Dialog open={this.props.openEdit} keepMounted={true}>
+          <Formik
+            enableReinitialize={true}
+            initialValues={initialValues}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
+          >
+            {({
+              values,
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+            }) => (
+              <Form>
+                <DialogTitle classes={{ root: classes.dialogTitle }}>
+                  {t('Edit Data Flow')}
+                </DialogTitle>
+                <DialogContent classes={{ root: classes.dialogContent }}>
+                  <Grid container={true} spacing={3}>
+                    <Grid item={true} xs={12}>
+                      <Typography>
+                        {t("Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows.")}
                       </Typography>
-                      <Tooltip title={t('Description')}>
-                        <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
-                      </Tooltip>
-                    </div>
-                    <div className="clearfix" />
-                    <Field
-                      component={MarkDownField}
-                      name="description"
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      variant='outlined'
-                    />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <div className={classes.textBase}>
+                        <Typography variant="h3"
+                          color="textSecondary"
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Description')}
+                        </Typography>
+                        <Tooltip title={t('Description')}>
+                          <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field
+                        component={MarkDownField}
+                        name="description"
+                        fullWidth={true}
+                        multiline={true}
+                        rows="4"
+                        variant='outlined'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <SystemDocumentationDiagram
+                        setFieldValue={setFieldValue}
+                        values={values}
+                        diagramType='data_flow'
+                        title='Diagram(s)'
+                        id={informationSystem.id}
+                        name='diagram'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={12}>
+                      <CyioCoreObjectExternalReferences
+                        externalReferences={dataFlow.links}
+                        cyioCoreObjectId={dataFlow.id}
+                        fieldName='links'
+                        refreshQuery={refreshQuery}
+                        typename={dataFlow.__typename}
+                      />
+                    </Grid>
                   </Grid>
-                  <Grid item={true} xs={12}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="installed_hardware"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'Indicates installed hardware on this entity.'}
-                      data={[]}
-                      title={'Diagram(s)'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              <DialogActions classes={{ root: classes.dialogClosebutton }}>
-                <Button
-                  variant="outlined"
-                  onClick={this.props.handleCloseEdit}
-                  classes={{ root: classes.buttonPopover }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  // onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.buttonPopover }}
-                >
-                  {t('Submit')}
-                </Button>
-              </DialogActions>
-              <Dialog
-                open={this.state.close}
-                keepMounted={true}
-              >
-                <DialogContent>
-                  <Typography className={classes.popoverDialog}>
-                    {t('Are you sure you’d like to cancel?')}
-                  </Typography>
-                  <Typography align='left'>
-                    {t('Your progress will not be saved')}
-                  </Typography>
                 </DialogContent>
-                <DialogActions className={classes.dialogActions}>
+                <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
-                    onClick={this.handleCancelCloseClick.bind(this)}
+                    variant="outlined"
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
-                    variant='outlined'
-                    size='small'
                   >
-                    {t('Go Back')}
+                    {t('Cancel')}
                   </Button>
                   <Button
-                    onClick={this.handleCloseMain.bind(this)}
-                    color='secondary'
+                    variant="contained"
+                    color="primary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
-                    variant='contained'
-                    size='small'
                   >
-                    {t('Yes, Cancel')}
+                    {t('Submit')}
                   </Button>
                 </DialogActions>
-              </Dialog>
-            </Form>
-          )}
-        </Formik>
-      </Dialog>
-    </>
+              </Form>
+            )}
+          </Formik>
+        </Dialog>
+      </>
     );
   }
 }
@@ -243,17 +212,33 @@ DataFlowEdition.propTypes = {
   fldt: PropTypes.func,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
-  dataSource: PropTypes.object,
-  openConnection: PropTypes.bool,
-  handleCloseConnection: PropTypes.func,
+  handleCloseEdit: PropTypes.func,
 };
 
 const DataFlowEditionPopover = createFragmentContainer(DataFlowEdition, {
   informationSystem: graphql`
     fragment DataFlowEditionPopover_information on InformationSystem {
+      __typename
       id
+      data_flow {
+       id
+       entity_type
+       description
+        links {
+          id
+          entity_type
+          created
+          modified
+          source_name
+          description
+          url
+          external_id
+          reference_purpose
+          media_type
+        }
+      }
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(DataFlowEditionPopover);
+export default R.compose(inject18n, withStyles(styles))(DataFlowEditionPopover);

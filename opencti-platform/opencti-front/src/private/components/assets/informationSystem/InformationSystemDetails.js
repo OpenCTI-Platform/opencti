@@ -10,26 +10,15 @@ import Paper from '@material-ui/core/Paper';
 import { Information } from 'mdi-material-ui';
 import Typography from '@material-ui/core/Typography';
 import Grid from '@material-ui/core/Grid';
-import VisibilityIcon from '@material-ui/icons/Visibility';
-import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import {
-  Button,
   Divider,
-  Menu,
-  MenuItem,
 } from '@material-ui/core';
-import EditIcon from '@material-ui/icons/Edit';
 import inject18n from '../../../../components/i18n';
-import AuthorizationBoundaryPopover from './AuthorizationBoundaryPopover';
-import NetworkArchitecturePopover from './NetworkArchitecturePopover';
-import DataFlowPopover from './DataFlowPopover';
 import InformationTypeCreation from './InformationTypeCreation';
-import AuthorizationBoundaryEditionPopover from './AuthorizationBoundaryEditionPopover';
-import NetworkArchitectureEditionPopover from './NetworkArchitectureEditionPopover';
-import DataFlowEditionPopover from './DataFlowEditionPopover';
 import HyperLinkField from '../../common/form/HyperLinkField';
 import InformationTypesPopover from './InformationTypesPopover';
 import RiskLevel from '../../common/form/RiskLevel';
+import SystemDocumentation from './SystemDocumentation';
 
 const styles = (theme) => ({
   paper: {
@@ -98,112 +87,12 @@ class InformationSystemDetailsComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      anchorEl: null,
-      openView: false,
-      openEdit: false,
-      modal: '',
-      mode: null,
       openInfoType: false,
     };
   }
 
-  handleClick(event, id) {
-    this.setState({
-      anchorEl: event.currentTarget,
-      modal: id,
-    });
-  }
-
-  handleOpenView() {
-    this.setState({
-      anchorEl: null,
-      openView: true,
-      mode: 'view',
-    });
-  }
-
-  handleCloseView() {
-    this.setState({
-      openView: false,
-      modal: '',
-      mode: null,
-    });
-  }
-
-  handleOpenEdit() {
-    this.setState({
-      anchorEl: null,
-      openEdit: true,
-      mode: 'edit',
-    });
-  }
-
-  handleCloseEdit() {
-    this.setState({
-      openEdit: false,
-      modal: '',
-      mode: null,
-    });
-  }
-
   handleInformationType() {
     this.setState({ openInfoType: !this.state.openInfoType });
-  }
-
-  renderButtons(id, title) {
-    const {
-      classes,
-    } = this.props;
-
-    return (
-      <>
-        <Button
-          aria-controls={
-            this.state.anchorEl ? 'basic-menu' : undefined
-          }
-          variant='contained'
-          color='primary'
-          endIcon={<KeyboardArrowDownIcon />}
-          style={{ marginRight: 5 }}
-          onClick={(event) => this.handleClick(event, id)}
-          id={id}
-          aria-describedby='basic-menu'
-        >
-          {title}
-        </Button>
-        <Menu
-          id='basic-menu'
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={() => {
-            this.setState({
-              anchorEl: null,
-            });
-          }}
-          MenuListProps={{
-            'aria-labelledby': id,
-          }}
-          anchorOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'center',
-          }}
-          className={classes.selectOptionMenu}
-        >
-          <MenuItem onClick={this.handleOpenView.bind(this)} className={classes.selectMenuItems}>
-            <VisibilityIcon className={classes.selectIcons} />
-            View
-          </MenuItem>
-          <MenuItem onClick={this.handleOpenEdit.bind(this)} className={classes.selectMenuItems}>
-            <EditIcon className={classes.selectIcons} />
-            Edit
-          </MenuItem>
-        </Menu>
-      </>
-    );
   }
 
   renderSecurityImpact(type, impact) {
@@ -251,7 +140,7 @@ class InformationSystemDetailsComponent extends Component {
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
-                    <InformationTypesPopover name={'information_types'} setFieldValue={setFieldValue}/>
+                    <InformationTypesPopover name={'information_types'} setFieldValue={setFieldValue} />
                   </Grid>
                   <Grid item={true} xs={6}>
                     <div className={classes.textBase}>
@@ -272,7 +161,7 @@ class InformationSystemDetailsComponent extends Component {
                       </Tooltip>
                     </div>
                     <div className="clearfix" />
-                      {informationSystem?.security_sensitivity_level && <RiskLevel
+                    {informationSystem?.security_sensitivity_level && <RiskLevel
                       risk={informationSystem?.security_sensitivity_level}
                     />}
                     <span style={{ marginLeft: '10px' }}>
@@ -414,71 +303,15 @@ class InformationSystemDetailsComponent extends Component {
                       </Tooltip>
                     </div>
                   </Grid>
-                  <Grid item={true} xs={12}>
-                    {this.renderButtons(
-                      'authorizationBoundary',
-                      'Authorization Boundary',
-                    )}
-                    {this.renderButtons(
-                      'networkArchitecture',
-                      'Network Architecture',
-                    )}
-                    {this.renderButtons('dataFlow', 'Data Flow')}
-                  </Grid>
+                  <SystemDocumentation
+                    informationSystem={informationSystem}
+                  />
                 </Grid>
               </Paper>
               <InformationTypeCreation
                 openInformationType={this.state.openInfoType}
                 handleInformationType={this.handleInformationType.bind(this)}
               />
-              {/* View Modal */}
-              {this.state.mode === 'view'
-                && this.state.modal === 'authorizationBoundary' && (
-                  <AuthorizationBoundaryPopover
-                    openView={this.state.openView}
-                    informationSystem={informationSystem}
-                    handleCloseView={this.handleCloseView.bind(this)}
-                  />
-              )}
-              {this.state.mode === 'view'
-                && this.state.modal === 'networkArchitecture' && (
-                  <NetworkArchitecturePopover
-                    openView={this.state.openView}
-                    handleCloseView={this.handleCloseView.bind(this)}
-                  />
-              )}
-              {this.state.mode === 'view'
-                && this.state.modal === 'dataFlow' && (
-                  <DataFlowPopover
-                    openView={this.state.openView}
-                    handleCloseView={this.handleCloseView.bind(this)}
-                  />
-              )}
-              {/* Edit Modals */}
-              {this.state.mode === 'edit'
-                && this.state.modal === 'authorizationBoundary' && (
-                  <AuthorizationBoundaryEditionPopover
-                    openEdit={this.state.openEdit}
-                    handleCloseEdit={this.handleCloseEdit.bind(this)}
-                    informationSystem={informationSystem}
-                  />
-              )}
-              {this.state.mode === 'edit'
-                && this.state.modal === 'networkArchitecture' && (
-                  <NetworkArchitectureEditionPopover
-                    openEdit={this.state.openEdit}
-                    handleCloseEdit={this.handleCloseEdit.bind(this)}
-                    informationSystem={informationSystem}
-                  />
-              )}
-              {this.state.mode === 'edit'
-                && this.state.modal === 'dataFlow' && (
-                  <DataFlowEditionPopover
-                    openEdit={this.state.openEdit}
-                    handleCloseEdit={this.handleCloseEdit.bind(this)}
-                    informationSystem={informationSystem}
-                  />
-              )}
             </div>
           </Form>
         )}
@@ -502,15 +335,7 @@ const InformationSystemDetails = createFragmentContainer(InformationSystemDetail
       security_objective_integrity
       security_objective_availability
       security_objective_confidentiality
-      information_types {
-        id
-      }
-      ...AuthorizationBoundaryPopover_information
-      ...NetworkArchitecturePopover_information
-      ...DataFlowPopover_information
-      ...AuthorizationBoundaryEditionPopover_information
-      ...NetworkArchitectureEditionPopover_information
-      ...DataFlowEditionPopover_information
+      ...SystemDocumentation_information
     }
   `,
 });

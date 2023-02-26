@@ -3,8 +3,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import {
-  map,
-  pipe,
   pathOr,
   compose,
 } from 'ramda';
@@ -21,6 +19,7 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
+import SystemDocumentationDiagram from '../../common/form/SystemDocumentationDiagram';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
@@ -39,10 +38,6 @@ const styles = (theme) => ({
     marginLeft: '15px',
     marginBottom: '20px',
   },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
-  },
   buttonPopover: {
     textTransform: 'capitalize',
   },
@@ -51,39 +46,9 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    display: 'grid',
-    gridTemplateColumns: '40% 1fr',
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
 });
 
 class AuthorizationBoundaryComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      close: false,
-    };
-  }
-
   render() {
     const {
       t,
@@ -91,13 +56,7 @@ class AuthorizationBoundaryComponent extends Component {
       refreshQuery,
       informationSystem,
     } = this.props;
-    const diagramData = pipe(
-      pathOr([], ['authorization_boundary', 'diagrams']),
-      map((n) => ({
-        caption: n.caption,
-        diagram_link: n.diagram_link,
-      })),
-    )(informationSystem);
+    const authorizationBoundary = pathOr([], ['authorization_boundary'], informationSystem);
     return (
       <Dialog
         open={this.props.openView}
@@ -133,60 +92,25 @@ class AuthorizationBoundaryComponent extends Component {
               </div>
               <div className='clearfix' />
               <Typography>
-                {informationSystem.authorization_boundary && t(informationSystem.authorization_boundary.description)}
+                {authorizationBoundary.description && t(authorizationBoundary.description)}
               </Typography>
             </Grid>
             <Grid item={true} xs={12}>
-              <div className={classes.textBase}>
-                <Typography
-                  variant='h3'
-                  color='textSecondary'
-                  gutterBottom={true}
-                  style={{ margin: 0 }}
-                >
-                  {t('Diagram(s)')}
-                </Typography>
-                <Tooltip title={t('Diagram(s)')}>
-                  <Information
-                    style={{ marginLeft: '5px' }}
-                    fontSize='inherit'
-                    color='disabled'
-                  />
-                </Tooltip>
-              </div>
-              <div className='clearfix' />
-              <div style={{ display: 'grid', gridTemplateColumns: '40% 1fr', padding: '10px' }}>
-                <Typography>
-                  Caption
-                </Typography>
-                <Typography>
-                  Diagram Link
-                </Typography>
-              </div>
-              <div className={classes.scrollBg}>
-                <div className={classes.scrollDiv}>
-                  <div className={classes.scrollObj}>
-                    {diagramData.length && diagramData.map((diagram) => (
-                      <>
-                        <Typography variant='h3' color='inherit'>
-                          {diagram.caption && t(diagram.caption)}
-                        </Typography>
-                        <Typography variant='h3' color='inherit'>
-                          {diagram.diagram_link && t(diagram.diagram_link)}
-                        </Typography>
-                      </>
-                    ))}
-                  </div>
-                </div>
-              </div>
+              <SystemDocumentationDiagram
+                diagramType='authorization_boundary'
+                title='Diagram(s)'
+                id={informationSystem.id}
+                name='diagram'
+                disabled={true}
+              />
             </Grid>
             <Grid item={true} xs={12}>
               <CyioCoreObjectExternalReferences
-                externalReferences={informationSystem.links}
-                cyioCoreObjectId={informationSystem.id}
+                externalReferences={authorizationBoundary.links}
+                cyioCoreObjectId={authorizationBoundary.id}
                 fieldName='links'
                 refreshQuery={refreshQuery}
-                typename={informationSystem.__typename}
+                typename={authorizationBoundary.__typename}
               />
             </Grid>
           </Grid>
@@ -222,15 +146,6 @@ const AuthorizationBoundaryPopover = createFragmentContainer(AuthorizationBounda
         id
         entity_type
         description
-        diagrams {
-          id
-          entity_type
-          created
-          modified
-          description
-          caption
-          diagram_link
-        }
         links {
           id
           entity_type

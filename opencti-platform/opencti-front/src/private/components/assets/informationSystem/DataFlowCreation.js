@@ -3,6 +3,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -17,16 +18,30 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
-import { adaptFieldValue } from '../../../../utils/String';
 import MarkDownField from '../../../../components/MarkDownField';
-import { commitMutation } from '../../../../relay/environment';
-import { toastGenericError } from '../../../../utils/bakedToast';
+import HyperLinkField from '../../common/form/HyperLinkField';
 import SystemDocumentationDiagram from '../../common/form/SystemDocumentationDiagram';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
   dialogTitle: {
     padding: '24px 0 16px 24px',
+  },
+  dialogContent: {
+    padding: '0 24px',
+    marginBottom: '24px',
+    overflowY: 'auto',
+    overflowX: 'hidden',
+    // minWidth: '580px',
+    minHeight: '550px',
+  },
+  dialogClosebutton: {
+    marginLeft: '15px',
+    marginBottom: '20px',
+  },
+  dialogActions: {
+    justifyContent: 'flex-start',
+    padding: '10px 0 20px 22px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -38,30 +53,24 @@ const styles = (theme) => ({
   },
 });
 
-const networkArchitectureEditionMutation = graphql`
-  mutation NetworkArchitectureEditionPopovernMutation($id: ID!, $input: [EditInput]!) {
-    editDescriptionBlock (id: $id, input: $input) {
+const dataFlowCreationMutation = graphql`
+  mutation DataFlowCreationMutation($input: DescriptionBlockInput!) {
+    createDescriptionBlock (input: $input) {
       id
     }
   }
 `;
 
-class NetworkArchitectureComponent extends Component {
+class DataFlowCreation extends Component {
+  onReset() {
+    this.props.handleCloseCreate();
+  }
+
   onSubmit(values, { setSubmitting, resetForm }) {
-    const finalValues = R.pipe(
-      R.toPairs,
-      R.map((n) => {
-        return {
-          'key': n[0],
-          'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
-        };
-      }),
-    )(values);
     commitMutation({
-      mutation: networkArchitectureEditionMutation,
+      mutation: dataFlowCreationMutation,
       variables: {
-        id: this.props.informationSystem.id,
-        input: finalValues,
+        input: values,
       },
       setSubmitting,
       pathname: '/defender HQ/assets/information_systems',
@@ -70,36 +79,30 @@ class NetworkArchitectureComponent extends Component {
         resetForm();
         this.props.history.push('/defender HQ/assets/information_systems');
       },
-      onError: () => toastGenericError('Failed to create responsibility'),
+      onError: () => {
+        toastGenericError('Failed to create Data Flow');
+      },
     });
-  }
-
-  onReset() {
-    this.props.handleCloseEdit();
   }
 
   render() {
     const {
       t,
       classes,
-      refreshQuery,
-      informationSystem,
+      openCreate,
     } = this.props;
-    const networkArchitecture = R.pathOr([], ['network_architecture'], informationSystem);
-    const initialValues = R.pipe(
-      R.assoc('description', networkArchitecture?.description || ''),
-      R.assoc('diagram', networkArchitecture?.diagram || []),
-      R.pick([
-        'diagram',
-        'description',
-      ]),
-    )(networkArchitecture);
     return (
       <>
-        <Dialog open={this.props.openEdit} keepMounted={false}>
+        <Dialog
+          open={openCreate}
+          keepMounted={true}
+        >
           <Formik
+            initialValues={{
+              description: '',
+              diagram: [],
+            }}
             enableReinitialize={true}
-            initialValues={initialValues}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
@@ -112,13 +115,13 @@ class NetworkArchitectureComponent extends Component {
             }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
-                  {t('Edit Authorization Boundary')}
+                  {t('Create Data Flow')}
                 </DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
                       <Typography>
-                        {t("Identifies a description of the system's network architecture, optionally supplemented by diagrams that illustrate the network architecture.")}
+                        {t("Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows.")}
                       </Typography>
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -148,19 +151,14 @@ class NetworkArchitectureComponent extends Component {
                       <SystemDocumentationDiagram
                         setFieldValue={setFieldValue}
                         values={values}
-                        diagramType='network_architecture'
+                        diagramType='data_flow'
                         title='Diagram(s)'
-                        id={informationSystem.id}
                         name='diagram'
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <CyioCoreObjectExternalReferences
-                        externalReferences={networkArchitecture.links}
-                        cyioCoreObjectId={networkArchitecture.id}
-                        fieldName='links'
-                        refreshQuery={refreshQuery}
-                        typename={networkArchitecture.__typename}
+                        disableAdd={true}
                       />
                     </Grid>
                   </Grid>
@@ -192,38 +190,13 @@ class NetworkArchitectureComponent extends Component {
   }
 }
 
-NetworkArchitectureComponent.propTypes = {
+DataFlowCreation.propTypes = {
   t: PropTypes.func,
   fldt: PropTypes.func,
   classes: PropTypes.object,
-  refreshQuery: PropTypes.func,
-  handleCloseEdit: PropTypes.func,
+  openCreate: PropTypes.bool,
+  handleCloseCreate: PropTypes.func,
+
 };
 
-const NetworkArchitectureEditionPopover = createFragmentContainer(NetworkArchitectureComponent, {
-  informationSystem: graphql`
-    fragment NetworkArchitectureEditionPopover_information on InformationSystem {
-      __typename
-      id
-      network_architecture {
-        id
-        entity_type
-        description
-        links {
-          id
-          entity_type
-          created
-          modified
-          source_name
-          description
-          url
-          external_id
-          reference_purpose
-          media_type
-        }
-      }
-    }
-  `,
-});
-
-export default R.compose(inject18n, withStyles(styles))(NetworkArchitectureEditionPopover);
+export default compose(inject18n, withStyles(styles))(DataFlowCreation);

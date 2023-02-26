@@ -1,6 +1,11 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import {
+  pathOr,
+  compose,
+} from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -14,6 +19,8 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
+import SystemDocumentationDiagram from '../../common/form/SystemDocumentationDiagram';
+import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
   dialogTitle: {
@@ -24,17 +31,12 @@ const styles = (theme) => ({
     marginBottom: '24px',
     overflowY: 'auto',
     overflowX: 'hidden',
-    minWidth: '580px',
     minHeight: '550px',
   },
   dialogClosebutton: {
     float: 'left',
     marginLeft: '15px',
     marginBottom: '20px',
-  },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
   },
   buttonPopover: {
     textTransform: 'capitalize',
@@ -44,155 +46,121 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
-    color: theme.palette.header.text,
-  },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
 });
 
-class NetworkArchitectureComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      close: false,
-    };
-  }
-
-  handleCancelOpenClick() {
-    this.setState({ close: true });
-  }
-
-  handleCancelCloseClick() {
-    this.setState({ close: false });
-  }
-
-  handleCloseMain() {
-    this.setState({ close: false });
-    this.props.handleCloseConnection();
-  }
-
+class NetworkArchitecturePopoverComponent extends Component {
   render() {
     const {
       t,
       classes,
+      refreshQuery,
+      informationSystem,
     } = this.props;
+    const networkArchitecture = pathOr([], ['network_architecture'], informationSystem);
     return (
-        <>
-        <Dialog open={this.props.openView} keepMounted={false}>
-          <DialogTitle classes={{ root: classes.dialogTitle }}>
-            {t('Network Architecture')}
-          </DialogTitle>
-          <DialogContent classes={{ root: classes.dialogContent }}>
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12}>
-                <div className={classes.textBase}>
-                  <Typography
-                    variant='h3'
-                    color='textSecondary'
-                    gutterBottom={true}
-                    style={{ margin: 0 }}
-                  >
-                    {t('Description')}
-                  </Typography>
-                  <Tooltip title={t('Description')}>
-                    <Information
-                      style={{ marginLeft: '5px' }}
-                      fontSize='inherit'
-                      color='disabled'
-                    />
-                  </Tooltip>
-                </div>
-                <div className='clearfix' />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* Content here */}
-                    </div>
-                  </div>
-                </div>
-              </Grid>
-              <Grid item={true} xs={12}>
-                <div className={classes.textBase}>
-                  <Typography
-                    variant='h3'
-                    color='textSecondary'
-                    gutterBottom={true}
-                    style={{ margin: 0 }}
-                  >
-                    {t('Diagram(s)')}
-                  </Typography>
-                  <Tooltip title={t('Diagram(s)')}>
-                    <Information
-                      style={{ marginLeft: '5px' }}
-                      fontSize='inherit'
-                      color='disabled'
-                    />
-                  </Tooltip>
-                </div>
-                <div className='clearfix' />
-                <div className={classes.scrollBg}>
-                  <div className={classes.scrollDiv}>
-                    <div className={classes.scrollObj}>
-                      {/* Content here */}
-                    </div>
-                  </div>
-                </div>
-              </Grid>
+      <Dialog
+        open={this.props.openView}
+        keepMounted={false}
+      >
+        <DialogTitle classes={{ root: classes.dialogTitle }}>
+          {t('Network Architecture')}
+        </DialogTitle>
+        <DialogContent classes={{ root: classes.dialogContent }}>
+          <Grid container={true} spacing={3}>
+            <Grid item={true} xs={12}>
+              <Typography>
+                {t("Identifies a description of the system's network architecture, optionally supplemented by diagrams that illustrate the network architecture.")}
+              </Typography>
             </Grid>
-          </DialogContent>
-          <DialogActions classes={{ root: classes.dialogClosebutton }}>
-            <Button
-              variant='outlined'
-              onClick={this.props.handleCloseView}
-              classes={{ root: classes.buttonPopover }}
-            >
-              {t('Cancel')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </>
+            <Grid item={true} xs={12}>
+              <div className={classes.textBase}>
+                <Typography
+                  variant='h3'
+                  color='textSecondary'
+                  gutterBottom={true}
+                  style={{ margin: 0 }}
+                >
+                  {t('Description')}
+                </Typography>
+                <Tooltip title={t('Description')}>
+                  <Information
+                    style={{ marginLeft: '5px' }}
+                    fontSize='inherit'
+                    color='disabled'
+                  />
+                </Tooltip>
+              </div>
+              <div className='clearfix' />
+              <Typography>
+                {networkArchitecture.description && t(networkArchitecture.description)}
+              </Typography>
+            </Grid>
+            <Grid item={true} xs={12}>
+              <SystemDocumentationDiagram
+                diagramType='network_architecture'
+                title='Diagram(s)'
+                id={informationSystem.id}
+                name='diagram'
+                disabled={true}
+              />
+            </Grid>
+            <Grid item={true} xs={12}>
+              <CyioCoreObjectExternalReferences
+                externalReferences={networkArchitecture.links}
+                cyioCoreObjectId={networkArchitecture.id}
+                fieldName='links'
+                refreshQuery={refreshQuery}
+                typename={networkArchitecture.__typename}
+              />
+            </Grid>
+          </Grid>
+        </DialogContent>
+        <DialogActions classes={{ root: classes.dialogClosebutton }}>
+          <Button
+            variant='outlined'
+            onClick={this.props.handleCloseView}
+            classes={{ root: classes.buttonPopover }}
+          >
+            {t('Cancel')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     );
   }
 }
 
-NetworkArchitectureComponent.propTypes = {
+NetworkArchitecturePopoverComponent.propTypes = {
   t: PropTypes.func,
   fldt: PropTypes.func,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
-  dataSource: PropTypes.object,
-  openConnection: PropTypes.bool,
-  handleCloseConnection: PropTypes.func,
+  informationSystem: PropTypes.object,
 };
 
-const NetworkArchitecturePopover = createFragmentContainer(NetworkArchitectureComponent, {
+const AuthorizationBoundaryPopover = createFragmentContainer(NetworkArchitecturePopoverComponent, {
   informationSystem: graphql`
     fragment NetworkArchitecturePopover_information on InformationSystem {
+      __typename
       id
+      network_architecture {
+        id
+        entity_type
+        description
+        links {
+          id
+          entity_type
+          created
+          modified
+          source_name
+          description
+          url
+          external_id
+          reference_purpose
+          media_type
+        }
+      }
     }
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(NetworkArchitecturePopover);
+export default compose(inject18n, withStyles(styles))(AuthorizationBoundaryPopover);

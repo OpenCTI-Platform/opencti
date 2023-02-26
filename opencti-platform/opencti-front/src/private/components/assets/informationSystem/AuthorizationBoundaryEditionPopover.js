@@ -3,7 +3,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { compose, pathOr } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -18,17 +17,15 @@ import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import inject18n from '../../../../components/i18n';
+import { adaptFieldValue } from '../../../../utils/String';
 import MarkDownField from '../../../../components/MarkDownField';
 import HyperLinkField from '../../common/form/HyperLinkField';
+import { commitMutation } from '../../../../relay/environment';
+import { toastGenericError } from '../../../../utils/bakedToast';
+import SystemDocumentationDiagram from '../../common/form/SystemDocumentationDiagram';
 import CyioCoreObjectExternalReferences from '../../analysis/external_references/CyioCoreObjectExternalReferences';
 
 const styles = (theme) => ({
-  menuItem: {
-    padding: '15px 0',
-    width: '152px',
-    margin: '0 20px',
-    justifyContent: 'center',
-  },
   dialogTitle: {
     padding: '24px 0 16px 24px',
   },
@@ -44,10 +41,6 @@ const styles = (theme) => ({
     marginLeft: '15px',
     marginBottom: '20px',
   },
-  dialogActions: {
-    justifyContent: 'flex-start',
-    padding: '10px 0 20px 22px',
-  },
   buttonPopover: {
     textTransform: 'capitalize',
   },
@@ -56,53 +49,48 @@ const styles = (theme) => ({
     alignItems: 'center',
     marginBottom: 5,
   },
-  popoverDialog: {
-    fontSize: '18px',
-    lineHeight: '24px',
-    color: theme.palette.header.text,
-  },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
 });
 
+const authorizationBoundaryEditionMutation = graphql`
+  mutation AuthorizationBoundaryEditionPopovernMutation($id: ID!, $input: [EditInput]!) {
+    editDescriptionBlock (id: $id, input: $input) {
+      id
+    }
+  }
+`;
+
 class AuthorizationBoundaryEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      close: false,
-    };
+  onSubmit(values, { setSubmitting, resetForm }) {
+    const finalValues = R.pipe(
+      R.toPairs,
+      R.map((n) => {
+        return {
+          'key': n[0],
+          'value': Array.isArray(adaptFieldValue(n[1])) ? adaptFieldValue(n[1]) : [adaptFieldValue(n[1])],
+        }
+      }),
+    )(values);
+    commitMutation({
+      mutation: authorizationBoundaryEditionMutation,
+      variables: {
+        id: this.props.informationSystem.id,
+        input: finalValues,
+      },
+      setSubmitting,
+      pathname: '/defender HQ/assets/information_systems',
+      onCompleted: () => {
+        setSubmitting(false);
+        resetForm();
+        this.props.history.push('/defender HQ/assets/information_systems');
+      },
+      onError: () => {
+        toastGenericError('Failed to edit Data Flow');
+      },
+    });
   }
 
-  handleCancelOpenClick() {
-    this.setState({ close: true });
-  }
-
-  handleCancelCloseClick() {
-    this.setState({ close: false });
-  }
-
-  handleCloseMain() {
-    this.setState({ close: false });
-    this.props.handleCloseConnection();
+  onReset() {
+    this.props.handleCloseEdit();
   }
 
   render() {
@@ -112,12 +100,12 @@ class AuthorizationBoundaryEdition extends Component {
       refreshQuery,
       informationSystem,
     } = this.props;
-    const authorizationBoundary = pathOr([], ['authorization_boundary'], informationSystem);
+    const authorizationBoundary = R.pathOr([], ['authorization_boundary'], informationSystem);
     const initialValues = R.pipe(
-      R.assoc('name', authorizationBoundary?.name || ''),
       R.assoc('description', authorizationBoundary?.description || ''),
+      R.assoc('diagram', authorizationBoundary?.diagram || []),
       R.pick([
-        'name',
+        'diagram',
         'description',
       ]),
     )(authorizationBoundary);
@@ -127,10 +115,13 @@ class AuthorizationBoundaryEdition extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-          // onSubmit={this.onSubmit.bind(this)}
-          // onReset={this.onReset.bind(this)}
+            onSubmit={this.onSubmit.bind(this)}
+            onReset={this.onReset.bind(this)}
           >
             {({
+              values,
+              submitForm,
+              handleReset,
               isSubmitting,
               setFieldValue,
             }) => (
@@ -169,19 +160,13 @@ class AuthorizationBoundaryEdition extends Component {
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
-                      <HyperLinkField
-                        variant='outlined'
-                        type='hardware'
-                        multiple={true}
-                        name="installed_hardware"
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '90%' }}
-                        helperText={'Indicates installed hardware on this entity.'}
-                        data={[]}
-                        title={'Diagram(s)'}
+                      <SystemDocumentationDiagram
                         setFieldValue={setFieldValue}
-                        link='/defender HQ/assets/devices'
+                        values={values}
+                        diagramType='authorization_boundary'
+                        title='Diagram(s)'
+                        id={informationSystem.id}
+                        name='diagram'
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
@@ -198,7 +183,7 @@ class AuthorizationBoundaryEdition extends Component {
                 <DialogActions classes={{ root: classes.dialogClosebutton }}>
                   <Button
                     variant="outlined"
-                    onClick={this.props.handleCloseEdit}
+                    onClick={handleReset}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Cancel')}
@@ -206,45 +191,13 @@ class AuthorizationBoundaryEdition extends Component {
                   <Button
                     variant="contained"
                     color="primary"
-                    // onClick={submitForm}
+                    onClick={submitForm}
                     disabled={isSubmitting}
                     classes={{ root: classes.buttonPopover }}
                   >
                     {t('Submit')}
                   </Button>
                 </DialogActions>
-                <Dialog
-                  open={this.state.close}
-                  keepMounted={true}
-                >
-                  <DialogContent>
-                    <Typography className={classes.popoverDialog}>
-                      {t('Are you sure you’d like to cancel?')}
-                    </Typography>
-                    <Typography align='left'>
-                      {t('Your progress will not be saved')}
-                    </Typography>
-                  </DialogContent>
-                  <DialogActions className={classes.dialogActions}>
-                    <Button
-                      onClick={this.handleCancelCloseClick.bind(this)}
-                      classes={{ root: classes.buttonPopover }}
-                      variant='outlined'
-                      size='small'
-                    >
-                      {t('Go Back')}
-                    </Button>
-                    <Button
-                      onClick={this.handleCloseMain.bind(this)}
-                      color='secondary'
-                      classes={{ root: classes.buttonPopover }}
-                      variant='contained'
-                      size='small'
-                    >
-                      {t('Yes, Cancel')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
               </Form>
             )}
           </Formik>
@@ -259,9 +212,7 @@ AuthorizationBoundaryEdition.propTypes = {
   fldt: PropTypes.func,
   classes: PropTypes.object,
   refreshQuery: PropTypes.func,
-  dataSource: PropTypes.object,
-  openConnection: PropTypes.bool,
-  handleCloseConnection: PropTypes.func,
+  handleCloseEdit: PropTypes.func,
 };
 
 const AuthorizationBoundaryEditionPopover = createFragmentContainer(AuthorizationBoundaryEdition, {
@@ -273,15 +224,6 @@ const AuthorizationBoundaryEditionPopover = createFragmentContainer(Authorizatio
         id
         entity_type
         description
-        diagrams {
-          id
-          entity_type
-          created
-          modified
-          description
-          caption
-          diagram_link
-        }
         links {
           id
           entity_type
@@ -299,4 +241,4 @@ const AuthorizationBoundaryEditionPopover = createFragmentContainer(Authorizatio
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(AuthorizationBoundaryEditionPopover);
+export default R.compose(inject18n, withStyles(styles))(AuthorizationBoundaryEditionPopover);

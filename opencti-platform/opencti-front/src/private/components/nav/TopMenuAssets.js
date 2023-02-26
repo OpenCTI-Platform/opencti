@@ -289,7 +289,7 @@ class TopMenuAssets extends Component {
           {t('Overview')}
         </Button>
         <Button
-          component={Link}
+          // component={Link}
           size="small"
           data-cy='asset analysis'
           classes={{ root: classes.button }}
@@ -305,7 +305,7 @@ class TopMenuAssets extends Component {
               ? 'secondary'
               : 'inherit'
           }
-          to={`/defender HQ/assets/information_systems/${informationSystemId}/analysis`}
+          // to={`/defender HQ/assets/information_systems/${informationSystemId}/analysis`}
         >
           {t('Analysis')}
         </Button>
