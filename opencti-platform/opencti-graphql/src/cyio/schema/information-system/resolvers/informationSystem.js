@@ -33,8 +33,8 @@ const cyioInformationSystemResolvers = {
     attachToInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => attachToInformationSystem(id, field, entryId ,dbName, dataSources),
     detachFromInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => detachFromInformationSystem(id, field, entryId ,dbName, dataSources),
     // Implementation items
-    addInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }) => addImplementationEntity(id, implementationType, entityId, dbName, dataSources),
-    removeInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }) => removeImplementationEntity(id, implementationType, entityId, dbName, dataSources),
+    addInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }, { dbName, dataSources }) => addImplementationEntity(id, implementationType, entityId, dbName, dataSources),
+    removeInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }, { dbName, dataSources }) => removeImplementationEntity(id, implementationType, entityId, dbName, dataSources),
   },
   InformationSystem: {
     authorization_boundary: async (parent, _, { dbName, dataSources, selectMap }) => {
@@ -124,6 +124,24 @@ const cyioInformationSystemResolvers = {
     government_only_cloud: "government-only-cloud",
     on_premise: "on-premise",
     other: "other"
+  },
+  IdentityAssuranceLevel: {
+    IAL1: "ial1",
+    IAL2: "ial2",
+    IAL3: "ial3",
+    UNKNOWN: "unknown"
+  },
+  AuthenticatorAssuranceLevel: {
+    AAL1: "aal1",
+    AAL2: "aal2",
+    AAL3: "aal3",
+    UNKNOWN: "unknown"
+  },
+  FederationAssuranceLevel: {
+    FAL1: "fal1",
+    FAL2: "fal2",
+    FAL3: "fal3",
+    UNKNOWN: "unknown"
   },
   FIPS199: {
     fips_199_low: 'fips-199-low',
