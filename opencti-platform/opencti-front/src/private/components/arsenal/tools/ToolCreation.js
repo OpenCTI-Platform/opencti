@@ -94,8 +94,8 @@ const ToolCreation = ({ paginationOptions }) => {
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    tool_types: Yup.array(),
+    confidence: Yup.number().nullable(),
+    tool_types: Yup.array().nullable(),
   };
   const toolValidator = useYupSchemaBuilder('Tool', basicShape);
 

@@ -86,9 +86,9 @@ const ToolEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
-    tool_types: Yup.array(),
-    references: Yup.array(),
+    confidence: Yup.number().nullable(),
+    tool_types: Yup.array().nullable(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const toolValidator = useYupSchemaBuilder('Tool', basicShape);
@@ -111,6 +111,7 @@ const ToolEditionOverviewComponent = (props) => {
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('tool_types', values.tool_types),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -279,10 +280,10 @@ const ToolEditionOverviewComponent = (props) => {
               multiple={true}
               editContext={context}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
