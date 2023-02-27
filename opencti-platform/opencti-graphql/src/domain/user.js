@@ -2,6 +2,7 @@ import * as R from 'ramda';
 import { map } from 'ramda';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import jwt from 'jsonwebtoken';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
@@ -50,6 +51,7 @@ import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { oidcRefresh, tokenExpired } from '../config/tokenManagement';
 import { keycloakAdminClient } from '../service/keycloak';
+import axios from 'axios';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -515,7 +517,7 @@ export const loginFromProvider = async (
     const groupsCreation = R.map((group) => assignGroupToUser(SYSTEM_USER, user.id, group), providerGroups);
     await Promise.all(groupsCreation);
   }
-  return { ...user, access_token: accessToken };
+  return { ...user, access_token: accessToken, refresh_token: refreshToken };
 };
 
 export const login = async (email, password) => {
@@ -527,11 +529,45 @@ export const login = async (email, password) => {
   return user;
 };
 
+const endKCSession = (user) => {
+  if (!user.access_token && !user.refresh_token) {
+    logApp.warn('Current user is missing both access and refresh tokens');
+    return;
+  }
+
+  const decoded = jwt.decode(user.access_token, { complete: true });
+  if (!decoded.payload?.iss) {
+    logApp.warn('Unable to determine the token issuer');
+    return;
+  }
+
+  const baseURL = decoded.payload.iss;
+  const logoutEndpoint = new URL(`${baseURL}/protocol/openid-connect/logout`);
+  logoutEndpoint.search = new URLSearchParams({
+    token: user.access_token,
+    refresh_token: user.refresh_token,
+  }).toString();
+
+  axios
+    .post(logoutEndpoint.href)
+    .then((r) => {
+      if (r.status && r.statusText) {
+        logApp.info(`Keycloak session closed for ${user.user_email}: ${r.statusText} (${r.status})`);
+      } else {
+        logApp.warn('No status message returned from Keycloak for closing current users active session');
+      }
+    })
+    .catch((e) => {
+      logApp.error('Failed to call Keycloak logout endpoint for session closure', e);
+    });
+};
+
 export const logout = async (user, req, res) => {
   await delUserContext(user);
   await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, { access_token: null, refresh_token: null });
   res.clearCookie(OPENCTI_SESSION);
   req.session.destroy();
+  endKCSession(user);
   logAudit.info(user, LOGOUT_ACTION);
   return user.id;
 };
