@@ -11,7 +11,7 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
@@ -85,6 +85,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
 
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
+    x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -147,20 +148,15 @@ const AttackPatternEditionOverviewComponent = (props) => {
     }
   };
 
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(attackPattern);
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(attackPattern)),
-    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('killChainPhases', convertKillChainPhases(attackPattern)),
     R.assoc('objectMarking', convertMarkings(attackPattern)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, attackPattern)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'x_mitre_id',
       'description',
       'createdBy',
       'killChainPhases',
@@ -195,6 +191,19 @@ const AttackPatternEditionOverviewComponent = (props) => {
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
               }
+            />
+            <Field
+                component={TextField}
+                variant="standard"
+                name="x_mitre_id"
+                label={t('External ID')}
+                fullWidth={true}
+                style={{ marginTop: 20 }}
+                onFocus={editor.changeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="x_mitre_id" />
+                }
             />
             <Field
               component={MarkDownField}
@@ -249,10 +258,10 @@ const AttackPatternEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
@@ -270,6 +279,7 @@ export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
       fragment AttackPatternEditionOverview_attackPattern on AttackPattern {
         id
         name
+        x_mitre_id
         description
         createdBy {
           ... on Identity {
