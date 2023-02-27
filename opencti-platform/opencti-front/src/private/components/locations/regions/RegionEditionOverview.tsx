@@ -129,7 +129,7 @@ interface RegionEdititionOverviewProps {
 interface RegionEditionFormValues {
   name: string
   description: string | null
-  createdBy: Option | undefined
+  createdBy?: Option
   objectMarking: Option[]
   x_opencti_workflow_id: Option
   message?: string,
@@ -148,7 +148,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
 
@@ -212,7 +212,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
     }
   };
 
-  const initialValues: RegionEditionFormValues = {
+  const initialValues = {
     name: region.name,
     description: region.description,
     createdBy: convertCreatedBy(region),
@@ -295,10 +295,10 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

@@ -168,7 +168,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
             initialValues={{
               name: '',
               description: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
