@@ -1365,6 +1365,21 @@ const prepareAttributes = (instance, elements) => {
         }, input.value),
       };
     }
+    // Check dates for empty values
+    if (dateForStartAttributes.includes(input.key)) {
+      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+      return {
+        key: input.key,
+        value: emptyValue ? [FROM_START_STR] : input.value,
+      };
+    }
+    if (dateForEndAttributes.includes(input.key)) {
+      const emptyValue = isEmptyField(input.value) || isEmptyField(input.value.at(0));
+      return {
+        key: input.key,
+        value: emptyValue ? [UNTIL_END_STR] : input.value,
+      };
+    }
     // Specific case for Label
     if (input.key === VALUE_FIELD && instanceType === ENTITY_TYPE_LABEL) {
       return {
@@ -1417,16 +1432,16 @@ const updateAttributeRaw = async (context, user, instance, inputs, opts = {}) =>
   // region Check date range
   const inputKeys = inputs.map((i) => i.key);
   if (inputKeys.includes(START_TIME) || inputKeys.includes(STOP_TIME)) {
-    updateDateRangeValidation(instance, inputs, START_TIME, STOP_TIME);
+    updateDateRangeValidation(instance, preparedElements, START_TIME, STOP_TIME);
   }
   if (inputKeys.includes(FIRST_SEEN) || inputKeys.includes(LAST_SEEN)) {
-    updateDateRangeValidation(instance, inputs, FIRST_SEEN, LAST_SEEN);
+    updateDateRangeValidation(instance, preparedElements, FIRST_SEEN, LAST_SEEN);
   }
   if (inputKeys.includes(VALID_FROM) || inputKeys.includes(VALID_UNTIL)) {
-    updateDateRangeValidation(instance, inputs, VALID_FROM, VALID_UNTIL);
+    updateDateRangeValidation(instance, preparedElements, VALID_FROM, VALID_UNTIL);
   }
   if (inputKeys.includes(FIRST_OBSERVED) || inputKeys.includes(LAST_OBSERVED)) {
-    updateDateRangeValidation(instance, inputs, FIRST_OBSERVED, LAST_OBSERVED);
+    updateDateRangeValidation(instance, preparedElements, FIRST_OBSERVED, LAST_OBSERVED);
   }
   // endregion
   // region Some magic around aliases
