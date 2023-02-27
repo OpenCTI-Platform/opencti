@@ -8,7 +8,6 @@ import {
   createRelationRaw,
   createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
   distributionEntities,
   storeLoadByIdWithRefs,
   timeSeriesEntities,
@@ -60,6 +59,7 @@ import { isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } 
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -157,15 +157,7 @@ export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId
 };
 
 export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType) => {
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  if (!stixCoreObject) {
-    throw FunctionalError('Cannot delete the relation, Stix-Core-Object cannot be found.');
-  }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, stixCoreObject, user);
+  return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT);
 };
 
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {

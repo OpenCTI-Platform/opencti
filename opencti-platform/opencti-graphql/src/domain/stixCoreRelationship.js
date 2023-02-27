@@ -56,6 +56,7 @@ import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -261,22 +262,7 @@ export const stixCoreRelationshipAddRelation = async (context, user, stixCoreRel
 };
 
 export const stixCoreRelationshipDeleteRelation = async (context, user, stixCoreRelationshipId, toId, relationshipType) => {
-  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  if (!stixCoreRelationship) {
-    throw FunctionalError(`Cannot delete the relation, ${ABSTRACT_STIX_CORE_RELATIONSHIP} cannot be found.`);
-  }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(
-    context,
-    user,
-    stixCoreRelationshipId,
-    toId,
-    relationshipType,
-    ABSTRACT_STIX_META_RELATIONSHIP
-  );
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, stixCoreRelationship, user);
+  return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreRelationshipId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
 // endregion
 
