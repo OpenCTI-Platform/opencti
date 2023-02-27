@@ -197,6 +197,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
         .catch(() => false);
     }
   };
+
   const initialValues = {
     name: administrativeArea.name,
     description: administrativeArea.description,
