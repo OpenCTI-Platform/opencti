@@ -59,7 +59,8 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_REPORT, 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INTRUSION_SET, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_THREAT_ACTOR, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INCIDENT, [objectAssignee, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_CASE, [objectAssignee, objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_CASE, [ // Case cant use standard mandatory attributes, waiting a split from feedbacks
+  { ...createdBy, mandatoryType: 'no' }, { ...objectMarking, mandatoryType: 'no' }, { ...objectAssignee, mandatoryType: 'no' }, objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_NOTE, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [objectOrganization]);

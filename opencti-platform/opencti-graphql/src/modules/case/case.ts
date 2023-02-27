@@ -29,7 +29,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'case_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
     { name: 'severity', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },

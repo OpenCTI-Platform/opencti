@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import type { Checker, RelationRefDefinition } from './relationRef-definition';
 import { getParentTypes } from './schemaUtils';
 
@@ -38,8 +39,10 @@ export const schemaRelationsRefDefinition = {
   },
 
   getRelationsRef(entityType: string): RelationRefDefinition[] {
-    const entityTypes = [entityType, ...getParentTypes(entityType)];
-    return entityTypes.map((type) => this.relationsRef[type] ?? []).flat();
+    const directRefs = R.fromPairs((this.relationsRef[entityType] ?? []).map((e) => [e.stixName, e]));
+    const parentRefs = R.fromPairs(getParentTypes(entityType).map((type) => this.relationsRef[type] ?? [])
+      .flat().map((e) => [e.stixName, e]));
+    return Object.values({ ...parentRefs, ...directRefs });
   },
 
   registerChecker(databaseName: string, checker: Checker) {
