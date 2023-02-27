@@ -103,6 +103,7 @@ const IncidentCreation = ({
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
+    name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const caseValidator = useYupSchemaBuilder('Case', basicShape);
