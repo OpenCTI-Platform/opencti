@@ -186,10 +186,10 @@ const CampaignEditionDetailsComponent = (props) => {
                 <SubscriptionFocus context={context} fieldName="objective" />
               }
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}open={false}
                 values={values.references}
                 id={campaign.id}

@@ -178,10 +178,10 @@ const AttackPatternEditionDetailsComponent = (props) => {
                 />
               }
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
