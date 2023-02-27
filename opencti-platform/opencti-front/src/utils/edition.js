@@ -1,4 +1,5 @@
 import { truncate } from './String';
+import { isEmptyField } from './utils';
 
 export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null ? ''
   : {
@@ -41,5 +42,5 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
   value: n.node.id,
 }));
 
-export const convertCreatedBy = (element) => (element?.createdBy?.name === null ? undefined
-  : { label: element?.createdBy?.name ?? null, value: element?.createdBy?.id ?? null });
+export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy) ? ''
+  : { label: element.createdBy.name, value: element.createdBy.id });

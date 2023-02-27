@@ -83,10 +83,10 @@ interface AdministrativeAreaAddInput {
   description: string
   latitude: string
   longitude: string
-  createdBy: Option | undefined;
-  objectMarking: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option;
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const AdministrativeAreaCreation = ({
@@ -144,30 +144,22 @@ const AdministrativeAreaCreation = ({
   };
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
+      <Fab onClick={handleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an area')}</Typography>

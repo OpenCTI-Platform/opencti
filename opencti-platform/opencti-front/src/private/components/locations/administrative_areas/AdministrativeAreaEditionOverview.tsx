@@ -122,7 +122,6 @@ interface AdministrativeAreaEditionFormValues {
   createdBy?: Option
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
-  externalReferences?: Option[]
 }
 
 // eslint-disable-next-line max-len
@@ -269,7 +268,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                     {administrativeArea?.workflowEnabled && (
                         <StatusField
                             name="x_opencti_workflow_id"
-                            type="AdministrativeArea"
+                            type="Administrative-Area"
                             onFocus={editor.changeFocus}
                             onChange={handleSubmitField}
                             setFieldValue={setFieldValue}
