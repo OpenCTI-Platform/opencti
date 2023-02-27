@@ -140,7 +140,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     references: Yup.array().nullable(),
-    x_opencti_workflow_id: Yup.object().nullable(),
+    x_opencti_workflow_id: Yup.object(),
   };
   const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
 

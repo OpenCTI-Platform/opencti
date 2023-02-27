@@ -120,8 +120,7 @@ const CampaignEditionOverviewComponent = (props) => {
       variables: {
         id: campaign.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -151,19 +150,15 @@ const CampaignEditionOverviewComponent = (props) => {
     }
   };
 
-  const initialValues = R.pipe(
-    R.assoc('createdBy', convertCreatedBy(campaign)),
-    R.assoc('objectMarking', convertMarkings(campaign)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, campaign)),
-    R.pick([
-      'name',
-      'confidence',
-      'description',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(campaign);
+  const initialValues = {
+    name: campaign.name,
+    description: campaign.description,
+    confidence: campaign.confidence,
+    createdBy: convertCreatedBy(campaign),
+    objectMarking: convertMarkings(campaign),
+    x_opencti_workflow_id: convertStatus(t, campaign),
+    references: [],
+  };
   return (
       <Formik
         enableReinitialize={true}

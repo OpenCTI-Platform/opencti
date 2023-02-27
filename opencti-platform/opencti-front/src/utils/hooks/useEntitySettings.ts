@@ -39,11 +39,9 @@ export const useIsEnforceReference = (id: string): boolean => {
 
 const useAttributesConfiguration = (id: string): AttributeConfiguration[] | null => {
   const entitySetting = useEntitySettings(id)[0];
-
   if (!entitySetting || !entitySetting.attributes_configuration) {
     return null;
   }
-
   return JSON.parse(entitySetting.attributes_configuration);
 };
 
