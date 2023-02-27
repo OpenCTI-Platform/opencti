@@ -91,10 +91,10 @@ const ReportEditionOverviewComponent = (props) => {
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
-    report_types: Yup.array(),
-    confidence: Yup.number(),
+    report_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const reportValidator = useYupSchemaBuilder('Report', basicShape);
@@ -293,10 +293,10 @@ const ReportEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

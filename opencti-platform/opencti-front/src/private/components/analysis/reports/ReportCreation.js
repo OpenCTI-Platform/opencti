@@ -102,8 +102,8 @@ const ReportCreation = ({ paginationOptions }) => {
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
-    report_types: Yup.array(),
-    confidence: Yup.number(),
+    report_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
   const reportValidator = useYupSchemaBuilder('Report', basicShape);
