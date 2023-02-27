@@ -654,17 +654,17 @@ export const editInformationSystemById = async (id, input, dbName, dataSources, 
           break;
         case 'identity_assurance_level':
           if (!validateEnumValue(value, 'IdentityAssuranceLevel', schema)) throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
-          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
+          editItem.value[0] = value.replace(/_/g,'-');
           fieldType = 'simple';
           break;
         case 'authenticator_assurance_level':
           if (!validateEnumValue(value, 'AuthenticatorAssuranceLevel', schema)) throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
-          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
+          editItem.value[0] = value.replace(/_/g,'-');
           fieldType = 'simple';
           break;
         case 'federation_assurance_level':
           if (!validateEnumValue(value, 'FederationAssuranceLevel', schema)) throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
-          editItem.value[0] = value.replace(/_/g,'-').toLowerCase();
+          editItem.value[0] = value.replace(/_/g,'-');
           fieldType = 'simple';
           break;
         case 'security_objective_confidentiality':

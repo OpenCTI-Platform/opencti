@@ -125,24 +125,6 @@ const cyioInformationSystemResolvers = {
     on_premise: "on-premise",
     other: "other"
   },
-  IdentityAssuranceLevel: {
-    IAL1: "ial1",
-    IAL2: "ial2",
-    IAL3: "ial3",
-    UNKNOWN: "unknown"
-  },
-  AuthenticatorAssuranceLevel: {
-    AAL1: "aal1",
-    AAL2: "aal2",
-    AAL3: "aal3",
-    UNKNOWN: "unknown"
-  },
-  FederationAssuranceLevel: {
-    FAL1: "fal1",
-    FAL2: "fal2",
-    FAL3: "fal3",
-    UNKNOWN: "unknown"
-  },
   FIPS199: {
     fips_199_low: 'fips-199-low',
     fips_199_moderate: 'fips-199-moderate',
