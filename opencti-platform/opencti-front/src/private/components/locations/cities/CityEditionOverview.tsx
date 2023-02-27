@@ -127,7 +127,7 @@ interface CityEditionOverviewProps {
 interface CityEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
@@ -140,12 +140,8 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
+    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -210,6 +206,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     description: city.description,
     latitude: city.latitude,
     longitude: city.longitude,
+    references: [],
     createdBy: convertCreatedBy(city),
     objectMarking: convertMarkings(city),
     x_opencti_workflow_id: convertStatus(t, city) as Option,
@@ -319,10 +316,10 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

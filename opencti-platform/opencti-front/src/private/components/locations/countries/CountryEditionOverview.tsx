@@ -214,18 +214,17 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
   const initialValues: CountryEditionFormValues = {
     name: country.name,
     description: country.description,
-    createdBy: convertCreatedBy(country),
+    references: [],
+    createdBy: convertCreatedBy(country) as Option,
     objectMarking: convertMarkings(country),
     x_opencti_workflow_id: convertStatus(t, country) as Option,
   };
 
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues as never}
         validationSchema={countryValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
@@ -294,10 +293,10 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

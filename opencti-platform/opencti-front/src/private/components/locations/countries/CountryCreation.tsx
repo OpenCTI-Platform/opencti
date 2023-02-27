@@ -88,7 +88,7 @@ const countryMutation = graphql`
 interface CountryAddInput {
   name: string
   description: string
-  createdBy?: Option
+  createdBy?: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -135,30 +135,24 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
 
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a country')}</Typography>
@@ -168,7 +162,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
             initialValues={{
               name: '',
               description: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],

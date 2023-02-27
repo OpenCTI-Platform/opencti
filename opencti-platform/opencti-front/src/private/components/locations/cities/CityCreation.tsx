@@ -95,12 +95,8 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
+    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
   const cityValidator = useYupSchemaBuilder('City', basicShape);
 
@@ -137,30 +133,24 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
 
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a city')}</Typography>
@@ -172,7 +162,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
               description: '',
               latitude: '',
               longitude: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
