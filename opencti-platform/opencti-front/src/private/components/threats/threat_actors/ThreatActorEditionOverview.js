@@ -86,10 +86,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
 
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
-    threat_actor_types: Yup.array(),
-    confidence: Yup.number(),
+    threat_actor_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
@@ -273,10 +273,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

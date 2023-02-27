@@ -81,8 +81,8 @@ const ThreatActorCreation = ({ paginationOptions }) => {
 
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
-    threat_actor_types: Yup.array(),
-    confidence: Yup.number(),
+    threat_actor_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
   const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
