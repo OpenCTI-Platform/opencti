@@ -3,7 +3,6 @@ import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { Option } from './ReferenceField';
@@ -57,35 +56,21 @@ Omit<OpenVocabProps, 'type'>
   queryRef,
 }) => {
   const { t } = useFormatter();
-
-  const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
-    vocabularyQuery,
-    queryRef,
-  );
+  const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(vocabularyQuery, queryRef);
   const openVocabList = (vocabularies?.edges ?? [])
     .map(({ node }) => node)
-    .map(({ name: value, description }) => ({
-      value,
-      label: value,
-      description,
-    }))
+    .map(({ name: value, description }) => ({ value, label: value, description }))
     .sort((a, b) => a.label.localeCompare(b.label));
   let internalOnChange: ((n: string, v: Option | Option[]) => void) | undefined;
   let internalOnSubmit: ((n: string, v: Option | Option[]) => void) | undefined;
   if (onChange) {
     internalOnChange = (n: string, v: Option | Option[]) => (Array.isArray(v)
-      ? onChange(
-        n,
-        v.map((nV) => nV?.value ?? nV),
-      )
+      ? onChange(n, v.map((nV) => nV?.value ?? nV))
       : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
     internalOnSubmit = (n: string, v: Option | Option[]) => (Array.isArray(v)
-      ? onSubmit?.(
-        n,
-        v.map((nV) => nV?.value ?? nV),
-      )
+      ? onSubmit?.(n, v.map((nV) => nV?.value ?? nV))
       : onSubmit?.(n, v?.value ?? v));
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (
@@ -93,24 +78,6 @@ Omit<OpenVocabProps, 'type'>
       <MenuItem value={value}>{value}</MenuItem>
     </Tooltip>
   );
-  const renderTags = (
-    values: string[],
-    getTagProps: (v: string) => Record<string, unknown>,
-    ownerState: { options: Option[] },
-  ) => values.map((v) => {
-    const { value, description } = ownerState.options.find(
-      (opt) => opt.value === v,
-    ) ?? { value: '', description: '' };
-    const onDelete = () => onSubmit?.(
-      name,
-      values.filter((nValue) => nValue !== v),
-    );
-    return (
-        <Tooltip key={value} title={description}>
-          <Chip onDelete={onDelete} label={value} />
-        </Tooltip>
-    );
-  });
   if (variant === 'edit') {
     return (
       <Field
@@ -126,9 +93,7 @@ Omit<OpenVocabProps, 'type'>
         style={containerStyle}
         options={openVocabList}
         renderOption={renderOption}
-        renderTags={renderTags}
-        isOptionEqualToValue={(option: Option, value: string) => option.value === value
-        }
+        isOptionEqualToValue={(option: Option, value: string) => option.value === value}
         textfieldprops={{
           variant: 'standard',
           label,
@@ -149,8 +114,7 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) => option.value === value
-      }
+      isOptionEqualToValue={(option: Option, value: string) => option.value === value}
       textfieldprops={{
         variant: 'standard',
         label: t(label),

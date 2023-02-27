@@ -152,13 +152,12 @@ const ChannelEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(channel)),
     R.assoc('objectMarking', convertMarkings(channel)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, channel)),
-    R.assoc(
-      'channel_types',
-      (channel.channel_types || []),
-    ),
+    R.assoc('channel_types', (channel.channel_types || [])),
+    R.assoc('references', []),
     R.pick([
       'name',
       'channel_types',
+      'references',
       'description',
       'createdBy',
       'objectMarking',
@@ -167,12 +166,10 @@ const ChannelEditionOverviewComponent = (props) => {
     ]),
   )(channel);
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={channelValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -261,10 +258,10 @@ const ChannelEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}
