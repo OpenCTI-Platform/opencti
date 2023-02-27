@@ -86,7 +86,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
-    x_opencti_log_sources: Yup.string().nullable(),
+    x_opencti_log_sources: Yup.array().nullable(),
     x_mitre_id: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
@@ -153,14 +153,15 @@ const CourseOfActionEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(courseOfAction)),
     R.assoc('objectMarking', convertMarkings(courseOfAction)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, courseOfAction)),
+    R.assoc('references', []),
     R.pick([
       'name',
       'description',
+      'references',
       'x_mitre_id',
       'x_opencti_threat_hunting',
       'x_opencti_log_sources',
@@ -171,12 +172,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     ]),
   )(courseOfAction);
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={courseOfActionValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
@@ -284,10 +283,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

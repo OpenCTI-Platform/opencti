@@ -223,15 +223,14 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
     confidence: dataSource.confidence,
     x_mitre_platforms: dataSource.x_mitre_platforms,
     collection_layers: dataSource.collection_layers,
+    references: [],
   };
 
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={dataSourceValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -280,7 +279,7 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
           {dataSource?.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Data Source"
+              type="Data-Source"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
@@ -332,10 +331,10 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
             multiple={true}
             editContext={context}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

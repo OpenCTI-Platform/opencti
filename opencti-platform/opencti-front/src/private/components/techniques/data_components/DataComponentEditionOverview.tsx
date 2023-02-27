@@ -214,18 +214,17 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
   const initialValues: DataComponentAddInput = {
     name: dataComponent.name,
     description: dataComponent.description,
-    createdBy: convertCreatedBy(dataComponent),
+    createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
     x_opencti_workflow_id: convertStatus(t, dataComponent) as Option,
     confidence: dataComponent.confidence,
+    references: [],
   };
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -304,10 +303,10 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}
