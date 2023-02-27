@@ -82,7 +82,7 @@ const SectorEditionOverviewComponent = (props) => {
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const sectorValidator = useYupSchemaBuilder('Sector', basicShape);
@@ -229,10 +229,10 @@ const SectorEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
