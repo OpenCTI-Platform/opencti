@@ -93,7 +93,7 @@ const PositionEditionOverviewComponent = (props) => {
       .nullable(),
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const positionValidator = useYupSchemaBuilder('Position', basicShape);
@@ -296,10 +296,10 @@ const PositionEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
