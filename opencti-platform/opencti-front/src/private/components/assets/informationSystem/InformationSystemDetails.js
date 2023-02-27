@@ -19,6 +19,7 @@ import HyperLinkField from '../../common/form/HyperLinkField';
 import InformationTypesPopover from './InformationTypesPopover';
 import RiskLevel from '../../common/form/RiskLevel';
 import SystemDocumentation from './SystemDocumentation';
+import SystemImplementation from './SystemImplementation';
 
 const styles = (theme) => ({
   paper: {
@@ -29,42 +30,10 @@ const styles = (theme) => ({
     borderRadius: 6,
     maxHeight: '824px',
   },
-  scrollBg: {
-    background: theme.palette.header.background,
-    width: '100%',
-    color: 'white',
-    padding: '10px 5px 10px 15px',
-    borderRadius: '5px',
-    lineHeight: '20px',
-  },
-  scrollDiv: {
-    width: '100%',
-    background: theme.palette.header.background,
-    height: '78px',
-    overflow: 'hidden',
-    overflowY: 'scroll',
-  },
-  scrollObj: {
-    color: theme.palette.header.text,
-    fontFamily: 'sans-serif',
-    padding: '0px',
-    textAlign: 'left',
-  },
   textBase: {
     display: 'flex',
     alignItems: 'center',
     marginBottom: 5,
-  },
-  selectOptionMenu: {
-    padding: '20px 10px',
-    marginTop: '50px',
-  },
-  selectMenuItems: {
-    paddingLeft: '30px',
-    paddingRight: '70px',
-  },
-  selectIcons: {
-    marginRight: '20px',
   },
   impactContainer: {
     minWidth: '50px',
@@ -198,89 +167,9 @@ class InformationSystemDetailsComponent extends Component {
                   <Grid item={true} xs={12}>
                     <Divider />
                   </Grid>
-                  <Grid item={true} xs={12}>
-                    <div className={classes.textBase}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ margin: 0 }}
-                      >
-                        {t('System Implementation')}
-                      </Typography>
-                      <Tooltip title={t('Identifies a description of the logical flow of information within the system and across its boundaries, optionally supplemented by diagrams that illustrate these flows.')}>
-                        <Information
-                          style={{ marginLeft: '5px' }}
-                          fontSize="inherit"
-                          color="disabled"
-                        />
-                      </Tooltip>
-                    </div>
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="inventory_items"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'A managed inventory instance contained in a system or environment.  They include concepts such as physical security devices, computing devices, network devices, and networks.'}
-                      data={[]}
-                      title={'Inventory Items'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="components"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'Type of component that is connected to the information system. They include concepts such as products (e.g. software), services, application programming interfaces (APIs), policies, processes, plans, guidance, standards, or other tangible items that enable security and/or privacy.'}
-                      data={[]}
-                      title={'Components'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="users"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'Type of user that is connected to the information system.'}
-                      data={[]}
-                      title={'Users'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
-                  </Grid>
-                  <Grid item={true} xs={6}>
-                    <HyperLinkField
-                      variant='outlined'
-                      type='hardware'
-                      multiple={true}
-                      name="leveraged_authorizations"
-                      fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '90%' }}
-                      helperText={'Identifies a description of this system\'s authorization boundary, optionally supplemented by diagrams that illustrate the authorization boundary.'}
-                      data={[]}
-                      title={'Leveraged Authorization'}
-                      setFieldValue={setFieldValue}
-                      link='/defender HQ/assets/devices'
-                    />
-                  </Grid>
+                  <SystemImplementation
+                    informationSystem={informationSystem}
+                  />
                   <Grid item={true} xs={12}>
                     <Divider />
                   </Grid>
@@ -336,6 +225,7 @@ const InformationSystemDetails = createFragmentContainer(InformationSystemDetail
       security_objective_availability
       security_objective_confidentiality
       ...SystemDocumentation_information
+      ...SystemImplementation_information
     }
   `,
 });

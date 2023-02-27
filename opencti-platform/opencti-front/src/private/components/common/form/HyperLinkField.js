@@ -280,32 +280,19 @@ class HyperLinkField extends Component {
               <Information fontSize="inherit" color="disabled" />
             </Tooltip>
           </div>
-          {["installed_hardware", "installed_software"].includes(
-            this.props.name
-          ) && (
-            <IconButton
-              size="small"
-              onClick={() => this.setState({ open: true })}
-            >
-              <AddIcon />
-            </IconButton>
-          )}
-          {["components", "inventory_items", "leveraged_authorizations", "users"].includes(
-            this.props.name
-          ) && (
-            <IconButton
-              size="small"
-              onClick={() => this.setState({ open: true })}
-            >
-              <LinkIcon />
-            </IconButton>
-          )}
+          <IconButton
+            size="small"
+            onClick={() => this.setState({ open: true })}
+          >
+            <AddIcon />
+          </IconButton>
         </div>
         <Field
           component={HyperLinks}
           name={name}
           fullWidth={true}
           disabled={true}
+          detach={true}
           multiline={true}
           rows="3"
           value={installedOn}
@@ -388,6 +375,7 @@ class HyperLinkField extends Component {
                     >
                       <Typography>{item.name}</Typography>
                       <IconButton
+                        size='small'
                         onClick={this.handleDeleteItem.bind(this, key)}
                       >
                         <Delete />
