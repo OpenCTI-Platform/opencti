@@ -96,7 +96,7 @@ const EntitySettingAttributesConfiguration = ({
     }
   });
 
-  if (subType.mandatoryAttributes.length > 0) {
+  if (entitySetting.availableSettings.includes('attributes_configuration') && subType.mandatoryAttributes.length > 0) {
     return (
       <Grid item={true} xs={6}>
         <div style={{ height: '100%' }}>

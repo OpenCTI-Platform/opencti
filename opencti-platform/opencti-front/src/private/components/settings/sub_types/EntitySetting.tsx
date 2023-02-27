@@ -29,14 +29,6 @@ export const entitySettingsFragment = graphql`
   }
 `;
 
-export const entitySettingsQuery = graphql`
-  query EntitySettingsQuery {
-    entitySettings {
-      ...EntitySettingConnection_entitySettings
-    }
-  }
-`;
-
 export const entitySettingFragment = graphql`
   fragment EntitySetting_entitySetting on EntitySetting {
     id
@@ -45,6 +37,7 @@ export const entitySettingFragment = graphql`
     platform_hidden_type
     enforce_reference
     attributes_configuration
+    availableSettings
   }
 `;
 
@@ -114,7 +107,7 @@ const EntitySetting = ({
         <div>
           <Tooltip
             title={
-              entitySetting.platform_entity_files_ref === null
+              !entitySetting.availableSettings.includes('platform_entity_files_ref')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
@@ -129,7 +122,7 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.platform_entity_files_ref === null}
+                  disabled={!entitySetting.availableSettings.includes('platform_entity_files_ref')}
                   checked={entitySetting.platform_entity_files_ref ?? false}
                   onChange={() => handleSubmitField(
                     'platform_entity_files_ref',
@@ -144,7 +137,7 @@ const EntitySetting = ({
         <div style={{ marginTop: 20 }}>
           <Tooltip
             title={
-              entitySetting.platform_hidden_type === null
+              !entitySetting.availableSettings.includes('platform_hidden_type')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration hidde a specific entity type across the entire platform.',
@@ -159,7 +152,7 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.platform_hidden_type === null}
+                  disabled={!entitySetting.availableSettings.includes('platform_hidden_type')}
                   checked={entitySetting.platform_hidden_type ?? false}
                   onChange={() => handleSubmitField(
                     'platform_hidden_type',
@@ -176,7 +169,7 @@ const EntitySetting = ({
         <div>
           <Tooltip
             title={
-              entitySetting.enforce_reference === null
+              !entitySetting.availableSettings.includes('enforce_reference')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration enables the requirement of a reference message on an entity update.',
@@ -191,7 +184,7 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.enforce_reference === null}
+                  disabled={!entitySetting.availableSettings.includes('enforce_reference')}
                   checked={entitySetting.enforce_reference ?? false}
                   onChange={() => handleSubmitField(
                     'enforce_reference',

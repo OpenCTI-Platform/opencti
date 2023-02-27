@@ -5359,6 +5359,7 @@ export type EmailMimePartTypeAddInput = {
 export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
   attributes_configuration?: Maybe<Scalars['String']>;
+  availableSettings: Array<Scalars['String']>;
   created_at: Scalars['DateTime'];
   enforce_reference?: Maybe<Scalars['Boolean']>;
   entity_type: Scalars['String'];
@@ -27131,6 +27132,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
 
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

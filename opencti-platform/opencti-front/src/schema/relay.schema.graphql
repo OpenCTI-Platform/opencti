@@ -9764,6 +9764,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean
   enforce_reference: Boolean
   attributes_configuration: String
+  availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!
 }

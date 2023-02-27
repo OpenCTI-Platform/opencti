@@ -11,6 +11,7 @@ const convertEntitySettingToStix = (instance: StoreEntityEntitySetting): StixEnt
     platform_hidden_type: instance.platform_hidden_type,
     enforce_reference: instance.enforce_reference,
     attributes_configuration: instance.attributes_configuration,
+    available_settings: instance.availableSettings,
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...stixObject.extensions[STIX_EXT_OCTI],
