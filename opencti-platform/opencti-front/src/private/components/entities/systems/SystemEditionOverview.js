@@ -83,7 +83,7 @@ const SystemEditionOverviewComponent = (props) => {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
-    references: Yup.array(),
+    references: Yup.array().nullable(),
     x_opencti_workflow_id: Yup.object(),
   };
   const systemValidator = useYupSchemaBuilder('System', basicShape);
@@ -245,10 +245,10 @@ const SystemEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
