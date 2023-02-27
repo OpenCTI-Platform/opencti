@@ -20,6 +20,7 @@ import {
 } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
+import RelationShipFromAndTo from './RelationShipFromAndTo';
 
 const useStyles = makeStyles < Theme >(() => ({
   relation: {
@@ -151,22 +152,42 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           />
         </div>
       }
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          className={classes.label}
-        >
-          {t('From')}
-        </Typography>
-        {stixCoreRelationship.from.entity_type}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
-        {t('To')}
-      </Typography>
-      {stixCoreRelationship.to.entity_type}
+      { !stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
+        && <RelationShipFromAndTo
+        id={stixCoreRelationship.from.id}
+        direction={'From'}
+      />
+      }
+      { stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
+            {t('From')}
+          </Typography>
+          {stixCoreRelationship.from.relationship_type}
+        </div>
+      }
+      { !stixCoreRelationship.to.relationship_type && stixCoreRelationship.to.id
+        && <RelationShipFromAndTo
+          id={stixCoreRelationship.to.id}
+          direction={'To'}
+        />
+      }
+      { stixCoreRelationship.to.relationship_type && stixCoreRelationship.to.id
+        && <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            className={classes.label}
+          >
+            {t('To')}
+          </Typography>
+          {stixCoreRelationship.to.relationship_type}
+        </div>
+      }
       { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0)
         && <div>
           <Typography variant="h3"
