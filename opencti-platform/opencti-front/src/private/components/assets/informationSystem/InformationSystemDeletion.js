@@ -188,7 +188,7 @@ class InformationSystemDeletion extends Component {
               lineHeight: '24px',
               color: 'white',
             }} >
-              {t('Are you sure you’d like to delete this Software?')}
+              {t('Are you sure you’d like to delete this Information System?')}
             </Typography>
             <DialogContentText>
               {t('This action can’t be undone')}
