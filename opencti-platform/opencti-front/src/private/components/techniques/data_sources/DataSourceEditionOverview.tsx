@@ -184,7 +184,7 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
       variables: {
         id: dataSource.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

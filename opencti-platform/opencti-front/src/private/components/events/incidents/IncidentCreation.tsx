@@ -114,9 +114,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
   const incidentValidator = useYupSchemaBuilder('Incident', basicShape);
 
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const cleanedValues = isEmptyField(values.severity)
-      ? R.dissoc('severity', values)
-      : values;
+    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
     const finalValues = {
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
@@ -149,30 +147,25 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
   };
   return (
     <div>
-      <Fab
-        onClick={() => setOpen(true)}
+      <Fab onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
-      >
+        onClose={() => setOpen(false)}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={() => setOpen(false)}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an incident')}</Typography>
@@ -186,7 +179,7 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
               severity: '',
               source: '',
               description: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectAssignee: [],
               objectLabel: [],

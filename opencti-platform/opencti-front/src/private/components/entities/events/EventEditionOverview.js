@@ -80,12 +80,8 @@ const EventEditionOverviewComponent = (props) => {
     name: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
-    start_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    stop_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
+    start_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+    stop_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -105,11 +101,11 @@ const EventEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('start_time', parse(values.start_time).format()),
       R.assoc('stop_time', parse(values.stop_time).format()),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -120,8 +116,7 @@ const EventEditionOverviewComponent = (props) => {
       variables: {
         id: event.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -157,8 +152,10 @@ const EventEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(event)),
     R.assoc('objectMarking', convertMarkings(event)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, event)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'event_types',
       'description',
       'start_time',
@@ -282,10 +279,10 @@ const EventEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

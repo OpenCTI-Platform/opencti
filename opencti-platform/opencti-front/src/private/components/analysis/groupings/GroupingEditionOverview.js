@@ -107,9 +107,9 @@ const GroupingEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
@@ -121,7 +121,7 @@ const GroupingEditionOverviewComponent = (props) => {
       variables: {
         id: grouping.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -155,8 +155,10 @@ const GroupingEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(grouping)),
     R.assoc('objectMarking', convertMarkings(grouping)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, grouping)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'context',
       'description',
       'createdBy',
@@ -167,12 +169,10 @@ const GroupingEditionOverviewComponent = (props) => {
   )(grouping);
 
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={groupingValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -233,14 +233,11 @@ const GroupingEditionOverviewComponent = (props) => {
                 name="x_opencti_workflow_id"
                 type="Grouping"
                 onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
+                onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -257,19 +254,16 @@ const GroupingEditionOverviewComponent = (props) => {
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
-                open={false}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
+                open={false}
                 values={values.references}
                 id={grouping.id}
               />

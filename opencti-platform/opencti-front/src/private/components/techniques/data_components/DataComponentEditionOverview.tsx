@@ -178,7 +178,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
       variables: {
         id: dataComponent.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

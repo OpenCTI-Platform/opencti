@@ -3,7 +3,7 @@ import { graphql, useFragment } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import inject18n, { useFormatter } from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -189,7 +189,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
       variables: {
         id: incident.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -225,25 +225,26 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     description: incident.description,
     incident_type: incident.incident_type,
     severity: incident.severity,
-    createdBy: convertCreatedBy(incident),
+    createdBy: convertCreatedBy(incident) as Option,
     objectMarking: convertMarkings(incident),
     objectAssignee: convertAssignees(incident),
     x_opencti_workflow_id: convertStatus(t, incident) as Option,
     confidence: incident.confidence,
+    references: [],
   };
 
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -305,19 +306,23 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="description" />
-            }
+            helperText={<SubscriptionFocus context={context} fieldName="description" />}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="source"
+            label={t('Source')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={<SubscriptionFocus context={context} fieldName="Source" />}
           />
           <ObjectAssigneeField
             name="objectAssignee"
             style={{ marginTop: 20, width: '100%' }}
-            helpertext={
-              <SubscriptionFocus
-                context={context}
-                fieldname="objectAssignee"
-              />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectAssignee"/>}
             onChange={editor.changeAssignee}
           />
           {incident?.workflowEnabled && (
@@ -328,39 +333,27 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_workflow_id"
-                />
-              }
+              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>}
             />
           )}
           <CreatedByField
             name="createdBy"
             style={{ marginTop: 20, width: '100%' }}
             setFieldValue={setFieldValue}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="createdBy" />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
             style={{ marginTop: 20, width: '100%' }}
             disabled={isInferred}
-            helpertext={
-              <SubscriptionFocus
-                context={context}
-                fieldname="objectMarking"
-              />
-            }
+            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
             onChange={editor.changeMarking}
           />
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               open={false}
               values={values.references}
               setFieldValue={setFieldValue}
@@ -373,4 +366,4 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   );
 };
 
-export default inject18n(IncidentEditionOverviewComponent);
+export default IncidentEditionOverviewComponent;

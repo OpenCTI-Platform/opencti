@@ -151,8 +151,10 @@ const IndividualEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(individual)),
     R.assoc('objectMarking', convertMarkings(individual)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, individual)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'contact_information',
       'createdBy',
@@ -161,12 +163,10 @@ const IndividualEditionOverviewComponent = (props) => {
     ]),
   )(individual);
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={individualValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
@@ -248,10 +248,10 @@ const IndividualEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

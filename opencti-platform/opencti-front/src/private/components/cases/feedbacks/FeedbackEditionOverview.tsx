@@ -206,7 +206,7 @@ FeedbackEditionOverviewProps
       variables: {
         id: caseData.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -246,7 +246,7 @@ FeedbackEditionOverviewProps
     severity: caseData.severity,
     rating: caseData.rating,
     confidence: caseData.confidence,
-    createdBy: convertCreatedBy(caseData),
+    createdBy: convertCreatedBy(caseData) as Option,
     objectMarking: convertMarkings(caseData),
     objectAssignee: convertAssignees(caseData),
     x_opencti_workflow_id: convertStatus(t, caseData) as Option,
@@ -375,10 +375,10 @@ FeedbackEditionOverviewProps
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

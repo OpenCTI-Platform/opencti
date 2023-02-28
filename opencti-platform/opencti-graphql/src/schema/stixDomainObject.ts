@@ -710,7 +710,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'malware_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Malware types' },
-    { name: 'is_family', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'is_family', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'first_seen', type: 'date', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'i_first_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_first_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },

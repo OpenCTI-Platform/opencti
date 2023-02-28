@@ -145,8 +145,10 @@ const NarrativeEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(narrative)),
     R.assoc('objectMarking', convertMarkings(narrative)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, narrative)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'createdBy',
       'objectMarking',
@@ -225,10 +227,10 @@ const NarrativeEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && isValid && dirty && (
+            {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

@@ -99,7 +99,7 @@ interface NoteEditionOverviewProps {
 interface NoteEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
@@ -152,7 +152,7 @@ NoteEditionOverviewProps
       variables: {
         id: note.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -189,18 +189,16 @@ NoteEditionOverviewProps
     confidence: note.confidence,
     note_types: note.note_types ?? [],
     likelihood: note.likelihood,
-    createdBy: convertCreatedBy(note),
+    createdBy: convertCreatedBy(note) as Option,
     objectMarking: convertMarkings(note),
     x_opencti_workflow_id: convertStatus(t, note) as Option,
   };
 
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -325,10 +323,10 @@ NoteEditionOverviewProps
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

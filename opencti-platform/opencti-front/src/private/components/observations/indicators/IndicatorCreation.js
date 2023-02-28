@@ -107,15 +107,9 @@ const IndicatorCreation = ({ paginationOptions }) => {
     confidence: Yup.number(),
     pattern: Yup.string().required(t('This field is required')),
     pattern_type: Yup.string().required(t('This field is required')),
-    x_opencti_main_observable_type: Yup.string().required(
-      t('This field is required'),
-    ),
-    valid_from: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    x_opencti_main_observable_type: Yup.string().required(t('This field is required')),
+    valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -201,12 +195,12 @@ const IndicatorCreation = ({ paginationOptions }) => {
               indicator_types: [],
               pattern: '',
               pattern_type: '',
-              x_opencti_main_observable_type: '',
+              x_opencti_main_observable_type: undefined,
               x_mitre_platforms: [],
               valid_from: null,
               valid_until: null,
               description: '',
-              createdBy: '',
+              createdBy: undefined,
               objectMarking: [],
               killChainPhases: [],
               objectLabel: [],

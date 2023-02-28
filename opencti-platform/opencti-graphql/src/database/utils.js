@@ -14,10 +14,10 @@ import {
 import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
-import { now, observableValue } from '../utils/format';
+import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { truncate } from '../utils/mailData';
-import { isDictionaryAttribute, isJsonAttribute } from '../schema/schema-attributes';
+import { isDateAttribute, isDictionaryAttribute, isJsonAttribute } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
@@ -340,6 +340,8 @@ export const generateUpdateMessage = (inputs) => {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {
           message = values.map((v) => truncate(JSON.stringify(v)));
+        } else if (isDateAttribute(key)) {
+          message = values.map((v) => ((v === FROM_START_STR || v === UNTIL_END_STR) ? 'nothing' : v));
         } else {
           // If standard primitive data, just join the values
           message = values.join(', ');

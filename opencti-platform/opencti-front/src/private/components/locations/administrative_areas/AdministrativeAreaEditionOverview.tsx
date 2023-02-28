@@ -139,7 +139,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
     description: Yup.string().nullable(),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
@@ -168,7 +168,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
       variables: {
         id: administrativeArea.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {

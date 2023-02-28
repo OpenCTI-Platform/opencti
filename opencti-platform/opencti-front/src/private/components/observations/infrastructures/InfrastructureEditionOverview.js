@@ -12,7 +12,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -93,12 +93,8 @@ const InfrastructureEditionOverviewComponent = (props) => {
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number(),
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -123,14 +119,8 @@ const InfrastructureEditionOverviewComponent = (props) => {
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('infrastructure_types', values.infrastructure_types),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
+      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -138,8 +128,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
       variables: {
         id: infrastructure.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -169,28 +158,18 @@ const InfrastructureEditionOverviewComponent = (props) => {
     }
   };
 
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(infrastructure);
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(infrastructure)),
-    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('killChainPhases', convertKillChainPhases(infrastructure)),
     R.assoc('objectMarking', convertMarkings(infrastructure)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, infrastructure)),
     R.assoc('first_seen', buildDate(infrastructure.first_seen)),
     R.assoc('last_seen', buildDate(infrastructure.last_seen)),
-    R.assoc(
-      'infrastructure_types',
-      infrastructure.infrastructure_types
-        ? infrastructure.infrastructure_types
-        : [],
-    ),
+    R.assoc('infrastructure_types', infrastructure.infrastructure_types ? infrastructure.infrastructure_types : []),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'infrastructure_types',
       'confidence',
@@ -204,12 +183,10 @@ const InfrastructureEditionOverviewComponent = (props) => {
     ]),
   )(infrastructure);
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={infrastructureValidator}
-      onSubmit={onSubmit}
-    >
+      onSubmit={onSubmit}>
       {({
         submitForm,
         isSubmitting,
@@ -336,10 +313,10 @@ const InfrastructureEditionOverviewComponent = (props) => {
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && isValid && dirty && (
+          {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

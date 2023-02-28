@@ -12,7 +12,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
@@ -151,20 +151,15 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     }
   };
 
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(intrusionSet);
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(intrusionSet)),
-    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('killChainPhases', convertKillChainPhases(intrusionSet)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, intrusionSet)),
     R.assoc('objectMarking', convertMarkings(intrusionSet)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'confidence',
       'description',
       'createdBy',
@@ -258,10 +253,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
           }
           onChange={editor.changeMarking}
         />
-        {enableReferences && isValid && dirty && (
+        {enableReferences && (
           <CommitMessage
             submitForm={submitForm}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isValid || !dirty}
             setFieldValue={setFieldValue}
             open={false}
             values={values.references}
