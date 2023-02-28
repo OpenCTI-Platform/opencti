@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -14,6 +13,8 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const positionMutationFieldPatch = graphql`
   mutation PositionEditionOverviewFieldPatchMutation(
@@ -77,30 +78,33 @@ const positionMutationRelationDelete = graphql`
   }
 `;
 
-const positionValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable().max(5000, t('The value is too long')),
-  latitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
-  longitude: Yup.lazy((value) => (value === '' ? Yup.string() : Yup.number().nullable().typeError(t('This field must be a number')))),
-  street_address: Yup.string().nullable().max(1000, t('The value is too long')),
-  postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 const PositionEditionOverviewComponent = (props) => {
   const { position, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: positionEditionOverviewFocus,
-    variables: {
-      id: position.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable().max(5000, t('The value is too long')),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+    postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
+    references: Yup.array().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const positionValidator = useYupSchemaBuilder('Position', basicShape);
+
+  const queries = {
+    fieldPatch: positionMutationFieldPatch,
+    relationAdd: positionMutationRelationAdd,
+    relationDelete: positionMutationRelationDelete,
+    editionFocus: positionEditionOverviewFocus,
+  };
+  const editor = useFormEditor(position, enableReferences, queries, positionValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -114,8 +118,7 @@ const PositionEditionOverviewComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: positionMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: position.id,
         input: inputValues,
@@ -123,7 +126,6 @@ const PositionEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -137,11 +139,10 @@ const PositionEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      positionValidation(t)
+      positionValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: positionMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: position.id,
               input: {
@@ -155,61 +156,10 @@ const PositionEditionOverviewComponent = (props) => {
     }
   };
 
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: positionMutationFieldPatch,
-        variables: {
-          id: position.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(position);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: positionMutationRelationAdd,
-          variables: {
-            id: position.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: positionMutationRelationDelete,
-          variables: {
-            id: position.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(position);
-  const objectMarking = convertMarkings(position);
-  const status = convertStatus(t, position);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(position)),
+    R.assoc('objectMarking', convertMarkings(position)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, position)),
     R.pick([
       'name',
       'description',
@@ -226,7 +176,7 @@ const PositionEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={positionValidation(t)}
+        validationSchema={positionValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -234,6 +184,8 @@ const PositionEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -242,7 +194,7 @@ const PositionEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -256,7 +208,7 @@ const PositionEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -269,7 +221,7 @@ const PositionEditionOverviewComponent = (props) => {
               name="latitude"
               label={t('Latitude')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="latitude" />
@@ -282,7 +234,7 @@ const PositionEditionOverviewComponent = (props) => {
               name="longitude"
               label={t('Longitude')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="longitude" />
@@ -295,7 +247,7 @@ const PositionEditionOverviewComponent = (props) => {
               name="street_address"
               label={t('Street address')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="street_address" />
@@ -308,7 +260,7 @@ const PositionEditionOverviewComponent = (props) => {
               name="postal_code"
               label={t('Postal code')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="postal_code" />
@@ -318,15 +270,12 @@ const PositionEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Position"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -337,23 +286,20 @@ const PositionEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

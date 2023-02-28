@@ -38,6 +38,8 @@ import {
 } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 
+import '../../../src/modules/index'; // Need to import registration files
+
 describe('Testing checkRelationConsistency', () => {
   it.concurrent.each([
     // CREATED_BY

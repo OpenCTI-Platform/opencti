@@ -23,6 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,16 +85,6 @@ const regionMutation = graphql`
   }
 `;
 
-const regionValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-  });
-
 interface RegionAddInput {
   name: string
   description: string
@@ -109,13 +100,14 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const handleOpen = () => {
-    setOpen(true);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
+  const regionValidator = useYupSchemaBuilder('Region', basicShape);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const [commit] = useMutation(regionMutation);
 
@@ -176,12 +168,12 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
             initialValues={{
               name: '',
               description: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={regionValidation(t)}
+            validationSchema={regionValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

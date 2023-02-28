@@ -22,6 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -74,17 +75,6 @@ const cityMutation = graphql`
   }
 `;
 
-const cityValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-});
-
 interface CityAddInput {
   name: string
   description: string
@@ -101,6 +91,15 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const { t } = useFormatter();
 
   const [open, setOpen] = useState<boolean>(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+  };
+  const cityValidator = useYupSchemaBuilder('City', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
 
@@ -109,6 +108,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
     const finalValues: CityCreationMutation$variables['input'] = {
       name: values.name,
+      description: values.description,
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
       objectMarking: values.objectMarking.map(({ value }) => value),
@@ -133,30 +133,24 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
 
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a city')}</Typography>
@@ -168,12 +162,12 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
               description: '',
               latitude: '',
               longitude: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={cityValidation(t)}
+            validationSchema={cityValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

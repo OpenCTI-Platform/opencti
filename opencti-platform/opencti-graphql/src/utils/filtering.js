@@ -1,4 +1,4 @@
-import { buildRefRelationKey } from '../schema/general';
+import { buildRefRelationKey, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT,
@@ -9,7 +9,6 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../database/stix';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 

@@ -1,6 +1,7 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import * as R from 'ramda';
 import {
+  createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
@@ -8,19 +9,13 @@ import {
   distributionRelations,
   mergeEntities,
   patchAttribute,
+  storeLoadByIdWithRefs,
   timeSeriesEntities,
   timeSeriesRelations,
   updateAttribute,
-  createEntity,
-  storeLoadByIdWithRefs,
 } from '../../../src/database/middleware';
 import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
-import {
-  elFindByIds,
-  elLoadById,
-  ES_IGNORE_THROTTLED,
-  elRawSearch
-} from '../../../src/database/engine';
+import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -61,13 +56,14 @@ import {
   internalLoadById,
   listAllRelations,
   listEntities,
-  listRelations, storeLoadById
+  listRelations,
+  storeLoadById
 } from '../../../src/database/middleware-loader';
 import { addThreatActor } from '../../../src/domain/threatActor';
 import { addMalware } from '../../../src/domain/malware';
 import { addIntrusionSet } from '../../../src/domain/intrusionSet';
 import { addIndicator } from '../../../src/domain/indicator';
-import { querySubTypes } from '../../../src/domain/subType';
+import { findAll } from '../../../src/domain/subType';
 
 describe('Basic and utils', () => {
   it('should escape according to our needs', () => {
@@ -96,7 +92,7 @@ describe('Basic and utils', () => {
 
 describe('Loaders', () => {
   it('should load subTypes values', async () => {
-    const stixObservableSubTypes = await querySubTypes({ type: 'Stix-Cyber-Observable' });
+    const stixObservableSubTypes = await findAll({ type: 'Stix-Cyber-Observable' });
     expect(stixObservableSubTypes).not.toBeNull();
     expect(stixObservableSubTypes.edges.length).toEqual(29);
     const subTypeLabels = R.map((e) => e.node.label, stixObservableSubTypes.edges);

@@ -50,7 +50,7 @@ export type ExternalReferencesValues = {
 interface ExternalReferencesFieldProps {
   name: string;
   style?: { marginTop: number; width: string };
-  onChange?: () => void;
+  onChange?: (name: string, values: Option[]) => void;
   setFieldValue: (
     field: string,
     value: {
@@ -121,10 +121,7 @@ ExternalReferencesFieldProps
     if (id) {
       filters = [{ key: ['usedBy'], values: [id] }];
     }
-    fetchQuery(externalReferencesQueriesSearchQuery, {
-      search: event && event.target.value,
-      filters,
-    })
+    fetchQuery(externalReferencesQueriesSearchQuery, { search: event && event.target.value, filters })
       .toPromise()
       .then((data) => {
         const newExternalReferencesEdges = ((
@@ -195,10 +192,7 @@ ExternalReferencesFieldProps
         creationCallback={(data: ExternalReferenceCreationMutation$data) => {
           const newExternalReference = data.externalReferenceAdd;
           if (id) {
-            const input = {
-              fromId: id,
-              relationship_type: 'external-reference',
-            };
+            const input = { fromId: id, relationship_type: 'external-reference' };
             commitMutation({
               mutation: externalReferenceLinesMutationRelationAdd,
               variables: {
@@ -227,35 +221,12 @@ ExternalReferencesFieldProps
             });
           }
           if (newExternalReference) {
-            setExternalReferences((o) => append(
-              {
-                label: `[${newExternalReference.source_name}] ${truncate(
-                  newExternalReference.description
-                      || newExternalReference.url
-                      || newExternalReference.external_id,
-                  150,
-                )}`,
-                value: newExternalReference.id,
-                entity: newExternalReference,
-              },
-              o,
-            ));
-            setFieldValue(
-              name,
-              append(
-                {
-                  label: `[${newExternalReference.source_name}] ${truncate(
-                    newExternalReference.description
-                      || newExternalReference.url
-                      || newExternalReference.external_id,
-                    150,
-                  )}`,
-                  value: newExternalReference.id,
-                  entity: newExternalReference,
-                },
-                values || [],
-              ),
-            );
+            const externalReferenceLabel = `[${newExternalReference.source_name}] ${truncate(
+              newExternalReference.description || newExternalReference.url || newExternalReference.external_id,
+              150,
+            )}`;
+            const newExternalReferences = append({ label: externalReferenceLabel, value: newExternalReference.id, entity: newExternalReference }, values || []);
+            setFieldValue(name, newExternalReferences);
           }
         }}
       />

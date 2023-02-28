@@ -12,19 +12,17 @@ import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import Loader from '../../../../components/Loader';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import ItemIcon from '../../../../components/ItemIcon';
-import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -90,16 +88,6 @@ const channelMutation = graphql`
   }
 `;
 
-const channelValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  channel_types: Yup.array().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  confidence: Yup.number(),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -115,13 +103,20 @@ const ChannelCreation = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    channel_types: Yup.array(),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const channelValidator = useYupSchemaBuilder('Channel', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
-      R.assoc('channel_types', R.pluck('value', values.channel_types)),
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -175,169 +170,133 @@ const ChannelCreation = ({ paginationOptions }) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <QueryRenderer
-          query={vocabulariesQuery}
-          variables={{ category: 'channel_types_ov' }}
-          render={({ props }) => {
-            if (props && props.vocabularies) {
-              const channelEdges = props.vocabularies.edges.map(
-                (e) => e.node.name,
-              );
-              return (
-                <div>
-                  <div className={classes.header}>
-                    <IconButton
-                      aria-label="Close"
-                      className={classes.closeButton}
-                      onClick={handleClose}
-                      size="large"
-                      color="primary"
+        <div>
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose}
+              size="large"
+              color="primary"
+            >
+              <Close fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">
+              {t('Create a channel')}
+            </Typography>
+          </div>
+          <div className={classes.container}>
+            <Formik
+              initialValues={{
+                name: '',
+                channel_types: [],
+                description: '',
+                createdBy: '',
+                objectMarking: [],
+                objectLabel: [],
+                externalReferences: [],
+                confidence: 75,
+              }}
+              validationSchema={channelValidator}
+              onSubmit={onSubmit}
+              onReset={onReset}
+            >
+              {({
+                submitForm,
+                handleReset,
+                isSubmitting,
+                setFieldValue,
+                values,
+              }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="name"
+                    label={t('Name')}
+                    fullWidth={true}
+                    detectDuplicate={['Channel', 'Malware']}
+                  />
+                  <OpenVocabField
+                    label={t('Channel types')}
+                    type="channel_types_ov"
+                    name="channel_types"
+                    multiple={true}
+                    containerStyle={fieldSpacingContainerStyle}
+                    onChange={setFieldValue}
+                  />
+                  <Field
+                    component={MarkDownField}
+                    name="description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                  />
+                  <ConfidenceField
+                    name="confidence"
+                    label={t('Confidence')}
+                    fullWidth={true}
+                    containerStyle={fieldSpacingContainerStyle}
+                  />
+                  <CreatedByField
+                    name="createdBy"
+                    style={{
+                      marginTop: 20,
+                      width: '100%',
+                    }}
+                    setFieldValue={setFieldValue}
+                  />
+                  <ObjectLabelField
+                    name="objectLabel"
+                    style={{
+                      marginTop: 20,
+                      width: '100%',
+                    }}
+                    setFieldValue={setFieldValue}
+                    values={values.objectLabel}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={{
+                      marginTop: 20,
+                      width: '100%',
+                    }}
+                  />
+                  <ExternalReferencesField
+                    name="externalReferences"
+                    style={{
+                      marginTop: 20,
+                      width: '100%',
+                    }}
+                    setFieldValue={setFieldValue}
+                    values={values.externalReferences}
+                  />
+                  <div className={classes.buttons}>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
                     >
-                      <Close fontSize="small" color="primary" />
-                    </IconButton>
-                    <Typography variant="h6">
-                      {t('Create a channel')}
-                    </Typography>
-                  </div>
-                  <div className={classes.container}>
-                    <Formik
-                      initialValues={{
-                        name: '',
-                        channel_types: [],
-                        description: '',
-                        createdBy: '',
-                        objectMarking: [],
-                        objectLabel: [],
-                        externalReferences: [],
-                        confidence: 75,
-                      }}
-                      validationSchema={channelValidation(t)}
-                      onSubmit={onSubmit}
-                      onReset={onReset}
+                      {t('Cancel')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="secondary"
+                      onClick={submitForm}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.button }}
                     >
-                      {({
-                        submitForm,
-                        handleReset,
-                        isSubmitting,
-                        setFieldValue,
-                        values,
-                      }) => (
-                        <Form style={{ margin: '20px 0 20px 0' }}>
-                          <Field
-                            component={TextField}
-                            variant="standard"
-                            name="name"
-                            label={t('Name')}
-                            fullWidth={true}
-                            detectDuplicate={['Channel', 'Malware']}
-                          />
-                          <Field
-                            component={AutocompleteField}
-                            style={{ marginTop: 20 }}
-                            name="channel_types"
-                            multiple={true}
-                            createLabel={t('Add')}
-                            textfieldprops={{
-                              variant: 'standard',
-                              label: t('Channel types'),
-                            }}
-                            options={channelEdges.map((n) => ({
-                              id: n,
-                              value: n,
-                              label: n,
-                            }))}
-                            renderOption={(optionProps, option) => (
-                              <li {...optionProps}>
-                                <div className={classes.icon}>
-                                  <ItemIcon type="attribute" />
-                                </div>
-                                <div className={classes.text}>
-                                  {option.label}
-                                </div>
-                              </li>
-                            )}
-                            classes={{
-                              clearIndicator:
-                              classes.autoCompleteIndicator,
-                            }}
-                          />
-                          <Field
-                            component={MarkDownField}
-                            name="description"
-                            label={t('Description')}
-                            fullWidth={true}
-                            multiline={true}
-                            rows="4"
-                            style={{ marginTop: 20 }}
-                          />
-                          <ConfidenceField
-                            name="confidence"
-                            label={t('Confidence')}
-                            fullWidth={true}
-                            containerStyle={fieldSpacingContainerStyle}
-                          />
-                          <CreatedByField
-                            name="createdBy"
-                            style={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                            setFieldValue={setFieldValue}
-                          />
-                          <ObjectLabelField
-                            name="objectLabel"
-                            style={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                            setFieldValue={setFieldValue}
-                            values={values.objectLabel}
-                          />
-                          <ObjectMarkingField
-                            name="objectMarking"
-                            style={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                          />
-                          <ExternalReferencesField
-                            name="externalReferences"
-                            style={{
-                              marginTop: 20,
-                              width: '100%',
-                            }}
-                            setFieldValue={setFieldValue}
-                            values={values.externalReferences}
-                          />
-                          <div className={classes.buttons}>
-                            <Button
-                              variant="contained"
-                              onClick={handleReset}
-                              disabled={isSubmitting}
-                              classes={{ root: classes.button }}
-                            >
-                              {t('Cancel')}
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="secondary"
-                              onClick={submitForm}
-                              disabled={isSubmitting}
-                              classes={{ root: classes.button }}
-                            >
-                              {t('Create')}
-                            </Button>
-                          </div>
-                        </Form>
-                      )}
-                    </Formik>
+                      {t('Create')}
+                    </Button>
                   </div>
-                </div>
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
+                </Form>
+              )}
+            </Formik>
+          </div>
+        </div>
       </Drawer>
     </div>
   );

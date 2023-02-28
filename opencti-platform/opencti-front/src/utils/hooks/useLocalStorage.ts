@@ -1,11 +1,7 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
-import {
-  Filters,
-  OrderMode,
-  PaginationOptions,
-} from '../../components/list_lines';
+import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
 import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
 

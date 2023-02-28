@@ -13,7 +13,7 @@ import { elIndexElements } from '../database/engine';
 import type { StixRelation, StixSighting } from '../types/stix-sro';
 import { listEntities } from '../database/middleware-loader';
 import type { BasicRuleEntity, BasicStoreEntity } from '../types/store';
-import { BASE_TYPE_ENTITY } from '../schema/general';
+import { BASE_TYPE_ENTITY, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
 import type { StixId } from '../types/stix-common';
@@ -22,7 +22,6 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { OrderingMode } from '../generated/graphql';
-import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../database/stix';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;

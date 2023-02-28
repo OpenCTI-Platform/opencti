@@ -8,6 +8,9 @@ import { ZipkinExporter } from '@opentelemetry/exporter-zipkin';
 import { PrometheusExporter } from '@opentelemetry/exporter-prometheus';
 import { PeriodicExportingMetricReader } from '@opentelemetry/sdk-metrics';
 import { OTLPMetricExporter } from '@opentelemetry/exporter-metrics-otlp-http';
+// region static graphql modules, need to be imported before everything
+import './modules/index';
+// endregion
 import { platformStart } from './boot';
 import { ENABLED_METRICS, ENABLED_TRACING } from './config/conf';
 import { isNotEmptyField } from './database/utils';

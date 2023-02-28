@@ -159,7 +159,7 @@ const i18n = {
         '¿Quieres iniciar este sincronizador?',
       'Do you want to stop this synchronizer?':
         '¿Quieres parar este sincronizador?',
-      'Do you want to create a STIX Indcator from this observable?':
+      'Do you want to create a STIX Indicator from this observable?':
         '¿Quieres crear un indicador STIX a partir de este observable?',
       'Do you want to enable this rule?': '¿Quieres activar esta regla?',
       'Do you want to disable this rule?': '¿Quieres desactivar esta regla?',
@@ -237,6 +237,9 @@ const i18n = {
         'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
+      'Mandatory attributes': 'Atributos obligatorios',
+      'Built-in attributes': 'Atributos incorporados',
+      'Customizable attributes': 'Atributos personalizables',
       'Dark theme': 'Tema oscuro',
       'Light theme': 'Tema claro',
       'Background color': 'Color de fondo',
@@ -553,6 +556,7 @@ const i18n = {
       'potential duplicate entities': 'entidades potencialmente duplicadas',
       'have been found.': 'se han encontrado.',
       'Potential duplicate entities': 'Entidades potencialmente duplicadas',
+      'Create an opinion': 'Crear una opinión',
       'Update opinion': 'Actualizar la opinión',
       // Menu
       Dashboard: 'Cuadro de mando',
@@ -996,6 +1000,7 @@ const i18n = {
       Creator: 'Creador',
       Validate: 'Validar',
       Marking: 'Clasificación',
+      Markings: 'Marcas',
       'Kill chain phases': 'Fases de la «kill chain»',
       'Kill chain phase': 'Fase de la «kill chain»',
       'Global kill chain': '«ill chain» global',
@@ -1913,7 +1918,7 @@ const i18n = {
         'Souhaitez-vous démarrer ce synchroniseur ?',
       'Do you want to stop this synchronizer?':
         'Souhaitez-vous arrêter ce synchroniseur ?',
-      'Do you want to create a STIX Indcator from this observable?':
+      'Do you want to create a STIX Indicator from this observable?':
         'Souhaitez-vous créer un indicateur STIX depuis cet observable ?',
       'Do you want to enable this rule?':
         'Souhaitez-vous activer cette règle ?',
@@ -1995,6 +2000,9 @@ const i18n = {
         "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
+      'Mandatory attributes': 'Attributs obligatoires',
+      'Built-in attributes': 'Attributs intégrés',
+      'Customizable attributes': 'Attributs personnalisables',
       Automatic: 'Automatique',
       Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
@@ -2298,6 +2306,7 @@ const i18n = {
       'potential duplicate entities': "duplicats potentiels d'entité",
       'have been found.': 'ont été trouvés.',
       'Potential duplicate entities': "Duplicats potentiels d'entités",
+      'Create an opinion': 'Créer une opinion',
       'Update opinion': "Modifier l'opinion",
       // Menu
       Dashboard: 'Tableau de bord',
@@ -2735,6 +2744,7 @@ const i18n = {
       Creator: 'Créateur',
       Validate: 'Valider',
       Marking: 'Marquage',
+      Markings: 'Marquages',
       'Kill chain phases': 'Phases de kill chain',
       'Kill chain phase': 'Phase de kill chain',
       'Global kill chain': 'Kill chain globale',
@@ -3611,7 +3621,7 @@ const i18n = {
         'この同期処理を削除しますか？',
       'Do you want to start this synchronizer?': 'この同期処理を開始しますか？',
       'Do you want to stop this synchronizer?': 'この同期処理を停止しますか？',
-      'Do you want to create a STIX Indcator from this observable?':
+      'Do you want to create a STIX Indicator from this observable?':
         'この観測結果からインジケータを作成しますか？',
       'Do you want to enable this rule?': 'このルールを有効にしますか？',
       'Do you want to disable this rule?': 'このルールを無効にしますか？',
@@ -3688,6 +3698,9 @@ const i18n = {
         'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
+      'Mandatory attributes': '必須属性',
+      'Built-in attributes': '内置属性',
+      'Customizable attributes': '可定制的属性',
       'Dark theme': 'ダークテーマ',
       'Light theme': 'ライトテーマ',
       'Background color': '背景色',
@@ -3999,6 +4012,7 @@ const i18n = {
       'potential duplicate entities': '重複する可能性のあるエンティティ',
       'have been found.': 'があります。',
       'Potential duplicate entities': '重複する可能性のあるエンティティ',
+      'Create an opinion': '意見を作成する',
       'Update opinion': 'オピニオンの更新',
       // Menu
       Dashboard: 'ダッシュボード',
@@ -4435,6 +4449,7 @@ const i18n = {
       Creator: '作成者',
       Validate: '有効期限',
       Marking: 'マーキング',
+      Markings: 'マーキング',
       'Kill chain phases': 'キルチェーンフェーズ',
       'Kill chain phase': 'キルチェーンフェーズ',
       'Global kill chain': 'グローバルキルチェーン',
@@ -5286,7 +5301,7 @@ const i18n = {
       'Do you want to delete this synchronizer?': '是否要删除此同步器？',
       'Do you want to start this synchronizer?': '是否要启动此同步器？',
       'Do you want to stop this synchronizer?': '是否要删除此同步器？',
-      'Do you want to create a STIX Indcator from this observable?':
+      'Do you want to create a STIX Indicator from this observable?':
         '是否要从此可观测数据创建一个STIX攻击指标？',
       'Do you want to enable this rule?': '是否要启用该规则？',
       'Do you want to disable this rule?': '是否要禁用该规则？',
@@ -5354,6 +5369,9 @@ const i18n = {
         '此配置启用了对实体更新的参考消息的要求。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         '此配置使实体能够从上传的文件自动构建外部引用。',
+      'Mandatory attributes': '必須属性',
+      'Built-in attributes': '内置属性',
+      'Customizable attributes': '可定制的属性',
       Automatic: '自动',
       Manual: '手动',
       'Automatic trigger': '自动触发',
@@ -6051,6 +6069,7 @@ const i18n = {
       Creator: '创建者',
       Validate: '验证',
       Marking: '标记',
+      Markings: '标记',
       'Kill chain phases': '杀伤链阶段',
       'Kill chain phase': '杀伤链阶段',
       'Global kill chain': '全局杀伤链',
@@ -6748,6 +6767,7 @@ const i18n = {
       'This action will generate STIX patterns indicators from the selected observables.':
         '此操作将从选定的 observables 生成 STIX 模式指标。',
       'Indicators/observables generation': '指标/可观察的生成',
+      'Create an opinion': '创建意见',
       'Update opinion': '更新意见',
       disagree: '不同意',
       neutral: '中性的',

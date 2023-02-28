@@ -29,6 +29,7 @@ import { DataSourcesLinesPaginationQuery$variables } from './__generated__/DataS
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -90,15 +91,6 @@ const dataSourceMutation = graphql`
   }
 `;
 
-const dataSourceValidation = (t: (message: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  confidence: Yup.number(),
-});
-
 interface DataSourceAddInput {
   name: string;
   description: string;
@@ -128,6 +120,14 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -157,7 +157,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map((v) => v.value),
-      confidence: () => parseInt(String(values.confidence), 10),
+      confidence: parseInt(String(values.confidence), 10),
       x_mitre_platforms: values.x_mitre_platforms,
       collection_layers: values.collection_layers,
     };
@@ -302,7 +302,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
         <div className={classes.container}>
           <Formik<DataSourceAddInput>
             initialValues={initialValues}
-            validationSchema={dataSourceValidation(t)}
+            validationSchema={dataSourceValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -355,7 +355,7 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <Formik
           initialValues={initialValues}
-          validationSchema={dataSourceValidation(t)}
+          validationSchema={dataSourceValidator}
           onSubmit={onSubmit}
           onReset={onReset}
         >

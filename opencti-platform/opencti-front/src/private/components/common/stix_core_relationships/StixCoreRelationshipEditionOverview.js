@@ -155,7 +155,7 @@ const stixCoreRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
     .nullable(),
   description: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
   x_opencti_workflow_id: Yup.object(),
 });
 

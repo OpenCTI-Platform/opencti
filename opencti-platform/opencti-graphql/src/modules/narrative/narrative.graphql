@@ -175,8 +175,8 @@ input NarrativeAddInput {
     stix_id: StixId
     x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
-    description: String!
-    narrative_types: [String]
+    description: String
+    narrative_types: [String!]
     aliases: [String]
     confidence: Int
     revoked: Boolean

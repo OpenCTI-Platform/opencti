@@ -50,7 +50,7 @@ const campaignValidation = (t) => Yup.object().shape({
     .nullable()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   objective: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
 });
 
 const CampaignEditionDetailsComponent = (props) => {
@@ -138,6 +138,8 @@ const CampaignEditionDetailsComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -187,7 +189,7 @@ const CampaignEditionDetailsComponent = (props) => {
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}open={false}
                 values={values.references}
                 id={campaign.id}

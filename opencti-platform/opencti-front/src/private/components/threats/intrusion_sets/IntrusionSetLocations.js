@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, filter } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import List from '@mui/material/List';
@@ -51,10 +51,7 @@ class IntrusionSetLocationsComponent extends Component {
         const node = store.get(this.props.intrusionSet.id);
         const locations = node.getLinkedRecord('locations');
         const edges = locations.getLinkedRecords('edges');
-        const newEdges = filter(
-          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
-          edges,
-        );
+        const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id);
         locations.setLinkedRecords(newEdges, 'edges');
       },
     });
@@ -96,17 +93,16 @@ class IntrusionSetLocationsComponent extends Component {
                   </ListItemIcon>
                 </ListItemIcon>
                 <ListItemText primary={location.name} />
-                <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                  <ListItemSecondaryAction>
+                <ListItemSecondaryAction>
+                  <Security needs={[KNOWLEDGE_KNUPDATE]}>
                     <IconButton
                       aria-label="Remove"
                       onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large"
-                    >
+                      size="large">
                       <LinkOff />
                     </IconButton>
-                  </ListItemSecondaryAction>
-                </Security>
+                  </Security>
+                </ListItemSecondaryAction>
               </ListItem>
             );
           })}

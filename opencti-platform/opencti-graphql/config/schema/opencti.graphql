@@ -595,6 +595,14 @@ type SubType {
   statuses: StatusConnection
   workflowEnabled: Boolean
   settings: EntitySetting
+  mandatoryAttributes: [SubTypeAttribute!]!
+}
+
+type SubTypeAttribute {
+  name: String!
+  builtIn: Boolean!
+  mandatory: Boolean!
+  label: String
 }
 
 ############## Statuses
@@ -2439,7 +2447,7 @@ input CampaignAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   revoked: Boolean
   lang: String
@@ -3602,7 +3610,7 @@ input CourseOfActionAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   x_opencti_aliases: [String]
   x_mitre_id: String
   confidence: Int
@@ -3961,7 +3969,7 @@ input IndividualAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
@@ -4165,7 +4173,7 @@ input OrganizationAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
@@ -4347,7 +4355,7 @@ input SectorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
@@ -4522,7 +4530,7 @@ input SystemAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   contact_information: String
   roles: [String]
   x_opencti_aliases: [String]
@@ -5094,7 +5102,7 @@ input IntrusionSetAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   first_seen: DateTime
   last_seen: DateTime
@@ -6166,7 +6174,7 @@ input MalwareAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   malware_types: [String]
   aliases: [String]
   is_family: Boolean
@@ -6355,7 +6363,7 @@ input ThreatActorAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   threat_actor_types: [String]
   first_seen: DateTime
@@ -6535,7 +6543,7 @@ input ToolAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   aliases: [String]
   tool_types: [String]
   tool_version: String
@@ -6718,7 +6726,7 @@ input VulnerabilityAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   x_opencti_aliases: [String]
   x_opencti_base_score: Float
   x_opencti_base_severity: String
@@ -6904,7 +6912,7 @@ input IncidentAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
-  description: String!
+  description: String
   confidence: Int
   revoked: Boolean
   lang: String

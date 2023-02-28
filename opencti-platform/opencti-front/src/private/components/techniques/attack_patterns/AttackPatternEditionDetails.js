@@ -46,7 +46,6 @@ export const attackPatternEditionDetailsFocus = graphql`
 `;
 
 const attackPatternValidation = () => Yup.object().shape({
-  x_mitre_id: Yup.string().nullable(),
   x_mitre_platforms: Yup.array(),
   x_mitre_permissions_required: Yup.array(),
   x_mitre_detection: Yup.string().nullable(),
@@ -117,7 +116,6 @@ const AttackPatternEditionDetailsComponent = (props) => {
     R.assoc('x_mitre_permissions_required', R.propOr([], 'x_mitre_permissions_required', attackPattern)),
     R.assoc('x_mitre_detection', R.propOr('', 'x_mitre_detection', attackPattern)),
     R.pick([
-      'x_mitre_id',
       'x_mitre_platforms',
       'x_mitre_permissions_required',
       'x_mitre_detection',
@@ -136,20 +134,10 @@ const AttackPatternEditionDetailsComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="x_mitre_id"
-              label={t('External ID')}
-              fullWidth={true}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="x_mitre_id" />
-              }
-            />
             <OpenVocabField
               label={t('Platforms')}
               type="platforms_ov"
@@ -193,7 +181,7 @@ const AttackPatternEditionDetailsComponent = (props) => {
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}
@@ -212,7 +200,6 @@ export default createFragmentContainer(AttackPatternEditionDetailsComponent, {
         id
         x_mitre_platforms
         x_mitre_permissions_required
-        x_mitre_id
         x_mitre_detection
       }
     `,

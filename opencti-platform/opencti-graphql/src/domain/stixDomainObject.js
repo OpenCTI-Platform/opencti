@@ -7,7 +7,6 @@ import {
   createRelation,
   createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
   distributionEntities,
   listThroughGetTo,
   timeSeriesEntities,
@@ -32,22 +31,22 @@ import {
   isStixDomainObject,
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
-  stixDomainObjectOptions,
 } from '../schema/stixDomainObject';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
-  STIX_META_RELATIONSHIPS_INPUTS,
 } from '../schema/general';
 import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixMetaRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
-import { STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS } from '../schema/stixCyberObservableRelationship';
 import { now, utcDate } from '../utils/format';
 import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-types';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
+import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -228,15 +227,7 @@ export const stixDomainObjectAddRelations = async (context, user, stixDomainObje
 };
 
 export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType) => {
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  if (!stixDomainObject) {
-    throw FunctionalError('Cannot delete the relation, Stix-Domain-Object cannot be found.');
-  }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_META_RELATIONSHIP);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, stixDomainObject, user);
+  return stixObjectOrRelationshipDeleteRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
 
 export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
@@ -253,8 +244,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
   // Check is a real update was done
   const updateWithoutMeta = R.pipe(
-    R.omit(STIX_META_RELATIONSHIPS_INPUTS),
-    R.omit(STIX_CYBER_OBSERVABLE_RELATIONSHIPS_INPUTS),
+    R.omit(schemaRelationsRefDefinition.getInputNames()),
   )(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {

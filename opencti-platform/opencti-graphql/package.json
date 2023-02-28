@@ -54,6 +54,7 @@
     "@opentelemetry/sdk-trace-base": "1.9.1",
     "@opentelemetry/sdk-trace-node": "1.9.1",
     "@opentelemetry/semantic-conventions": "1.9.1",
+    "ajv": "8.12.0",
     "amqplib": "0.10.3",
     "antlr4": "4.11.0",
     "apollo-errors": "1.9.0",

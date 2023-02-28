@@ -5,7 +5,6 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -16,6 +15,8 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionOverviewFieldPatchMutation(
@@ -79,31 +80,27 @@ const threatActorMutationRelationDelete = graphql`
   }
 `;
 
-const threatActorValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  threat_actor_types: Yup.array(),
-  confidence: Yup.number(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 const ThreatActorEditionOverviewComponent = (props) => {
   const { threatActor, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: threatActorEditionOverviewFocus,
-    variables: {
-      id: threatActor.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    threat_actor_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
+    description: Yup.string().nullable(),
+    references: Yup.array().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
+
+  const queries = {
+    fieldPatch: threatActorMutationFieldPatch,
+    relationAdd: threatActorMutationRelationAdd,
+    relationDelete: threatActorMutationRelationDelete,
+    editionFocus: threatActorEditionOverviewFocus,
+  };
+  const editor = useFormEditor(threatActor, enableReferences, queries, threatActorValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -117,8 +114,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: threatActorMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: threatActor.id,
         input: inputValues,
@@ -126,7 +122,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -140,11 +135,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      threatActorValidation(t)
+      threatActorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: threatActorMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: threatActor.id,
               input: { key: name, value: finalValue ?? '' },
@@ -152,53 +146,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
           });
         })
         .catch(() => false);
-    }
-  };
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: threatActorMutationFieldPatch,
-        variables: {
-          id: threatActor.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(threatActor);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: threatActorMutationRelationAdd,
-          variables: {
-            id: threatActor.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: threatActorMutationRelationDelete,
-          variables: {
-            id: threatActor.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
     }
   };
 
@@ -236,7 +183,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={{ ...initialValues, references: [] }}
-        validationSchema={threatActorValidation(t)}
+        validationSchema={threatActorValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -244,6 +191,8 @@ const ThreatActorEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -252,7 +201,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -265,14 +214,14 @@ const ThreatActorEditionOverviewComponent = (props) => {
               label={t('Threat actor types')}
               containerStyle={{ width: '100%', marginTop: 20 }}
               multiple={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               editContext={context}
             />
             <ConfidenceField
               name="confidence"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
@@ -288,7 +237,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -298,15 +247,12 @@ const ThreatActorEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Threat-Actor"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    field="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} field="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -317,23 +263,20 @@ const ThreatActorEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

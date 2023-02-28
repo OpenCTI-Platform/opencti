@@ -10,7 +10,6 @@ import {
   createRelation,
   createRelations,
   deleteElementById,
-  deleteRelationsByFromAndTo,
   distributionEntities,
   listThroughGetFrom,
   storeLoadByIdWithRefs,
@@ -53,6 +52,7 @@ import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { now, observableValue } from '../utils/format';
 import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
+import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -250,22 +250,7 @@ export const stixCyberObservableAddRelations = async (context, user, stixCyberOb
 };
 
 export const stixCyberObservableDeleteRelation = async (context, user, stixCyberObservableId, toId, relationshipType) => {
-  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  if (!stixCyberObservable) {
-    throw FunctionalError('Cannot delete the relation, Stix-Cyber-Observable cannot be found.');
-  }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(
-    context,
-    user,
-    stixCyberObservableId,
-    toId,
-    relationshipType,
-    ABSTRACT_STIX_META_RELATIONSHIP
-  );
-  return notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, stixCyberObservable, user);
+  return stixObjectOrRelationshipDeleteRelation(context, user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {

@@ -23,15 +23,8 @@ export const entitySettingsFragment = graphql`
         platform_entity_files_ref
         platform_hidden_type
         target_type
+        attributes_configuration
       }
-    }
-  }
-`;
-
-export const entitySettingsQuery = graphql`
-  query EntitySettingsQuery {
-    entitySettings {
-      ...EntitySettingConnection_entitySettings
     }
   }
 `;
@@ -39,10 +32,12 @@ export const entitySettingsQuery = graphql`
 export const entitySettingFragment = graphql`
   fragment EntitySetting_entitySetting on EntitySetting {
     id
-    enforce_reference
+    target_type
     platform_entity_files_ref
     platform_hidden_type
-    target_type
+    enforce_reference
+    attributes_configuration
+    availableSettings
   }
 `;
 
@@ -66,6 +61,7 @@ export const entitySettingsPatch = graphql`
   mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySetting_entitySetting
+      attributes_configuration
     }
   }
 `;
@@ -111,7 +107,7 @@ const EntitySetting = ({
         <div>
           <Tooltip
             title={
-              entitySetting.platform_entity_files_ref === null
+              !entitySetting.availableSettings.includes('platform_entity_files_ref')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
@@ -126,13 +122,12 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.platform_entity_files_ref === null}
+                  disabled={!entitySetting.availableSettings.includes('platform_entity_files_ref')}
                   checked={entitySetting.platform_entity_files_ref ?? false}
                   onChange={() => handleSubmitField(
                     'platform_entity_files_ref',
                     !entitySetting.platform_entity_files_ref,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}
@@ -142,7 +137,7 @@ const EntitySetting = ({
         <div style={{ marginTop: 20 }}>
           <Tooltip
             title={
-              entitySetting.platform_hidden_type === null
+              !entitySetting.availableSettings.includes('platform_hidden_type')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration hidde a specific entity type across the entire platform.',
@@ -157,13 +152,12 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.platform_hidden_type === null}
+                  disabled={!entitySetting.availableSettings.includes('platform_hidden_type')}
                   checked={entitySetting.platform_hidden_type ?? false}
                   onChange={() => handleSubmitField(
                     'platform_hidden_type',
                     !entitySetting.platform_hidden_type,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}
@@ -175,7 +169,7 @@ const EntitySetting = ({
         <div>
           <Tooltip
             title={
-              entitySetting.enforce_reference === null
+              !entitySetting.availableSettings.includes('enforce_reference')
                 ? t('This configuration is not available for this entity type')
                 : t(
                   'This configuration enables the requirement of a reference message on an entity update.',
@@ -190,13 +184,12 @@ const EntitySetting = ({
             <FormControlLabel
               control={
                 <Switch
-                  disabled={entitySetting.enforce_reference === null}
+                  disabled={!entitySetting.availableSettings.includes('enforce_reference')}
                   checked={entitySetting.enforce_reference ?? false}
                   onChange={() => handleSubmitField(
                     'enforce_reference',
                     !entitySetting.enforce_reference,
-                  )
-                  }
+                  )}
                 />
               }
               label={t('Enable this feature')}

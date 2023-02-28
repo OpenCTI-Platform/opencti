@@ -25,6 +25,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -91,17 +92,19 @@ const groupingMutation = graphql`
   }
 `;
 
-const groupingValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  context: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-});
-
 const GroupingCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    confidence: Yup.number(),
+    context: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  };
+  const groupingValidator = useYupSchemaBuilder('Grouping', basicShape);
+
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
@@ -179,7 +182,7 @@ const GroupingCreation = ({ paginationOptions }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={groupingValidation(t)}
+            validationSchema={groupingValidator}
             onSubmit={onSubmit}
             onReset={() => setOpen(false)}
           >

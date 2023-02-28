@@ -6,7 +6,6 @@ import * as Yup from 'yup';
 import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
@@ -16,12 +15,14 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const indicatorMutationFieldPatch = graphql`
   mutation IndicatorEditionOverviewFieldPatchMutation(
@@ -85,39 +86,32 @@ const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-const indicatorValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  pattern: Yup.string().required(t('This field is required')),
-  valid_from: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  valid_until: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  x_opencti_score: Yup.number().nullable(),
-  description: Yup.string().nullable(),
-  x_opencti_detection: Yup.boolean(),
-  x_mitre_platforms: Yup.array().nullable(),
-  indicator_types: Yup.array().nullable(),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, enableReferences }) => {
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => {
-    commitMutation({
-      mutation: indicatorEditionOverviewFocus,
-      variables: {
-        id: indicator.id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    indicator_types: Yup.array(),
+    confidence: Yup.number(),
+    pattern: Yup.string().required(t('This field is required')),
+    valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    x_mitre_platforms: Yup.array().nullable(),
+    x_opencti_score: Yup.number().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_detection: Yup.boolean(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
   };
+  const indicatorValidator = useYupSchemaBuilder('Indicator', basicShape);
+
+  const queries = {
+    fieldPatch: indicatorMutationFieldPatch,
+    relationAdd: indicatorMutationRelationAdd,
+    relationDelete: indicatorMutationRelationDelete,
+    editionFocus: indicatorEditionOverviewFocus,
+  };
+  const editor = useFormEditor(indicator, enableReferences, queries, indicatorValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -131,22 +125,13 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
       R.assoc('indicator_types', values.indicator_types),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc(
-        'valid_from',
-        values.valid_from ? parse(values.valid_from).format() : null,
-      ),
-      R.assoc(
-        'valid_until',
-        values.valid_from ? parse(values.valid_until).format() : null,
-      ),
+      R.assoc('valid_from', values.valid_from ? parse(values.valid_from).format() : null),
+      R.assoc('valid_until', values.valid_from ? parse(values.valid_until).format() : null),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: indicatorMutationFieldPatch,
+
+    editor.fieldPatch({
       variables: {
         id: indicator.id,
         input: inputValues,
@@ -168,11 +153,10 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      indicatorValidation(t)
+      indicatorValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: indicatorMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: indicator.id,
               input: {
@@ -186,114 +170,19 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     }
   };
 
-  const handleChangeKillChainPhases = (name, values) => {
-    if (!enableReferences) {
-      const currentKillChainPhases = R.pipe(
-        R.pathOr([], ['killChainPhases', 'edges']),
-        R.map((n) => ({
-          label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-          value: n.node.id,
-        })),
-      )(indicator);
-      const added = R.difference(values, currentKillChainPhases);
-      const removed = R.difference(currentKillChainPhases, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: indicatorMutationRelationAdd,
-          variables: {
-            id: indicator.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'kill-chain-phase',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: indicatorMutationRelationDelete,
-          variables: {
-            id: indicator.id,
-            toId: R.head(removed).value,
-            relationship_type: 'kill-chain-phase',
-          },
-        });
-      }
-    }
-  };
-
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: indicatorMutationRelationDelete,
-        variables: {
-          id: indicator.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(indicator);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: indicatorMutationRelationAdd,
-          variables: {
-            id: indicator.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: indicatorMutationRelationDelete,
-          variables: {
-            id: indicator.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(indicator);
-  const createdBy = convertCreatedBy(indicator);
-  const objectMarking = convertMarkings(indicator);
-  const status = convertStatus(t, indicator);
   const initialValues = R.pipe(
-    R.assoc('killChainPhases', killChainPhases),
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
-    R.assoc(
-      'x_mitre_platforms',
-      R.propOr([], 'x_mitre_platforms', indicator),
-    ),
+    R.assoc('killChainPhases', convertKillChainPhases(indicator)),
+    R.assoc('createdBy', convertCreatedBy(indicator)),
+    R.assoc('objectMarking', convertMarkings(indicator)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, indicator)),
+    R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', indicator)),
     R.assoc('indicator_types', R.propOr([], 'indicator_types', indicator)),
     R.assoc('valid_from', buildDate(indicator.valid_from)),
     R.assoc('valid_until', buildDate(indicator.valid_until)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'confidence',
       'pattern',
       'description',
@@ -311,17 +200,17 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     ]),
   )(indicator);
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={indicatorValidation(t)}
-        onSubmit={onSubmit}
-      >
+        validationSchema={indicatorValidator}
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -330,7 +219,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -340,7 +229,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               label={t('Indicator types')}
               type="indicator-type-ov"
               name="indicator_types"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
@@ -350,7 +239,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
             />
             <ConfidenceField
               name="confidence"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Confidence')}
               fullWidth={true}
@@ -367,7 +256,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="pattern" />
@@ -376,7 +265,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
             <Field
               component={DateTimePickerField}
               name="valid_from"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Valid from'),
@@ -391,7 +280,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
             <Field
               component={DateTimePickerField}
               name="valid_until"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Valid until'),
@@ -399,10 +288,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
                 fullWidth: true,
                 style: { marginTop: 20 },
                 helperText: (
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="valid_until"
-                  />
+                  <SubscriptionFocus context={context} fieldName="valid_until"/>
                 ),
               }}
             />
@@ -425,14 +311,9 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               type="number"
               fullWidth={true}
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_score"
-                />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="x_opencti_score"/>}
             />
             <Field
               component={MarkDownField}
@@ -442,59 +323,40 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="description" />}
             />
             <KillChainPhasesField
               name="killChainPhases"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="killChainPhases"
-                />
-              }
-              onChange={handleChangeKillChainPhases}
+              helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases"/>}
+              onChange={editor.changeKillChainPhases}
             />
             {indicator.workflowEnabled && (
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Indicator"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
-                }
+                helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>}
               />
             )}
             <CreatedByField
               name="createdBy"
               style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={handleChangeCreatedBy}
+              helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
-              }
-              onChange={handleChangeObjectMarking}
+              helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
+              onChange={editor.changeMarking}
             />
             <Field
               component={SwitchField}
@@ -503,17 +365,12 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
               label={t('Detection')}
               containerstyle={{ marginTop: 20 }}
               onChange={handleSubmitField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_detection"
-                />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="x_opencti_detection"/>}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

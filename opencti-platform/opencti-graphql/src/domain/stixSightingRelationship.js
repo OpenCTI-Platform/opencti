@@ -1,13 +1,12 @@
 import { assoc, dissoc, pipe } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
   batchListThroughGetFrom,
   batchListThroughGetTo,
-  updateAttribute,
   batchLoadThroughGetTo,
+  createRelation,
+  deleteElementById,
+  updateAttribute,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
 import { FunctionalError } from '../config/errors';
@@ -35,6 +34,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
@@ -122,29 +122,9 @@ export const stixSightingRelationshipAddRelation = async (context, user, stixSig
     return relationData;
   });
 };
-export const stixSightingRelationshipDeleteRelation = async (
-  context,
-  user,
-  stixSightingRelationshipId,
-  toId,
-  relationshipType
-) => {
-  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  if (!stixSightingRelationship) {
-    throw FunctionalError(`Cannot delete the relation, ${STIX_SIGHTING_RELATIONSHIP} cannot be found.`);
-  }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
-  }
-  await deleteRelationsByFromAndTo(
-    context,
-    user,
-    stixSightingRelationshipId,
-    toId,
-    relationshipType,
-    ABSTRACT_STIX_META_RELATIONSHIP
-  );
-  return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, stixSightingRelationship, user);
+
+export const stixSightingRelationshipDeleteRelation = async (context, user, stixSightingRelationshipId, toId, relationshipType) => {
+  return stixObjectOrRelationshipDeleteRelation(context, user, stixSightingRelationshipId, toId, relationshipType, STIX_SIGHTING_RELATIONSHIP);
 };
 // endregion
 

@@ -58,16 +58,7 @@ import {
   REL_INDEX_PREFIX,
   RULE_PREFIX,
 } from '../schema/general';
-import {
-  booleanAttributes,
-  dateAttributes,
-  isBooleanAttribute,
-  isModifiedObject,
-  isMultipleAttribute,
-  isRuntimeAttribute,
-  isUpdatedAtObject,
-  numericOrBooleanAttributes,
-} from '../schema/fieldDataAdapter';
+import { isModifiedObject, isUpdatedAtObject, } from '../schema/fieldDataAdapter';
 import { getParentTypes } from '../schema/schemaUtils';
 import {
   ATTRIBUTE_ABSTRACT,
@@ -88,6 +79,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
+import { isBooleanAttribute, isDateNumericOrBooleanAttribute, isMultipleAttribute, isRuntimeAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
@@ -1031,7 +1023,6 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
   const markingRestrictions = await buildDataRestrictions(context, user);
-  const numericOrBooleanAttr = numericOrBooleanAttributes();
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];
@@ -1156,14 +1147,14 @@ const elQueryBodyBuilder = async (context, user, options) => {
           } else if (operator === 'eq') {
             valuesFiltering.push({
               multi_match: {
-                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
+                fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
                 query: values[i].toString(),
               },
             });
           } else if (operator === 'not_eq') {
             noValuesFiltering.push({
               multi_match: {
-                fields: validKeys.map((k) => `${(dateAttributes.includes(k) || numericOrBooleanAttr.includes(k)) ? k : `${k}.keyword`}`),
+                fields: validKeys.map((k) => `${isDateNumericOrBooleanAttribute(k) ? k : `${k}.keyword`}`),
                 query: values[i].toString(),
               },
             });
@@ -1236,7 +1227,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     const orderCriterion = Array.isArray(orderBy) ? orderBy : [orderBy];
     for (let index = 0; index < orderCriterion.length; index += 1) {
       const orderCriteria = orderCriterion[index];
-      const isDateOrNumber = dateAttributes.includes(orderCriteria) || numericOrBooleanAttr.includes(orderCriteria);
+      const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
       const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
       const order = { [orderKeyword]: orderMode };
       ordering = R.append(order, ordering);
@@ -1371,7 +1362,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
   body.aggs = {
     genres: {
       terms: {
-        field: booleanAttributes.includes(field) ? field : `${field}.keyword`,
+        field: isBooleanAttribute(field) ? field : `${field}.keyword`,
         size: MAX_AGGREGATION_SIZE,
       },
       aggs: {
@@ -1613,7 +1604,7 @@ export const elLoadBy = async (context, user, field, value, type = null, indices
 export const elAttributeValues = async (context, user, field, opts = {}) => {
   const { first, orderMode = 'asc', search } = opts;
   const markingRestrictions = await buildDataRestrictions(context, user);
-  const isDateOrNumber = dateAttributes.includes(field) || numericOrBooleanAttributes().includes(field);
+  const isDateOrNumber = isDateNumericOrBooleanAttribute(field);
   const must = [];
   if (isNotEmptyField(search) && search.length > 0) {
     const shouldSearch = elGenerateFullTextSearchShould(search);

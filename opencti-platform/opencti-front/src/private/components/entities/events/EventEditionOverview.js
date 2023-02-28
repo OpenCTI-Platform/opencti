@@ -6,7 +6,6 @@ import * as R from 'ramda';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -18,6 +17,8 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const eventMutationFieldPatch = graphql`
   mutation EventEditionOverviewFieldPatchMutation(
@@ -71,32 +72,28 @@ const eventMutationRelationDelete = graphql`
   }
 `;
 
-const eventValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  event_types: Yup.array().nullable(),
-  description: Yup.string().nullable(),
-  start_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  stop_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 const EventEditionOverviewComponent = (props) => {
   const { event, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: eventEditionOverviewFocus,
-    variables: {
-      id: event.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    event_types: Yup.array().nullable(),
+    start_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+    stop_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const eventValidator = useYupSchemaBuilder('Event', basicShape);
+
+  const queries = {
+    fieldPatch: eventMutationFieldPatch,
+    relationAdd: eventMutationRelationAdd,
+    relationDelete: eventMutationRelationDelete,
+    editionFocus: eventEditionOverviewFocus,
+  };
+  const editor = useFormEditor(event, enableReferences, queries, eventValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -104,27 +101,24 @@ const EventEditionOverviewComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('start_time', parse(values.start_time).format()),
       R.assoc('stop_time', parse(values.stop_time).format()),
+      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.toPairs,
       R.map((n) => ({
         key: n[0],
         value: adaptFieldValue(n[1]),
       })),
     )(values);
-    commitMutation({
-      mutation: eventMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: event.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -138,11 +132,10 @@ const EventEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      eventValidation(t)
+      eventValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: eventMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: event.id,
               input: { key: name, value: finalValue ?? '' },
@@ -153,65 +146,16 @@ const EventEditionOverviewComponent = (props) => {
     }
   };
 
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: eventMutationFieldPatch,
-        variables: {
-          id: event.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(event);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: eventMutationRelationAdd,
-          variables: {
-            id: event.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: eventMutationRelationDelete,
-          variables: {
-            id: event.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(event);
-  const objectMarking = convertMarkings(event);
-  const status = convertStatus(t, event);
   const initialValues = R.pipe(
     R.assoc('start_time', buildDate(event.start_time)),
     R.assoc('stop_time', buildDate(event.stop_time)),
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(event)),
+    R.assoc('objectMarking', convertMarkings(event)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, event)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'event_types',
       'description',
       'start_time',
@@ -225,7 +169,7 @@ const EventEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={eventValidation(t)}
+        validationSchema={eventValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -233,6 +177,8 @@ const EventEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -241,7 +187,7 @@ const EventEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -251,7 +197,7 @@ const EventEditionOverviewComponent = (props) => {
               label={t('Event types')}
               type="event-type-ov"
               name="event_types"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               onChange={(name, value) => setFieldValue(name, value)}
               containerStyle={fieldSpacingContainerStyle}
@@ -267,7 +213,7 @@ const EventEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -276,7 +222,7 @@ const EventEditionOverviewComponent = (props) => {
             <Field
               component={DateTimePickerField}
               name="start_time"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('Start date'),
@@ -291,7 +237,7 @@ const EventEditionOverviewComponent = (props) => {
             <Field
               component={DateTimePickerField}
               name="stop_time"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               TextFieldProps={{
                 label: t('End date'),
@@ -307,15 +253,12 @@ const EventEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Event"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -326,23 +269,20 @@ const EventEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

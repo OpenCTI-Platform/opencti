@@ -26,6 +26,7 @@ import RatingField from '../../../../components/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -141,19 +142,6 @@ const feedbackMutationRelationDelete = graphql`
   }
 `;
 
-const caseValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  priority: Yup.string().nullable(),
-  severity: Yup.string().nullable(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-  rating: Yup.number(),
-  confidence: Yup.number(),
-});
-
 interface FeedbackEditionOverviewProps {
   caseRef: FeedbackEditionOverview_case$key;
   context:
@@ -180,10 +168,16 @@ FeedbackEditionOverviewProps
   const { t } = useFormatter();
   const caseData = useFragment(feedbackEditionOverviewFragment, caseRef);
 
-  const createdBy = convertCreatedBy(caseData);
-  const objectMarking = convertMarkings(caseData);
-  const objectAssignee = convertAssignees(caseData);
-  const status = convertStatus(t, caseData);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    priority: Yup.string().nullable(),
+    severity: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    rating: Yup.number(),
+    confidence: Yup.number(),
+  };
+  const caseValidator = useYupSchemaBuilder('Case', basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -191,7 +185,7 @@ FeedbackEditionOverviewProps
     relationDelete: feedbackMutationRelationDelete,
     editionFocus: feedbackEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries);
+  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
 
   const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (
     values,
@@ -212,7 +206,7 @@ FeedbackEditionOverviewProps
       variables: {
         id: caseData.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -231,7 +225,7 @@ FeedbackEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      caseValidation(t)
+      caseValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -252,16 +246,16 @@ FeedbackEditionOverviewProps
     severity: caseData.severity,
     rating: caseData.rating,
     confidence: caseData.confidence,
-    createdBy,
-    objectMarking,
-    objectAssignee,
-    x_opencti_workflow_id: status,
+    createdBy: convertCreatedBy(caseData) as Option,
+    objectMarking: convertMarkings(caseData),
+    objectAssignee: convertAssignees(caseData),
+    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
   };
   return (
     <Formik
       enableReinitialize={true}
-      initialValues={initialValues as never}
-      validationSchema={caseValidation(t)}
+      initialValues={initialValues}
+      validationSchema={caseValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -269,6 +263,8 @@ FeedbackEditionOverviewProps
         isSubmitting,
         setFieldValue,
         values,
+        isValid,
+        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
@@ -382,7 +378,7 @@ FeedbackEditionOverviewProps
           {enableReferences && (
             <CommitMessage
               submitForm={submitForm}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}

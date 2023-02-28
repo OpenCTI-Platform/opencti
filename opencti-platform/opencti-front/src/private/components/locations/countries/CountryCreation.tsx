@@ -23,6 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,20 +85,10 @@ const countryMutation = graphql`
   }
 `;
 
-const countryValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-  });
-
 interface CountryAddInput {
   name: string
   description: string
-  createdBy?: Option
+  createdBy?: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -109,13 +100,14 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
 
   const [open, setOpen] = useState<boolean>(false);
 
-  const handleOpen = () => {
-    setOpen(true);
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
   };
+  const countryValidator = useYupSchemaBuilder('Country', basicShape);
 
-  const handleClose = () => {
-    setOpen(false);
-  };
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
 
   const [commit] = useMutation(countryMutation);
 
@@ -143,30 +135,24 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
 
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a country')}</Typography>
@@ -176,12 +162,12 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
             initialValues={{
               name: '',
               description: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={countryValidation(t)}
+            validationSchema={countryValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

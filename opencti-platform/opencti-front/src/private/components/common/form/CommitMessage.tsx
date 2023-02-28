@@ -39,21 +39,18 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   return (
     <div>
       { !handleClose && (
-        <Button
-          variant="contained"
+        <Button variant="contained"
           color="primary"
           onClick={handleOpen}
-          style={{ marginTop: 20, float: 'right' }}
-        >
+          disabled={disabled}
+          style={{ marginTop: 20, float: 'right' }}>
           {t('Update')}
         </Button>
       )}
-        <Dialog
-          PaperProps={{ elevation: 1 }}
+        <Dialog PaperProps={{ elevation: 1 }}
           open={handleClose ? open : controlOpen}
           onClose={handleClose ?? handleControlClose }
-          fullWidth={true}
-        >
+          fullWidth={true}>
           <DialogTitle>{t('Reference modification')}</DialogTitle>
           <DialogContent>
             <ExternalReferencesField
@@ -75,11 +72,9 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             />
           </DialogContent>
           <DialogActions>
-            <Button
-              color="primary"
+            <Button color="primary"
               onClick={submitForm}
-              disabled={disabled}
-            >
+              disabled={disabled}>
               {t('Validate')}
             </Button>
           </DialogActions>

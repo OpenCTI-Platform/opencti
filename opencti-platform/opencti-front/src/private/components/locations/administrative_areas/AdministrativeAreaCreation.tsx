@@ -22,6 +22,8 @@ import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -76,26 +78,15 @@ const administrativeAreaMutation = graphql`
   }
 `;
 
-const administrativeAreaValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string().nullable(),
-  latitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-  longitude: Yup.number()
-    .typeError(t('This field must be a number'))
-    .nullable(),
-});
-
 interface AdministrativeAreaAddInput {
   name: string
   description: string
   latitude: string
   longitude: string
-  createdBy?: { value: string; label?: string }
-  objectMarking: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  createdBy?: Option;
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
 }
 
 const AdministrativeAreaCreation = ({
@@ -106,6 +97,15 @@ const AdministrativeAreaCreation = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+  };
+  const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [commit] = useMutation(administrativeAreaMutation);
@@ -144,30 +144,22 @@ const AdministrativeAreaCreation = ({
   };
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
-      >
+      <Fab onClick={handleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer
-        open={open}
+      <Drawer open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an area')}</Typography>
@@ -179,12 +171,12 @@ const AdministrativeAreaCreation = ({
               description: '',
               latitude: '',
               longitude: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={administrativeAreaValidation(t)}
+            validationSchema={administrativeAreaValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

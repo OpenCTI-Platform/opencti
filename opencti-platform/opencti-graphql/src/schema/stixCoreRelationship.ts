@@ -1,10 +1,22 @@
-import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, schemaTypes } from './general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from './general';
 import {
   RELATION_CREATED_BY,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
 } from './stixMetaRelationship';
+import {
+  AttributeDefinition,
+  confidence, created,
+  createdAt,
+  entityType,
+  IcreatedAtDay,
+  IcreatedAtMonth,
+  IcreatedAtYear,
+  internalId, lang, modified, relationshipType, revoked, specVersion,
+  standardId, updatedAt, xOpenctiStixIds
+} from './attribute-definition';
+import { schemaAttributesDefinition } from './schema-attributes';
 
 // region Standard STIX core
 export const RELATION_DELIVERS = 'delivers';
@@ -103,8 +115,9 @@ export const STIX_CORE_RELATIONSHIPS = [
   RELATION_SUBNARRATIVE_OF,
 ];
 
-schemaTypes.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type: string): boolean => [...STIX_CORE_RELATIONSHIPS, ABSTRACT_STIX_CORE_RELATIONSHIP].includes(type);
+schemaAttributesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
+export const isStixCoreRelationship = (type: string): boolean => schemaAttributesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP).includes(type)
+ || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 
 export const stixCoreRelationshipOptions = {
   StixCoreRelationshipsFilter: {
@@ -116,34 +129,34 @@ export const stixCoreRelationshipOptions = {
   },
   StixCoreRelationshipsOrdering: {}
 };
-export const stixCoreRelationshipsAttributes = [
-  'internal_id',
-  'standard_id',
-  'entity_type',
-  'created_at',
-  'i_created_at_day',
-  'i_created_at_month',
-  'i_created_at_year',
-  'updated_at',
-  'x_opencti_stix_ids',
-  'spec_version',
-  'revoked',
-  'confidence',
-  'lang',
-  'created',
-  'modified',
-  'relationship_type',
-  'description',
-  'start_time',
-  'i_start_time_day',
-  'i_start_time_month',
-  'i_start_time_year',
-  'stop_time',
-  'i_stop_time_day',
-  'i_stop_time_month',
-  'i_stop_time_year',
-  'i_inference_weight',
-  'x_opencti_workflow_id',
+export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
+  internalId,
+  standardId,
+  entityType,
+  createdAt,
+  IcreatedAtDay,
+  IcreatedAtMonth,
+  IcreatedAtYear, //  Not in add input
+  updatedAt,
+  xOpenctiStixIds,
+  specVersion,
+  revoked,
+  confidence,
+  lang,
+  created,
+  modified,
+  relationshipType,
+  { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'start_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_start_time_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'stop_time', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_stop_time_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'i_inference_weight', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
 ];
-schemaTypes.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
-STIX_CORE_RELATIONSHIPS.map((type) => schemaTypes.registerAttributes(type, stixCoreRelationshipsAttributes));
+schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_CORE_RELATIONSHIP, stixCoreRelationshipsAttributes);
+STIX_CORE_RELATIONSHIPS.map((type) => schemaAttributesDefinition.registerAttributes(type, stixCoreRelationshipsAttributes));

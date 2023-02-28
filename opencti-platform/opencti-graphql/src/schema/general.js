@@ -1,6 +1,9 @@
 import * as R from 'ramda';
 
 // General
+export const STIX_TYPE_RELATION = 'relationship';
+export const STIX_TYPE_SIGHTING = 'sighting';
+
 export const KNOWLEDGE_ORGANIZATION_RESTRICT = 'KNORGARESTRICT';
 export const KNOWLEDGE_DELETE = 'KNDELETE';
 export const KNOWLEDGE_UPDATE = 'KNUPDATE';
@@ -25,17 +28,6 @@ export const INPUT_ASSIGNEE = 'objectAssignee'; // object_assignee_refs (OCTI)
 export const INPUT_OBJECTS = 'objects'; // object_refs
 export const INPUT_DOMAIN_FROM = 'from'; // source_ref
 export const INPUT_DOMAIN_TO = 'to'; // target_ref
-
-export const MULTIPLE_META_RELATIONSHIPS_INPUTS = [
-  INPUT_MARKINGS,
-  INPUT_LABELS,
-  INPUT_EXTERNAL_REFS,
-  INPUT_KILLCHAIN,
-  INPUT_OBJECTS,
-  INPUT_GRANTED_REFS,
-  INPUT_ASSIGNEE,
-];
-export const STIX_META_RELATIONSHIPS_INPUTS = [INPUT_CREATED_BY, ...MULTIPLE_META_RELATIONSHIPS_INPUTS];
 
 // Specific prefix
 export const REL_INDEX_PREFIX = 'rel_';
@@ -79,8 +71,6 @@ export const ENTITY_TYPE_CONTAINER = 'Container';
 export const ENTITY_TYPE_IDENTITY = 'Identity';
 export const ENTITY_TYPE_LOCATION = 'Location';
 
-export const DEPS_KEYS = 'depsKeys';
-
 // Abstract
 export const ABSTRACT_TYPES = [
   ABSTRACT_BASIC_OBJECT,
@@ -102,39 +92,4 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
 ];
 export const isAbstract = (type) => R.includes(type, ABSTRACT_TYPES);
-export const schemaTypes = {
-  types: {},
-  attributes: {},
-  upsertAttributes: {},
-  relationshipsMapping: {},
-  // eslint-disable-next-line object-shorthand,func-names
-  register: function (type, children) {
-    this.types[type] = children;
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  add: function (type, children) {
-    const values = Array.isArray(children) ? children : [children];
-    this.types[type] = [...(this.get(type)), ...values];
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  get: function (type) {
-    return this.types[type] ?? [];
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  registerUpsertAttributes: function (type, children) {
-    this.upsertAttributes[type] = children;
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  getUpsertAttributes: function (type) {
-    return this.upsertAttributes[type] ?? [];
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  registerAttributes: function (type, children) {
-    this.attributes[type] = children;
-  },
-  // eslint-disable-next-line object-shorthand,func-names
-  getAttributes: function (type) {
-    return this.attributes[type] ?? [];
-  },
-};
 // region utils

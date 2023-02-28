@@ -95,6 +95,7 @@ const locationMutation = graphql`
 
 const locationValidation = (t) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
+  description: Yup.string().nullable(),
   type: Yup.string().required(t('This field is required')),
 });
 

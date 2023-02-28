@@ -3,7 +3,7 @@ import { graphql, useFragment, useMutation } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
+import { isNone, useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -59,12 +59,8 @@ const incidentEditionDetailsFragment = graphql`
   `;
 
 const incidentEditionDetailsValidation = (t: (v: string) => string) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   objective: Yup.string().nullable(),
   source: Yup.string().nullable(),
 });
@@ -120,7 +116,7 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
       variables: {
         id: incident.id,
         input: inputValues,
-        commitMessage: commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -148,24 +144,25 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
   };
 
   const initialValues = {
-    first_seen: incident.first_seen,
-    last_seen: incident.last_seen,
+    first_seen: !isNone(incident.first_seen) ? incident.first_seen : null,
+    last_seen: !isNone(incident.last_seen) ? incident.last_seen : null,
     source: incident.source,
     objective: incident.objective,
+    references: [],
   };
 
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={incidentEditionDetailsValidation(t)}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -209,9 +206,7 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="source" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="source" />}
             />
             <Field
               component={TextField}
@@ -224,14 +219,12 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
               style={{ marginTop: 20 }}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="objective" />
-              }
+              helperText={<SubscriptionFocus context={context} fieldName="objective" />}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 values={values.references}
                 id={incident.id}

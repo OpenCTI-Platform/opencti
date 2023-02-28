@@ -22,9 +22,6 @@ import {
   ENTITY_TYPE_THREAT_ACTOR,
   ENTITY_TYPE_TOOL,
   ENTITY_TYPE_VULNERABILITY,
-  isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
 import {
   ENTITY_AUTONOMOUS_SYSTEM,
@@ -118,8 +115,7 @@ import {
   RELATION_SRC,
   RELATION_SRC_PAYLOAD,
   RELATION_TO,
-  RELATION_VALUES,
-  STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD,
+  RELATION_VALUES
 } from '../schema/stixCyberObservableRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { ENTITY_TYPE_EVENT } from '../modules/event/event-types';
@@ -127,26 +123,11 @@ import { ENTITY_TYPE_NARRATIVE } from '../modules/narrative/narrative-types';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
 import type { StoreRelation } from '../types/store';
 import { logApp } from '../config/conf';
-import {
-  isStixMetaRelationship,
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixMetaRelationship';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION
-} from '../schema/stixMetaObject';
+import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isInternalRelationship } from '../schema/internalRelationship';
-import { ENTITY_TYPE_USER } from '../schema/internalObject';
+import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { ENTITY_TYPE_CHANNEL } from '../modules/channel/channel-types';
+import { FunctionalError, UnknownError } from '../config/errors';
 
 const MAX_TRANSIENT_STIX_IDS = 200;
 export const STIX_SPEC_VERSION = '2.1';
@@ -179,8 +160,6 @@ type RelationType = 'builtin' | 'new' | 'extended';
 export const REL_BUILT_IN: RelationType = 'builtin';
 export const REL_NEW: RelationType = 'new';
 export const REL_EXTENDED: RelationType = 'extended';
-export const STIX_TYPE_RELATION = 'relationship';
-export const STIX_TYPE_SIGHTING = 'sighting';
 export type RelationDefinition = { name: string; type: RelationType };
 type RelationshipMappings = { [k: `${string}_${string}`]: Array<RelationDefinition>; };
 
@@ -1278,7 +1257,7 @@ export const stixCyberObservableFieldsForType = (type: string) => {
     const [fromTo, fields] = entries[index];
     const [fromType] = fromTo.split('_');
     const inputFields = fields.map((f) => f.name)
-      .map((f) => STIX_CYBER_OBSERVABLE_RELATION_TO_FIELD[f]);
+      .map((f) => schemaRelationsRefDefinition.databaseNameToInputName[f]);
     if (typeFields[fromType]) {
       typeFields[fromType].push(...inputFields);
     } else {
@@ -1297,22 +1276,22 @@ export const checkStixCyberObservableRelationshipMapping = (fromType: string, to
   return R.includes(relationshipType, targetRelations);
 };
 
-export const CHECK_META_RELATIONSHIP_VALUES: { [k: string]: (fromType: string, toType: string) => boolean } = {
-  [RELATION_GRANTED_TO]: (fromType, toType) => !(fromType === ENTITY_TYPE_EVENT || isStixDomainObjectIdentity(fromType)
-    || isStixDomainObjectLocation(fromType)) && ENTITY_TYPE_IDENTITY_ORGANIZATION === toType,
-  [RELATION_CREATED_BY]: (fromType, toType) => isStixDomainObjectIdentity(toType),
-  [RELATION_OBJECT_ASSIGNEE]: (fromType, toType) => ENTITY_TYPE_USER === toType,
-  [RELATION_OBJECT_MARKING]: (fromType, toType) => ENTITY_TYPE_MARKING_DEFINITION === toType,
-  [RELATION_OBJECT]: (fromType,) => isStixDomainObjectContainer(fromType),
-  [RELATION_OBJECT_LABEL]: (fromType, toType) => toType === ENTITY_TYPE_LABEL,
-  [RELATION_EXTERNAL_REFERENCE]: (fromType, toType) => toType === ENTITY_TYPE_EXTERNAL_REFERENCE,
-  [RELATION_KILL_CHAIN_PHASE]: (fromType, toType) => toType === ENTITY_TYPE_KILL_CHAIN_PHASE
-};
-
-export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string): boolean => {
-  const checkMetaRelationshipFn = CHECK_META_RELATIONSHIP_VALUES[relationshipType];
-  if (checkMetaRelationshipFn) {
-    return checkMetaRelationshipFn(fromType, toType);
+export const checkMetaRelationship = (fromType: string, toType: string, relationshipType: string) => {
+  const relationRefs = schemaRelationsRefDefinition.getRelationsRef(fromType).filter((rel) => rel.databaseName === relationshipType);
+  if (relationRefs.length === 0) {
+    throw FunctionalError(
+      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+    );
   }
-  return false;
+  if (relationRefs.length > 1) {
+    throw UnknownError(`Invalid schema from ${fromType} to ${toType} on ${relationshipType}`, { data: relationRefs });
+  }
+
+  // TODO: after migration checker will be mandatory
+  const checkMetaRelationshipFn = relationRefs[0].checker;
+  if (checkMetaRelationshipFn && !checkMetaRelationshipFn(fromType, toType)) {
+    throw FunctionalError(
+      `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
+    );
+  }
 };

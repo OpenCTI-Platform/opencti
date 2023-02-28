@@ -1,11 +1,15 @@
 import vocabularyTypeDefs from './vocabulary.graphql';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
-import { ENTITY_TYPE_VOCABULARY, StixVocabulary, StoreEntityVocabulary, vocabularyDefinitions } from './vocabulary-types';
+import {
+  ENTITY_TYPE_VOCABULARY,
+  StixVocabulary,
+  StoreEntityVocabulary,
+  vocabularyDefinitions
+} from './vocabulary-types';
 import vocabularyResolvers from './vocabulary-resolver';
 import convertVocabularyToStix from './vocabulary-converter';
 import { ABSTRACT_STIX_META_OBJECT } from '../../schema/general';
+import { ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const generateInputDependencyKeys = () => {
   return Object.values(vocabularyDefinitions)
@@ -34,9 +38,9 @@ const VOCABULARY_DEFINITION: ModuleDefinition<StoreEntityVocabulary, StixVocabul
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'category', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'category', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   ],
   relations: [],
   depsKeys: generateInputDependencyKeys(),

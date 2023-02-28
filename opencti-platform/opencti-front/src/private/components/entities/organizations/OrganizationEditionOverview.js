@@ -8,7 +8,6 @@ import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import { commitMutation } from '../../../../relay/environment';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -16,6 +15,8 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -79,34 +80,28 @@ const organizationMutationRelationDelete = graphql`
   }
 `;
 
-const organizationValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  contact_information: Yup.string().nullable(),
-  x_opencti_organization_type: Yup.string().required(
-    t('This field is required'),
-  ),
-  x_opencti_reliability: Yup.string().required(t('This field is required')),
-  references: Yup.array().required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 const OrganizationEditionOverviewComponent = (props) => {
   const { organization, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
 
-  const handleChangeFocus = (name) => commitMutation({
-    mutation: organizationEditionOverviewFocus,
-    variables: {
-      id: organization.id,
-      input: {
-        focusOn: name,
-      },
-    },
-  });
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    contact_information: Yup.string().nullable(),
+    x_opencti_organization_type: Yup.string().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const organizationValidator = useYupSchemaBuilder('Organization', basicShape);
+
+  const queries = {
+    fieldPatch: organizationMutationFieldPatch,
+    relationAdd: organizationMutationRelationAdd,
+    relationDelete: organizationMutationRelationDelete,
+    editionFocus: organizationEditionOverviewFocus,
+  };
+  const editor = useFormEditor(organization, enableReferences, queries, organizationValidator);
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -120,8 +115,7 @@ const OrganizationEditionOverviewComponent = (props) => {
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
-    commitMutation({
-      mutation: organizationMutationFieldPatch,
+    editor.fieldPatch({
       variables: {
         id: organization.id,
         input: inputValues,
@@ -129,7 +123,6 @@ const OrganizationEditionOverviewComponent = (props) => {
           commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -143,11 +136,10 @@ const OrganizationEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      organizationValidation(t)
+      organizationValidator
         .validateAt(name, { [name]: value })
         .then(() => {
-          commitMutation({
-            mutation: organizationMutationFieldPatch,
+          editor.fieldPatch({
             variables: {
               id: organization.id,
               input: {
@@ -161,61 +153,10 @@ const OrganizationEditionOverviewComponent = (props) => {
     }
   };
 
-  const handleChangeCreatedBy = (name, value) => {
-    if (!enableReferences) {
-      commitMutation({
-        mutation: organizationMutationFieldPatch,
-        variables: {
-          id: organization.id,
-          input: { key: 'createdBy', value: value.value || '' },
-        },
-      });
-    }
-  };
-
-  const handleChangeObjectMarking = (name, values) => {
-    if (!enableReferences) {
-      const currentMarkingDefinitions = R.pipe(
-        R.pathOr([], ['objectMarking', 'edges']),
-        R.map((n) => ({
-          label: n.node.definition,
-          value: n.node.id,
-        })),
-      )(organization);
-      const added = R.difference(values, currentMarkingDefinitions);
-      const removed = R.difference(currentMarkingDefinitions, values);
-      if (added.length > 0) {
-        commitMutation({
-          mutation: organizationMutationRelationAdd,
-          variables: {
-            id: organization.id,
-            input: {
-              toId: R.head(added).value,
-              relationship_type: 'object-marking',
-            },
-          },
-        });
-      }
-      if (removed.length > 0) {
-        commitMutation({
-          mutation: organizationMutationRelationDelete,
-          variables: {
-            id: organization.id,
-            toId: R.head(removed).value,
-            relationship_type: 'object-marking',
-          },
-        });
-      }
-    }
-  };
-
-  const createdBy = convertCreatedBy(organization);
-  const objectMarking = convertMarkings(organization);
-  const status = convertStatus(t, organization);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(organization)),
+    R.assoc('objectMarking', convertMarkings(organization)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, organization)),
     R.pick([
       'name',
       'description',
@@ -231,7 +172,7 @@ const OrganizationEditionOverviewComponent = (props) => {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={organizationValidation(t)}
+        validationSchema={organizationValidator}
         onSubmit={onSubmit}
       >
         {({
@@ -239,6 +180,8 @@ const OrganizationEditionOverviewComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -247,7 +190,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               name="name"
               label={t('Name')}
               fullWidth={true}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="name" />
@@ -261,7 +204,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
                 <SubscriptionFocus context={context} fieldName="description" />
@@ -276,20 +219,17 @@ const OrganizationEditionOverviewComponent = (props) => {
               multiline={true}
               rows="4"
               style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="contact_information"
-                />
+                <SubscriptionFocus context={context} fieldName="contact_information" />
               }
             />
             <Field
               component={SelectField}
               variant="standard"
               name="x_opencti_organization_type"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Organization type')}
               fullWidth={true}
@@ -299,10 +239,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_organization_type"
-                />
+                <SubscriptionFocus context={context} fieldName="x_opencti_organization_type" />
               }
             >
               <MenuItem value="constituent">{t('Constituent')}</MenuItem>
@@ -315,7 +252,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               component={SelectField}
               variant="standard"
               name="x_opencti_reliability"
-              onFocus={handleChangeFocus}
+              onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               label={t('Reliability')}
               fullWidth={true}
@@ -325,10 +262,7 @@ const OrganizationEditionOverviewComponent = (props) => {
               }}
               containerstyle={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_opencti_reliability"
-                />
+                <SubscriptionFocus context={context} fieldName="x_opencti_reliability" />
               }
             >
               <MenuItem value="A">{t('reliability_A')}</MenuItem>
@@ -342,15 +276,12 @@ const OrganizationEditionOverviewComponent = (props) => {
               <StatusField
                 name="x_opencti_workflow_id"
                 type="Organization"
-                onFocus={handleChangeFocus}
+                onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus
-                    context={context}
-                    fieldName="x_opencti_workflow_id"
-                  />
+                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
                 }
               />
             )}
@@ -361,23 +292,20 @@ const OrganizationEditionOverviewComponent = (props) => {
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
               }
-              onChange={handleChangeCreatedBy}
+              onChange={editor.changeCreated}
             />
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus
-                  context={context}
-                  fieldname="objectMarking"
-                />
+                <SubscriptionFocus context={context} fieldname="objectMarking" />
               }
-              onChange={handleChangeObjectMarking}
+              onChange={editor.changeMarking}
             />
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}
                 open={false}
                 values={values.references}

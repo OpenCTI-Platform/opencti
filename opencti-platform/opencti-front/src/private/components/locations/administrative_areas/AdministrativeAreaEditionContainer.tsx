@@ -10,6 +10,7 @@ import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { AdministrativeAreaEditionContainerQuery } from './__generated__/AdministrativeAreaEditionContainerQuery.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -88,6 +89,7 @@ const AdministrativeAreaEditionContainer: FunctionComponent<AdministrativeAreaEd
                     administrativeAreaRef={queryData.administrativeArea}
                     context={queryData.administrativeArea.editContext}
                     handleClose={handleClose}
+                    enableReferences={useIsEnforceReference('Administrative-Area')}
                 />
             </div>
         </div>

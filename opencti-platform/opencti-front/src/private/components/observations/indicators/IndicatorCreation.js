@@ -29,6 +29,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -85,28 +86,6 @@ const indicatorMutation = graphql`
   }
 `;
 
-const indicatorValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  indicator_types: Yup.array(),
-  confidence: Yup.number(),
-  description: Yup.string().nullable(),
-  x_opencti_score: Yup.number().nullable(),
-  pattern: Yup.string().required(t('This field is required')),
-  pattern_type: Yup.string().required(t('This field is required')),
-  valid_from: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  valid_until: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  x_opencti_main_observable_type: Yup.string().required(
-    t('This field is required'),
-  ),
-  x_opencti_detection: Yup.boolean(),
-  createObservables: Yup.boolean(),
-  x_mitre_platforms: Yup.array(),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -121,6 +100,24 @@ const IndicatorCreation = ({ paginationOptions }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    indicator_types: Yup.array(),
+    confidence: Yup.number(),
+    pattern: Yup.string().required(t('This field is required')),
+    pattern_type: Yup.string().required(t('This field is required')),
+    x_opencti_main_observable_type: Yup.string().required(t('This field is required')),
+    valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    x_mitre_platforms: Yup.array(),
+    x_opencti_score: Yup.number().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_detection: Yup.boolean(),
+    createObservables: Yup.boolean(),
+  };
+  const indicatorValidator = useYupSchemaBuilder('Indicator', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
@@ -198,12 +195,12 @@ const IndicatorCreation = ({ paginationOptions }) => {
               indicator_types: [],
               pattern: '',
               pattern_type: '',
-              x_opencti_main_observable_type: '',
+              x_opencti_main_observable_type: undefined,
               x_mitre_platforms: [],
               valid_from: null,
               valid_until: null,
               description: '',
-              createdBy: '',
+              createdBy: undefined,
               objectMarking: [],
               killChainPhases: [],
               objectLabel: [],
@@ -211,7 +208,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
               x_opencti_detection: false,
               x_opencti_score: 50,
             }}
-            validationSchema={indicatorValidation(t)}
+            validationSchema={indicatorValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

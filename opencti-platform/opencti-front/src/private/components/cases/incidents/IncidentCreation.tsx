@@ -26,6 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -78,10 +79,6 @@ const incidentMutation = graphql`
   }
 `;
 
-const caseValidation = () => Yup.object().shape({
-  description: Yup.string().nullable(),
-});
-
 interface FormikCaseAddInput {
   name: string
   confidence: number
@@ -104,6 +101,13 @@ const IncidentCreation = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  };
+  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const [commit] = useMutation(incidentMutation);
@@ -190,7 +194,7 @@ const IncidentCreation = ({
               externalReferences: [],
               file: undefined,
             }}
-            validationSchema={caseValidation()}
+            validationSchema={caseValidator}
             onSubmit={onSubmit}
             onReset={handleClose}
           >

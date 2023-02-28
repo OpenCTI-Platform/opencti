@@ -30,7 +30,18 @@ const subTypesLinesFragment = graphql`
             platform_hidden_type
             target_type
           }
-          ...SubType_subType
+          statuses {
+            edges {
+              node {
+                id
+                order
+                template {
+                  name
+                  color
+                }
+              }
+            }
+          }
         }
       }
     }

@@ -8,9 +8,9 @@ import {
   StoreEntityNotification,
   StoreEntityTrigger
 } from './notification-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
+import type { ModuleDefinition } from '../../schema/module';
+import { registerDefinition } from '../../schema/module';
 
 // Outcomes
 // TODO
@@ -32,14 +32,14 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: false },
-    { name: 'description', type: 'string', multiple: false, upsert: false },
-    { name: 'event_types', type: 'string', multiple: true, upsert: false },
-    { name: 'outcomes', type: 'string', multiple: true, upsert: false },
-    { name: 'filters', type: 'string', multiple: false, upsert: false },
-    { name: 'trigger_ids', type: 'string', multiple: true, upsert: false },
-    { name: 'period', type: 'string', multiple: false, upsert: false },
-    { name: 'trigger_time', type: 'string', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'event_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'outcomes', type: 'string', mandatoryType: 'internal', multiple: true, upsert: false },
+    { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'trigger_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'period', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'trigger_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixTrigger) => {
@@ -66,9 +66,10 @@ const NOTIFICATION_DEFINITION: ModuleDefinition<StoreEntityNotification, StixNot
     },
   },
   attributes: [
-    { name: 'notification_type', type: 'string', multiple: false, upsert: false },
-    { name: 'content', type: 'dictionary', multiple: true, upsert: false },
-    { name: 'is_read', type: 'boolean', multiple: false, upsert: true },
+    { name: 'notification_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    // TODO: modify content to content_notification
+    // { name: 'content', type: 'dictionary', mandatoryType: 'internal', multiple: true, upsert: false },
+    { name: 'is_read', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: true },
   ],
   relations: [],
   representative: (stix: StixNotification) => {

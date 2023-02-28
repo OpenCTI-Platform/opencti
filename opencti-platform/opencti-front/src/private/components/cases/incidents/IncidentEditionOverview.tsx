@@ -24,6 +24,9 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import CommitMessage from '../../common/form/CommitMessage';
+import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 
 export const incidentMutationFieldPatch = graphql`
   mutation IncidentEditionOverviewCaseFieldPatchMutation(
@@ -139,19 +142,6 @@ const incidentMutationRelationDelete = graphql`
   }
 `;
 
-const caseValidation = (t: (v: string) => string) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  severity: Yup.string().nullable(),
-  priority: Yup.string().nullable(),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-  x_opencti_workflow_id: Yup.object(),
-  rating: Yup.number(),
-  confidence: Yup.number(),
-});
-
 interface IncidentEditionOverviewProps {
   caseRef: IncidentEditionOverview_case$key;
   context:
@@ -165,9 +155,12 @@ interface IncidentEditionOverviewProps {
 }
 
 interface CaseEditionFormValues {
-  x_opencti_workflow_id:
-  | string
-  | { label: string; color: string; value: string; order: string };
+  message?: string
+  createdBy?: Option
+  objectMarking?: Option[]
+  objectAssignee?: Option[]
+  x_opencti_workflow_id: Option
+  references: ExternalReferencesValues | undefined
 }
 
 const CaseEditionOverviewComponent: FunctionComponent<
@@ -175,27 +168,44 @@ IncidentEditionOverviewProps
 > = ({ caseRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const caseData = useFragment(incidentEditionOverviewFragment, caseRef);
-  const createdBy = convertCreatedBy(caseData);
-  const objectMarking = convertMarkings(caseData);
-  const objectAssignee = convertAssignees(caseData);
-  const status = convertStatus(t, caseData);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    severity: Yup.string().nullable(),
+    priority: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    x_opencti_workflow_id: Yup.object(),
+    rating: Yup.number(),
+    confidence: Yup.number(),
+  };
+  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
     relationAdd: incidentMutationRelationAdd,
     relationDelete: incidentMutationRelationDelete,
     editionFocus: incidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries);
+  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
 
-  const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (
-    values,
-    { setSubmitting },
-  ) => {
+  const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, references, ...otherValues } = values;
+    const commitMessage = message ?? '';
+    const commitReferences = (references ?? []).map(({ value }) => value);
     const inputValues = Object.entries({
-      x_opencti_workflow_id: values.x_opencti_workflow_id,
+      ...otherValues,
+      createdBy: values.createdBy?.value,
+      x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
+      objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
+      objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
-      variables: { id: caseData.id, input: inputValues },
+      variables: {
+        id: caseData.id,
+        input: inputValues,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        references: commitReferences,
+      },
       onCompleted: () => {
         setSubmitting(false);
         handleClose();
@@ -203,16 +213,13 @@ IncidentEditionOverviewProps
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: Option | string | string[] | null,
-  ) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      caseValidation(t)
+      caseValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -228,22 +235,27 @@ IncidentEditionOverviewProps
   const initialValues = {
     name: caseData.name,
     description: caseData.description,
-    severity: caseData.severity,
     priority: caseData.priority,
+    severity: caseData.severity,
     confidence: caseData.confidence,
-    createdBy,
-    objectMarking,
-    objectAssignee,
-    x_opencti_workflow_id: status,
+    createdBy: convertCreatedBy(caseData),
+    objectMarking: convertMarkings(caseData),
+    objectAssignee: convertAssignees(caseData),
+    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
+    references: [],
   };
   return (
-    <Formik
-      enableReinitialize={true}
-      initialValues={initialValues as never}
-      validationSchema={caseValidation(t)}
-      onSubmit={onSubmit}
-    >
-      {({ setFieldValue }) => (
+    <Formik enableReinitialize={true} initialValues={initialValues as never}
+      validationSchema={caseValidator}
+      onSubmit={onSubmit}>
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -344,6 +356,16 @@ IncidentEditionOverviewProps
             }
             onChange={editor.changeMarking}
           />
+          {enableReferences && (
+              <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting || !isValid || !dirty}
+                  setFieldValue={setFieldValue}
+                  open={false}
+                  values={values.references}
+                  id={caseData.id}
+              />
+          )}
         </Form>
       )}
     </Formik>

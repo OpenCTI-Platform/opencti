@@ -83,7 +83,7 @@ class ObjectMarkingField extends Component {
         disabled={disabled}
         textfieldprops={{
           variant: 'standard',
-          label: t('Marking'),
+          label: t('Markings'),
           helperText: helpertext,
           onFocus: this.searchMarkingDefinitions.bind(this),
         }}

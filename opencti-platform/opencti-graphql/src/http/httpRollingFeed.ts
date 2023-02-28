@@ -11,7 +11,7 @@ import { listThings } from '../database/middleware';
 import { minutesAgo } from '../utils/format';
 import { isNotEmptyField } from '../database/utils';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
-import { isDictionaryAttribute, isMultipleAttribute } from '../schema/fieldDataAdapter';
+import { isDictionaryAttribute, isMultipleAttribute } from '../schema/schema-attributes';
 
 const errorConverter = (e: any) => {
   const details = R.pipe(R.dissoc('reason'), R.dissoc('http_status'))(e.data);

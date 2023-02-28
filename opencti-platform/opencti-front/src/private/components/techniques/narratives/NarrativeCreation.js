@@ -23,6 +23,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -93,14 +94,6 @@ const narrativeMutation = graphql`
   }
 `;
 
-const narrativeValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  description: Yup.string()
-    .min(3, t('The value is too short'))
-    .max(5000, t('The value is too long'))
-    .required(t('This field is required')),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -115,6 +108,12 @@ const NarrativeCreation = ({ paginationOptions, contextual, display }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+  };
+  const narrativeValidator = useYupSchemaBuilder('Narrative', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -240,7 +239,7 @@ const NarrativeCreation = ({ paginationOptions, contextual, display }) => {
                 objectLabel: [],
                 externalReferences: [],
               }}
-              validationSchema={narrativeValidation(t)}
+              validationSchema={narrativeValidator}
               onSubmit={onSubmit}
               onReset={onReset}
             >
@@ -306,7 +305,7 @@ const NarrativeCreation = ({ paginationOptions, contextual, display }) => {
               objectLabel: [],
               externalReferences: [],
             }}
-            validationSchema={narrativeValidation(t)}
+            validationSchema={narrativeValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >

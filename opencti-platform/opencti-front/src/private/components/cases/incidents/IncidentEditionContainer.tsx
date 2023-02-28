@@ -10,6 +10,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import CaseEditionOverview from './IncidentEditionOverview';
 import { IncidentEditionContainerCaseQuery } from './__generated__/IncidentEditionContainerCaseQuery.graphql';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -88,6 +89,7 @@ CaseEditionContainerProps
         <CaseEditionOverview
           caseRef={queryData.case}
           context={queryData.case.editContext}
+          enableReferences={useIsEnforceReference('Case')}
           handleClose={handleClose}
         />
       </div>

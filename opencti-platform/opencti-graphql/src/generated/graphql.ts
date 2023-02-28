@@ -221,7 +221,7 @@ export type AdministrativeAreaAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
@@ -1500,7 +1500,7 @@ export type CampaignAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   lang?: InputMaybe<Scalars['String']>;
@@ -2119,7 +2119,7 @@ export type ChannelAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -3233,7 +3233,7 @@ export type CourseOfActionAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -3933,7 +3933,7 @@ export type DataComponentAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   dataSource?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -4176,7 +4176,7 @@ export type DataSourceAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   dataComponents?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -5358,6 +5358,8 @@ export type EmailMimePartTypeAddInput = {
 
 export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
+  attributes_configuration?: Maybe<Scalars['String']>;
+  availableSettings: Array<Scalars['String']>;
   created_at: Scalars['DateTime'];
   enforce_reference?: Maybe<Scalars['Boolean']>;
   entity_type: Scalars['String'];
@@ -5580,8 +5582,8 @@ export type EventAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
-  event_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  description?: InputMaybe<Scalars['String']>;
+  event_types?: InputMaybe<Array<Scalars['String']>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -7552,7 +7554,7 @@ export type IncidentAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   incident_type?: InputMaybe<Scalars['String']>;
@@ -8172,7 +8174,7 @@ export type IndividualAddInput = {
   contact_information?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -8782,7 +8784,7 @@ export type IntrusionSetAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -9241,7 +9243,7 @@ export type LanguageAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -10042,7 +10044,7 @@ export type MalwareAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   implementation_languages?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -12391,12 +12393,12 @@ export type NarrativeAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
-  narrative_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  narrative_types?: InputMaybe<Array<Scalars['String']>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -13886,7 +13888,7 @@ export type OrganizationAddInput = {
   contact_information?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -18116,7 +18118,7 @@ export type SectorAddInput = {
   contact_information?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -20730,9 +20732,18 @@ export type SubType = {
   __typename?: 'SubType';
   id: Scalars['ID'];
   label: Scalars['String'];
+  mandatoryAttributes: Array<SubTypeAttribute>;
   settings?: Maybe<EntitySetting>;
   statuses?: Maybe<StatusConnection>;
   workflowEnabled?: Maybe<Scalars['Boolean']>;
+};
+
+export type SubTypeAttribute = {
+  __typename?: 'SubTypeAttribute';
+  builtIn: Scalars['Boolean'];
+  label?: Maybe<Scalars['String']>;
+  mandatory: Scalars['Boolean'];
+  name: Scalars['String'];
 };
 
 export type SubTypeConnection = {
@@ -21128,7 +21139,7 @@ export type SystemAddInput = {
   contact_information?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -21760,7 +21771,7 @@ export type ThreatActorAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -22052,7 +22063,7 @@ export type ToolAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -23346,7 +23357,7 @@ export type VulnerabilityAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
-  description: Scalars['String'];
+  description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -24934,6 +24945,7 @@ export type ResolversTypes = ResolversObject<{
   StreamCollectionOrdering: StreamCollectionOrdering;
   String: ResolverTypeWrapper<Scalars['String']>;
   SubType: ResolverTypeWrapper<Omit<SubType, 'settings'> & { settings?: Maybe<ResolversTypes['EntitySetting']> }>;
+  SubTypeAttribute: ResolverTypeWrapper<SubTypeAttribute>;
   SubTypeConnection: ResolverTypeWrapper<Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversTypes['SubTypeEdge']> }>;
   SubTypeEdge: ResolverTypeWrapper<Omit<SubTypeEdge, 'node'> & { node: ResolversTypes['SubType'] }>;
   SubTypeEditMutations: ResolverTypeWrapper<Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversTypes['SubType']>, statusDelete?: Maybe<ResolversTypes['SubType']>, statusFieldPatch?: Maybe<ResolversTypes['SubType']> }>;
@@ -25525,6 +25537,7 @@ export type ResolversParentTypes = ResolversObject<{
   StreamCollectionFiltering: StreamCollectionFiltering;
   String: Scalars['String'];
   SubType: Omit<SubType, 'settings'> & { settings?: Maybe<ResolversParentTypes['EntitySetting']> };
+  SubTypeAttribute: SubTypeAttribute;
   SubTypeConnection: Omit<SubTypeConnection, 'edges'> & { edges: Array<ResolversParentTypes['SubTypeEdge']> };
   SubTypeEdge: Omit<SubTypeEdge, 'node'> & { node: ResolversParentTypes['SubType'] };
   SubTypeEditMutations: Omit<SubTypeEditMutations, 'statusAdd' | 'statusDelete' | 'statusFieldPatch'> & { statusAdd?: Maybe<ResolversParentTypes['SubType']>, statusDelete?: Maybe<ResolversParentTypes['SubType']>, statusFieldPatch?: Maybe<ResolversParentTypes['SubType']> };
@@ -27118,6 +27131,8 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
+  attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31060,9 +31075,18 @@ export type StreamCollectionEditMutationsResolvers<ContextType = any, ParentType
 export type SubTypeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubType'] = ResolversParentTypes['SubType']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   label?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mandatoryAttributes?: Resolver<Array<ResolversTypes['SubTypeAttribute']>, ParentType, ContextType>;
   settings?: Resolver<Maybe<ResolversTypes['EntitySetting']>, ParentType, ContextType>;
   statuses?: Resolver<Maybe<ResolversTypes['StatusConnection']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type SubTypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeAttribute'] = ResolversParentTypes['SubTypeAttribute']> = ResolversObject<{
+  builtIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -32427,6 +32451,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StreamCollectionEdge?: StreamCollectionEdgeResolvers<ContextType>;
   StreamCollectionEditMutations?: StreamCollectionEditMutationsResolvers<ContextType>;
   SubType?: SubTypeResolvers<ContextType>;
+  SubTypeAttribute?: SubTypeAttributeResolvers<ContextType>;
   SubTypeConnection?: SubTypeConnectionResolvers<ContextType>;
   SubTypeEdge?: SubTypeEdgeResolvers<ContextType>;
   SubTypeEditMutations?: SubTypeEditMutationsResolvers<ContextType>;

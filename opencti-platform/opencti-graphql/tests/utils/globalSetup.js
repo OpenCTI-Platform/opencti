@@ -1,3 +1,6 @@
+// region static graphql modules, need to be imported before everything
+import '../../src/modules/index';
+// endregion
 import { platformStart, platformStop } from '../../src/boot';
 import { deleteBucket } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';

@@ -27,7 +27,7 @@ import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
-import { stixDomainObjectOptions } from '../schema/stixDomainObject';
+import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
 

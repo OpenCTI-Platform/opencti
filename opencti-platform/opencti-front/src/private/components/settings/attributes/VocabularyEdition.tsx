@@ -59,7 +59,7 @@ const vocabularyMutationUpdate = graphql`
 
 const attributeValidation = (t: (s: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
-  description: Yup.string(),
+  description: Yup.string().nullable(),
 });
 
 interface VocabularyEditionFormikValues {

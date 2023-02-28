@@ -61,7 +61,7 @@ const threatActorValidation = (t) => Yup.object().shape({
   secondary_motivations: Yup.array().nullable(),
   personal_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
 });
 
 const ThreatActorEditionDetailsComponent = (props) => {
@@ -183,6 +183,8 @@ const ThreatActorEditionDetailsComponent = (props) => {
             isSubmitting,
             setFieldValue,
             values,
+            isValid,
+            dirty,
           }) => (
             <div>
               <Form style={{ margin: '20px 0 20px 0' }}>
@@ -311,7 +313,7 @@ const ThreatActorEditionDetailsComponent = (props) => {
                 {enableReferences && (
                   <CommitMessage
                     submitForm={submitForm}
-                    disabled={isSubmitting}
+                    disabled={isSubmitting || !isValid || !dirty}
                     setFieldValue={setFieldValue}
                     open={false}
                     values={values.references}

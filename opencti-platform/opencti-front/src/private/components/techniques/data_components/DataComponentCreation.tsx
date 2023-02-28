@@ -28,6 +28,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,17 +90,6 @@ const dataComponentMutation = graphql`
   }
 `;
 
-const dataComponentValidation = (t: (message: string) => string) => Yup.object()
-  .shape({
-    name: Yup.string()
-      .required(t('This field is required')),
-    description: Yup.string()
-      .min(3, t('The value is too short'))
-      .max(5000, t('The value is too long'))
-      .required(t('This field is required')),
-    confidence: Yup.number(),
-  });
-
 interface DataComponentAddInput {
   name: string,
   description: string,
@@ -124,6 +114,14 @@ const DataComponentCreation: FunctionComponent<{
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
+
+  const basicShape = {
+    name: Yup.string().required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number(),
+  };
+  const dataComponentValidator = useYupSchemaBuilder('Data-Component', basicShape);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -155,7 +153,7 @@ const DataComponentCreation: FunctionComponent<{
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map((v) => v.value),
-      confidence: () => parseInt(String(values.confidence), 10),
+      confidence: parseInt(String(values.confidence), 10),
     };
     commit({
       variables: {
@@ -282,7 +280,7 @@ const DataComponentCreation: FunctionComponent<{
         <div className={classes.container}>
           <Formik<DataComponentAddInput>
             initialValues={initialValues}
-            validationSchema={dataComponentValidation(t)}
+            validationSchema={dataComponentValidator}
             onSubmit={onSubmit}
             onReset={onReset}
           >
@@ -339,7 +337,7 @@ const DataComponentCreation: FunctionComponent<{
       >
         <Formik<DataComponentAddInput>
           initialValues={initialValues}
-          validationSchema={dataComponentValidation(t)}
+          validationSchema={dataComponentValidator}
           onSubmit={onSubmit}
           onReset={onReset}
         >

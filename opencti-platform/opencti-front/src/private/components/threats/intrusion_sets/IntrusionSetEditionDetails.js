@@ -48,17 +48,13 @@ const intrusionSetEditionDetailsFocus = graphql`
 `;
 
 const intrusionSetValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   resource_level: Yup.string().nullable(),
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),
   goals: Yup.string().nullable(),
-  references: Yup.array().required(t('This field is required')),
+  references: Yup.array(),
 });
 
 const IntrusionSetEditionDetailsComponent = (props) => {
@@ -81,31 +77,18 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc(
-        'first_seen',
-        values.first_seen ? parse(values.first_seen).format() : null,
-      ),
-      R.assoc(
-        'last_seen',
-        values.last_seen ? parse(values.last_seen).format() : null,
-      ),
-      R.assoc(
-        'goals',
-        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
-      ),
+      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
+      R.assoc('goals', values.goals && values.goals.length ? R.split('\n', values.goals) : []),
       R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
+      R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
     commitMutation({
       mutation: intrusionSetMutationFieldPatch,
       variables: {
         id: intrusionSet.id,
         input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -140,14 +123,11 @@ const IntrusionSetEditionDetailsComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('first_seen', buildDate(intrusionSet.first_seen)),
     R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
-    R.assoc(
-      'secondary_motivations',
-      intrusionSet.secondary_motivations
-        ? intrusionSet.secondary_motivations
-        : [],
-    ),
+    R.assoc('secondary_motivations', intrusionSet.secondary_motivations ? intrusionSet.secondary_motivations : []),
     R.assoc('goals', R.join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
+    R.assoc('references', []),
     R.pick([
+      'references',
       'first_seen',
       'last_seen',
       'resource_level',
@@ -168,6 +148,8 @@ const IntrusionSetEditionDetailsComponent = (props) => {
           isSubmitting,
           setFieldValue,
           values,
+          isValid,
+          dirty,
         }) => (
           <Form style={{ margin: '20px 0 20px 0' }}>
             <Field
@@ -253,7 +235,7 @@ const IntrusionSetEditionDetailsComponent = (props) => {
             {enableReferences && (
               <CommitMessage
                 submitForm={submitForm}
-                disabled={isSubmitting}
+                disabled={isSubmitting || !isValid || !dirty}
                 setFieldValue={setFieldValue}open={false}
                 values={values.references}
                 id={intrusionSet.id}

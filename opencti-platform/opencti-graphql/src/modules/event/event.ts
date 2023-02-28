@@ -3,8 +3,6 @@ import convertEventToStix from './event-converter';
 import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import channelResolvers from './event-resolver';
 import { ENTITY_TYPE_EVENT, StixEvent, StoreEntityEvent } from './event-types';
-import type { ModuleDefinition } from '../../types/module';
-import { registerDefinition } from '../../types/module';
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_LOCATION_CITY,
@@ -14,6 +12,7 @@ import {
 } from '../../schema/stixDomainObject';
 import { REL_EXTENDED } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
+import { ModuleDefinition, registerDefinition } from '../../schema/module';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
   type: {
@@ -37,12 +36,12 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     },
   },
   attributes: [
-    { name: 'name', type: 'string', multiple: false, upsert: true },
-    { name: 'description', type: 'string', multiple: false, upsert: true },
-    { name: 'event_types', type: 'string', multiple: true, upsert: true },
-    { name: 'start_time', type: 'date', multiple: false, upsert: true },
-    { name: 'stop_time', type: 'date', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', multiple: false, upsert: true },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
+    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'event_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Event types' },
+    { name: 'start_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Start date' },
+    { name: 'stop_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'End date' },
+    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     {
