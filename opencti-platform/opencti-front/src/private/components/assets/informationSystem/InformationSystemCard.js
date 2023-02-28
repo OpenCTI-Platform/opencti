@@ -15,8 +15,9 @@ import CardHeader from '@material-ui/core/CardHeader';
 import CardContent from '@material-ui/core/CardContent';
 import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
-import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 import RiskLevel from '../../common/form/RiskLevel';
+import InformationSystemPopover from './InformationSystemPopover';
+import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 
 const styles = (theme) => ({
   card: {
@@ -125,7 +126,7 @@ class InformationSystemCardComponent extends Component {
         >
           <CardContent className={classes.content}>
             <Grid item={true} className={classes.header}>
-              <div style={{ marginRight: 'auto', marginLeft: '12px' }}>
+              <div>
                 <Typography
                   variant="h3"
                   color="textSecondary"
@@ -135,18 +136,24 @@ class InformationSystemCardComponent extends Component {
                 </Typography>
                 <div className="clearfix" />
                 <Typography>
-                  {/* {t('KK-HWELL-011')} */}
                   {node.system_name && t(node.system_name)}
                 </Typography>
               </div>
-              <div>
+              <Grid
+                item={true}
+                onClick={(event) => event.preventDefault()}
+                style={{ display: 'flex' }}
+              >
+                <InformationSystemPopover
+                  nodeId={node?.id}
+                />
                 <Checkbox
                   color='primary'
                   onClick={onToggleEntity.bind(this, node)}
                   checked={selectAll || node.id in (selectedElements || {})}
                   disableRipple={true}
                 />
-              </div>
+              </Grid>
             </Grid>
             <Grid xs={12} container={true} >
               <Grid item={true} xs={7} className={classes.body}>

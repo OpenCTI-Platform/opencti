@@ -241,11 +241,11 @@ class InformationSystems extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'name_m',
-          'asset_type_or',
-          'created_start_date',
-          'created_end_date',
-          'vendor_name_or',
           'label_name',
+          'asset_type_or',
+          'created_end_date',
+          'top_risk_severity',
+          'created_start_date',
         ]}
       >
         <QueryRenderer
@@ -293,7 +293,7 @@ class InformationSystems extends Component {
       risks: {
         label: 'Risks',
         width: '6%',
-        isSortable: true,
+        isSortable: false,
       },
       severity: {
         label: 'Severity',
@@ -308,7 +308,7 @@ class InformationSystems extends Component {
       sensitivity_level: {
         label: 'Sensitivity Level',
         width: '8%',
-        isSortable: true,
+        isSortable: false,
       },
       privacy_sensitive: {
         label: 'Privacy Sensitive',
@@ -357,11 +357,11 @@ class InformationSystems extends Component {
         numberOfElements={numberOfElements}
         availableFilterKeys={[
           'name_m',
-          'asset_type_or',
-          'created_start_date',
-          'created_end_date',
-          'vendor_name_or',
           'label_name',
+          'asset_type_or',
+          'created_end_date',
+          'top_risk_severity',
+          'created_start_date',
         ]}
       >
         <QueryRenderer

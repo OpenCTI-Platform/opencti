@@ -7,6 +7,7 @@ import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemIcon from '@material-ui/core/ListItemIcon';
+import ListItemSecondaryAction from '@material-ui/core/ListItemSecondaryAction';
 import Checkbox from '@material-ui/core/Checkbox';
 import CheckIcon from '@material-ui/icons/Check';
 import ListItemText from '@material-ui/core/ListItemText';
@@ -14,6 +15,7 @@ import Skeleton from '@material-ui/lab/Skeleton';
 import inject18n from '../../../../components/i18n';
 import CyioCoreObjectLabels from '../../common/stix_core_objects/CyioCoreObjectLabels';
 import RiskLevel from '../../common/form/RiskLevel';
+import InformationSystemPopover from './InformationSystemPopover';
 
 const styles = (theme) => ({
   item: {
@@ -38,8 +40,7 @@ const styles = (theme) => ({
     textOverflow: 'ellipsis',
   },
   goIcon: {
-    position: 'absolute',
-    right: -10,
+    minWidth: '0px',
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -65,7 +66,7 @@ class InformationSystemLineComponent extends Component {
     } = this.props;
     return (
       <ListItem
-         classes={{ root: classes.item }}
+        classes={{ root: classes.item }}
         divider={true}
         button={true}
         component={Link}
@@ -120,8 +121,8 @@ class InformationSystemLineComponent extends Component {
                 style={{ width: dataColumns.sensitivity_level.width }}
               >
                 {node?.security_sensitivity_level && <RiskLevel
-                    risk={node?.security_sensitivity_level}
-                  />}
+                  risk={node?.security_sensitivity_level}
+                />}
               </div>
               <div
                 className={classes.bodyItem}
@@ -154,6 +155,11 @@ class InformationSystemLineComponent extends Component {
             </div>
           }
         />
+        <ListItemSecondaryAction classes={{ root: classes.goIcon }}>
+          <InformationSystemPopover
+            nodeId={node?.id}
+          />
+        </ListItemSecondaryAction>
       </ListItem>
     );
   }
