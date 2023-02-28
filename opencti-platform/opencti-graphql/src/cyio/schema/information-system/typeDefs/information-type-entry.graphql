@@ -3,7 +3,7 @@ extend type Query {
   # ---- Information Type Entry
   informationTypeEntry(id: ID!): InformationTypeEntry @hasPermission(resources:"Asset:view")
   informationTypeEntries(
-    catalogId: ID!,
+    catalogId: ID!
     first: Int
     offset: Int
     orderedBy: InformationTypeEntryOrdering

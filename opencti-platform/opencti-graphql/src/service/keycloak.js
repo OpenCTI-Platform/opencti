@@ -2,7 +2,7 @@ import Keycloak from 'keycloak-connect';
 import { defaultFieldResolver } from 'graphql';
 import { getDirective, MapperKind, mapSchema } from '@graphql-tools/utils';
 import { auth, hasPermission, hasRole, KeycloakContext } from 'keycloak-connect-graphql';
-import KeycloakAdminClient, { AuthError } from '@darklight/keycloak-admin-client';
+import KeycloakAdminClient from '@darklight/keycloak-admin-client';
 import conf, { logApp } from '../config/conf';
 
 const realm = conf.get('keycloak:realm');

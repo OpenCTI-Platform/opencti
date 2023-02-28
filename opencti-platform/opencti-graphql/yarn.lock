@@ -4496,7 +4496,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@xmldom/xmldom@npm:^0.7.0, @xmldom/xmldom@npm:^0.7.9":
+"@xmldom/xmldom@npm:^0.7.0, @xmldom/xmldom@npm:^0.7.6, @xmldom/xmldom@npm:^0.7.9":
   version: 0.7.9
   resolution: "@xmldom/xmldom@npm:0.7.9"
   checksum: 66e37b7800132f891b885b2eceeeebc53f60b69789da10276f1584256b963d79a28c7ae2071bc53a9cd842d9b03554c761b2701fe8036d6052f26bcd0ae8f2bb
@@ -4881,6 +4881,15 @@ __metadata:
   dependencies:
     lru-cache: ^6.0.0
   checksum: 53057326f5d0bdeb48da0c738281e3e3765b918050ad02a4d2db514d1e45c9263fcc526fca26ac71aedeccee094f2b6adaa45d67a02b566a6bb4ad1524610ae5
+  languageName: node
+  linkType: hard
+
+"apollo-server-caching@npm:^3.3.0":
+  version: 3.3.0
+  resolution: "apollo-server-caching@npm:3.3.0"
+  dependencies:
+    lru-cache: ^6.0.0
+  checksum: a5b43025ffb00cb3899fa0584512538747e8afe595ff8a0235caf8469435a03c1edc23fa56893fc77910f032563106872faa7e86a58acf1aed16bf77e9723327
   languageName: node
   linkType: hard
 
@@ -6577,7 +6586,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.3":
+"debug@npm:4, debug@npm:^4.0.1, debug@npm:^4.1.0, debug@npm:^4.1.1, debug@npm:^4.3.1, debug@npm:^4.3.2, debug@npm:^4.3.3":
   version: 4.3.4
   resolution: "debug@npm:4.3.4"
   dependencies:
@@ -10263,21 +10272,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jsonwebtoken@npm:8.5.1":
-  version: 8.5.1
-  resolution: "jsonwebtoken@npm:8.5.1"
+"jsonwebtoken@npm:9.0.0":
+  version: 9.0.0
+  resolution: "jsonwebtoken@npm:9.0.0"
   dependencies:
     jws: ^3.2.2
-    lodash.includes: ^4.3.0
-    lodash.isboolean: ^3.0.3
-    lodash.isinteger: ^4.0.4
-    lodash.isnumber: ^3.0.3
-    lodash.isplainobject: ^4.0.6
-    lodash.isstring: ^4.0.1
-    lodash.once: ^4.0.0
+    lodash: ^4.17.21
     ms: ^2.1.1
-    semver: ^5.6.0
-  checksum: 93c9e3f23c59b758ac88ba15f4e4753b3749dfce7a6f7c40fb86663128a1e282db085eec852d4e0cbca4cefdcd3a8275ee255dbd08fcad0df26ad9f6e4cc853a
+    semver: ^7.3.8
+  checksum: b9181cecf9df99f1dc0253f91ba000a1aa4d91f5816d1608c0dba61a5623726a0bfe200b51df25de18c1a6000825d231ad7ce2788aa54fd48dcb760ad9eb9514
   languageName: node
   linkType: hard
 
@@ -10563,13 +10566,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.includes@npm:^4.3.0":
-  version: 4.3.0
-  resolution: "lodash.includes@npm:4.3.0"
-  checksum: 71092c130515a67ab3bd928f57f6018434797c94def7f46aafa417771e455ce3a4834889f4267b17887d7f75297dfabd96231bf704fd2b8c5096dc4a913568b6
-  languageName: node
-  linkType: hard
-
 "lodash.isarguments@npm:^3.1.0":
   version: 3.1.0
   resolution: "lodash.isarguments@npm:3.1.0"
@@ -10577,52 +10573,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"lodash.isboolean@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "lodash.isboolean@npm:3.0.3"
-  checksum: b70068b4a8b8837912b54052557b21fc4774174e3512ed3c5b94621e5aff5eb6c68089d0a386b7e801d679cd105d2e35417978a5e99071750aa2ed90bffd0250
-  languageName: node
-  linkType: hard
-
-"lodash.isinteger@npm:^4.0.4":
-  version: 4.0.4
-  resolution: "lodash.isinteger@npm:4.0.4"
-  checksum: 6034821b3fc61a2ffc34e7d5644bb50c5fd8f1c0121c554c21ac271911ee0c0502274852845005f8651d51e199ee2e0cfebfe40aaa49c7fe617f603a8a0b1691
-  languageName: node
-  linkType: hard
-
-"lodash.isnumber@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "lodash.isnumber@npm:3.0.3"
-  checksum: 913784275b565346255e6ae6a6e30b760a0da70abc29f3e1f409081585875105138cda4a429ff02577e1bc0a7ae2a90e0a3079a37f3a04c3d6c5aaa532f4cab2
-  languageName: node
-  linkType: hard
-
-"lodash.isplainobject@npm:^4.0.6":
-  version: 4.0.6
-  resolution: "lodash.isplainobject@npm:4.0.6"
-  checksum: 29c6351f281e0d9a1d58f1a4c8f4400924b4c79f18dfc4613624d7d54784df07efaff97c1ff2659f3e085ecf4fff493300adc4837553104cef2634110b0d5337
-  languageName: node
-  linkType: hard
-
-"lodash.isstring@npm:^4.0.1":
-  version: 4.0.1
-  resolution: "lodash.isstring@npm:4.0.1"
-  checksum: eaac87ae9636848af08021083d796e2eea3d02e80082ab8a9955309569cb3a463ce97fd281d7dc119e402b2e7d8c54a23914b15d2fc7fff56461511dc8937ba0
-  languageName: node
-  linkType: hard
-
 "lodash.merge@npm:^4.6.2":
   version: 4.6.2
   resolution: "lodash.merge@npm:4.6.2"
   checksum: ad580b4bdbb7ca1f7abf7e1bce63a9a0b98e370cf40194b03380a46b4ed799c9573029599caebc1b14e3f24b111aef72b96674a56cfa105e0f5ac70546cdc005
-  languageName: node
-  linkType: hard
-
-"lodash.once@npm:^4.0.0":
-  version: 4.1.1
-  resolution: "lodash.once@npm:4.1.1"
-  checksum: d768fa9f9b4e1dc6453be99b753906f58990e0c45e7b2ca5a3b40a33111e5d17f6edf2f768786e2716af90a8e78f8f91431ab8435f761fef00f9b0c256f6d245
   languageName: node
   linkType: hard
 
@@ -11284,13 +11238,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"node-forge@npm:^0.10.0":
-  version: 0.10.0
-  resolution: "node-forge@npm:0.10.0"
-  checksum: 5aa6dc9922e424a20ef101d2f517418e2bc9cfc0255dd22e0701c0fad1568445f510ee67f6f3fcdf085812c4ca1b847b8ba45683b34776828e41f5c1794e42e1
-  languageName: node
-  linkType: hard
-
 "node-gyp@npm:latest":
   version: 9.3.1
   resolution: "node-gyp@npm:9.3.1"
@@ -11620,7 +11567,9 @@ __metadata:
     "@graphql-tools/schema": ^8.2.0
     "@graphql-tools/utils": 8.5.3
     amqplib: 0.8.0
+    apollo-datasource: ^3.3.2
     apollo-errors: 1.9.0
+    apollo-server-caching: ^3.3.0
     apollo-server-core: ^3.10.2
     apollo-server-errors: ^3.3.1
     apollo-server-express: ^3.10.2
@@ -11673,7 +11622,7 @@ __metadata:
     jest-junit: 12.2.0
     jest-transform-graphql: 2.1.0
     jsondiffpatch: 0.4.1
-    jsonwebtoken: 8.5.1
+    jsonwebtoken: 9.0.0
     jwt-decode: 3.1.2
     keycloak-connect: ^19.0.1
     keycloak-connect-graphql: ^0.7.0
@@ -11687,14 +11636,14 @@ __metadata:
     node-fetch: 3.3.0
     nodemailer: 6.6.3
     openid-client: 4.7.4
-    passport: 0.4.1
+    passport: 0.6.0
     passport-auth0: 1.4.0
     passport-facebook: 3.0.0
     passport-github: 1.1.0
     passport-google-oauth: 2.0.0
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
-    passport-saml: 3.1.1
+    passport-saml: 3.2.4
     prettier: 2.3.2
     prom-client: ^14.0.1
     python-shell: 3.0.0
@@ -12049,18 +11998,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport-saml@npm:3.1.1":
-  version: 3.1.1
-  resolution: "passport-saml@npm:3.1.1"
+"passport-saml@npm:3.2.4":
+  version: 3.2.4
+  resolution: "passport-saml@npm:3.2.4"
   dependencies:
-    debug: ^4.3.1
+    "@xmldom/xmldom": ^0.7.6
+    debug: ^4.3.2
     passport-strategy: ^1.0.0
-    xml-crypto: ^2.1.2
-    xml-encryption: ^1.2.4
+    xml-crypto: ^2.1.3
+    xml-encryption: ^2.0.0
     xml2js: ^0.4.23
     xmlbuilder: ^15.1.1
-    xmldom: ^0.6.0
-  checksum: ebfba4c3c9a98a75dcec2800e2c5126906a7886f161fab112cbea54f6dbb871ff6777b080da396f571a783c4b90889faa068c59cca97bcd90c61ae9ea1fda494
+  checksum: 8e885af4d44c2d862b2ea0d051ab2a36bc6f9a70e62f90daf7ce4eefd126ac2ab4d5fc070693eba05f5e1be248af23fa018611bbfa7fad31708371f387f5dd77
   languageName: node
   linkType: hard
 
@@ -12071,13 +12020,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"passport@npm:0.4.1":
-  version: 0.4.1
-  resolution: "passport@npm:0.4.1"
+"passport@npm:0.6.0":
+  version: 0.6.0
+  resolution: "passport@npm:0.6.0"
   dependencies:
     passport-strategy: 1.x.x
     pause: 0.0.1
-  checksum: 6e0d855e281df8568f4b361d8377995295e59b08391a1b57d18d1404dbaa67af1523c987e9a071d6b0d1550f022637d62f9854bbd31ebc30372f0bfb1acb2567
+    utils-merge: ^1.0.1
+  checksum: ef932ad671d50de34765c7a53cd1e058d8331a82a6df09265a9c6c1168911aee4a7b5215803d0101110ab7f317e096b4954ca7e18fb2c33b9929f0bd17dbe159
   languageName: node
   linkType: hard
 
@@ -13133,7 +13083,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.5":
+"semver@npm:^7.2.1, semver@npm:^7.3.2, semver@npm:^7.3.5, semver@npm:^7.3.8":
   version: 7.3.8
   resolution: "semver@npm:7.3.8"
   dependencies:
@@ -14532,7 +14482,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x":
+"utils-merge@npm:1.0.1, utils-merge@npm:1.x.x, utils-merge@npm:^1.0.1":
   version: 1.0.1
   resolution: "utils-merge@npm:1.0.1"
   checksum: c81095493225ecfc28add49c106ca4f09cdf56bc66731aa8dabc2edbbccb1e1bfe2de6a115e5c6a380d3ea166d1636410b62ef216bb07b3feb1cfde1d95d5080
@@ -15048,7 +14998,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-crypto@npm:^2.1.2":
+"xml-crypto@npm:^2.1.3":
   version: 2.1.5
   resolution: "xml-crypto@npm:2.1.5"
   dependencies:
@@ -15058,15 +15008,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"xml-encryption@npm:^1.2.4":
-  version: 1.3.0
-  resolution: "xml-encryption@npm:1.3.0"
+"xml-encryption@npm:^2.0.0":
+  version: 2.0.0
+  resolution: "xml-encryption@npm:2.0.0"
   dependencies:
     "@xmldom/xmldom": ^0.7.0
     escape-html: ^1.0.3
-    node-forge: ^0.10.0
     xpath: 0.0.32
-  checksum: 7e8b1b472bbaabe8fb151a59c1fc5c82c9866200f3a367515f3116a21f389786211dbd9bc0d6001c4a3f6298d2a6eb458b550dfb2f4144fb9622dac5675599e6
+  checksum: a454445704c5e3aa3f992128c413c02f3c00c346cb0d63b01beae4b6a341cfc0a52a0219ccec47dcce250e336ba7b09d95909913b1f199ca43604961a00a1995
   languageName: node
   linkType: hard
 
@@ -15112,13 +15061,6 @@ __metadata:
   version: 2.2.0
   resolution: "xmlchars@npm:2.2.0"
   checksum: 8c70ac94070ccca03f47a81fcce3b271bd1f37a591bf5424e787ae313fcb9c212f5f6786e1fa82076a2c632c0141552babcd85698c437506dfa6ae2d58723062
-  languageName: node
-  linkType: hard
-
-"xmldom@github:xmldom/xmldom#0.7.0":
-  version: 0.7.0
-  resolution: "xmldom@https://github.com/xmldom/xmldom.git#commit=c568938641cc1f121cef5b4df80fcfda1e489b6e"
-  checksum: 86beb4f90675610ad4c2de68a46c7747b90b2a077fa73069973bd681b07fe4384361cfe1785d090e42f499095a7cfaadc3988a1aca2a3ef55c3d9d9a98d9e1d0
   languageName: node
   linkType: hard
 

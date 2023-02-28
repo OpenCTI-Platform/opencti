@@ -32,11 +32,8 @@ import {
 import { saveViewParameters } from '../../../utils/ListParameters';
 
 const customSvg = require('../../../assets/severity-scores/custom.svg').default;
-const tenableSvg =
-  require('../../../assets/severity-scores/tenable.svg').default;
+const tenableSvg = require('../../../assets/severity-scores/tenable.svg').default;
 const nvdSvg = require('../../../assets/severity-scores/nvd.svg').default;
-
-let currentSeverityLevel = 'custom';
 
 const classes = {
   root: {
@@ -140,20 +137,23 @@ const classes = {
 };
 
 const UserPreferencesModal = (props) => {
-  const me = props.me;
+  const { me } = props;
 
   const [isLoading, setIsLoading] = useState(props.isLoading);
   const [currentClient_id, setCurrentClient_id] = useState(localStorage.getItem('client_id'));
   const [severityLevel, setSeverityLevel] = useState();
   const [user] = useState(props.user);
-  const [orgSettings, setOrgSettings] = useState([])
+  const [orgSettings, setOrgSettings] = useState([]);
 
   const location = useLocation();
 
-  const handleSubmit = () => {
-    const param = { vsa_severity_score_method: severityLevel }
-    updateOrganizationSettings(currentClient_id, param).then((results) => {
+  const handleCancel = () => {
+    props.action();
+  };
 
+  const handleSubmit = () => {
+    const param = { vsa_severity_score_method: severityLevel };
+    updateOrganizationSettings(currentClient_id, param).then((results) => {
       localStorage.setItem('client_id', currentClient_id);
       props.setClientId(currentClient_id);
       if (location.pathname === '/activities/vulnerability_assessment/scans/explore results') {
@@ -162,22 +162,17 @@ const UserPreferencesModal = (props) => {
         props.history.push('/dashboard');
       }
       handleCancel();
-
     }).catch((error) => {
-      console.log(error)
-    })
+      console.log(error);
+    });
   };
-
-  const handleCancel = () => {
-    props.action();
-  }
 
   useEffect(() => {
     user.clients.forEach((item) => {
       getOrganizationSettings(item.client_id).then((result) => {
         // eslint-disable-next-line no-param-reassign
-        if (result) {          
-          if (item.client_id == currentClient_id) {
+        if (result) {
+          if (item.client_id === currentClient_id) {
             setSeverityLevel(result.data.vsa_severity_score_method);
           }
           setOrgSettings(oldArray => [...oldArray, {
@@ -187,25 +182,24 @@ const UserPreferencesModal = (props) => {
           setIsLoading(false);
         }
       }).catch((error) => {
-        if(error) {
+        if (error) {
           setIsLoading(false);
         }
-        console.log(error)
+        console.log(error);
       });
     });
-
-    
   }, []);
 
   const handleOrgChange = (event) => {
-
-    setSeverityLevel(orgSettings.find(obj => { return obj.client_id === currentClient_id }).vsa_severity_score_method);
+    setSeverityLevel(
+      orgSettings.find((obj) => obj.client_id === currentClient_id).vsa_severity_score_method,
+    );
     setCurrentClient_id(event.target.value);
-  }
+  };
 
   const handleSeverityLevelChange = (event) => {
     setSeverityLevel(event.target.value);
-  }
+  };
 
   return (
     <Paper
@@ -235,10 +229,10 @@ const UserPreferencesModal = (props) => {
               onChange={(e) => handleOrgChange(e)}
               data-cy='org selection'
             >
-              {user &&
-                user.clients.map((item, i) => {
-                  return (<MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem>)
-                })
+              {user
+                && user.clients.map((item, i) => (
+                  <MenuItem value={item.client_id} data-cy='an org'>{item.name}</MenuItem>
+                ))
               }
             </Select>
           </CardContent>
@@ -251,8 +245,8 @@ const UserPreferencesModal = (props) => {
               <img src={tenableSvg} alt="Tenable" />
             )}
             {severityLevel === 'nvd' && <img src={nvdSvg} alt="NVD" />}
-            {severityLevel &&
-              <RadioGroup
+            {severityLevel
+              && <RadioGroup
                 row
                 aria-label="severityLevel"
                 name="severityLevel"
@@ -325,8 +319,8 @@ const UserPreferencesModal = (props) => {
               <Grid item xs={12}>
                 <Skeleton variant="text" height={35} />
               </Grid>
-              <Grid item xs={12} style={{ display: 'flex', placeContent: 'end'}}>
-                <Skeleton variant="text" height={50} width={70} style={{margin: '0 20px'}}/>
+              <Grid item xs={12} style={{ display: 'flex', placeContent: 'end' }}>
+                <Skeleton variant="text" height={50} width={70} style={{ margin: '0 20px' }}/>
                 <Skeleton variant="text" height={50} width={70}/>
               </Grid>
             </Grid>

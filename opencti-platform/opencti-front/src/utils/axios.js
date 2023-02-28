@@ -1,7 +1,7 @@
-/* eslint-disable */
-import axios from "axios";
+/* eslint-disable no-param-reassign */
+import axios from 'axios';
 
-const API_URL = process.env.REACT_APP_API_URL || "";
+const API_URL = process.env.REACT_APP_API_URL || '';
 
 const BearerToken = () => {
   const accessToken = localStorage.getItem('token');
@@ -9,24 +9,24 @@ const BearerToken = () => {
 };
 
 const headers = {
-  Action: "application/json",
-  "Content-Type": "application/json",
+  Action: 'application/json',
+  'Content-Type': 'application/json',
 };
 
 export const scanAxios = axios.create({
   baseURL: API_URL,
   headers: {
-    ...headers
+    ...headers,
   },
 });
 
-scanAxios.interceptors.request.use(function (config) {
+scanAxios.interceptors.request.use((config) => {
   const bearer = BearerToken();
   config.headers.Authorization = bearer;
   return config;
 });
 
-const analysisAccept = "application/vnd.dl.vsa.analysis+json;version=1";
+const analysisAccept = 'application/vnd.dl.vsa.analysis+json;version=1';
 export const analysisAxios = axios.create({
   baseURL: API_URL,
   headers: {
@@ -35,13 +35,13 @@ export const analysisAxios = axios.create({
   },
 });
 
-analysisAxios.interceptors.request.use(function (config) {
+analysisAxios.interceptors.request.use((config) => {
   const bearer = BearerToken();
   config.headers.Authorization = bearer;
   return config;
 });
 
-const apiAccept = "application/vnd.dl.vsa+json;version=1";
+const apiAccept = 'application/vnd.dl.vsa+json;version=1';
 export const apiAxios = axios.create({
   baseURL: API_URL,
   headers: {
@@ -50,13 +50,13 @@ export const apiAxios = axios.create({
   },
 });
 
-apiAxios.interceptors.request.use(function (config) {
+apiAxios.interceptors.request.use((config) => {
   const bearer = BearerToken();
   config.headers.Authorization = bearer;
   return config;
 });
 
-const accountAccept = "application/vnd.dl.cyio.account+json;version=1";
+const accountAccept = 'application/vnd.dl.cyio.account+json;version=1';
 export const accountAxios = axios.create({
   baseURL: API_URL,
   headers: {
@@ -65,14 +65,13 @@ export const accountAxios = axios.create({
   },
 });
 
-accountAxios.interceptors.request.use(function (config) {
+accountAxios.interceptors.request.use((config) => {
   const bearer = BearerToken();
   config.headers.Authorization = bearer;
   return config;
 });
 
-const organizationAccept =
-  "application/vnd.dl.cyio.organization.settings+json;version=1";
+const organizationAccept = 'application/vnd.dl.cyio.organization.settings+json;version=1';
 export const organizationAxios = axios.create({
   baseURL: API_URL,
   headers: {
@@ -81,7 +80,7 @@ export const organizationAxios = axios.create({
   },
 });
 
-organizationAxios.interceptors.request.use(function (config) {
+organizationAxios.interceptors.request.use((config) => {
   const bearer = BearerToken();
   config.headers.Authorization = bearer;
   return config;

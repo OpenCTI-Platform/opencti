@@ -33,8 +33,8 @@ const cyioInformationSystemResolvers = {
     attachToInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => attachToInformationSystem(id, field, entryId ,dbName, dataSources),
     detachFromInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => detachFromInformationSystem(id, field, entryId ,dbName, dataSources),
     // Implementation items
-    addInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }) => addImplementationEntity(id, implementationType, entityId, dbName, dataSources),
-    removeInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }) => removeImplementationEntity(id, implementationType, entityId, dbName, dataSources),
+    addInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }, { dbName, dataSources }) => addImplementationEntity(id, implementationType, entityId, dbName, dataSources),
+    removeInformationSystemImplementationEntity: async (_, { id, implementationType, entityId }, { dbName, dataSources }) => removeImplementationEntity(id, implementationType, entityId, dbName, dataSources),
   },
   InformationSystem: {
     authorization_boundary: async (parent, _, { dbName, dataSources, selectMap }) => {
