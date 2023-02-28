@@ -1,6 +1,6 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'apollo-server-errors';
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
-import { compareValues, filterValues, CyioError } from '../../utils.js';
+import { compareValues, filterValues } from '../../utils.js';
 import { objectMap } from '../global-utils.js';
 import {
   getReducer,
@@ -285,7 +285,7 @@ const cyioGlobalTypeResolvers = {
     addReference: async (_, { input }, { dbName, dataSources }) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined)
-        throw new CyioError(`Source and target types must be supplied`);
+        throw new UserInputError(`Source and target types must be supplied`);
 
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
@@ -304,7 +304,7 @@ const cyioGlobalTypeResolvers = {
             break;
           }
         }
-        if (!found) throw new CyioError(`Unknown source type '${input.from_type}'`);
+        if (!found) throw new UserInputError(`Unknown source type '${input.from_type}'`);
       }
       if (!objectMap.hasOwnProperty(input.to_type)) {
         let found = false;
@@ -322,13 +322,13 @@ const cyioGlobalTypeResolvers = {
             break;
           }
         }
-        if (!found) throw new CyioError(`Unknown source type '${input.to_type}'`);
+        if (!found) throw new UserInputError(`Unknown source type '${input.to_type}'`);
       }
 
       // Validate field is defined on the source (from)
       const { predicateMap } = objectMap[input.from_type];
       if (!predicateMap.hasOwnProperty(input.field_name))
-        throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
+        throw new UserInputError(`Field '${input.field_name}' is not defined for the source entity.`);
       const { predicate } = predicateMap[input.field_name];
 
       // construct the IRIs for source (from) and target (to)
@@ -368,7 +368,7 @@ const cyioGlobalTypeResolvers = {
     removeReference: async (_, { input }, { dbName, dataSources }) => {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined)
-        throw new CyioError(`Source and target types must be supplied`);
+        throw new UserInputError(`Source and target types must be supplied`);
 
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
@@ -387,7 +387,7 @@ const cyioGlobalTypeResolvers = {
             break;
           }
         }
-        if (!found) throw new CyioError(`Unknown source type '${input.from_type}'`);
+        if (!found) throw new UserInputError(`Unknown source type '${input.from_type}'`);
       }
       if (!objectMap.hasOwnProperty(input.to_type)) {
         let found = false;
@@ -405,13 +405,13 @@ const cyioGlobalTypeResolvers = {
             break;
           }
         }
-        if (!found) throw new CyioError(`Unknown source type '${input.to_type}'`);
+        if (!found) throw new UserInputError(`Unknown source type '${input.to_type}'`);
       }
 
       // Validate field value is defined on the source (from)
       const { predicateMap } = objectMap[input.from_type];
       if (!predicateMap.hasOwnProperty(input.field_name))
-        throw new CyioError(`Field '${input.field_name}' is not defined for the source entity.`);
+        throw new UserInputError(`Field '${input.field_name}' is not defined for the source entity.`);
       const { predicate } = predicateMap[input.field_name];
 
       // construct the IRIs for source (from) and target (to)
