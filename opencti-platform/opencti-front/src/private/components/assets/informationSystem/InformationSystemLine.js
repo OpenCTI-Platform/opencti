@@ -38,6 +38,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
+    marginLeft: '2.8px',
   },
   goIcon: {
     minWidth: '0px',

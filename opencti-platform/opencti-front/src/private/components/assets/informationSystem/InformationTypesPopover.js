@@ -34,6 +34,7 @@ import LoggedBy from "../../common/form/LoggedBy";
 import SelectField from "../../../../components/SelectField";
 import { toastGenericError } from "../../../../utils/bakedToast";
 import { commitMutation, fetchQuery } from "../../../../relay/environment";
+import SearchTextField from "../../common/form/SearchTextField";
 
 const styles = (theme) => ({
   dialogMain: {
@@ -281,7 +282,7 @@ class InformationTypesPopover extends Component {
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
-            {({ submitForm, handleReset, isSubmitting }) => (
+            {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
               <Form>
                 <DialogTitle classes={{ root: classes.dialogTitle }}>
                   {t("Information Type")}
@@ -307,9 +308,13 @@ class InformationTypesPopover extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <Field
-                        // open={this.state.openAutocomplete}
-                        // onClose={() => this.setState({ openAutocomplete: false })}
+                      <SearchTextField
+                        name='name'
+                        setFieldValue={setFieldValue}
+                      />
+                      {/* <Field
+                        open={this.state.openAutocomplete}
+                        onClose={() => this.setState({ openAutocomplete: false })}
                         component={Autocomplete}
                         name="name"
                         size="small"
@@ -345,7 +350,7 @@ class InformationTypesPopover extends Component {
                             }}
                           />
                         )}
-                      />
+                      /> */}
                     </Grid>
                     <Grid xs={12} item={true}>
                       <Typography

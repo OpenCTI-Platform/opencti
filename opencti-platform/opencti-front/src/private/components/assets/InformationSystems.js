@@ -322,7 +322,7 @@ class InformationSystems extends Component {
       },
       label_name: {
         label: 'Labels',
-        width: '20%',
+        width: '15%',
         isSortable: true,
       },
       date_created: {

@@ -21,6 +21,7 @@ import Chip from '@material-ui/core/Chip';
 import List from '@material-ui/core/List';
 import Popover from '@material-ui/core/Popover';
 import Tooltip from '@material-ui/core/Tooltip';
+import { ListItemIcon, ListItemText } from '@material-ui/core';
 import ListItem from '@material-ui/core/ListItem';
 import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
 import tasksIcon from '../../resources/images/entities/tasks.svg';
@@ -35,6 +36,7 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
+import ItemIcon from '../ItemIcon';
 
 const styles = (theme) => ({
   container: {
@@ -145,6 +147,12 @@ const styles = (theme) => ({
     backgroundColor: theme.palette.background.chip,
     marginRight: 10,
     marginBottom: 10,
+  },
+  informationSystemIcon: {
+    minWidth: '26px',
+  },
+  informationSystemText: {
+    marginLeft: '10px',
   },
 });
 
@@ -541,13 +549,19 @@ class CyioListCards extends Component {
                           disabled={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
                         >
-                          Graph
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemGraph'/>
+                          </ListItemIcon>
+                          <ListItemText primary="Graph" className={classes.informationSystemText}/>
                         </ListItem>
                         <ListItem
                           button={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'form')}
                         >
-                          Form
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemForm'/>
+                          </ListItemIcon>
+                          <ListItemText primary="Form" className={classes.informationSystemText}/>
                         </ListItem>
                       </List>
                     </Popover>

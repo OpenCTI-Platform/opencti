@@ -42,6 +42,7 @@ import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
+import ItemIcon from '../ItemIcon';
 
 const styles = (theme) => ({
   container: {
@@ -198,6 +199,12 @@ const styles = (theme) => ({
   },
   info: {
     paddingTop: 10,
+  },
+  informationSystemIcon: {
+    minWidth: '26px',
+  },
+  informationSystemText: {
+    marginLeft: '10px',
   },
 });
 
@@ -656,13 +663,19 @@ class CyioListLines extends Component {
                           disabled={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
                         >
-                          Graph
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemGraph'/>
+                          </ListItemIcon>
+                          <ListItemText primary="Graph" className={classes.informationSystemText}/>
                         </ListItem>
                         <ListItem
                           button={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'form')}
                         >
-                          Form
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemForm'/>
+                          </ListItemIcon>
+                          <ListItemText primary="Form" className={classes.informationSystemText}/>
                         </ListItem>
                       </List>
                     </Popover>
