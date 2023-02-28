@@ -2,6 +2,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import { compose } from 'ramda';
 import graphql from 'babel-plugin-relay/macro';
 import { withStyles } from '@material-ui/core/styles/index';
@@ -62,6 +63,10 @@ const informationSystemEditionContainerMutation = graphql`
   }
 `;
 
+const InformationSystemValidation = (t) => Yup.object().shape({
+  system_name: Yup.string().required(t('This field is required')),
+});
+
 class InformationSystemEditionContainer extends Component {
   constructor(props) {
     super(props);
@@ -98,7 +103,7 @@ class InformationSystemEditionContainer extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.props.history.push('/data/assets/information_systems');
+        this.props.history.push('/defender HQ/assets/information_systems');
       },
       onError: (err) => {
         console.error(err);
@@ -146,7 +151,7 @@ class InformationSystemEditionContainer extends Component {
           <Formik
             enableReinitialize={true}
             initialValues={initialValues}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={InformationSystemValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >

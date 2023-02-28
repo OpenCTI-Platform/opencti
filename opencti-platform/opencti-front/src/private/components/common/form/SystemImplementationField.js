@@ -233,22 +233,6 @@ class HyperLinkField extends Component {
       });
   }
 
-  handleAddAsset(list) {
-    const addItem = R.find((n) => n.id === this.state.value)(list);
-    if (this.state.data.every((value) => value.id !== this.state.value)) {
-      this.setState({
-        data: [...this.state.data, addItem],
-        value: '',
-        isSubmitting: false,
-      });
-    } else {
-      this.setState({
-        value: '',
-        isSubmitting: false,
-      });
-    }
-  }
-
   handleSubmit() {
     const { data } = this.state;
     if (data.length === 0) {
@@ -279,16 +263,24 @@ class HyperLinkField extends Component {
     );
   }
 
-  handleDeleteItem(key) {
-    this.setState({
-      data: this.state.data.filter((value, i) => i !== key),
-      value: '',
-      isSubmitting: false,
-    });
-  }
-
-  handleChange(event) {
-    this.setState({ value: event.target.value });
+  handleSelectChange(event) {
+    const { data } = this.state;
+    const diagramId = event.target.value;
+    this.setState({ value: diagramId });
+    const addItem = R.find((n) => n.id === diagramId)(this.state.list);
+    if (this.state.data.every((value) => value.id !== diagramId)) {
+      this.setState({
+        data: [...data, addItem],
+        value: '',
+        isSubmitting: false,
+      });
+    } else {
+      this.setState({
+        value: '',
+        isSubmitting: false,
+      });
+    }
+    this.props.onSubmit(this.props.name, diagramId);
   }
 
   render() {
@@ -299,6 +291,7 @@ class HyperLinkField extends Component {
       history,
       title,
       onSubmit,
+      variant,
       helperText,
       containerstyle,
       style,
@@ -355,70 +348,39 @@ class HyperLinkField extends Component {
               alignItems: 'center',
             }}
           >
-            <div
-              style={{
-                overflow: 'hidden',
-                display: 'flex',
-                alignItems: 'center',
-                width: '100%',
-                borderBottom: '1px #fff solid',
-              }}
-            >
-              <FormControl style={{ width: '91%' }}>
-                <InputLabel id='demo-simple-select-label'>Select {title}</InputLabel>
-                <Select
-                  label={'Assets'}
-                  labelId='demo-simple-select-label'
-                  name={name}
-                  fullWidth={true}
-                  containerstyle={containerstyle}
-                  // disabled={disabled || false}
-                  // size={size}
-                  style={style}
-                  helperText={helperText}
-                  value={this.state.value}
-                  onOpen={this.handleSearchEntities.bind(this)}
-                  onChange={this.handleChange.bind(this)}
-                  disableUnderline
-                >
-                  {this.state.list.length > 0
-                    && this.state.list.map((listItem) => listItem.name && (
-                      <MenuItem key={listItem.id} value={listItem.id}>
-                        {t(listItem.name)}
-                      </MenuItem>
-                    ))}
-                </Select>
-              </FormControl>
-              <IconButton
-                aria-label='toggle password visibility'
-                edge='end'
-                onClick={this.handleAddAsset.bind(this, this.state.list)}
-                style={{ marginTop: '20px' }}
-                disabled={!this.state.value}
+            <FormControl variant='standard' style={containerstyle}>
+              <InputLabel variant="standard" id='demo-simple-select-label'>Select {title}</InputLabel>
+              <Select
+                variant='standard'
+                labelId='demo-simple-select-label'
+                name={name}
+                fullWidth={true}
+                containerstyle={containerstyle}
+                // disabled={disabled || false}
+                // size={size}
+                style={style}
+                helperText={helperText}
+                value={this.state.value}
+                onOpen={this.handleSearchEntities.bind(this)}
+                onChange={this.handleSelectChange.bind(this)}
+                disableUnderline
               >
-                <LinkIcon />
-              </IconButton>
-            </div>
+                {this.state.list.length > 0
+                  && this.state.list.map((listItem) => listItem.name && (
+                    <MenuItem key={listItem.id} value={listItem.id}>
+                      {t(listItem.name)}
+                    </MenuItem>
+                  ))}
+              </Select>
+            </FormControl>
           </DialogContent>
           <DialogContent>
             <div className={classes.scrollBg}>
               <div className={classes.scrollDiv}>
                 <div className={classes.scrollObj}>
                   {systemImplementationData.map((item, key) => (
-                    <div
-                      key={key}
-                      style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                      }}
-                    >
+                    <div key={key}>
                       <Typography>{item.name}</Typography>
-                      <IconButton
-                        size='small'
-                        onClick={this.handleDeleteItem.bind(this, key)}
-                      >
-                        <LinkOff />
-                      </IconButton>
                     </div>
                   ))}
                 </div>

@@ -92,7 +92,7 @@ class InformationSystemDetailsComponent extends Component {
 
   render() {
     const {
-      t, classes, informationSystem,
+      t, classes, informationSystem, refreshQuery,
     } = this.props;
     return (
       <Formik
@@ -168,29 +168,11 @@ class InformationSystemDetailsComponent extends Component {
                     <Divider />
                   </Grid>
                   <SystemImplementation
+                    refreshQuery={refreshQuery}
                     informationSystem={informationSystem}
                   />
                   <Grid item={true} xs={12}>
                     <Divider />
-                  </Grid>
-                  <Grid item={true} xs={12}>
-                    <div className={classes.textBase}>
-                      <Typography
-                        variant="h3"
-                        color="textSecondary"
-                        gutterBottom={true}
-                        style={{ margin: 0 }}
-                      >
-                        {t('System Documentation')}
-                      </Typography>
-                      <Tooltip title={t('Identifies a description of this system\'s authorization boundary, network architecture, and data flow.')}>
-                        <Information
-                          style={{ marginLeft: '5px' }}
-                          fontSize="inherit"
-                          color="disabled"
-                        />
-                      </Tooltip>
-                    </div>
                   </Grid>
                   <SystemDocumentation
                     informationSystem={informationSystem}
@@ -210,10 +192,11 @@ class InformationSystemDetailsComponent extends Component {
 }
 
 InformationSystemDetailsComponent.propTypes = {
-  informationSystem: PropTypes.object,
-  classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,
+  classes: PropTypes.object,
+  refreshQuery: PropTypes.func,
+  informationSystem: PropTypes.object,
 };
 
 const InformationSystemDetails = createFragmentContainer(InformationSystemDetailsComponent, {

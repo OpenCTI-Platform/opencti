@@ -79,7 +79,7 @@ class SystemImplementationComponent extends Component {
       },
       pathname: '/defender HQ/assets/information_systems',
       onCompleted: () => {
-        // this.props.history.push('/defender HQ/assets/information_systems');
+        this.props.refreshQuery();
       },
       onError: () => {
         toastGenericError(`Failed to add ${name}`);
@@ -97,7 +97,7 @@ class SystemImplementationComponent extends Component {
       },
       pathname: '/defender HQ/assets/information_systems',
       onCompleted: () => {
-        // this.props.history.push('/defender HQ/assets/information_systems');
+        this.props.refreshQuery();
       },
       onError: () => {
         toastGenericError(`Failed to delete ${name}`);
@@ -137,7 +137,7 @@ class SystemImplementationComponent extends Component {
             name='inventory_item'
             fullWidth={true}
             style={{ height: '38.09px' }}
-            containerstyle={{ width: '90%' }}
+            containerstyle={{ width: '100%' }}
             data={informationSystem?.inventory_items || []}
             helperText={'Indicateds installed software on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
@@ -152,7 +152,7 @@ class SystemImplementationComponent extends Component {
             name='component'
             fullWidth={true}
             style={{ height: '38.09px' }}
-            containerstyle={{ width: '90%' }}
+            containerstyle={{ width: '100%' }}
             data={informationSystem?.components || []}
             helperText={'Indicateds installed software on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
@@ -166,7 +166,7 @@ class SystemImplementationComponent extends Component {
             name='leveraged_authorization'
             fullWidth={true}
             style={{ height: '38.09px' }}
-            containerstyle={{ width: '90%' }}
+            containerstyle={{ width: '100%' }}
             data={informationSystem?.leveraged_authorizations || []}
             helperText={'Indicateds installed software on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
@@ -180,7 +180,7 @@ class SystemImplementationComponent extends Component {
             name='user_type'
             fullWidth={true}
             style={{ height: '38.09px' }}
-            containerstyle={{ width: '90%' }}
+            containerstyle={{ width: '100%' }}
             data={informationSystem?.users || []}
             helperText={'Indicateds installed software on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
@@ -194,6 +194,7 @@ class SystemImplementationComponent extends Component {
 
 SystemImplementationComponent.propTypes = {
   informationSystem: PropTypes.object,
+  refreshQuery: PropTypes.func,
   classes: PropTypes.object,
   t: PropTypes.func,
   fld: PropTypes.func,

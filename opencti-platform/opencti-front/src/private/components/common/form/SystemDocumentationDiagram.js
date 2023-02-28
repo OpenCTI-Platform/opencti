@@ -75,7 +75,9 @@ const styles = (theme) => ({
 
 const SystemDocumentationValidation = (t) => Yup.object().shape({
   caption: Yup.string().required(t('This field is required')),
-  diagram_link: Yup.string().required(t('This field is required')),
+  diagram_link: Yup.string()
+    .required(t('This field is required'))
+    .url(t('The value must be a valid URL (scheme://host:port/path). For example, https://cyio.darklight.ai')),
 });
 
 const SystemDocumentationDiagramQuery = graphql`
@@ -346,12 +348,11 @@ class SystemDocumentationDiagram extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant='outlined'
                       name="diagram_link"
+                      size='small'
                       fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
                     />
                   </Grid>
                   <Grid item={true} xs={12}>

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
+import * as Yup from 'yup';
 import { compose } from 'ramda';
 import { Formik, Form, Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
@@ -60,6 +61,11 @@ const informationSystemFormCreationMutation = graphql`
     }
   }
 `;
+
+const InformationSystemValidation = (t) => Yup.object().shape({
+  system_name: Yup.string().required(t('This field is required')),
+});
+
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
 ));
@@ -91,7 +97,7 @@ class InformationSystemFormCreation extends Component {
         this.props.history.push('/defender HQ/assets/information_systems');
       },
       onError: () => {
-        toastGenericError('Failed to create responsibility');
+        toastGenericError('Failed to create Information System');
       },
     });
   }
@@ -125,7 +131,7 @@ class InformationSystemFormCreation extends Component {
               federation_assurance_level: '',
               authenticator_assurance_level: '',
             }}
-            // validationSchema={RelatedTaskValidation(t)}
+            validationSchema={InformationSystemValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >

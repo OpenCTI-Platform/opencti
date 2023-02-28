@@ -13,6 +13,9 @@ import {
   Menu,
   MenuItem,
 } from '@material-ui/core';
+import Tooltip from '@material-ui/core/Tooltip';
+import { Information } from 'mdi-material-ui';
+import Typography from '@material-ui/core/Typography';
 import EditIcon from '@material-ui/icons/Edit';
 import inject18n from '../../../../components/i18n';
 import AuthorizationBoundaryPopover from './AuthorizationBoundaryPopover';
@@ -36,6 +39,11 @@ const styles = (theme) => ({
   },
   selectIcons: {
     marginRight: '20px',
+  },
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
   },
 });
 
@@ -184,6 +192,25 @@ class SystemDocumentationComponent extends Component {
     } = this.props;
     return (
       <>
+        <Grid item={true} xs={12}>
+          <div className={classes.textBase}>
+            <Typography
+              variant="h3"
+              color="textSecondary"
+              gutterBottom={true}
+              style={{ margin: 0 }}
+            >
+              {t('System Documentation')}
+            </Typography>
+            <Tooltip title={t('Identifies a description of this system\'s authorization boundary, network architecture, and data flow.')}>
+              <Information
+                style={{ marginLeft: '5px' }}
+                fontSize="inherit"
+                color="disabled"
+              />
+            </Tooltip>
+          </div>
+        </Grid>
         <Grid item={true} xs={12}>
           {this.renderButtons(
             'authorization_boundary',

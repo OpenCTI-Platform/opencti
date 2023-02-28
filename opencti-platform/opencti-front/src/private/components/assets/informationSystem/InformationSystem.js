@@ -78,8 +78,9 @@ class InformationSystemComponent extends Component {
           </Grid>
           <Grid item={true} xs={6}>
             <InformationSystemDetails
-              informationSystem={informationSystem}
               history={history}
+              refreshQuery={refreshQuery}
+              informationSystem={informationSystem}
             />
           </Grid>
         </Grid>
@@ -107,11 +108,11 @@ class InformationSystemComponent extends Component {
           cyioCoreObjectOrCyioCoreRelationshipId={informationSystem.id}
         />
         <InformationSystemFormCreation
-          InfoSystemCreation={this.state.displayCreate}
+          InfoSystemCreation={this.state.displayCreate === 'form'}
           handleInformationSystemCreation={this.handleOpenNewCreation.bind(this)}
         />
         <InformationSystemGraphCreation
-          InfoSystemCreation={this.state.displayCreate}
+          InfoSystemCreation={this.state.displayCreate === 'graph'}
           handleInformationSystemCreation={this.handleOpenNewCreation.bind(this)}
         />
         <InformationSystemEditionContainer
