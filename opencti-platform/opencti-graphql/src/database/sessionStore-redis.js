@@ -52,7 +52,7 @@ class RedisStore extends Store {
     const key = this.prefix + sid;
     const { cache } = this;
     const sessionSetter = (done) => {
-      return setSession(key, sess, this._getTTL(sess)).then((data) => {
+      return setSession(key, sess, this.ttl).then((data) => {
         cache.set(`get-${key}`, data);
         return done(null, data);
       });
@@ -70,8 +70,7 @@ class RedisStore extends Store {
       if (cachedTouch) {
         return done(null, 'OK');
       }
-      const ttlExtension = this._getTTL(sess);
-      return extendSession(key, ttlExtension).then(((ret) => {
+      return extendSession(key, this.ttl).then(((ret) => {
         if (ret !== 1) return done(null, 'EXPIRED');
         touchCache.set(`touch-${key}`);
         return done(null, 'OK');
@@ -106,10 +105,6 @@ class RedisStore extends Store {
   expiration(sid, cb = noop) {
     const key = this.prefix + sid;
     getSessionTtl(key).then((ttl) => cb(null, ttl));
-  }
-
-  _getTTL(sess) {
-    return sess ? sess.expiration : this.ttl;
   }
 
   _getAllKeys(cb = noop) {

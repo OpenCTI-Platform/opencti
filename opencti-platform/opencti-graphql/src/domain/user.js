@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
-import conf, { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import {
   batchListThroughGetTo,
   createEntity,
@@ -734,7 +734,6 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   req.session.session_refresh = false;
-  req.session.expiration = conf.get('app:session_timeout');
   return sessionUser;
 };
 

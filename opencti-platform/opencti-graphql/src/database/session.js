@@ -91,12 +91,10 @@ export const killUserSessions = async (userId) => {
 };
 
 export const markSessionForRefresh = async (id) => {
-  const { store } = applicationSession;
   const currentSession = await getSession(id);
   if (currentSession) {
-    const currentTtl = store._getTTL(currentSession);
     const newSession = { ...currentSession, session_refresh: true };
-    await setSession(id, newSession, currentTtl);
+    await setSession(id, newSession, currentSession.expiration);
   }
   return undefined;
 };
