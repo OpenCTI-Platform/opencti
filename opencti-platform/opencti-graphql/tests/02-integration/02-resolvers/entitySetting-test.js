@@ -70,14 +70,14 @@ describe('EntitySetting resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY_BY_ID, variables: { id: entitySettingIdNote } });
     expect(queryResult.data.entitySetting.target_type).toEqual(ENTITY_TYPE_CONTAINER_NOTE);
     expect(queryResult.data.entitySetting.platform_entity_files_ref).toBeFalsy();
-    expect(queryResult.data.entitySetting.platform_hidden_type).toBeFalsy();
+    expect(queryResult.data.entitySetting.platform_hidden_type).toSatisfy((s) => s === null || s === undefined);
     expect(queryResult.data.entitySetting.enforce_reference).toSatisfy((s) => s === null || s === undefined);
   });
   it('should retrieve entity setting by target type', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY_BY_TARGET_TYPE, variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE } });
     expect(queryResult.data.entitySettingByType.target_type).toEqual(ENTITY_TYPE_CONTAINER_NOTE);
     expect(queryResult.data.entitySettingByType.platform_entity_files_ref).toBeFalsy();
-    expect(queryResult.data.entitySettingByType.platform_hidden_type).toBeFalsy();
+    expect(queryResult.data.entitySettingByType.platform_hidden_type).toSatisfy((s) => s === null || s === undefined);
     expect(queryResult.data.entitySettingByType.enforce_reference).toSatisfy((s) => s === null || s === undefined);
   });
   it('should update entity settings by ids - valid', async () => {

@@ -235,9 +235,7 @@ const IndicatorCreation = ({ paginationOptions }) => {
                   onChange={(n, v) => setFieldValue(n, v)}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Indicator"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField

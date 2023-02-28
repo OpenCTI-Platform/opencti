@@ -228,9 +228,7 @@ const InfrastructureCreation = ({ paginationOptions }) => {
                   onChange={(name, value) => setFieldValue(name, value)}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Infrastructure"
                   containerStyle={{ width: '100%', marginTop: 20 }}
                 />
                 <Field

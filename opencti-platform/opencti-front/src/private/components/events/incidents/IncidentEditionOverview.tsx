@@ -200,7 +200,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     });
   };
 
-  const handleSubmitField = (name: string, value: string | string[] | null) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | null | number | number[]) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -263,15 +263,12 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            disabled={isInferred}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            entityType="Incident"
           />
           <OpenVocabField
             label={t('Incident type')}

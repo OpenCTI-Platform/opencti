@@ -235,10 +235,8 @@ const ChannelCreation = ({ paginationOptions }) => {
                     style={{ marginTop: 20 }}
                   />
                   <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
                     containerStyle={fieldSpacingContainerStyle}
+                    entityType="Channel"
                   />
                   <CreatedByField
                     name="createdBy"

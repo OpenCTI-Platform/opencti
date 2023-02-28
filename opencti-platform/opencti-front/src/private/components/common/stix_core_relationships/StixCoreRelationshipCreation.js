@@ -586,9 +586,6 @@ class StixCoreRelationshipCreation extends Component {
                 )}
               </Field>
               <ConfidenceField
-                name="confidence"
-                label={t('Confidence level')}
-                fullWidth={true}
                 containerStyle={fieldSpacingContainerStyle}
               />
               <Field

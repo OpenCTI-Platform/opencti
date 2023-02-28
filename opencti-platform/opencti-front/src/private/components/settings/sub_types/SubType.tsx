@@ -13,6 +13,7 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
+import EntitySettingConfidenceScale from './EntitySettingConfidenceScale';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -37,6 +38,7 @@ export const subTypeFragment = graphql`
       platform_entity_files_ref
       platform_hidden_type
       target_type
+      confidence_scale 
       availableSettings
     }
     statuses {
@@ -61,6 +63,8 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
   const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, { targetType: subType.id });
+
+  const confidenceScale = subType.settings?.confidence_scale;
 
   return (
     <>
@@ -91,10 +95,23 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Grid>
             <EntitySettingAttributesConfiguration queryRef={queryRef} />
           </Grid>
+          { confidenceScale ? (
+            <Grid container={true} spacing={3} style={{ paddingTop: 10 }}>
+              <Grid item={true} xs={12}>
+                <div style={{ marginTop: 30 }}>
+                  <Typography variant="h4" gutterBottom={true}>
+                    {t('Confidence Scale Configuration')}
+                  </Typography>
+                  <Paper classes={{ root: classes.paper }} variant="outlined">
+                    <EntitySettingConfidenceScale queryRef={queryRef} />
+                  </Paper>
+                </div>
+              </Grid>
+            </Grid>
+          ) : <></> }
         </React.Suspense>
       )}
     </>
   );
 };
-
 export default SubType;

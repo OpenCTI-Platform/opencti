@@ -202,9 +202,7 @@ const GroupingCreation = ({ paginationOptions }) => {
                   fullWidth={true}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Grouping"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <OpenVocabField

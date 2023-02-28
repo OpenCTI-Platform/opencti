@@ -223,14 +223,12 @@ const InfrastructureEditionOverviewComponent = (props) => {
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            entityType="Infrastructure"
           />
           <Field
             component={DateTimePickerField}

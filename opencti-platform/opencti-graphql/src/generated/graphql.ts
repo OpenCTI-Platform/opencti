@@ -5360,6 +5360,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
   attributes_configuration?: Maybe<Scalars['String']>;
   availableSettings: Array<Scalars['String']>;
+  confidence_scale?: Maybe<Scalars['String']>;
   created_at: Scalars['DateTime'];
   enforce_reference?: Maybe<Scalars['Boolean']>;
   entity_type: Scalars['String'];
@@ -13665,6 +13666,7 @@ export type OpinionEditMutationsRelationDeleteArgs = {
 export enum OpinionsFilter {
   AssigneeTo = 'assigneeTo',
   Authors = 'authors',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -13688,6 +13690,7 @@ export type OpinionsFiltering = {
 };
 
 export enum OpinionsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -27134,6 +27137,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  confidence_scale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

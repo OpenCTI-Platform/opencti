@@ -554,9 +554,6 @@ class StixDomainObjectCreation extends Component {
                     </div>
                   )}
                   <ConfidenceField
-                    name="confidence"
-                    label={t('Confidence')}
-                    fullWidth={true}
                     containerStyle={fieldSpacingContainerStyle}
                   />
                   {values.type === 'Grouping' && (

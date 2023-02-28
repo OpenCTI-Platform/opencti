@@ -224,7 +224,7 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           >
             {t('Confidence level')}
           </Typography>
-          <ItemConfidence confidence={stixCoreRelationship.confidence} />
+          <ItemConfidence confidence={stixCoreRelationship.confidence} entityType="stix-core-relationship" />
         </div>
       }
       <Typography

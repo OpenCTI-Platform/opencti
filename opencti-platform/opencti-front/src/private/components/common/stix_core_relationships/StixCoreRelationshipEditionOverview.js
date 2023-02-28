@@ -15,7 +15,6 @@ import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, requestSubscription } from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
-import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import CreatedByField from '../form/CreatedByField';
@@ -396,13 +395,9 @@ const StixCoreRelationshipEditionContainer = ({
           }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
-                component={SelectField}
                 variant="edit"
-                name="confidence"
                 onFocus={handleChangeFocus}
-                onChange={handleSubmitField}
-                label={t('Confidence level')}
-                fullWidth={true}
+                onSubmit={handleSubmitField}
                 containerStyle={{ width: '100%' }}
                 editContext={editContext}
               />
@@ -560,6 +555,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
         description
         relationship_type
         is_inferred
+        entity_type
         status {
           id
           order

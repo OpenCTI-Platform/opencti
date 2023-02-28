@@ -425,6 +425,7 @@ class StixSightingRelationshipContainer extends Component {
                   </Typography>
                   <ItemConfidence
                     confidence={stixSightingRelationship.confidence}
+                    entityType={stixSightingRelationship.entity_type}
                   />
                   {stixSightingRelationship.x_opencti_inferences === null && (
                     <div>

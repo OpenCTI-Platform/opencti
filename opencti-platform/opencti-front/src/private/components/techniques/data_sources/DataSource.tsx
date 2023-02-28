@@ -29,6 +29,7 @@ const dataSourceFragment = graphql`
   fragment DataSource_dataSource on DataSource {
     id
     standard_id
+    entity_type
     x_opencti_stix_ids
     spec_version
     revoked

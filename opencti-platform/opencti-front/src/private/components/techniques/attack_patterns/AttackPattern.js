@@ -107,7 +107,6 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
       x_opencti_stix_ids
       spec_version
       revoked
-      confidence
       created
       modified
       created_at

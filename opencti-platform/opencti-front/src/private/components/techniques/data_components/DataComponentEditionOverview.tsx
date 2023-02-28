@@ -188,10 +188,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     });
   };
 
-  const handleSubmitField = (
-    name: string,
-    value: string | Option | null,
-  ) => {
+  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[]) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -247,14 +244,12 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
+            entityType="Data-Component"
           />
           <Field
             component={MarkDownField}

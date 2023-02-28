@@ -72,6 +72,7 @@ export default createFragmentContainer(GroupingComponent, {
     fragment Grouping_grouping on Grouping {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

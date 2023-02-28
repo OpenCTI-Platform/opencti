@@ -15,6 +15,7 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean @auth
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
+  confidence_scale: String @auth(for: [SETTINGS])
   attributes_configuration: String @auth(for: [SETTINGS])
   mandatoryDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
   mandatoryAttributes: [String!]! @auth

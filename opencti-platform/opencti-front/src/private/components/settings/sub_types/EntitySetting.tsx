@@ -23,6 +23,7 @@ export const entitySettingsFragment = graphql`
         platform_entity_files_ref
         platform_hidden_type
         target_type
+        confidence_scale
         mandatoryAttributes
       }
     }
@@ -32,9 +33,10 @@ export const entitySettingsFragment = graphql`
 export const entitySettingFragment = graphql`
   fragment EntitySetting_entitySetting on EntitySetting {
     id
-    target_type
     platform_entity_files_ref
     platform_hidden_type
+    target_type
+    confidence_scale
     enforce_reference
     mandatoryAttributes
     mandatoryDefinitions {

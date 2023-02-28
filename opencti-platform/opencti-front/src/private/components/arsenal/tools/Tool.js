@@ -103,6 +103,7 @@ const Tool = createFragmentContainer(ToolComponent, {
     fragment Tool_tool on Tool {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

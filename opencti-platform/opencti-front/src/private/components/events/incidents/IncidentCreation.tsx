@@ -206,10 +206,8 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
                   detectDuplicate={['Incident']}
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
                   containerStyle={fieldSpacingContainerStyle}
+                  entityType="Incident"
                 />
                 <OpenVocabField
                   label={t('Incident type')}
