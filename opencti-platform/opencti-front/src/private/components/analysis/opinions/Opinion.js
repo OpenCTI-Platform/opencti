@@ -1,10 +1,7 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React from 'react';
 import { graphql, createFragmentContainer } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Grid from '@mui/material/Grid';
-import inject18n from '../../../../components/i18n';
+import makeStyles from '@mui/styles/makeStyles';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import OpinionDetails from './OpinionDetails';
 import OpinionEdition from './OpinionEdition';
@@ -16,19 +13,18 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   container: {
     margin: 0,
   },
   gridContainer: {
     marginBottom: 20,
   },
-});
+}));
 
-class OpinionComponent extends Component {
-  render() {
-    const { classes, opinion } = this.props;
-    return (
+const OpinionComponent = ({ opinion }) => {
+  const classes = useStyles();
+  return (
       <div className={classes.container}>
         <ContainerHeader
           container={opinion}
@@ -79,14 +75,7 @@ class OpinionComponent extends Component {
           <OpinionEdition opinionId={opinion.id} />
         </Security>
       </div>
-    );
-  }
-}
-
-OpinionComponent.propTypes = {
-  opinion: PropTypes.object,
-  classes: PropTypes.object,
-  t: PropTypes.func,
+  );
 };
 
 const Opinion = createFragmentContainer(OpinionComponent, {
@@ -150,4 +139,4 @@ const Opinion = createFragmentContainer(OpinionComponent, {
   `,
 });
 
-export default compose(inject18n, withStyles(styles))(Opinion);
+export default Opinion;
