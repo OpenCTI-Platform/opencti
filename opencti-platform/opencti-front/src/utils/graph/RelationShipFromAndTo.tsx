@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { useFormatter } from '../../components/i18n';
@@ -9,7 +8,7 @@ import Loader, { LoaderVariant } from '../../components/Loader';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../String';
 
-const useStyles = makeStyles < Theme >(() => ({
+const useStyles = makeStyles(() => ({
   label: {
     marginTop: '20px',
   },

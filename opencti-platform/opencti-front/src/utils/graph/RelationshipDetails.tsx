@@ -6,7 +6,6 @@ import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
 import { InfoOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { useFormatter } from '../../components/i18n';
@@ -22,7 +21,7 @@ import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
 
-const useStyles = makeStyles < Theme >(() => ({
+const useStyles = makeStyles(() => ({
   relation: {
     marginTop: '20px',
   },

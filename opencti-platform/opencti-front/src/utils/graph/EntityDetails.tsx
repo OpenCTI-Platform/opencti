@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
-import { Theme } from '@mui/material/styles/createTheme';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
@@ -19,7 +18,7 @@ import { truncate } from '../String';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 
-const useStyles = makeStyles < Theme >(() => ({
+const useStyles = makeStyles(() => ({
   entity: {
     marginTop: '20px',
   },
