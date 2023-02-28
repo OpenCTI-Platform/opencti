@@ -61,18 +61,20 @@ class SystemDocumentationComponent extends Component {
     };
   }
 
-  handleClick(event, id) {
+  handleClick(event, name) {
     this.setState({
+      modal: name,
+      openInfoType: true,
       anchorEl: event.currentTarget,
-      modal: id,
     });
   }
 
   handleOpenView() {
     this.setState({
-      anchorEl: null,
-      openView: true,
       mode: 'view',
+      openView: true,
+      anchorEl: null,
+      openInfoType: false,
     });
   }
 
@@ -86,17 +88,19 @@ class SystemDocumentationComponent extends Component {
 
   handleOpenEdit() {
     this.setState({
-      anchorEl: null,
-      openEdit: true,
       mode: 'edit',
+      openEdit: true,
+      anchorEl: null,
+      openInfoType: false,
     });
   }
 
   handleOpenCreate() {
     this.setState({
+      mode: 'create',
       anchorEl: null,
       openCreate: true,
-      mode: 'create',
+      openInfoType: false,
     });
   }
 
@@ -125,62 +129,60 @@ class SystemDocumentationComponent extends Component {
     return (
       <>
         <Button
-          aria-controls={
-            this.state.anchorEl ? 'basic-menu' : undefined
-          }
           variant='contained'
           color='primary'
           endIcon={<KeyboardArrowDownIcon />}
           style={{ marginRight: 5 }}
           onClick={(event) => this.handleClick(event, name)}
           id={name}
-          aria-describedby='basic-menu'
         >
           {title && t(title)}
         </Button>
         <Menu
-          id='basic-menu'
           anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
+          open={this.state.modal === name && this.state.openInfoType}
           onClose={() => {
             this.setState({
               anchorEl: null,
+              openInfoType: false,
             });
           }}
-          MenuListProps={{
-            'aria-labelledby': name,
-          }}
           anchorOrigin={{
-            vertical: 'top',
+            vertical: 'true',
             horizontal: 'center',
           }}
           transformOrigin={{
-            vertical: 'top',
+            vertical: 'true',
             horizontal: 'center',
           }}
           className={classes.selectOptionMenu}
         >
-          <MenuItem
-            className={classes.selectMenuItems}
-            onClick={this.handleOpenCreate.bind(this)}
-          >
-            <AddIcon className={classes.selectIcons} />
-            Add
-          </MenuItem>
-          <MenuItem
-            onClick={this.handleOpenView.bind(this)}
-            className={classes.selectMenuItems}
-          >
-            <VisibilityIcon className={classes.selectIcons} />
-            View
-          </MenuItem>
-          <MenuItem
-            onClick={this.handleOpenEdit.bind(this)}
-            className={classes.selectMenuItems}
-          >
-            <EditIcon className={classes.selectIcons} />
-            Edit
-          </MenuItem>
+          {informationSystem[name] && informationSystem[name].id ? (
+            <>
+              <MenuItem
+                onClick={this.handleOpenView.bind(this)}
+                className={classes.selectMenuItems}
+              >
+                <VisibilityIcon className={classes.selectIcons} />
+                View
+              </MenuItem>
+              <MenuItem
+                onClick={this.handleOpenEdit.bind(this)}
+                className={classes.selectMenuItems}
+              >
+                <EditIcon className={classes.selectIcons} />
+                Edit
+              </MenuItem>
+            </>
+          ) : (
+            <MenuItem
+              className={classes.selectMenuItems}
+              onClick={this.handleOpenCreate.bind(this)}
+            >
+              <AddIcon className={classes.selectIcons} />
+              Add
+            </MenuItem>
+          )}
         </Menu>
       </>
     );

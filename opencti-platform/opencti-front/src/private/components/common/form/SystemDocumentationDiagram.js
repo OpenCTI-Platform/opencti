@@ -491,12 +491,11 @@ class SystemDocumentationDiagram extends Component {
                     </div>
                     <div className="clearfix" />
                     <Field
-                      component={SelectField}
+                      component={TextField}
                       variant='outlined'
                       name="diagram_link"
+                      size='small'
                       fullWidth={true}
-                      style={{ height: '38.09px' }}
-                      containerstyle={{ width: '100%' }}
                     />
                   </Grid>
                   <Grid item={true} xs={12}>

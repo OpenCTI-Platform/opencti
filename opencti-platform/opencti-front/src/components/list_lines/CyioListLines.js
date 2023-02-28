@@ -653,6 +653,7 @@ class CyioListLines extends Component {
                       <List>
                         <ListItem
                           button={true}
+                          disabled={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
                         >
                           Graph
