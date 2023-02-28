@@ -1,53 +1,3 @@
-// generated from the ontology files for the object
-const assetNameContext = {
-  id: 'http://darklight.ai/ns/common#id',
-  entity_type: 'http://darklight.ai/ns/common#object_type',
-  asset_id: 'http://scap.nist.gov/ns/asset-identification#asset_id',
-  asset_tag: 'http://scap.nist.gov/ns/asset-identification#asset_tag',
-  asset_type: 'http://scap.nist.gov/ns/asset-identification#asset_type',
-  baseline_configuration_name: 'http://scap.nist.gov/ns/asset-identification#baseline_configuration_name',
-  bios_id: 'http://scap.nist.gov/ns/asset-identification#bios_id',
-  cpe_identifier: 'http://scap.nist.gov/ns/asset-identification#cpe_identifier',
-  default_gateway: 'http://scap.nist.gov/ns/asset-identification#default_gateway',
-  description: 'http://scap.nist.gov/ns/asset-identification#description',
-  fqdn: 'http://scap.nist.gov/ns/asset-identification#fqdn',
-  function: 'http://scap.nist.gov/ns/asset-identification#function',
-  hostname: 'http://scap.nist.gov/ns/asset-identification#hostname',
-  implementation_point: 'http://scap.nist.gov/ns/asset-identification#implementation_point',
-  installation_id: 'http://scap.nist.gov/ns/asset-identification#installation_id',
-  installed_hardware: 'http://scap.nist.gov/ns/asset-identification#installed_hardware',
-  installed_operating_system: 'http://scap.nist.gov/ns/asset-identification#installed_operating_system',
-  installed_software: 'http://scap.nist.gov/ns/asset-identification#installed_software',
-  ip_address: 'http://scap.nist.gov/ns/asset-identification#ip_address',
-  is_publicly_accessible: 'http://scap.nist.gov/ns/asset-identification#is_publicly_accessible',
-  is_scanned: 'http://scap.nist.gov/ns/asset-identification#is_scanned',
-  is_virtual: 'http://scap.nist.gov/ns/asset-identification#is_virtual',
-  last_scanned: 'http://scap.nist.gov/ns/asset-identification#last_scanned',
-  license_key: 'http://scap.nist.gov/ns/asset-identification#license_key',
-  locations: 'http://scap.nist.gov/ns/asset-identification#locations',
-  mac_address: 'http://scap.nist.gov/ns/asset-identification#mac_address',
-  model: 'http://scap.nist.gov/ns/asset-identification#model',
-  motherboard_id: 'http://scap.nist.gov/ns/asset-identification#motherboard_id',
-  name: 'http://scap.nist.gov/ns/asset-identification#name',
-  netbios_name: 'http://scap.nist.gov/ns/asset-identification#netbios_name',
-  network_address_range: 'http://scap.nist.gov/ns/asset-identification#network_address_range',
-  network_id: 'http://scap.nist.gov/ns/asset-identification#network_id',
-  network_name: 'http://scap.nist.gov/ns/asset-identification#network_name',
-  operational_status: 'http://scap.nist.gov/ns/asset-identification#operational_status',
-  patch_level: 'http://scap.nist.gov/ns/asset-identification#patch_level',
-  ports: 'http://scap.nist.gov/ns/asset-identification#ports',
-  release_date: 'http://scap.nist.gov/ns/asset-identification#release_date',
-  responsible_parties: 'http://scap.nist.gov/ns/asset-identification#responsible_parties',
-  serial_number: 'http://scap.nist.gov/ns/asset-identification#serial_number',
-  service_software: 'http://scap.nist.gov/ns/asset-identification#service_software',
-  software_identifier: 'http://scap.nist.gov/ns/asset-identification#software_identifier',
-  system_name: 'http://scap.nist.gov/ns/asset-identification#system_name',
-  uri: 'http://scap.nist.gov/ns/asset-identification#uri',
-  vendor_name: 'http://scap.nist.gov/ns/asset-identification#vendor_name',
-  version: 'http://scap.nist.gov/ns/asset-identification#version',
-  vlan_id: 'http://scap.nist.gov/ns/asset-identification#vlan_id',
-};
-
 const objectTypeMapping = {
   // object-type: GraphQL-Type
   "account": "AccountAsset",
@@ -211,4 +161,4 @@ const assetSingularizeSchema = {
   },
 };
 
-export { assetNameContext, assetSingularizeSchema, objectTypeMapping };
+export { assetSingularizeSchema, objectTypeMapping };
