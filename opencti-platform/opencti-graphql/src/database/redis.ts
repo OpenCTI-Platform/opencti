@@ -226,10 +226,10 @@ export const getSession = async (key: string) => {
     await tx.get(key);
     await tx.ttl(key);
   });
-  const session = String(sessionInformation?.at(0)?.at(1));
+  const session = sessionInformation?.at(0)?.at(1);
   if (session) {
     const ttl = Number(sessionInformation?.at(1)?.at(1));
-    return { ...JSON.parse(session), expiration: ttl };
+    return { ...JSON.parse(String(session)), expiration: ttl };
   }
   return undefined;
 };
