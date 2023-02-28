@@ -36,6 +36,8 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   const handleOpen = () => setControlOpen(true);
   const handleControlClose = () => setControlOpen(false);
 
+  const validateReferences = (references: ExternalReferencesValues | undefined) => !!references && references.length > 0;
+
   return (
     <div>
       { !handleClose && (
@@ -74,7 +76,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <DialogActions>
             <Button color="primary"
               onClick={submitForm}
-              disabled={disabled}>
+              disabled={disabled || !validateReferences(values)}>
               {t('Validate')}
             </Button>
           </DialogActions>

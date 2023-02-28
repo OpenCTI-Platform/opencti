@@ -122,9 +122,9 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
   };
   const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
 

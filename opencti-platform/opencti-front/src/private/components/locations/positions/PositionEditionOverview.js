@@ -83,7 +83,7 @@ const PositionEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
@@ -93,7 +93,7 @@ const PositionEditionOverviewComponent = (props) => {
       .nullable(),
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const positionValidator = useYupSchemaBuilder('Position', basicShape);
@@ -160,6 +160,7 @@ const PositionEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(position)),
     R.assoc('objectMarking', convertMarkings(position)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, position)),
+    R.assoc('references', []),
     R.pick([
       'name',
       'description',

@@ -80,7 +80,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     if (!node.settings?.availableSettings?.includes(option)) {
       return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'}/>;
     }
-    if ((node.settings as any)?.[option] === true) {
+    if ((node.settings as never)?.[option] === true) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
     }
     return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;

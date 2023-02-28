@@ -150,13 +150,13 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    confidence: Yup.number(),
-    x_mitre_platforms: Yup.array(),
-    collection_layers: Yup.array(),
+    confidence: Yup.number().nullable(),
+    x_mitre_platforms: Yup.array().nullable(),
+    collection_layers: Yup.array().nullable(),
     references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
   };
   const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
 

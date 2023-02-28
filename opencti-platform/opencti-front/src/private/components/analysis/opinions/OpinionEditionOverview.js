@@ -118,6 +118,7 @@ const OpinionEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(opinion)),
     R.assoc('objectMarking', convertMarkings(opinion)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, opinion)),
+    R.assoc('references', []),
     R.pick([
       'opinion',
       'explanation',

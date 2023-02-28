@@ -12,7 +12,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
@@ -85,11 +85,11 @@ const ThreatActorEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
@@ -111,6 +111,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -149,21 +150,12 @@ const ThreatActorEditionOverviewComponent = (props) => {
     }
   };
 
-  const createdBy = convertCreatedBy(threatActor);
-  const objectMarking = convertMarkings(threatActor);
-  const status = convertStatus(t, threatActor);
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(threatActor);
   const initialValues = R.pipe(
-    R.assoc('createdBy', createdBy),
-    R.assoc('killChainPhases', killChainPhases),
-    R.assoc('objectMarking', objectMarking),
-    R.assoc('x_opencti_workflow_id', status),
+    R.assoc('createdBy', convertCreatedBy(threatActor)),
+    R.assoc('killChainPhases', convertKillChainPhases(threatActor)),
+    R.assoc('objectMarking', convertMarkings(threatActor)),
+    R.assoc('x_opencti_workflow_id', convertStatus(t, threatActor)),
+    R.assoc('references', []),
     R.assoc(
       'threat_actor_types',
       threatActor.threat_actor_types ? threatActor.threat_actor_types : [],

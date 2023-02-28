@@ -80,7 +80,7 @@ const IntrusionSetCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number(),
     description: Yup.string().nullable(),
   };

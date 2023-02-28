@@ -90,13 +90,13 @@ NoteEditionOverviewProps
 
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
-    content: Yup.string().required(t('This field is required')),
+    content: Yup.string().min(2).required(t('This field is required')),
     created: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
     attribute_abstract: Yup.string().nullable(),
-    confidence: Yup.number(),
-    note_types: Yup.array(),
+    confidence: Yup.number().nullable(),
+    note_types: Yup.array().nullable(),
     likelihood: Yup.number()
       .min(0)
       .max(100)
@@ -143,6 +143,7 @@ NoteEditionOverviewProps
     createdBy: convertCreatedBy(note) as Option,
     objectMarking: convertMarkings(note),
     x_opencti_workflow_id: convertStatus(t, note) as Option,
+    references: [],
   };
 
   return (

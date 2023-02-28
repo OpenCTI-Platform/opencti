@@ -80,9 +80,9 @@ const SectorEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const sectorValidator = useYupSchemaBuilder('Sector', basicShape);
@@ -149,6 +149,7 @@ const SectorEditionOverviewComponent = (props) => {
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
     R.assoc('x_opencti_workflow_id', status),
+    R.assoc('references', []),
     R.pick([
       'name',
       'description',

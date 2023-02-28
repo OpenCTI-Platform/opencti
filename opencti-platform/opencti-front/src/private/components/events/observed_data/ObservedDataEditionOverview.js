@@ -164,6 +164,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     R.assoc('first_observed', buildDate(observedData.first_observed)),
     R.assoc('last_observed', buildDate(observedData.last_observed)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, observedData)),
+    R.assoc('references', []),
     R.pick([
       'first_observed',
       'last_observed',
@@ -274,10 +275,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 }
                 onChange={editor.changeMarking}
               />
-              {enableReferences && isValid && dirty && (
+              {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValid || !dirty}
                   setFieldValue={setFieldValue}
                   open={false}
                   values={values.references}

@@ -84,7 +84,7 @@ const AttackPatternEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     x_mitre_id: Yup.string().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),

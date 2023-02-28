@@ -102,7 +102,7 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const courseOfActionValidator = useYupSchemaBuilder('Course-Of-Action', basicShape);

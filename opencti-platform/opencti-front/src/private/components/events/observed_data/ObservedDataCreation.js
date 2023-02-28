@@ -89,8 +89,8 @@ const ObservedDataCreation = ({ paginationOptions }) => {
     last_observed: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
-    number_observed: Yup.number(),
-    confidence: Yup.number(),
+    number_observed: Yup.number().required(t('This field is required')),
+    confidence: Yup.number().nullable(),
   };
   const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape);
 

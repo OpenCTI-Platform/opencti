@@ -83,7 +83,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
     x_opencti_log_sources: Yup.array().nullable(),

@@ -84,8 +84,8 @@ const GroupingEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),

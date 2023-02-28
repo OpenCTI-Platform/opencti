@@ -129,7 +129,7 @@ interface RegionEdititionOverviewProps {
 interface RegionEditionFormValues {
   name: string
   description: string | null
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   x_opencti_workflow_id: Option
   message?: string,
@@ -146,9 +146,9 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
   const region = useFragment(regionEditionOverviewFragment, regionRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
 
@@ -218,6 +218,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
     createdBy: convertCreatedBy(region),
     objectMarking: convertMarkings(region),
     x_opencti_workflow_id: convertStatus(t, region) as Option,
+    references: [],
   };
 
   return (

@@ -88,7 +88,7 @@ const SystemCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const systemValidator = useYupSchemaBuilder('System', basicShape);

@@ -146,7 +146,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
   const country = useFragment(countryEditionOverviewFragment, countryRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),

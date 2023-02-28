@@ -94,15 +94,13 @@ const InfrastructureCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
-    confidence: Yup.number(),
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
+    confidence: Yup.number().nullable(),
+    first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date().nullable()
+      .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
   const infrastructureValidator = useYupSchemaBuilder('Infrastructure', basicShape);

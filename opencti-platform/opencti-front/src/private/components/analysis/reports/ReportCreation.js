@@ -98,7 +98,7 @@ const ReportCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),

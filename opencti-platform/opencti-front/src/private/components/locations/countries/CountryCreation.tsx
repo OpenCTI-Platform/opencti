@@ -88,7 +88,7 @@ const countryMutation = graphql`
 interface CountryAddInput {
   name: string
   description: string
-  createdBy?: Option | undefined
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -101,7 +101,7 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const countryValidator = useYupSchemaBuilder('Country', basicShape);

@@ -85,8 +85,8 @@ const CampaignEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),

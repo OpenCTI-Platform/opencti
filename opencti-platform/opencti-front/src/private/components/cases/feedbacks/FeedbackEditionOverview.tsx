@@ -157,7 +157,7 @@ interface FeedbackEditionOverviewProps {
 interface CaseEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
@@ -169,7 +169,7 @@ FeedbackEditionOverviewProps
   const caseData = useFragment(feedbackEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     priority: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     description: Yup.string().nullable(),

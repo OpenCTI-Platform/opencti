@@ -119,7 +119,7 @@ interface AdministrativeAreaEditionOverviewProps {
 interface AdministrativeAreaEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
@@ -135,7 +135,7 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
   const administrativeArea = useFragment(administrativeAreaEditionOverviewFragment, administrativeAreaRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),

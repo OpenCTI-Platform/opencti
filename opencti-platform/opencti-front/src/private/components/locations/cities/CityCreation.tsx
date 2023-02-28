@@ -80,7 +80,7 @@ interface CityAddInput {
   description: string
   latitude: string
   longitude: string
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -93,7 +93,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),

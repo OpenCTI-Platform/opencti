@@ -138,7 +138,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
   const city = useFragment(cityEditionOverviewFragment, cityRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),

@@ -85,7 +85,7 @@ const OrganizationEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
@@ -157,6 +157,7 @@ const OrganizationEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(organization)),
     R.assoc('objectMarking', convertMarkings(organization)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, organization)),
+    R.assoc('references', []),
     R.pick([
       'name',
       'description',

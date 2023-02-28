@@ -75,7 +75,7 @@ Omit<OpenVocabProps, 'type'>
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (
     <Tooltip {...optionProps} key={value} title={description}>
-      <MenuItem value={value}>{value}</MenuItem>
+      <MenuItem value={value}>{t(value)}</MenuItem>
     </Tooltip>
   );
   if (variant === 'edit') {

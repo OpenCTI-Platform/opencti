@@ -90,12 +90,14 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     indicator_types: Yup.array(),
     confidence: Yup.number(),
     pattern: Yup.string().required(t('This field is required')),
     valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date().nullable()
+      .min(Yup.ref('valid_from'), "The valid until date can't be before valid from date")
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
@@ -194,7 +196,6 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
       'x_mitre_platforms',
       'killChainPhases',
       'createdBy',
-      'killChainPhases',
       'objectMarking',
       'x_opencti_workflow_id',
     ]),

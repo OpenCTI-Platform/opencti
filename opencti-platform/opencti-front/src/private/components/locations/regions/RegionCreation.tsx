@@ -88,7 +88,7 @@ const regionMutation = graphql`
 interface RegionAddInput {
   name: string
   description: string
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -101,7 +101,7 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const regionValidator = useYupSchemaBuilder('Region', basicShape);

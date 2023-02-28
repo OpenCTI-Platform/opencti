@@ -90,7 +90,7 @@ const OrganizationCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
@@ -172,7 +172,7 @@ const OrganizationCreation = ({ paginationOptions }) => {
             initialValues={{
               name: '',
               description: '',
-              x_opencti_reliability: '',
+              x_opencti_reliability: undefined,
               x_opencti_organization_type: 'other',
               createdBy: '',
               objectMarking: [],
