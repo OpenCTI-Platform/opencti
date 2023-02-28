@@ -106,17 +106,21 @@ const noteResolvers = {
         return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
       },
     }),
+    // For collaborative creation
     userNoteAdd: async (_, { input }, context) => {
       const { user } = context;
-      let individualId = user.individual_id;
-      if (individualId === undefined) {
-        const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
-        individualId = individual.id;
+      const noteToCreate = { ...input };
+      noteToCreate.createdBy = user.individual_id;
+      if (noteToCreate.createdBy === undefined) {
+        const individualInput = { name: user.name, contact_information: user.user_email };
+        // We need to bypass validation here has we maybe not setup all require fields
+        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+        noteToCreate.createdBy = individual.id;
         await userSessionRefresh(user.internal_id);
       }
-      const inputWithCreator = { ...input, createdBy: individualId };
-      return addNote(context, user, inputWithCreator);
+      return addNote(context, user, noteToCreate);
     },
+    // For knowledge
     noteAdd: (_, { input }, context) => {
       return addNote(context, context.user, input);
     },

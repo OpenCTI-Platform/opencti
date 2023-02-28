@@ -2641,7 +2641,9 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
-  await validateInputCreation(context, user, relationshipType, input, entitySetting);
+  if (opts.bypassValidation === false || opts.bypassValidation === null) {
+    await validateInputCreation(context, user, relationshipType, input, entitySetting);
+  }
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
@@ -2972,9 +2974,10 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       });
     }
   }
-  await validateInputCreation(context, user, type, input, entitySetting);
+  if (opts.bypassValidation === false || opts.bypassValidation === null) {
+    await validateInputCreation(context, user, type, input, entitySetting);
+  }
   // Endregion
-
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, type);
@@ -3099,23 +3102,23 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
   }
 };
 
-export const createEntity = async (context, user, input, type) => {
+export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
     const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
     const firstSequence = objectSequences.shift();
     const subObjectsEntity = R.assoc(INPUT_OBJECTS, firstSequence, input);
-    const created = await createEntityRaw(context, user, subObjectsEntity, type);
+    const created = await createEntityRaw(context, user, subObjectsEntity, type, opts);
     // For each subsequences of objects
     // We need to produce a batch upsert of object that will be upserted.
     for (let index = 0; index < objectSequences.length; index += 1) {
       const objectSequence = objectSequences[index];
       const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
-      await createEntityRaw(context, user, upsertInput, type);
+      await createEntityRaw(context, user, upsertInput, type, opts);
     }
     return created.element;
   }
-  const data = await createEntityRaw(context, user, input, type);
+  const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await createEntityAutoEnrichment(context, user, data.element.id, type);

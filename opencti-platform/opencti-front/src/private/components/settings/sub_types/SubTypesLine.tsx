@@ -76,6 +76,15 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const renderOptionIcon = (option: string) => {
+    if (!node.settings?.availableSettings?.includes(option)) {
+      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'}/>;
+    }
+    if ((node.settings as any)?.[option] === true) {
+      return <CheckCircleOutlined fontSize="small" color="success" />;
+    }
+    return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
+  };
   return (
     <ListItemButton
       key={node.id}
@@ -90,8 +99,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
           : onToggleEntity({ id: node.id }, event))
         }
         classes={{ root: classes.itemIcon }}
-        style={{ minWidth: 40 }}
-      >
+        style={{ minWidth: 40 }}>
         <Checkbox
           edge="start"
           checked={
@@ -107,72 +115,24 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
               {t(`entity_${node.label}`)}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.workflow_status.width }}
-            >
+            <div className={classes.bodyItem} style={{ width: dataColumns.workflow_status.width }}>
               {node.workflowEnabled ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.enforce_reference.width }}
-            >
-              {node.settings?.enforce_reference ? (
-                <CheckCircleOutlined fontSize="small" color="success" />
-              ) : (
-                <DoNotDisturbOnOutlined
-                  fontSize="small"
-                  color={
-                    node.settings?.enforce_reference === null
-                      ? 'disabled'
-                      : 'primary'
-                  }
-                />
-              )}
+            <div className={classes.bodyItem} style={{ width: dataColumns.enforce_reference.width }}>
+              {renderOptionIcon('enforce_reference')}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.automatic_references.width }}
-            >
-              {node.settings?.platform_entity_files_ref ? (
-                <CheckCircleOutlined fontSize="small" color="success" />
-              ) : (
-                <DoNotDisturbOnOutlined
-                  fontSize="small"
-                  color={
-                    node.settings?.platform_entity_files_ref === null
-                      ? 'disabled'
-                      : 'primary'
-                  }
-                />
-              )}
+            <div className={classes.bodyItem} style={{ width: dataColumns.automatic_references.width }}>
+              {renderOptionIcon('platform_entity_files_ref')}
             </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.hidden.width }}
-            >
-              {node.settings?.platform_hidden_type ? (
-                <CheckCircleOutlined fontSize="small" color="success" />
-              ) : (
-                <DoNotDisturbOnOutlined
-                  fontSize="small"
-                  color={
-                    node.settings?.platform_hidden_type === null
-                      ? 'disabled'
-                      : 'primary'
-                  }
-                />
-              )}
+            <div className={classes.bodyItem} style={{ width: dataColumns.hidden.width }}>
+              {renderOptionIcon('platform_hidden_type')}
             </div>
           </div>
         }

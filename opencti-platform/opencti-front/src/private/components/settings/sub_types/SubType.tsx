@@ -37,6 +37,7 @@ export const subTypeFragment = graphql`
       platform_entity_files_ref
       platform_hidden_type
       target_type
+      availableSettings
     }
     statuses {
       edges {

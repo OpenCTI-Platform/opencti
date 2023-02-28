@@ -38,6 +38,7 @@ import {
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
+import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -89,14 +90,6 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
   }
 `;
 
-const noteValidation = (t: (message: string) => string) => Yup.object().shape({
-  attribute_abstract: Yup.string().nullable(),
-  content: Yup.string().required(t('This field is required')),
-  confidence: Yup.number(),
-  note_types: Yup.array(),
-  likelihood: Yup.number().min(0).max(100),
-});
-
 const toFinalValues = (values: NoteAddInput, id: string) => {
   return {
     attribute_abstract: values.attribute_abstract,
@@ -141,6 +134,15 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
 > = ({ id, marginTop, queryRef, paginationOptions, defaultMarking, title }) => {
   const { t } = useFormatter();
   const classes = useStyles();
+  const basicShape = {
+    content: Yup.string().required(t('This field is required')),
+    attribute_abstract: Yup.string().nullable(),
+    confidence: Yup.number(),
+    note_types: Yup.array(),
+    likelihood: Yup.number().min(0).max(100),
+  };
+  // createdBy must be excluded from the validation, it will be handled directly by the backend
+  const noteValidator = useYupSchemaBuilder('Note', basicShape, ['createdBy']);
   const data = usePreloadedFragment<
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
@@ -201,18 +203,13 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       </Typography>
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <>
-          <IconButton
-            color="secondary"
+          <IconButton color="secondary"
             onClick={handleToggleWrite}
             classes={{ root: classes.createButton }}
-            size="large"
-          >
+            size="large">
             <EditOutlined fontSize="small" />
           </IconButton>
-          <AddNotes
-            stixCoreObjectOrStixCoreRelationshipId={id}
-            stixCoreObjectOrStixCoreRelationshipNotes={notes}
-          />
+          <AddNotes stixCoreObjectOrStixCoreRelationshipId={id} stixCoreObjectOrStixCoreRelationshipNotes={notes}/>
         </>
       </Security>
       <div className="clearfix" />
@@ -229,15 +226,10 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           );
         })}
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-        <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+        <Accordion style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
-          variant="outlined"
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreOutlined />}
-            onClick={handleToggleWrite}
-          >
+          variant="outlined">
+          <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={handleToggleWrite}>
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
@@ -245,12 +237,10 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            <Formik
-              initialValues={initialValues}
-              validationSchema={noteValidation(t)}
+            <Formik initialValues={initialValues}
+              validationSchema={noteValidator}
               onSubmit={onSubmit}
-              onReset={handleToggleWrite}
-            >
+              onReset={handleToggleWrite}>
               {({
                 submitForm,
                 handleReset,
@@ -312,8 +302,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       variant="contained"
                       onClick={handleReset}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                      classes={{ root: classes.button }}>
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -321,8 +310,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
+                      classes={{ root: classes.button }}>
                       {t('Create')}
                     </Button>
                   </div>
