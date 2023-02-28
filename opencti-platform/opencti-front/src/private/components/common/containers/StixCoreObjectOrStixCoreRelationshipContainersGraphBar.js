@@ -10,7 +10,6 @@ import {
   FilterListOutlined,
   AccountBalanceOutlined,
   CenterFocusStrongOutlined,
-  InfoOutlined,
   ScatterPlotOutlined,
   DateRangeOutlined,
 } from '@mui/icons-material';
@@ -370,18 +369,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     height: '100%',
                   }}
                 >
-                  <Tooltip title={t('View the item')}>
-                    <span>
-                      <IconButton
-                        color="primary"
-                        target="_blank"
-                        disabled={true}
-                        size="large"
-                      >
-                        <InfoOutlined />
-                      </IconButton>
-                    </span>
-                  </Tooltip>
                 </div>
               )}
               <div className="clearfix" />
@@ -777,7 +764,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     disabled={!viewEnabled}
                     size="large"
                   >
-                    <InfoOutlined />
                   </IconButton>
                 </span>
               </Tooltip>

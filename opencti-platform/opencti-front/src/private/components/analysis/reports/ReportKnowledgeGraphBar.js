@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Link } from 'react-router-dom';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -13,7 +12,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   FilterListOutlined,
-  InfoOutlined,
   LinkOutlined,
   ReadMoreOutlined,
   ScatterPlotOutlined,
@@ -49,7 +47,6 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
-import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
 import StixSightingRelationshipCreation
   from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
@@ -368,46 +365,10 @@ class ReportKnowledgeGraphBar extends Component {
       deleteObject,
       navOpen,
     } = this.state;
-    const viewEnabled = (numberOfSelectedNodes === 1 && numberOfSelectedLinks === 0)
-      || (numberOfSelectedNodes === 0 && numberOfSelectedLinks === 1);
-    let viewLink = null;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
         > 0
       || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length
         > 0;
-    if (viewEnabled) {
-      if (numberOfSelectedNodes === 1 && selectedNodes.length === 1) {
-        if (
-          !selectedNodes[0].parent_types.includes(
-            'stix-cyber-observable-relationship',
-          )
-          && selectedNodes[0].relationship_type
-        ) {
-          viewLink = `${resolveLink(selectedNodes[0].fromType)}/${
-            selectedNodes[0].fromId
-          }/knowledge/relations/${selectedNodes[0].id}`;
-        } else {
-          viewLink = `${resolveLink(selectedNodes[0].entity_type)}/${
-            selectedNodes[0].id
-          }`;
-        }
-      } else if (numberOfSelectedLinks === 1 && selectedLinks.length === 1) {
-        const remoteRelevant = selectedLinks[0].source.relationship_type
-          ? selectedLinks[0].target
-          : selectedLinks[0].source;
-        if (selectedLinks[0].entity_type === 'stix-sighting-relationship') {
-          viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
-            remoteRelevant.id
-          }/knowledge/sightings/${selectedLinks[0].id}`;
-        } else if (
-          !selectedLinks[0].parent_types.includes('stix-meta-relationship')
-        ) {
-          viewLink = `${resolveLink(remoteRelevant.entity_type)}/${
-            remoteRelevant.id
-          }/knowledge/relations/${selectedLinks[0].id}`;
-        }
-      }
-    }
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
@@ -863,20 +824,6 @@ class ReportKnowledgeGraphBar extends Component {
                     confidence={report.confidence}
                   />
                 )}
-                <Tooltip title={t('View the item')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      component={Link}
-                      target="_blank"
-                      to={viewLink}
-                      disabled={!viewEnabled || !viewLink}
-                      size="large"
-                    >
-                      <InfoOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
                 <Tooltip title={t('Edit the selected item')}>
                   <span>
                     <IconButton

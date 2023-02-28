@@ -37,6 +37,7 @@ import {
 } from './IncidentKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import IncidentPopover from './IncidentPopover';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const ignoredStixCoreObjectsTypes = ['Incident', 'Note', 'Opinion'];
 
@@ -1232,6 +1233,7 @@ class IncidentKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
       <div>
         <ContainerHeader
@@ -1245,6 +1247,11 @@ class IncidentKnowledgeGraphComponent extends Component {
           enableSuggestions={false}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
+        {(selectedEntities.length > 0) && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+          />
+        )}
         <IncidentKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
