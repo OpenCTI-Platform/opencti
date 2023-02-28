@@ -66,6 +66,9 @@ const styles = (theme) => ({
     lineHeight: "24px",
     color: theme.palette.header.text,
   },
+  textarea: {
+    background: "#cfe"
+  }
 });
 
 const informationTypesPopoverMutation = graphql`
@@ -312,45 +315,6 @@ class InformationTypesPopover extends Component {
                         name='name'
                         setFieldValue={setFieldValue}
                       />
-                      {/* <Field
-                        open={this.state.openAutocomplete}
-                        onClose={() => this.setState({ openAutocomplete: false })}
-                        component={Autocomplete}
-                        name="name"
-                        size="small"
-                        loading={selectedProduct.name || false}
-                        loadingText="Searching..."
-                        className={classes.autocomplete}
-                        inputValue={productName}
-                        classes={{
-                          popupIndicatorOpen: classes.popupIndicator,
-                        }}
-                        noOptionsText={t("No available options")}
-                        popupIcon={<KeyboardArrowDownIcon />}
-                        options={this.state.products}
-                        getOptionLabel={(option) =>
-                          option.label ? option.label : option
-                        }
-                        onInputChange={this.searchProducts.bind(this)}
-                        onKeyDown={this.handleSearchProducts.bind(this)}
-                        selectOnFocus={true}
-                        autoHighlight={true}
-                        renderInput={(params) => (
-                          <TextField
-                            variant="outlined"
-                            {...params}
-                            inputProps={{
-                              ...params.inputProps,
-                              onKeyDown: (e) => {
-                                if (e.key === "Enter") {
-                                  e.stopPropagation();
-                                  this.handleSearchProducts();
-                                }
-                              },
-                            }}
-                          />
-                        )}
-                      /> */}
                     </Grid>
                     <Grid xs={12} item={true}>
                       <Typography

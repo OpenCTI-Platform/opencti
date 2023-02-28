@@ -21,15 +21,15 @@ const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 const searchTextFieldQuery = graphql`
   query SearchTextFieldQuery(
     $search: String
-    $filters: [ProductFiltering]
-    $orderedBy: ProductOrdering
+    $orderedBy: SoftwareAssetOrdering
     $orderMode: OrderingMode
+    $first: Int
   ) {
-    products(
+    softwareAssetList(
       search: $search
-      filters: $filters
       orderedBy: $orderedBy
       orderMode: $orderMode
+      first: $first
     ) {
       edges {
         node {
@@ -43,17 +43,14 @@ const searchTextFieldQuery = graphql`
 
 const searchTextFieldIdQuery = graphql`
   query SearchTextFieldIdQuery($id: ID!) {
-    product(id: $id) {
+    softwareAsset(id: $id) {
       id
       created
       modified
       name
-      vendor
+      vendor_name
       version
       cpe_identifier
-      ... on SoftwareProduct {
-        software_identifier
-      }
     }
   }
 `;
@@ -98,32 +95,29 @@ class SearchTextField extends Component {
         id: selectedProductValue.value,
       }).toPromise()
         .then((data) => {
-          this.setState({ selectedProduct: data.product });
+          this.setState({ selectedProduct: data.softwareAsset }, () => this.props.setFieldValue("description", data.softwareAsset.cpe_identifier));
         });
     }
   }
 
-  handleSearchProducts() {
-    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
-    (this.state.productName.length > 2) && fetchQuery(searchTextFieldQuery, {
-      search: this.state.productName,
+  handleSearchProducts(event, value) {
+    fetchQuery(searchTextFieldQuery, {
+      search: value === "" ? "" : value,
       orderedBy: 'name',
       orderMode: 'asc',
-      filters: [
-        { key: 'object_type', values: ['software'] },
-      ],
+      first: value === "" ? 10 : null,
     })
       .toPromise()
       .then((data) => {
-        const products = R.pipe(
-          R.pathOr([], ['products', 'edges']),
-          R.map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
+        const products = pipe(
+          pathOr([], ['softwareAssetList', 'edges']),
+          map((n) => ({
+            label: n.node?.name,
+            value: n.node?.id,
           })),
         )(data);
         this.setState({
-          products: R.union(this.state.products, products),
+          products: union(this.state.products, products),
         });
       })
       .catch((err) => {
@@ -147,7 +141,7 @@ class SearchTextField extends Component {
       <div>
         <Field
           component={Autocomplete}
-          name={name}
+          name="name"
           size="small"
           loading={selectedProduct.name || false}
           loadingText="Searching..."
@@ -161,7 +155,8 @@ class SearchTextField extends Component {
           options={this.state.products}
           getOptionLabel={(option) => (option.label ? option.label : option)}
           onInputChange={this.searchProducts.bind(this)}
-          onKeyDown={this.handleSearchProducts.bind(this)}
+          onFocus={this.handleSearchProducts.bind(this)}
+          onChange={this.handleSearchProducts.bind(this)}
           selectOnFocus={true}
           autoHighlight={true}
           renderInput={(params) => (
