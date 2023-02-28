@@ -120,7 +120,7 @@ class SoftwareCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/defender HQ/assets/software/${node.id}`}
+          to={`/defender_hq/assets/software/${node.id}`}
           data-cy='software card'
         >
           {/* <CardHeader

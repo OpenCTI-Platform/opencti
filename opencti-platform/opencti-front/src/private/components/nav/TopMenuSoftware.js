@@ -54,7 +54,7 @@ class TopMenuSoftware extends Component {
         {/* {!softwareId && (
           <Button
             component={Link}
-            to="/defender HQ/assets/software"
+            to="/defender_hq/assets/software"
             variant="contained"
             size="small"
             color="inherit"
@@ -70,15 +70,15 @@ class TopMenuSoftware extends Component {
         />
         <Button
           component={Link}
-          to={`/defender HQ/assets/software/${softwareId}`}
+          to={`/defender_hq/assets/software/${softwareId}`}
           variant={
-            location.pathname === `/defender HQ/assets/software/${softwareId}`
+            location.pathname === `/defender_hq/assets/software/${softwareId}`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === `/defender HQ/assets/software/${softwareId}`
+            location.pathname === `/defender_hq/assets/software/${softwareId}`
               ? 'secondary'
               : 'inherit'
           }
@@ -88,10 +88,10 @@ class TopMenuSoftware extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/defender HQ/assets/software/${softwareId}/knowledge`}
+          to={`/defender_hq/assets/software/${softwareId}/knowledge`}
           variant={
             location.pathname.includes(
-              `/defender HQ/assets/software/${softwareId}/knowledge`,
+              `/defender_hq/assets/software/${softwareId}/knowledge`,
             )
               ? 'contained'
               : 'text'
@@ -99,7 +99,7 @@ class TopMenuSoftware extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/defender HQ/assets/software/${softwareId}/knowledge`,
+              `/defender_hq/assets/software/${softwareId}/knowledge`,
             )
               ? 'secondary'
               : 'inherit'
@@ -110,17 +110,17 @@ class TopMenuSoftware extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/defender HQ/assets/software/${softwareId}/analysis`}
+          to={`/defender_hq/assets/software/${softwareId}/analysis`}
           variant={
             location.pathname
-            === `/defender HQ/assets/software/${softwareId}/analysis`
+            === `/defender_hq/assets/software/${softwareId}/analysis`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/defender HQ/assets/software/${softwareId}/analysis`
+            === `/defender_hq/assets/software/${softwareId}/analysis`
               ? 'secondary'
               : 'inherit'
           }
@@ -130,10 +130,10 @@ class TopMenuSoftware extends Component {
         </Button>
         <Button
           component={Link}
-          to={`/defender HQ/assets/software/${softwareId}/indicators`}
+          to={`/defender_hq/assets/software/${softwareId}/indicators`}
           variant={
             location.pathname.includes(
-              `/defender HQ/assets/software/${softwareId}/indicators`,
+              `/defender_hq/assets/software/${softwareId}/indicators`,
             )
               ? 'contained'
               : 'text'
@@ -141,7 +141,7 @@ class TopMenuSoftware extends Component {
           size="small"
           color={
             location.pathname.includes(
-              `/defender HQ/assets/software/${softwareId}/indicators`,
+              `/defender_hq/assets/software/${softwareId}/indicators`,
             )
               ? 'secondary'
               : 'inherit'
@@ -153,17 +153,17 @@ class TopMenuSoftware extends Component {
         <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
           <Button
             component={Link}
-            to={`/defender HQ/assets/software/${softwareId}/files`}
+            to={`/defender_hq/assets/software/${softwareId}/files`}
             variant={
               location.pathname
-              === `/defender HQ/assets/software/${softwareId}/files`
+              === `/defender_hq/assets/software/${softwareId}/files`
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
               location.pathname
-              === `/defender HQ/assets/software/${softwareId}/files`
+              === `/defender_hq/assets/software/${softwareId}/files`
                 ? 'secondary'
                 : 'inherit'
             }
@@ -174,17 +174,17 @@ class TopMenuSoftware extends Component {
         </Security>
         <Button
           component={Link}
-          to={`/defender HQ/assets/software/${softwareId}/history`}
+          to={`/defender_hq/assets/software/${softwareId}/history`}
           variant={
             location.pathname
-            === `/defender HQ/assets/software/${softwareId}/history`
+            === `/defender_hq/assets/software/${softwareId}/history`
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
             location.pathname
-            === `/defender HQ/assets/software/${softwareId}/history`
+            === `/defender_hq/assets/software/${softwareId}/history`
               ? 'secondary'
               : 'inherit'
           }

@@ -119,7 +119,7 @@ class SoftwareDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/defender HQ/assets/software');
+  //       this.props.history.push('/defender_hq/assets/software');
   //     },
   //   });
   // }
@@ -136,7 +136,7 @@ class SoftwareDeletion extends Component {
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/software');
+          this.props.history.push('/defender_hq/assets/software');
         },
         onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
       });
@@ -149,7 +149,7 @@ class SoftwareDeletion extends Component {
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/software');
+          this.props.history.push('/defender_hq/assets/software');
         },
         onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
       });
@@ -168,7 +168,7 @@ class SoftwareDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/defender HQ/assets/software');
+    //     this.props.history.push('/defender_hq/assets/software');
     //   },
     // });
   }

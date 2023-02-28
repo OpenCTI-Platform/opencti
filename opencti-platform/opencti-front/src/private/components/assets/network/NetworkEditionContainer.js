@@ -172,12 +172,12 @@ class NetworkEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: '/defender HQ/assets/network',
+      pathname: '/defender_hq/assets/network',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/network');
+        this.props.history.push('/defender_hq/assets/network');
       },
       onError: (err) => console.error(err),
     });

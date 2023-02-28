@@ -72,7 +72,7 @@ class DeviceLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/defender HQ/assets/devices/${node.id}`}
+        to={`/defender_hq/assets/devices/${node.id}`}
         data-cy='device line'
       >
         {/* <ListItemIcon classes={{ root: classes.itemIcon }}>

@@ -66,7 +66,7 @@ class Devices extends Component {
       filters: [],
       openDeviceCreation,
     };
-    if (this.props.history.location.pathname !== '/defender HQ/assets/devices'
+    if (this.props.history.location.pathname !== '/defender_hq/assets/devices'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -106,13 +106,13 @@ class Devices extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/defender HQ/assets/devices');
+    this.props.history.push('/defender_hq/assets/devices');
   }
 
   handleDisplayEdit(selectedElements) {
     const deviceId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/defender HQ/assets/devices/${deviceId}`,
+      pathname: `/defender_hq/assets/devices/${deviceId}`,
       openEdit: true,
     });
   }

@@ -240,7 +240,7 @@ class RiskObservationPopover extends Component {
                             component="button"
                             variant="body2"
                             className={classes.link}
-                            onClick={() => (history.push(`/defender HQ/assets/devices/${subject.subject_ref.id}`))}
+                            onClick={() => (history.push(`/defender_hq/assets/devices/${subject.subject_ref.id}`))}
                           >
                             {t(subject.subject_ref.name)}
                             </Link>
@@ -283,7 +283,7 @@ class RiskObservationPopover extends Component {
                             component="button"
                             variant="body2"
                             className={classes.link}
-                            onClick={() => (history.push(`/defender HQ/assets/software/${subject.subject_ref.id}`))}
+                            onClick={() => (history.push(`/defender_hq/assets/software/${subject.subject_ref.id}`))}
                           >
                             {t(subject.subject_ref.name)}
                             </Link>

@@ -73,11 +73,11 @@ class NetworkArchitectureCreation extends Component {
         input: values,
       },
       setSubmitting,
-      pathname: '/defender HQ/assets/information_systems',
+      pathname: '/defender_hq/assets/information_systems',
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        this.props.history.push('/defender HQ/assets/information_systems');
+        this.props.history.push('/defender_hq/assets/information_systems');
       },
       onError: () => {
         toastGenericError('Failed to create Network Architecture');

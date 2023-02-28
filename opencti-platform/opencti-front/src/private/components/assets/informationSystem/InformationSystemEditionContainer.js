@@ -103,7 +103,7 @@ class InformationSystemEditionContainer extends Component {
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.props.history.push('/defender HQ/assets/information_systems');
+        this.props.history.push('/defender_hq/assets/information_systems');
       },
       onError: (err) => {
         console.error(err);

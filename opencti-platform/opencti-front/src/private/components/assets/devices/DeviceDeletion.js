@@ -119,7 +119,7 @@ class DeviceDeletion extends Component {
   //     onCompleted: () => {
   //       this.setState({ deleting: false });
   //       this.handleClose();
-  //       this.props.history.push('/defender HQ/assets/devices');
+  //       this.props.history.push('/defender_hq/assets/devices');
   //     },
   //   });
   // }
@@ -136,7 +136,7 @@ class DeviceDeletion extends Component {
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/devices');
+          this.props.history.push('/defender_hq/assets/devices');
         },
         onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
       });
@@ -149,7 +149,7 @@ class DeviceDeletion extends Component {
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/devices');
+          this.props.history.push('/defender_hq/assets/devices');
         },
         onError: (err) => console.log('DeviceDeletionDarkLightMutationError', err),
       });
@@ -168,7 +168,7 @@ class DeviceDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/defender HQ/assets/devices');
+    //     this.props.history.push('/defender_hq/assets/devices');
     //   },
     // });
   }

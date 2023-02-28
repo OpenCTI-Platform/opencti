@@ -120,7 +120,7 @@ class NetworkCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/defender HQ/assets/network/${node.id}`}
+          to={`/defender_hq/assets/network/${node.id}`}
           data-cy='network card'
         >
           {/* <CardHeader

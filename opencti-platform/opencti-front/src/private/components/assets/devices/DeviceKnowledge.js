@@ -27,7 +27,7 @@ const styles = () => ({
 class DeviceKnowledgeComponent extends Component {
   render() {
     const { classes, device } = this.props;
-    const link = `/defender HQ/assets/devices/${device.id}/knowledge`;
+    const link = `/defender_hq/assets/devices/${device.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -36,7 +36,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/relations/:relationId"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/relations/:relationId"
           render={(routeProps) => (
             <StixCoreRelationship
               entityId={device.id}
@@ -47,7 +47,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/sightings/:sightingId"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/sightings/:sightingId"
           render={(routeProps) => (
             <StixSightingRelationship
               entityId={device.id}
@@ -58,7 +58,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/overview"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/overview"
           render={(routeProps) => (
             <StixDomainObjectThreatKnowledge
               stixDomainObjectId={device.id}
@@ -69,7 +69,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/related"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/related"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -98,7 +98,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/victimology"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/victimology"
           render={(routeProps) => (
             <StixDomainObjectVictimology
               stixDomainObjectId={device.id}
@@ -109,7 +109,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/devices"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/devices"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -123,7 +123,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/network"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/network"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -137,7 +137,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/software"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/software"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -151,7 +151,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/attack_patterns"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/attack_patterns"
           render={(routeProps) => (
             <StixDomainObjectAttackPatterns
               stixDomainObjectId={device.id}
@@ -162,7 +162,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/malwares"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/malwares"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -175,7 +175,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/tools"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/tools"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -188,7 +188,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/vulnerabilities"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/vulnerabilities"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -201,7 +201,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/incidents"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/incidents"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -215,7 +215,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/observables"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/observables"
           render={(routeProps) => (
             <StixCoreObjectStixCyberObservables
               stixCoreObjectId={device.id}
@@ -227,7 +227,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/infrastructures"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/infrastructures"
           render={(routeProps) => (
             <EntityStixCoreRelationships
               entityId={device.id}
@@ -241,7 +241,7 @@ class DeviceKnowledgeComponent extends Component {
         />
         <Route
           exact
-          path="/defender HQ/assets/devices/:deviceId/knowledge/sightings"
+          path="/defender_hq/assets/devices/:deviceId/knowledge/sightings"
           render={(routeProps) => (
             <EntityStixSightingRelationships
               entityId={device.id}

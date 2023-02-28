@@ -170,7 +170,7 @@ class SoftwareEditionContainer extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: '/defender HQ/assets/software',
+      pathname: '/defender_hq/assets/software',
       onCompleted: (data, error) => {
         if (error) {
           this.setState({ error });
@@ -178,7 +178,7 @@ class SoftwareEditionContainer extends Component {
           setSubmitting(false);
           resetForm();
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/software');
+          this.props.history.push('/defender_hq/assets/software');
         }
       },
     });

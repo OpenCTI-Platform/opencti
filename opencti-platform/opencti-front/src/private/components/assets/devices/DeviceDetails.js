@@ -122,7 +122,7 @@ class DeviceDetailsComponent extends Component {
                     component="button"
                     variant="body2"
                     className={classes.link}
-                    onClick={() => (history.push(`/defender HQ/assets/software/${device.installed_operating_system.id}`))}
+                    onClick={() => (history.push(`/defender_hq/assets/software/${device.installed_operating_system.id}`))}
                   >
                     <LaunchIcon fontSize="small"  className={classes.launchIcon} /> <div className={classes.linkTitle}>{t(device.installed_operating_system.name)} {t(device.installed_operating_system.version || " ")}</div> 
                   </Link>}
@@ -153,7 +153,7 @@ class DeviceDetailsComponent extends Component {
                             component="button"
                             variant="body2"
                             className={classes.link}
-                            onClick={() => (history.push(`/defender HQ/assets/devices/${data.id}`))}
+                            onClick={() => (history.push(`/defender_hq/assets/devices/${data.id}`))}
                           >
                             <LaunchIcon fontSize="small" className={classes.launchIcon} /> <div className={classes.linkTitle}>{data?.name && t(data.name)}</div>
                           </Link>                        
@@ -192,7 +192,7 @@ class DeviceDetailsComponent extends Component {
                               variant="body2"
                               className={classes.link}
                               onClick={() => (
-                                software.id && history.push(`/defender HQ/assets/software/${software.id}`)
+                                software.id && history.push(`/defender_hq/assets/software/${software.id}`)
                               )}
                             >
                               <LaunchIcon fontSize="small"  className={classes.launchIcon} /> <div className={classes.linkTitle}>{t(software.name)} {t(software.version || " ")}</div>
@@ -337,7 +337,7 @@ class DeviceDetailsComponent extends Component {
                     variant="body2"
                     className={classes.link}
                     onClick={() => (
-                      device.connected_to_network.id && history.push(`/defender HQ/assets/network/${device.connected_to_network.id}`)
+                      device.connected_to_network.id && history.push(`/defender_hq/assets/network/${device.connected_to_network.id}`)
                     )}
                   >
                     <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(device.connected_to_network.name)}</div>

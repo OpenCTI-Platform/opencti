@@ -278,8 +278,8 @@ const TopBar = ({
             && (
               <TopMenuVsacCompare />
             )} */}
-          {(location.pathname.includes('/defender HQ/assets')
-            || location.pathname.match('/defender HQ/assets/[a-z_]+$')) && <TopMenuAssets />}
+          {(location.pathname.includes('/defender_hq/assets')
+            || location.pathname.match('/defender_hq/assets/[a-z_]+$')) && <TopMenuAssets />}
           {(location.pathname === ('/activities/risk_assessment')
             || location.pathname.match('/activities/risk_assessment/[a-z_]+$')) && <TopMenuRiskAssessment />}
           {(location.pathname.includes('/activities/risk_assessment/risks/')) && <TopMenuRisk />}

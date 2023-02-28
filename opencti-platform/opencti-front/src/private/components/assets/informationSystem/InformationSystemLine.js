@@ -70,7 +70,7 @@ class InformationSystemLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/defender HQ/assets/information_systems/${node.id}`}
+        to={`/defender_hq/assets/information_systems/${node.id}`}
         data-cy='software line'
       >
         <ListItemIcon

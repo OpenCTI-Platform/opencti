@@ -70,7 +70,7 @@ class InformationSystems extends Component {
       filters: [],
       InfoSystemCreation,
     };
-    if (this.props.history.location.pathname !== '/defender HQ/assets/information_systems'
+    if (this.props.history.location.pathname !== '/defender_hq/assets/information_systems'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -110,7 +110,7 @@ class InformationSystems extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/defender HQ/assets/information_systems');
+    this.props.history.push('/defender_hq/assets/information_systems');
   }
 
   handleDisplayEdit(selectedElements) {

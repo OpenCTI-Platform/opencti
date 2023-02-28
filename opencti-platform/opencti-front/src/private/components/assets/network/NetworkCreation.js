@@ -168,9 +168,9 @@ class NetworkCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/network');
+        this.props.history.push('/defender_hq/assets/network');
       },
-      pathname:'/defender HQ/assets/network',
+      pathname:'/defender_hq/assets/network',
       onError: () => {
         toastGenericError('Failed to Create Network');
       }
@@ -349,7 +349,7 @@ class NetworkCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/defender HQ/assets/network')}
+              onClick={() => this.props.history.push('/defender_hq/assets/network')}
               // onClick={() => history.goBack()}
               color="secondary"
               classes={{ root: classes.buttonPopover }}

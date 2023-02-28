@@ -69,7 +69,7 @@ class NetworkLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/defender HQ/assets/network/${node.id}`}
+        to={`/defender_hq/assets/network/${node.id}`}
         data-cy='network line'
       >
         <ListItemIcon

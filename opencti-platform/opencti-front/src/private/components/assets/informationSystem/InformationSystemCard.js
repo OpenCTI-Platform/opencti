@@ -120,7 +120,7 @@ class InformationSystemCardComponent extends Component {
         <CardActionArea
           classes={{ root: classes.area }}
           component={Link}
-          to={`/defender HQ/assets/information_systems/${node.id}`}
+          to={`/defender_hq/assets/information_systems/${node.id}`}
           data-cy='information_systems card'
         >
           <CardContent className={classes.content}>

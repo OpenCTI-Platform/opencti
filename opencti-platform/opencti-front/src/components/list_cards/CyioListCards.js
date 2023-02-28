@@ -509,7 +509,7 @@ class CyioListCards extends Component {
                     isAllselected: selectAll,
                   })}
                 </div>
-                {location.pathname === '/defender HQ/assets/information_systems' ? (
+                {location.pathname === '/defender_hq/assets/information_systems' ? (
                   <div>
                     <Tooltip title={t('Create New')}>
                       <Button
@@ -538,6 +538,7 @@ class CyioListCards extends Component {
                       <List>
                         <ListItem
                           button={true}
+                          disabled={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
                         >
                           Graph

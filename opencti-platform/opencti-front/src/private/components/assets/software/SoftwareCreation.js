@@ -229,12 +229,12 @@ class SoftwareCreation extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: '/defender HQ/assets/software',
+      pathname: '/defender_hq/assets/software',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/software');
+        this.props.history.push('/defender_hq/assets/software');
       },
       onError: () => {
         toastGenericError('Failed to create Software');
@@ -461,7 +461,7 @@ class SoftwareCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/defender HQ/assets/software')}
+              onClick={() => this.props.history.push('/defender_hq/assets/software')}
               // onClick={() => history.goBack()}
               color="secondary"
               classes={{ root: classes.buttonPopover }}

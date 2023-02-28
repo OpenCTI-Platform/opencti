@@ -309,7 +309,7 @@ const LeftBar = ({
                 }}
                 onClick={() => toggle('activities')}
                 component={Link}
-                to="/defender HQ/assets"
+                to="/defender_hq/assets"
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
                   <svg
@@ -333,8 +333,8 @@ const LeftBar = ({
                 <MenuList component="nav" disablePadding={true}>
                   <MenuItem
                     component={Link}
-                    to="/defender HQ/assets"
-                    selected={location.pathname.includes('/defender HQ/assets')}
+                    to="/defender_hq/assets"
+                    selected={location.pathname.includes('/defender_hq/assets')}
                     dense={false}
                     classes={{ root: classes.menuItemNested }}
                   >

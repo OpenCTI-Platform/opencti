@@ -32,15 +32,15 @@ class TopMenuAssets extends Component {
       <div>
         <Button
           component={Link}
-          to="/defender HQ/assets/devices"
+          to="/defender_hq/assets/devices"
           variant={
-            location.pathname.includes('/defender HQ/assets/devices')
+            location.pathname.includes('/defender_hq/assets/devices')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/defender HQ/assets/devices')
+            location.pathname.includes('/defender_hq/assets/devices')
               ? 'secondary'
               : 'inherit'
           }
@@ -51,15 +51,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/defender HQ/assets/network"
+          to="/defender_hq/assets/network"
           variant={
-            location.pathname.includes('/defender HQ/assets/network')
+            location.pathname.includes('/defender_hq/assets/network')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/defender HQ/assets/network')
+            location.pathname.includes('/defender_hq/assets/network')
               ? 'secondary'
               : 'inherit'
           }
@@ -70,15 +70,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/defender HQ/assets/software"
+          to="/defender_hq/assets/software"
           variant={
-            location.pathname.includes('/defender HQ/assets/software')
+            location.pathname.includes('/defender_hq/assets/software')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/defender HQ/assets/software'
+            location.pathname === '/defender_hq/assets/software'
               ? 'secondary'
               : 'inherit'
           }

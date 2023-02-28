@@ -41,7 +41,7 @@ class NetworkComponent extends Component {
 
   handleOpenNewCreation() {
     this.props.history.push({
-      pathname: '/defender HQ/assets/network',
+      pathname: '/defender_hq/assets/network',
       openNewCreation: true,
     });
   }
@@ -63,7 +63,7 @@ class NetworkComponent extends Component {
               name={network.name}
               cyioDomainObject={network}
               PopoverComponent={<NetworkPopover />}
-              goBack='/defender HQ/assets/network'
+              goBack='/defender_hq/assets/network'
               OperationsComponent={<NetworkDeletion />}
               handleDisplayEdit={this.handleDisplayEdit.bind(this)}
               handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}

@@ -34,10 +34,10 @@ class RootInformationSystem extends Component {
         params: { informationSystemId },
       },
     } = this.props;
-    const link = `/defender HQ/assets/information_systems/${informationSystemId}/knowledge`;
+    const link = `/defender_hq/assets/information_systems/${informationSystemId}/knowledge`;
     return (
       <div>
-        <Route path="/defender HQ/assets/information_systems/:informationSystemId/knowledge">
+        <Route path="/defender_hq/assets/information_systems/:informationSystemId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -65,7 +65,7 @@ class RootInformationSystem extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/defender HQ/assets/information_systems/:informationSystemId"
+                      path="/defender_hq/assets/information_systems/:informationSystemId"
                       render={(routeProps) => (
                         <InformationSystem
                           {...routeProps}
@@ -76,7 +76,7 @@ class RootInformationSystem extends Component {
                     />
                     <Route
                       exact
-                      path="/defender HQ/assets/information_systems/:informationSystemId/analysis"
+                      path="/defender_hq/assets/information_systems/:informationSystemId/analysis"
                       render={(routeProps) => (
                         <Analysis
                           {...routeProps}

@@ -27,7 +27,7 @@ const styles = () => ({
 class InformationSystemKnowledgeComponent extends Component {
   render() {
     const { classes, informationSystem } = this.props;
-    const link = `/defender HQ/assets/information_systems/${informationSystem.id}/knowledge`;
+    const link = `/defender_hq/assets/information_systems/${informationSystem.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -37,7 +37,7 @@ class InformationSystemKnowledgeComponent extends Component {
         <Switch>
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/relations/:relationId"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
                 entityId={informationSystem.id}
@@ -48,7 +48,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/sightings/:sightingId"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/sightings/:sightingId"
             render={(routeProps) => (
               <StixSightingRelationship
                 entityId={informationSystem.id}
@@ -59,7 +59,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/overview"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/overview"
             render={(routeProps) => (
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={informationSystem.id}
@@ -70,7 +70,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/related"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -99,7 +99,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/attribution"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/attribution"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -113,7 +113,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/victimology"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/victimology"
             render={(routeProps) => (
               <StixDomainObjectVictimology
                 stixDomainObjectId={informationSystem.id}
@@ -124,7 +124,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/attack_patterns"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/attack_patterns"
             render={(routeProps) => (
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={informationSystem.id}
@@ -135,7 +135,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/malwares"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/malwares"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -149,7 +149,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/tools"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/tools"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -163,7 +163,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/vulnerabilities"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -177,7 +177,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/incidents"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/incidents"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -191,7 +191,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/observables"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables
                 stixCoreObjectId={informationSystem.id}
@@ -203,7 +203,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/infrastructures"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/infrastructures"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={informationSystem.id}
@@ -217,7 +217,7 @@ class InformationSystemKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/information_systems/:softwareId/knowledge/sightings"
+            path="/defender_hq/assets/information_systems/:softwareId/knowledge/sightings"
             render={(routeProps) => (
               <EntityStixSightingRelationships
                 entityId={informationSystem.id}

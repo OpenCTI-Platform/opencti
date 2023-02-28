@@ -18,43 +18,43 @@ class Root extends Component {
       <Switch>
         <BoundaryRoute
           exact
-          path="/defender HQ/assets"
-          render={() => <Redirect to="/defender HQ/assets/devices" />}
+          path="/defender_hq/assets"
+          render={() => <Redirect to="/defender_hq/assets/devices" />}
         />
         <BoundaryRoute
           exact
-          path="/defender HQ/assets/devices"
+          path="/defender_hq/assets/devices"
           component={Devices}
         />
         <BoundaryRoute
-          path="/defender HQ/assets/devices/:deviceId"
+          path="/defender_hq/assets/devices/:deviceId"
           render={(routeProps) => <RootDevice {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/defender HQ/assets/network"
+          path="/defender_hq/assets/network"
           component={Network}
         />
         <BoundaryRoute
-          path="/defender HQ/assets/network/:networkId"
+          path="/defender_hq/assets/network/:networkId"
           render={(routeProps) => <RootNetwork {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/defender HQ/assets/software"
+          path="/defender_hq/assets/software"
           component={software}
         />
         <BoundaryRoute
-          path="/defender HQ/assets/software/:softwareId"
+          path="/defender_hq/assets/software/:softwareId"
           render={(routeProps) => <RootSoftware {...routeProps} me={me} />}
         />
         <BoundaryRoute
           exact
-          path="/defender HQ/assets/information_systems"
+          path="/defender_hq/assets/information_systems"
           component={InformationSystems}
         />
         <BoundaryRoute
-          path="/defender HQ/assets/information_systems/:informationSystemId"
+          path="/defender_hq/assets/information_systems/:informationSystemId"
           render={(routeProps) => <RootInformationSystem {...routeProps} me={me} />}
         />
       </Switch>

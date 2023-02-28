@@ -53,7 +53,7 @@ class AnalysisComponent extends Component {
             name={informationSystem.name}
             cyioDomainObject={informationSystem}
             PopoverComponent={<InformationSystemPopover />}
-            goBack='/defender HQ/assets/information_systems'
+            goBack='/defender_hq/assets/information_systems'
             OperationsComponent={<InformationSystemDeletion />}
             handleDisplayEdit={this.handleDisplayEdit.bind(this)}
             handleOpenNewCreation={this.handleOpenNewCreation.bind(this)}

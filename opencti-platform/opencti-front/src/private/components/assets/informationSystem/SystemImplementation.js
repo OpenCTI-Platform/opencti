@@ -77,7 +77,7 @@ class SystemImplementationComponent extends Component {
         itemId: output,
         implementationType: name,
       },
-      pathname: '/defender HQ/assets/information_systems',
+      pathname: '/defender_hq/assets/information_systems',
       onCompleted: () => {
         this.props.refreshQuery();
       },
@@ -95,7 +95,7 @@ class SystemImplementationComponent extends Component {
         itemId: output,
         implementationType: name,
       },
-      pathname: '/defender HQ/assets/information_systems',
+      pathname: '/defender_hq/assets/information_systems',
       onCompleted: () => {
         this.props.refreshQuery();
       },

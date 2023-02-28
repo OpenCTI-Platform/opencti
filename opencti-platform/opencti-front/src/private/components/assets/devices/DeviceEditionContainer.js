@@ -175,7 +175,7 @@ class DeviceEditionContainer extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/devices');
+        this.props.history.push('/defender_hq/assets/devices');
       },
     });
     // commitMutation({

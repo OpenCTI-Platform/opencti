@@ -358,7 +358,7 @@ class NetworkEditionDetailsComponent extends Component {
                   data={network?.connected_assets}
                   title={'Connected Assets'}
                   setFieldValue={setFieldValue}
-                  link='/defender HQ/assets/devices'
+                  link='/defender_hq/assets/devices'
                 />
               </Grid>
               <Grid item={true} xs={12}>

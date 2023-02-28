@@ -624,7 +624,7 @@ class CyioListLines extends Component {
                     isAllselected: selectAll,
                   })}
                 </div>
-                {location.pathname === '/defender HQ/assets/information_systems' ? (
+                {location.pathname === '/defender_hq/assets/information_systems' ? (
                   <div>
                     <Tooltip title={t('Create New')}>
                       <Button
@@ -764,7 +764,7 @@ class CyioListLines extends Component {
                 )}
                 <ListItemText
                   primary={
-                    <div>
+                    <div style={{ display: 'flex', alignItems: 'center' }}>
                       {toPairs(dataColumns).map((dataColumn) => this.renderHeaderElement(
                         dataColumn[0],
                         dataColumn[1].label,

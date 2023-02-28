@@ -17,6 +17,7 @@ import Tooltip from '@material-ui/core/Tooltip';
 import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import { toastGenericError } from '../../../../utils/bakedToast';
 
 const styles = (theme) => ({
   container: {
@@ -55,14 +56,14 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const InformationSystemDeletionMutation = graphql`
-  mutation InformationSystemDeletionMutation($ids: [ID]!) {
-    deleteAssets(ids: $ids)
+  mutation InformationSystemDeletionMutation($ids: [ID!]!) {
+    deleteInformationSystems(ids: $ids)
   }
 `;
 
 const InformationSystemDeletionDarkLightMutation = graphql`
   mutation InformationSystemDeletionDarkLightMutation($id: ID!) {
-    deleteSoftwareAsset(id: $id)
+    deleteInformationSystem(id: $id)
   }
 `;
 
@@ -103,55 +104,34 @@ class InformationSystemDeletion extends Component {
     this.setState({ displayEdit: false });
   }
 
-  // submitDelete() {
-  //   this.setState({ deleting: true });
-  //   commitMutation({
-  //     mutation: InformationSystemDeletionMutation,
-  //     variables: {
-  //       id: this.props.id,
-  //     },
-  //     config: [
-  //       {
-  //         type: 'NODE_DELETE',
-  //         deletedIDFieldName: 'id',
-  //       },
-  //     ],
-  //     onCompleted: () => {
-  //       this.setState({ deleting: false });
-  //       this.handleClose();
-  //       this.props.history.push('/defender HQ/assets/software');
-  //     },
-  //   });
-  // }
-
   submitDelete() {
-    const softwareIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
+    const InformationSystemIds = this.props.id.map((value) => (Array.isArray(value) ? value[0] : value));
     this.setState({ deleting: true });
-    if (softwareIds.length > 1) {
+    if (InformationSystemIds.length > 1) {
       commitMutation({
         mutation: InformationSystemDeletionMutation,
         variables: {
-          ids: softwareIds,
+          ids: InformationSystemIds,
         },
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/software');
+          this.props.history.push('/defender_hq/assets/information_systems');
         },
-        onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
+        onError: (err) => toastGenericError('Failed to delete Information System'),
       });
     } else {
       commitMutation({
         mutation: InformationSystemDeletionDarkLightMutation,
         variables: {
-          id: softwareIds[0],
+          id: InformationSystemIds[0],
         },
         onCompleted: (data) => {
           this.setState({ deleting: false });
           this.handleClose();
-          this.props.history.push('/defender HQ/assets/software');
+          this.props.history.push('/defender_hq/assets/information_systems');
         },
-        onError: (err) => console.log('SoftwareDeletionDarkLightMutationError', err),
+        onError: (err) => toastGenericError('Failed to delete Information System'),
       });
     }
     // commitMutation({
@@ -168,7 +148,7 @@ class InformationSystemDeletion extends Component {
     //   onCompleted: () => {
     //     this.setState({ deleting: false });
     //     this.handleClose();
-    //     this.props.history.push('/defender HQ/assets/software');
+    //     this.props.history.push('/defender_hq/assets/software');
     //   },
     // });
   }

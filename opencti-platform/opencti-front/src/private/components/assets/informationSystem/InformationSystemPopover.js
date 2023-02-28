@@ -99,7 +99,7 @@ class InformationSystemPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/information_systems');
+        this.props.history.push('/defender_hq/assets/information_systems');
       },
     });
   }
