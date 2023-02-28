@@ -41,16 +41,14 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
   const classes = useStyles();
 
   const uniqSelectedEntities: SelectedEntity[] = selectedEntities.filter((item, index) => {
-    return (
-      selectedEntities.findIndex((entity) => entity.id === item.id) === index
-    );
+    return selectedEntities.findIndex((entity) => entity.id === item.id) === index;
   });
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(uniqSelectedEntities[0]);
   useEffect(() => {
     if (uniqSelectedEntities[0] !== selectedEntity) {
       setSelectedEntity(uniqSelectedEntities[0]);
     }
-  }, [uniqSelectedEntities[0].id]);
+  }, [selectedEntities]);
   const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
     const { value } = event.target;
     const entity = selectedEntities.find((el) => (el.id === value));

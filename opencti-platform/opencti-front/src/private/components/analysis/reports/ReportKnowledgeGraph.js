@@ -1131,8 +1131,7 @@ class ReportKnowledgeGraphComponent extends Component {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
     R.map((n) => this.selectedNodes.add(n), this.state.graphData.nodes);
-    this.setState({ numberOfSelectedNodes: this.selectedNodes.size,
-    });
+    this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
   }
 
   handleSelectByType(type) {
