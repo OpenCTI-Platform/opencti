@@ -109,14 +109,7 @@ class RedisStore extends Store {
   }
 
   _getTTL(sess) {
-    let ttl;
-    if (sess && sess.cookie && sess.cookie.expires) {
-      const ms = Number(new Date(sess.cookie.expires)) - Date.now();
-      ttl = Math.ceil(ms / 1000);
-    } else {
-      ttl = this.ttl;
-    }
-    return ttl;
+    return sess ? sess.expiration : this.ttl;
   }
 
   _getAllKeys(cb = noop) {

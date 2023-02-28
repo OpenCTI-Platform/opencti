@@ -222,8 +222,16 @@ export const clearSessions = async () => {
   return Promise.all(contextIds.map((id) => getClientBase().del(id)));
 };
 export const getSession = async (key: string) => {
-  const session = await getClientBase().get(key);
-  return session ? JSON.parse(session) : undefined;
+  const sessionInformation = await redisTx(getClientBase(), async (tx) => {
+    await tx.get(key);
+    await tx.ttl(key);
+  });
+  const session = String(sessionInformation?.at(0)?.at(1));
+  if (session) {
+    const ttl = Number(sessionInformation?.at(1)?.at(1));
+    return { ...JSON.parse(session), expiration: ttl };
+  }
+  return undefined;
 };
 export const getSessionTtl = (key: string) => {
   return getClientBase().ttl(key);
