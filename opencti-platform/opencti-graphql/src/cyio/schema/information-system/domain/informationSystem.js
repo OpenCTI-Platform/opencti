@@ -24,6 +24,8 @@ import {
   attachToInformationSystemQuery,
   detachFromInformationSystemQuery,
 } from '../schema/sparql/informationSystem.js';
+import { findLeveragedAuthorizationByIri } from '../../risk-assessments/oscal-common/domain/oscalLeveragedAuthorization.js';
+import { findUserTypeByIri } from '../../risk-assessments/oscal-common/domain/oscalUser.js';
 import { addToInventoryQuery, removeFromInventoryQuery } from '../../assets/assetUtil.js';
 import { createInformationType, findInformationTypeByIri } from './informationType.js';
 import { createDescriptionBlock, deleteDescriptionBlockByIri } from './descriptionBlock.js';
@@ -766,7 +768,7 @@ export const attachToInformationSystem = async (id, field, entityId, dbName, dat
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
-  let select = ['id','iri'];
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/information-system--${id}>`;
   sparqlQuery = selectInformationSystemByIriQuery(iri, select);
   let response;
@@ -844,6 +846,7 @@ export const detachFromInformationSystem = async (id, field, entityId, dbName, d
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/information-system--${id}>`;
   sparqlQuery = selectInformationSystemByIriQuery(iri, select);
   let response;
@@ -892,7 +895,9 @@ export const detachFromInformationSystem = async (id, field, entityId, dbName, d
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${entityId}`);
 
   // check to make sure entity to be attached is proper for the field specified
-  if (response[0].object_type !== attachableObjects[field]) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+  if (response[0].object_type !== attachableObjects[field]) {
+    if (!objectTypeMapping.hasOwnProperty(response[0].object_type)) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+  }
 
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
