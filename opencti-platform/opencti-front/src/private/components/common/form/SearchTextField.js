@@ -4,19 +4,14 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map, union,
 } from 'ramda';
-import { debounce } from 'rxjs/operators';
-import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from '@material-ui/lab/Autocomplete';
-import Avatar from '@material-ui/core/Avatar';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-
-const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 const searchTextFieldQuery = graphql`
   query SearchTextFieldQuery(
@@ -128,20 +123,17 @@ class SearchTextField extends Component {
 
   render() {
     const {
-      t, name, style, classes, onChange, helpertext,
+      t, name, classes,
     } = this.props;
     const {
-        open,
         selectedProduct,
-        openAutocomplete,
-        products,
         productName
       } = this.state;
     return (
       <div>
         <Field
           component={Autocomplete}
-          name="name"
+          name={name}
           size="small"
           loading={selectedProduct.name || false}
           loadingText="Searching..."
