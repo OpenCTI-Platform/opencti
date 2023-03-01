@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
-import { Field, Formik, Form } from 'formik';
+import { Field, Formik } from 'formik';
 import {
   compose, pathOr, assoc, pick, pipe,
 } from 'ramda';

@@ -167,7 +167,7 @@ const systemImplementationFieldLeveragedAuthorizationsQuery = graphql`
   }
 `;
 
-class HyperLinkField extends Component {
+class SystemImplementationField extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -296,8 +296,8 @@ class HyperLinkField extends Component {
       containerstyle,
       style,
     } = this.props;
-    const systemImplementationData = this.state.data.length > 0
-      ? R.map((n) => ({ id: n.id, name: n.name }))(this.state.data)
+    const systemImplementationData = this.props.data.length > 0
+      ? R.map((n) => ({ id: n.id, name: n.name || n.title }))(this.props.data)
       : [];
     return (
       <>
@@ -409,7 +409,7 @@ class HyperLinkField extends Component {
   }
 }
 
-HyperLinkField.propTypes = {
+SystemImplementationField.propTypes = {
   t: PropTypes.func,
   data: PropTypes.array,
   name: PropTypes.string,
@@ -419,4 +419,4 @@ HyperLinkField.propTypes = {
   classes: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(HyperLinkField);
+export default compose(inject18n, withStyles(styles))(SystemImplementationField);

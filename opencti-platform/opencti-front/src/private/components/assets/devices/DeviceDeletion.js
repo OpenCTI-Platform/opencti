@@ -242,7 +242,6 @@ class DeviceDeletion extends Component {
 }
 
 DeviceDeletion.propTypes = {
-  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

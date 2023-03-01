@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -15,7 +14,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import SystemImplementationField from '../../common/form/SystemImplementationField';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '824px',
@@ -109,6 +108,7 @@ class SystemImplementationComponent extends Component {
     const {
       t, classes, informationSystem,
     } = this.props;
+    const systemImplementation = R.pathOr([], ['system_implementation'], informationSystem);
     return (
       <>
         <Grid item={true} xs={12}>
@@ -138,8 +138,8 @@ class SystemImplementationComponent extends Component {
             fullWidth={true}
             style={{ height: '38.09px' }}
             containerstyle={{ width: '100%' }}
-            data={informationSystem?.inventory_items || []}
-            helperText={'Indicateds installed software on this entity.'}
+            data={systemImplementation?.inventory_items || []}
+            helperText={'Indicateds Inventory Items on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
             onDelete={this.onDelete.bind(this)}
 
@@ -153,8 +153,8 @@ class SystemImplementationComponent extends Component {
             fullWidth={true}
             style={{ height: '38.09px' }}
             containerstyle={{ width: '100%' }}
-            data={informationSystem?.components || []}
-            helperText={'Indicateds installed software on this entity.'}
+            data={systemImplementation?.components || []}
+            helperText={'Indicateds Components on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
             onDelete={this.onDelete.bind(this)}
           />
@@ -167,8 +167,8 @@ class SystemImplementationComponent extends Component {
             fullWidth={true}
             style={{ height: '38.09px' }}
             containerstyle={{ width: '100%' }}
-            data={informationSystem?.leveraged_authorizations || []}
-            helperText={'Indicateds installed software on this entity.'}
+            data={systemImplementation?.leveraged_authorizations || []}
+            helperText={'Indicateds Leveraged Authorizations on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
             onDelete={this.onDelete.bind(this)}
           />
@@ -181,8 +181,8 @@ class SystemImplementationComponent extends Component {
             fullWidth={true}
             style={{ height: '38.09px' }}
             containerstyle={{ width: '100%' }}
-            data={informationSystem?.users || []}
-            helperText={'Indicateds installed software on this entity.'}
+            data={systemImplementation?.users || []}
+            helperText={'Indicateds User Types on this entity.'}
             onSubmit={this.onSubmit.bind(this)}
             onDelete={this.onDelete.bind(this)}
           />

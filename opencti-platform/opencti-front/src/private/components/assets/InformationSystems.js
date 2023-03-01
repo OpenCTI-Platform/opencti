@@ -407,7 +407,6 @@ class InformationSystems extends Component {
       filters: finalFilters,
       filterMode: 'and',
     };
-    const { location } = this.props;
     return (
       <div>
         {view === 'cards' && this.renderCards(paginationOptions)}
