@@ -49,22 +49,22 @@ const styles = (theme) => ({
 const systemImplementationAttachMutation = graphql`
   mutation SystemImplementationAttachMutation(
     $id: ID!,
-    $itemId: ID!,
-    $implementationType: ImplementationType,
+    $entityId: ID!,
+    $implementation_type: ImplementationType!,
     
   ) {
-    addInformationSystemImplementationEntity(id: $id, itemId: $itemId, implementationType: $implementationType)
+    addInformationSystemImplementationEntity(id: $id, entityId: $entityId, implementation_type: $implementation_type)
   }
 `;
 
 const systemImplementationRemoveMutation = graphql`
   mutation SystemImplementationRemoveMutation(
     $id: ID!,
-    $itemId: ID!,
-    $implementationType: ImplementationType,
+    $entityId: ID!,
+    $implementation_type: ImplementationType!,
     
   ) {
-    removeInformationSystemImplementationEntity(id: $id, itemId: $itemId, implementationType: $implementationType)
+    removeInformationSystemImplementationEntity(id: $id, entityId: $entityId, implementation_type: $implementation_type)
   }
 `;
 
@@ -74,8 +74,8 @@ class SystemImplementationComponent extends Component {
       mutation: systemImplementationAttachMutation,
       variables: {
         id: this.props.informationSystem.id,
-        itemId: output,
-        implementationType: name,
+        entityId: output,
+        implementation_type: name,
       },
       pathname: '/defender_hq/assets/information_systems',
       onCompleted: () => {
@@ -92,8 +92,8 @@ class SystemImplementationComponent extends Component {
       mutation: systemImplementationRemoveMutation,
       variables: {
         id: this.props.informationSystem.id,
-        itemId: output,
-        implementationType: name,
+        entityId: output,
+        implementation_type: name,
       },
       pathname: '/defender_hq/assets/information_systems',
       onCompleted: () => {
