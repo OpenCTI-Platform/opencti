@@ -187,10 +187,7 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
             render={({ props }: { props: NoteEditionContainerQuery$data }) => {
               if (props && props.note) {
                 return (
-                  <NoteEditionContainer
-                    note={props.note}
-                    handleClose={handleCloseEdit}
-                  />
+                  <NoteEditionContainer note={props.note} handleClose={handleCloseEdit}/>
                 );
               }
               return <Loader variant={LoaderVariant.inElement} />;

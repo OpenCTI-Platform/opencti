@@ -163,6 +163,7 @@ const PositionEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'latitude',
       'longitude',

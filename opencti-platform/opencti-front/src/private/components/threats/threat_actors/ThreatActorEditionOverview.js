@@ -156,12 +156,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
     R.assoc('objectMarking', convertMarkings(threatActor)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, threatActor)),
     R.assoc('references', []),
-    R.assoc(
-      'threat_actor_types',
-      threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
-    ),
+    R.assoc('threat_actor_types', threatActor.threat_actor_types ? threatActor.threat_actor_types : []),
     R.pick([
       'name',
+      'references',
       'threat_actor_types',
       'confidence',
       'description',

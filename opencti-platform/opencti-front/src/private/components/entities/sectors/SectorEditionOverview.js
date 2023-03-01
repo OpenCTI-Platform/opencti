@@ -152,6 +152,7 @@ const SectorEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'createdBy',
       'objectMarking',

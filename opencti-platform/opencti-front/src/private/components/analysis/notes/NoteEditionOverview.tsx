@@ -102,7 +102,6 @@ NoteEditionOverviewProps
       .max(100)
       .transform((value) => (Number.isNaN(value) ? null : value))
       .nullable(true),
-    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const noteValidator = useYupSchemaBuilder('Note', basicShape);
@@ -143,7 +142,6 @@ NoteEditionOverviewProps
     createdBy: convertCreatedBy(note) as Option,
     objectMarking: convertMarkings(note),
     x_opencti_workflow_id: convertStatus(t, note) as Option,
-    references: [],
   };
 
   return (

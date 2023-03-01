@@ -86,13 +86,11 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
   };
   return (
-    <ListItemButton
-      key={node.id}
+    <ListItemButton key={node.id}
       divider={true}
       classes={{ root: classes.item }}
       component={Link}
-      to={`/dashboard/settings/entity_types/${node.id}`}
-    >
+      to={`/dashboard/settings/entity_types/${node.id}`}>
       <ListItemIcon
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, { id: node.id }, event)
@@ -100,12 +98,8 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         }
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}>
-        <Checkbox
-          edge="start"
-          checked={
-            (selectAll && !(node.id in (deSelectedElements || {})))
-            || node.id in (selectedElements || {})
-          }
+        <Checkbox edge="start"
+          checked={(selectAll && !(node.id in (deSelectedElements || {}))) || node.id in (selectedElements || {})}
           disableRipple={true}
         />
       </ListItemIcon>

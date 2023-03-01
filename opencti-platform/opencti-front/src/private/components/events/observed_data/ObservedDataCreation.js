@@ -82,7 +82,7 @@ const ObservedDataCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    objects: Yup.array().min(1),
+    objects: Yup.array(),
     first_observed: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),

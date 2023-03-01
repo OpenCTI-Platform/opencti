@@ -258,11 +258,7 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     revoked,
     confidence,
     lang,
-    {
-      ...created,
-      mandatoryType: 'external',
-      label: 'Publication date'
-    },
+    { ...created, mandatoryType: 'external', label: 'Publication date' },
     modified,
     { name: 'abstract', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'attribute_abstract', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Abstract' },
@@ -291,7 +287,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     modified,
     { name: 'first_observed', type: 'date', mandatoryType: 'external', multiple: false, upsert: false, label: 'First observed' },
     { name: 'last_observed', type: 'date', mandatoryType: 'external', multiple: false, upsert: false, label: 'Last observed' },
-    { name: 'objects', type: 'string', mandatoryType: 'external', multiple: false, upsert: false, label: 'Entities' },
     { name: 'number_observed', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: false, label: 'Number observed' },
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }

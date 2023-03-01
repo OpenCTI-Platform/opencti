@@ -151,6 +151,7 @@ const SystemEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'contact_information',
       'createdBy',

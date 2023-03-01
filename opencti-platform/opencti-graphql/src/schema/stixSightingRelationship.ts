@@ -43,7 +43,7 @@ export const stixSightingRelationshipsAttributes: { [k: string]: Array<Attribute
     { name: 'i_last_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false }, //
     { name: 'i_last_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false }, //
     { name: 'i_last_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }, //
-    { name: 'attribute_count', type: 'numeric', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'attribute_count', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'x_opencti_negative', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_inference_weight', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

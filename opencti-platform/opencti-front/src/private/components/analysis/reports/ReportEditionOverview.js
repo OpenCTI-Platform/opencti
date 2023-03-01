@@ -170,6 +170,7 @@ const ReportEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'published',
       'description',
       'report_types',

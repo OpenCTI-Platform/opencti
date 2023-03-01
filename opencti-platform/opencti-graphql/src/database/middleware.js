@@ -100,7 +100,7 @@ import {
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
-  BASE_TYPE_RELATION,
+  BASE_TYPE_RELATION, buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -231,6 +231,7 @@ import {
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { getMandatoryAttributesForSetting } from '../domain/attribute';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -3282,6 +3283,15 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
   const fromThing = await internalLoadById(context, user, fromId, opts);
+  // Check mandatory attribute
+  const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
+  const attributesMandatory = await getMandatoryAttributesForSetting(context, entitySetting);
+  if (attributesMandatory.length > 0) {
+    const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(relationshipType));
+    if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {
+      throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
+    }
+  }
   const toThing = await internalLoadById(context, user, toId, opts);
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);

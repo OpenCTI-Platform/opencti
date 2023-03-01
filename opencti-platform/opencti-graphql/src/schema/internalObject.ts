@@ -67,7 +67,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'platform_title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platform_organization', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platform_favicon', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -104,7 +103,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'lastRun', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platformVersion', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -112,7 +110,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'title', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'timestamp', type: 'date', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -122,8 +119,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     entityType,
     createdAt,
     updatedAt,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
@@ -135,10 +131,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
-    { name: 'user_email', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'user_email', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'password', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'firstname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'lastname', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -161,8 +156,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     createdAt,
@@ -175,12 +169,10 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'active', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: true }
   ],
   [ENTITY_TYPE_RULE_MANAGER]: [
     internalId,
-
     { name: 'lastEventId', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'errors', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
   ],
@@ -188,7 +180,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'attribute_order', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -202,7 +193,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'name', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'active', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'auto', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -222,9 +212,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     internalId,
     standardId,
     entityType,
-
     { name: 'identifier', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'manifest', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'owner', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -240,16 +229,14 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     internalId,
     standardId,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_STREAM_COLLECTION]: [
     internalId,
     standardId,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'filters', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'stream_public', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
@@ -258,21 +245,18 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_STATUS_TEMPLATE]: [
     internalId,
     standardId,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'color', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'color', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_STATUS]: [
     internalId,
     standardId,
-
-    { name: 'template_id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'template_id', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'order', type: 'numeric', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'order', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_TASK]: [
     standardId,
-
     { name: 'task_position', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'task_processed_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'task_expected_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -281,10 +265,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   ],
   [ENTITY_TYPE_RETENTION_RULE]: [
     standardId,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'filters', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'max_retention', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'filters', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'max_retention', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'last_execution_date', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'last_deleted_count', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'remaining_count', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
@@ -292,17 +275,16 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
   [ENTITY_TYPE_SYNC]: [
     internalId,
     standardId,
-
-    { name: 'name', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'uri', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'uri', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'ssl_verify', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'token', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'stream_id', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'token', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'stream_id', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'running', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'current_state', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'listen_deletion', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'no_dependencies', type: 'boolean', mandatoryType: 'internal', multiple: false, upsert: false },
+    { name: 'listen_deletion', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'no_dependencies', type: 'boolean', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
 };

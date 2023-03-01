@@ -161,6 +161,7 @@ const OrganizationEditionOverviewComponent = (props) => {
     R.pick([
       'name',
       'description',
+      'references',
       'contact_information',
       'x_opencti_organization_type',
       'x_opencti_reliability',
@@ -170,12 +171,10 @@ const OrganizationEditionOverviewComponent = (props) => {
     ]),
   )(organization);
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={organizationValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,

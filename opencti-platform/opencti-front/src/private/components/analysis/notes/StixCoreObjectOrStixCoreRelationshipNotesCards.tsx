@@ -141,8 +141,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     note_types: Yup.array(),
     likelihood: Yup.number().min(0).max(100),
   };
-  // createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useYupSchemaBuilder('Note', basicShape, ['createdBy']);
+  // created & createdBy must be excluded from the validation, it will be handled directly by the backend
+  const noteValidator = useYupSchemaBuilder('Note', basicShape, ['created', 'createdBy']);
   const data = usePreloadedFragment<
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key

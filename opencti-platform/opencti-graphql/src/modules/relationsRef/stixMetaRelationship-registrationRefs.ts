@@ -44,7 +44,9 @@ import {
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences]);
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, [createdBy, objectMarking, objectLabel, externalReferences]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_RELATIONSHIP, [createdBy, objectMarking, objectLabel, externalReferences, killChainPhases]);
+schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_RELATIONSHIP, [createdBy, objectMarking, objectLabel, externalReferences, { ...killChainPhases, mandatoryType: 'no' }]);
+schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CORE_RELATIONSHIP, [objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(STIX_SIGHTING_RELATIONSHIP, [objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [objects]);
 
@@ -63,11 +65,9 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_CASE, [ 
   { ...createdBy, mandatoryType: 'no' }, { ...objectMarking, mandatoryType: 'no' }, { ...objectAssignee, mandatoryType: 'no' }, objectOrganization]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_NOTE, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OBSERVED_DATA, [{ ...objects, mandatoryType: 'external' }, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER_OPINION, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_COURSE_OF_ACTION, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CORE_RELATIONSHIP, [objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(STIX_SIGHTING_RELATIONSHIP, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CHANNEL, [objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_DATA_SOURCE, [objectOrganization]);

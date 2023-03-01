@@ -96,7 +96,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape);
+  const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape, ['objects']);
 
   const queries = {
     fieldPatch: observedDataMutationFieldPatch,
@@ -166,6 +166,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     R.assoc('x_opencti_workflow_id', convertStatus(t, observedData)),
     R.assoc('references', []),
     R.pick([
+      'references',
       'first_observed',
       'last_observed',
       'number_observed',
@@ -177,12 +178,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
   )(observedData);
 
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={observedDataValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
@@ -282,6 +281,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
                   setFieldValue={setFieldValue}
                   open={false}
                   values={values.references}
+                  id={observedData.id}
                 />
               )}
             </Form>

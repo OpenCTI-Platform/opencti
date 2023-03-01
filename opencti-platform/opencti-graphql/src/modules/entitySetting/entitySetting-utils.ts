@@ -36,7 +36,7 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
 export const availableSettings: Record<string, Array<string>> = {
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference'],
   [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_entity_files_ref'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['enforce_reference'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['enforce_reference'], /* 'attributes_configuration', 'platform_entity_files_ref', */
   [STIX_SIGHTING_RELATIONSHIP]: ['platform_entity_files_ref'],
   // enforce_reference not available on specific entities
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],

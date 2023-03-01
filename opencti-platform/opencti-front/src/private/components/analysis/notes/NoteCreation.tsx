@@ -145,7 +145,8 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     note_types: Yup.array().nullable(),
     likelihood: Yup.number().min(0).max(100),
   };
-  const noteValidator = useYupSchemaBuilder('Note', basicShape);
+  // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
+  const noteValidator = useYupSchemaBuilder('Note', basicShape, userIsKnowledgeEditor ? [] : ['createdBy']);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

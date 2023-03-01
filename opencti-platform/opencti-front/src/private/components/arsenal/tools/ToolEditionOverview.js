@@ -162,6 +162,7 @@ const ToolEditionOverviewComponent = (props) => {
     R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'createdBy',
       'killChainPhases',

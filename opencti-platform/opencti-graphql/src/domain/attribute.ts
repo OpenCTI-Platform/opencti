@@ -4,9 +4,10 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
-import { getAttributesConfiguration, getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
+import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 
 interface MandatoryAttribute {
   name: string
@@ -15,23 +16,28 @@ interface MandatoryAttribute {
   label?: string
 }
 
-export const queryMandatoryAttributes = async (context: AuthContext, subTypeId: string) => {
+export const queryMandatoryAttributesDefinition = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting) => {
+  if (!entitySetting) {
+    return [];
+  }
+
   // From schema attributes
   const mandatoryAttributes: MandatoryAttribute[] = [];
   const customizableAttributes: MandatoryAttribute[] = [];
 
-  schemaAttributesDefinition.getAttributes(subTypeId)
-    .forEach((attr) => {
-      if (attr.mandatoryType === 'external') {
-        mandatoryAttributes.push({ name: attr.name, builtIn: true, mandatory: true, label: attr.label });
-      }
-      if (attr.mandatoryType === 'customizable') {
-        customizableAttributes.push({ name: attr.name, builtIn: false, mandatory: false, label: attr.label });
-      }
-    });
+  // From schema attributes
+  const attributes = schemaAttributesDefinition.getAttributes(entitySetting.target_type);
+  attributes.forEach((attr) => {
+    if (attr.mandatoryType === 'external') {
+      mandatoryAttributes.push({ name: attr.name, builtIn: true, mandatory: true, label: attr.label });
+    }
+    if (attr.mandatoryType === 'customizable') {
+      customizableAttributes.push({ name: attr.name, builtIn: false, mandatory: false, label: attr.label });
+    }
+  });
 
   // From schema relations ref
-  const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(subTypeId);
+  const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(entitySetting.target_type);
   relationsRef.forEach((rel) => {
     if (rel.mandatoryType === 'external') {
       mandatoryAttributes.push({ name: rel.inputName, builtIn: true, mandatory: true, label: rel.label });
@@ -41,24 +47,24 @@ export const queryMandatoryAttributes = async (context: AuthContext, subTypeId: 
     }
   });
 
-  const entitySetting = await getEntitySettingFromCache(context, subTypeId);
-  if (entitySetting) {
-    const userDefinedAttributes = getAttributesConfiguration(entitySetting);
-
-    userDefinedAttributes?.forEach((userDefinedAttr) => {
-      const customizableAttr = customizableAttributes.find((a) => a.name === userDefinedAttr.name);
-      if (customizableAttr) {
-        customizableAttr.mandatory = userDefinedAttr.mandatory;
-      }
-    });
-  }
+  const userDefinedAttributes = getAttributesConfiguration(entitySetting);
+  userDefinedAttributes?.forEach((userDefinedAttr) => {
+    const customizableAttr = customizableAttributes.find((a) => a.name === userDefinedAttr.name);
+    if (customizableAttr) {
+      customizableAttr.mandatory = userDefinedAttr.mandatory;
+    }
+  });
 
   return mandatoryAttributes.concat(customizableAttributes);
 };
 
+export const getMandatoryAttributesForSetting = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting): Promise<string[]> => {
+  const mandatoryAttributes = await queryMandatoryAttributesDefinition(context, entitySetting);
+  return mandatoryAttributes.filter((a) => a.mandatory === true).map((a) => a.name);
+};
+
 const queryAttributeNames = async (types: string[]) => {
   const attributes = R.uniq(types.map((type) => schemaAttributesDefinition.getAttributeNames(type)).flat());
-
   const sortByLabel = R.sortBy(R.toLower);
   const finalResult = R.pipe(
     sortByLabel,

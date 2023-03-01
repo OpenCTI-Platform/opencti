@@ -17,18 +17,9 @@ import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
-  mutation OpinionEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-    $references: [String]
-  ) {
+  mutation OpinionEditionOverviewFieldPatchMutation($id: ID!$input: [EditInput]!) {
     opinionEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input) {
         ...OpinionEditionOverview_opinion
         ...Opinion_opinion
       }
@@ -83,7 +74,6 @@ const OpinionEditionOverviewComponent = (props) => {
     opinion: Yup.string().required(t('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
-    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
   const opinionValidator = useYupSchemaBuilder('Opinion', basicShape);
@@ -118,7 +108,6 @@ const OpinionEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(opinion)),
     R.assoc('objectMarking', convertMarkings(opinion)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, opinion)),
-    R.assoc('references', []),
     R.pick([
       'opinion',
       'explanation',
