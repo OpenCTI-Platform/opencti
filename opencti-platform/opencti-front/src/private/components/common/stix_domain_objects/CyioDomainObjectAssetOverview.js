@@ -21,6 +21,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
+import ResponsiblePartiesField from '../form/ResponsiblePartiesField';
 
 const styles = (theme) => ({
   paper: {
@@ -303,7 +304,7 @@ class CyioDomainObjectAssetOverview extends Component {
             </Grid>
             <Grid item={true} xs={6}>
               <div>
-                <Typography
+                {/* <Typography
                   variant="h3"
                   color="textSecondary"
                   gutterBottom={true}
@@ -325,7 +326,14 @@ class CyioDomainObjectAssetOverview extends Component {
                       label={t(data)}
                       color="primary"
                     />
-                  ))}
+                  ))} */}
+                  <ResponsiblePartiesField                   
+                    id={cyioDomainObject.id}
+                    fromType={cyioDomainObject.__typename}
+                    toType='OscalResponsibleParty'
+                    name='responsible_parties'
+                    title='Responsible Parties'
+                  />
               </div>
             </Grid>
             <Grid item={true} xs={6}>
