@@ -1,18 +1,18 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { graphql, createPaginationContainer } from 'react-relay';
+import { createPaginationContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { CheckCircle, WorkOutline } from '@mui/icons-material';
-import { ConnectionHandler } from 'relay-runtime';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { deleteNode, insertNode } from '../../../../utils/store';
 
 const styles = (theme) => ({
   avatar: {
@@ -54,17 +54,12 @@ export const noteMutationRelationDelete = graphql`
   }
 `;
 
-const sharedUpdater = (store, entityId, newEdge) => {
-  const entity = store.get(entityId);
-  const conn = ConnectionHandler.getConnection(entity, 'Pagination_notes');
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
 class AddNotesLinesContainer extends Component {
   toggleNote(note) {
     const {
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipNotes,
+      paginationOptions,
     } = this.props;
     const entityNotesIds = R.map(
       (n) => n.node.id,
@@ -86,12 +81,12 @@ class AddNotesLinesContainer extends Component {
           relationship_type: 'object',
         },
         updater: (store) => {
-          const entity = store.get(stixCoreObjectOrStixCoreRelationshipId);
-          const conn = ConnectionHandler.getConnection(
-            entity,
+          deleteNode(
+            store,
             'Pagination_notes',
+            paginationOptions,
+            existingNote.node.id,
           );
-          ConnectionHandler.deleteNode(conn, note.id);
         },
       });
     } else {
@@ -106,15 +101,16 @@ class AddNotesLinesContainer extends Component {
           input,
         },
         updater: (store) => {
-          const payload = store
-            .getRootField('noteEdit')
-            .getLinkedRecord('relationAdd', { input });
-          const relationId = payload.getValue('id');
-          const node = payload.getLinkedRecord('from');
-          const relation = store.get(relationId);
-          payload.setLinkedRecord(node, 'node');
-          payload.setLinkedRecord(relation, 'relation');
-          sharedUpdater(store, stixCoreObjectOrStixCoreRelationshipId, payload);
+          insertNode(
+            store,
+            'Pagination_notes',
+            paginationOptions,
+            'noteEdit',
+            null,
+            'relationAdd',
+            input,
+            'from',
+          );
         },
       });
     }
@@ -171,6 +167,7 @@ class AddNotesLinesContainer extends Component {
 AddNotesLinesContainer.propTypes = {
   stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   stixCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  paginationOptions: PropTypes.object,
   data: PropTypes.object,
   limit: PropTypes.number,
   classes: PropTypes.object,

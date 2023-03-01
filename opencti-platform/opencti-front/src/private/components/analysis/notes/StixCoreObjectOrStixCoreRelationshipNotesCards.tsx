@@ -209,7 +209,9 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             size="large">
             <EditOutlined fontSize="small" />
           </IconButton>
-          <AddNotes stixCoreObjectOrStixCoreRelationshipId={id} stixCoreObjectOrStixCoreRelationshipNotes={notes}/>
+          <AddNotes stixCoreObjectOrStixCoreRelationshipId={id}
+                    stixCoreObjectOrStixCoreRelationshipNotes={notes}
+                    paginationOptions={paginationOptions} />
         </>
       </Security>
       <div className="clearfix" />
