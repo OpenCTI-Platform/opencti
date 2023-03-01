@@ -2968,7 +2968,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
   // Region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
   const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if (!isAllowedToByPass && entitySetting?.enforce_reference) {
+  if ((opts.bypassEnforceReference === false || opts.bypassEnforceReference === null) && !isAllowedToByPass && entitySetting?.enforce_reference) {
     if (isEmptyField(input.externalReferences)) {
       throw ValidationError('externalReferences', {
         message: 'You must provide at least one external reference for this type of entity',
