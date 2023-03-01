@@ -9,7 +9,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import InformationSystemEditionContainer from './InformationSystemEditionContainer';
 
-const styles = (theme) => ({
+const styles = () => ({
   container: {
     margin: 0,
   },

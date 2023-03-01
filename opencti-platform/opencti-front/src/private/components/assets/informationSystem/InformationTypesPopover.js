@@ -61,6 +61,27 @@ const styles = (theme) => ({
   buttonPopover: {
     textTransform: "capitalize",
   },
+  scrollBg: {
+    background: theme.palette.header.background,
+    width: '100%',
+    color: 'white',
+    padding: '10px 5px 10px 15px',
+    borderRadius: '5px',
+    lineHeight: '20px',
+  },
+  scrollDiv: {
+    width: '100%',
+    background: theme.palette.header.background,
+    height: '78px',
+    overflow: 'hidden',
+    overflowY: 'scroll',
+  },
+  scrollObj: {
+    color: theme.palette.header.text,
+    fontFamily: 'sans-serif',
+    padding: '0px',
+    textAlign: 'left',
+  },
   popoverDialog: {
     fontSize: "18px",
     lineHeight: "24px",
@@ -252,18 +273,12 @@ class InformationTypesPopover extends Component {
             <AddIcon />
           </IconButton>
         </div>
-        <Field
-          component={HyperLinks}
-          name={name}
-          fullWidth={true}
-          disabled={true}
-          multiline={true}
-          rows="3"
-          value={[]}
-          variant="outlined"
-          history={history}
-          handleDelete={this.handleDelete.bind(this)}
-        />
+        <div className={classes.scrollBg}>
+          <div className={classes.scrollDiv}>
+            <div className={classes.scrollObj}>
+            </div>
+          </div>
+        </div>
         <Dialog
           open={open}
           maxWidth="md"

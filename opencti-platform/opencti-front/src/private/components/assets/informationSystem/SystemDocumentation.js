@@ -28,7 +28,7 @@ import AuthorizationBoundaryCreation from './AuthorizationBoundaryCreation';
 import NetworkArchitectureCreation from './NetworkArchitectureCreation';
 import DataFlowCreation from './DataFlowCreation';
 
-const styles = (theme) => ({
+const styles = () => ({
   selectOptionMenu: {
     padding: '20px 10px',
     marginTop: '50px',

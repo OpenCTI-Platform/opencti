@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
 import { compose } from 'ramda';
 import { createFragmentContainer } from 'react-relay';
 import graphql from 'babel-plugin-relay/macro';
@@ -15,7 +14,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import SystemImplementationField from '../../common/form/SystemImplementationField';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '824px',

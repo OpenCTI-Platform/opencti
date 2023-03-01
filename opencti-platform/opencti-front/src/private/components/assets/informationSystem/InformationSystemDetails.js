@@ -15,13 +15,12 @@ import {
 } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import InformationTypeCreation from './InformationTypeCreation';
-import HyperLinkField from '../../common/form/HyperLinkField';
 import InformationTypesPopover from './InformationTypesPopover';
 import RiskLevel from '../../common/form/RiskLevel';
 import SystemDocumentation from './SystemDocumentation';
 import SystemImplementation from './SystemImplementation';
 
-const styles = (theme) => ({
+const styles = () => ({
   paper: {
     height: '100%',
     minHeight: '824px',

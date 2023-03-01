@@ -222,7 +222,6 @@ class InformationSystemDeletion extends Component {
 }
 
 InformationSystemDeletion.propTypes = {
-  id: PropTypes.array,
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,

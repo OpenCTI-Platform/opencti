@@ -11,30 +11,6 @@ const useStyles = makeStyles((theme) => ({
     minWidth: '100%',
     height: '100%',
   },
-  contentOpen: {
-    height: '100%',
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
-    minWidth: 0,
-    margin: '1rem 1rem 0 17rem',
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    overflow: 'hidden',
-  },
-  contentClose: {
-    height: '100%',
-    flexGrow: 1,
-    backgroundColor: theme.palette.background.default,
-    minWidth: 0,
-    margin: '1rem 1rem 0 5.5rem',
-    transition: theme.transitions.create('margin', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.leavingScreen,
-    }),
-    overflow: 'hidden',
-  },
   message: {
     display: 'flex',
     alignItems: 'center',
