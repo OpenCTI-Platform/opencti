@@ -66,9 +66,6 @@ const styles = (theme) => ({
     lineHeight: "24px",
     color: theme.palette.header.text,
   },
-  textarea: {
-    background: "#cfe"
-  }
 });
 
 const informationTypesPopoverMutation = graphql`

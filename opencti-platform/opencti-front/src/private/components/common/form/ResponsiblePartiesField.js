@@ -9,7 +9,8 @@ import {
     map,
     pipe,
     pathOr,
-    filter
+    filter,
+    uniq,
   } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
@@ -155,7 +156,8 @@ class ResponsiblePartiesField extends Component {
 
   handleAdd() {
     this.setState({
-        currentParties: [...this.state.currentParties, this.state.party],
+        currentParties: uniq([...this.state.currentParties, this.state.party]),
+        open: false,
     });
 
     commitMutation({
@@ -167,18 +169,13 @@ class ResponsiblePartiesField extends Component {
           from_type: this.props.fromType,
           to_type: this.props.toType,
         },
-        onCompleted: () => {
-            this.setState({
-                open: false
-            });
-        },
       })
   }
 
-  handleDelete() {
-    const removeParties = ((party) => party.id === this.state.party.value);
+  handleDelete(key) {
+    const newParties = this.state.currentParties.filter((item, index) => index !== key)
     this.setState({
-        currentParties: filter(removeParties, this.state.currentParties),
+        currentParties: newParties,
     });
 
     commitMutation({
