@@ -1,6 +1,7 @@
 import { UserInputError } from 'apollo-server-errors';
 import conf from '../../../../config/conf';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
+import { objectTypeMapping } from '../../assets/asset-mappings';
 import { 
   compareValues, 
   filterValues, 
@@ -765,6 +766,7 @@ export const attachToInformationSystem = async (id, field, entityId, dbName, dat
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
+  let select = ['id','iri'];
   let iri = `<http://cyio.darklight.ai/information-system--${id}>`;
   sparqlQuery = selectInformationSystemByIriQuery(iri, select);
   let response;
@@ -813,7 +815,9 @@ export const attachToInformationSystem = async (id, field, entityId, dbName, dat
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${entityId}`);
   
   // check to make sure entity to be attached is proper for the field specified
-  if (response[0].object_type !== attachableObjects[field]) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+  if (response[0].object_type !== attachableObjects[field]) {
+    if (!objectTypeMapping.hasOwnProperty(response[0].object_type)) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+  }
 
   // retrieve the IRI of the entity
   let entityIri = `<${response[0].iri}>`;
@@ -932,12 +936,12 @@ export const getInformationSystemSecurityStatus = async (id, dbName, dataSources
   return response[0];
 };
 
-export const addImplementationEntity = async( id, implementationType, entityId, dbName, dataSources) => {
+export const addImplementationEntity = async( id, implementation_type, entityId, dbName, dataSources) => {
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   let field;
-  switch(implementationType) {
+  switch(implementation_type) {
     case 'component':
       field = 'components';
       break;
@@ -951,19 +955,19 @@ export const addImplementationEntity = async( id, implementationType, entityId, 
       field = 'users';
       break;
     default:
-      throw new UserInputError(`Unknown implementation type '${implementationType}'`);      
+      throw new UserInputError(`Unknown implementation type '${implementation_type}'`);      
   }
 
   let result = await attachToInformationSystem(id, field, entityId, dbName, dataSources);
   return result;
 }
 
-export const removeImplementationEntity = async( id, implementationType, entityId, dbName, dataSources) => {
+export const removeImplementationEntity = async( id, implementation_type, entityId, dbName, dataSources) => {
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   let field;
-  switch(implementationType) {
+  switch(implementation_type) {
     case 'component':
       field = 'components';
       break;
@@ -977,7 +981,7 @@ export const removeImplementationEntity = async( id, implementationType, entityI
       field = 'users';
       break;
     default:
-      throw new UserInputError(`Unknown implementation type '${implementationType}'`);      
+      throw new UserInputError(`Unknown implementation type '${implementation_type}'`);      
   }
 
   let result = await detachFromInformationSystem(id, field, entityId, dbName, dataSources);

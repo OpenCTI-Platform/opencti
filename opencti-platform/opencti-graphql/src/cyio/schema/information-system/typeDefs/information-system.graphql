@@ -22,8 +22,8 @@ extend type Mutation {
   attachToInformationSystem(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
   detachFromInformationSystem(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
   #
-  addInformationSystemImplementationEntity( id: ID!, implementationType: ImplementationType, itemId: ID!): Boolean @hasPermission(resources: "Asset:update")
-  removeInformationSystemImplementationEntity( id: ID!, implementationType: ImplementationType, itemId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  addInformationSystemImplementationEntity( id: ID!, implementation_type: ImplementationType!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  removeInformationSystemImplementationEntity( id: ID!, implementation_type: ImplementationType!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
 }
 
 
