@@ -114,7 +114,7 @@ const noteResolvers = {
       if (noteToCreate.createdBy === undefined) {
         const individualInput = { name: user.name, contact_information: user.user_email };
         // We need to bypass validation here has we maybe not setup all require fields
-        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true, bypassEnforceReference: true });
+        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
         noteToCreate.createdBy = individual.id;
         await userSessionRefresh(user.internal_id);
       }

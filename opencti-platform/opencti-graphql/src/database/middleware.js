@@ -2045,6 +2045,20 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
 };
 // endregion
 
+const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
+  if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    if (!isAllowedToByPass && entitySetting?.enforce_reference) {
+      if (isEmptyField(input.externalReferences)) {
+        throw ValidationError('externalReferences', {
+          message: 'You must provide at least one external reference for this type of entity/relationship',
+        });
+      }
+    }
+    await validateInputCreation(context, user, type, input, entitySetting);
+  }
+};
+
 // region mutation relation
 const buildRelationInput = (input) => {
   const { relationship_type: relationshipType } = input;
@@ -2621,30 +2635,19 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     relations: relToCreate
   };
 };
+
 export const createRelationRaw = async (context, user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
-  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  // Enforce reference controls
-  if (isStixCoreRelationship(relationshipType)) {
-    if (entitySetting?.enforce_reference) {
-      if (isEmptyField(input.externalReferences)) {
-        throw ValidationError('externalReferences', {
-          message: 'You must provide at least one external reference to create a relationship',
-        });
-      }
-    }
-  }
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* istanbul ignore next */
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
-  if (opts.bypassValidation === false || opts.bypassValidation === null) {
-    await validateInputCreation(context, user, relationshipType, input, entitySetting);
-  }
+  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
+  await validateEntityAndRelationCreation(context, user, input, relationshipType, entitySetting, opts);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
@@ -2783,7 +2786,11 @@ export const createRelation = async (context, user, input) => {
   return data.element;
 };
 export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
-  const args = { ...opts, fromRule: ruleContent.field };
+  const args = {
+    ...opts,
+    fromRule: ruleContent.field,
+    bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
+  };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
@@ -2967,17 +2974,7 @@ const userHaveCapability = (user, capability) => {
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
   // Region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
-  const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if ((opts.bypassEnforceReference === false || opts.bypassEnforceReference === null) && !isAllowedToByPass && entitySetting?.enforce_reference) {
-    if (isEmptyField(input.externalReferences)) {
-      throw ValidationError('externalReferences', {
-        message: 'You must provide at least one external reference for this type of entity',
-      });
-    }
-  }
-  if (opts.bypassValidation === false || opts.bypassValidation === null) {
-    await validateInputCreation(context, user, type, input, entitySetting);
-  }
+  await validateEntityAndRelationCreation(context, user, input, type, entitySetting, opts);
   // Endregion
   const { fromRule } = opts;
   // We need to check existing dependencies
@@ -3127,7 +3124,11 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
   return data.element;
 };
 export const createInferredEntity = async (context, input, ruleContent, type) => {
-  const opts = { fromRule: ruleContent.field, impactStandardId: false };
+  const opts = {
+    fromRule: ruleContent.field,
+    impactStandardId: false,
+    bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
+  };
   // Inferred entity have a specific standardId generated from dependencies data.
   const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };

@@ -77,6 +77,7 @@ const feedbackMutation = graphql`
 `;
 
 interface FormikCaseAddInput {
+  name: string
   description: string
   confidence: number
   rating: number
@@ -107,7 +108,7 @@ const FeedbackCreation: FunctionComponent<{
     { setSubmitting, resetForm },
   ) => {
     const finalValues: FeedbackCreationMutation$variables['input'] = {
-      name: `Feedback from ${me.user_email}`,
+      name: values.name,
       case_type: 'feedback',
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -155,6 +156,7 @@ const FeedbackCreation: FunctionComponent<{
         <div className={classes.container}>
           <Formik<FormikCaseAddInput>
             initialValues={{
+              name: `Feedback from ${me.user_email}`,
               rating: 5,
               description: '',
               confidence: 75,
