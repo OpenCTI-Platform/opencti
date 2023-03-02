@@ -39,7 +39,6 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 All you need to install the OpenCTI platform can be found in the [official documentation](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518). For installation, you can:
 
-* [Deploy the VM template](https://filigran.notion.site/Virtual-machine-template-1789b4442b414dbf87f748db51c85aa5)
 * [Use Docker](https://filigran.notion.site/Using-Docker-03d5c0592b9d4547800cc9f4ff7be2b8) (recommended)
 * [Use Terraform or Helm-Chart](https://filigran.notion.site/Using-Terraform-or-Helm-Chart-Community-Version-05e38d1046f34b998a0bd2873537f8f0) (Community Version)
 * [Install manually](https://filigran.notion.site/Manual-deployment-b911beba44234f179841582ab3894bb1)
