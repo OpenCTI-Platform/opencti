@@ -3,6 +3,7 @@ import { map } from 'ramda';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import jwt from 'jsonwebtoken';
+import axios from 'axios';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION } from '../config/conf';
@@ -49,9 +50,8 @@ import {
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import { BYPASS, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
-import { oidcRefresh, tokenExpired } from '../config/tokenManagement';
+import { oidcRefresh } from '../config/tokenManagement';
 import { keycloakAdminClient } from '../service/keycloak';
-import axios from 'axios';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -91,7 +91,6 @@ const extractTokenFromBasicAuth = async (authorization) => {
   return null;
 };
 
-// TODO: Need to rework to use Keycloak before returning undefined
 export const findById = async (user, userId) => {
   const data = await loadById(user, userId, ENTITY_TYPE_USER);
   const userObj = data ? R.dissoc('password', data) : data;
@@ -99,10 +98,15 @@ export const findById = async (user, userId) => {
   const q = { email: userObj.user_email };
   const kcUserRes = await keycloakAdminClient.users.find(q);
   if (kcUserRes.length === 0) return userObj;
-  const kcUser = kcUserRes[0];
+  const kcUser = kcUserRes.at(0);
+  if (kcUser.attributes?.api_token && kcUser.attributes?.api_token.length > 0) {
+    userObj.api_token = kcUser.attributes.api_token.at(0);
+  }
+  userObj.id = kcUser.id;
+  userObj.internal_id = kcUser.id;
   userObj.user_email = kcUser.email;
-  userObj.firstName = kcUser.firstName;
-  userObj.lastName = kcUser.lastName;
+  userObj.firstname = kcUser.firstName;
+  userObj.lastname = kcUser.lastName;
   return userObj;
 };
 
@@ -164,6 +168,22 @@ export const getCapabilities = async (userId) => {
   if (userId === OPENCTI_ADMIN_UUID && !R.find(R.propEq('name', BYPASS))(capabilities)) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
+  }
+  if (!R.find(R.propEq('name', 'SETTINGS'))(capabilities)) {
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'SETTINGS' });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: 'SETTINGS' });
+  }
+  if (!R.find(R.propEq('name', 'MODULES'))(capabilities)) {
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'MODULES' });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: 'MODULES' });
+  }
+  if (!R.find(R.propEq('name', 'KNOWLEDGE'))(capabilities)) {
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'KNOWLEDGE' });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: 'KNOWLEDGE' });
+  }
+  if (!R.find(R.propEq('name', 'TAXIIAPI_SETCOLLECTIONS'))(capabilities)) {
+    const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: 'TAXIIAPI_SETCOLLECTIONS' });
+    capabilities.push({ id, standard_id: id, internal_id: id, name: 'TAXIIAPI_SETCOLLECTIONS' });
   }
   return capabilities;
 };
@@ -632,21 +652,6 @@ export const userRenewToken = async (user, userId) => {
   }
   await patchAttribute(user, userId, ENTITY_TYPE_USER, patch);
   return loadById(user, userId, ENTITY_TYPE_USER);
-};
-
-const authenticateUserOIDC = async (user) => {
-  const token = user.access_token;
-  if (tokenExpired(token)) {
-    const tokenSet = await oidcRefresh(user.refresh_token);
-    if (tokenSet === null) return user;
-    const patch = {
-      access_token: tokenSet.accessToken,
-      refresh_token: tokenSet.refreshToken,
-    };
-    const { element: updatedUser } = await patchAttribute(SYSTEM_USER, user.id, ENTITY_TYPE_USER, patch);
-    return buildCompleteUser(updatedUser);
-  }
-  return user;
 };
 
 export const authenticateUser = async (req, user, provider) => {
