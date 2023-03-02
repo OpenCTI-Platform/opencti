@@ -1693,10 +1693,13 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
-  if (entitySetting?.enforce_reference) {
-    const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
-    if (!isNoReferenceKey && isEmptyField(opts.references)) {
-      throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
+  if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    if (!isAllowedToByPass && entitySetting?.enforce_reference) {
+      const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
+      if (!isNoReferenceKey && isEmptyField(opts.references)) {
+        throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
+      }
     }
   }
   let locksIds = getInstanceIds(initial);
