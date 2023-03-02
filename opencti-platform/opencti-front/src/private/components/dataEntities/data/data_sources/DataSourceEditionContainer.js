@@ -181,7 +181,7 @@ class DataSourceEditionContainer extends Component {
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Data Source')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
+                    <Grid item={true} xs={6}>
                       <Typography
                         variant="h3"
                         color="textSecondary"
@@ -203,6 +203,31 @@ class DataSourceEditionContainer extends Component {
                         size="small"
                         containerstyle={{ width: '100%' }}
                         variant='outlined'
+                      />
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Data Source Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Data Source Type')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <TaskType
+                        component={SelectField}
+                        variant='outlined'
+                        name='data_source_type'
+                        taskType='DataSourceType'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
@@ -288,9 +313,9 @@ class DataSourceEditionContainer extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Secure Connection')}
+                          {t('Contextual')}
                         </Typography>
-                        <Tooltip title={t('Secure Connection')} >
+                        <Tooltip title={t('Contextual')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>

@@ -140,6 +140,7 @@ class DataSourcesCreation extends Component {
               contextual: false,
               description: '',
               data_source_type: '',
+              iep: '',
             }}
             validationSchema={DataSourcesCreationValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
@@ -156,7 +157,7 @@ class DataSourcesCreation extends Component {
                 <DialogTitle classes={{ root: classes.dialogTitle }}>{t('Data Source')}</DialogTitle>
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
-                    <Grid item={true} xs={12}>
+                    <Grid item={true} xs={6}>
                       <div style={{ marginBottom: '10px' }}>
                         <Typography
                           variant="h3"
@@ -181,6 +182,31 @@ class DataSourcesCreation extends Component {
                           variant='outlined'
                         />
                       </div>
+                    </Grid>
+                    <Grid item={true} xs={6}>
+                      <Typography
+                        variant="h3"
+                        color="textSecondary"
+                        gutterBottom={true}
+                        style={{ float: 'left' }}
+                      >
+                        {t('Data Source Type')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                        <Tooltip title={t('Data Source Type')} >
+                          <Information fontSize="inherit" color="disabled" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <TaskType
+                        component={SelectField}
+                        variant='outlined'
+                        name='data_source_type'
+                        taskType='DataSourceType'
+                        fullWidth={true}
+                        style={{ height: '38.09px' }}
+                        containerstyle={{ width: '100%' }}
+                      />
                     </Grid>
                     <Grid xs={12} item={true}>
                       <Typography
@@ -265,9 +291,9 @@ class DataSourcesCreation extends Component {
                           gutterBottom={true}
                           style={{ margin: 0 }}
                         >
-                          {t('Secure Connection')}
+                          {t('Contextual')}
                         </Typography>
-                        <Tooltip title={t('Secure Connection')} >
+                        <Tooltip title={t('Contextual')} >
                           <Information style={{ marginLeft: '5px' }} fontSize="inherit" color="disabled" />
                         </Tooltip>
                       </div>
@@ -334,8 +360,8 @@ class DataSourcesCreation extends Component {
                       <TaskType
                         component={SelectField}
                         variant='outlined'
-                        name="data_source_type"
-                        taskType='DataSourceType'
+                        name="iep"
+                        taskType='IEPMarking'
                         fullWidth={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
