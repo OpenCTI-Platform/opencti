@@ -194,6 +194,7 @@ const entityDetailsQuery = graphql`
 interface EntityDetailsComponentProps {
   queryRef: PreloadedQuery<EntityDetailsQuery>;
 }
+
 const EntityDetailsComponent: FunctionComponent<
 EntityDetailsComponentProps
 > = ({ queryRef }) => {
@@ -218,65 +219,69 @@ EntityDetailsComponentProps
       >
         {t('Name')}
       </Typography>
-      {truncate(stixCoreObject.name, 30)}
+      {stixCoreObject.name ? truncate(stixCoreObject.name, 30) : '-'}
       <Tooltip title={t('View the item')}>
-        <span>
-          <IconButton
-            color="primary"
-            component={Link}
-            to={`${resolveLink(stixCoreObject.entity_type)}/${
-              stixCoreObject.id
-            }`}
-            size="small"
-          >
-            <InfoOutlined />
-          </IconButton>
-        </span>
+          <span>
+            <IconButton
+              color="primary"
+              component={Link}
+              to={`${resolveLink(stixCoreObject.entity_type)}/${
+                stixCoreObject.id
+              }`}
+              size="small"
+            >
+                <InfoOutlined/>
+            </IconButton>
+          </span>
       </Tooltip>
-      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
         {t('Type')}
       </Typography>
       {stixCoreObject.entity_type}
-      {stixCoreObject.description && (
-        <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('Description')}
-          </Typography>
-          <ExpandableMarkdown source={stixCoreObject.description} limit={400} />
-        </div>
-      )}
-      {stixCoreObject.objectMarking?.edges
-        && stixCoreObject.objectMarking?.edges.length > 0 && (
-          <div>
-            <Typography
-              variant="h3"
-              gutterBottom={true}
-              className={classes.label}
-            >
-              {t('Marking')}
-            </Typography>
-            <ItemMarkings
-              markingDefinitionsEdges={stixCoreObject.objectMarking.edges}
-              limit={2}
-            />
-          </div>
-      )}
-      {stixCoreObject.createdBy && (
-        <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('Author')}
-          </Typography>
-          <ItemAuthor createdBy={stixCoreObject.createdBy} />
-        </div>
-      )}
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('Description')}
+      </Typography>
+      {stixCoreObject.description ? (
+        <ExpandableMarkdown
+          source={stixCoreObject.description}
+          limit={400}
+        />
+      ) : (
+        '-'
+      )
+      }
+      <Typography variant="h3"
+                  gutterBottom={true}
+                  className={classes.label}
+      >
+        {t('Marking')}
+      </Typography>
+      {(stixCoreObject.objectMarking?.edges && stixCoreObject.objectMarking?.edges.length > 0) ? (
+        <ItemMarkings
+          markingDefinitionsEdges={stixCoreObject.objectMarking.edges}
+          limit={2}
+        />) : (
+        '-'
+      )
+      }
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('Author')}
+      </Typography>
+      <ItemAuthor
+          createdBy={stixCoreObject.createdBy}
+        />
     </div>
   );
 };
@@ -293,11 +298,11 @@ Omit<EntityDetailsProps, 'queryRef'>
     id: entity.id,
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <EntityDetailsComponent queryRef={queryRef} />
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
+      <EntityDetailsComponent queryRef={queryRef}/>
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement}/>
   );
 };
 
