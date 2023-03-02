@@ -366,6 +366,7 @@ const InformationSystemOverview = createFragmentContainer(InformationSystemOverv
       federation_assurance_level
       responsible_parties {
         id
+        name
       }
     }
   `,
