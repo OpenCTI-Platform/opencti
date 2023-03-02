@@ -42,59 +42,60 @@ const relationshipDetailsQuery = graphql`
       start_time
       stop_time
       created
-      confidence
-      relationship_type
-      from {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
-        }
-        ... on StixCoreRelationship {
-          relationship_type
-        }
-      }
-      to {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
-        }
-        ... on StixCoreRelationship {
-          relationship_type
-        }
-      }
       created_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
+            confidence
+            relationship_type
+            from {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            to {
+                ... on BasicObject {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on BasicRelationship {
+                    id
+                    entity_type
+                    parent_types
+                }
+                ... on StixCoreRelationship {
+                    relationship_type
+                }
+            }
+            created_at
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
         }
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
     }
-  }
 `;
 
 interface RelationshipDetailsComponentProps {
@@ -141,22 +142,6 @@ RelationshipDetailsComponentProps
             </IconButton>
           </span>
         </Tooltip>}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
-        {t('Description')}
-      </Typography>
-      {stixCoreRelationship.description ? (
-        <ExpandableMarkdown
-          source={stixCoreRelationship.description}
-          limit={400}
-        />
-      ) : (
-        '-'
-      )
-      }
       {!stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
         && <RelationShipFromAndTo
           id={stixCoreRelationship.from.id}
@@ -197,24 +182,41 @@ RelationshipDetailsComponentProps
                   gutterBottom={true}
                   className={classes.label}
       >
-        {t('Marking')}
+        {t('Creation date')}
       </Typography>
-      {(stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0) ? (
-        <ItemMarkings
-          markingDefinitionsEdges={stixCoreRelationship.objectMarking.edges}
-          limit={2}
-        />) : (
-        '-'
-      )
-      }
+      {fldt(stixCoreRelationship.created_at)}
       <Typography
         variant="h3"
         gutterBottom={true}
         className={classes.label}
       >
-        {t('Author')}
+        {t('First seen')}
       </Typography>
-      <ItemAuthor createdBy={stixCoreRelationship.createdBy}/>
+      {fldt(stixCoreRelationship.start_time)}
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('Last seen')}
+      </Typography>
+      {fldt(stixCoreRelationship.stop_time)}
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('Description')}
+      </Typography>
+      {stixCoreRelationship.description ? (
+        <ExpandableMarkdown
+          source={stixCoreRelationship.description}
+          limit={400}
+        />
+      ) : (
+        '-'
+      )
+      }
       <Typography
         variant="h3"
         gutterBottom={true}
@@ -227,18 +229,24 @@ RelationshipDetailsComponentProps
       ) : (
         '-'
       ) }
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
+      <Typography variant="h3"
+                  gutterBottom={true}
+                  className={classes.label}
       >
-        {t('First seen')}
+        {t('Marking')}
       </Typography>
-      {fldt(stixCoreRelationship.start_time)}
+      {(stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0) ? (
+        <ItemMarkings
+          markingDefinitionsEdges={stixCoreRelationship.objectMarking.edges}
+          limit={2}
+        />) : (
+        '-'
+      )
+      }
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
-        {t('Last seen')}
+        {t('Author')}
       </Typography>
-      {fldt(stixCoreRelationship.stop_time)}
+      <ItemAuthor createdBy={stixCoreRelationship.createdBy}/>
     </div>
   );
 };

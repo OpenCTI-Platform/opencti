@@ -199,7 +199,7 @@ const EntityDetailsComponent: FunctionComponent<
 EntityDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t, fldt } = useFormatter();
 
   const entity = usePreloadedQuery<EntityDetailsQuery>(
     entityDetailsQuery,
@@ -258,6 +258,13 @@ EntityDetailsComponentProps
         '-'
       )
       }
+      <Typography variant="h3"
+                  gutterBottom={true}
+                  className={classes.label}
+      >
+        {t('Creation date')}
+      </Typography>
+      {fldt(stixCoreObject.created_at)}
       <Typography variant="h3"
                   gutterBottom={true}
                   className={classes.label}
