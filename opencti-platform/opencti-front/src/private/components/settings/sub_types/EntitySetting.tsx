@@ -23,7 +23,7 @@ export const entitySettingsFragment = graphql`
         platform_entity_files_ref
         platform_hidden_type
         target_type
-        attributes_configuration
+        mandatoryAttributes
       }
     }
   }
@@ -36,6 +36,13 @@ export const entitySettingFragment = graphql`
     platform_entity_files_ref
     platform_hidden_type
     enforce_reference
+    mandatoryAttributes
+    mandatoryDefinitions {
+      name
+      label
+      mandatory
+      builtIn
+    }
     attributes_configuration
     availableSettings
   }
@@ -61,7 +68,6 @@ export const entitySettingsPatch = graphql`
   mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySetting_entitySetting
-      attributes_configuration
     }
   }
 `;

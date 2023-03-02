@@ -86,10 +86,8 @@ class AddNotes extends Component {
       classes,
       stixCoreObjectOrStixCoreRelationshipId,
       stixCoreObjectOrStixCoreRelationshipNotes,
+      paginationOptions,
     } = this.props;
-    const paginationOptions = {
-      search: this.state.search,
-    };
     return (
       <div>
         <IconButton
@@ -141,13 +139,10 @@ class AddNotes extends Component {
                 if (props) {
                   return (
                     <AddNotesLines
-                      stixCoreObjectOrStixCoreRelationshipId={
-                        stixCoreObjectOrStixCoreRelationshipId
-                      }
-                      stixCoreObjectOrStixCoreRelationshipNotes={
-                        stixCoreObjectOrStixCoreRelationshipNotes
-                      }
+                      stixCoreObjectOrStixCoreRelationshipId={stixCoreObjectOrStixCoreRelationshipId}
+                      stixCoreObjectOrStixCoreRelationshipNotes={stixCoreObjectOrStixCoreRelationshipNotes}
                       data={props}
+                      paginationOptions={paginationOptions}
                     />
                   );
                 }
@@ -194,8 +189,7 @@ class AddNotes extends Component {
           display={this.state.open}
           contextual={true}
           inputValue={this.state.search}
-          paginationOptions={paginationOptions}
-        />
+          paginationOptions={{ search: this.state.search }} />
       </div>
     );
   }
@@ -204,6 +198,7 @@ class AddNotes extends Component {
 AddNotes.propTypes = {
   stixCoreObjectOrStixCoreRelationshipId: PropTypes.string,
   stixCoreObjectOrStixCoreRelationshipNotes: PropTypes.array,
+  paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
 };

@@ -23,7 +23,7 @@ import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -82,17 +82,17 @@ const ObservedDataCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    objects: Yup.array().min(1),
+    objects: Yup.array(),
     first_observed: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
     last_observed: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
-    number_observed: Yup.number(),
-    confidence: Yup.number(),
+    number_observed: Yup.number().required(t('This field is required')),
+    confidence: Yup.number().nullable(),
   };
-  const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape);
+  const observedDataValidator = useSchemaCreationValidation('Observed-Data', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

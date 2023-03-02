@@ -13,7 +13,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const courseOfActionMutationFieldPatch = graphql`
@@ -83,7 +83,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     x_opencti_threat_hunting: Yup.string().nullable(),
     x_opencti_log_sources: Yup.array().nullable(),
@@ -91,7 +91,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const courseOfActionValidator = useYupSchemaBuilder('Course-Of-Action', basicShape);
+  const courseOfActionValidator = useSchemaEditionValidation('Course-Of-Action', basicShape);
 
   const queries = {
     fieldPatch: courseOfActionMutationFieldPatch,

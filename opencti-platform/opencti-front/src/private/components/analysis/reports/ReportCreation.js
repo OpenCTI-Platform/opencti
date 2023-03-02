@@ -25,7 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -98,7 +98,7 @@ const ReportCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
@@ -106,7 +106,7 @@ const ReportCreation = ({ paginationOptions }) => {
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const reportValidator = useYupSchemaBuilder('Report', basicShape);
+  const reportValidator = useSchemaCreationValidation('Report', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

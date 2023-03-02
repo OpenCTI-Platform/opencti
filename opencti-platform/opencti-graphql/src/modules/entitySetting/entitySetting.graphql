@@ -1,3 +1,10 @@
+type TypeAttribute {
+  name: String!
+  builtIn: Boolean!
+  mandatory: Boolean!
+  label: String
+}
+
 type EntitySetting implements InternalObject & BasicObject {
   id: ID!
   entity_type: String! @auth
@@ -8,7 +15,9 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_entity_files_ref: Boolean @auth
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
-  attributes_configuration: String @auth
+  attributes_configuration: String @auth(for: [SETTINGS])
+  mandatoryDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
+  mandatoryAttributes: [String!]! @auth
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth

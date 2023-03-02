@@ -25,7 +25,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -98,12 +98,12 @@ const GroupingCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const groupingValidator = useYupSchemaBuilder('Grouping', basicShape);
+  const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(

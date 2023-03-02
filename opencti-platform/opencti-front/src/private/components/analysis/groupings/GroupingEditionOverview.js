@@ -16,7 +16,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const groupingMutationFieldPatch = graphql`
@@ -84,14 +84,14 @@ const GroupingEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const groupingValidator = useYupSchemaBuilder('Grouping', basicShape);
+  const groupingValidator = useSchemaEditionValidation('Grouping', basicShape);
 
   const queries = {
     fieldPatch: groupingMutationFieldPatch,

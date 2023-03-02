@@ -49,7 +49,9 @@ const intrusionSetEditionDetailsFocus = graphql`
 
 const intrusionSetValidation = (t) => Yup.object().shape({
   first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date().nullable()
+    .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   resource_level: Yup.string().nullable(),
   primary_motivation: Yup.string().nullable(),
   secondary_motivations: Yup.array().nullable(),

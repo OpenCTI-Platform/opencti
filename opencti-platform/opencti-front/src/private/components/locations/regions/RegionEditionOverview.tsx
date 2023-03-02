@@ -16,7 +16,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { useFormatter } from '../../../../components/i18n';
 import { RegionEditionOverview_region$key } from './__generated__/RegionEditionOverview_region.graphql';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const regionMutationFieldPatch = graphql`
@@ -129,7 +129,7 @@ interface RegionEdititionOverviewProps {
 interface RegionEditionFormValues {
   name: string
   description: string | null
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   x_opencti_workflow_id: Option
   message?: string,
@@ -146,13 +146,13 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
   const region = useFragment(regionEditionOverviewFragment, regionRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
 
-  const regionValidator = useYupSchemaBuilder('Region', basicShape);
+  const regionValidator = useSchemaEditionValidation('Region', basicShape);
 
   const queries = {
     fieldPatch: regionMutationFieldPatch,
@@ -218,6 +218,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
     createdBy: convertCreatedBy(region),
     objectMarking: convertMarkings(region),
     x_opencti_workflow_id: convertStatus(t, region) as Option,
+    references: [],
   };
 
   return (

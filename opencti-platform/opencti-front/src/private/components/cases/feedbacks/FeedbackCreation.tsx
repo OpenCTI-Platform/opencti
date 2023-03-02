@@ -23,7 +23,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -77,6 +77,7 @@ const feedbackMutation = graphql`
 `;
 
 interface FormikCaseAddInput {
+  name: string
   description: string
   confidence: number
   rating: number
@@ -100,14 +101,14 @@ const FeedbackCreation: FunctionComponent<{
     confidence: Yup.number(),
     rating: Yup.number(),
   };
-  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+  const caseValidator = useSchemaCreationValidation('Case', basicShape);
 
   const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
     const finalValues: FeedbackCreationMutation$variables['input'] = {
-      name: `Feedback from ${me.user_email}`,
+      name: values.name,
       case_type: 'feedback',
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -155,6 +156,7 @@ const FeedbackCreation: FunctionComponent<{
         <div className={classes.container}>
           <Formik<FormikCaseAddInput>
             initialValues={{
+              name: `Feedback from ${me.user_email}`,
               rating: 5,
               description: '',
               confidence: 75,

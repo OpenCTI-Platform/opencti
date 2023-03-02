@@ -18,7 +18,7 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 
@@ -150,15 +150,15 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    confidence: Yup.number(),
-    x_mitre_platforms: Yup.array(),
-    collection_layers: Yup.array(),
+    confidence: Yup.number().nullable(),
+    x_mitre_platforms: Yup.array().nullable(),
+    collection_layers: Yup.array().nullable(),
     references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
   };
-  const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
+  const dataSourceValidator = useSchemaEditionValidation('Data-Source', basicShape);
 
   const queries = {
     fieldPatch: dataSourceMutationFieldPatch,

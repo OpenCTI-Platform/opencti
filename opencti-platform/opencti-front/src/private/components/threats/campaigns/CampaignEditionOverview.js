@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const campaignMutationFieldPatch = graphql`
@@ -85,13 +85,13 @@ const CampaignEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const campaignValidator = useYupSchemaBuilder('Campaign', basicShape);
+  const campaignValidator = useSchemaEditionValidation('Campaign', basicShape);
 
   const queries = {
     fieldPatch: campaignMutationFieldPatch,

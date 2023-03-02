@@ -9,6 +9,8 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
+import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 interface CommitMessageProps {
   id: string
@@ -36,16 +38,29 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   const handleOpen = () => setControlOpen(true);
   const handleControlClose = () => setControlOpen(false);
 
+  const validateReferences = (references: ExternalReferencesValues | undefined) => !!references && references.length > 0;
+
   return (
     <div>
       { !handleClose && (
-        <Button variant="contained"
-          color="primary"
-          onClick={handleOpen}
-          disabled={disabled}
-          style={{ marginTop: 20, float: 'right' }}>
-          {t('Update')}
-        </Button>
+          <>
+            <Button variant="contained"
+                    color="primary"
+                    onClick={handleOpen}
+                    disabled={disabled}
+                    style={{ marginTop: 20, float: 'right' }}>
+              {t('Update')}
+            </Button>
+            <Security needs={[BYPASSREFERENCE]}>
+              <Button variant="outlined"
+                      color="primary"
+                      onClick={submitForm}
+                      disabled={disabled}
+                      style={{ marginTop: 20, marginRight: 20, float: 'left' }}>
+                {t('Direct Update')}
+              </Button>
+            </Security>
+          </>
       )}
         <Dialog PaperProps={{ elevation: 1 }}
           open={handleClose ? open : controlOpen}
@@ -74,7 +89,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <DialogActions>
             <Button color="primary"
               onClick={submitForm}
-              disabled={disabled}>
+              disabled={disabled || !validateReferences(values)}>
               {t('Validate')}
             </Button>
           </DialogActions>

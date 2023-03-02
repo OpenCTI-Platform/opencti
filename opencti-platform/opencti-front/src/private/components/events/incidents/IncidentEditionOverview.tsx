@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const incidentMutationFieldPatch = graphql`
@@ -90,6 +90,7 @@ const incidentEditionOverviewFragment = graphql`
       name
       confidence
       description
+      source
       incident_type
       severity
       createdBy {
@@ -145,7 +146,7 @@ interface IncidentEditionOverviewProps {
 interface IncidentEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
   objectAssignee?: Option[]
@@ -156,13 +157,13 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     references: Yup.array(),
   };
-  const incidentValidator = useYupSchemaBuilder('Incident', basicShape);
+  const incidentValidator = useSchemaEditionValidation('Incident', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
@@ -223,6 +224,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
   const initialValues = {
     name: incident.name,
     description: incident.description,
+    source: incident.source,
     incident_type: incident.incident_type,
     severity: incident.severity,
     createdBy: convertCreatedBy(incident) as Option,

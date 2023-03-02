@@ -6,6 +6,7 @@ import { isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
+import { externalReferences } from './stixMetaRelationship';
 
 const ajv = new Ajv();
 
@@ -41,16 +42,19 @@ const validateFormatSchemaAttributes = (instanceType: string, input: Record<stri
 const validateMandatoryAttributes = (
   input: Record<string, unknown>,
   entitySetting: BasicStoreEntityEntitySetting,
+  isCreation: boolean,
   validation: (inputKeys: string[], mandatoryKey: string) => boolean
 ) => {
   const attributesConfiguration = getAttributesConfiguration(entitySetting);
   if (!attributesConfiguration) {
     return;
   }
-
   const mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
+  // In creation if enforce reference is activated, user must provide a least 1 external references
+  if (isCreation && entitySetting.enforce_reference === true) {
+    mandatoryAttributes.push({ name: externalReferences.inputName, mandatory: true });
+  }
   const inputKeys = Object.keys(input);
-
   mandatoryAttributes.forEach((attr) => {
     if (!(validation(inputKeys, attr.name))) {
       throw ValidationError(attr.name, { message: 'This attribute is mandatory', attribute: attr.name });
@@ -66,7 +70,7 @@ const validateMandatoryAttributesOnCreation = (
   const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
     && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
-  validateMandatoryAttributes(input, entitySetting, inputValidValue);
+  validateMandatoryAttributes(input, entitySetting, true, inputValidValue);
 };
 const validateMandatoryAttributesOnUpdate = (
   input: Record<string, unknown>,
@@ -76,7 +80,7 @@ const validateMandatoryAttributesOnUpdate = (
   const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
     || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
-  validateMandatoryAttributes(input, entitySetting, inputValidValue);
+  validateMandatoryAttributes(input, entitySetting, false, inputValidValue);
 };
 
 export const validateInputCreation = async (

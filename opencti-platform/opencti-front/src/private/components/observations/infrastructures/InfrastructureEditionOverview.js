@@ -19,7 +19,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const infrastructureMutationFieldPatch = graphql`
@@ -89,16 +89,18 @@ const InfrastructureEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     infrastructure_types: Yup.array().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
     first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    last_seen: Yup.date().nullable()
+      .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const infrastructureValidator = useYupSchemaBuilder('Infrastructure', basicShape);
+  const infrastructureValidator = useSchemaEditionValidation('Infrastructure', basicShape);
 
   const queries = {
     fieldPatch: infrastructureMutationFieldPatch,

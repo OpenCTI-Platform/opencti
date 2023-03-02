@@ -12,10 +12,7 @@ import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -29,7 +26,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -102,21 +99,23 @@ const IndicatorCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    indicator_types: Yup.array(),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    indicator_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     pattern: Yup.string().required(t('This field is required')),
     pattern_type: Yup.string().required(t('This field is required')),
     x_opencti_main_observable_type: Yup.string().required(t('This field is required')),
     valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    x_mitre_platforms: Yup.array(),
+    valid_until: Yup.date().nullable()
+      .min(Yup.ref('valid_from'), "The valid until date can't be before valid from date")
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    x_opencti_detection: Yup.boolean(),
-    createObservables: Yup.boolean(),
+    x_opencti_detection: Yup.boolean().nullable(),
+    createObservables: Yup.boolean().nullable(),
   };
-  const indicatorValidator = useYupSchemaBuilder('Indicator', basicShape);
+  const indicatorValidator = useSchemaCreationValidation('Indicator', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

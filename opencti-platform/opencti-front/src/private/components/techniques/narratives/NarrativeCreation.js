@@ -23,7 +23,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -110,10 +110,10 @@ const NarrativeCreation = ({ paginationOptions, contextual, display }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const narrativeValidator = useYupSchemaBuilder('Narrative', basicShape);
+  const narrativeValidator = useSchemaCreationValidation('Narrative', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

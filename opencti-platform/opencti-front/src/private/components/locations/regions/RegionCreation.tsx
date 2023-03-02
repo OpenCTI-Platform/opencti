@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const styles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -88,7 +88,7 @@ const regionMutation = graphql`
 interface RegionAddInput {
   name: string
   description: string
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -101,10 +101,10 @@ const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLines
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const regionValidator = useYupSchemaBuilder('Region', basicShape);
+  const regionValidator = useSchemaCreationValidation('Region', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

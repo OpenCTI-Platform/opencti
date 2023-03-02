@@ -6,7 +6,11 @@ import {
   ABSTRACT_STIX_DOMAIN_OBJECT
 } from '../../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import { isStixDomainObject } from '../../schema/stixDomainObject';
+import {
+  ENTITY_TYPE_CONTAINER_NOTE,
+  ENTITY_TYPE_CONTAINER_OPINION,
+  isStixDomainObject
+} from '../../schema/stixDomainObject';
 import { UnsupportedError, ValidationError } from '../../config/errors';
 import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
@@ -18,6 +22,7 @@ import { isStixCyberObservable } from '../../schema/stixCyberObservable';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../../schema/relationRef-definition';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -28,11 +33,15 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   attributes_configuration: JSON.stringify([]),
 };
 
+// Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference'],
-  [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_entity_files_ref'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['enforce_reference'],
-  [STIX_SIGHTING_RELATIONSHIP]: ['platform_entity_files_ref'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: [],
+  [STIX_SIGHTING_RELATIONSHIP]: [],
+  // enforce_reference not available on specific entities
+  [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
+  [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
+  [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
 };
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
@@ -40,7 +49,7 @@ const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
 export const getAvailableSettings = (targetType: string) => {
   let settings;
   if (isStixDomainObject(targetType)) {
-    settings = [...availableSettings[targetType] ?? [], ...availableSettings[ABSTRACT_STIX_DOMAIN_OBJECT]];
+    settings = availableSettings[targetType] ?? availableSettings[ABSTRACT_STIX_DOMAIN_OBJECT];
   } else {
     settings = availableSettings[targetType];
   }
@@ -141,7 +150,7 @@ export const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = 
   items: {
     type: 'object',
     properties: {
-      name: { type: 'string' },
+      name: { type: 'string', minLength: 1 },
       mandatory: { type: 'boolean' }
     },
     required: ['name', 'mandatory']

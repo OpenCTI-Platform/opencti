@@ -16,7 +16,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const observedDataMutationFieldPatch = graphql`
@@ -96,7 +96,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape);
+  const observedDataValidator = useSchemaEditionValidation('Observed-Data', basicShape, ['objects']);
 
   const queries = {
     fieldPatch: observedDataMutationFieldPatch,
@@ -164,7 +164,9 @@ const ObservedDataEditionOverviewComponent = (props) => {
     R.assoc('first_observed', buildDate(observedData.first_observed)),
     R.assoc('last_observed', buildDate(observedData.last_observed)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, observedData)),
+    R.assoc('references', []),
     R.pick([
+      'references',
       'first_observed',
       'last_observed',
       'number_observed',
@@ -176,12 +178,10 @@ const ObservedDataEditionOverviewComponent = (props) => {
   )(observedData);
 
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={observedDataValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,
@@ -274,13 +274,14 @@ const ObservedDataEditionOverviewComponent = (props) => {
                 }
                 onChange={editor.changeMarking}
               />
-              {enableReferences && isValid && dirty && (
+              {enableReferences && (
                 <CommitMessage
                   submitForm={submitForm}
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !isValid || !dirty}
                   setFieldValue={setFieldValue}
                   open={false}
                   values={values.references}
+                  id={observedData.id}
                 />
               )}
             </Form>

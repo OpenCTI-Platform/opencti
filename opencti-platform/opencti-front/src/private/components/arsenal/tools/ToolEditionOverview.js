@@ -13,11 +13,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const toolMutationFieldPatch = graphql`
@@ -84,14 +84,14 @@ const ToolEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const toolValidator = useYupSchemaBuilder('Tool', basicShape);
+  const toolValidator = useSchemaEditionValidation('Tool', basicShape);
 
   const queries = {
     fieldPatch: toolMutationFieldPatch,
@@ -153,21 +153,16 @@ const ToolEditionOverviewComponent = (props) => {
     }
   };
 
-  const killChainPhases = R.pipe(
-    R.pathOr([], ['killChainPhases', 'edges']),
-    R.map((n) => ({
-      label: `[${n.node.kill_chain_name}] ${n.node.phase_name}`,
-      value: n.node.id,
-    })),
-  )(tool);
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(tool)),
-    R.assoc('killChainPhases', killChainPhases),
+    R.assoc('killChainPhases', convertKillChainPhases(tool)),
     R.assoc('objectMarking', convertMarkings(tool)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, tool)),
     R.assoc('tool_types', tool.tool_types ?? []),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'createdBy',
       'killChainPhases',

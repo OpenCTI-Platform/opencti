@@ -13,7 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const sectorMutationFieldPatch = graphql`
@@ -80,12 +80,12 @@ const SectorEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const sectorValidator = useYupSchemaBuilder('Sector', basicShape);
+  const sectorValidator = useSchemaEditionValidation('Sector', basicShape);
 
   const queries = {
     fieldPatch: sectorMutationFieldPatch,
@@ -149,8 +149,10 @@ const SectorEditionOverviewComponent = (props) => {
     R.assoc('createdBy', createdBy),
     R.assoc('objectMarking', objectMarking),
     R.assoc('x_opencti_workflow_id', status),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'createdBy',
       'objectMarking',

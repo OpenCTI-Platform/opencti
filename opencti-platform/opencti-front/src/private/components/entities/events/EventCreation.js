@@ -23,7 +23,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -92,7 +92,7 @@ const EventCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date()
@@ -100,9 +100,10 @@ const EventCreation = ({ paginationOptions }) => {
       .nullable(),
     stop_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
   };
-  const eventValidator = useYupSchemaBuilder('Event', basicShape);
+  const eventValidator = useSchemaCreationValidation('Event', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

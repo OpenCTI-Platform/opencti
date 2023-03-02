@@ -18,13 +18,9 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
 };
 
-export const addIndividual = async (context, user, individual) => {
-  const created = await createEntity(
-    context,
-    user,
-    R.assoc('identity_class', ENTITY_TYPE_IDENTITY_INDIVIDUAL.toLowerCase(), individual),
-    ENTITY_TYPE_IDENTITY_INDIVIDUAL
-  );
+export const addIndividual = async (context, user, individual, opts = {}) => {
+  const inputWithClass = R.assoc('identity_class', ENTITY_TYPE_IDENTITY_INDIVIDUAL.toLowerCase(), individual);
+  const created = await createEntity(context, user, inputWithClass, ENTITY_TYPE_IDENTITY_INDIVIDUAL, opts);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

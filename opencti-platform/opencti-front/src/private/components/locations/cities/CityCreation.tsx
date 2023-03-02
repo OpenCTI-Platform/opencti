@@ -22,7 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -80,7 +80,7 @@ interface CityAddInput {
   description: string
   latitude: string
   longitude: string
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -93,12 +93,12 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
-  const cityValidator = useYupSchemaBuilder('City', basicShape);
+  const cityValidator = useSchemaCreationValidation('City', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

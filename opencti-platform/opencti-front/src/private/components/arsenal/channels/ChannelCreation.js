@@ -21,7 +21,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles((theme) => ({
@@ -104,12 +104,12 @@ const ChannelCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    channel_types: Yup.array(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
   };
-  const channelValidator = useYupSchemaBuilder('Channel', basicShape);
+  const channelValidator = useSchemaCreationValidation('Channel', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

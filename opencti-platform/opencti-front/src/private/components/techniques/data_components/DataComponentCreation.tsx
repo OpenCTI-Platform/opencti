@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Field, Formik, Form } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -28,7 +28,7 @@ import { DataComponentsLinesPaginationQuery$variables } from './__generated__/Da
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -116,11 +116,11 @@ const DataComponentCreation: FunctionComponent<{
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
   };
-  const dataComponentValidator = useYupSchemaBuilder('Data-Component', basicShape);
+  const dataComponentValidator = useSchemaCreationValidation('Data-Component', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

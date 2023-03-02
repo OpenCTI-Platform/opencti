@@ -15,7 +15,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const cityMutationFieldPatch = graphql`
@@ -138,14 +138,14 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
   const city = useFragment(cityEditionOverviewFragment, cityRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const cityValidator = useYupSchemaBuilder('City', basicShape);
+  const cityValidator = useSchemaEditionValidation('City', basicShape);
 
   const queries = {
     fieldPatch: cityMutationFieldPatch,

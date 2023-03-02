@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const organizationMutationFieldPatch = graphql`
@@ -85,7 +85,7 @@ const OrganizationEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     contact_information: Yup.string().nullable(),
     x_opencti_organization_type: Yup.string().nullable(),
@@ -93,7 +93,7 @@ const OrganizationEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const organizationValidator = useYupSchemaBuilder('Organization', basicShape);
+  const organizationValidator = useSchemaEditionValidation('Organization', basicShape);
 
   const queries = {
     fieldPatch: organizationMutationFieldPatch,
@@ -157,9 +157,11 @@ const OrganizationEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(organization)),
     R.assoc('objectMarking', convertMarkings(organization)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, organization)),
+    R.assoc('references', []),
     R.pick([
       'name',
       'description',
+      'references',
       'contact_information',
       'x_opencti_organization_type',
       'x_opencti_reliability',
@@ -169,12 +171,10 @@ const OrganizationEditionOverviewComponent = (props) => {
     ]),
   )(organization);
   return (
-      <Formik
-        enableReinitialize={true}
+      <Formik enableReinitialize={true}
         initialValues={initialValues}
         validationSchema={organizationValidator}
-        onSubmit={onSubmit}
-      >
+        onSubmit={onSubmit}>
         {({
           submitForm,
           isSubmitting,

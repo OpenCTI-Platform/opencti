@@ -16,7 +16,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const channelMutationFieldPatch = graphql`
@@ -80,14 +80,14 @@ const ChannelEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    channel_types: Yup.array(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    channel_types: Yup.array().nullable(),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const channelValidator = useYupSchemaBuilder('Channel', basicShape);
+  const channelValidator = useSchemaEditionValidation('Channel', basicShape);
 
   const queries = {
     fieldPatch: channelMutationFieldPatch,

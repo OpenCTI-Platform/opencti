@@ -100,7 +100,7 @@ import {
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
-  BASE_TYPE_RELATION,
+  BASE_TYPE_RELATION, buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -231,6 +231,7 @@ import {
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
+import { getMandatoryAttributesForSetting } from '../domain/attribute';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -1692,10 +1693,13 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   }
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
-  if (entitySetting?.enforce_reference) {
-    const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
-    if (!isNoReferenceKey && isEmptyField(opts.references)) {
-      throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
+  if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    if (!isAllowedToByPass && entitySetting?.enforce_reference) {
+      const isNoReferenceKey = noReferenceAttributes.includes(R.head(keys)) && keys.length === 1;
+      if (!isNoReferenceKey && isEmptyField(opts.references)) {
+        throw ValidationError('references', { message: 'You must provide at least one external reference to update' });
+      }
     }
   }
   let locksIds = getInstanceIds(initial);
@@ -2043,6 +2047,20 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
+
+const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
+  if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
+    const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
+    if (!isAllowedToByPass && entitySetting?.enforce_reference) {
+      if (isEmptyField(input.externalReferences)) {
+        throw ValidationError('externalReferences', {
+          message: 'You must provide at least one external reference for this type of entity/relationship',
+        });
+      }
+    }
+    await validateInputCreation(context, user, type, input, entitySetting);
+  }
+};
 
 // region mutation relation
 const buildRelationInput = (input) => {
@@ -2620,28 +2638,19 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     relations: relToCreate
   };
 };
+
 export const createRelationRaw = async (context, user, input, opts = {}) => {
   let lock;
   const { fromRule, locks = [] } = opts;
   const { fromId, toId, relationship_type: relationshipType } = input;
-  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  // Enforce reference controls
-  if (isStixCoreRelationship(relationshipType)) {
-    if (entitySetting?.enforce_reference) {
-      if (isEmptyField(input.externalReferences)) {
-        throw ValidationError('externalReferences', {
-          message: 'You must provide at least one external reference to create a relationship',
-        });
-      }
-    }
-  }
   // Pre-check before inputs resolution
   if (fromId === toId) {
     /* istanbul ignore next */
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
-  await validateInputCreation(context, user, relationshipType, input, entitySetting);
+  const entitySetting = await getEntitySettingFromCache(context, relationshipType);
+  await validateEntityAndRelationCreation(context, user, input, relationshipType, entitySetting, opts);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
@@ -2780,7 +2789,11 @@ export const createRelation = async (context, user, input) => {
   return data.element;
 };
 export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
-  const args = { ...opts, fromRule: ruleContent.field };
+  const args = {
+    ...opts,
+    fromRule: ruleContent.field,
+    bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
+  };
   // eslint-disable-next-line camelcase
   const { fromId, toId, relationship_type } = input;
   // In some cases, we can try to create with the same from and to, ignore
@@ -2964,17 +2977,8 @@ const userHaveCapability = (user, capability) => {
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
   // Region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
-  const isAllowedToByPass = userHaveCapability(user, BYPASS_REFERENCE);
-  if (!isAllowedToByPass && entitySetting?.enforce_reference) {
-    if (isEmptyField(input.externalReferences)) {
-      throw ValidationError('externalReferences', {
-        message: 'You must provide at least one external reference for this type of entity',
-      });
-    }
-  }
-  await validateInputCreation(context, user, type, input, entitySetting);
+  await validateEntityAndRelationCreation(context, user, input, type, entitySetting, opts);
   // Endregion
-
   const { fromRule } = opts;
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, type);
@@ -3099,23 +3103,23 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
   }
 };
 
-export const createEntity = async (context, user, input, type) => {
+export const createEntity = async (context, user, input, type, opts = {}) => {
   // volumes of objects relationships must be controlled
   if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
     const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
     const firstSequence = objectSequences.shift();
     const subObjectsEntity = R.assoc(INPUT_OBJECTS, firstSequence, input);
-    const created = await createEntityRaw(context, user, subObjectsEntity, type);
+    const created = await createEntityRaw(context, user, subObjectsEntity, type, opts);
     // For each subsequences of objects
     // We need to produce a batch upsert of object that will be upserted.
     for (let index = 0; index < objectSequences.length; index += 1) {
       const objectSequence = objectSequences[index];
       const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
-      await createEntityRaw(context, user, upsertInput, type);
+      await createEntityRaw(context, user, upsertInput, type, opts);
     }
     return created.element;
   }
-  const data = await createEntityRaw(context, user, input, type);
+  const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await createEntityAutoEnrichment(context, user, data.element.id, type);
@@ -3123,7 +3127,11 @@ export const createEntity = async (context, user, input, type) => {
   return data.element;
 };
 export const createInferredEntity = async (context, input, ruleContent, type) => {
-  const opts = { fromRule: ruleContent.field, impactStandardId: false };
+  const opts = {
+    fromRule: ruleContent.field,
+    impactStandardId: false,
+    bypassValidation: true, // We need to bypass validation here has we maybe not setup all require fields
+  };
   // Inferred entity have a specific standardId generated from dependencies data.
   const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
   const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };
@@ -3279,6 +3287,15 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
   const fromThing = await internalLoadById(context, user, fromId, opts);
+  // Check mandatory attribute
+  const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
+  const attributesMandatory = await getMandatoryAttributesForSetting(context, entitySetting);
+  if (attributesMandatory.length > 0) {
+    const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(relationshipType));
+    if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {
+      throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
+    }
+  }
   const toThing = await internalLoadById(context, user, toId, opts);
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);

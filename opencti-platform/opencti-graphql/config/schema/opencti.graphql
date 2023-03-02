@@ -594,15 +594,7 @@ type SubType {
   label: String!
   statuses: StatusConnection
   workflowEnabled: Boolean
-  settings: EntitySetting
-  mandatoryAttributes: [SubTypeAttribute!]!
-}
-
-type SubTypeAttribute {
-  name: String!
-  builtIn: Boolean!
-  mandatory: Boolean!
-  label: String
+  settings: EntitySetting # Simpler before moving workflow
 }
 
 ############## Statuses

@@ -26,7 +26,8 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -86,7 +87,7 @@ interface FormikCaseAddInput {
   priority: string
   description: string
   file: File | undefined
-  createdBy?: { value: string; label?: string }
+  createdBy: Option | undefined
   objectMarking: { value: string }[]
   objectAssignee: { value: string }[]
   objectLabel: { value: string }[]
@@ -103,10 +104,10 @@ const IncidentCreation = ({
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+  const caseValidator = useSchemaCreationValidation('Case', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
@@ -187,7 +188,7 @@ const IncidentCreation = ({
               description: '',
               severity: '',
               priority: '',
-              createdBy: { value: '', label: '' },
+              createdBy: undefined,
               objectMarking: [],
               objectAssignee: [],
               objectLabel: [],

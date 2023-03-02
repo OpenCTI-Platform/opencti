@@ -19,7 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const reportMutationFieldPatch = graphql`
@@ -87,17 +87,17 @@ const ReportEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     published: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .required(t('This field is required')),
     report_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const reportValidator = useYupSchemaBuilder('Report', basicShape);
+  const reportValidator = useSchemaEditionValidation('Report', basicShape);
 
   const queries = {
     fieldPatch: reportMutationFieldPatch,
@@ -167,8 +167,10 @@ const ReportEditionOverviewComponent = (props) => {
     R.assoc('x_opencti_workflow_id', convertStatus(t, report)),
     R.assoc('createdBy', convertCreatedBy(report)),
     R.assoc('objectMarking', convertMarkings(report)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'published',
       'description',
       'report_types',

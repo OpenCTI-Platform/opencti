@@ -15,7 +15,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const intrusionSetMutationFieldPatch = graphql`
@@ -85,13 +85,13 @@ const IntrusionSetEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const intrusionSetValidator = useYupSchemaBuilder('Intrusion-Set', basicShape);
+  const intrusionSetValidator = useSchemaEditionValidation('Intrusion-Set', basicShape);
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,
@@ -110,6 +110,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
       R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.toPairs,
       R.map((n) => ({
         key: n[0],

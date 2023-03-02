@@ -37,6 +37,7 @@ export const subTypeFragment = graphql`
       platform_entity_files_ref
       platform_hidden_type
       target_type
+      availableSettings
     }
     statuses {
       edges {
@@ -50,12 +51,6 @@ export const subTypeFragment = graphql`
         }
       }
     }
-    mandatoryAttributes {
-      name
-      builtIn
-      mandatory
-      label
-    }
   }
 `;
 
@@ -65,24 +60,18 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
 
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
-
-  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, {
-    targetType: subType.id,
-  });
+  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, { targetType: subType.id });
 
   return (
     <>
       {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <div>
             <Typography variant="h1" gutterBottom={true}>
               {t(`entity_${subType.label}`)}
             </Typography>
           </div>
-          <Grid container={true} spacing={3}
-                style={{ marginBottom: 20 }}>
+          <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
             <Grid item={true} xs={6}>
               <div style={{ height: '100%' }}>
                 <Typography variant="h4" gutterBottom={true}>
@@ -96,14 +85,11 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                       <SubTypeStatusPopover subTypeId={subType.id} />
                     </Typography>
                   </div>
-                  <ItemStatusTemplate
-                    statuses={statuses}
-                    disabled={!subType.workflowEnabled}
-                  />
+                  <ItemStatusTemplate statuses={statuses} disabled={!subType.workflowEnabled}/>
                 </Paper>
               </div>
             </Grid>
-            <EntitySettingAttributesConfiguration queryRef={queryRef} subType={subType}/>
+            <EntitySettingAttributesConfiguration queryRef={queryRef} />
           </Grid>
         </React.Suspense>
       )}

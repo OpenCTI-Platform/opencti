@@ -5,12 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import {
-  convertAssignees,
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -24,7 +19,7 @@ import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import CommitMessage from '../../common/form/CommitMessage';
 import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 
@@ -156,7 +151,7 @@ interface IncidentEditionOverviewProps {
 
 interface CaseEditionFormValues {
   message?: string
-  createdBy?: Option
+  createdBy: Option | undefined
   objectMarking?: Option[]
   objectAssignee?: Option[]
   x_opencti_workflow_id: Option
@@ -170,15 +165,15 @@ IncidentEditionOverviewProps
   const caseData = useFragment(incidentEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     severity: Yup.string().nullable(),
     priority: Yup.string().nullable(),
     description: Yup.string().nullable(),
-    x_opencti_workflow_id: Yup.object(),
-    rating: Yup.number(),
-    confidence: Yup.number(),
+    x_opencti_workflow_id: Yup.object().nullable(),
+    rating: Yup.number().nullable(),
+    confidence: Yup.number().nullable(),
   };
-  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+  const caseValidator = useSchemaEditionValidation('Case', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,

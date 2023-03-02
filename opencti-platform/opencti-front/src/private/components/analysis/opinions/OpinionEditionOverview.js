@@ -13,24 +13,13 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import CommitMessage from '../../common/form/CommitMessage';
-import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
-  mutation OpinionEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-    $commitMessage: String
-    $references: [String]
-  ) {
+  mutation OpinionEditionOverviewFieldPatchMutation($id: ID!$input: [EditInput]!) {
     opinionEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-        references: $references
-      ) {
+      fieldPatch(input: $input) {
         ...OpinionEditionOverview_opinion
         ...Opinion_opinion
       }
@@ -78,17 +67,16 @@ const opinionMutationRelationDelete = graphql`
 `;
 
 const OpinionEditionOverviewComponent = (props) => {
-  const { opinion, enableReferences, context, handleClose } = props;
+  const { opinion, context } = props;
   const { t } = useFormatter();
 
   const basicShape = {
     opinion: Yup.string().required(t('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
-    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const opinionValidator = useYupSchemaBuilder('Opinion', basicShape);
+  const opinionValidator = useSchemaEditionValidation('Opinion', basicShape);
 
   const queries = {
     fieldPatch: opinionMutationFieldPatch,
@@ -96,56 +84,24 @@ const OpinionEditionOverviewComponent = (props) => {
     relationDelete: opinionMutationRelationDelete,
     editionFocus: opinionEditionOverviewFocus,
   };
-  const editor = useFormEditor(opinion, enableReferences, queries, opinionValidator);
-
-  const onSubmit = (values, { setSubmitting }) => {
-    const commitMessage = values.message;
-    const references = R.pluck('value', values.references || []);
-    const inputValues = R.pipe(
-      R.dissoc('message'),
-      R.dissoc('references'),
-      R.assoc('x_opencti_workflow_id', values.x_opencti_workflow_id?.value),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.toPairs,
-      R.map((n) => ({
-        key: n[0],
-        value: adaptFieldValue(n[1]),
-      })),
-    )(values);
-    editor.fieldPatch({
-      variables: {
-        id: opinion.id,
-        input: inputValues,
-        commitMessage:
-          commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references,
-      },
-      onCompleted: () => {
-        setSubmitting(false);
-        handleClose();
-      },
-    });
-  };
+  const editor = useFormEditor(opinion, false, queries, opinionValidator);
 
   const handleSubmitField = (name, value) => {
-    if (!enableReferences) {
-      let finalValue = value;
-      if (name === 'x_opencti_workflow_id') {
-        finalValue = value.value;
-      }
-      opinionValidator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: opinion.id,
-              input: { key: name, value: finalValue ?? '' },
-            },
-          });
-        })
-        .catch(() => false);
+    let finalValue = value;
+    if (name === 'x_opencti_workflow_id') {
+      finalValue = value.value;
     }
+    opinionValidator
+      .validateAt(name, { [name]: value })
+      .then(() => {
+        editor.fieldPatch({
+          variables: {
+            id: opinion.id,
+            input: { key: name, value: finalValue ?? '' },
+          },
+        });
+      })
+      .catch(() => false);
   };
 
   const initialValues = R.pipe(
@@ -162,20 +118,11 @@ const OpinionEditionOverviewComponent = (props) => {
     ]),
   )(opinion);
   return (
-    <Formik
-      enableReinitialize={true}
+    <Formik enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={opinionValidator}
-      onSubmit={onSubmit}
-    >
-      {({
-        submitForm,
-        isSubmitting,
-        setFieldValue,
-        values,
-        isValid,
-        dirty,
-      }) => (
+      onSubmit={() => {}}>
+      {({ setFieldValue }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
             <OpenVocabField
@@ -247,16 +194,6 @@ const OpinionEditionOverviewComponent = (props) => {
               }
               onChange={editor.changeMarking}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                open={false}
-                values={values.references}
-                setFieldValue={setFieldValue}
-                id={opinion.id}
-              />
-            )}
           </Form>
         </div>
       )}

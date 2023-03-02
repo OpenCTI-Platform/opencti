@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const dataComponentMutationFieldPatch = graphql`
@@ -146,13 +146,13 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    confidence: Yup.number(),
+    confidence: Yup.number().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const dataComponentValidator = useYupSchemaBuilder('Data-Component', basicShape);
+  const dataComponentValidator = useSchemaEditionValidation('Data-Component', basicShape);
 
   const queries = {
     fieldPatch: dataComponentMutationFieldPatch,

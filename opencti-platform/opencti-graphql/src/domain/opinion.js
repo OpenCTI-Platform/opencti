@@ -15,6 +15,7 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 import { isStixId } from '../schema/schemaUtils';
 import { addIndividual, findAll as findIndividuals } from './individual';
+import { userSessionRefresh } from './user';
 
 export const findById = (context, user, opinionId) => {
   return storeLoadById(context, user, opinionId, ENTITY_TYPE_CONTAINER_OPINION);
@@ -114,17 +115,13 @@ export const opinionsDistributionByEntity = async (context, user, args) => {
 
 // region mutations
 export const addOpinion = async (context, user, opinion) => {
-  const opinionToCreate = opinion;
-  // For note, auto assign current user as author
-  if (!opinion.createdBy) {
-    const args = { filters: [{ key: 'contact_information', values: [user.user_email] }], connectionFormat: false };
-    const individuals = await findIndividuals(context, user, args);
-    if (individuals.length > 0) {
-      opinionToCreate.createdBy = R.head(individuals).id;
-    } else {
-      const individual = await addIndividual(context, user, { name: user.name, contact_information: user.user_email });
-      opinionToCreate.createdBy = individual.id;
-    }
+  const opinionToCreate = { ...opinion };
+  if (opinionToCreate.createdBy === undefined) {
+    const individualInput = { name: user.name, contact_information: user.user_email };
+    // We need to bypass validation here has we maybe not setup all require fields
+    const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+    opinionToCreate.createdBy = individual.id;
+    await userSessionRefresh(user.internal_id);
   }
   const created = await createEntity(context, user, opinionToCreate, ENTITY_TYPE_CONTAINER_OPINION);
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);

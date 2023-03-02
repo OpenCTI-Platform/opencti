@@ -17,7 +17,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const eventMutationFieldPatch = graphql`
@@ -77,15 +77,17 @@ const EventEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
-    stop_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+    stop_time: Yup.date()
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const eventValidator = useYupSchemaBuilder('Event', basicShape);
+  const eventValidator = useSchemaEditionValidation('Event', basicShape);
 
   const queries = {
     fieldPatch: eventMutationFieldPatch,

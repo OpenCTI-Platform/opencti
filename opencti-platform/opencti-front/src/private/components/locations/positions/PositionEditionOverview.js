@@ -13,7 +13,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const positionMutationFieldPatch = graphql`
@@ -83,7 +83,7 @@ const PositionEditionOverviewComponent = (props) => {
   const { t } = useFormatter();
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
@@ -93,10 +93,10 @@ const PositionEditionOverviewComponent = (props) => {
       .nullable(),
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
-    references: Yup.array().nullable(),
+    references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const positionValidator = useYupSchemaBuilder('Position', basicShape);
+  const positionValidator = useSchemaEditionValidation('Position', basicShape);
 
   const queries = {
     fieldPatch: positionMutationFieldPatch,
@@ -160,8 +160,10 @@ const PositionEditionOverviewComponent = (props) => {
     R.assoc('createdBy', convertCreatedBy(position)),
     R.assoc('objectMarking', convertMarkings(position)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, position)),
+    R.assoc('references', []),
     R.pick([
       'name',
+      'references',
       'description',
       'latitude',
       'longitude',

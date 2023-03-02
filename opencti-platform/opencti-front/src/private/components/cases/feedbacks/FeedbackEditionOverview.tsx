@@ -5,12 +5,7 @@ import * as Yup from 'yup';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
-import {
-  convertAssignees,
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
@@ -26,7 +21,7 @@ import RatingField from '../../../../components/RatingField';
 import CommitMessage from '../../common/form/CommitMessage';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const feedbackMutationFieldPatch = graphql`
   mutation FeedbackEditionOverviewFieldPatchMutation(
@@ -157,7 +152,7 @@ interface FeedbackEditionOverviewProps {
 interface CaseEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy?: Option
+  createdBy: Option | undefined
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }
@@ -169,7 +164,7 @@ FeedbackEditionOverviewProps
   const caseData = useFragment(feedbackEditionOverviewFragment, caseRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     priority: Yup.string().nullable(),
     severity: Yup.string().nullable(),
     description: Yup.string().nullable(),
@@ -177,7 +172,7 @@ FeedbackEditionOverviewProps
     rating: Yup.number(),
     confidence: Yup.number(),
   };
-  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+  const caseValidator = useSchemaEditionValidation('Case', basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,

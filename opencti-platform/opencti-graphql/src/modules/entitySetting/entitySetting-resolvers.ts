@@ -5,6 +5,7 @@ import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
+import { getMandatoryAttributesForSetting, queryMandatoryAttributesDefinition } from '../../domain/attribute';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -13,6 +14,8 @@ const entitySettingResolvers: Resolvers = {
     entitySettingByType: (_, { targetType }, context) => findByType(context, context.user, targetType),
   },
   EntitySetting: {
+    mandatoryDefinitions: (entitySetting, _, context) => queryMandatoryAttributesDefinition(context, entitySetting),
+    mandatoryAttributes: (entitySetting, _, context) => getMandatoryAttributesForSetting(context, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
   },
   Mutation: {

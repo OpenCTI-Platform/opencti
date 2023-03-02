@@ -16,7 +16,7 @@ import { CountryEditionOverview_country$key } from './__generated__/CountryEditi
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const countryMutationFieldPatch = graphql`
@@ -146,12 +146,12 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
   const country = useFragment(countryEditionOverviewFragment, countryRef);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const countryValidator = useYupSchemaBuilder('Country', basicShape);
+  const countryValidator = useSchemaEditionValidation('Country', basicShape);
 
   const queries = {
     fieldPatch: countryMutationFieldPatch,

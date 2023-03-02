@@ -20,7 +20,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -79,7 +79,7 @@ const PositionCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
@@ -90,7 +90,7 @@ const PositionCreation = ({ paginationOptions }) => {
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-  const positionValidator = useYupSchemaBuilder('Position', basicShape);
+  const positionValidator = useSchemaCreationValidation('Position', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

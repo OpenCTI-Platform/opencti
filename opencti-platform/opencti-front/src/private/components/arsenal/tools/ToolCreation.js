@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -92,12 +92,12 @@ const ToolCreation = ({ paginationOptions }) => {
   const [open, setOpen] = useState(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
   };
-  const toolValidator = useYupSchemaBuilder('Tool', basicShape);
+  const toolValidator = useSchemaCreationValidation('Tool', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -88,7 +88,7 @@ const countryMutation = graphql`
 interface CountryAddInput {
   name: string
   description: string
-  createdBy?: Option | undefined
+  createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
@@ -101,10 +101,10 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
   const [open, setOpen] = useState<boolean>(false);
 
   const basicShape = {
-    name: Yup.string().required(t('This field is required')),
+    name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const countryValidator = useYupSchemaBuilder('Country', basicShape);
+  const countryValidator = useSchemaCreationValidation('Country', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
