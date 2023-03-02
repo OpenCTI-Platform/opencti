@@ -23,7 +23,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -97,7 +97,7 @@ const ToolCreation = ({ paginationOptions }) => {
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
   };
-  const toolValidator = useYupSchemaBuilder('Tool', basicShape);
+  const toolValidator = useSchemaCreationValidation('Tool', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

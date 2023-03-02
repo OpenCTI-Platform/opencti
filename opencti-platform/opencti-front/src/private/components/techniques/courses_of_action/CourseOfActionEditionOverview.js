@@ -13,7 +13,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const courseOfActionMutationFieldPatch = graphql`
@@ -91,7 +91,7 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const courseOfActionValidator = useYupSchemaBuilder('Course-Of-Action', basicShape);
+  const courseOfActionValidator = useSchemaEditionValidation('Course-Of-Action', basicShape);
 
   const queries = {
     fieldPatch: courseOfActionMutationFieldPatch,

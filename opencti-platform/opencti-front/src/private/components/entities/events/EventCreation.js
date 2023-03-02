@@ -23,7 +23,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -103,7 +103,7 @@ const EventCreation = ({ paginationOptions }) => {
       .min(Yup.ref('start_time'), "The end date can't be before start date")
       .nullable(),
   };
-  const eventValidator = useYupSchemaBuilder('Event', basicShape);
+  const eventValidator = useSchemaCreationValidation('Event', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

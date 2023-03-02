@@ -38,7 +38,7 @@ import {
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -142,7 +142,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     likelihood: Yup.number().min(0).max(100),
   };
   // created & createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useYupSchemaBuilder('Note', basicShape, ['created', 'createdBy']);
+  const noteValidator = useSchemaCreationValidation('Note', basicShape, ['created', 'createdBy']);
   const data = usePreloadedFragment<
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key

@@ -15,7 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const threatActorMutationFieldPatch = graphql`
@@ -92,7 +92,7 @@ const ThreatActorEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
+  const threatActorValidator = useSchemaEditionValidation('Threat-Actor', basicShape);
 
   const queries = {
     fieldPatch: threatActorMutationFieldPatch,

@@ -13,7 +13,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
@@ -76,7 +76,7 @@ const OpinionEditionOverviewComponent = (props) => {
     confidence: Yup.number(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const opinionValidator = useYupSchemaBuilder('Opinion', basicShape);
+  const opinionValidator = useSchemaEditionValidation('Opinion', basicShape);
 
   const queries = {
     fieldPatch: opinionMutationFieldPatch,

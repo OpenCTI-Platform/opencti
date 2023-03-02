@@ -20,7 +20,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -90,7 +90,7 @@ const PositionCreation = ({ paginationOptions }) => {
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-  const positionValidator = useYupSchemaBuilder('Position', basicShape);
+  const positionValidator = useSchemaCreationValidation('Position', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

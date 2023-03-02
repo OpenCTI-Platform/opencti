@@ -16,7 +16,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const observedDataMutationFieldPatch = graphql`
@@ -96,7 +96,7 @@ const ObservedDataEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const observedDataValidator = useYupSchemaBuilder('Observed-Data', basicShape, ['objects']);
+  const observedDataValidator = useSchemaEditionValidation('Observed-Data', basicShape, ['objects']);
 
   const queries = {
     fieldPatch: observedDataMutationFieldPatch,

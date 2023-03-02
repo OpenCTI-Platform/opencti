@@ -21,7 +21,7 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -85,7 +85,7 @@ const ThreatActorCreation = ({ paginationOptions }) => {
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const threatActorValidator = useYupSchemaBuilder('Threat-Actor', basicShape);
+  const threatActorValidator = useSchemaCreationValidation('Threat-Actor', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

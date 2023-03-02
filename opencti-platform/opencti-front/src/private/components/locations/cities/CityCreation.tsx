@@ -22,7 +22,7 @@ import { CitiesLinesPaginationQuery$variables } from './__generated__/CitiesLine
 import { CityCreationMutation$variables } from './__generated__/CityCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -98,7 +98,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
-  const cityValidator = useYupSchemaBuilder('City', basicShape);
+  const cityValidator = useSchemaCreationValidation('City', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

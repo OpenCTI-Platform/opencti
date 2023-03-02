@@ -18,11 +18,13 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
-import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
+import {
+  AdministrativeAreasLinesPaginationQuery$variables,
+} from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -104,7 +106,7 @@ const AdministrativeAreaCreation = ({
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
-  const administrativeAreaValidator = useYupSchemaBuilder('Administrative-Area', basicShape);
+  const administrativeAreaValidator = useSchemaCreationValidation('Administrative-Area', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

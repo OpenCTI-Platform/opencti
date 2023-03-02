@@ -19,7 +19,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionOverview_incident$key } from './__generated__/IncidentEditionOverview_incident.graphql';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const incidentMutationFieldPatch = graphql`
@@ -163,7 +163,7 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     x_opencti_workflow_id: Yup.object(),
     references: Yup.array(),
   };
-  const incidentValidator = useYupSchemaBuilder('Incident', basicShape);
+  const incidentValidator = useSchemaEditionValidation('Incident', basicShape);
 
   const queries = {
     fieldPatch: incidentMutationFieldPatch,

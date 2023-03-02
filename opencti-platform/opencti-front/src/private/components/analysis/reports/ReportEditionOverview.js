@@ -19,7 +19,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const reportMutationFieldPatch = graphql`
@@ -97,7 +97,7 @@ const ReportEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const reportValidator = useYupSchemaBuilder('Report', basicShape);
+  const reportValidator = useSchemaEditionValidation('Report', basicShape);
 
   const queries = {
     fieldPatch: reportMutationFieldPatch,

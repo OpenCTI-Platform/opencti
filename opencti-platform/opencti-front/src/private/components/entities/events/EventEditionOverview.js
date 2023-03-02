@@ -17,7 +17,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const eventMutationFieldPatch = graphql`
@@ -87,7 +87,7 @@ const EventEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const eventValidator = useYupSchemaBuilder('Event', basicShape);
+  const eventValidator = useSchemaEditionValidation('Event', basicShape);
 
   const queries = {
     fieldPatch: eventMutationFieldPatch,

@@ -34,7 +34,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesPaginationQuery.graphql';
 import SliderField from '../../../../components/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -146,7 +146,7 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     likelihood: Yup.number().min(0).max(100),
   };
   // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
-  const noteValidator = useYupSchemaBuilder('Note', basicShape, userIsKnowledgeEditor ? [] : ['createdBy']);
+  const noteValidator = useSchemaCreationValidation('Note', basicShape, userIsKnowledgeEditor ? [] : ['createdBy']);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

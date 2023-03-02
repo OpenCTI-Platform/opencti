@@ -26,7 +26,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -107,7 +107,7 @@ const IncidentCreation = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const caseValidator = useYupSchemaBuilder('Case', basicShape);
+  const caseValidator = useSchemaCreationValidation('Case', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

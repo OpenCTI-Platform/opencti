@@ -19,7 +19,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
 import SliderField from '../../../../components/SliderField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
@@ -104,7 +104,7 @@ NoteEditionOverviewProps
       .nullable(true),
     x_opencti_workflow_id: Yup.object(),
   };
-  const noteValidator = useYupSchemaBuilder('Note', basicShape);
+  const noteValidator = useSchemaEditionValidation('Note', basicShape);
 
   const queries = {
     fieldPatch: noteMutationFieldPatch,

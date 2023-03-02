@@ -11,12 +11,9 @@ export type EntitySetting = EntitySettingConnection_entitySettings$data['edges']
 
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
-
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-
   return useFragment<EntitySettingConnection_entitySettings$key>(entitySettingsFragment, entitySettings)
-    .edges
-    .map(({ node }) => node)
+    .edges.map(({ node }) => node)
     .filter(({ target_type }) => (entityType ? entityTypes.includes(target_type) : true));
 };
 
@@ -34,9 +31,17 @@ export const useIsEnforceReference = (id: string): boolean => {
   return useEntitySettings(id).some((node) => node.enforce_reference !== null && node.enforce_reference);
 };
 
-export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, exclusions?: string[]): BaseSchema => {
+export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, isCreation: boolean, exclusions?: string[]): BaseSchema => {
   const { t } = useFormatter();
-  const mandatoryAttributes = useEntitySettings(id).map((setting) => setting.mandatoryAttributes).flat();
+  const entitySettings = useEntitySettings(id).at(0);
+  if (!entitySettings) {
+    throw Error(`Invalid type for setting: ${id}`);
+  }
+  const mandatoryAttributes = [...entitySettings.mandatoryAttributes];
+  // In creation, if enforce_reference is activated, externalReferences is required
+  if (isCreation && entitySettings.enforce_reference === true) {
+    mandatoryAttributes.push('externalReferences');
+  }
   const existingKeys = Object.keys(existingShape);
   const newShape = Object.fromEntries(mandatoryAttributes.filter((attr) => !(exclusions ?? []).includes(attr))
     .map((attrName: string) => {
@@ -51,6 +56,14 @@ export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(id: string, 
       return [attrName, validator];
     }));
   return Yup.object().shape({ ...existingShape, ...newShape });
+};
+
+export const useSchemaCreationValidation = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, exclusions?: string[]): BaseSchema => {
+  return useYupSchemaBuilder(id, existingShape, true, exclusions);
+};
+
+export const useSchemaEditionValidation = <TNextShape extends ObjectShape>(id: string, existingShape: TNextShape, exclusions?: string[]): BaseSchema => {
+  return useYupSchemaBuilder(id, existingShape, false, exclusions);
 };
 
 export default useEntitySettings;

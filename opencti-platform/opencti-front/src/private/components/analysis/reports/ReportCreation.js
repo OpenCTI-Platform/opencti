@@ -25,7 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -106,7 +106,7 @@ const ReportCreation = ({ paginationOptions }) => {
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const reportValidator = useYupSchemaBuilder('Report', basicShape);
+  const reportValidator = useSchemaCreationValidation('Report', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

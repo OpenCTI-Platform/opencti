@@ -21,7 +21,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -108,7 +108,7 @@ const AttackPatternCreation = ({ paginationOptions }) => {
     description: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
   };
-  const attackPatternValidator = useYupSchemaBuilder('Attack-Pattern', basicShape);
+  const attackPatternValidator = useSchemaCreationValidation('Attack-Pattern', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

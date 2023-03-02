@@ -18,7 +18,7 @@ import { DataSourceEditionOverview_dataSource$key } from './__generated__/DataSo
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { dataComponentEditionOverviewFocus } from '../data_components/DataComponentEditionOverview';
 
@@ -158,7 +158,7 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const dataSourceValidator = useYupSchemaBuilder('Data-Source', basicShape);
+  const dataSourceValidator = useSchemaEditionValidation('Data-Source', basicShape);
 
   const queries = {
     fieldPatch: dataSourceMutationFieldPatch,

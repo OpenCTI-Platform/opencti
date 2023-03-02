@@ -21,7 +21,7 @@ import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useFormatter } from '../../../../components/i18n';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const indicatorMutationFieldPatch = graphql`
@@ -105,7 +105,7 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const indicatorValidator = useYupSchemaBuilder('Indicator', basicShape);
+  const indicatorValidator = useSchemaEditionValidation('Indicator', basicShape);
 
   const queries = {
     fieldPatch: indicatorMutationFieldPatch,

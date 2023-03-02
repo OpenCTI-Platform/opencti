@@ -21,7 +21,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -95,7 +95,7 @@ const OrganizationCreation = ({ paginationOptions }) => {
     x_opencti_organization_type: Yup.string().nullable(),
     x_opencti_reliability: Yup.string().nullable(),
   };
-  const organizationValidator = useYupSchemaBuilder('Organization', basicShape);
+  const organizationValidator = useSchemaCreationValidation('Organization', basicShape);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);

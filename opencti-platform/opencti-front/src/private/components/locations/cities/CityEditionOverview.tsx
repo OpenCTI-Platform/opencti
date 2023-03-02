@@ -15,7 +15,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import { useFormatter } from '../../../../components/i18n';
 import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
-import { useYupSchemaBuilder } from '../../../../utils/hooks/useEntitySettings';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 const cityMutationFieldPatch = graphql`
@@ -145,7 +145,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const cityValidator = useYupSchemaBuilder('City', basicShape);
+  const cityValidator = useSchemaEditionValidation('City', basicShape);
 
   const queries = {
     fieldPatch: cityMutationFieldPatch,

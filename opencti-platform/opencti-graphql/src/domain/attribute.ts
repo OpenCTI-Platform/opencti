@@ -8,7 +8,6 @@ import { getAttributesConfiguration } from '../modules/entitySetting/entitySetti
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
-import { externalReferences } from '../schema/stixMetaRelationship';
 
 interface MandatoryAttribute {
   name: string
@@ -60,14 +59,8 @@ export const queryMandatoryAttributesDefinition = async (context: AuthContext, e
 };
 
 export const getMandatoryAttributesForSetting = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting): Promise<string[]> => {
-  const mandatoryAttributeNames = (await queryMandatoryAttributesDefinition(context, entitySetting)).filter((a) => a.mandatory === true)
-    .map((a) => a.name);
-
-  if (entitySetting?.enforce_reference) {
-    mandatoryAttributeNames.push(externalReferences.inputName);
-  }
-
-  return mandatoryAttributeNames;
+  const attributes = await queryMandatoryAttributesDefinition(context, entitySetting);
+  return attributes.filter((a) => a.mandatory === true).map((a) => a.name);
 };
 
 const queryAttributeNames = async (types: string[]) => {
