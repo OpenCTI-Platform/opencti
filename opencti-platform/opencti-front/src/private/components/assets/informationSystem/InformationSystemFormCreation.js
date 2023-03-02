@@ -367,7 +367,7 @@ class InformationSystemFormCreation extends Component {
 }
 
 InformationSystemFormCreation.propTypes = {
-  InfoSystemCreation: PropTypes.string,
+  InfoSystemCreation: PropTypes.bool,
   handleInformationSystemCreation: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,

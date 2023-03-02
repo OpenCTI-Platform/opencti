@@ -25,13 +25,6 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 
 const styles = (theme) => ({
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
   scrollBg: {
     background: theme.palette.header.background,
     width: '100%',
@@ -57,12 +50,6 @@ const styles = (theme) => ({
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
-  },
-  inputTextField: {
-    color: 'white',
-  },
-  textField: {
-    background: theme.palette.header.background,
   },
   dialogAction: {
     margin: '15px 20px 15px 0',
@@ -225,13 +212,18 @@ class ResponsiblePartiesField extends Component {
             </div>
           </div>
         </div>
-        <Dialog open={this.state.open} fullWidth={true} maxWidth="sm">
+        <Dialog
+          keepMounted={false}
+          open={this.state.open}
+          fullWidth={true}
+          maxWidth='sm'
+        >
           <DialogContent>{title && t(title)}</DialogContent>
           <DialogContent style={{ overflow: 'hidden' }}>
             <Autocomplete
-              size="small"
+              size='small'
               loading={this.state.party || false}
-              loadingText="Searching..."
+              loadingText='Searching...'
               className={classes.autocomplete}
               classes={{
                 popupIndicatorOpen: classes.popupIndicator,
@@ -245,24 +237,24 @@ class ResponsiblePartiesField extends Component {
               autoHighlight={true}
               renderInput={(params) => (
                 <TextField
-                  variant="outlined"
+                  variant='outlined'
                   {...params}
-                  label="Responsible Parties"
+                  label='Responsible Parties'
                 />
               )}
             />
           </DialogContent>
           <DialogActions className={classes.dialogAction}>
             <Button
-              variant="outlined"
+              variant='outlined'
               onClick={() => this.setState({ open: false, party: null })}
             >
               {t('Cancel')}
             </Button>
             <Button
-              variant="contained"
+              variant='contained'
               onClick={this.handleAdd.bind(this)}
-              color="primary"
+              color='primary'
               disabled={this.state.party === null}
             >
               {t('Add')}

@@ -16,20 +16,18 @@ import inject18n from '../../../../components/i18n';
 const searchTextFieldQuery = graphql`
   query SearchTextFieldQuery(
     $search: String
-    $orderedBy: SoftwareAssetOrdering
+    $orderedBy: InformationTypeOrdering
     $orderMode: OrderingMode
-    $first: Int
   ) {
-    softwareAssetList(
+    informationTypes(
       search: $search
       orderedBy: $orderedBy
       orderMode: $orderMode
-      first: $first
     ) {
       edges {
         node {
           id
-          name
+          title
         }
       }
     }
@@ -38,14 +36,11 @@ const searchTextFieldQuery = graphql`
 
 const searchTextFieldIdQuery = graphql`
   query SearchTextFieldIdQuery($id: ID!) {
-    softwareAsset(id: $id) {
+    informationType(id: $id) {
       id
+      title
       created
       modified
-      name
-      vendor_name
-      version
-      cpe_identifier
     }
   }
 `;
@@ -90,7 +85,7 @@ class SearchTextField extends Component {
         id: selectedProductValue.value,
       }).toPromise()
         .then((data) => {
-          this.setState({ selectedProduct: data.softwareAsset }, () => this.props.setFieldValue("description", data.softwareAsset.cpe_identifier));
+          this.setState({ selectedProduct: data.informationSystem });
         });
     }
   }
@@ -100,14 +95,13 @@ class SearchTextField extends Component {
       search: value === "" ? "" : value,
       orderedBy: 'name',
       orderMode: 'asc',
-      first: value === "" ? 10 : null,
     })
       .toPromise()
       .then((data) => {
         const products = pipe(
-          pathOr([], ['softwareAssetList', 'edges']),
+          pathOr([], ['informationTypes', 'edges']),
           map((n) => ({
-            label: n.node?.name,
+            label: n.node?.title,
             value: n.node?.id,
           })),
         )(data);
@@ -126,9 +120,9 @@ class SearchTextField extends Component {
       t, name, classes,
     } = this.props;
     const {
-        selectedProduct,
-        productName
-      } = this.state;
+      selectedProduct,
+      productName
+    } = this.state;
     return (
       <div>
         <Field

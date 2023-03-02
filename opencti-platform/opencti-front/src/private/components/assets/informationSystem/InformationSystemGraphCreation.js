@@ -367,7 +367,7 @@ class InformationSystemGraphCreation extends Component {
 }
 
 InformationSystemGraphCreation.propTypes = {
-  InfoSystemCreation: PropTypes.string,
+  InfoSystemCreation: PropTypes.bool,
   handleInformationSystemCreation: PropTypes.func,
   classes: PropTypes.object,
   theme: PropTypes.object,
