@@ -36,7 +36,6 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference'],
-  [ABSTRACT_STIX_CYBER_OBSERVABLE]: ['platform_entity_files_ref'],
   [ABSTRACT_STIX_CORE_RELATIONSHIP]: [],
   [STIX_SIGHTING_RELATIONSHIP]: [],
   // enforce_reference not available on specific entities
@@ -151,7 +150,7 @@ export const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = 
   items: {
     type: 'object',
     properties: {
-      name: { type: 'string' },
+      name: { type: 'string', minLength: 1 },
       mandatory: { type: 'boolean' }
     },
     required: ['name', 'mandatory']
