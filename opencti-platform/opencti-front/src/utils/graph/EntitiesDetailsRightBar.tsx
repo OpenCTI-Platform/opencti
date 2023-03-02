@@ -11,20 +11,19 @@ import RelationshipDetails from './RelationshipDetails';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
-    minHeight: '100vh',
-    width: 250,
-    padding: '0 20px 20px 20px',
-    position: 'fixed',
+    width: 'auto',
+    maxWidth: '400px',
+    padding: '20px 20px 20px 20px',
+    position: 'absolute',
     zIndex: 900,
   },
   formControl: {
     width: '100%',
-    marginTop: '20px',
+    marginTop: '10px',
   },
   label: {
     backgroundColor: theme.palette.background.paper,
   },
-  toolbar: theme.mixins.toolbar,
 }));
 
 export interface SelectedEntity {

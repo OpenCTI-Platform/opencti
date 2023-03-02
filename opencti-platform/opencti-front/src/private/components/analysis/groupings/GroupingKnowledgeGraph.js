@@ -44,371 +44,371 @@ const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
 export const groupingKnowledgeGraphQuery = graphql`
-  query GroupingKnowledgeGraphQuery($id: String!) {
-    grouping(id: $id) {
-      ...GroupingKnowledgeGraph_grouping
+    query GroupingKnowledgeGraphQuery($id: String!) {
+        grouping(id: $id) {
+            ...GroupingKnowledgeGraph_grouping
+        }
     }
-  }
 `;
 
 const groupingKnowledgeGraphCheckRelationQuery = graphql`
-  query GroupingKnowledgeGraphCheckRelationQuery($id: String!) {
-    stixRelationship(id: $id) {
-      id
-      is_inferred
-      ... on StixCoreRelationship {
-        groupings {
-          edges {
-            node {
-              id
+    query GroupingKnowledgeGraphCheckRelationQuery($id: String!) {
+        stixRelationship(id: $id) {
+            id
+            is_inferred
+            ... on StixCoreRelationship {
+                groupings {
+                    edges {
+                        node {
+                            id
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      ... on StixCyberObservableRelationship {
-        groupings {
-          edges {
-            node {
-              id
+            ... on StixCyberObservableRelationship {
+                groupings {
+                    edges {
+                        node {
+                            id
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      ... on StixSightingRelationship {
-        groupings {
-          edges {
-            node {
-              id
+            ... on StixSightingRelationship {
+                groupings {
+                    edges {
+                        node {
+                            id
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 `;
 
 const groupingKnowledgeGraphStixCoreObjectQuery = graphql`
-  query GroupingKnowledgeGraphStixCoreObjectQuery($id: String!) {
-    stixCoreObject(id: $id) {
-      id
-      entity_type
-      parent_types
-      created_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
+    query GroupingKnowledgeGraphStixCoreObjectQuery($id: String!) {
+        stixCoreObject(id: $id) {
             id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
+            entity_type
+            parent_types
+            created_at
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
+            }
+            objectMarking {
+                edges {
+                    node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                    }
+                }
+            }
+            ... on StixDomainObject {
+                created
+            }
+            ... on AttackPattern {
+                name
+                x_mitre_id
+            }
+            ... on Campaign {
+                name
+                first_seen
+                last_seen
+            }
+            ... on CourseOfAction {
+                name
+            }
+            ... on Channel {
+                name
+            }
+            ... on Note {
+                attribute_abstract
+                content
+            }
+            ... on ObservedData {
+                name
+                first_observed
+                last_observed
+            }
+            ... on Opinion {
+                opinion
+            }
+            ... on Report {
+                name
+                published
+            }
+            ... on Grouping {
+                name
+                description
+            }
+            ... on Individual {
+                name
+            }
+            ... on Organization {
+                name
+            }
+            ... on Sector {
+                name
+            }
+            ... on System {
+                name
+            }
+            ... on Indicator {
+                name
+                valid_from
+            }
+            ... on Infrastructure {
+                name
+            }
+            ... on IntrusionSet {
+                name
+                first_seen
+                last_seen
+            }
+            ... on Position {
+                name
+            }
+            ... on City {
+                name
+            }
+            ... on AdministrativeArea {
+                name
+            }
+            ... on Country {
+                name
+            }
+            ... on Region {
+                name
+            }
+            ... on Malware {
+                name
+                first_seen
+                last_seen
+            }
+            ... on ThreatActor {
+                name
+                first_seen
+                last_seen
+            }
+            ... on Tool {
+                name
+            }
+            ... on Vulnerability {
+                name
+            }
+            ... on Incident {
+                name
+                first_seen
+                last_seen
+            }
+            ... on StixCyberObservable {
+                observable_value
+            }
+            ... on StixFile {
+                observableName: name
+            }
+            ... on Event {
+                name
+            }
+            ... on Case {
+                name
+            }
+            ... on Narrative {
+                name
+            }
+            ... on DataComponent {
+                name
+            }
+            ... on DataSource {
+                name
+            }
+            ... on Language {
+                name
+            }
         }
-      }
-      ... on StixDomainObject {
-        created
-      }
-      ... on AttackPattern {
-        name
-        x_mitre_id
-      }
-      ... on Campaign {
-        name
-        first_seen
-        last_seen
-      }
-      ... on CourseOfAction {
-        name
-      }
-      ... on Channel {
-        name
-      }
-      ... on Note {
-        attribute_abstract
-        content
-      }
-      ... on ObservedData {
-        name
-        first_observed
-        last_observed
-      }
-      ... on Opinion {
-        opinion
-      }
-      ... on Report {
-        name
-        published
-      }
-      ... on Grouping {
-        name
-        description
-      }
-      ... on Individual {
-        name
-      }
-      ... on Organization {
-        name
-      }
-      ... on Sector {
-        name
-      }
-      ... on System {
-        name
-      }
-      ... on Indicator {
-        name
-        valid_from
-      }
-      ... on Infrastructure {
-        name
-      }
-      ... on IntrusionSet {
-        name
-        first_seen
-        last_seen
-      }
-      ... on Position {
-        name
-      }
-      ... on City {
-        name
-      }
-      ... on AdministrativeArea {
-        name
-      }
-      ... on Country {
-        name
-      }
-      ... on Region {
-        name
-      }
-      ... on Malware {
-        name
-        first_seen
-        last_seen
-      }
-      ... on ThreatActor {
-        name
-        first_seen
-        last_seen
-      }
-      ... on Tool {
-        name
-      }
-      ... on Vulnerability {
-        name
-      }
-      ... on Incident {
-        name
-        first_seen
-        last_seen
-      }
-      ... on StixCyberObservable {
-        observable_value
-      }
-      ... on StixFile {
-        observableName: name
-      }
-      ... on Event {
-        name
-      }
-      ... on Case {
-        name
-      }
-      ... on Narrative {
-        name
-      }
-      ... on DataComponent {
-        name
-      }
-      ... on DataSource {
-        name
-      }
-      ... on Language {
-        name
-      }
     }
-  }
 `;
 
 const groupingKnowledgeGraphStixRelationshipQuery = graphql`
-  query GroupingKnowledgeGraphStixRelationshipQuery($id: String!) {
-    stixRelationship(id: $id) {
-      id
-      entity_type
-      parent_types
-      ... on StixCoreRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
+    query GroupingKnowledgeGraphStixRelationshipQuery($id: String!) {
+        stixRelationship(id: $id) {
             id
             entity_type
             parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            ... on StixCoreRelationship {
+                relationship_type
+                start_time
+                stop_time
+                confidence
+                created
+                is_inferred
+                from {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                to {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                created_at
+                createdBy {
+                    ... on Identity {
+                        id
+                        name
+                        entity_type
+                    }
+                }
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      ... on StixCyberObservableRelationship {
-        relationship_type
-        start_time
-        stop_time
-        confidence
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            ... on StixCyberObservableRelationship {
+                relationship_type
+                start_time
+                stop_time
+                confidence
+                is_inferred
+                from {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                to {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                created_at
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                }
             }
-          }
-        }
-      }
-      ... on StixSightingRelationship {
-        relationship_type
-        first_seen
-        last_seen
-        confidence
-        created
-        is_inferred
-        from {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
-          ... on StixCoreRelationship {
-            relationship_type
-          }
-        }
-        created_at
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            ... on StixSightingRelationship {
+                relationship_type
+                first_seen
+                last_seen
+                confidence
+                created
+                is_inferred
+                from {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                to {
+                    ... on BasicObject {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on BasicRelationship {
+                        id
+                        entity_type
+                        parent_types
+                    }
+                    ... on StixCoreRelationship {
+                        relationship_type
+                    }
+                }
+                created_at
+                createdBy {
+                    ... on Identity {
+                        id
+                        name
+                        entity_type
+                    }
+                }
+                objectMarking {
+                    edges {
+                        node {
+                            id
+                            definition_type
+                            definition
+                            x_opencti_order
+                            x_opencti_color
+                        }
+                    }
+                }
             }
-          }
         }
-      }
     }
-  }
 `;
 
 class GroupingKnowledgeGraphComponent extends Component {
@@ -943,7 +943,7 @@ class GroupingKnowledgeGraphComponent extends Component {
           ) {
             commitMutation({
               mutation:
-                groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
+              groupingKnowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1193,7 +1193,7 @@ class GroupingKnowledgeGraphComponent extends Component {
       <div>
         <ContainerHeader
           container={grouping}
-          PopoverComponent={<GroupingPopover />}
+          PopoverComponent={<GroupingPopover/>}
           link={`/dashboard/analysis/groupings/${grouping.id}/knowledge`}
           modes={['graph', 'correlation', 'matrix']}
           currentMode={mode}
@@ -1202,9 +1202,6 @@ class GroupingKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
-        )}
         <GroupingKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -1251,192 +1248,206 @@ class GroupingKnowledgeGraphComponent extends Component {
           handleSearch={this.handleSearch.bind(this)}
         />
         {mode3D ? (
-          <ForceGraph3D
-            ref={this.graph}
-            width={graphWidth}
-            height={graphHeight}
-            backgroundColor={theme.palette.background.default}
-            graphData={graphData}
-            nodeThreeObjectExtend={true}
-            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkLineDash={[2, 1]}
-            linkWidth={0.2}
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            linkThreeObjectExtend={true}
-            linkThreeObject={(link) => {
-              if (!displayLabels) return null;
-              const sprite = new SpriteText(link.label);
-              sprite.color = 'lightgrey';
-              sprite.textHeight = 1.5;
-              return sprite;
-            }}
-            linkPositionUpdate={(sprite, { start, end }) => {
-              const middlePos = Object.assign(
-                ...['x', 'y', 'z'].map((c) => ({
-                  [c]: start[c] + (end[c] - start[c]) / 2,
-                })),
-              );
-              Object.assign(sprite.position, middlePos);
-            }}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
+          <div style={{ position: 'absolute' }}>
+            <ForceGraph3D
+              ref={this.graph}
+              width={graphWidth}
+              height={graphHeight}
+              backgroundColor={theme.palette.background.default}
+              graphData={graphData}
+              nodeThreeObjectExtend={true}
+              nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
               }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
+              linkColor={(link) => (this.selectedLinks.has(link)
+                ? theme.palette.secondary.main
+                : theme.palette.primary.main)
+              }
+              linkLineDash={[2, 1]}
+              linkWidth={0.2}
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={0.99}
+              linkThreeObjectExtend={true}
+              linkThreeObject={(link) => {
+                if (!displayLabels) return null;
+                const sprite = new SpriteText(link.label);
+                sprite.color = 'lightgrey';
+                sprite.textHeight = 1.5;
+                return sprite;
+              }}
+              linkPositionUpdate={(sprite, { start, end }) => {
+                const middlePos = Object.assign(
+                  ...['x', 'y', 'z'].map((c) => ({
+                    [c]: start[c] + (end[c] - start[c]) / 2,
+                  })),
+                );
+                Object.assign(sprite.position, middlePos);
+              }}
+              onNodeClick={this.handleNodeClick.bind(this)}
+              onNodeRightClick={(node) => {
+                // eslint-disable-next-line no-param-reassign
+                node.fx = undefined;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = undefined;
+                // eslint-disable-next-line no-param-reassign
+                node.fz = undefined;
+                this.handleDragEnd();
+                this.forceUpdate();
+              }}
+              onNodeDrag={(node, translate) => {
+                if (this.selectedNodes.has(node)) {
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node)
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => ['x', 'y', 'z'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fz = selNode.z;
-                  });
+                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                    ));
+                }
+              }}
+              onNodeDragEnd={(node) => {
+                if (this.selectedNodes.has(node)) {
+                  // finished moving a selected node
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node) // don't touch node being dragged
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => {
+                      ['x', 'y'].forEach(
+                        // eslint-disable-next-line no-param-reassign,no-return-assign
+                        (coord) => (selNode[`f${coord}`] = undefined),
+                      );
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fx = selNode.x;
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fy = selNode.y;
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fz = selNode.z;
+                    });
+                }
+                // eslint-disable-next-line no-param-reassign
+                node.fx = node.x;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = node.y;
+                // eslint-disable-next-line no-param-reassign
+                node.fz = node.z;
+              }}
+              onLinkClick={this.handleLinkClick.bind(this)}
+              onBackgroundClick={this.handleBackgroundClick.bind(this)}
+              cooldownTicks={modeFixed ? 0 : undefined}
+              dagMode={
+                // eslint-disable-next-line no-nested-ternary
+                modeTree === 'horizontal'
+                  ? 'lr'
+                  : modeTree === 'vertical'
+                    ? 'td'
+                    : undefined
               }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              // eslint-disable-next-line no-param-reassign
-              node.fz = node.z;
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
+            />
+            {(selectedEntities.length > 0) && (
+              <EntitiesDetailsRightsBar
+                selectedEntities={selectedEntities}
+              />
+            )}
+          </div>
         ) : (
-          <ForceGraph2D
-            ref={this.graph}
-            width={graphWidth}
-            height={graphHeight}
-            graphData={graphData}
-            onZoom={this.onZoom.bind(this)}
-            onZoomEnd={this.handleZoomEnd.bind(this)}
-            nodeRelSize={4}
-            nodeCanvasObject={(node, ctx) => nodePaint(
-              {
-                selected: theme.palette.secondary.main,
-                inferred: theme.palette.warning.main,
-              },
-              node,
-              node.color,
-              ctx,
-              this.selectedNodes.has(node),
-              node.isNestedInferred,
-            )
-            }
-            nodePointerAreaPaint={nodeAreaPaint}
-            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-            // linkDirectionalParticleWidth={1}
-            // linkDirectionalParticleSpeed={() => 0.004}
-            linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => (displayLabels
-              ? linkPaint(link, ctx, theme.palette.text.primary)
-              : null)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkLineDash={(link) => (link.inferred ? [2, 1] : null)}
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
+          <div style={{ position: 'absolute' }}>
+            <ForceGraph2D
+              ref={this.graph}
+              width={graphWidth}
+              height={graphHeight}
+              graphData={graphData}
+              onZoom={this.onZoom.bind(this)}
+              onZoomEnd={this.handleZoomEnd.bind(this)}
+              nodeRelSize={4}
+              nodeCanvasObject={(node, ctx) => nodePaint(
+                {
+                  selected: theme.palette.secondary.main,
+                  inferred: theme.palette.warning.main,
+                },
+                node,
+                node.color,
+                ctx,
+                this.selectedNodes.has(node),
+                node.isNestedInferred,
+              )
               }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
+              nodePointerAreaPaint={nodeAreaPaint}
+              // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+              // linkDirectionalParticleWidth={1}
+              // linkDirectionalParticleSpeed={() => 0.004}
+              linkCanvasObjectMode={() => 'after'}
+              linkCanvasObject={(link, ctx) => (displayLabels
+                ? linkPaint(link, ctx, theme.palette.text.primary)
+                : null)
+              }
+              linkColor={(link) => (this.selectedLinks.has(link)
+                ? theme.palette.secondary.main
+                : theme.palette.primary.main)
+              }
+              linkLineDash={(link) => (link.inferred ? [2, 1] : null)}
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={0.99}
+              onNodeClick={this.handleNodeClick.bind(this)}
+              onNodeRightClick={(node) => {
+                // eslint-disable-next-line no-param-reassign
+                node.fx = undefined;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = undefined;
+                this.handleDragEnd();
+                this.forceUpdate();
+              }}
+              onNodeDrag={(node, translate) => {
+                if (this.selectedNodes.has(node)) {
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node)
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                  });
+                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                    ));
+                }
+              }}
+              onNodeDragEnd={(node) => {
+                if (this.selectedNodes.has(node)) {
+                  // finished moving a selected node
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node) // don't touch node being dragged
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => {
+                      ['x', 'y'].forEach(
+                        // eslint-disable-next-line no-param-reassign,no-return-assign
+                        (coord) => (selNode[`f${coord}`] = undefined),
+                      );
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fx = selNode.x;
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fy = selNode.y;
+                    });
+                }
+                // eslint-disable-next-line no-param-reassign
+                node.fx = node.x;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = node.y;
+                this.handleDragEnd();
+              }}
+              onLinkClick={this.handleLinkClick.bind(this)}
+              onBackgroundClick={this.handleBackgroundClick.bind(this)}
+              cooldownTicks={modeFixed ? 0 : undefined}
+              dagMode={
+                // eslint-disable-next-line no-nested-ternary
+                modeTree === 'horizontal'
+                  ? 'lr'
+                  : modeTree === 'vertical'
+                    ? 'td'
+                    : undefined
               }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              this.handleDragEnd();
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-            dagLevelDistance={50}
-          />
+              dagLevelDistance={50}
+            />
+            {(selectedEntities.length > 0) && (
+              <EntitiesDetailsRightsBar
+                selectedEntities={selectedEntities}
+              />
+            )}
+          </div>
         )}
       </div>
     );
@@ -1455,377 +1466,377 @@ const GroupingKnowledgeGraph = createFragmentContainer(
   GroupingKnowledgeGraphComponent,
   {
     grouping: graphql`
-      fragment GroupingKnowledgeGraph_grouping on Grouping {
-        id
-        name
-        x_opencti_graph_data
-        context
-        confidence
-        createdBy {
-          ... on Identity {
+        fragment GroupingKnowledgeGraph_grouping on Grouping {
             id
             name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
+            x_opencti_graph_data
+            context
+            confidence
+            createdBy {
+                ... on Identity {
+                    id
+                    name
+                    entity_type
+                }
             }
-          }
-        }
-        objects(all: true) {
-          edges {
-            node {
-              ... on BasicObject {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreObject {
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
+            objectMarking {
+                edges {
                     node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
                     }
-                  }
                 }
-              }
-              ... on StixDomainObject {
-                is_inferred
-                created
-              }
-              ... on AttackPattern {
-                name
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                first_seen
-                last_seen
-              }
-              ... on ObservedData {
-                name
-              }
-              ... on CourseOfAction {
-                name
-              }
-              ... on Note {
-                attribute_abstract
-                content
-              }
-              ... on Opinion {
-                opinion
-              }
-              ... on Report {
-                name
-                published
-              }
-              ... on Grouping {
-                name
-              }
-              ... on Individual {
-                name
-              }
-              ... on Organization {
-                name
-              }
-              ... on Sector {
-                name
-              }
-              ... on System {
-                name
-              }
-              ... on Indicator {
-                name
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-              }
-              ... on IntrusionSet {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Position {
-                name
-              }
-              ... on City {
-                name
-              }
-              ... on AdministrativeArea {
-                name
-              }
-              ... on Country {
-                name
-              }
-              ... on Region {
-                name
-              }
-              ... on Malware {
-                name
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-              }
-              ... on Vulnerability {
-                name
-              }
-              ... on Incident {
-                name
-                first_seen
-                last_seen
-              }
-              ... on Event {
-                name
-                description
-                start_time
-                stop_time
-              }
-              ... on Channel {
-                name
-                description
-              }
-              ... on Narrative {
-                name
-                description
-              }
-              ... on Language {
-                name
-              }
-              ... on DataComponent {
-                name
-              }
-              ... on DataSource {
-                name
-              }
-              ... on Case {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-              }
-              ... on StixFile {
-                observableName: name
-              }
-              ... on Label {
-                value
-                color
-              }
-              ... on MarkingDefinition {
-                definition
-                x_opencti_color
-              }
-              ... on KillChainPhase {
-                kill_chain_name
-                phase_name
-              }
-              ... on ExternalReference {
-                url
-                source_name
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
-              }
-              ... on StixCoreRelationship {
-                relationship_type
-                start_time
-                stop_time
-                confidence
-                created
-                is_inferred
-                from {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                to {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
-                }
-              }
-              ... on StixCyberObservableRelationship {
-                relationship_type
-                start_time
-                stop_time
-                confidence
-                is_inferred
-                from {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                to {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                created_at
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
-                }
-              }
-              ... on StixSightingRelationship {
-                relationship_type
-                first_seen
-                last_seen
-                confidence
-                created
-                is_inferred
-                from {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                to {
-                  ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                  }
-                  ... on StixCoreRelationship {
-                    relationship_type
-                  }
-                }
-                created_at
-                createdBy {
-                  ... on Identity {
-                    id
-                    name
-                    entity_type
-                  }
-                }
-                objectMarking {
-                  edges {
-                    node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                    }
-                  }
-                }
-              }
             }
-          }
+            objects(all: true) {
+                edges {
+                    node {
+                        ... on BasicObject {
+                            id
+                            entity_type
+                            parent_types
+                        }
+                        ... on StixCoreObject {
+                            created_at
+                            createdBy {
+                                ... on Identity {
+                                    id
+                                    name
+                                    entity_type
+                                }
+                            }
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                        definition_type
+                                        definition
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
+                                }
+                            }
+                        }
+                        ... on StixDomainObject {
+                            is_inferred
+                            created
+                        }
+                        ... on AttackPattern {
+                            name
+                            x_mitre_id
+                        }
+                        ... on Campaign {
+                            name
+                            first_seen
+                            last_seen
+                        }
+                        ... on ObservedData {
+                            name
+                        }
+                        ... on CourseOfAction {
+                            name
+                        }
+                        ... on Note {
+                            attribute_abstract
+                            content
+                        }
+                        ... on Opinion {
+                            opinion
+                        }
+                        ... on Report {
+                            name
+                            published
+                        }
+                        ... on Grouping {
+                            name
+                        }
+                        ... on Individual {
+                            name
+                        }
+                        ... on Organization {
+                            name
+                        }
+                        ... on Sector {
+                            name
+                        }
+                        ... on System {
+                            name
+                        }
+                        ... on Indicator {
+                            name
+                            valid_from
+                        }
+                        ... on Infrastructure {
+                            name
+                        }
+                        ... on IntrusionSet {
+                            name
+                            first_seen
+                            last_seen
+                        }
+                        ... on Position {
+                            name
+                        }
+                        ... on City {
+                            name
+                        }
+                        ... on AdministrativeArea {
+                            name
+                        }
+                        ... on Country {
+                            name
+                        }
+                        ... on Region {
+                            name
+                        }
+                        ... on Malware {
+                            name
+                            first_seen
+                            last_seen
+                        }
+                        ... on ThreatActor {
+                            name
+                            first_seen
+                            last_seen
+                        }
+                        ... on Tool {
+                            name
+                        }
+                        ... on Vulnerability {
+                            name
+                        }
+                        ... on Incident {
+                            name
+                            first_seen
+                            last_seen
+                        }
+                        ... on Event {
+                            name
+                            description
+                            start_time
+                            stop_time
+                        }
+                        ... on Channel {
+                            name
+                            description
+                        }
+                        ... on Narrative {
+                            name
+                            description
+                        }
+                        ... on Language {
+                            name
+                        }
+                        ... on DataComponent {
+                            name
+                        }
+                        ... on DataSource {
+                            name
+                        }
+                        ... on Case {
+                            name
+                        }
+                        ... on StixCyberObservable {
+                            observable_value
+                        }
+                        ... on StixFile {
+                            observableName: name
+                        }
+                        ... on Label {
+                            value
+                            color
+                        }
+                        ... on MarkingDefinition {
+                            definition
+                            x_opencti_color
+                        }
+                        ... on KillChainPhase {
+                            kill_chain_name
+                            phase_name
+                        }
+                        ... on ExternalReference {
+                            url
+                            source_name
+                        }
+                        ... on BasicRelationship {
+                            id
+                            entity_type
+                            parent_types
+                        }
+                        ... on BasicRelationship {
+                            id
+                            entity_type
+                            parent_types
+                        }
+                        ... on StixCoreRelationship {
+                            relationship_type
+                            start_time
+                            stop_time
+                            confidence
+                            created
+                            is_inferred
+                            from {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            to {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            created_at
+                            createdBy {
+                                ... on Identity {
+                                    id
+                                    name
+                                    entity_type
+                                }
+                            }
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                        definition_type
+                                        definition
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
+                                }
+                            }
+                        }
+                        ... on StixCyberObservableRelationship {
+                            relationship_type
+                            start_time
+                            stop_time
+                            confidence
+                            is_inferred
+                            from {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            to {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            created_at
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                        definition_type
+                                        definition
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
+                                }
+                            }
+                        }
+                        ... on StixSightingRelationship {
+                            relationship_type
+                            first_seen
+                            last_seen
+                            confidence
+                            created
+                            is_inferred
+                            from {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            to {
+                                ... on BasicObject {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on BasicRelationship {
+                                    id
+                                    entity_type
+                                    parent_types
+                                }
+                                ... on StixCoreRelationship {
+                                    relationship_type
+                                }
+                            }
+                            created_at
+                            createdBy {
+                                ... on Identity {
+                                    id
+                                    name
+                                    entity_type
+                                }
+                            }
+                            objectMarking {
+                                edges {
+                                    node {
+                                        id
+                                        definition_type
+                                        definition
+                                        x_opencti_order
+                                        x_opencti_color
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
-      }
     `,
   },
 );
