@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     marginTop: '20px',
   },
   label: {
-    backgroundColor: '#001e3c',
+    backgroundColor: theme.palette.background.paper,
   },
   toolbar: theme.mixins.toolbar,
 }));
