@@ -87,9 +87,6 @@ const styles = (theme) => ({
     lineHeight: "24px",
     color: theme.palette.header.text,
   },
-  textarea: {
-    background: "#cfe"
-  }
 });
 
 const informationTypesPopoverMutation = graphql`
@@ -98,36 +95,6 @@ const informationTypesPopoverMutation = graphql`
   ) {
     createOscalResponsibleParty(input: $input) {
       id
-    }
-  }
-`;
-
-const informationTypesPopoverQuery = graphql`
-  query InformationTypesPopoverQuery($search: String, $filters: [ProductFiltering], $orderedBy: ProductOrdering, $orderMode: OrderingMode) {
-    products(search: $search, filters: $filters, orderedBy: $orderedBy, orderMode: $orderMode) {
-      edges {
-        node {
-          id
-          name
-        }
-      }
-    }
-  }
-`;
-
-const informationTypesPopoverIdQuery = graphql`
-  query InformationTypesPopoverIdQuery( $id: ID!) {
-    product(id: $id) {
-      id
-      created
-      modified
-      name
-      vendor
-      version
-      cpe_identifier
-      ... on SoftwareProduct {
-        software_identifier
-      }
     }
   }
 `;
@@ -147,56 +114,10 @@ class InformationTypesPopover extends Component {
     this.state = {
       open: false,
       openAutocomplete: false,
-      products: [],
-      productName: '',
       onSubmit: false,
       selectedProduct: {},
       displayCancel: false,
     };
-  }
-
-  searchProducts(event, value) {
-    this.setState({ productName: value });
-    if (event?.type === 'click' && value) {
-      const selectedProductValue = this.state.products.filter(
-        (product) => product.label === value,
-      )[0];
-      fetchQuery(informationTypesPopoverIdQuery, {
-        id: selectedProductValue.value,
-      }).toPromise()
-        .then((data) => {
-          this.setState({ selectedProduct: data.product });
-        });
-    }
-  }
-
-  handleSearchProducts() {
-    this.setState({ selectedProduct: { name: this.state.productName }, openAutocomplete: true });
-    (this.state.productName.length > 2) && fetchQuery(informationTypesPopoverQuery, {
-      search: this.state.productName,
-      orderedBy: 'name',
-      orderMode: 'asc',
-      filters: [
-        { key: 'object_type', values: ['software'] },
-      ],
-    })
-      .toPromise()
-      .then((data) => {
-        const products = R.pipe(
-          R.pathOr([], ['products', 'edges']),
-          R.map((n) => ({
-            label: n.node.name,
-            value: n.node.id,
-          })),
-        )(data);
-        this.setState({
-          products: R.union(this.state.products, products),
-        });
-      })
-      .catch((err) => {
-        const ErrorResponse = err.res.errors;
-        this.setState({ error: ErrorResponse });
-      });
   }
 
   handleOpen() {
@@ -252,8 +173,6 @@ class InformationTypesPopover extends Component {
       open,
       selectedProduct,
       openAutocomplete,
-      products,
-      productName
     } = this.state;
     return (
       <div>
@@ -357,7 +276,7 @@ class InformationTypesPopover extends Component {
                         multiline={true}
                         rows="3"
                         variant="outlined"
-                        containerstyle={{ width: "100%" }}
+                        containerstyle={{ width: "100px" }}
                       />
                     </Grid>
                     <Grid item={true} xs={4}>

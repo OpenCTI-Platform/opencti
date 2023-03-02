@@ -221,39 +221,6 @@ class InformationSystemDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.privacy_sensitive.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.critical_system.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
-                  width={140}
-                  height="100%"
-                />
-              </div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.status.width }}
-              >
-                <Skeleton
-                  animation="wave"
-                  variant="rect"
                   width={140}
                   height="100%"
                 />
@@ -282,12 +249,56 @@ class InformationSystemDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.critical_system.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.sensitivity_level.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.privacy_sensitive.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.status.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rect"
+                  width={140}
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.label_name.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width={140}
                   height="100%"
                 />
               </div>
@@ -298,13 +309,16 @@ class InformationSystemDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rect"
-                  width="90%"
+                  width={100}
                   height="100%"
                 />
               </div>
             </div>
           }
         />
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
+          <Skeleton animation="wave" variant="circle" width={30} height={30} />
+        </ListItemIcon>
       </ListItem>
     );
   }

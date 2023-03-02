@@ -16,6 +16,7 @@ import Switch from '@material-ui/core/Switch';
 import LaunchIcon from '@material-ui/icons/Launch';
 import inject18n from '../../../../components/i18n';
 import ResponsiblePartiesPopover from './ResponsiblePartiesPopover'
+import ResponsiblePartiesField from '../../common/form/ResponsiblePartiesField';
 
 const styles = (theme) => ({
   paper: {
@@ -324,7 +325,13 @@ class InformationSystemOverviewComponent extends Component {
               {informationSystem.federation_assurance_level && t(informationSystem.federation_assurance_level)}
             </Grid>
             <Grid item={true} xs={12}>
-              <ResponsiblePartiesPopover name={'responsible_parties'} responsibleParties={informationSystem.responsible_parties}/>
+            <ResponsiblePartiesField                   
+              id={informationSystem.id}
+              fromType={informationSystem.__typename}
+              toType='OscalResponsibleParty'
+              name='responsible_parties'
+              title='Responsible Parties'
+            />
             </Grid>
           </Grid>
         </Paper>
@@ -344,6 +351,7 @@ const InformationSystemOverview = createFragmentContainer(InformationSystemOverv
   informationSystem: graphql`
     fragment InformationSystemOverview_information on InformationSystem {
       id
+      __typename
       created
       modified
       description
@@ -358,6 +366,7 @@ const InformationSystemOverview = createFragmentContainer(InformationSystemOverv
       federation_assurance_level
       responsible_parties {
         id
+        name
       }
     }
   `,

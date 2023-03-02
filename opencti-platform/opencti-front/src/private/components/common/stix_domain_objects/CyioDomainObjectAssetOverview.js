@@ -21,6 +21,7 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOpinions from '../../analysis/opinions/StixCoreObjectOpinions';
 import ItemIcon from '../../../../components/ItemIcon';
 import CyioCoreObjectLabelsView from '../stix_core_objects/CyioCoreObjectLabelsView';
+import ResponsiblePartiesField from '../form/ResponsiblePartiesField';
 
 const styles = (theme) => ({
   paper: {
@@ -301,32 +302,14 @@ class CyioDomainObjectAssetOverview extends Component {
                   fd(cyioDomainObject.release_date)}
               </div>
             </Grid>
-            <Grid item={true} xs={6}>
-              <div>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: "left", marginTop: 20 }}
-                >
-                  {t("Responsible Parties")}
-                </Typography>
-                <div style={{ float: "left", margin: "21px 0 0 5px" }}>
-                  <Tooltip title={t("Responsible Parties")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {cyioDomainObject?.responsible_parties &&
-                  cyioDomainObject?.responsible_parties.map((data, key) => (
-                    <Chip
-                      key={key}
-                      classes={{ root: classes.chip }}
-                      label={t(data)}
-                      color="primary"
-                    />
-                  ))}
-              </div>
+            <Grid item={true} xs={12}>
+              <ResponsiblePartiesField                   
+                id={cyioDomainObject.id}
+                fromType={cyioDomainObject.__typename}
+                toType='OscalResponsibleParty'
+                name='responsible_parties'
+                title='Responsible Parties'
+              />
             </Grid>
             <Grid item={true} xs={6}>
               <div>
