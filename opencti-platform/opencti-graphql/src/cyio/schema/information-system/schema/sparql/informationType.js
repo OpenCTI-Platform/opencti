@@ -14,8 +14,8 @@ export function getReducer(type) {
   switch (type) {
     case 'INFORMATION-TYPE':
       return informationTypeReducer;
-		case 'IMPACT-LEVEL':
-			return impactLevelReducer;
+		case 'IMPACT-DEFINITION':
+			return impactDefinitionReducer;
     default:
       throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
@@ -37,17 +37,21 @@ const informationTypeReducer = (item) => {
       ...(item.object_type && { entity_type: item.object_type }),
       ...(item.created && { created: item.created }),
       ...(item.modified && { modified: item.modified }),
+      ...(item.display_name && { display_name: item.display_name }),
 			...(item.title && { title: item.title }),
 			...(item.description && { description: item.description }),
+      ...(item.identifier && { identifier: item.identifier }),
+      ...(item.system && { system: item.system }),
+      ...(item.category && { category: item.category }),
 			// prefetched 
-			...(item.confidentiality_base_impact_level && { confidentiality_base_impact_level: item.confidentiality_base_impact_level }),
-			...(item.confidentiality_selected_impact_level && { confidentiality_selected_impact_level: item.confidentiality_selected_impact_level }),
+			...(item.confidentiality_base_impact && { confidentiality_base_impact: item.confidentiality_base_impact }),
+			...(item.confidentiality_selected_impact && { confidentiality_selected_impact: item.confidentiality_selected_impact }),
 			...(item.confidentiality_adjustment_justification && { confidentiality_adjustment_justification: item.confidentiality_adjustment_justification }),
-			...(item.integrity_base_impact_level && { integrity_base_impact_level: item.integrity_base_impact_level }),
-			...(item.integrity_selected_impact_level && { integrity_selected_impact_level: item.integrity_selected_impact_level }),
+			...(item.integrity_base_impact && { integrity_base_impact: item.integrity_base_impact }),
+			...(item.integrity_selected_impact && { integrity_selected_impact: item.integrity_selected_impact }),
 			...(item.integrity_adjustment_justification && { integrity_adjustment_justification: item.integrity_adjustment_justification }),
-			...(item.availability_base_impact_level && { availability_base_impact_level: item.availability_base_impact_level }),
-			...(item.availability_selected_impact_level && { availability_selected_impact_level: item.availability_selected_impact_level }),
+			...(item.availability_base_impact && { availability_base_impact: item.availability_base_impact }),
+			...(item.availability_selected_impact && { availability_selected_impact: item.availability_selected_impact }),
 			...(item.availability_adjustment_justification && { availability_adjustment_justification: item.availability_adjustment_justification }),
       // hints for field-level resolver queries
       ...(item.categorizations && { categorizations_iris: item.categorizations }),
@@ -60,26 +64,24 @@ const informationTypeReducer = (item) => {
 			...(item.relationships && { relationships: item.relationships }),
   }
 };
-const impactLevelReducer = (item) => {
+const impactDefinitionReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
       if (item.entity_type !== undefined) item.object_type = item.entity_type;
-      if (item.iri.includes('information-level')) item.object_type = 'information-level';
+      if (item.iri.includes('information-definition')) item.object_type = 'information-definition';
   }
 
   return {
       iri: item.iri,
       id: item.id,
       ...(item.object_type && { entity_type: item.object_type }),
-      ...(item.created && { created: item.created }),
-      ...(item.modified && { modified: item.modified }),
-			...(item.base_impact_level && { base_impact_level: item.base_impact_level }),
-			...(item.selected_impact_level && { selected_impact_level: item.selected_impact_level }),
+			...(item.base_impact && { base_impact: item.base_impact }),
+			...(item.selected_impact && { selected_impact: item.selected_impact }),
 			...(item.adjustment_justification && { adjustment_justification: item.adjustment_justification }),
+      ...(item.explanation && { explanation: item.explanation }),
+      ...(item.recommendation && { recommendation: item.recommendation }),
       // hints for field-level resolver queries
-      ...(item.labels && { labels_iris: item.labels }),
       ...(item.links && { links_iris: item.links }),
-      ...(item.remarks && { remarks_iris: item.remarks }),
 			...(item.relationships && { relationships: item.relationships }),
 		}
 };
@@ -168,6 +170,7 @@ export const insertInformationTypeQuery = (propValues) => {
   INSERT DATA {
     GRAPH ${iri} {
       ${iri} a <http://csrc.nist.gov/ns/oscal/info-system#InformationType> .
+      ${iri} a <http://nist.gov/ns/sp/800-60#InformationType> .
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#Object> .
       ${iri} a <http://darklight.ai/ns/common#Object> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
@@ -257,32 +260,32 @@ export const detachFromInformationTypeQuery = (id, field, itemIris) => {
 }
 
 // Query Builders - Impact Level
-export const selectImpactLevelQuery = (id, select) => {
-  return selectImpactLevelByIriQuery(`http://cyio.darklight.ai/impact-level--${id}`, select);
+export const selectImpactDefinitionQuery = (id, select) => {
+  return selectImpactDefinitionByIriQuery(`http://cyio.darklight.ai/impact-definition--${id}`, select);
 }
 
-export const selectImpactLevelByIriQuery = (iri, select) => {
+export const selectImpactDefinitionByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
-  if (select === undefined || select === null) select = Object.keys(impactLevelPredicateMap);
+  if (select === undefined || select === null) select = Object.keys(impactDefinitionPredicateMap);
 
   // this is needed to assist in the determination of the type of the data source
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
 
-  const { selectionClause, predicates } = buildSelectVariables(impactLevelPredicateMap, select);
+  const { selectionClause, predicates } = buildSelectVariables(impactDefinitionPredicateMap, select);
   return `
   SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
-    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel> .
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition> .
     ${predicates}
   }`
 }
 
-export const selectAllImpactLevelsQuery = (select, args, parent) => {
+export const selectAllImpactDefinitionsQuery = (select, args, parent) => {
   let constraintClause = '';
-  if (select === undefined || select === null) select = Object.keys(impactLevelPredicateMap);
+  if (select === undefined || select === null) select = Object.keys(impactDefinitionPredicateMap);
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
 
@@ -300,34 +303,34 @@ export const selectAllImpactLevelsQuery = (select, args, parent) => {
   }
 
   // build lists of selection variables and predicates
-  const { selectionClause, predicates } = buildSelectVariables(impactLevelPredicateMap, select);
+  const { selectionClause, predicates } = buildSelectVariables(impactDefinitionPredicateMap, select);
 
   return `
   SELECT DISTINCT ?iri ${selectionClause} 
   FROM <tag:stardog:api:context:local>
   WHERE {
-    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel> . 
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition> . 
     ${predicates}
     ${constraintClause}
   }
   `
 }
 
-export const insertImpactLevelQuery = (propValues) => {
+export const insertImpactDefinitionQuery = (propValues) => {
   const id = generateId( );
   const timestamp = new Date().toISOString();
 
   // determine the appropriate ontology class type
-  const iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
+  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
   const insertPredicates = [];
   Object.entries(propValues).forEach((propPair) => {
-    if (impactLevelPredicateMap.hasOwnProperty(propPair[0])) {
+    if (impactDefinitionPredicateMap.hasOwnProperty(propPair[0])) {
       if (Array.isArray(propPair[1])) {
         for (let value of propPair[1]) {
-          insertPredicates.push(impactLevelPredicateMap[propPair[0]].binding(iri, value));
+          insertPredicates.push(impactDefinitionPredicateMap[propPair[0]].binding(iri, value));
         }  
       } else {
-        insertPredicates.push(impactLevelPredicateMap[propPair[0]].binding(iri, propPair[1]));
+        insertPredicates.push(impactDefinitionPredicateMap[propPair[0]].binding(iri, propPair[1]));
       }
     }
   });
@@ -335,13 +338,12 @@ export const insertImpactLevelQuery = (propValues) => {
   const query = `
   INSERT DATA {
     GRAPH ${iri} {
-      ${iri} a <http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel> .
-      ${iri} a <http://csrc.nist.gov/ns/oscal/common#Object> .
-      ${iri} a <http://darklight.ai/ns/common#Object> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition> .
+      ${iri} a <http://nist.gov/ns/sp/800-60#InformationDefinition> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
+      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "information-level" . 
-      ${iri} <http://darklight.ai/ns/common#created> "${timestamp}"^^xsd:dateTime . 
-      ${iri} <http://darklight.ai/ns/common#modified> "${timestamp}"^^xsd:dateTime . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "information-definition" . 
       ${insertPredicates.join(" . \n")}
     }
   }
@@ -349,12 +351,12 @@ export const insertImpactLevelQuery = (propValues) => {
   return {iri, id, query}
 }
     
-export const deleteImpactLevelQuery = (id) => {
-  const iri = `http://cyio.darklight.ai/impact-level--${id}`;
-  return deleteImpactLevelByIriQuery(iri);
+export const deleteImpactDefinitionQuery = (id) => {
+  const iri = `http://cyio.darklight.ai/impact-definition--${id}`;
+  return deleteImpactDefinitionByIriQuery(iri);
 }
 
-export const deleteImpactLevelByIriQuery = (iri) => {
+export const deleteImpactDefinitionByIriQuery = (iri) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   return `
   DELETE {
@@ -363,14 +365,14 @@ export const deleteImpactLevelByIriQuery = (iri) => {
     }
   } WHERE {
     GRAPH ${iri} {
-      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel> .
+      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition> .
       ?iri ?p ?o
     }
   }
   `
 }
 
-export const deleteMultipleImpactLevelsQuery = (ids) =>{
+export const deleteMultipleImpactDefinitionsQuery = (ids) =>{
   const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
   return `
   DELETE {
@@ -379,7 +381,7 @@ export const deleteMultipleImpactLevelsQuery = (ids) =>{
     }
   } WHERE {
     GRAPH ?g {
-      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel> .
+      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition> .
       ?iri <http://darklight.ai/ns/common#id> ?id .
       ?iri ?p ?o .
       VALUES ?id {${values}}
@@ -388,10 +390,10 @@ export const deleteMultipleImpactLevelsQuery = (ids) =>{
   `
 }
 
-export const attachToImpactLevelQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
-  if (!impactLevelPredicateMap.hasOwnProperty(field)) return null;
-  const predicate = impactLevelPredicateMap[field].predicate;
+export const attachToImpactDefinitionQuery = (id, field, itemIris) => {
+  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
+  if (!impactDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = impactDefinitionPredicateMap[field].predicate;
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -403,13 +405,13 @@ export const attachToImpactLevelQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, impactLevelPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel>');
+  return attachQuery(iri, statements, impactDefinitionPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>');
 }
 
-export const detachFromImpactLevelQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
-  if (!impactLevelPredicateMap.hasOwnProperty(field)) return null;
-  const predicate = impactLevelPredicateMap[field].predicate;
+export const detachFromImpactDefinitionQuery = (id, field, itemIris) => {
+  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
+  if (!impactDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = impactDefinitionPredicateMap[field].predicate;
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -421,7 +423,7 @@ export const detachFromImpactLevelQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, impactLevelPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel>');
+  return detachQuery(iri, statements, impactDefinitionPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>');
 }
 
 
@@ -472,14 +474,14 @@ export const informationTypePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "confidentiality_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-	confidentiality_base_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#confidentiality_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "confidentiality_base_impact_level");},
+	confidentiality_base_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#confidentiality_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "confidentiality_base_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
-	confidentiality_selected_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#confidentiality_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "confidentiality_selected_impact_level");},
+	confidentiality_selected_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#confidentiality_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "confidentiality_selected_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	confidentiality_adjustment_justification: {
@@ -492,14 +494,14 @@ export const informationTypePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "integrity_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-	integrity_base_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#integrity_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "integrity_base_impact_level");},
+	integrity_base_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#integrity_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "integrity_base_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
-	integrity_selected_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#integrity_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "integrity_selected_impact_level");},
+	integrity_selected_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#integrity_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "integrity_selected_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	integrity_adjustment_justification: {
@@ -512,19 +514,34 @@ export const informationTypePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "availability_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-	availability_base_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#availability_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "availability_base_impact_level");},
+	availability_base_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#availability_impact>/<http://csrc.nist.gov/ns/oscal/info-system#base_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "availability_base_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
-	availability_selected_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#availability_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "availability_selected_impact_level");},
+	availability_selected_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#availability_impact>/<http://csrc.nist.gov/ns/oscal/info-system#selected_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "availability_selected_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	availability_adjustment_justification: {
     predicate: "<http://csrc.nist.gov/ns/oscal/info-system#availability_impact>/<http://csrc.nist.gov/ns/oscal/info-system#adjustment_justification>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "availability_adjustment_justification");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	identifier: {
+    predicate: "<http://nist.gov/ns/sp800-60#identifier>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "identifier");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	category: {
+    predicate: "<http://nist.gov/ns/sp800-60#category>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "category");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	system: {
+    predicate: "<http://nist.gov/ns/sp800-60#system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI`: null, this.predicate, "system");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	labels: {
@@ -549,7 +566,7 @@ export const informationTypePredicateMap = {
   },
 };
 
-export const impactLevelPredicateMap = {
+export const impactDefinitionPredicateMap = {
   id: {
     predicate: "<http://darklight.ai/ns/common#id>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
@@ -565,24 +582,14 @@ export const impactLevelPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-  created: {
-    predicate: "<http://darklight.ai/ns/common#created>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-  modified: {
-    predicate: "<http://darklight.ai/ns/common#modified>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "modified");},
-    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
-  },
-	base_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#base_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "base_impact_level");},
+	base_impact: {
+    predicate: "<http://nist.gov/ns/sp800-60#base_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "base_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
-	selected_impact_level: {
-    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#selected_impact_level>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "selected_impact_level");},
+	selected_impact: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#selected_impact>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "selected_impact");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	adjustment_justification: {
@@ -590,7 +597,22 @@ export const impactLevelPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "adjustment_justification");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
-	labels: {
+	explanation: {
+    predicate: "<http://nist.gov/ns/sp800-60#explanation>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "explanation");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	recommendation: {
+    predicate: "<http://nist.gov/ns/sp800-60#recommendation>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "recommendation");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	identifier: {
+    predicate: "<http://nist.gov/ns/sp800-60#identifier>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "recommendation");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+  labels: {
     predicate: "<http://darklight.ai/ns/common#labels>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "labels");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
@@ -623,34 +645,38 @@ export const singularizeInformationTypeSchema = {
     "entity_type": true,
     "created": true,
     "modified": true,
+    "display_name": true,
 		"title": true,
     "description": true,
+    "identifier": true,
+    "system": true,
+    "category": true,
 		"confidentiality_impact": true,
-		"confidentiality_base_impact_level": true,
-		"confidentiality_selected_impact_level": true,
+		"confidentiality_base_impact": true,
+		"confidentiality_selected_impact": true,
 		"confidentiality_adjustment_justification": true,
 		"integrity_impact": true,
-		"integrity_base_impact_level": true,
-		"integrity_selected_impact_level": true,
+		"integrity_base_impact": true,
+		"integrity_selected_impact": true,
 		"integrity_adjustment_justification": true,
 		"availability_impact": true,
-		"availability_base_impact_level": true,
-		"availability_selected_impact_level": true,
+		"availability_base_impact": true,
+		"availability_selected_impact": true,
 		"availability_adjustment_justification": true,
   }
 };
 
-export const singularizeImpactLevelSchema = { 
+export const singularizeImpactDefinitionSchema = { 
   singularizeVariables: {
     "": false, // so there is an object as the root instead of an array
     "id": true,
     "iri": true,
     "object_type": true,
     "entity_type": true,
-    "created": true,
-    "modified": true,
-		"base_impact_level": true,
-		"selected_impact_level": true,
+		"base_impact": true,
+		"selected_impact": true,
 		"adjustment_justification": true,
+    "explanation": true,
+    "recommendation": true,
   }
 };

@@ -87,9 +87,6 @@ import {
   informationTypeCatalogPredicateMap, // attachToInformationTypeCatalogQuery, detachFromInformationTypeCatalogQuery
 } from '../information-system/schema/sparql/informationTypeCatalog.js';
 import {
-  informationTypeEntryPredicateMap, // attachToInformationTypeEntryQuery, detachFromInformationTypeEntryQuery
-} from '../information-system/schema/sparql/informationTypeEntry.js';
-import {
   descriptionBlockPredicateMap, // attachToDescriptionBlockQuery, detachFromDescriptionBlockQuery,
   diagramPredicateMap, // attachToDiagramQuery, detachFromDiagramQuery
 } from '../information-system/schema/sparql/descriptionBlock.js';
@@ -441,14 +438,6 @@ export const objectMap = {
     graphQLType: "InformationTypeCatalog",
     classIri: "http://nist.gov/ns/sp800-60#InformationTypeCatalog",
     iriTemplate: "http://cyio.darklight.ai/information-type-catalog"
-  },
-  "information-type-entry": {
-    predicateMap: informationTypeEntryPredicateMap,
-    // attachQuery: attachToInformationTypeEntryQuery,
-    // detachQuery: detachFromInformationTypeEntryQuery,
-    graphQLType: "InformationTypeEntry",
-    classIri: "http://nist.gov/ns/sp800-60#InformationTypeEntry",
-    iriTemplate: "http://cyio.darklight.ai/information-type-entry"
   },
   "information-system": {
     predicateMap: informationSystemPredicateMap,

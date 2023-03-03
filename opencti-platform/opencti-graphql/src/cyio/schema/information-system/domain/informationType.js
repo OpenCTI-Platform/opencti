@@ -14,17 +14,17 @@ import {
   deleteInformationTypeQuery,
   attachToInformationTypeQuery,
   detachFromInformationTypeQuery,
-	// Impact Level
-  impactLevelPredicateMap,
-  singularizeImpactLevelSchema,
-  selectImpactLevelQuery,
-  selectImpactLevelByIriQuery,
-  selectAllImpactLevelsQuery,
-  insertImpactLevelQuery,
-  deleteImpactLevelQuery,
-  deleteImpactLevelByIriQuery,
-  attachToImpactLevelQuery,
-  detachFromImpactLevelQuery,
+	// Impact Definition
+  impactDefinitionPredicateMap,
+  singularizeImpactDefinitionSchema,
+  selectImpactDefinitionQuery,
+  selectImpactDefinitionByIriQuery,
+  selectAllImpactDefinitionsQuery,
+  insertImpactDefinitionQuery,
+  deleteImpactDefinitionQuery,
+  deleteImpactDefinitionByIriQuery,
+  attachToImpactDefinitionQuery,
+  detachFromImpactDefinitionQuery,
 } from '../schema/sparql/informationType.js';
 
 
@@ -38,6 +38,11 @@ export const findInformationTypeById = async (id, dbName, dataSources, select) =
 }
 
 export const findInformationTypeByIri = async (iri, dbName, dataSources, select) => {
+  if (select.includes('display_name')) {
+    if (!select.includes('title')) select.push('title');
+    if (!select.includes('identifier')) select.push('identifier');
+  }
+  
   const sparqlQuery = selectInformationTypeByIriQuery(iri, select);
   let response;
   try {
@@ -52,11 +57,24 @@ export const findInformationTypeByIri = async (iri, dbName, dataSources, select)
     throw e
   }
   if (response === undefined || response === null || response.length === 0) return null;
+
+  if (select.includes('display_name')) {
+    let display_name = (response[0].identifier ? response[0].identifier : '') + "  " +
+                        (response[0].title ? response[0].title : '');
+    display_name = display_name.trim();
+    if (display_name.length > 0) response[0].display_name = display_name;
+  }
+
   const reducer = getReducer("INFORMATION-TYPE");
   return reducer(response[0]);  
 };
 
 export const findAllInformationTypes = async (args, dbName, dataSources, select ) => {
+  if (select.includes('display_name')) {
+    if (!select.includes('title')) select.push('title');
+    if (!select.includes('identifier')) select.push('identifier');
+  }
+
   const sparqlQuery = selectAllInformationTypesQuery(select, args);
   let response;
   try {
@@ -101,6 +119,13 @@ export const findAllInformationTypes = async (args, dbName, dataSources, select 
       continue
     }
 
+    if (select.includes('display_name')) {
+      let display_name = (resultItem.identifier ? resultItem.identifier : '') + "  " +
+                          (resultItem.title ? result.title : '');
+      display_name = display_name.trim();
+      if (display_name.length > 0) response[0].display_name = display_name;
+    }
+  
     // filter out non-matching entries if a filter is to be applied
     if ('filters' in args && args.filters != null && args.filters.length > 0) {
       if (!filterValues(resultItem, args.filters, args.filterMode) ) {
@@ -179,9 +204,9 @@ export const createInformationType = async (input, dbName, dataSources, select) 
 
   // Collect all the nested definitions and remove them from input array
   let nestedDefinitions = {
-		'confidentiality_impact': { values: input.confidentiality_impact, props: {}, objectType: 'impact-level', insertFunction: insertImpactLevelQuery },
-		'integrity_impact': { values: input.integrity_impact, props: {}, objectType: 'impact-level', insertFunction: insertImpactLevelQuery} ,
-		'availability_impact': { values: input.availability_impact, props: {}, objectType: 'impact-level', insertFunction: insertImpactLevelQuery },
+		'confidentiality_impact': { values: input.confidentiality_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery },
+		'integrity_impact': { values: input.integrity_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery} ,
+		'availability_impact': { values: input.availability_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery },
   };
 	for (let [fieldName, fieldInfo] of Object.entries(nestedDefinitions)) {
     if (fieldInfo.values === undefined || fieldInfo.values === null) continue;
@@ -337,12 +362,12 @@ export const deleteInformationTypeById = async ( id, dbName, dataSources ) => {
 
     // Delete any associated confidentiality impact
     if (response[0].confidentiality_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].confidentiality_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].confidentiality_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Confidentiality Impact Level"
+          queryId: "Delete Confidentiality Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -352,12 +377,12 @@ export const deleteInformationTypeById = async ( id, dbName, dataSources ) => {
 
     // Delete any associated integrity impact
     if (response[0].integrity_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].integrity_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].integrity_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Integrity Impact Level"
+          queryId: "Delete Integrity Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -367,12 +392,12 @@ export const deleteInformationTypeById = async ( id, dbName, dataSources ) => {
     
     // Delete any associated availability impact
     if (response[0].availability_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].availability_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].availability_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Availability Impact Level"
+          queryId: "Delete Availability Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -489,7 +514,7 @@ export const editInformationTypeById = async ( id, input, dbName, dataSources, s
               if (editItem.key === 'integrity_impact') entityIri = response[0].integrity_impact;
               if (editItem.key === 'availability_impact') entityIri = response[0].availability_impact;
 
-              // detach the private Impact Level object
+              // detach the private Impact Definition object
               let query = detachFromInformationTypeQuery(id, editItem.key, entityIri);
               await dataSources.Stardog.delete({
                 dbName,
@@ -497,12 +522,12 @@ export const editInformationTypeById = async ( id, input, dbName, dataSources, s
                 queryId: "Detach Impact from Information Type"
               });
 
-              // Delete the Impact Level object since its private to the Information Type
-              query = deleteImpactLevelByIriQuery(entityIri);
+              // Delete the Impact Definition object since its private to the Information Type
+              query = deleteImpactDefinitionByIriQuery(entityIri);
               await dataSources.Stardog.delete({
                 dbName,
                 sparqlQuery: query,
-                queryId: "Delete Impact Level"
+                queryId: "Delete Impact Definition"
               });  
             }
           }
@@ -516,20 +541,20 @@ export const editInformationTypeById = async ( id, input, dbName, dataSources, s
               entity = objArray;
             }
 
-            // create the instance of the Impact Level
-            const { iri: impactLevelIri, id: impactLevelId, query } = insertImpactLevelQuery(entity);
+            // create the instance of the Impact Definition
+            const { iri: impactDefinitionIri, id: impactDefinitionId, query } = insertImpactDefinitionQuery(entity);
             await dataSources.Stardog.create({
               dbName,
               sparqlQuery: query,
-              queryId: "Create Impact Level of Information Type Entry"
+              queryId: "Create Impact Definition of Information Type "
             });
 
-            // attach the new Impact Level to the Information Type Entry
-            let attachQuery = attachToInformationTypeQuery(id, editItem.key, impactLevelIri);
+            // attach the new Impact Definition to the Information Type object
+            let attachQuery = attachToInformationTypeQuery(id, editItem.key, impactDefinitionIri);
             await dataSources.Stardog.create({
               dbName,
               sparqlQuery: attachQuery,
-              queryId: "Attach Impact Level object to Information Type Entry"
+              queryId: "Attach Impact Definition object to Information Type Entry"
             });
           }
           fieldType = 'complex';
@@ -614,9 +639,9 @@ export const attachToInformationType = async ( id, field, entityId, dbName, data
 
   let attachableObjects = {
 		'categorizations': 'information-type-entry',
-		'confidentiality_impact': 'impact-level',
-		'integrity_impact': 'impact-level',
-		'availability_impact': 'impact-level',
+		'confidentiality_impact': 'impact-definition',
+		'integrity_impact': 'impact-definition',
+		'availability_impact': 'impact-definition',
     'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
@@ -684,9 +709,9 @@ export const detachFromInformationType = async ( id, field, entityId, dbName, da
 
   let attachableObjects = {
 		'categorizations': 'information-type-entry',
-		'confidentiality_impact': 'impact-level',
-		'integrity_impact': 'impact-level',
-		'availability_impact': 'impact-level',
+		'confidentiality_impact': 'impact-definition',
+		'integrity_impact': 'impact-definition',
+		'availability_impact': 'impact-definition',
     'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
@@ -731,43 +756,43 @@ export const detachFromInformationType = async ( id, field, entityId, dbName, da
 };
 
 
-// Impact Level
-export const findImpactLevelById = async (id, dbName, dataSources, select) => {
+// Impact Definition
+export const findImpactDefinitionById = async (id, dbName, dataSources, select) => {
   // ensure the id is a valid UUID
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
 
-  let iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
-  return findImpactLevelByIri(iri, dbName, dataSources, select);
+  let iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
+  return findImpactDefinitionByIri(iri, dbName, dataSources, select);
 }
 
-export const findImpactLevelByIri = async (iri, dbName, dataSources, select) => {
-  const sparqlQuery = selectImpactLevelByIriQuery(iri, select);
+export const findImpactDefinitionByIri = async (iri, dbName, dataSources, select) => {
+  const sparqlQuery = selectImpactDefinitionByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
       dbName,
       sparqlQuery,
-      queryId: "Select Impact Level",
-      singularizeSchema: singularizeImpactLevelSchema
+      queryId: "Select Impact Definition",
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
     throw e
   }
   if (response === undefined || response === null || response.length === 0) return null;
-  const reducer = getReducer("IMPACT-LEVEL");
+  const reducer = getReducer("IMPACT-DEFINITION");
   return reducer(response[0]);  
 };
 
-export const findAllImpactLevelEntries = async (args, dbName, dataSources, select ) => {
-  const sparqlQuery = selectAllImpactLevelsQuery(select, args);
+export const findAllImpactDefinitionEntries = async (args, dbName, dataSources, select ) => {
+  const sparqlQuery = selectAllImpactDefinitionsQuery(select, args);
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
       dbName,
       sparqlQuery,
-      queryId: "Select List of Impact Levels",
-      singularizeSchema: singularizeImpactLevelSchema
+      queryId: "Select List of Impact Definitions",
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
@@ -781,7 +806,7 @@ export const findAllImpactLevelEntries = async (args, dbName, dataSources, selec
   if (Array.isArray(response) && response.length < 1) return null;
 
   const edges = [];
-  const reducer = getReducer("IMPACT-LEVEL");
+  const reducer = getReducer("IMPACT-DEFINITION");
   let skipCount = 0,filterCount = 0, resultCount = 0, limit, offset, limitSize, offsetSize;
   limitSize = limit = (args.first === undefined ? response.length : args.first) ;
   offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
@@ -849,7 +874,7 @@ export const findAllImpactLevelEntries = async (args, dbName, dataSources, selec
   }
 };
 
-export const createImpactLevel = async (input, dbName, dataSources, selectMap) => {
+export const createImpactDefinition = async (input, dbName, dataSources, selectMap) => {
   // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
     if (Array.isArray(input[key]) && input[key].length === 0) {
@@ -872,40 +897,40 @@ export const createImpactLevel = async (input, dbName, dataSources, selectMap) =
 																						.replace(/[\u201C\u201D]/g, '\\"');
   }
 
-  // create the Impact Level object
+  // create the Impact Definition object
   let response;
-  let {iri, id, query} = insertImpactLevelQuery(input);
+  let {iri, id, query} = insertImpactDefinitionQuery(input);
   try {
     response = await dataSources.Stardog.create({
       dbName,
       sparqlQuery: query,
-      queryId: "Create Impact Level object"
+      queryId: "Create Impact Definition object"
       });
   } catch (e) {
     console.log(e)
     throw e
   }
 
-  // retrieve the newly created Impact Level to be returned
-  const selectQuery = selectImpactLevelQuery(id, selectMap.getNode("createImpactLevel"));
+  // retrieve the newly created Impact Definition to be returned
+  const selectQuery = selectImpactDefinitionQuery(id, selectMap.getNode("createImpactDefinition"));
   let result;
   try {
     result = await dataSources.Stardog.queryById({
       dbName,
       sparqlQuery: selectQuery,
-      queryId: "Select Impact Level object",
-      singularizeSchema: singularizeImpactLevelSchema
+      queryId: "Select Impact Definition object",
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
     throw e
   }
   if (result === undefined || result === null || result.length === 0) return null;
-  const reducer = getReducer("IMPACT-LEVEL");
+  const reducer = getReducer("IMPACT-DEFINITION");
   return reducer(result[0]);
 };
 
-export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap) => {
+export const deleteImpactDefinitionById = async ( id, dbName, dataSources, selectMap) => {
   let select = ['iri','id','object_type',];
   let idArray = [];
   if (!Array.isArray(id)) {
@@ -920,13 +945,13 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
     if (!checkIfValidUUID(itemId)) throw new UserInputError(`Invalid identifier: ${itemId}`);  
 
     // check if object with id exists
-    let sparqlQuery = selectImpactLevelQuery(itemId, select);
+    let sparqlQuery = selectImpactDefinitionQuery(itemId, select);
     try {
       response = await dataSources.Stardog.queryById({
         dbName,
         sparqlQuery,
-        queryId: "Select Impact Level",
-        singularizeSchema: singularizeImpactLevelSchema
+        queryId: "Select Impact Definition",
+        singularizeSchema: singularizeImpactDefinitionSchema
       });
     } catch (e) {
       console.log(e)
@@ -936,12 +961,12 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
 
     // Delete any associated confidentiality impact
     if (response[0].confidentiality_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].confidentiality_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].confidentiality_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Confidentiality Impact Level"
+          queryId: "Delete Confidentiality Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -951,12 +976,12 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
 
     // Delete any associated integrity impact
     if (response[0].integrity_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].integrity_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].integrity_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Integrity Impact Level"
+          queryId: "Delete Integrity Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -966,12 +991,12 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
     
     // Delete any associated availability impact
     if (response[0].availability_impact ) {
-      let sparqlQuery = deleteImpactLevelByIriQuery(response[0].availability_impact);
+      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].availability_impact);
       try {
         let results = await dataSources.Stardog.delete({
           dbName,
           sparqlQuery,
-          queryId: "Delete Availability Impact Level"
+          queryId: "Delete Availability Impact Definition"
         });
       } catch (e) {
         console.log(e)
@@ -979,12 +1004,12 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
       }
     }
 
-    sparqlQuery = deleteImpactLevelQuery(itemId);
+    sparqlQuery = deleteImpactDefinitionQuery(itemId);
     try {
       response = await dataSources.Stardog.delete({
         dbName,
         sparqlQuery,
-        queryId: "Delete Impact Level"
+        queryId: "Delete Impact Definition"
       });
     } catch (e) {
       console.log(e)
@@ -998,7 +1023,7 @@ export const deleteImpactLevelById = async ( id, dbName, dataSources, selectMap)
   return removedIds;
 };
 
-export const editImpactLevelById = async (id, input, dbName, dataSources, selectMap, schema) => {
+export const editImpactDefinitionById = async (id, input, dbName, dataSources, selectMap, schema) => {
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
 
   // make sure there is input data containing what is to be edited
@@ -1013,12 +1038,12 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
     editSelect.push(editItem.key);
   }
 
-  const sparqlQuery = selectImpactLevelQuery(id, editSelect );
+  const sparqlQuery = selectImpactDefinitionQuery(id, editSelect );
   let response = await dataSources.Stardog.queryById({
     dbName,
     sparqlQuery,
-    queryId: "Select Impact Level",
-    singularizeSchema: singularizeImpactLevelSchema
+    queryId: "Select Impact Definition",
+    singularizeSchema: singularizeImpactDefinitionSchema
   });
   if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
@@ -1042,17 +1067,6 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
       if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
     }
   }
-
-  // Push an edit to update the modified time of the object
-  const timestamp = new Date().toISOString();
-  if (!response[0].hasOwnProperty('created')) {
-    let update = {key: "created", value:[`${timestamp}`], operation: "add"}
-    input.push(update);
-  }
-  let operation = "replace";
-  if (!response[0].hasOwnProperty('modified')) operation = "add";
-  let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
-  input.push(update);
 
   // Handle the update to fields that have references to other object instances
   for (let editItem  of input) {
@@ -1082,7 +1096,7 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
           dbName,
           sparqlQuery,
           queryId: "Obtaining IRI for the object with id",
-          singularizeSchema: singularizeImpactLevelSchema
+          singularizeSchema: singularizeImpactDefinitionSchema
         });
         if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
         iris.push(`<${result[0].iri}>`);
@@ -1092,8 +1106,8 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
   }    
 
   const query = updateQuery(
-    `http://cyio.darklight.ai/impact-level--${id}`,
-    "http://csrc.nist.gov/ns/oscal/info-system#ImpactLevel",
+    `http://cyio.darklight.ai/impact-definition--${id}`,
+    "http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition",
     input,
     informationTypePredicateMap
   );
@@ -1103,7 +1117,7 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
       response = await dataSources.Stardog.edit({
         dbName,
         sparqlQuery: query,
-        queryId: "Update Impact Level"
+        queryId: "Update Impact Definition"
       });  
     } catch (e) {
       console.log(e)
@@ -1111,32 +1125,32 @@ export const editImpactLevelById = async (id, input, dbName, dataSources, select
     }
   }
 
-  const selectQuery = selectImpactLevelQuery(id, selectMap.getNode("editImpactLevel"));
+  const selectQuery = selectImpactDefinitionQuery(id, selectMap.getNode("editImpactDefinition"));
   const result = await dataSources.Stardog.queryById({
     dbName,
     sparqlQuery: selectQuery,
-    queryId: "Select Impact Level",
-    singularizeSchema: singularizeImpactLevelSchema
+    queryId: "Select Impact Definition",
+    singularizeSchema: singularizeImpactDefinitionSchema
   });
-  const reducer = getReducer("IMPACT-LEVEL");
+  const reducer = getReducer("IMPACT-DEFINITION");
   return reducer(result[0]);
 };
 
-export const attachToImpactLevel = async (id, field, entityId, dbName, dataSources, selectMap) => {
+export const attachToImpactDefinition = async (id, field, entityId, dbName, dataSources, selectMap) => {
   let sparqlQuery;
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
-  let iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
-  sparqlQuery = selectImpactLevelByIriQuery(iri, select);
+  let iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
+  sparqlQuery = selectImpactDefinitionByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
       dbName,
       sparqlQuery,
-      queryId: "Select Impact Level",
-      singularizeSchema: singularizeImpactLevelSchema
+      queryId: "Select Impact Definition",
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
@@ -1146,9 +1160,9 @@ export const attachToImpactLevel = async (id, field, entityId, dbName, dataSourc
 
   let attachableObjects = {
 		'categorizations': 'information-type-entry',
-		'confidentiality_impact': 'impact-level',
-		'integrity_impact': 'impact-level',
-		'availability_impact': 'impact-level',
+		'confidentiality_impact': 'impact-definition',
+		'integrity_impact': 'impact-definition',
+		'availability_impact': 'impact-definition',
     'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
@@ -1162,7 +1176,7 @@ export const attachToImpactLevel = async (id, field, entityId, dbName, dataSourc
       dbName,
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
-      singularizeSchema: singularizeImpactLevelSchema
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
@@ -1177,12 +1191,12 @@ export const attachToImpactLevel = async (id, field, entityId, dbName, dataSourc
   let entityIri = `<${response[0].iri}>`;
 
   // Attach the object to the information system
-  sparqlQuery = attachToImpactLevelQuery(id, field, entityIri);
+  sparqlQuery = attachToImpactDefinitionQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({
       dbName,
       sparqlQuery,
-      queryId: `Attach ${field} to Impact Level`
+      queryId: `Attach ${field} to Impact Definition`
       });
   } catch (e) {
     console.log(e)
@@ -1192,21 +1206,21 @@ export const attachToImpactLevel = async (id, field, entityId, dbName, dataSourc
   return true;
 };
 
-export const detachFromImpactLevel = async (id, field, entityId, dbName, dataSources, selectMap) => {
+export const detachFromImpactDefinition = async (id, field, entityId, dbName, dataSources, selectMap) => {
   let sparqlQuery;
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
-  let iri = `<http://cyio.darklight.ai/impact-level--${id}>`;
-  sparqlQuery = selectImpactLevelByIriQuery(iri, select);
+  let iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
+  sparqlQuery = selectImpactDefinitionByIriQuery(iri, select);
   let response;
   try {
     response = await dataSources.Stardog.queryById({
       dbName,
       sparqlQuery,
-      queryId: "Select Impact Level",
-      singularizeSchema: singularizeImpactLevelSchema
+      queryId: "Select Impact Definition",
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
@@ -1216,9 +1230,9 @@ export const detachFromImpactLevel = async (id, field, entityId, dbName, dataSou
 
   let attachableObjects = {
 		'categorizations': 'information-type-entry',
-		'confidentiality_impact': 'impact-level',
-		'integrity_impact': 'impact-level',
-		'availability_impact': 'impact-level',
+		'confidentiality_impact': 'impact-definition',
+		'integrity_impact': 'impact-definition',
+		'availability_impact': 'impact-definition',
     'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
@@ -1232,7 +1246,7 @@ export const detachFromImpactLevel = async (id, field, entityId, dbName, dataSou
       dbName,
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
-      singularizeSchema: singularizeImpactLevelSchema
+      singularizeSchema: singularizeImpactDefinitionSchema
     });
   } catch (e) {
     console.log(e)
@@ -1247,12 +1261,12 @@ export const detachFromImpactLevel = async (id, field, entityId, dbName, dataSou
   let entityIri = `<${response[0].iri}>`;
 
   // Attach the object to the information system
-  sparqlQuery = detachFromImpactLevelQuery(id, field, entityIri);
+  sparqlQuery = detachFromImpactDefinitionQuery(id, field, entityIri);
   try {
     response = await dataSources.Stardog.create({
       dbName,
       sparqlQuery,
-      queryId: `Detach ${field} from Impact Level`
+      queryId: `Detach ${field} from Impact Definition`
       });
   } catch (e) {
     console.log(e)

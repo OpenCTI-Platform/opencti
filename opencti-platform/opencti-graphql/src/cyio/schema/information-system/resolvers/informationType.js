@@ -1,10 +1,11 @@
+import conf from '../../../../config/conf';
 import {
   findAllInformationTypes,
   findInformationTypeById,
   createInformationType,
   deleteInformationTypeById,
   editInformationTypeById,
-  findImpactLevelByIri,
+  findImpactDefinitionByIri,
 } from '../domain/informationType.js';
 
 const cyioInformationTypeResolvers = {
@@ -29,19 +30,37 @@ const cyioInformationTypeResolvers = {
 		},
 		confidentiality_impact: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.confidentiality_impact_iri === undefined) return null;
-      let impact = findImpactLevelByIri(parent.confidentiality_impact_iri, dbName, dataSources, selectMap.getNode('confidentiality_impact'));
+
+      // if information type contained within a catalog, change database to contextual memory
+      if ( parent.hasOwnProperty('system') && parent.hasOwnProperty('category') && parent.hasOwnProperty('identifier')) {
+        dbName = conf.get('app:database:context') || 'cyber-context';
+      }
+
+      let impact = findImpactDefinitionByIri(parent.confidentiality_impact_iri, dbName, dataSources, selectMap.getNode('confidentiality_impact'));
       if (impact === undefined || impact === null) return null;
       return impact;
 		},
 		integrity_impact: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.integrity_impact_iri === undefined) return null;
-      let impact = findImpactLevelByIri(parent.integrity_impact_iri, dbName, dataSources, selectMap.getNode('integrity_impact'));
+
+      // if information type contained within a catalog, change database to contextual memory
+      if ( parent.hasOwnProperty('system') && parent.hasOwnProperty('category') && parent.hasOwnProperty('identifier')) {
+        dbName = conf.get('app:database:context') || 'cyber-context';
+      }
+
+      let impact = findImpactDefinitionByIri(parent.integrity_impact_iri, dbName, dataSources, selectMap.getNode('integrity_impact'));
       if (impact === undefined || impact === null) return null;
       return impact;
 		},
 		availability_impact: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.availability_impact_iri === undefined) return null;
-      let impact = findImpactLevelByIri(parent.availability_impact_iri, dbName, dataSources, selectMap.getNode('availability_impact'));
+
+      // if information type contained within a catalog, change database to contextual memory
+      if ( parent.hasOwnProperty('system') && parent.hasOwnProperty('category') && parent.hasOwnProperty('identifier')) {
+        dbName = conf.get('app:database:context') || 'cyber-context';
+      }
+
+      let impact = findImpactDefinitionByIri(parent.availability_impact_iri, dbName, dataSources, selectMap.getNode('availability_impact'));
       if (impact === undefined || impact === null) return null;
       return impact;
 		}
