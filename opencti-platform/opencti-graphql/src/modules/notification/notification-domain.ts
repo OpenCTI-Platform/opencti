@@ -59,8 +59,10 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
   const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
 };
-export const triggerDelete = (context: AuthContext, user: AuthUser, triggerId: string) => {
-  return deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {
+  const element = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+  await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, element, user);
+  return triggerId;
 };
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], opts);
@@ -95,10 +97,10 @@ export const myUnreadNotificationsCount = async (context: AuthContext, user: Aut
 
 export const notificationDelete = async (context: AuthContext, user: AuthUser, notificationId: string) => {
   const notification = await notificationGet(context, user, notificationId);
-  const result = await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
+  await deleteElementById(context, user, notificationId, ENTITY_TYPE_NOTIFICATION);
   const unreadNotificationsCount = await myUnreadNotificationsCount(context, user);
   await notify(BUS_TOPICS[NOTIFICATION_NUMBER].EDIT_TOPIC, { count: unreadNotificationsCount, user_id: notification.user_id }, user);
-  return result;
+  return notificationId;
 };
 
 export const notificationEditRead = async (context: AuthContext, user: AuthUser, notificationId: string, read: boolean) => {

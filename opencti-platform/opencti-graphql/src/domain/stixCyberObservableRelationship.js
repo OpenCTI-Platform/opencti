@@ -40,7 +40,8 @@ export const addStixCyberObservableRelationship = async (context, user, stixCybe
 };
 
 export const stixCyberObservableRelationshipDelete = async (context, user, stixCyberObservableRelationshipId) => {
-  return deleteElementById(context, user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+  await deleteElementById(context, user, stixCyberObservableRelationshipId, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
+  return stixCyberObservableRelationshipId;
 };
 
 export const stixCyberObservableRelationshipCleanContext = (context, user, stixCyberObservableRelationshipId) => {

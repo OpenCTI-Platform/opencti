@@ -21,8 +21,9 @@ export const addKillChainPhase = async (context, user, killChainPhase) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, created, user);
 };
 
-export const killChainPhaseDelete = (context, user, killChainPhaseId) => {
-  return deleteElementById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+export const killChainPhaseDelete = async (context, user, killChainPhaseId) => {
+  await deleteElementById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return killChainPhaseId;
 };
 
 export const killChainPhaseAddRelation = (context, user, killChainPhaseId, input) => {

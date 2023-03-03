@@ -47,8 +47,9 @@ export const addGroup = async (context, user, group) => {
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].ADDED_TOPIC, created, user);
 };
 
-export const groupDelete = (context, user, groupId) => {
-  return deleteElementById(context, user, groupId, ENTITY_TYPE_GROUP);
+export const groupDelete = async (context, user, groupId) => {
+  await deleteElementById(context, user, groupId, ENTITY_TYPE_GROUP);
+  return groupId;
 };
 
 export const groupEditField = async (context, user, groupId, input) => {

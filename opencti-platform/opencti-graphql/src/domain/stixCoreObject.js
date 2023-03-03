@@ -165,7 +165,8 @@ export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   if (!stixCoreObject) {
     throw FunctionalError('Cannot delete the object, Stix-Core-Object cannot be found.');
   }
-  return deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  await deleteElementById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
+  return stixCoreObjectId;
 };
 
 export const askElementEnrichmentForConnector = async (context, user, elementId, connectorId) => {

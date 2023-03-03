@@ -67,7 +67,9 @@ export const workspaceAddRelations = async (context, user, workspaceId, input) =
     input.toIds
   );
   await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user));
+  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((entity) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, entity, user);
+  });
 };
 
 export const workspaceDeleteRelation = async (context, user, workspaceId, toId, relationshipType) => {
@@ -109,7 +111,9 @@ export const workspaceDelete = async (context, user, workspaceId) => {
 // region context
 export const workspaceCleanContext = async (context, user, workspaceId) => {
   await delEditContext(user, workspaceId);
-  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user));
+  return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE).then((userToReturn) => {
+    return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, userToReturn, user);
+  });
 };
 
 export const workspaceEditContext = async (context, user, workspaceId, input) => {

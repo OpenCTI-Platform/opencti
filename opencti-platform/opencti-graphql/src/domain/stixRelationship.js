@@ -12,5 +12,6 @@ export const findById = (context, user, stixRelationshipId) => {
 };
 
 export const stixRelationshipDelete = async (context, user, stixRelationshipId) => {
-  return deleteElementById(context, user, stixRelationshipId, ABSTRACT_STIX_RELATIONSHIP);
+  await deleteElementById(context, user, stixRelationshipId, ABSTRACT_STIX_RELATIONSHIP);
+  return stixRelationshipId;
 };

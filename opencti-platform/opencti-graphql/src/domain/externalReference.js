@@ -60,9 +60,10 @@ export const externalReferenceDelete = async (context, user, externalReferenceId
   // Call the deletion of file that will also handle the external reference deletion
   if (reference.fileId) {
     await stixCoreObjectImportDelete(context, user, reference.fileId);
-    return externalReferenceId;
+  } else {
+    await deleteElementById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
   }
-  return deleteElementById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  return externalReferenceId;
 };
 
 export const externalReferenceAddRelation = async (context, user, externalReferenceId, input) => {
@@ -78,8 +79,7 @@ export const externalReferenceAddRelation = async (context, user, externalRefere
   }
   const finalInput = assoc('toId', externalReferenceId, input);
   return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, relationData, user);
-    return relationData;
+    return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, relationData, user);
   });
 };
 

@@ -226,7 +226,8 @@ export const addStixCoreRelationship = async (context, user, stixCoreRelationshi
 };
 
 export const stixCoreRelationshipDelete = async (context, user, stixCoreRelationshipId) => {
-  return deleteElementById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  await deleteElementById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
+  return stixCoreRelationshipId;
 };
 
 export const stixCoreRelationshipDeleteByFromAndTo = async (context, user, fromId, toId, relationshipType) => {
@@ -256,8 +257,7 @@ export const stixCoreRelationshipAddRelation = async (context, user, stixCoreRel
   }
   const finalInput = R.assoc('fromId', stixCoreRelationshipId, input);
   return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, relationData, user);
-    return relationData;
+    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, relationData, user);
   });
 };
 
