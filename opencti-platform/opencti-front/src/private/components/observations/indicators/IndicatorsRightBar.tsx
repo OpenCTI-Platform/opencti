@@ -59,7 +59,7 @@ interface IndicatorsRightBarProps {
   handleToggleIndicatorType: (name: string) => void,
   handleToggleObservableType: (name: string) => void,
   handleClearObservableTypes: () => void,
-  openExports: boolean,
+  openExports?: boolean,
 }
 
 const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
@@ -97,6 +97,7 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
               }
             >
               {patternTypes && patternTypes.map((patternType) => <ListItem
+                key={patternType.node.id}
                 dense={true}
                 button={true}
                 onClick={() => handleToggleIndicatorType(patternType.node.name)}
@@ -115,129 +116,6 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
         }
         }
       />
-      <List
-        subheader={
-          <ListSubheader component="div">{t('Pattern type')}</ListSubheader>
-        }
-      >
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('stix')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('stix')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="STIX" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('pcre')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('pcre')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="PCRE" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('sigma')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('sigma')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="SIGMA" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('snort')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('snort')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="SNORT" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('suricata')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('suricata')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="Suricata" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('yara')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('yara')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="YARA" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('tanium-signal')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('tanium-signal')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="Tanium Signal" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('spl')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('spl')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="Splunk SPL" />
-        </ListItem>
-        <ListItem
-          dense={true}
-          button={true}
-          onClick={() => handleToggleIndicatorType('eql')}
-          classes={{ root: classes.item }}
-        >
-          <Checkbox
-            checked={indicatorTypes.includes('eql')}
-            disableRipple={true}
-            size="small"
-          />
-          <ListItemText primary="Elastic EQL" />
-        </ListItem>
-      </List>
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
         variables={{ type: 'Stix-Cyber-Observable' }}
