@@ -28,8 +28,16 @@ interface OpenVocabProps {
 }
 
 export const vocabularyQuery = graphql`
-  query OpenVocabFieldQuery($category: VocabularyCategory!) {
-    vocabularies(category: $category) {
+  query OpenVocabFieldQuery(
+      $category: VocabularyCategory!
+      $orderBy: VocabularyOrdering
+      $orderMode: OrderingMode
+  ) {
+    vocabularies(
+        category: $category
+        orderBy: $orderBy
+        orderMode: $orderMode
+    ) {
       edges {
         node {
           id

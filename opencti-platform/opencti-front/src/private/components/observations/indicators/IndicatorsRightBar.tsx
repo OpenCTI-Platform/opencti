@@ -17,6 +17,8 @@ import { Theme } from '../../../../components/Theme';
 import {
   StixCyberObservablesLinesSubTypesQuery$data,
 } from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
+import { vocabularyQuery } from '../../common/form/OpenVocabField';
+import { OpenVocabFieldQuery$data } from '../../common/form/__generated__/OpenVocabFieldQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -79,9 +81,43 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
       }}
     >
       <div className={classes.toolbar} />
+      <QueryRenderer
+        query={vocabularyQuery}
+        variables={{
+          category: 'pattern_type_ov',
+          orderBy: 'name',
+          orderMode: 'asc',
+        }}
+        render={({ props }: { props: OpenVocabFieldQuery$data }) => {
+          const patternTypes = props?.vocabularies?.edges;
+          return (
+            <List
+              subheader={
+                <ListSubheader component="div">{t('Pattern type')}</ListSubheader>
+              }
+            >
+              {patternTypes && patternTypes.map((patternType) => <ListItem
+                dense={true}
+                button={true}
+                onClick={() => handleToggleIndicatorType(patternType.node.name)}
+                classes={{ root: classes.item }}
+              >
+                <Checkbox
+                  checked={indicatorTypes.includes(patternType.node.name)}
+                  disableRipple={true}
+                  size="small"
+                />
+                <ListItemText primary={t(`${patternType.node.name}`)}/>
+              </ListItem>)
+              }
+            </List>
+          );
+        }
+        }
+      />
       <List
         subheader={
-          <ListSubheader component="div">{t('Pattern types')}</ListSubheader>
+          <ListSubheader component="div">{t('Pattern type')}</ListSubheader>
         }
       >
         <ListItem
