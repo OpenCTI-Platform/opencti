@@ -1,15 +1,16 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
-import { InfoOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, InfoOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import Button from '@mui/material/Button';
 import { useFormatter } from '../../components/i18n';
 import { resolveLink } from '../Entity';
 import ItemAuthor from '../../components/ItemAuthor';
@@ -22,8 +23,9 @@ import { truncate } from '../String';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import ItemIcon from '../../components/ItemIcon';
+import { Theme } from '../../components/Theme';
 
-const useStyles = makeStyles(() => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   entity: {
     marginTop: '20px',
   },
@@ -33,6 +35,26 @@ const useStyles = makeStyles(() => ({
   nameLabel: {
     marginTop: '15px',
     marginBottom: -1,
+  },
+  buttonExpand: {
+    position: 'relative',
+    left: 0,
+    bottom: 0,
+    width: '100%',
+    height: 25,
+    color: theme.palette.primary.main,
+    backgroundColor:
+      theme.palette.mode === 'dark'
+        ? 'rgba(255, 255, 255, .1)'
+        : 'rgba(0, 0, 0, .1)',
+    borderTopLeftRadius: 0,
+    borderTopRightRadius: 0,
+    '&:hover': {
+      backgroundColor:
+        theme.palette.mode === 'dark'
+          ? 'rgba(255, 255, 255, .2)'
+          : 'rgba(0, 0, 0, .2)',
+    },
   },
 }));
 
@@ -223,9 +245,16 @@ EntityDetailsComponentProps
   );
   const { stixCoreObject } = entity;
 
-  const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
+  const [expanded, setExpanded] = useState(false);
 
-  console.log('externalReferencesEdges   :', externalReferencesEdges);
+  const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
+  const expandable = externalReferencesEdges
+    ? externalReferencesEdges.length > 1
+    : false;
+
+  const handleToggleExpand = () => {
+    setExpanded(!expanded);
+  };
 
   if (!stixCoreObject) {
     return <ErrorNotFound />;
@@ -316,46 +345,63 @@ EntityDetailsComponentProps
       >
         {t('External References')}
       </Typography>
-      <List style={{ marginBottom: 0 }}>
-        {externalReferencesEdges?.map((externalReference) => {
-          const externalReferenceId = externalReference.node.external_id
-            ? `(${externalReference.node.external_id})`
-            : '';
-          let externalReferenceSecondary = '';
-          if (externalReference.node.url && externalReference.node.url.length > 0) {
-            externalReferenceSecondary = externalReference.node.url;
-          } else if (
-            externalReference.node.description
-            && externalReference.node.description.length > 0
-          ) {
-            externalReferenceSecondary = externalReference.node.description;
-          } else {
-            externalReferenceSecondary = t('No description');
-          }
-          return (
-            <div key={externalReference.node.id}>
-              <ListItem
-                component={Link}
-                to={`/dashboard/analysis/external_references/${externalReference.node.id}`}
-                dense={true}
-                divider={true}
-                button={true}
-              >
-                <ListItemIcon>
-                  <ItemIcon type="External-Reference" />
-                </ListItemIcon>
-                <ListItemText
-                  primary={truncate(
-                    `${externalReference.node.source_name} ${externalReferenceId}`,
-                    70,
-                  )}
-                  secondary={truncate(externalReferenceSecondary, 70)}
-                />
-              </ListItem>
-            </div>
-          );
-        })}
-      </List>
+      { (externalReferencesEdges && externalReferencesEdges.length > 0)
+        && <List style={{ marginBottom: 0 }}>
+        {externalReferencesEdges
+          .slice(0, expanded ? 200 : 7)
+          .map((externalReference) => {
+            const externalReferenceId = externalReference.node.external_id
+              ? `(${externalReference.node.external_id})`
+              : '';
+            let externalReferenceSecondary = '';
+            if (externalReference.node.url && externalReference.node.url.length > 0) {
+              externalReferenceSecondary = externalReference.node.url;
+            } else if (
+              externalReference.node.description
+              && externalReference.node.description.length > 0
+            ) {
+              externalReferenceSecondary = externalReference.node.description;
+            } else {
+              externalReferenceSecondary = t('No description');
+            }
+            return (
+              <div key={externalReference.node.id}>
+                <ListItem
+                  component={Link}
+                  to={`/dashboard/analysis/external_references/${externalReference.node.id}`}
+                  dense={true}
+                  divider={true}
+                  button={true}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type="External-Reference"/>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={truncate(
+                      `${externalReference.node.source_name} ${externalReferenceId}`,
+                      70,
+                    )}
+                    secondary={truncate(externalReferenceSecondary, 70)}
+                  />
+                </ListItem>
+              </div>
+            );
+          })}
+      </List>}
+      {expandable && (
+        <Button
+          variant="contained"
+          size="small"
+          onClick={handleToggleExpand}
+          className= {classes.buttonExpand }
+        >
+          {expanded ? (
+            <ExpandLessOutlined fontSize="small" />
+          ) : (
+            <ExpandMoreOutlined fontSize="small" />
+          )}
+        </Button>
+      )}
     </div>
   );
 };
