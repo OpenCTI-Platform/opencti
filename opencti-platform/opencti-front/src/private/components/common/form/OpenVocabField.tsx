@@ -27,7 +27,7 @@ interface OpenVocabProps {
   multiple?: boolean;
 }
 
-const vocabularyQuery = graphql`
+export const vocabularyQuery = graphql`
   query OpenVocabFieldQuery($category: VocabularyCategory!) {
     vocabularies(category: $category) {
       edges {

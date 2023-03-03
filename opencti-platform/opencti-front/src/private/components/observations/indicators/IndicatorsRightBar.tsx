@@ -1,0 +1,261 @@
+import React, { FunctionComponent } from 'react';
+import { assoc, compose, prop, sortBy, toLower } from 'ramda';
+import List from '@mui/material/List';
+import ListSubheader from '@mui/material/ListSubheader';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
+import Drawer from '@mui/material/Drawer';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { FilterOffOutline } from 'mdi-material-ui';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
+import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
+import { Theme } from '../../../../components/Theme';
+import {
+  StixCyberObservablesLinesSubTypesQuery$data,
+} from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
+
+const useStyles = makeStyles<Theme>((theme) => ({
+  drawerPaper: {
+    minHeight: '100vh',
+    width: 250,
+    right: 0,
+    padding: '0 0 20px 0',
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.enteringScreen,
+    }),
+  },
+  drawerPaperExports: {
+    minHeight: '100vh',
+    width: 250,
+    right: 310,
+    padding: '0 0 20px 0',
+    transition: theme.transitions.create('right', {
+      easing: theme.transitions.easing.easeOut,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+  },
+  listIcon: {
+    marginRight: 0,
+  },
+  item: {
+    padding: '0 0 0 6px',
+  },
+  itemField: {
+    padding: '0 15px 0 15px',
+  },
+  toolbar: theme.mixins.toolbar,
+}));
+
+interface IndicatorsRightBarProps {
+  indicatorTypes: string[],
+  observableTypes: string[],
+  handleToggleIndicatorType: (name: string) => void,
+  handleToggleObservableType: (name: string) => void,
+  handleClearObservableTypes: () => void,
+  openExports: boolean,
+}
+
+const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
+  indicatorTypes,
+  observableTypes,
+  handleToggleIndicatorType,
+  handleToggleObservableType,
+  handleClearObservableTypes,
+  openExports }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  return (
+    <Drawer
+      variant="permanent"
+      anchor="right"
+      classes={{
+        paper: openExports ? classes.drawerPaperExports : classes.drawerPaper,
+      }}
+    >
+      <div className={classes.toolbar} />
+      <List
+        subheader={
+          <ListSubheader component="div">{t('Pattern types')}</ListSubheader>
+        }
+      >
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('stix')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('stix')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="STIX" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('pcre')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('pcre')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="PCRE" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('sigma')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('sigma')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="SIGMA" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('snort')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('snort')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="SNORT" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('suricata')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('suricata')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="Suricata" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('yara')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('yara')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="YARA" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('tanium-signal')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('tanium-signal')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="Tanium Signal" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('spl')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('spl')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="Splunk SPL" />
+        </ListItem>
+        <ListItem
+          dense={true}
+          button={true}
+          onClick={() => handleToggleIndicatorType('eql')}
+          classes={{ root: classes.item }}
+        >
+          <Checkbox
+            checked={indicatorTypes.includes('eql')}
+            disableRipple={true}
+            size="small"
+          />
+          <ListItemText primary="Elastic EQL" />
+        </ListItem>
+      </List>
+      <QueryRenderer
+        query={stixCyberObservablesLinesSubTypesQuery}
+        variables={{ type: 'Stix-Cyber-Observable' }}
+        render={({ props }: { props: StixCyberObservablesLinesSubTypesQuery$data }) => {
+          if (props && props.subTypes) {
+            const subTypesEdges = props.subTypes.edges;
+            const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
+            const translatedOrderedList = sortByLabel(
+              subTypesEdges
+                .map((n) => n.node)
+                .map((n) => assoc('tlabel', t(`entity_${n.label}`), n)),
+            );
+            return (
+              <List
+                subheader={
+                  <ListSubheader component="div">
+                    {t('Observable type')}
+                    <Tooltip title={t('Clear filters')}>
+                      <IconButton
+                        onClick={handleClearObservableTypes}
+                        disabled={observableTypes.length === 0}
+                        color="primary"
+                        size="large"
+                      >
+                        <FilterOffOutline fontSize="small" />
+                      </IconButton>
+                    </Tooltip>
+                  </ListSubheader>
+                }
+              >
+                {translatedOrderedList.map((subType) => (
+                  <ListItem
+                    key={subType.id}
+                    dense={true}
+                    button={true}
+                    onClick={() => handleToggleObservableType(subType.label)}
+                    classes={{ root: classes.item }}
+                  >
+                    <Checkbox
+                      checked={observableTypes.includes(subType.label)}
+                      disableRipple={true}
+                      size="small"
+                    />
+                    <ListItemText primary={subType.tlabel} />
+                  </ListItem>
+                ))}
+              </List>
+            );
+          }
+          return <div />;
+        }}
+      />
+    </Drawer>
+  );
+};
+
+export default IndicatorsRightBar;
