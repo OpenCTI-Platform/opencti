@@ -27,10 +27,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export interface SelectedEntity {
-  id: string;
-  label: string;
-  relationship_type?: string;
-  entity_type: string;
+  id: string
+  label: string
+  relationship_type?: string
+  entity_type: string
+  source? : SelectedEntity
+  target?: SelectedEntity
+  fromId?: string
+  toId?: string
 }
 
 interface EntityDetailsRightsBarProps {
@@ -65,6 +69,22 @@ EntityDetailsRightsBarProps
       setSelectedEntity(entity);
     }
   };
+  const selectInputLabel = () => {
+    if (!selectedEntity.relationship_type) {
+      return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
+    }
+    if (selectedEntity.relationship_type && selectedEntity.source && selectedEntity.target) {
+      const source = selectedEntity.source.label;
+      const target = selectedEntity.target.label;
+      return (`${source} to ${target}`);
+    }
+    if (selectedEntity.relationship_type && selectedEntity.fromId && selectedEntity.toId) {
+      const source = selectedEntity.fromId;
+      const target = selectedEntity.toId;
+      return (`${source} to ${target}`);
+    }
+    return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
+  };
 
   return (
     <Drawer
@@ -76,9 +96,7 @@ EntityDetailsRightsBarProps
       <div className={classes.toolbar} />
       <FormControl className={classes.formControl} fullWidth={true}>
         <InputLabel id="entityField" className={classes.label}>
-          {selectedEntity.label.length > 1
-            ? selectedEntity.label
-            : selectedEntity.entity_type}
+          {selectInputLabel()}
         </InputLabel>
         <Select
           labelId="entityField"
