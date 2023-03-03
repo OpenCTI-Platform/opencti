@@ -22,7 +22,7 @@ export const INTERNAL_RELATIONSHIPS = [
   RELATION_HAS_REFERENCE,
 ];
 schemaAttributesDefinition.register(ABSTRACT_INTERNAL_RELATIONSHIP, INTERNAL_RELATIONSHIPS);
-export const isInternalRelationship = (type: string) => schemaAttributesDefinition.get(ABSTRACT_INTERNAL_RELATIONSHIP).includes(type)
+export const isInternalRelationship = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_RELATIONSHIP)
 || type === ABSTRACT_INTERNAL_RELATIONSHIP;
 
 export const internalRelationshipsAttributes: { [k: string]: Array<AttributeDefinition> } = {

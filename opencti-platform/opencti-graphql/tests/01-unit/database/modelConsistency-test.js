@@ -38,7 +38,8 @@ import {
 } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 
-import '../../../src/modules/index'; // Need to import registration files
+import '../../../src/modules/index';
+import { ADMIN_USER, testContext } from '../../utils/testQuery'; // Need to import registration files
 
 describe('Testing checkRelationConsistency', () => {
   it.concurrent.each([
@@ -90,13 +91,15 @@ describe('Testing checkRelationConsistency', () => {
     [RELATION_DERIVED_FROM, ENTITY_TYPE_TOOL, ENTITY_TYPE_VULNERABILITY, false],
   ])(
     'Trying to create a relation of type %s from %s to %s',
-    (relType, fromType, toType, expected) => {
-      const relationConsitency = isRelationConsistent(
+    async (relType, fromType, toType, expected) => {
+      const relationConsistency = await isRelationConsistent(
+        testContext,
+        ADMIN_USER,
         relType,
         { entity_type: fromType },
         Array.isArray(toType) ? toType.map((t) => ({ entity_type: t })) : { entity_type: toType }
       );
-      expect(relationConsitency).toBe(expected);
+      expect(relationConsistency).toBe(expected);
     }
   );
 });

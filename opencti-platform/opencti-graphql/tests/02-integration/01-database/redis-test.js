@@ -10,6 +10,7 @@ import {
   setEditContext,
 } from '../../../src/database/redis';
 import { OPENCTI_ADMIN_UUID } from '../../../src/schema/general';
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
 
 describe('Redis basic and utils', () => {
   it('should redis in correct version', async () => {

@@ -58,7 +58,7 @@ const INTERNAL_OBJECTS = [
 ];
 const HISTORY_OBJECTS = [ENTITY_TYPE_WORK];
 
-export const isInternalObject = (type: string) => schemaAttributesDefinition.get(ABSTRACT_INTERNAL_OBJECT).includes(type) || type === ABSTRACT_INTERNAL_OBJECT;
+export const isInternalObject = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_INTERNAL_OBJECT) || type === ABSTRACT_INTERNAL_OBJECT;
 export const isDatedInternalObject = (type: string) => DATED_INTERNAL_OBJECTS.includes(type);
 export const isHistoryObject = (type: string) => HISTORY_OBJECTS.includes(type);
 

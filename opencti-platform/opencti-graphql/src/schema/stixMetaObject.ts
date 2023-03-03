@@ -22,7 +22,7 @@ export const STIX_EMBEDDED_OBJECT = [ENTITY_TYPE_LABEL, ENTITY_TYPE_EXTERNAL_REF
 const STIX_META_OBJECT = [...STIX_EMBEDDED_OBJECT, ENTITY_TYPE_MARKING_DEFINITION];
 schemaAttributesDefinition.register(ABSTRACT_STIX_META_OBJECT, [...STIX_META_OBJECT, ABSTRACT_STIX_META_OBJECT]);
 
-export const isStixMetaObject = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_META_OBJECT).includes(type)
+export const isStixMetaObject = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_META_OBJECT)
 || type === ABSTRACT_STIX_META_OBJECT;
 
 const stixMetaObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {

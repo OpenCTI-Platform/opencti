@@ -209,7 +209,7 @@ const oebp = (queryResult) => {
 };
 
 export const elRawSearch = (context, user, types, query) => {
-  const elRawSearchFn = () => engine.search(query).then((r) => {
+  const elRawSearchFn = async () => engine.search(query).then((r) => {
     const parsedSearch = oebp(r);
     // If some shards fail
     if (parsedSearch._shards.failed > 0) {

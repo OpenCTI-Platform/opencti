@@ -157,7 +157,7 @@ schemaAttributesDefinition.register(
   ABSTRACT_STIX_META_RELATIONSHIP,
   RELATIONS_REF_INTERNAL.concat(RELATIONS_REF_EXTERNAL).map((arr) => arr.databaseName)
 );
-export const isStixMetaRelationship = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_META_RELATIONSHIP).includes(type)
+export const isStixMetaRelationship = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_META_RELATIONSHIP)
   || type === ABSTRACT_STIX_META_RELATIONSHIP;
 
 // -- ATTRIBUTES --

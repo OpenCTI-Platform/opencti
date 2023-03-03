@@ -94,9 +94,9 @@ const STIX_CYBER_OBSERVABLES = [
 ];
 schemaAttributesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE, STIX_CYBER_OBSERVABLES);
 
-export const isStixCyberObservableHashedObservable = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE).includes(type)
+export const isStixCyberObservableHashedObservable = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE)
   || type === ABSTRACT_STIX_CYBER_OBSERVABLE_HASHED_OBSERVABLE;
-export const isStixCyberObservable = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE).includes(type)
+export const isStixCyberObservable = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE)
   || type === ABSTRACT_STIX_CYBER_OBSERVABLE;
 
 export const stixCyberObservableOptions = {

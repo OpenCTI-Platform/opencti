@@ -79,7 +79,7 @@ const STIX_DOMAIN_OBJECT_CONTAINERS: Array<string> = [
 ];
 
 schemaAttributesDefinition.register(ENTITY_TYPE_CONTAINER, STIX_DOMAIN_OBJECT_CONTAINERS);
-export const isStixDomainObjectContainer = (type: string): boolean => schemaAttributesDefinition.get(ENTITY_TYPE_CONTAINER).includes(type)
+export const isStixDomainObjectContainer = (type: string): boolean => schemaAttributesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER)
     || type === ENTITY_TYPE_CONTAINER;
 
 const STIX_DOMAIN_OBJECT_SHAREABLE_CONTAINERS: Array<string> = [
@@ -99,7 +99,7 @@ const STIX_DOMAIN_OBJECT_IDENTITIES: Array<string> = [
 ];
 schemaAttributesDefinition.register(ENTITY_TYPE_IDENTITY, STIX_DOMAIN_OBJECT_IDENTITIES);
 export const isStixDomainObjectIdentity = (type: string): boolean => {
-  return schemaAttributesDefinition.get(ENTITY_TYPE_IDENTITY).includes(type) || type === ENTITY_TYPE_IDENTITY;
+  return schemaAttributesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_IDENTITY) || type === ENTITY_TYPE_IDENTITY;
 };
 
 const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
@@ -109,7 +109,7 @@ const STIX_DOMAIN_OBJECT_LOCATIONS: Array<string> = [
   ENTITY_TYPE_LOCATION_POSITION,
 ];
 schemaAttributesDefinition.register(ENTITY_TYPE_LOCATION, STIX_DOMAIN_OBJECT_LOCATIONS);
-export const isStixDomainObjectLocation = (type: string): boolean => schemaAttributesDefinition.get(ENTITY_TYPE_LOCATION).includes(type)
+export const isStixDomainObjectLocation = (type: string): boolean => schemaAttributesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_LOCATION)
   || type === ENTITY_TYPE_LOCATION;
 
 const STIX_DOMAIN_OBJECTS: Array<string> = [
@@ -140,7 +140,7 @@ const STIX_DOMAIN_OBJECTS: Array<string> = [
 schemaAttributesDefinition.register(ABSTRACT_STIX_DOMAIN_OBJECT, STIX_DOMAIN_OBJECTS);
 
 export const isStixDomainObject = (type: string): boolean => {
-  return schemaAttributesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT).includes(type)
+  return schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_DOMAIN_OBJECT)
     || isStixDomainObjectIdentity(type)
     || isStixDomainObjectLocation(type)
     || isStixDomainObjectContainer(type)
