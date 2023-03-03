@@ -94,6 +94,25 @@ const entityDetailsQuery = graphql`
                     }
                 }
             }
+            reports {
+                edges {
+                    node {
+                        id
+                        entity_type
+                        name
+                        description
+                        published
+                        report_types
+                        createdBy {
+                            ... on Identity {
+                                id
+                                name
+                                entity_type
+                            }
+                        }
+                    }
+                }
+            }
             ... on StixDomainObject {
                 created
             }
@@ -248,10 +267,12 @@ EntityDetailsComponentProps
   const [expanded, setExpanded] = useState(false);
 
   const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
+  const reportsEdges = stixCoreObject?.reports?.edges;
   const expandable = externalReferencesEdges
     ? externalReferencesEdges.length > 1
     : false;
 
+  console.log(reportsEdges);
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
@@ -345,63 +366,108 @@ EntityDetailsComponentProps
       >
         {t('External References')}
       </Typography>
-      { (externalReferencesEdges && externalReferencesEdges.length > 0)
+      {(externalReferencesEdges && externalReferencesEdges.length > 0)
         && <List style={{ marginBottom: 0 }}>
-        {externalReferencesEdges
-          .slice(0, expanded ? 200 : 7)
-          .map((externalReference) => {
-            const externalReferenceId = externalReference.node.external_id
-              ? `(${externalReference.node.external_id})`
-              : '';
-            let externalReferenceSecondary = '';
-            if (externalReference.node.url && externalReference.node.url.length > 0) {
-              externalReferenceSecondary = externalReference.node.url;
-            } else if (
-              externalReference.node.description
-              && externalReference.node.description.length > 0
-            ) {
-              externalReferenceSecondary = externalReference.node.description;
-            } else {
-              externalReferenceSecondary = t('No description');
-            }
-            return (
-              <div key={externalReference.node.id}>
-                <ListItem
-                  component={Link}
-                  to={`/dashboard/analysis/external_references/${externalReference.node.id}`}
-                  dense={true}
-                  divider={true}
-                  button={true}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type="External-Reference"/>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={truncate(
-                      `${externalReference.node.source_name} ${externalReferenceId}`,
-                      70,
-                    )}
-                    secondary={truncate(externalReferenceSecondary, 70)}
-                  />
-                </ListItem>
-              </div>
-            );
-          })}
-      </List>}
+          {externalReferencesEdges
+            .slice(0, expanded ? 200 : 7)
+            .map((externalReference) => {
+              const externalReferenceId = externalReference.node.external_id
+                ? `(${externalReference.node.external_id})`
+                : '';
+              let externalReferenceSecondary = '';
+              if (externalReference.node.url && externalReference.node.url.length > 0) {
+                externalReferenceSecondary = externalReference.node.url;
+              } else if (
+                externalReference.node.description
+                && externalReference.node.description.length > 0
+              ) {
+                externalReferenceSecondary = externalReference.node.description;
+              } else {
+                externalReferenceSecondary = t('No description');
+              }
+              return (
+                <div key={externalReference.node.id}>
+                  <ListItem
+                    component={Link}
+                    to={`/dashboard/analysis/external_references/${externalReference.node.id}`}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type="External-Reference"/>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={truncate(
+                        `${externalReference.node.source_name} ${externalReferenceId}`,
+                        70,
+                      )}
+                      secondary={truncate(externalReferenceSecondary, 70)}
+                    />
+                  </ListItem>
+                </div>
+              );
+            })}
+        </List>}
       {expandable && (
         <Button
           variant="contained"
           size="small"
           onClick={handleToggleExpand}
-          className= {classes.buttonExpand }
+          className={classes.buttonExpand}
         >
           {expanded ? (
-            <ExpandLessOutlined fontSize="small" />
+            <ExpandLessOutlined fontSize="small"/>
           ) : (
-            <ExpandMoreOutlined fontSize="small" />
+            <ExpandMoreOutlined fontSize="small"/>
           )}
         </Button>
       )}
+      <Typography
+        variant="h3"
+        gutterBottom={true}
+        className={classes.label}
+      >
+        {t('Reports')}
+      </Typography>
+      {(reportsEdges && reportsEdges.length > 0)
+        ? (<List style={{ marginBottom: 0 }}>
+            {reportsEdges.map((reportEdge) => {
+              const report = reportEdge?.node;
+              if (report) {
+                return (
+                  <ListItem
+                    key={report.id}
+                    dense={true}
+                    button={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/analysis/reports/${report.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={report.entity_type}/>
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <Tooltip title={report.name}>
+                          <div className={classes.itemText}>
+                            {report.name}
+                          </div>
+                        </Tooltip>
+                      }
+                    />
+                  </ListItem>
+                );
+              }
+              return (<div></div>);
+            })
+            }
+          </List>)
+        : (
+          '-'
+        )
+      }
     </div>
   );
 };
