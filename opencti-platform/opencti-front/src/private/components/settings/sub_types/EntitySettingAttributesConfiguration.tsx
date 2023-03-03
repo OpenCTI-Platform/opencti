@@ -49,11 +49,17 @@ const EntitySettingAttributesConfiguration = ({ queryRef }: { queryRef: Preloade
   const [commit] = useMutation(entitySettingsPatch);
 
   const handleSubmitField = (field: string, checked: boolean) => {
-    const entitySettingsAttributesConfiguration = [...attributesConfiguration, { name: field, mandatory: checked }];
+    const saveConfiguration = [...attributesConfiguration];
+    const currentKeyValue = saveConfiguration.find((a) => a.name === field);
+    if (currentKeyValue) {
+      currentKeyValue.mandatory = checked;
+    } else {
+      saveConfiguration.push({ name: field, mandatory: checked });
+    }
     commit({
       variables: {
         ids: [entitySetting.id],
-        input: { key: 'attributes_configuration', value: JSON.stringify(entitySettingsAttributesConfiguration) },
+        input: { key: 'attributes_configuration', value: JSON.stringify(saveConfiguration) },
       },
     });
   };
