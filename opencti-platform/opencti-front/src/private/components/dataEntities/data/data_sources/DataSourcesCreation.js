@@ -25,6 +25,7 @@ import MarkDownField from '../../../../../components/MarkDownField';
 import { toastGenericError } from '../../../../../utils/bakedToast';
 import TaskType from '../../../common/form/TaskType';
 import ScopeField from '../../../common/form/ScopeField';
+import DataUsageRestrictionField from '../../../common/form/DataUsageRestrictionField';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -357,15 +358,14 @@ class DataSourcesCreation extends Component {
                         </Tooltip>
                       </div>
                       <div className="clearfix" />
-                      <TaskType
-                        component={SelectField}
-                        variant='outlined'
-                        name="iep"
-                        taskType='IEPMarking'
-                        fullWidth={true}
-                        style={{ height: '38.09px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
+                        <DataUsageRestrictionField
+                          variant='outlined'
+                          name='iep'
+                          size='small'
+                          fullWidth={true}
+                          style={{ height: '38.09px', marginBottom: '3px' }}
+                          containerstyle={{ width: '100%', padding: '0 0 1px 0' }}
+                        />
                     </Grid>
                     <Grid item={true} xs={12}>
                       <div className={classes.textBase}>
