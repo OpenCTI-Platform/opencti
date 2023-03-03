@@ -269,7 +269,7 @@ EntityDetailsComponentProps
   const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
   const reportsEdges = stixCoreObject?.reports?.edges;
   const expandable = externalReferencesEdges
-    ? externalReferencesEdges.length > 1
+    ? externalReferencesEdges.length > 3
     : false;
 
   console.log(reportsEdges);
@@ -367,9 +367,9 @@ EntityDetailsComponentProps
         {t('External References')}
       </Typography>
       {(externalReferencesEdges && externalReferencesEdges.length > 0)
-        && <List style={{ marginBottom: 0 }}>
+        ? (<List style={{ marginBottom: 0 }}>
           {externalReferencesEdges
-            .slice(0, expanded ? 200 : 7)
+            .slice(0, expanded ? 200 : 3)
             .map((externalReference) => {
               const externalReferenceId = externalReference.node.external_id
                 ? `(${externalReference.node.external_id})`
@@ -408,7 +408,10 @@ EntityDetailsComponentProps
                 </div>
               );
             })}
-        </List>}
+        </List>)
+        : (
+          '-'
+        )}
       {expandable && (
         <Button
           variant="contained"
