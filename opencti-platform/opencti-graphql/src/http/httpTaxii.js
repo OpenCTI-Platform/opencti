@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { authenticateUserFromRequest, TAXIIAPI } from '../domain/user';
 import { basePath, getBaseUrl } from '../config/conf';
 import { AuthRequired, ForbiddenAccess, UnsupportedError } from '../config/errors';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import {
   restAllCollections,
   restCollectionManifest,
@@ -44,6 +45,9 @@ const rebuildParamsForObject = (id, req) => {
   const { spec_version, version } = match;
   const argsMatch = { id, spec_version, version };
   return { added_after, limit, next, match: argsMatch };
+};
+const getUpdatedAt = (obj) => {
+  return obj?.extensions?.[STIX_EXT_OCTI]?.updated_at;
 };
 
 const initTaxiiApi = (app) => {
@@ -111,8 +115,8 @@ const initTaxiiApi = (app) => {
       const context = executionContext('taxii');
       const user = await extractUserFromRequest(context, req, res);
       const manifest = await restCollectionManifest(context, user, id, req.query);
-      res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.updated_at);
-      res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.updated_at);
+      res.set('X-TAXII-Date-Added-First', R.head(manifest.objects)?.version);
+      res.set('X-TAXII-Date-Added-Last', R.last(manifest.objects)?.version);
       res.json(manifest);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -125,8 +129,8 @@ const initTaxiiApi = (app) => {
       const context = executionContext('taxii');
       const user = await extractUserFromRequest(context, req, res);
       const stix = await restCollectionStix(context, user, id, req.query);
-      res.set('X-TAXII-Date-Added-First', R.head(stix.objects)?.updated_at);
-      res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
+      res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
+      res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
       res.json(stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -140,8 +144,8 @@ const initTaxiiApi = (app) => {
       const user = await extractUserFromRequest(context, req, res);
       const args = rebuildParamsForObject(object_id, req);
       const stix = await restCollectionStix(context, user, id, args);
-      res.set('X-TAXII-Date-Added-First', R.head(stix.objects)?.updated_at);
-      res.set('X-TAXII-Date-Added-Last', R.last(stix.objects)?.updated_at);
+      res.set('X-TAXII-Date-Added-First', getUpdatedAt(R.head(stix.objects)));
+      res.set('X-TAXII-Date-Added-Last', getUpdatedAt(R.last(stix.objects)));
       res.json(stix);
     } catch (e) {
       const errorDetail = errorConverter(e);
@@ -156,9 +160,10 @@ const initTaxiiApi = (app) => {
       const args = rebuildParamsForObject(object_id, req);
       const stix = await restCollectionStix(context, user, id, args);
       const data = R.head(stix.objects);
-      res.set('X-TAXII-Date-Added-First', data?.updated_at);
-      res.set('X-TAXII-Date-Added-Last', data?.updated_at);
-      const versions = data ? [data.updated_at] : [];
+      const updatedAt = getUpdatedAt(data);
+      res.set('X-TAXII-Date-Added-First', updatedAt);
+      res.set('X-TAXII-Date-Added-Last', updatedAt);
+      const versions = data ? [updatedAt] : [];
       res.json({ versions });
     } catch (e) {
       const errorDetail = errorConverter(e);
