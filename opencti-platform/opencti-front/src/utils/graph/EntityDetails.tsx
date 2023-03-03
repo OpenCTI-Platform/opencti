@@ -11,6 +11,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../components/i18n';
 import { resolveLink } from '../Entity';
 import ItemAuthor from '../../components/ItemAuthor';
@@ -55,6 +56,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
           ? 'rgba(255, 255, 255, .2)'
           : 'rgba(0, 0, 0, .2)',
     },
+  },
+  report: {
+    display: 'flex',
+    alignItems: 'flex-end',
   },
 }));
 
@@ -426,47 +431,61 @@ EntityDetailsComponentProps
           )}
         </Button>
       )}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
+      <div
+        className={classes.report}
       >
-        {t('Reports')}
-      </Typography>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          className={classes.label}
+        >
+          {t('Reports')}
+        </Typography>
+        {(reportsEdges && reportsEdges.length > 0)
+          ? (<Chip
+            color="primary"
+            variant="outlined"
+            label={reportsEdges?.length}
+            style={{ marginLeft: 10 }}
+          />) : (
+            ''
+          )
+        }
+      </div>
       {(reportsEdges && reportsEdges.length > 0)
         ? (<List style={{ marginBottom: 0 }}>
-            {reportsEdges.map((reportEdge) => {
-              const report = reportEdge?.node;
-              if (report) {
-                return (
-                  <ListItem
-                    key={report.id}
-                    dense={true}
-                    button={true}
-                    classes={{ root: classes.item }}
-                    divider={true}
-                    component={Link}
-                    to={`/dashboard/analysis/reports/${report.id}`}
-                  >
-                    <ListItemIcon>
-                      <ItemIcon type={report.entity_type}/>
-                    </ListItemIcon>
-                    <ListItemText
-                      primary={
-                        <Tooltip title={report.name}>
-                          <div className={classes.itemText}>
-                            {report.name}
-                          </div>
-                        </Tooltip>
-                      }
-                    />
-                  </ListItem>
-                );
-              }
-              return (<div></div>);
-            })
+          {reportsEdges.map((reportEdge) => {
+            const report = reportEdge?.node;
+            if (report) {
+              return (
+                <ListItem
+                  key={report.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/analysis/reports/${report.id}`}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type={report.entity_type}/>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Tooltip title={report.name}>
+                        <div className={classes.itemText}>
+                          {report.name}
+                        </div>
+                      </Tooltip>
+                    }
+                  />
+                </ListItem>
+              );
             }
-          </List>)
+            return (<div></div>);
+          })
+          }
+        </List>)
         : (
           '-'
         )
