@@ -277,7 +277,6 @@ EntityDetailsComponentProps
     ? externalReferencesEdges.length > 3
     : false;
 
-  console.log(reportsEdges);
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
