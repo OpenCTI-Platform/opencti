@@ -1,4 +1,4 @@
-import { FunctionComponent } from 'react';
+import { FunctionComponent, useContext } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
@@ -13,7 +13,6 @@ import StixCyberObservablesLines, {
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
 import { Filters } from '../../../components/list_lines';
-import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import {
   StixCyberObservablesLinesPaginationQuery$data,
 } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
@@ -40,6 +39,8 @@ const LOCAL_STORAGE_KEY = 'view-stix-cyber-observables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();
+  const { helper } = useContext(UserContext);
+  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
 
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
@@ -109,8 +110,7 @@ const StixCyberObservables: FunctionComponent = () => {
     selectAll,
   );
 
-  const buildColumns = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+  const buildColumns = () => {
     return {
       entity_type: {
         label: 'Type',
@@ -159,13 +159,11 @@ const StixCyberObservables: FunctionComponent = () => {
     }
     const finalFilters = { ...viewStorage.filters, entity_type: finalType };
     return (
-      <UserContext.Consumer>
-        {({ helper }) => (
-          <div>
-            <ListLines
+        <div>
+          <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={buildColumns(helper)}
+              dataColumns={buildColumns()}
               handleSort={helpers.handleSort}
               handleSearch={helpers.handleSearch}
               handleAddFilter={helpers.handleAddFilter}
@@ -191,31 +189,27 @@ const StixCyberObservables: FunctionComponent = () => {
                 'sightedBy',
                 'creator',
               ]}
-            >
-              <QueryRenderer
+          >
+            <QueryRenderer
                 query={stixCyberObservablesLinesQuery}
                 variables={paginationOptions}
-                render={({
-                  props,
-                }: {
-                  props: StixCyberObservablesLinesPaginationQuery$data;
-                }) => (
-                  <StixCyberObservablesLines
-                    data={props}
-                    paginationOptions={paginationOptions}
-                    dataColumns={buildColumns(helper)}
-                    initialLoading={props === null}
-                    onLabelClick={helpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={helpers.handleSetNumberOfElements}
-                  />
+                render={({ props }: { props: StixCyberObservablesLinesPaginationQuery$data }) => (
+                    <StixCyberObservablesLines
+                        data={props}
+                        paginationOptions={paginationOptions}
+                        dataColumns={buildColumns()}
+                        initialLoading={props === null}
+                        onLabelClick={helpers.handleAddFilter}
+                        selectedElements={selectedElements}
+                        deSelectedElements={deSelectedElements}
+                        onToggleEntity={onToggleEntity}
+                        selectAll={selectAll}
+                        setNumberOfElements={helpers.handleSetNumberOfElements}
+                    />
                 )}
-              />
-            </ListLines>
-            <ToolBar
+            />
+          </ListLines>
+          <ToolBar
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
@@ -225,10 +219,8 @@ const StixCyberObservables: FunctionComponent = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               variant="large"
               handleCopy={handleCopy}
-            />
-          </div>
-        )}
-      </UserContext.Consumer>
+          />
+        </div>
     );
   };
 

@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
+import { UserContext } from '../../../../utils/hooks/useAuth';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ListLines from '../../../../components/list_lines/ListLines';
@@ -38,7 +39,8 @@ class IndicatorEntities extends Component {
     this.setState({ searchTerm: value });
   }
 
-  renderLines(paginationOptions) {
+  renderLines(helper, paginationOptions) {
+    const isRuntimeSort = helper.isRuntimeFieldEnable();
     const { indicatorId } = this.props;
     const { sortBy, orderAsc } = this.state;
     const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
@@ -61,12 +63,12 @@ class IndicatorEntities extends Component {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: false,
+        isSortable: isRuntimeSort,
       },
       start_time: {
         label: 'First obs.',
@@ -131,7 +133,9 @@ class IndicatorEntities extends Component {
     };
     return (
       <div className={classes.container}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        <UserContext.Consumer>
+          {({ helper }) => (<>
+        {view === 'lines' ? this.renderLines(helper, paginationOptions) : ''}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCoreRelationshipCreationFromEntity
             paginationOptions={paginationOptions}
@@ -153,6 +157,8 @@ class IndicatorEntities extends Component {
             defaultStopTime={defaultStopTime}
           />
         </Security>
+              </>)}
+              </UserContext.Consumer>
       </div>
     );
   }

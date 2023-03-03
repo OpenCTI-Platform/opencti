@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import VulnerabilitiesLines, {
   vulnerabilitiesLinesQuery,
@@ -14,8 +14,11 @@ import {
   VulnerabilitiesLinesPaginationQuery$variables,
 } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import { UserContext } from '../../../utils/hooks/useAuth';
 
 const Vulnerabilities = () => {
+  const { helper } = useContext(UserContext);
+  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     'view-vulnerabilities',
     {
@@ -65,7 +68,7 @@ const Vulnerabilities = () => {
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
     };
 

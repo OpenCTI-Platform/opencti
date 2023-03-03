@@ -232,7 +232,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   };
 
   const buildColumns = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -242,7 +242,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       observable_value: {
         label: 'Value',
         width: '30%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -252,7 +252,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       createdBy: {
         label: 'Creator',
         width: '15%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       created_at: {
         label: 'Creation date',
@@ -261,7 +261,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
     };
   };

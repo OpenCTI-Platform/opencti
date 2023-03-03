@@ -261,7 +261,7 @@ class Indicators extends Component {
       creator: {
         label: 'Creators',
         width: '10%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       valid_until: {
         label: 'Valid until',

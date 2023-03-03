@@ -73,7 +73,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -93,12 +93,12 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       createdBy: {
         label: 'Author',
         width: '11%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '11%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -118,7 +118,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       objectMarking: {
         label: 'Marking',
         width: '8%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
     };
     const queryRef = useQueryLoading<IncidentsLinesCasesPaginationQuery>(

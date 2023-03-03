@@ -175,7 +175,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   buildColumns(helper) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    const isRuntimeSort = helper.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -190,12 +190,12 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',

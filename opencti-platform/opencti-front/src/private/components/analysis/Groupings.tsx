@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import GroupingsLines, {
   groupingsLinesQuery,
@@ -16,7 +16,6 @@ import {
   GroupingsLinesPaginationQuery$variables,
 } from './groupings/__generated__/GroupingsLinesPaginationQuery.graphql';
 import { GroupingLine_node$data } from './groupings/__generated__/GroupingLine_node.graphql';
-import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { GroupingLineDummy } from './groupings/GroupingLine';
 
 const LOCAL_STORAGE_KEY = 'view-groupings';
@@ -33,6 +32,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
+  const { helper } = useContext(UserContext);
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -87,7 +87,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     groupingsLinesQuery,
     paginationOptions,
   );
-  const renderLines = (helper: ModuleHelper | undefined) => {
+  const renderLines = () => {
     let exportContext = null;
     if (objectId) {
       exportContext = `of-entity-${objectId}`;
@@ -104,7 +104,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       ...finalFilters,
       entity_type: [{ id: 'Grouping', value: 'Grouping' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -119,12 +119,12 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -143,7 +143,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
         width: '8%',
       },
     };
@@ -221,16 +221,12 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
     );
   };
   return (
-    <UserContext.Consumer>
-      {({ helper }) => (
-        <div>
-          {renderLines(helper)}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <GroupingCreation paginationOptions={paginationOptions} />
-          </Security>
-        </div>
-      )}
-    </UserContext.Consumer>
+    <div>
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <GroupingCreation paginationOptions={paginationOptions} />
+        </Security>
+      </div>
   );
 };
 
