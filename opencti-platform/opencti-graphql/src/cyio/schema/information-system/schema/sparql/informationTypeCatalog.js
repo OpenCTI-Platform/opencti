@@ -271,11 +271,13 @@ export const selectCatalogCategoryMembersByIriQuery = (iri, categoryName, select
   if (!iri.startsWith('<')) iri = `<${iri}>`;
 
   // push predicates that are required to detect that its a catalog's information type
-  if (!select.includes('identifier')) select.push('identifier');
-  if (!select.includes('category')) select.push('category');
-  if (!select.includes('system')) select.push('system');
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
+  if (select.includes('display_name')) {
+    if (!select.includes('identifier')) select.push('identifier');
+    if (!select.includes('category')) select.push('category');
+    if (!select.includes('system')) select.push('system');  
+  }
 
   const { selectionClause, predicates } = buildSelectVariables(informationTypePredicateMap, select);
   let categoryPredicate = informationTypePredicateMap['category'].predicate;
