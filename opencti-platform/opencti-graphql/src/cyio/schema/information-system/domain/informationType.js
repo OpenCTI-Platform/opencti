@@ -25,7 +25,22 @@ import {
   deleteImpactDefinitionByIriQuery,
   attachToImpactDefinitionQuery,
   detachFromImpactDefinitionQuery,
+  // Categorization
+  categorizationPredicateMap,
+  singularizeCategorizationSchema,
+  selectCategorizationQuery,
+  selectCategorizationByIriQuery,
+  selectAllCategorizationsQuery,
+  insertCategorizationQuery,
+  deleteCategorizationQuery,
+  deleteCategorizationByIriQuery,
+  attachToCategorizationQuery,
+  detachFromCategorizationQuery,
 } from '../schema/sparql/informationType.js';
+import {
+  singularizeInformationTypeCatalogSchema,
+  selectInformationTypeCatalogQuery,
+} from '../../information-system/schema/sparql/informationTypeCatalog.js'
 
 
 // Information Type
@@ -229,7 +244,7 @@ export const createInformationType = async (input, dbName, dataSources, select) 
 
   // Collect all the referenced objects and remove them from input array
   let objectReferences = {
-    'categorizations': { ids: input.categorizations, objectType: 'information-type-entry' },
+    'categorizations': { ids: input.categorizations, objectType: 'categorization' },
   };
   if (input.categorizations) delete input.categorizations;
   
@@ -469,16 +484,18 @@ export const editInformationTypeById = async ( id, input, dbName, dataSources, s
     }
   }
 
-  // Push an edit to update the modified time of the object
-  const timestamp = new Date().toISOString();
-  if (!response[0].hasOwnProperty('created')) {
-    let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+  // Push an edit to update the modified time of the object, if supported
+  if (informationTypePredicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    if (!response[0].hasOwnProperty('created')) {
+      let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+      input.push(update);
+    }
+    let operation = "replace";
+    if (!response[0].hasOwnProperty('modified')) operation = "add";
+    let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
     input.push(update);
   }
-  let operation = "replace";
-  if (!response[0].hasOwnProperty('modified')) operation = "add";
-  let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
-  input.push(update);
 
   // Handle the update to fields that have references to other object instances
   for (let editItem  of input) {
@@ -488,7 +505,7 @@ export const editInformationTypeById = async ( id, input, dbName, dataSources, s
     for (value of editItem.value) {
       switch(editItem.key) {
 				case 'categorization':
-          objectType = 'information-type-entry';
+          objectType = 'categorization';
           fieldType = 'id';
           break;
         case 'responsible_parties':
@@ -638,7 +655,7 @@ export const attachToInformationType = async ( id, field, entityId, dbName, data
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'categorizations': 'information-type-entry',
+		'categorizations': 'categorization',
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
@@ -708,7 +725,7 @@ export const detachFromInformationType = async ( id, field, entityId, dbName, da
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'categorizations': 'information-type-entry',
+		'categorizations': 'categorization',
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
@@ -1068,6 +1085,19 @@ export const editImpactDefinitionById = async (id, input, dbName, dataSources, s
     }
   }
 
+  // Push an edit to update the modified time of the object, if supported
+  if (informationTypePredicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    if (!response[0].hasOwnProperty('created')) {
+      let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+      input.push(update);
+    }
+    let operation = "replace";
+    if (!response[0].hasOwnProperty('modified')) operation = "add";
+    let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
+    input.push(update);
+  }
+
   // Handle the update to fields that have references to other object instances
   for (let editItem  of input) {
     if (editItem.operation === 'skip') continue;
@@ -1159,7 +1189,6 @@ export const attachToImpactDefinition = async (id, field, entityId, dbName, data
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'categorizations': 'information-type-entry',
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
@@ -1229,7 +1258,6 @@ export const detachFromImpactDefinition = async (id, field, entityId, dbName, da
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'categorizations': 'information-type-entry',
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
@@ -1267,6 +1295,532 @@ export const detachFromImpactDefinition = async (id, field, entityId, dbName, da
       dbName,
       sparqlQuery,
       queryId: `Detach ${field} from Impact Definition`
+      });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  return true;
+};
+
+
+// Categorization
+export const findCategorizationById = async (id, dbName, dataSources, select) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+
+  let iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  return findCategorizationByIri(iri, dbName, dataSources, select);
+}
+
+export const findCategorizationByIri = async (iri, dbName, dataSources, select) => {
+  const sparqlQuery = selectCategorizationByIriQuery(iri, select);
+  let response;
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery,
+      queryId: "Select Categorization",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response === null || response.length === 0) return null;
+  const reducer = getReducer("CATEGORIZATION");
+  return reducer(response[0]);  
+};
+
+export const findAllCategorizationEntries = async (args, dbName, dataSources, select ) => {
+  const sparqlQuery = selectAllCategorizationsQuery(select, args);
+  let response;
+  try {
+    response = await dataSources.Stardog.queryAll({
+      dbName,
+      sparqlQuery,
+      queryId: "Select List of Categorizations",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  // no results found
+  if (response === undefined || response.length === 0) return null;
+
+  // if no matching results, then return null
+  if (Array.isArray(response) && response.length < 1) return null;
+
+  const edges = [];
+  const reducer = getReducer("CATEGORIZATION");
+  let skipCount = 0,filterCount = 0, resultCount = 0, limit, offset, limitSize, offsetSize;
+  limitSize = limit = (args.first === undefined ? response.length : args.first) ;
+  offsetSize = offset = (args.offset === undefined ? 0 : args.offset) ;
+
+  let resultList ;
+  if (args.orderedBy !== undefined ) {
+    resultList = response.sort(compareValues(args.orderedBy, args.orderMode ));
+  } else {
+    resultList = response;
+  }
+
+  // return null if offset value beyond number of results items
+  if (offset > resultList.length) return null;
+
+  // for each result in the result set
+  for (let resultItem of resultList) {
+    // skip down past the offset
+    if (offset) {
+      offset--
+      continue
+    }
+
+    // filter out non-matching entries if a filter is to be applied
+    if ('filters' in args && args.filters != null && args.filters.length > 0) {
+      if (!filterValues(resultItem, args.filters, args.filterMode) ) {
+        continue
+      }
+      filterCount++;
+    }
+
+    // if haven't reached limit to be returned
+    if (limit) {
+      let edge = {
+        cursor: resultItem.iri,
+        node: reducer(resultItem),
+      }
+      edges.push(edge)
+      limit--;
+      if (limit === 0) break;
+    }
+  }
+  // check if there is data to be returned
+  if (edges.length === 0 ) return null;
+  let hasNextPage = false, hasPreviousPage = false;
+  resultCount = resultList.length - skipCount;
+  if (edges.length < resultCount) {
+    if (edges.length === limitSize && filterCount <= limitSize ) {
+      hasNextPage = true;
+      if (offsetSize > 0) hasPreviousPage = true;
+    }
+    if (edges.length <= limitSize) {
+      if (filterCount !== edges.length) hasNextPage = true;
+      if (filterCount > 0 && offsetSize > 0) hasPreviousPage = true;
+    }
+  }
+  return {
+    pageInfo: {
+      startCursor: edges[0].cursor,
+      endCursor: edges[edges.length-1].cursor,
+      hasNextPage: (hasNextPage ),
+      hasPreviousPage: (hasPreviousPage),
+      globalCount: resultCount,
+    },
+    edges: edges,
+  }
+};
+
+export const createCategorization = async (input, dbName, dataSources, selectMap) => {
+  // WORKAROUND to remove input fields with null or empty values so creation will work
+  for (const [key, value] of Object.entries(input)) {
+    if (Array.isArray(input[key]) && input[key].length === 0) {
+      delete input[key];
+      continue;
+    }
+    if (value === null || value.length === 0) {
+      delete input[key];
+    }
+  }
+  // END WORKAROUND
+
+  let response;
+  let sparqlQuery;
+  let selectCheck = ['id','iri'];
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+
+  // check if catalog exists
+  if (!checkIfValidUUID(input.system)) throw new UserInputError(`Invalid identifier: ${input.system}`);
+  sparqlQuery = selectInformationTypeCatalogQuery(input.system, selectCheck);
+  response = await dataSources.Stardog.queryById({
+    dbName: contextDB,
+    sparqlQuery,
+    queryId: "Select Information Type Catalog",
+    singularizeSchema: singularizeInformationTypeCatalogSchema
+  });
+  if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+  let catalog_iri = `<${response[0].iri}>`;
+  delete input.system;
+
+  // check if catalog's information type exists
+  if (!checkIfValidUUID(input.information_type_id)) throw new UserInputError(`Invalid identifier: ${input.information_type_id}`);
+  sparqlQuery = selectInformationTypeQuery(input.information_type_id, selectCheck);
+  response = await dataSources.Stardog.queryById({
+    dbName: contextDB,
+    sparqlQuery,
+    queryId: "Select Information Type Catalog",
+    singularizeSchema: singularizeInformationTypeCatalogSchema
+  });
+  if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+  let informationType_iri = `<${response[0].iri}>`;
+  delete input.information_type_id;
+
+  // create the Categorization object
+    let {iri, id, query} = insertCategorizationQuery(input);
+  try {
+    response = await dataSources.Stardog.create({
+      dbName,
+      sparqlQuery: query,
+      queryId: "Create Categorization object"
+      });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  // attach the reference to the catalog
+  sparqlQuery = attachToCategorizationQuery(id, 'system_catalog', catalog_iri);
+  try {
+    response = await dataSources.Stardog.create({
+      dbName,
+      sparqlQuery,
+      queryId: `Attaching reference to information type catalog to Categorization.`
+      });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  // attach the reference to the catalog's information type
+  sparqlQuery = attachToCategorizationQuery(id, 'information_type', informationType_iri);
+  try {
+    response = await dataSources.Stardog.create({
+      dbName,
+      sparqlQuery,
+      queryId: `Attaching reference to information type in catalog to Categorization.`
+      });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  // retrieve the newly created Categorization to be returned
+  const selectQuery = selectCategorizationQuery(id, selectMap.getNode("createCategorization"));
+  let result;
+  try {
+    result = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery: selectQuery,
+      queryId: "Select Categorization object",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (result === undefined || result === null || result.length === 0) return null;
+  const reducer = getReducer("CATEGORIZATION");
+  return reducer(result[0]);
+};
+
+export const deleteCategorizationById = async ( id, dbName, dataSources, selectMap) => {
+  let select = ['iri','id','object_type',];
+  let idArray = [];
+  if (!Array.isArray(id)) {
+    idArray = [id];
+  } else {
+    idArray = id;
+  }
+
+  let removedIds = []
+  for (let itemId of idArray) {
+    let response;
+    if (!checkIfValidUUID(itemId)) throw new UserInputError(`Invalid identifier: ${itemId}`);  
+
+    // check if object with id exists
+    let sparqlQuery = selectCategorizationQuery(itemId, select);
+    try {
+      response = await dataSources.Stardog.queryById({
+        dbName,
+        sparqlQuery,
+        queryId: "Select Categorization",
+        singularizeSchema: singularizeCategorizationSchema
+      });
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+    if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${itemId}`);
+
+    sparqlQuery = deleteCategorizationQuery(itemId);
+    try {
+      response = await dataSources.Stardog.delete({
+        dbName,
+        sparqlQuery,
+        queryId: "Delete Categorization"
+      });
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+    
+    removedIds.push(itemId);
+  }
+
+  if (!Array.isArray(id)) return id;
+  return removedIds;
+};
+
+export const editCategorizationById = async (id, input, dbName, dataSources, selectMap, schema) => {
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
+
+  // make sure there is input data containing what is to be edited
+  if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
+
+  // WORKAROUND to remove immutable fields
+  input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
+
+  // check that the object to be edited exists with the predicates - only get the minimum of data
+  let editSelect = ['id','created','modified'];
+  for (let editItem of input) {
+    editSelect.push(editItem.key);
+  }
+
+  const sparqlQuery = selectCategorizationQuery(id, editSelect );
+  let response = await dataSources.Stardog.queryById({
+    dbName,
+    sparqlQuery,
+    queryId: "Select Categorization",
+    singularizeSchema: singularizeCategorizationSchema
+  });
+  if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  // determine operation, if missing
+  for (let editItem of input) {
+    if (editItem.operation !== undefined) continue;
+
+    // if value if empty then treat as a remove
+    if (editItem.value.length === 0) {
+      editItem.operation = 'remove';
+      continue;
+    }
+    if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new UserInputError(`Field "${editItem.key}" has invalid value "null"`);
+
+    if (!response[0].hasOwnProperty(editItem.key)) {
+      editItem.operation = 'add';
+    } else {
+      editItem.operation = 'replace';
+
+      // Set operation to 'skip' if no change in value
+      if (response[0][editItem.key] === editItem.value) editItem.operation ='skip';
+    }
+  }
+
+  // Push an edit to update the modified time of the object, if supported
+  if (categorizationPredicateMap.hasOwnProperty('modified')) {
+    // Push an edit to update the modified time of the object
+    const timestamp = new Date().toISOString();
+    if (!response[0].hasOwnProperty('created')) {
+      let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+      input.push(update);
+    }
+    let operation = "replace";
+    if (!response[0].hasOwnProperty('modified')) operation = "add";
+    let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
+    input.push(update);
+  }
+
+  // Handle the update to fields that have references to other object instances
+  for (let editItem  of input) {
+    if (editItem.operation === 'skip') continue;
+
+    let value, fieldType, objectType, objArray, iris=[];
+    for (value of editItem.value) {
+      switch(editItem.key) {
+				case 'system_catalog':
+          objectType = 'information-type-catalog';
+          fieldType = 'id';
+          break;
+        case 'information_type_id':
+          objectType = 'information-type';
+          fieldType = 'id';
+          break;
+        default:
+          fieldType = 'simple';
+          break;
+      }
+
+      if (fieldType === 'id') {
+        // continue to next item if nothing to do
+        if (editItem.operation === 'skip') continue;
+
+        // let iri = `${objectMap[objectType].iriTemplate}-${value}`;
+        let sparqlQuery = selectObjectIriByIdQuery(value, objectType);
+        let result = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: "Obtaining IRI for the object with id",
+          singularizeSchema: singularizeCategorizationSchema
+        });
+        if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
+        iris.push(`<${result[0].iri}>`);
+      }
+    }
+    if (iris.length > 0) editItem.value = iris;
+  }    
+
+  const query = updateQuery(
+    `http://cyio.darklight.ai/categorization--${id}`,
+    "http://csrc.nist.gov/ns/oscal/info-system#Categorization",
+    input,
+    categorizationPredicateMap
+  );
+  if (query !== null) {
+    let response;
+    try {
+      response = await dataSources.Stardog.edit({
+        dbName,
+        sparqlQuery: query,
+        queryId: "Update Categorization"
+      });  
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  }
+
+  const selectQuery = selectCategorizationQuery(id, selectMap.getNode("editCategorization"));
+  const result = await dataSources.Stardog.queryById({
+    dbName,
+    sparqlQuery: selectQuery,
+    queryId: "Select Categorization",
+    singularizeSchema: singularizeCategorizationSchema
+  });
+  const reducer = getReducer("CATEGORIZATION");
+  return reducer(result[0]);
+};
+
+export const attachToCategorization = async (id, field, entityId, dbName, dataSources, selectMap) => {
+  let sparqlQuery;
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
+
+  // check to see if the categorization exists
+  let iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  sparqlQuery = selectCategorizationByIriQuery(iri, select);
+  let response;
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery,
+      queryId: "Select Categorization",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  let attachableObjects = {
+    'system_catalog': 'information-type-catalog',
+    'information_type_id': 'information-type',
+  }
+  let objectType = attachableObjects[field];
+  try {
+    // check to see if the entity exists
+    sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
+    response = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery,
+      queryId: "Obtaining IRI for the object with id",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+  
+  // check to make sure entity to be attached is proper for the field specified
+  if (response[0].object_type !== attachableObjects[field]) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+
+  // retrieve the IRI of the entity
+  let entityIri = `<${response[0].iri}>`;
+
+  // Attach the object to the information system
+  sparqlQuery = attachToCategorizationQuery(id, field, entityIri);
+  try {
+    response = await dataSources.Stardog.create({
+      dbName,
+      sparqlQuery,
+      queryId: `Attach ${field} to Categorization`
+      });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  return true;
+};
+
+export const detachFromCategorization = async (id, field, entityId, dbName, dataSources, selectMap) => {
+  let sparqlQuery;
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
+
+  // check to see if the information system exists
+  let iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  sparqlQuery = selectCategorizationByIriQuery(iri, select);
+  let response;
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery,
+      queryId: "Select Categorization",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  let attachableObjects = {
+    'system_catalog': 'information-type-catalog',
+    'information_type_id': 'information-type',
+  }
+  let objectType = attachableObjects[field];
+  try {
+    // check to see if the entity exists
+    sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
+    response = await dataSources.Stardog.queryById({
+      dbName,
+      sparqlQuery,
+      queryId: "Obtaining IRI for the object with id",
+      singularizeSchema: singularizeCategorizationSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  // check to make sure entity to be attached is proper for the field specified
+  if (response[0].object_type !== attachableObjects[field]) throw new UserInputError(`Can not attach object of type '${response[0].object_type}' to field '${field}'`);
+
+  // retrieve the IRI of the entity
+  let entityIri = `<${response[0].iri}>`;
+
+  // Attach the object to the information system
+  sparqlQuery = detachFromCategorizationQuery(id, field, entityIri);
+  try {
+    response = await dataSources.Stardog.create({
+      dbName,
+      sparqlQuery,
+      queryId: `Detach ${field} from Categorization`
       });
   } catch (e) {
     console.log(e)

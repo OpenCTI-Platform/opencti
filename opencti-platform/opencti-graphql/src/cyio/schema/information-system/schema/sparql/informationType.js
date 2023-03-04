@@ -16,6 +16,8 @@ export function getReducer(type) {
       return informationTypeReducer;
 		case 'IMPACT-DEFINITION':
 			return impactDefinitionReducer;
+    case 'CATEGORIZATION':
+      return categorizationReducer;
     default:
       throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
@@ -54,7 +56,7 @@ const informationTypeReducer = (item) => {
 			...(item.availability_selected_impact && { availability_selected_impact: item.availability_selected_impact }),
 			...(item.availability_adjustment_justification && { availability_adjustment_justification: item.availability_adjustment_justification }),
       // hints for field-level resolver queries
-      ...(item.categorizations && { categorizations_iris: item.categorizations }),
+      ...(item.categorizations && { categorization_iris: item.categorizations }),
       ...(item.confidentiality_impact && { confidentiality_impact_iri: item.confidentiality_impact }),
       ...(item.integrity_impact && { integrity_impact_iri: item.integrity_impact }),
       ...(item.availability_impact && { availability_impact_iri: item.availability_impact }),
@@ -68,7 +70,7 @@ const impactDefinitionReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
       if (item.entity_type !== undefined) item.object_type = item.entity_type;
-      if (item.iri.includes('information-definition')) item.object_type = 'information-definition';
+      if (item.iri.includes('impact-definition')) item.object_type = 'impact-definition';
   }
 
   return {
@@ -83,6 +85,22 @@ const impactDefinitionReducer = (item) => {
       // hints for field-level resolver queries
       ...(item.links && { links_iris: item.links }),
 			...(item.relationships && { relationships: item.relationships }),
+		}
+};
+const categorizationReducer = (item) => {
+  // if no object type was returned, compute the type from the IRI
+  if (item.object_type === undefined) {
+      if (item.entity_type !== undefined) item.object_type = item.entity_type;
+      if (item.iri.includes('categorization')) item.object_type = 'categorization';
+  }
+
+  return {
+      iri: item.iri,
+      id: item.id,
+      ...(item.object_type && { entity_type: item.object_type }),
+      // hints for field-level resolver queries
+      ...(item.system_catalog && { system_catalog_iri: item.system_catalog }),
+			...(item.information_type && { information_type_iri: item.information_type }),
 		}
 };
   
@@ -259,7 +277,7 @@ export const detachFromInformationTypeQuery = (id, field, itemIris) => {
   return detachQuery(iri, statements, informationTypePredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#InformationType>');
 }
 
-// Query Builders - Impact Level
+// Query Builders - Impact Definition
 export const selectImpactDefinitionQuery = (id, select) => {
   return selectImpactDefinitionByIriQuery(`http://cyio.darklight.ai/impact-definition--${id}`, select);
 }
@@ -343,7 +361,7 @@ export const insertImpactDefinitionQuery = (propValues) => {
       ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
       ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
       ${iri} <http://darklight.ai/ns/common#id> "${id}" .
-      ${iri} <http://darklight.ai/ns/common#object_type> "information-definition" . 
+      ${iri} <http://darklight.ai/ns/common#object_type> "impact-definition" . 
       ${insertPredicates.join(" . \n")}
     }
   }
@@ -424,6 +442,173 @@ export const detachFromImpactDefinitionQuery = (id, field, itemIris) => {
   }
 
   return detachQuery(iri, statements, impactDefinitionPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>');
+}
+
+
+// Query Builders - Categorization
+export const selectCategorizationQuery = (id, select) => {
+  return selectCategorizationByIriQuery(`http://cyio.darklight.ai/categorization--${id}`, select);
+}
+
+export const selectCategorizationByIriQuery = (iri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (select === undefined || select === null) select = Object.keys(categorizationPredicateMap);
+
+  // this is needed to assist in the determination of the type of the data source
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
+
+  const { selectionClause, predicates } = buildSelectVariables(categorizationPredicateMap, select);
+  return `
+  SELECT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?iri)
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#Categorization> .
+    ${predicates}
+  }`
+}
+
+export const selectAllCategorizationsQuery = (select, args, parent) => {
+  let constraintClause = '';
+  if (select === undefined || select === null) select = Object.keys(categorizationPredicateMap);
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
+
+  if (args !== undefined ) {
+    if ( args.filters !== undefined ) {
+      for( const filter of args.filters) {
+        if (!select.includes(filter.key)) select.push( filter.key );
+      }
+    }
+    
+    // add value of orderedBy's key to cause special predicates to be included
+    if ( args.orderedBy !== undefined ) {
+      if (!select.includes(args.orderedBy)) select.push(args.orderedBy);
+    }
+  }
+
+  // build lists of selection variables and predicates
+  const { selectionClause, predicates } = buildSelectVariables(categorizationPredicateMap, select);
+
+  return `
+  SELECT DISTINCT ?iri ${selectionClause} 
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#Categorization> . 
+    ${predicates}
+    ${constraintClause}
+  }
+  `
+}
+
+export const insertCategorizationQuery = (propValues) => {
+  const id = generateId( );
+  const timestamp = new Date().toISOString();
+
+  // determine the appropriate ontology class type
+  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  const insertPredicates = [];
+  Object.entries(propValues).forEach((propPair) => {
+    if (categorizationPredicateMap.hasOwnProperty(propPair[0])) {
+      if (Array.isArray(propPair[1])) {
+        for (let value of propPair[1]) {
+          insertPredicates.push(categorizationPredicateMap[propPair[0]].binding(iri, value));
+        }  
+      } else {
+        insertPredicates.push(categorizationPredicateMap[propPair[0]].binding(iri, propPair[1]));
+      }
+    }
+  });
+
+  const query = `
+  INSERT DATA {
+    GRAPH ${iri} {
+      ${iri} a <http://csrc.nist.gov/ns/oscal/info-system#Categorization> .
+      ${iri} a <http://csrc.nist.gov/ns/oscal/common#ComplexDatatype> .
+      ${iri} a <http://darklight.ai/ns/common#ComplexDatatype> .
+      ${iri} <http://darklight.ai/ns/common#id> "${id}" .
+      ${iri} <http://darklight.ai/ns/common#object_type> "categorization" . 
+      ${insertPredicates.join(" . \n")}
+    }
+  }
+  `;
+  return {iri, id, query}
+}
+    
+export const deleteCategorizationQuery = (id) => {
+  const iri = `http://cyio.darklight.ai/categorization--${id}`;
+  return deleteCategorizationByIriQuery(iri);
+}
+
+export const deleteCategorizationByIriQuery = (iri) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  return `
+  DELETE {
+    GRAPH ${iri} {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ${iri} {
+      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#Categorization> .
+      ?iri ?p ?o
+    }
+  }
+  `
+}
+
+export const deleteMultipleCategorizationsQuery = (ids) =>{
+  const values = ids ? (ids.map((id) => `"${id}"`).join(' ')) : "";
+  return `
+  DELETE {
+    GRAPH ?g {
+      ?iri ?p ?o
+    }
+  } WHERE {
+    GRAPH ?g {
+      ?iri a <http://csrc.nist.gov/ns/oscal/info-system#Categorization> .
+      ?iri <http://darklight.ai/ns/common#id> ?id .
+      ?iri ?p ?o .
+      VALUES ?id {${values}}
+    }
+  }
+  `
+}
+
+export const attachToCategorizationQuery = (id, field, itemIris) => {
+  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  if (!categorizationPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = categorizationPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
+  }
+
+  return attachQuery(iri, statements, categorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>');
+}
+
+export const detachFromCategorizationQuery = (id, field, itemIris) => {
+  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
+  if (!categorizationPredicateMap.hasOwnProperty(field)) return null;
+  const predicate = categorizationPredicateMap[field].predicate;
+  let statements;
+  if (Array.isArray(itemIris)) {
+    statements = itemIris
+      .map((itemIri) => `${iri} ${predicate} ${itemIri}`)
+      .join(".\n        ")
+    }
+  else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
+  }
+
+  return detachQuery(iri, statements, categorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>');
 }
 
 
@@ -634,6 +819,34 @@ export const impactDefinitionPredicateMap = {
   },
 };
 
+export const categorizationPredicateMap = {
+  id: {
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  object_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+	system_catalog: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#system_catalog>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "system_catalog");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	information_type: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#information_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "information_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+};
+
 
 // Serialization schema
 export const singularizeInformationTypeSchema = { 
@@ -678,5 +891,17 @@ export const singularizeImpactDefinitionSchema = {
 		"adjustment_justification": true,
     "explanation": true,
     "recommendation": true,
+  }
+};
+
+export const singularizeCategorizationSchema = { 
+  singularizeVariables: {
+    "": false, // so there is an object as the root instead of an array
+    "id": true,
+    "iri": true,
+    "object_type": true,
+    "entity_type": true,
+    "system_catalog": true,
+    "information_type": true,
   }
 };

@@ -11,6 +11,9 @@ extend type Query {
     filterMode: FilterMode
     search: String
   ): InformationTypeCatalogConnection @hasPermission(resources: "Asset:view")
+  getCatalogCategories(id: ID!): [String] @hasPermission(resources: "Asset:view")
+  getCategoryMembers(id: ID!, categoryName: String!): [InformationType] @hasPermission(resources: "Asset:view")
+  getInformationTypeFromCatalog(id: ID!, infoTypeId: ID!): InformationType @hasPermission(resources: "Asset:view")
 }
 
 extend type Mutation {

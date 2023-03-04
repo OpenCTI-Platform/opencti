@@ -14,6 +14,9 @@ import {
   deleteInformationTypeCatalogQuery,
   attachToInformationTypeCatalogQuery,
   detachFromInformationTypeCatalogQuery,
+  selectCatalogCategoriesQuery,
+  selectCatalogCategoryMembersQuery,
+  selectCatalogMemberQuery,
 } from '../schema/sparql/informationTypeCatalog.js';
 import {
   createInformationType,
@@ -21,6 +24,7 @@ import {
   editInformationTypeById
 } from '../domain/informationType.js';
 import {
+  getReducer as getInformationTypeReducer,
   deleteInformationTypeByIriQuery,
   singularizeInformationTypeSchema,  
 } from '../schema/sparql/informationType.js';
@@ -307,16 +311,18 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
     }
   }
 
-  // Push an edit to update the modified time of the object
-  const timestamp = new Date().toISOString();
-  if (!response[0].hasOwnProperty('created')) {
-    let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+  // Push an edit to update the modified time of the object, if supported
+  if (informationTypeCatalogPredicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    if (!response[0].hasOwnProperty('created')) {
+      let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+      input.push(update);
+    }
+    let operation = "replace";
+    if (!response[0].hasOwnProperty('modified')) operation = "add";
+    let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
     input.push(update);
   }
-  let operation = "replace";
-  if (!response[0].hasOwnProperty('modified')) operation = "add";
-  let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
-  input.push(update);
 
   // Handle the update to fields that have references to other object instances
   for (let editItem  of input) {
@@ -512,7 +518,6 @@ export const editCatalogEntry = async (catalogId, entryId, input, dbName, dataSo
   return response;
 }
 
-
 export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSources) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let sparqlQuery;
@@ -567,3 +572,148 @@ export const removeInformationTypeFromCatalog = async (id, entryId, dbName, data
   });
 };
 
+export const fetchCatalogCategories = async (id, dbName, dataSources) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  // retrieve the list of categories
+  sparqlQuery = selectCatalogCategoriesQuery(id);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog Categories",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+  if (response[0].category) return response[0].category;
+  return [];
+};
+
+export const fetchCategoryMembers = async (id, categoryName, dbName, dataSources, select) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+
+  // retrieve the members of the category
+  sparqlQuery = selectCatalogCategoryMembersQuery(id, categoryName, select);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Members of a Category in Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  const reducer = getInformationTypeReducer("INFORMATION-TYPE");
+  let results = []
+  for (let result of response ) {
+    if (select.includes('display_name')) {
+      let display_name = (result.identifier ? result.identifier : '') + "  " +
+                          (result.title ? result.title : '');
+      display_name = display_name.trim();
+      if (display_name.length > 0) result.display_name = display_name;
+    }
+  
+    results.push(reducer(result))
+  }
+
+  return results;
+};
+
+export const fetchInformationTypeFromCatalog = async (id, infoTypeId, dbName, dataSources, select) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  if (!checkIfValidUUID(infoTypeId)) throw new UserInputError(`Invalid identifier: ${infoTypeId}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+
+    // retrieve the specific member from the category
+    sparqlQuery = selectCatalogMemberQuery(id, infoTypeId, select);
+    try {
+      response = await dataSources.Stardog.queryById({
+        dbName: contextDB,
+        sparqlQuery,
+        queryId: "Select specific member in Information Type Catalog",
+        singularizeSchema: singularizeInformationTypeSchema
+      });
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  
+  const reducer = getInformationTypeReducer("INFORMATION-TYPE");
+  let result = response[0];
+  if (select.includes('display_name')) {
+    let display_name = (result.identifier ? result.identifier : '') + "  " +
+                        (result.title ? result.title : '');
+    display_name = display_name.trim();
+    if (display_name.length > 0) result.display_name = display_name;
+  }
+  return reducer(result);
+};

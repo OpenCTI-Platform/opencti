@@ -69,7 +69,7 @@ type InformationType implements BasicObject & LifecycleObject & OscalObject {
   "Identities a summary of how this information type is used within the system."
   description: String!
   "Identifies a set of references to information type information, such as NIST SP 800-60."
-  categorizations: [InformationType]
+  categorizations: [Categorization]
   "Identifies the expected level of impact resulting from the unauthorized disclosure of the described information."
   confidentiality_impact: ImpactDefinition
   "Identifies the expected level of impact resulting from the unauthorized modification of the described information."
@@ -87,7 +87,7 @@ type InformationType implements BasicObject & LifecycleObject & OscalObject {
 
 """
 Defines the fields that can be used when creating an information type.
-The categorization field is used to reference InformationType
+The categorization field is used to reference InformationTypes contained within a catalog
 """
 input InformationTypeInput {
   "Identifies a human readable name for the information type. This title should be meaningful within the context of the system."
@@ -95,7 +95,7 @@ input InformationTypeInput {
   "Identities a summary of how this information type is used within the system."
   description: String!
   "Identifies a set of references to information type information, such as NIST SP 800-60."
-  categorizations: [ID]
+  categorizations: [CategorizationInput]
   "Identifies the expected level of impact resulting from the unauthorized disclosure of the described information."
   confidentiality_impact: ImpactDefinitionInput!
   "Identifies the expected level of impact resulting from the unauthorized modification of the described information."
@@ -210,13 +210,13 @@ type Categorization implements ComplexDatatype {
   "Identifies the information type identification system used. This represents the catalog from which the information types are from."
   system: URL
    "Identifies a unique identifier, qualified by the given identification system used, for an information type."
-  information_type: [InformationType]
+  information_type: InformationType
 }
 
 input CategorizationInput {
   # Categorization
-  "Identifies the information type identification system used."
-  system: ID!
+  "Identifies the information type identification system (catalog) used."
+  system_catalog: ID!
    "Identifies a unique identifier, qualified by the given identification system used, for an information type."
   information_type_id: ID!
 }

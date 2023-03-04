@@ -6,6 +6,7 @@ import {
   deleteInformationTypeById,
   editInformationTypeById,
   findImpactDefinitionByIri,
+  findCategorizationByIri,
 } from '../domain/informationType.js';
 
 const cyioInformationTypeResolvers = {
@@ -25,8 +26,14 @@ const cyioInformationTypeResolvers = {
   },
   InformationType: {
     categorizations: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.categorizations_iris === undefined) return [];
-
+      if (parent.categorization_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.categorization_iris) {
+        let result = findCategorizationByIri(iri, dbName, dataSources, selectMap.getNode('categorizations'));
+        if (result === undefined || result === null) return null;
+        results.push(result)
+      }
+      return results;
 		},
 		confidentiality_impact: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.confidentiality_impact_iri === undefined) return null;
@@ -63,7 +70,17 @@ const cyioInformationTypeResolvers = {
       let impact = findImpactDefinitionByIri(parent.availability_impact_iri, dbName, dataSources, selectMap.getNode('availability_impact'));
       if (impact === undefined || impact === null) return null;
       return impact;
-		}
+		},
+    links: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.link_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.link_iris) {
+        let result = await findLinkByIri(iri, dbName, dataSources, selectMap.getNode('links'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
+    },
 	},
   // Map enum GraphQL values to data model required values
   FIPS199: {

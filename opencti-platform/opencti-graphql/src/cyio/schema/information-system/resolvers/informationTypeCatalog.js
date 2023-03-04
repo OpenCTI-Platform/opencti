@@ -5,11 +5,14 @@ import {
   createInformationTypeCatalog,
   deleteInformationTypeCatalogById,
   editInformationTypeCatalogById,
-  addInformationTypeToCatalog,
-  removeInformationTypeFromCatalog,
   createCatalogEntry,
   deleteCatalogEntry,
   editCatalogEntry,
+  addInformationTypeToCatalog,
+  removeInformationTypeFromCatalog,
+  fetchCatalogCategories,
+  fetchCategoryMembers,
+  fetchInformationTypeFromCatalog,
 } from '../domain/informationTypeCatalog.js';
 import { findInformationTypeByIri } from '../domain/informationType.js';
 
@@ -18,6 +21,10 @@ const cyioInformationTypeCatalogResolvers = {
     // Information Type Catalog
     informationTypeCatalogs: async (_, args, { dbName, dataSources, selectMap }) => findAllInformationTypeCatalogs(args, dbName, dataSources, selectMap.getNode('node')),
     informationTypeCatalog: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationTypeCatalogById(id, dbName, dataSources, selectMap.getNode('informationTypeCatalog')),
+    // Catalog Content queries
+    getCatalogCategories: async (_, { id }, { dbName, dataSources }) => fetchCatalogCategories(id, dbName, dataSources),
+    getCategoryMembers: async (_, { id, categoryName }, { dbName, dataSources, selectMap }) => fetchCategoryMembers(id, categoryName, dbName, dataSources, selectMap.getNode('getCategoryMembers')),
+    getInformationTypeFromCatalog: async (_, { id, infoTypeId },{ dbName, dataSources, selectMap }) => fetchInformationTypeFromCatalog(id, infoTypeId, dbName, dataSources, selectMap.getNode('getInformationTypeFromCatalog')),
   },
   Mutation: {
     // Information Type Catalog

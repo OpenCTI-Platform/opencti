@@ -92,6 +92,8 @@ import {
 } from '../information-system/schema/sparql/descriptionBlock.js';
 import {
   informationTypePredicateMap, // attachToInformationTypeQuery, detachFromInformationTypeQuery
+  impactDefinitionPredicateMap,
+  categorizationPredicateMap,
 } from '../information-system/schema/sparql/informationType.js';
 import {
   oscalUserPredicateMap, // attachToOscalUserQuery, detachFromOscalUserQuery,
@@ -290,6 +292,12 @@ export const objectMap = {
     classIri:  "http://csrc.nist.gov/ns/oscal/common#AuthorizedPrivilege",
     iriTemplate: "http://cyio.darklight.ai/authorized-privilege",
   },
+  "categorization": {
+    predicateMap: categorizationPredicateMap,
+    graphQLType: "Categorization",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#Categorization",
+    iriTemplate: "http://cyio.darklight.ai/categorization",
+  },
   "characterization": {
     predicateMap: characterizationPredicateMap,
     // attachQuery: attachToCharacterizationQuery,
@@ -414,6 +422,12 @@ export const objectMap = {
     parent: "computing-device",
     classIri: "http://darklight.ai/ns/nist-7693-dlex#Hypervisor",
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Hypervisor",
+  },
+  "impact-definition": {
+    predicateMap: impactDefinitionPredicateMap,
+    graphQLType: "ImpactDefinition",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition",
+    iriTemplate: "http://cyio.darklight.ai/impact-definition",
   },
   "inventory-item": {
     predicateMap: inventoryItemPredicateMap,
