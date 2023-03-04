@@ -116,7 +116,7 @@ export const STIX_CORE_RELATIONSHIPS = [
 ];
 
 schemaAttributesDefinition.register(ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_CORE_RELATIONSHIPS);
-export const isStixCoreRelationship = (type: string): boolean => schemaAttributesDefinition.get(ABSTRACT_STIX_CORE_RELATIONSHIP).includes(type)
+export const isStixCoreRelationship = (type: string): boolean => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CORE_RELATIONSHIP)
  || type === ABSTRACT_STIX_CORE_RELATIONSHIP;
 
 export const stixCoreRelationshipOptions = {

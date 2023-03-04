@@ -1,11 +1,11 @@
 import { readFileSync } from 'node:fs';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, RedisOptions } from 'ioredis';
 import Redlock from 'redlock';
 import * as jsonpatch from 'fast-json-patch';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
-import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
 import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, logApp, } from '../config/conf';
 import {

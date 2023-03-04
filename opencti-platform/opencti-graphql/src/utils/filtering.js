@@ -243,11 +243,19 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
           }
         }
       }
-      // Revoked or Detected filtering
-      if (key === REVOKED_FILTER || key === DETECTION_FILTER) {
+      // Revoked filtering
+      if (key === REVOKED_FILTER) {
         const { id } = values.at(0) ?? {};
         const isRevoked = (id === 'true') === stix.revoked;
         if (!isRevoked) {
+          return false;
+        }
+      }
+      //  Detection filtering
+      if (key === DETECTION_FILTER) {
+        const { id } = values.at(0) ?? {};
+        const isDetection = (id === 'true') === stix.extensions?.[STIX_EXT_OCTI]?.detection;
+        if (!isDetection) {
           return false;
         }
       }

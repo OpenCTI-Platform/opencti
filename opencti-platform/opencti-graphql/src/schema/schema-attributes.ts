@@ -14,19 +14,38 @@ export const depsKeysRegister = {
 };
 
 export const schemaAttributesDefinition = {
-  types: {} as Record<string, string[]>,
+  types: {} as Record<string, Map<string, void>>,
   attributes: {} as Record<string, AttributeDefinition[]>,
+  attributes_by_types: {
+    string: new Map<string, void>(),
+    date: new Map<string, void>(),
+    numeric: new Map<string, void>(),
+    boolean: new Map<string, void>(),
+    dictionary: new Map<string, void>(),
+    json: new Map<string, void>(),
+    runtime: new Map<string, void>(),
+  } as Record<AttrType, Map<string, void>>,
+  attributes_multiple: new Map<string, void>(),
+  upsert_by_entity: new Map<string, string[]>(),
 
   // types
+  isTypeIncludedIn(type: string, parent: string) {
+    return this.types[parent].has(type);
+  },
   register(type: string, children: string[]) {
-    this.types[type] = children;
+    this.types[type] = new Map(children.map((c) => [c, undefined]));
   },
   add(type: string, children: string[] | string) {
     const values = Array.isArray(children) ? children : [children];
-    this.types[type] = [...this.get(type), ...values];
+    const currentMap = this.types[type];
+    if (currentMap) {
+      values.forEach((v) => currentMap.set(v));
+    } else {
+      this.types[type] = new Map(values.map((c) => [c, undefined]));
+    }
   },
   get(type: string): string[] {
-    return this.types[type] ?? [];
+    return Array.from(this.types[type].keys());
   },
 
   // attributes
@@ -41,8 +60,22 @@ export const schemaAttributesDefinition = {
           attribute,
         });
       }
+      // Generate map by types
+      this.attributes_by_types[attribute.type].set(attribute.name);
+      // Generate map by multiple
+      if (attribute.multiple) {
+        this.attributes_multiple.set(attribute.name);
+      }
+      // Generate map of upsert by entity type
+      if (attribute.upsert) {
+        const currentList = this.upsert_by_entity.get(entityType);
+        if (currentList) {
+          currentList.push(attribute.name);
+        } else {
+          this.upsert_by_entity.set(entityType, [attribute.name]);
+        }
+      }
     });
-
     this.attributes[entityType] = attributes;
   },
 
@@ -59,23 +92,15 @@ export const schemaAttributesDefinition = {
   },
 
   getUpsertAttributeNames(entityType: string): string[] {
-    return ((this.attributes)[entityType] ?? [])
-      .filter((attr) => attr.upsert)
-      .map((attr) => attr.name);
+    return this.upsert_by_entity.get(entityType) ?? [];
   },
 
   isMultipleAttribute(attributeName: string): boolean {
-    return this.getAllAttributes()
-      .filter((attr) => attr.multiple)
-      .map((attr) => attr.name)
-      .includes(attributeName);
+    return this.attributes_multiple.has(attributeName);
   },
 
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
-    return this.getAllAttributes()
-      .filter((attr) => attributeType.includes(attr.type))
-      .map((attr) => attr.name)
-      .includes(attributeName);
+    return attributeType.reduce((r, fn) => this.attributes_by_types[fn].has(attributeName) || r, false);
   },
 
 };
@@ -101,7 +126,6 @@ export const isNumericAttribute = (k: string): boolean => (
 export const isRuntimeAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'runtime')
 );
-
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );

@@ -11,11 +11,16 @@ export const schemaRelationsRefDefinition = {
   checker: {} as Record<string, Checker>,
 
   // Map
+  databaseNameMultiple: new Map<string, void>(),
+  inputNameMultiple: new Map<string, void>(),
+
   databaseNameToInputName: {} as { [k: string]: string },
   inputNameToDatabaseName: {} as { [k: string]: string },
 
   stixNameToInputName: {} as { [k: string]: string },
   inputNameToStixName: {} as { [k: string]: string },
+
+  relationsRefWithParentsCache: new Map<string, RelationRefDefinition[]>(),
 
   registerRelationsRef(entityType: string, relationsRefDefinition: RelationRefDefinition[]) {
     this.relationsRef[entityType] = [...this.relationsRef[entityType] ?? [], ...relationsRefDefinition];
@@ -29,6 +34,11 @@ export const schemaRelationsRefDefinition = {
           this.registerChecker(relationRefDefinition.databaseName, relationRefDefinition.checker);
         }
 
+        if (relationRefDefinition.multiple) {
+          this.databaseNameMultiple.set(relationRefDefinition.databaseName);
+          this.inputNameMultiple.set(relationRefDefinition.inputName);
+        }
+
         this.databaseNameToInputName[relationRefDefinition.databaseName] = relationRefDefinition.inputName;
         this.inputNameToDatabaseName[relationRefDefinition.inputName] = relationRefDefinition.databaseName;
 
@@ -39,10 +49,15 @@ export const schemaRelationsRefDefinition = {
   },
 
   getRelationsRef(entityType: string): RelationRefDefinition[] {
+    if (this.relationsRefWithParentsCache.has(entityType)) {
+      return this.relationsRefWithParentsCache.get(entityType) ?? [];
+    }
     const directRefs = R.fromPairs((this.relationsRef[entityType] ?? []).map((e) => [e.stixName, e]));
     const parentRefs = R.fromPairs(getParentTypes(entityType).map((type) => this.relationsRef[type] ?? [])
       .flat().map((e) => [e.stixName, e]));
-    return Object.values({ ...parentRefs, ...directRefs });
+    const computedWithParentsRefs = Object.values({ ...parentRefs, ...directRefs });
+    this.relationsRefWithParentsCache.set(entityType, computedWithParentsRefs);
+    return computedWithParentsRefs;
   },
 
   registerChecker(databaseName: string, checker: Checker) {
@@ -64,14 +79,10 @@ export const schemaRelationsRefDefinition = {
   },
 
   isMultipleDatabaseName(databaseName: string): boolean {
-    return Object.values(this.relationsRef ?? {}).flat()
-      .find((rel) => rel.databaseName === databaseName)
-      ?.multiple ?? false;
+    return this.databaseNameMultiple.has(databaseName);
   },
   isMultipleName(name: string): boolean {
-    return Object.values(this.relationsRef ?? {}).flat()
-      .find((rel) => rel.inputName === name)
-      ?.multiple ?? false;
+    return this.inputNameMultiple.has(name);
   },
 
   convertDatabaseNameToInputName(databaseName: string): string {

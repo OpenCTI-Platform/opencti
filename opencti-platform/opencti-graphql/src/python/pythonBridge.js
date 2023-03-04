@@ -20,7 +20,7 @@ const CREATE_PATTERN_SCRIPT = { fn: 'stix2_create_pattern', py: pyCreatePattern 
 
 // region child
 export const execChildPython = async (context, user, scriptPath, scriptName, args, stopCondition) => {
-  const execPythonTestingProcessFn = () => {
+  const execPythonTestingProcessFn = async () => {
     return new Promise((resolve, reject) => {
       const messages = [];
       const options = {

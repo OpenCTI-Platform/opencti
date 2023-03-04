@@ -2,6 +2,7 @@ import moment from 'moment';
 import * as R from 'ramda';
 import DataLoader from 'dataloader';
 import { Promise } from 'bluebird';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import {
   ALREADY_DELETED_ERROR,
   AlreadyDeletedError,
@@ -232,6 +233,7 @@ import { getEntitySettingFromCache } from '../modules/entitySetting/entitySettin
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
+import { telemetry } from '../config/tracing';
 
 // region global variables
 export const MAX_BATCH_SIZE = 300;
@@ -567,131 +569,137 @@ const idLabel = (label) => {
 };
 
 const inputResolveRefs = async (context, user, input, type) => {
-  const fetchingIds = [];
-  const expectedIds = [];
-  const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
-  let embeddedFromResolution;
-  let forceAliases = false;
-  const dependencyKeys = depsKeys();
-  for (let index = 0; index < dependencyKeys.length; index += 1) {
-    const { src, dst, types } = dependencyKeys[index];
-    const depTypes = types ?? [];
-    const destKey = dst || src;
-    const id = input[src];
-    const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
-    if (isValidType && !R.isNil(id) && !R.isEmpty(id)) {
-      const isListing = Array.isArray(id);
-      const hasOpenVocab = isEntityFieldAnOpenVocabulary(destKey, type);
-      // Handle specific case of object label that can be directly the value instead of the key.
-      if (src === INPUT_LABELS) {
-        const elements = R.uniq(id.map((label) => idLabel(label)))
-          .map((lid) => ({ id: lid, destKey, multiple: true }));
-        fetchingIds.push(...elements);
-        expectedIds.push(...elements.map((e) => e.id));
-      } else if (hasOpenVocab) {
-        const ids = isListing ? id : [id];
-        const category = getVocabularyCategoryForField(destKey, type);
-        const elements = ids.map((i) => idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }))
-          .map((lid) => ({ id: lid, destKey, multiple: isListing }));
-        fetchingIds.push(...elements);
-        forceAliases = true;
-      } else if (isListing) {
-        const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
-        fetchingIds.push(...elements);
-        expectedIds.push(...elements.map((e) => e.id));
-      } else if (!expectedIds.includes(id)) {
-        // If resolution is due to embedded ref, the from must be fully resolved
-        // This will be used to generated a correct stream message
-        if (dst === INPUT_FROM && isStixEmbeddedRelationship(type)) {
-          embeddedFromResolution = id;
-        } else {
-          fetchingIds.push({ id, destKey, multiple: false });
+  const inputResolveRefsFn = async () => {
+    const fetchingIds = [];
+    const expectedIds = [];
+    const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
+    let embeddedFromResolution;
+    let forceAliases = false;
+    const dependencyKeys = depsKeys();
+    for (let index = 0; index < dependencyKeys.length; index += 1) {
+      const { src, dst, types } = dependencyKeys[index];
+      const depTypes = types ?? [];
+      const destKey = dst || src;
+      const id = input[src];
+      const isValidType = depTypes.length > 0 ? depTypes.includes(type) : true;
+      if (isValidType && !R.isNil(id) && !R.isEmpty(id)) {
+        const isListing = Array.isArray(id);
+        const hasOpenVocab = isEntityFieldAnOpenVocabulary(destKey, type);
+        // Handle specific case of object label that can be directly the value instead of the key.
+        if (src === INPUT_LABELS) {
+          const elements = R.uniq(id.map((label) => idLabel(label)))
+            .map((lid) => ({ id: lid, destKey, multiple: true }));
+          fetchingIds.push(...elements);
+          expectedIds.push(...elements.map((e) => e.id));
+        } else if (hasOpenVocab) {
+          const ids = isListing ? id : [id];
+          const category = getVocabularyCategoryForField(destKey, type);
+          const elements = ids.map((i) => idNormalizeDataEntity(i, { category, entity_type: ENTITY_TYPE_VOCABULARY }))
+            .map((lid) => ({ id: lid, destKey, multiple: isListing }));
+          fetchingIds.push(...elements);
+          forceAliases = true;
+        } else if (isListing) {
+          const elements = R.uniq(id).map((i) => ({ id: i, destKey, multiple: true }));
+          fetchingIds.push(...elements);
+          expectedIds.push(...elements.map((e) => e.id));
+        } else if (!expectedIds.includes(id)) {
+          // If resolution is due to embedded ref, the from must be fully resolved
+          // This will be used to generated a correct stream message
+          if (dst === INPUT_FROM && isStixEmbeddedRelationship(type)) {
+            embeddedFromResolution = id;
+          } else {
+            fetchingIds.push({ id, destKey, multiple: false });
+          }
+          expectedIds.push(id);
         }
-        expectedIds.push(id);
+        cleanedInput[src] = null;
       }
-      cleanedInput[src] = null;
     }
-  }
-  const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), { forceAliases });
-  let embeddedFromPromise = Promise.resolve();
-  if (embeddedFromResolution) {
-    fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
-    embeddedFromPromise = storeLoadByIdWithRefs(context, user, embeddedFromResolution);
-  }
-  const [resolvedElements, embeddedFrom] = await Promise.all([simpleResolutionsPromise, embeddedFromPromise]);
-  if (embeddedFrom) {
-    resolvedElements.push(embeddedFrom);
-  }
-  const resolvedElementWithConfGroup = resolvedElements.map((d) => {
-    const elementIds = getInstanceIds(d);
-    const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
-    return matchingConfigs.map((c) => ({ ...d, i_group: c }));
-  });
-  const allResolvedElements = R.flatten(resolvedElementWithConfGroup);
-  const uniqElement = (a, b) => a.internal_id === b.internal_id && a.i_group.destKey === b.i_group.destKey;
-  const filteredElements = R.uniqWith(uniqElement, allResolvedElements);
-  const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, filteredElements);
-  const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
-    const isMultiple = R.head(val).i_group.multiple;
-    if (val.length === 1) {
-      return { [k]: isMultiple ? val : R.head(val) };
+    const simpleResolutionsPromise = internalFindByIds(context, user, fetchingIds.map((i) => i.id), { forceAliases });
+    let embeddedFromPromise = Promise.resolve();
+    if (embeddedFromResolution) {
+      fetchingIds.push({ id: embeddedFromResolution, destKey: 'from', multiple: false });
+      embeddedFromPromise = storeLoadByIdWithRefs(context, user, embeddedFromResolution);
     }
-    if (!isMultiple) {
-      throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val });
+    const [resolvedElements, embeddedFrom] = await Promise.all([simpleResolutionsPromise, embeddedFromPromise]);
+    if (embeddedFrom) {
+      resolvedElements.push(embeddedFrom);
     }
-    return { [k]: val };
-  });
-  const resolvedIds = R.flatten(
-    R.map((r) => {
-      const [, val] = R.head(Object.entries(r));
-      if (isNotEmptyField(val)) {
-        const values = Array.isArray(val) ? val : [val];
-        return R.map((v) => getInstanceIds(v), values);
-      }
-      return [];
-    }, resolved)
-  );
-  const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
-  // We only accept missing objects_refs (Report, Opinion, Note, Observed-data)
-  const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
-  if (expectedUnresolvedIds.length > 0) {
-    throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
-  }
-  // In case of objects missing reference, we reject twice before accepting
-  const retryNumber = user.origin?.call_retry_number;
-  const objectRefsUnresolvedIds = unresolvedIds.filter((u) => (input[INPUT_OBJECTS] ?? []).includes(u));
-  if (isNotEmptyField(retryNumber) && objectRefsUnresolvedIds.length > 0 && retryNumber <= 2) {
-    throw MissingReferenceError({ input, unresolvedIds });
-  }
-  const complete = { ...cleanedInput, entity_type: type };
-  const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
-  // Check Open vocab in resolved to convert them back to the raw value
-  const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
-  entityVocabs.forEach(({ fields }) => {
-    const existingFields = fields.filter(({ key }) => Boolean(input[key]));
-    existingFields.forEach(({ key, required, multiple }) => {
-      const resolvedData = inputResolved[key];
-      if (isEmptyField(resolvedData) && required) {
-        throw FunctionalError('Vocabulary value is mandatory', { key });
-      }
-      if (isNotEmptyField(resolvedData)) {
-        const isArrayValues = Array.isArray(resolvedData);
-        if (isArrayValues && !multiple) {
-          throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
-        }
-        inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
-      }
+    const resolvedElementWithConfGroup = resolvedElements.map((d) => {
+      const elementIds = getInstanceIds(d);
+      const matchingConfigs = R.filter((a) => elementIds.includes(a.id), fetchingIds);
+      return matchingConfigs.map((c) => ({ ...d, i_group: c }));
     });
-  });
-  // Check the marking allow for the user and asked inside the input
-  if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
-    const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
-    const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
-    if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-      throw ForbiddenAccess({ input });
+    const allResolvedElements = R.flatten(resolvedElementWithConfGroup);
+    const uniqElement = (a, b) => a.internal_id === b.internal_id && a.i_group.destKey === b.i_group.destKey;
+    const filteredElements = R.uniqWith(uniqElement, allResolvedElements);
+    const groupByTypeElements = R.groupBy((e) => e.i_group.destKey, filteredElements);
+    const resolved = Object.entries(groupByTypeElements).map(([k, val]) => {
+      const isMultiple = R.head(val).i_group.multiple;
+      if (val.length === 1) {
+        return { [k]: isMultiple ? val : R.head(val) };
+      }
+      if (!isMultiple) {
+        throw UnsupportedError('Input resolve refs expect single value', { key: k, values: val });
+      }
+      return { [k]: val };
+    });
+    const resolvedIds = R.flatten(
+      R.map((r) => {
+        const [, val] = R.head(Object.entries(r));
+        if (isNotEmptyField(val)) {
+          const values = Array.isArray(val) ? val : [val];
+          return R.map((v) => getInstanceIds(v), values);
+        }
+        return [];
+      }, resolved)
+    );
+    const unresolvedIds = R.filter((n) => !R.includes(n, resolvedIds), expectedIds);
+    // We only accept missing objects_refs (Report, Opinion, Note, Observed-data)
+    const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
+    if (expectedUnresolvedIds.length > 0) {
+      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
     }
-  }
-  return inputResolved;
+    // In case of objects missing reference, we reject twice before accepting
+    const retryNumber = user.origin?.call_retry_number;
+    const objectRefsUnresolvedIds = unresolvedIds.filter((u) => (input[INPUT_OBJECTS] ?? []).includes(u));
+    if (isNotEmptyField(retryNumber) && objectRefsUnresolvedIds.length > 0 && retryNumber <= 2) {
+      throw MissingReferenceError({ input, unresolvedIds });
+    }
+    const complete = { ...cleanedInput, entity_type: type };
+    const inputResolved = R.mergeRight(complete, R.mergeAll(resolved));
+    // Check Open vocab in resolved to convert them back to the raw value
+    const entityVocabs = Object.values(vocabularyDefinitions).filter(({ entity_types }) => entity_types.includes(type));
+    entityVocabs.forEach(({ fields }) => {
+      const existingFields = fields.filter(({ key }) => Boolean(input[key]));
+      existingFields.forEach(({ key, required, multiple }) => {
+        const resolvedData = inputResolved[key];
+        if (isEmptyField(resolvedData) && required) {
+          throw FunctionalError('Vocabulary value is mandatory', { key });
+        }
+        if (isNotEmptyField(resolvedData)) {
+          const isArrayValues = Array.isArray(resolvedData);
+          if (isArrayValues && !multiple) {
+            throw FunctionalError('Find multiple vocabularies for single one', { key, data: resolvedData });
+          }
+          inputResolved[key] = isArrayValues ? resolvedData.map(({ name }) => name) : resolvedData.name;
+        }
+      });
+    });
+    // Check the marking allow for the user and asked inside the input
+    if (!isBypassUser(user) && inputResolved[INPUT_MARKINGS]) {
+      const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
+      const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
+      if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
+        throw ForbiddenAccess({ input });
+      }
+    }
+    return inputResolved;
+  };
+  return telemetry(context, user, `INPUTS RESOLVE ${type}`, {
+    [SemanticAttributes.DB_NAME]: 'middleware',
+    [SemanticAttributes.DB_OPERATION]: 'resolver',
+  }, inputResolveRefsFn);
 };
 const isRelationTargetGrants = (elementGrants, relation, type) => {
   const isTargetType = relation.base_type === BASE_TYPE_RELATION && relation.entity_type === RELATION_OBJECT;
@@ -2155,7 +2163,6 @@ const buildRelationInput = (input) => {
 const buildInnerRelation = (from, to, type) => {
   const targets = Array.isArray(to) ? to : [to];
   if (!to || R.isEmpty(targets)) return [];
-  checkRelationConsistency(type, from, to);
   const relations = [];
   for (let i = 0; i < targets.length; i += 1) {
     const target = targets[i];
@@ -2655,7 +2662,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
   // Check consistency
-  checkRelationConsistency(relationshipType, from, to);
+  await checkRelationConsistency(context, user, relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
   if (from.internal_id === to.internal_id) {
     /* istanbul ignore next */
@@ -2734,7 +2741,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
         // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
         // Checking the direction of the relation to allow relationships
-        if (toRefs.includes(from.internal_id) && isRelationConsistent(relationshipType, to, from)) {
+        const isReverseRelationConsistent = await isRelationConsistent(context, user, relationshipType, to, from);
+        if (toRefs.includes(from.internal_id) && isReverseRelationConsistent) {
           throw FunctionalError(`You cant create a cyclic relation between ${from.standard_id} and ${to.standard_id}`);
         }
       }

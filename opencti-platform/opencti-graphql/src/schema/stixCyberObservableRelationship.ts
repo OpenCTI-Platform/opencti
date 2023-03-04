@@ -321,7 +321,7 @@ export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
 // -- TYPES --
 
 schemaAttributesDefinition.register(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, STIX_CYBER_OBSERVABLE_RELATIONSHIPS.map((arr) => arr.databaseName));
-export const isStixCyberObservableRelationship = (type: string) => schemaAttributesDefinition.get(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP).includes(type)
+export const isStixCyberObservableRelationship = (type: string) => schemaAttributesDefinition.isTypeIncludedIn(type, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP)
   || type === ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP;
 
 // -- ATTRIBUTES -

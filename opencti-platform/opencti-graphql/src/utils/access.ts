@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
@@ -11,6 +12,7 @@ import type { BasicStoreCommon, BasicStoreSettings } from '../types/store';
 import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
+import { telemetry } from '../config/tracing';
 
 export const BYPASS = 'BYPASS';
 export const BYPASS_REFERENCE = 'BYPASSREFERENCE';
@@ -118,45 +120,51 @@ export const isUserHasCapability = (user: AuthUser, capability: string): boolean
 };
 
 export const userFilterStoreElements = async (context: AuthContext, user: AuthUser, elements: Array<BasicStoreCommon>) => {
-  // If user have bypass, grant access to all
-  if (isBypassUser(user)) {
-    return elements;
-  }
-  // If not filter by the inner markings
-  const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
-  const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
-  return elements.filter((element) => {
-    // 1. Check markings
-    const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
-    if (elementMarkings.length > 0) {
-      const markingAllowed = elementMarkings.every((m) => authorizedMarkings.includes(m));
-      if (!markingAllowed) {
-        return false;
+  const userFilterStoreElementsFn = async () => {
+    // If user have bypass, grant access to all
+    if (isBypassUser(user)) {
+      return elements;
+    }
+    // If not filter by the inner markings
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, user, ENTITY_TYPE_SETTINGS);
+    const authorizedMarkings = user.allowed_marking.map((a) => a.internal_id);
+    return elements.filter((element) => {
+      // 1. Check markings
+      const elementMarkings = element[RELATION_OBJECT_MARKING] ?? [];
+      if (elementMarkings.length > 0) {
+        const markingAllowed = elementMarkings.every((m) => authorizedMarkings.includes(m));
+        if (!markingAllowed) {
+          return false;
+        }
       }
-    }
-    // 2. Check organizations
-    // Allow unrestricted entities
-    const types = [element.entity_type, ...getParentTypes(element.entity_type)];
-    if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
-      return true;
-    }
-    // Check restricted elements
-    const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
-    const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
-    // If platform organization is set
-    if (settings.platform_organization) {
-      // If user part of platform organization, is granted by default
-      if (user.inside_platform_organization) {
+      // 2. Check organizations
+      // Allow unrestricted entities
+      const types = [element.entity_type, ...getParentTypes(element.entity_type)];
+      if (STIX_ORGANIZATIONS_UNRESTRICTED.some((r) => types.includes(r))) {
         return true;
       }
-      // If not, user is by design inside an organization
-      // If element has no current sharing organization, it can be accessed (secure by default)
-      // If element is shared, user must have a matching sharing organization
-      return elementOrganizations.some((r) => userOrganizations.includes(r));
-    }
-    // If no platform organization is set, user can access empty sharing and dedicated sharing
-    return elementOrganizations.length === 0 || elementOrganizations.some((r) => userOrganizations.includes(r));
-  });
+      // Check restricted elements
+      const elementOrganizations = element[RELATION_GRANTED_TO] ?? [];
+      const userOrganizations = user.allowed_organizations.map((o) => o.internal_id);
+      // If platform organization is set
+      if (settings.platform_organization) {
+        // If user part of platform organization, is granted by default
+        if (user.inside_platform_organization) {
+          return true;
+        }
+        // If not, user is by design inside an organization
+        // If element has no current sharing organization, it can be accessed (secure by default)
+        // If element is shared, user must have a matching sharing organization
+        return elementOrganizations.some((r) => userOrganizations.includes(r));
+      }
+      // If no platform organization is set, user can access empty sharing and dedicated sharing
+      return elementOrganizations.length === 0 || elementOrganizations.some((r) => userOrganizations.includes(r));
+    });
+  };
+  return telemetry(context, user, 'FILTERING store filter', {
+    [SemanticAttributes.DB_NAME]: 'search_engine',
+    [SemanticAttributes.DB_OPERATION]: 'read',
+  }, userFilterStoreElementsFn);
 };
 
 export const isUserCanAccessStoreElement = async (context: AuthContext, user: AuthUser, element: BasicStoreCommon) => {
