@@ -126,7 +126,6 @@ export const isNumericAttribute = (k: string): boolean => (
 export const isRuntimeAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'runtime')
 );
-
 export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'date', 'numeric', 'boolean')
 );

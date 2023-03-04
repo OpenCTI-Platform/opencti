@@ -30,6 +30,7 @@ import {
 } from '../../../src/schema/stixDomainObject';
 import { ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION } from '../../../src/schema/stixMetaObject';
 import {
+  isStixCoreRelationship,
   RELATION_DERIVED_FROM,
   RELATION_INDICATES,
   RELATION_PART_OF,
@@ -39,9 +40,14 @@ import {
 import { ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 
 import '../../../src/modules/index';
-import { ADMIN_USER, testContext } from '../../utils/testQuery'; // Need to import registration files
+import { ADMIN_USER, testContext } from '../../utils/testQuery';
+import {
+  isDateNumericOrBooleanAttribute,
+  isJsonAttribute, isMultipleAttribute,
+  schemaAttributesDefinition
+} from '../../../src/schema/schema-attributes'; // Need to import registration files
 
-describe('Testing checkRelationConsistency', () => {
+describe('Testing relation consistency', () => {
   it.concurrent.each([
     // CREATED_BY
     [RELATION_CREATED_BY, ENTITY_HASHED_OBSERVABLE_STIX_FILE, ENTITY_TYPE_IDENTITY_ORGANIZATION, true],
@@ -102,4 +108,29 @@ describe('Testing checkRelationConsistency', () => {
       expect(relationConsistency).toBe(expected);
     }
   );
+});
+
+describe('Testing schema definition', () => {
+  it('Attributes type testing', () => {
+    expect(isJsonAttribute('revoked')).toBe(false);
+    expect(isJsonAttribute('bookmarks')).toBe(true);
+    expect(isDateNumericOrBooleanAttribute('bookmarks')).toBe(false);
+    expect(isDateNumericOrBooleanAttribute('attribute_order')).toBe(true);
+    expect(isDateNumericOrBooleanAttribute('start_time')).toBe(true);
+    expect(isDateNumericOrBooleanAttribute('platform_hidden_type')).toBe(true);
+    expect(isMultipleAttribute('platform_hidden_type')).toBe(false);
+    expect(isMultipleAttribute('channel_types')).toBe(true);
+  });
+  it('Attributes upsert testing', () => {
+    const availableAttributes = schemaAttributesDefinition.getAttributes('Report');
+    const upsertAttributes = availableAttributes.filter((f) => f.upsert).map((f) => f.name).sort();
+    const reportUpsertAttributes = schemaAttributesDefinition.getUpsertAttributeNames('Report').sort();
+    expect(upsertAttributes).toStrictEqual(reportUpsertAttributes);
+  });
+  it('Attributes ref testing', () => {
+    expect(isStixCoreRelationship('Report'), false);
+    expect(isStixCoreRelationship('stix-core-relationship'), true);
+    expect(isStixCoreRelationship('detects'), true);
+    expect(isStixCoreRelationship('detects-false'), false);
+  });
 });
