@@ -22,8 +22,18 @@ export const internalId: AttributeDefinition = {
   upsert: false
 };
 
+export const creators: AttributeDefinition = {
+  name: 'creator_id',
+  label: 'Creators',
+  type: 'runtime',
+  mandatoryType: 'no',
+  multiple: true,
+  upsert: false
+};
+
 export const standardId: AttributeDefinition = {
   name: 'standard_id',
+  label: 'Id',
   type: 'string',
   mandatoryType: 'internal',
   multiple: false,
@@ -32,6 +42,7 @@ export const standardId: AttributeDefinition = {
 
 export const iAliasedIds: AttributeDefinition = {
   name: 'i_aliases_ids',
+  label: 'Internal aliases',
   type: 'string',
   mandatoryType: 'no',
   multiple: true,
@@ -50,6 +61,7 @@ export const entityType: AttributeDefinition = {
 
 export const entityLocationType: AttributeDefinition = {
   name: 'x_opencti_location_type',
+  label: 'Location type',
   type: 'string',
   mandatoryType: 'internal',
   multiple: false,
@@ -70,6 +82,7 @@ export const relationshipType: AttributeDefinition = {
 
 export const xOpenctiStixIds: AttributeDefinition = {
   name: 'x_opencti_stix_ids',
+  label: 'Stix ids',
   type: 'string',
   mandatoryType: 'no',
   multiple: true,
@@ -80,6 +93,7 @@ export const xOpenctiStixIds: AttributeDefinition = {
 
 export const xOpenctiAliases: AttributeDefinition = {
   name: 'x_opencti_aliases',
+  label: 'Aliases',
   type: 'string',
   mandatoryType: 'no',
   multiple: true,
@@ -88,6 +102,7 @@ export const xOpenctiAliases: AttributeDefinition = {
 
 export const aliases: AttributeDefinition = {
   name: 'aliases',
+  label: 'Aliases',
   type: 'string',
   mandatoryType: 'no',
   multiple: true,
@@ -121,6 +136,7 @@ export const modified: AttributeDefinition = {
 
 export const createdAt: AttributeDefinition = {
   name: 'created_at',
+  label: 'Created at',
   type: 'date',
   mandatoryType: 'internal',
   multiple: false,
@@ -128,6 +144,7 @@ export const createdAt: AttributeDefinition = {
 };
 export const updatedAt: AttributeDefinition = {
   name: 'updated_at',
+  label: 'Updated at',
   type: 'date',
   mandatoryType: 'internal',
   multiple: false,

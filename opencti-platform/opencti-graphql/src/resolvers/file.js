@@ -3,10 +3,10 @@ import { askJobImport, uploadImport, uploadPending } from '../domain/file';
 import { worksForSource } from '../domain/work';
 import { stixCoreObjectImportDelete } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
-import { batchCreators } from '../domain/user';
+import { batchCreator } from '../domain/user';
 import { batchStixDomainObjects } from '../domain/stixDomainObject';
 
-const creatorLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 const domainLoader = batchLoader(batchStixDomainObjects);
 
 const fileResolvers = {

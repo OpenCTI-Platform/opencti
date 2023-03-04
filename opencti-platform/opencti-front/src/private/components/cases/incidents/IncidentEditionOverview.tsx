@@ -64,7 +64,7 @@ const incidentEditionOverviewFragment = graphql`
     description
     rating
     confidence
-    creator {
+    creators {
       id
       name
     }

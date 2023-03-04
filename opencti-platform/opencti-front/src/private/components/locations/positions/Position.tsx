@@ -144,7 +144,7 @@ const Position = createFragmentContainer(PositionComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

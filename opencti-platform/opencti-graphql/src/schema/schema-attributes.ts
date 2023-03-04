@@ -16,6 +16,7 @@ export const depsKeysRegister = {
 export const schemaAttributesDefinition = {
   types: {} as Record<string, Map<string, void>>,
   attributes: {} as Record<string, AttributeDefinition[]>,
+  attributes_by_name: {} as Record<string, AttributeDefinition>,
   attributes_by_types: {
     string: new Map<string, void>(),
     date: new Map<string, void>(),
@@ -60,6 +61,7 @@ export const schemaAttributesDefinition = {
           attribute,
         });
       }
+      this.attributes_by_name[attribute.name] = attribute;
       // Generate map by types
       this.attributes_by_types[attribute.type].set(attribute.name);
       // Generate map by multiple
@@ -77,6 +79,10 @@ export const schemaAttributesDefinition = {
       }
     });
     this.attributes[entityType] = attributes;
+  },
+
+  getAttribute(name: string): AttributeDefinition | null {
+    return this.attributes_by_name[name];
   },
 
   getAttributes(entityType: string): AttributeDefinition[] {

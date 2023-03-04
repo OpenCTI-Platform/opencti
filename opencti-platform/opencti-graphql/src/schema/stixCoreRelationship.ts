@@ -8,7 +8,7 @@ import {
 import {
   AttributeDefinition,
   confidence, created,
-  createdAt,
+  createdAt, creators,
   entityType,
   IcreatedAtDay,
   IcreatedAtMonth,
@@ -140,6 +140,7 @@ export const stixCoreRelationshipsAttributes: Array<AttributeDefinition> = [
   updatedAt,
   xOpenctiStixIds,
   specVersion,
+  creators,
   revoked,
   confidence,
   lang,
