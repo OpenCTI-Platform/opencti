@@ -59,7 +59,7 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
 
 const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion']; // Language as no ui, note and opinion are not useful
 const IDENTITY_ENTITIES = ['Sector', 'Organization', 'Individual', 'System', 'Event'];
-const LOCATION_ENTITIES = ['Region', 'Country', 'City', 'Location'];
+const LOCATION_ENTITIES = ['Region', 'Country', 'City', 'Location', 'Administrative-Area'];
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
