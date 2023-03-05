@@ -137,7 +137,7 @@ export const ReportCreationForm = ({
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'malwareAdd');
+          updater(store, 'reportAdd');
         }
       },
       onError: (error) => {

@@ -58,8 +58,20 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
 `;
 
 const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion']; // Language as no ui, note and opinion are not useful
-const IDENTITY_ENTITIES = ['Sector', 'Organization', 'Individual', 'System', 'Event'];
-const LOCATION_ENTITIES = ['Region', 'Country', 'City', 'Location', 'Administrative-Area'];
+const IDENTITY_ENTITIES = [
+  'Sector',
+  'Organization',
+  'Individual',
+  'System',
+  'Event',
+];
+const LOCATION_ENTITIES = [
+  'Region',
+  'Country',
+  'City',
+  'Location',
+  'Administrative-Area',
+];
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -105,7 +117,13 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const sharedUpdater = (store, userId, paginationOptions, paginationKey, newEdge) => {
+const sharedUpdater = (
+  store,
+  userId,
+  paginationOptions,
+  paginationKey,
+  newEdge,
+) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
@@ -123,223 +141,466 @@ const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
   }));
   const entitiesTypes = R.sortWith([R.ascend(R.prop('label'))], choices);
   return entitiesTypes.filter((n) => {
-    if (!stixDomainObjectTypes || stixDomainObjectTypes.length === 0 || stixDomainObjectTypes.includes('Stix-Domain-Object')) {
+    if (
+      !stixDomainObjectTypes
+      || stixDomainObjectTypes.length === 0
+      || stixDomainObjectTypes.includes('Stix-Domain-Object')
+    ) {
       return !UNSUPPORTED_TYPES.includes(n.value);
     }
-    if (stixDomainObjectTypes.includes('Identity') && IDENTITY_ENTITIES.includes(n.value)) {
+    if (
+      stixDomainObjectTypes.includes('Identity')
+      && IDENTITY_ENTITIES.includes(n.value)
+    ) {
       return true;
     }
-    if (stixDomainObjectTypes.includes('Location') && LOCATION_ENTITIES.includes(n.value)) {
+    if (
+      stixDomainObjectTypes.includes('Location')
+      && LOCATION_ENTITIES.includes(n.value)
+    ) {
       return true;
     }
     return !!stixDomainObjectTypes.includes(n.value);
   });
 };
 
-const StixDomainPanel = ({ queryRef, stixDomainObjectTypes, onClose, creationUpdater,
-  confidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+const StixDomainPanel = ({
+  queryRef,
+  stixDomainObjectTypes,
+  onClose,
+  creationUpdater,
+  confidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const { t } = useFormatter();
-  const queryData = usePreloadedQuery(stixDomainObjectCreationAllTypesQuery, queryRef);
-  const availableEntityTypes = buildEntityTypes(t, queryData, stixDomainObjectTypes);
-  const [status, setStatus] = useState(availableEntityTypes.at(0).value);
-  const baseCreatedBy = defaultCreatedBy ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name } : undefined;
-  const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map(
-    (n) => ({
-      label: n.definition,
-      value: n.id,
-      color: n.x_opencti_color,
-      entity: n,
-    }),
+  const queryData = usePreloadedQuery(
+    stixDomainObjectCreationAllTypesQuery,
+    queryRef,
   );
+  const availableEntityTypes = buildEntityTypes(
+    t,
+    queryData,
+    stixDomainObjectTypes,
+  );
+  const [type, setType] = useState(availableEntityTypes.at(0).value);
+  const baseCreatedBy = defaultCreatedBy
+    ? { value: defaultCreatedBy.id, label: defaultCreatedBy.name }
+    : undefined;
+  const baseMarkingDefinitions = (defaultMarkingDefinitions ?? []).map((n) => ({
+    label: n.definition,
+    value: n.id,
+    color: n.x_opencti_color,
+    entity: n,
+  }));
 
   const renderEntityCreationInterface = () => {
-    if (status === 'Administrative-Area') {
-      return <AdministrativeAreaCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Administrative-Area') {
+      return (
+        <AdministrativeAreaCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Attack-Pattern') {
-      return <AttackPatternCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Attack-Pattern') {
+      return (
+        <AttackPatternCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Campaign') {
-      return <CampaignCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Campaign') {
+      return (
+        <CampaignCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Case') { // Default to Incident case type
-      return <CaseCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Case') {
+      // Default to Incident case type
+      return (
+        <CaseCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Channel') {
-      return <ChannelCreationForm defaultConfidence={confidence}
-           defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-           onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Channel') {
+      return (
+        <ChannelCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'City') {
-      return <CityCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'City') {
+      return (
+        <CityCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Country') {
-      return <CountryCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Country') {
+      return (
+        <CountryCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Course-Of-Action') { // Course-Of-Action
-      return <CourseOfActionCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Course-Of-Action') {
+      // Course-Of-Action
+      return (
+        <CourseOfActionCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Data-Component') { // Data-Component
-      return <DataComponentCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Data-Component') {
+      // Data-Component
+      return (
+        <DataComponentCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Data-Source') { // Data-Source
-      return <DataSourceCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Data-Source') {
+      // Data-Source
+      return (
+        <DataSourceCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Event') { // Event
-      return <EventCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Event') {
+      // Event
+      return (
+        <EventCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Grouping') { // Grouping
-      return <GroupingCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Grouping') {
+      // Grouping
+      return (
+        <GroupingCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Incident') { // Incident
-      return <IncidentCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Incident') {
+      // Incident
+      return (
+        <IncidentCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Indicator') { // Indicator
-      return <IndicatorCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Indicator') {
+      // Indicator
+      return (
+        <IndicatorCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Individual') { // Individual
-      return <IndividualCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Individual') {
+      // Individual
+      return (
+        <IndividualCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Infrastructure') { // Infrastructure
-      return <InfrastructureCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Infrastructure') {
+      // Infrastructure
+      return (
+        <InfrastructureCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Intrusion-Set') { // IntrusionSet
-      return <IntrusionSetCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Intrusion-Set') {
+      // IntrusionSet
+      return (
+        <IntrusionSetCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Malware') { // Malware
-      return <MalwareCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Malware') {
+      // Malware
+      return (
+        <MalwareCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Narrative') { // Narrative
-      return <NarrativeCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Narrative') {
+      // Narrative
+      return (
+        <NarrativeCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Note') { // Note
-      return <NoteCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Note') {
+      // Note
+      return (
+        <NoteCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Observed-Data') { // Observed data
-      return <ObservedDataCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Observed-Data') {
+      // Observed data
+      return (
+        <ObservedDataCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Opinion') { // Opinion
-      return <OpinionCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Opinion') {
+      // Opinion
+      return (
+        <OpinionCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Organization') { // Organization
-      return <OrganizationCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Organization') {
+      // Organization
+      return (
+        <OrganizationCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Position') { // Position
-      return <PositionCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Position') {
+      // Position
+      return (
+        <PositionCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Region') { // Region
-      return <RegionCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Region') {
+      // Region
+      return (
+        <RegionCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Report') { // Report
-      return <ReportCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Report') {
+      // Report
+      return (
+        <ReportCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Sector') { // Sector
-      return <SectorCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Sector') {
+      // Sector
+      return (
+        <SectorCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'System') { // System
-      return <SystemCreationForm
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'System') {
+      // System
+      return (
+        <SystemCreationForm
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Threat-Actor') { // Threat-Actor
-      return <ThreatActorCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Threat-Actor') {
+      // Threat-Actor
+      return (
+        <ThreatActorCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Tool') { // Tool
-      return <ToolCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Tool') {
+      // Tool
+      return (
+        <ToolCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
-    if (status === 'Vulnerability') { // Vulnerability
-      return <VulnerabilityCreationForm defaultConfidence={confidence}
-          defaultCreatedBy={baseCreatedBy} defaultMarkingDefinitions={baseMarkingDefinitions}
-          onReset={onClose} updater={creationUpdater}/>;
+    if (type === 'Vulnerability') {
+      // Vulnerability
+      return (
+        <VulnerabilityCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
     }
     return <div>{t('Unsupported')}</div>;
   };
 
-  return <Dialog PaperProps={{ elevation: 1 }} open={true} onClose={onClose} fullWidth={true}>
-    <DialogTitle>{t('Create an entity')}</DialogTitle>
-    <DialogContent>
-      <Select value={status} onChange={(event) => setStatus(event.target.value)} fullWidth={true}>
-        {availableEntityTypes.map((type) => (
-            <MenuItem key={type.value} value={type.value}>
-              {type.label}
+  return (
+    <Dialog
+      PaperProps={{ elevation: 1 }}
+      open={true}
+      onClose={onClose}
+      fullWidth={true}
+    >
+      <DialogTitle>{t('Create an entity')}</DialogTitle>
+      <DialogContent>
+        <Select
+          value={type}
+          onChange={(event) => setType(event.target.value)}
+          fullWidth={true}
+        >
+          {availableEntityTypes.map((availableType) => (
+            <MenuItem key={availableType.value} value={availableType.value}>
+              {availableType.label}
             </MenuItem>
-        ))}
-      </Select>
-      {renderEntityCreationInterface()}
-    </DialogContent>
-  </Dialog>;
+          ))}
+        </Select>
+        {renderEntityCreationInterface()}
+      </DialogContent>
+    </Dialog>
+  );
 };
 
-const StixDomainObjectCreation = ({ creationCallback,
-  confidence, defaultCreatedBy, defaultMarkingDefinitions,
-  stixDomainObjectTypes, display, open, speeddial, handleClose, paginationKey, paginationOptions }) => {
+const StixDomainObjectCreation = ({
+  creationCallback,
+  confidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  stixDomainObjectTypes,
+  display,
+  open,
+  speeddial,
+  handleClose,
+  paginationKey,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const [status, setStatus] = useState({ open: false, type: null });
-  const [queryRef, loadQuery] = useQueryLoader(stixDomainObjectCreationAllTypesQuery);
+  const [queryRef, loadQuery] = useQueryLoader(
+    stixDomainObjectCreationAllTypesQuery,
+  );
   const isOpen = speeddial ? open : status.open;
-
   // In speed dial mode the open/close is handled by a parent
   // So we need to load only once directly
   if (speeddial && open && !queryRef) {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
   }
-
   const stateHandleOpen = () => {
     loadQuery({}, { fetchPolicy: 'store-and-network' });
     setStatus({ open: true, type: null });
@@ -366,26 +627,32 @@ const StixDomainObjectCreation = ({ creationCallback,
       stateHandleClose();
     }
   };
-
   return (
-      <div style={{ display: display ? 'block' : 'none' }}>
-        {!speeddial && (
-            <Fab onClick={stateHandleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
-              <Add />
-            </Fab>
-        )}
-        {isOpen && queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <StixDomainPanel queryRef={queryRef}
-                               confidence={confidence} defaultCreatedBy={defaultCreatedBy}
-                               defaultMarkingDefinitions={defaultMarkingDefinitions}
-                               stixDomainObjectTypes={stixDomainObjectTypes}
-                               creationUpdater={creationUpdater}
-                               onClose={speeddial ? handleClose : stateHandleClose}
-              />
-            </React.Suspense>
-        )}
-      </div>
+    <div style={{ display: display ? 'block' : 'none' }}>
+      {!speeddial && (
+        <Fab
+          onClick={stateHandleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}
+        >
+          <Add />
+        </Fab>
+      )}
+      {isOpen && queryRef && (
+        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <StixDomainPanel
+            queryRef={queryRef}
+            confidence={confidence}
+            defaultCreatedBy={defaultCreatedBy}
+            defaultMarkingDefinitions={defaultMarkingDefinitions}
+            stixDomainObjectTypes={stixDomainObjectTypes}
+            creationUpdater={creationUpdater}
+            onClose={speeddial ? handleClose : stateHandleClose}
+          />
+        </React.Suspense>
+      )}
+    </div>
   );
 };
 
