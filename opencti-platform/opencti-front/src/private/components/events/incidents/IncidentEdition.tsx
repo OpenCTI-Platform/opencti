@@ -4,7 +4,9 @@ import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useMutation } from 'react-relay';
-import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
+import IncidentEditionContainer, {
+  IncidentEditionQuery,
+} from './IncidentEditionContainer';
 import { incidentEditionOverviewFocus } from './IncidentEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
@@ -45,35 +47,40 @@ const IncidentEdition = ({ incidentId }: { incidentId: string }) => {
     setOpen(false);
   };
 
-  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(IncidentEditionQuery, { id: incidentId });
+  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(
+    IncidentEditionQuery,
+    { id: incidentId },
+  );
   return (
-      <div>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <IncidentEditionContainer
-                queryRef={queryRef}
-                handleClose={handleClose}
-              />
-            </React.Suspense>
-          )}
-        </Drawer>
-      </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Edit"
+        className={classes.editButton}
+      >
+        <Edit />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <IncidentEditionContainer
+              queryRef={queryRef}
+              handleClose={handleClose}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    </div>
   );
 };
 

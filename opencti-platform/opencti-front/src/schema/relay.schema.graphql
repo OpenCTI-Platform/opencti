@@ -2205,6 +2205,7 @@ enum CampaignsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 
 input CampaignsFiltering {
@@ -3941,6 +3942,7 @@ enum IntrusionSetsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 
 input IntrusionSetsFiltering {
@@ -4788,6 +4790,7 @@ enum ThreatActorsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 
 input ThreatActorsFiltering {
@@ -5169,6 +5172,7 @@ enum IncidentsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  creator
 }
 
 input IncidentsFiltering {

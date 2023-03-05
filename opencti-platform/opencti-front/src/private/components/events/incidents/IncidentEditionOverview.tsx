@@ -13,7 +13,12 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
@@ -85,77 +90,80 @@ const incidentMutationRelationDelete = graphql`
 `;
 
 const incidentEditionOverviewFragment = graphql`
-    fragment IncidentEditionOverview_incident on Incident {
-      id
-      name
-      confidence
-      description
-      source
-      incident_type
-      severity
-      createdBy {
-          ... on Identity {
-              id
-              name
-              entity_type
-          }
+  fragment IncidentEditionOverview_incident on Incident {
+    id
+    name
+    confidence
+    description
+    source
+    incident_type
+    severity
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
       }
-      objectMarking {
-          edges {
-              node {
-                  id
-                  definition_type
-                  definition
-                  x_opencti_order
-                  x_opencti_color
-              }
-          }
-      }
-      objectAssignee {
-          edges {
-              node {
-                  id
-                  name
-                  entity_type
-              }
-          }
-      }
-      status {
-          id
-          order
-          template {
-              name
-              color
-          }
-      }
-      workflowEnabled
-      is_inferred
     }
-  `;
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    objectAssignee {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    is_inferred
+  }
+`;
 
 interface IncidentEditionOverviewProps {
-  incidentRef: IncidentEditionOverview_incident$key,
-  context: readonly ({
+  incidentRef: IncidentEditionOverview_incident$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface IncidentEditionFormValues {
-  message?: string
-  references?: Option[]
-  createdBy: Option | undefined
-  x_opencti_workflow_id: Option
-  objectMarking?: Option[]
-  objectAssignee?: Option[]
+  message?: string;
+  references?: Option[];
+  createdBy: Option | undefined;
+  x_opencti_workflow_id: Option;
+  objectMarking?: Option[];
+  objectAssignee?: Option[];
 }
 
-const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOverviewProps> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
+const IncidentEditionOverviewComponent: FunctionComponent<
+IncidentEditionOverviewProps
+> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number().nullable(),
@@ -164,20 +172,25 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     references: Yup.array(),
   };
   const incidentValidator = useSchemaEditionValidation('Incident', basicShape);
-
   const queries = {
     fieldPatch: incidentMutationFieldPatch,
     relationAdd: incidentMutationRelationAdd,
     relationDelete: incidentMutationRelationDelete,
     editionFocus: incidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(incident, enableReferences, queries, incidentValidator);
-
-  const onSubmit: FormikConfig<IncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const editor = useFormEditor(
+    incident,
+    enableReferences,
+    queries,
+    incidentValidator,
+  );
+  const onSubmit: FormikConfig<IncidentEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
-
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
@@ -185,12 +198,12 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
-
     editor.fieldPatch({
       variables: {
         id: incident.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -199,7 +212,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
       },
     });
   };
-
   const handleSubmitField = (name: string, value: string | string[] | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
@@ -219,7 +231,6 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
         .catch(() => false);
     }
   };
-
   const isInferred = incident.is_inferred;
   const initialValues = {
     name: incident.name,
@@ -234,12 +245,13 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
     confidence: incident.confidence,
     references: [],
   };
-
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={incidentValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -308,7 +320,9 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={<SubscriptionFocus context={context} fieldName="description" />}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
           />
           <Field
             component={TextField}
@@ -319,12 +333,16 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
             style={{ marginTop: 20 }}
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            helperText={<SubscriptionFocus context={context} fieldName="Source" />}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="Source" />
+            }
           />
           <ObjectAssigneeField
             name="objectAssignee"
             style={{ marginTop: 20, width: '100%' }}
-            helpertext={<SubscriptionFocus context={context} fieldname="objectAssignee"/>}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectAssignee" />
+            }
             onChange={editor.changeAssignee}
           />
           {incident?.workflowEnabled && (
@@ -335,21 +353,30 @@ const IncidentEditionOverviewComponent : FunctionComponent<IncidentEditionOvervi
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
+              }
             />
           )}
           <CreatedByField
             name="createdBy"
             style={{ marginTop: 20, width: '100%' }}
             setFieldValue={setFieldValue}
-            helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
             onChange={editor.changeCreated}
           />
           <ObjectMarkingField
             name="objectMarking"
             style={{ marginTop: 20, width: '100%' }}
             disabled={isInferred}
-            helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
             onChange={editor.changeMarking}
           />
           {enableReferences && (

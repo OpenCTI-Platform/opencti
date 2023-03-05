@@ -10,7 +10,10 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -71,16 +74,22 @@ const useStyles = makeStyles((theme) => ({
 const observedDataCreationMutation = graphql`
   mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
     observedDataAdd(input: $input) {
-        id
-        name
-        entity_type
-        ...ObservedDataLine_node
+      id
+      name
+      entity_type
+      ...ObservedDataLine_node
     }
   }
 `;
 
-export const ObservedDataCreationForm = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const ObservedDataCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -94,7 +103,10 @@ export const ObservedDataCreationForm = ({ updater, onReset, onCompleted,
     number_observed: Yup.number().required(t('This field is required')),
     confidence: Yup.number().nullable(),
   };
-  const observedDataValidator = useSchemaCreationValidation('Observed-Data', basicShape);
+  const observedDataValidator = useSchemaCreationValidation(
+    'Observed-Data',
+    basicShape,
+  );
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = evolve(
       {
@@ -135,7 +147,8 @@ export const ObservedDataCreationForm = ({ updater, onReset, onCompleted,
     });
   };
 
-  return <Formik
+  return (
+    <Formik
       initialValues={{
         objects: [],
         first_observed: dayStartDate(),
@@ -149,99 +162,95 @@ export const ObservedDataCreationForm = ({ updater, onReset, onCompleted,
       }}
       validationSchema={observedDataValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <StixCoreObjectsField
-              name="objects"
-              style={{ width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.objects}
+            name="objects"
+            style={{ width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objects}
           />
           <Field
-              component={DateTimePickerField}
-              name="first_observed"
-              TextFieldProps={{
-                label: t('First observed'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
+            component={DateTimePickerField}
+            name="first_observed"
+            TextFieldProps={{
+              label: t('First observed'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
           />
           <Field
-              component={DateTimePickerField}
-              name="last_observed"
-              TextFieldProps={{
-                label: t('Last observed'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
+            component={DateTimePickerField}
+            name="last_observed"
+            TextFieldProps={{
+              label: t('Last observed'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
           />
           <Field
-              component={TextField}
-              variant="standard"
-              name="number_observed"
-              type="number"
-              label={t('Number observed')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+            component={TextField}
+            variant="standard"
+            name="number_observed"
+            type="number"
+            label={t('Number observed')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const ObservedDataCreation = ({ paginationOptions }) => {
@@ -262,34 +271,39 @@ const ObservedDataCreation = ({ paginationOptions }) => {
 
   return (
     <div>
-      <Fab onClick={handleOpen}
+      <Fab
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an observed data')}</Typography>
         </div>
         <div className={classes.container}>
           <ObservedDataCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

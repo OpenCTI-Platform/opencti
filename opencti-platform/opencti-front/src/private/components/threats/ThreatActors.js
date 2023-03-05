@@ -148,6 +148,7 @@ class ThreatActors extends Component {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'creator',
           'revoked',
           'confidence',
         ]}

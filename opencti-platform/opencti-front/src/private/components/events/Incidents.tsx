@@ -1,7 +1,9 @@
 import React, { FunctionComponent, useContext } from 'react';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, { incidentsCardsAndLinesPaginationQuery } from './incidents/IncidentsCards';
+import IncidentsCards, {
+  incidentsCardsAndLinesPaginationQuery,
+} from './incidents/IncidentsCards';
 import IncidentsLines from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 import Security from '../../../utils/Security';
@@ -52,7 +54,6 @@ const Incidents: FunctionComponent = () => {
       isSortable: true,
     },
   };
-
   const {
     sortBy,
     orderAsc,
@@ -62,7 +63,6 @@ const Incidents: FunctionComponent = () => {
     numberOfElements,
     view,
   } = viewStorage;
-
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -71,36 +71,42 @@ const Incidents: FunctionComponent = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<IncidentLine_node$data>(
-    LOCAL_STORAGE_KEY,
-  );
-
+  } = useEntityToggle<IncidentLine_node$data>(LOCAL_STORAGE_KEY);
   const queryRef = useQueryLoading<IncidentsCardsAndLinesPaginationQuery>(
     incidentsCardsAndLinesPaginationQuery,
     paginationOptions,
   );
   // eslint-disable-next-line class-methods-use-this
   const isRuntimeSort = helper?.isRuntimeFieldEnable();
-
   const buildColumns = {
     name: {
       label: 'Name',
-      width: '25%',
+      width: '23%',
       isSortable: true,
     },
     incident_type: {
       label: 'Incident type',
-      width: '10%',
+      width: '8%',
       isSortable: true,
     },
     severity: {
       label: 'Severity',
-      width: '10%',
+      width: '5%',
       isSortable: true,
+    },
+    createdBy: {
+      label: 'Author',
+      width: '11%',
+      isSortable: isRuntimeSort ?? false,
+    },
+    creator: {
+      label: 'Creators',
+      width: '11%',
+      isSortable: isRuntimeSort ?? false,
     },
     objectLabel: {
       label: 'Labels',
-      width: '17%',
+      width: '15%',
       isSortable: false,
     },
     created: {
@@ -108,18 +114,14 @@ const Incidents: FunctionComponent = () => {
       width: '10%',
       isSortable: true,
     },
-    modified: {
-      label: 'Modification date',
-      width: '10%',
-      isSortable: true,
-    },
     x_opencti_workflow_id: {
       label: 'Status',
-      width: '10%',
+      width: '8%',
       isSortable: true,
     },
     objectMarking: {
       label: 'Marking',
+      width: '8%',
       isSortable: isRuntimeSort ?? false,
     },
   };
@@ -148,6 +150,7 @@ const Incidents: FunctionComponent = () => {
           'created_start_date',
           'created_end_date',
           'createdBy',
+          'creator',
           'confidence',
         ]}
       >
@@ -155,11 +158,11 @@ const Incidents: FunctionComponent = () => {
           <React.Suspense
             fallback={
               <>
-               {Array(20)
-                 .fill(0)
-                 .map((idx) => (
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
                     <IncidentCardDummy key={idx} />
-                 ))}
+                  ))}
               </>
             }
           >
@@ -171,85 +174,95 @@ const Incidents: FunctionComponent = () => {
           </React.Suspense>
         )}
       </ListCards>
-
     );
   };
-
   const renderLines = () => {
     let renderFilters = filters;
-    renderFilters = { ...renderFilters, entity_type: [{ id: 'Incident', value: 'Incident' }] };
+    renderFilters = {
+      ...renderFilters,
+      entity_type: [{ id: 'Incident', value: 'Incident' }],
+    };
     return (
       <div>
-          <ListLines
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={buildColumns}
-            handleSort={helpers.handleSort}
-            handleSearch={helpers.handleSearch}
-            handleChangeView={helpers.handleChangeView}
-            handleAddFilter={helpers.handleAddFilter}
-            handleRemoveFilter={helpers.handleRemoveFilter}
-            handleToggleExports={helpers.handleToggleExports}
-            handleToggleSelectAll={handleToggleSelectAll}
-            selectAll={selectAll}
-            openExports={openExports}
-            exportEntityType="Incident"
-            keyword={searchTerm}
-            filters={filters}
-            paginationOptions={paginationOptions}
-            numberOfElements={numberOfElements}
-            iconExtension={true}
-            availableFilterKeys={[
-              'incident_type',
-              'labelledBy',
-              'markedBy',
-              'x_opencti_workflow_id',
-              'created_start_date',
-              'created_end_date',
-              'createdBy',
-              'confidence',
-            ]}
-          >
-            {queryRef && (
-              <React.Suspense fallback={
-                <>{Array(20).fill(0).map((idx) => (<IncidentLineDummy key={idx} dataColumns={buildColumns} />))}</>
-              }>
-                <IncidentsLines
-                  queryRef={queryRef}
-                  paginationOptions={paginationOptions}
-                  dataColumns={buildColumns}
-                  onLabelClick={helpers.handleAddFilter}
-                  setNumberOfElements={helpers.handleSetNumberOfElements}
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  onToggleEntity={onToggleEntity}
-                  selectAll={selectAll}
-                />
-              </React.Suspense>
-            )}
-          </ListLines>
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            search={searchTerm}
-            filters={renderFilters}
-            handleClearSelectedElements={handleClearSelectedElements}
-            type="Incident"
-          />
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          dataColumns={buildColumns}
+          handleSort={helpers.handleSort}
+          handleSearch={helpers.handleSearch}
+          handleChangeView={helpers.handleChangeView}
+          handleAddFilter={helpers.handleAddFilter}
+          handleRemoveFilter={helpers.handleRemoveFilter}
+          handleToggleExports={helpers.handleToggleExports}
+          handleToggleSelectAll={handleToggleSelectAll}
+          selectAll={selectAll}
+          openExports={openExports}
+          exportEntityType="Incident"
+          keyword={searchTerm}
+          filters={filters}
+          paginationOptions={paginationOptions}
+          numberOfElements={numberOfElements}
+          iconExtension={true}
+          availableFilterKeys={[
+            'incident_type',
+            'severity',
+            'labelledBy',
+            'markedBy',
+            'confidence',
+            'source',
+            'createdBy',
+            'creator',
+            'created_start_date',
+            'created_end_date',
+          ]}
+        >
+          {queryRef && (
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <IncidentLineDummy key={idx} dataColumns={buildColumns} />
+                    ))}
+                </>
+              }
+            >
+              <IncidentsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={buildColumns}
+                onLabelClick={helpers.handleAddFilter}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+              />
+            </React.Suspense>
+          )}
+        </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={renderFilters}
+          handleClearSelectedElements={handleClearSelectedElements}
+          type="Incident"
+        />
       </div>
     );
   };
-
   if (view === 'cards') {
     return (
-        <div>
-          {renderCards()}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <IncidentCreation paginationOptions={paginationOptions}/>
-          </Security>
-        </div>
+      <div>
+        {renderCards()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <IncidentCreation paginationOptions={paginationOptions} />
+        </Security>
+      </div>
     );
   }
   return (
@@ -257,7 +270,7 @@ const Incidents: FunctionComponent = () => {
       <div>
         {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={paginationOptions}/>
+          <IncidentCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     </ExportContextProvider>

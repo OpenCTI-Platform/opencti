@@ -86,7 +86,10 @@ class ObservedDataEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ObservedDataEditionContainer observedData={props.observedData} handleClose={this.handleClose.bind(this)} />
+                  <ObservedDataEditionContainer
+                    observedData={props.observedData}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

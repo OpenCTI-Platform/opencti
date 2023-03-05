@@ -14,7 +14,9 @@ import { useNavigate } from 'react-router-dom-v5-compat';
 import { PopoverProps } from '@mui/material/Popover';
 import DialogContentText from '@mui/material/DialogContentText';
 import { useFormatter } from '../../../../components/i18n';
-import IncidentEditionContainer, { IncidentEditionQuery } from './IncidentEditionContainer';
+import IncidentEditionContainer, {
+  IncidentEditionQuery,
+} from './IncidentEditionContainer';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import Transition from '../../../../components/Transition';
@@ -59,7 +61,10 @@ const IncidentPopover = ({ id }: { id: string }) => {
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
   const [commit] = useMutation(IncidentPopoverDeletionMutation);
-  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(IncidentEditionQuery, { id });
+  const queryRef = useQueryLoading<IncidentEditionContainerQuery>(
+    IncidentEditionQuery,
+    { id },
+  );
   const handleOpen = (event: React.SyntheticEvent) => {
     setAnchorEl(event.currentTarget);
   };
@@ -100,75 +105,62 @@ const IncidentPopover = ({ id }: { id: string }) => {
   };
 
   return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={handleOpen}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleClose}
-        >
-          <MenuItem onClick={handleOpenEdit}>
-            {t('Update')}
-          </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={displayDelete}
-          keepMounted={true}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this incident?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDelete}
-              disabled={deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={submitDelete}
-              disabled={deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Drawer
-          open={displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleCloseEdit}
-        >
-          {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-              <IncidentEditionContainer
-                queryRef={queryRef}
-                handleClose={handleCloseEdit}
-              />
-            </React.Suspense>
-          )}
-        </Drawer>
-      </div>
+    <div className={classes.container}>
+      <IconButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        size="large"
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        </Security>
+      </Menu>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayDelete}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this incident?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+            {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Drawer
+        open={displayEdit}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleCloseEdit}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <IncidentEditionContainer
+              queryRef={queryRef}
+              handleClose={handleCloseEdit}
+            />
+          </React.Suspense>
+        )}
+      </Drawer>
+    </div>
   );
 };
 //

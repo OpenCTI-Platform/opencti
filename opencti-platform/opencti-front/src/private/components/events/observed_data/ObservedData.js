@@ -83,7 +83,9 @@ class ObservedDataComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={observedData.id}
-          defaultMarking={(observedData.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(observedData.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ObservedDataEdition observedDataId={observedData.id} />

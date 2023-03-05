@@ -1,5 +1,10 @@
 import React, { FunctionComponent, useState } from 'react';
-import { createFragmentContainer, graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import {
+  createFragmentContainer,
+  graphql,
+  PreloadedQuery,
+  usePreloadedQuery,
+} from 'react-relay';
 import Box from '@mui/material/Box';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -41,25 +46,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IncidentEditionContainerProps {
-  queryRef: PreloadedQuery<IncidentEditionContainerQuery>
-  handleClose: () => void,
+  queryRef: PreloadedQuery<IncidentEditionContainerQuery>;
+  handleClose: () => void;
 }
 
 export const IncidentEditionQuery = graphql`
-    query IncidentEditionContainerQuery($id: String!) {
-        incident(id: $id) {
-          ...IncidentEditionOverview_incident
-          ...IncidentEditionDetails_incident
-          ...IncidentDetails_incident
-          editContext {
-              name
-              focusOn
-          }
-        }
+  query IncidentEditionContainerQuery($id: String!) {
+    incident(id: $id) {
+      ...IncidentEditionOverview_incident
+      ...IncidentEditionDetails_incident
+      ...IncidentDetails_incident
+      editContext {
+        name
+        focusOn
+      }
     }
+  }
 `;
 
-const IncidentEditionContainer : FunctionComponent<IncidentEditionContainerProps> = ({ queryRef, handleClose }) => {
+const IncidentEditionContainer: FunctionComponent<
+IncidentEditionContainerProps
+> = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -68,7 +75,7 @@ const IncidentEditionContainer : FunctionComponent<IncidentEditionContainerProps
   const handleChangeTab = (event: React.SyntheticEvent, value: number) => setCurrentTab(value);
 
   if (queryData.incident === null) {
-    return (<ErrorNotFound />);
+    return <ErrorNotFound />;
   }
   return (
     <div>
@@ -90,10 +97,7 @@ const IncidentEditionContainer : FunctionComponent<IncidentEditionContainerProps
       </div>
       <div className={classes.container}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={handleChangeTab}
-          >
+          <Tabs value={currentTab} onChange={handleChangeTab}>
             <Tab label={t('Overview')} />
             <Tab label={t('Details')} />
           </Tabs>

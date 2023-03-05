@@ -36,7 +36,9 @@ class ObservedDatasLines extends Component {
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={data?.observedDatas?.edges ?? []}
-        globalCount={data?.observedDatas?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        globalCount={
+          data?.observedDatas?.pageInfo?.globalCount ?? nbOfRowsToLoad
+        }
         LineComponent={<ObservedDataLine />}
         DummyLineComponent={<ObservedDataLineDummy />}
         dataColumns={dataColumns}

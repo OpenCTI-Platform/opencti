@@ -809,6 +809,24 @@ const useSearchEntities = ({
             );
           });
         break;
+      case 'source':
+        fetchQuery(attributesSearchQuery, {
+          attributeName: 'source',
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const sourceEntities = (data?.runtimeAttributes?.edges ?? []).map(
+              (n) => ({
+                label: n.node.value,
+                value: n.node.value,
+                type: 'Vocabulary',
+              }),
+            );
+            unionSetEntities('source', sourceEntities);
+          });
+        break;
       case 'indicator_types':
         fetchQuery(vocabularySearchQuery, {
           category: 'indicator_type_ov',

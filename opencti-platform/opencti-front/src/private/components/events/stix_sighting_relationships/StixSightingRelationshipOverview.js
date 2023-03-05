@@ -486,11 +486,16 @@ class StixSightingRelationshipContainer extends Component {
                   </Typography>
                   <div>
                     {(stixSightingRelationship.creators ?? []).map((c) => {
-                      return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
-                        <ItemCreator creator={c} />
-                      </div>;
+                      return (
+                        <div
+                          key={`creator-${c.id}`}
+                          style={{ float: 'left', marginRight: '10px' }}
+                        >
+                          <ItemCreator creator={c} />
+                        </div>
+                      );
                     })}
-                    <div style={{ clear: 'both' }}/>
+                    <div style={{ clear: 'both' }} />
                   </div>
                 </Grid>
               </Grid>

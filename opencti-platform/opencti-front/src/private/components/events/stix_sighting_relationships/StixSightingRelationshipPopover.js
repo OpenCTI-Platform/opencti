@@ -94,7 +94,8 @@ class StixSightingRelationshipPopover extends Component {
         id: this.props.stixSightingRelationshipId,
       },
       updater: (store) => {
-        const isUndefinedCallback = this.props.onDelete === undefined || typeof this.props.onDelete !== 'function';
+        const isUndefinedCallback = this.props.onDelete === undefined
+          || typeof this.props.onDelete !== 'function';
         if (isUndefinedCallback) {
           deleteNode(
             store,
@@ -151,7 +152,8 @@ class StixSightingRelationshipPopover extends Component {
           PaperProps={{ elevation: 1 }}
           keepMounted={true}
           TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}>
+          onClose={this.handleCloseDelete.bind(this)}
+        >
           <DialogContent>
             <DialogContentText>
               {t('Do you want to delete this sighting?')}

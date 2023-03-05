@@ -18,7 +18,7 @@ import { Theme } from '../../../../components/Theme';
 import { IncidentCard_node$key } from './__generated__/IncidentCard_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 
-const useStyles = makeStyles < Theme >((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   card: {
     width: '100%',
     height: 170,
@@ -88,39 +88,42 @@ const useStyles = makeStyles < Theme >((theme) => ({
 }));
 
 const IncidentCardFragment = graphql`
-    fragment IncidentCard_node on Incident {
-        id
-        name
-        description
-        created
-        modified
-        objectMarking {
-            edges {
-                node {
-                    id
-                    definition_type
-                    definition
-                    x_opencti_order
-                    x_opencti_color
-                }
-            }
+  fragment IncidentCard_node on Incident {
+    id
+    name
+    description
+    created
+    modified
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
         }
-        objectLabel {
-            edges {
-                node {
-                    id
-                    value
-                    color
-                }
-            }
-        }
+      }
     }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
+  }
 `;
 interface IncidentCardProps {
-  node: IncidentCard_node$key ;
-  onLabelClick: () => void
+  node: IncidentCard_node$key;
+  onLabelClick: () => void;
 }
-export const IncidentCard: FunctionComponent<IncidentCardProps> = ({ node, onLabelClick }) => {
+export const IncidentCard: FunctionComponent<IncidentCardProps> = ({
+  node,
+  onLabelClick,
+}) => {
   const classes = useStyles();
   const { t, fsd } = useFormatter();
   const data = useFragment(IncidentCardFragment, node);

@@ -45,6 +45,7 @@ export const EqFilters = [
   'relationship_type',
   'creator',
   'x_opencti_negative',
+  'source',
 ];
 const uniqFilters = [
   'revoked',

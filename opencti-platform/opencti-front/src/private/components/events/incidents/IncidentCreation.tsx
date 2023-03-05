@@ -28,9 +28,7 @@ import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  IncidentsCardsAndLinesPaginationQuery$variables,
-} from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
+import { IncidentsCardsAndLinesPaginationQuery$variables } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -89,30 +87,36 @@ const IncidentMutation = graphql`
 `;
 
 interface IncidentAddInput {
-  name: string
-  description: string
-  confidence: number
-  incident_type: string
-  severity: string
-  source: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  objectAssignee: Option[]
-  externalReferences: Option[]
+  name: string;
+  description: string;
+  confidence: number;
+  incident_type: string;
+  severity: string;
+  source: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  objectAssignee: Option[];
+  externalReferences: Option[];
 }
 
 interface IncidentCreationProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: Option
-  defaultMarkingDefinitions?: Option[]
-  defaultConfidence?: number
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: Option;
+  defaultMarkingDefinitions?: Option[];
+  defaultConfidence?: number;
 }
 
-export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -128,8 +132,13 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   };
   const incidentValidator = useSchemaCreationValidation('Incident', basicShape);
 
-  const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const cleanedValues = isEmptyField(values.severity) ? R.dissoc('severity', values) : values;
+  const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
+    const cleanedValues = isEmptyField(values.severity)
+      ? R.dissoc('severity', values)
+      : values;
     const finalValues = {
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
@@ -137,7 +146,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
-      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+      externalReferences: cleanedValues.externalReferences.map(
+        ({ value }) => value,
+      ),
     };
     commit({
       variables: {
@@ -162,7 +173,8 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     });
   };
 
-  return <Formik<IncidentAddInput>
+  return (
+    <Formik<IncidentAddInput>
       initialValues={{
         name: '',
         confidence: defaultConfidence ?? 75,
@@ -178,129 +190,126 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       }}
       validationSchema={incidentValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Incident']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Incident']}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
-              label={t('Incident type')}
-              type="incident-type-ov"
-              name="incident_type"
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={false}
-              onChange={setFieldValue}
+            label={t('Incident type')}
+            type="incident-type-ov"
+            name="incident_type"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
           />
           <OpenVocabField
-              label={t('Severity')}
-              type="incident-severity-ov"
-              name="severity"
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={false}
-              onChange={setFieldValue}
+            label={t('Severity')}
+            type="incident-severity-ov"
+            name="severity"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
+            onChange={setFieldValue}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <Field
-              component={TextField}
-              variant="standard"
-              name="source"
-              label={t('Source')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+            component={TextField}
+            variant="standard"
+            name="source"
+            label={t('Source')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
           />
           <ObjectAssigneeField
-              name="objectAssignee"
-              style={{ marginTop: 20, width: '100%' }}
+            name="objectAssignee"
+            style={{ marginTop: 20, width: '100%' }}
           />
           <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences }
+            name="externalReferences"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
-const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsCardsAndLinesPaginationQuery$variables }) => {
+const IncidentCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: IncidentsCardsAndLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
   const onReset = () => setOpen(false);
 
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_incidents',
-    paginationOptions,
-    'incidentAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_incidents', paginationOptions, 'incidentAdd');
   return (
     <div>
-      <Fab onClick={() => setOpen(true)}
+      <Fab
+        onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
       <Drawer
@@ -309,7 +318,8 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}>
+        onClose={() => setOpen(false)}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -324,9 +334,9 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsC
         </div>
         <div className={classes.container}>
           <IncidentCreationForm
-              updater={updater}
-              onCompleted={onReset}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={onReset}
+            onReset={onReset}
           />
         </div>
       </Drawer>

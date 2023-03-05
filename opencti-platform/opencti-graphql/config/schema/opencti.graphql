@@ -2309,6 +2309,7 @@ enum CampaignsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 input CampaignsFiltering {
   key: [CampaignsFilter!]!
@@ -4960,6 +4961,7 @@ enum IntrusionSetsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 input IntrusionSetsFiltering {
   key: [IntrusionSetsFilter!]!
@@ -6216,6 +6218,7 @@ enum ThreatActorsFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 input ThreatActorsFiltering {
   key: [ThreatActorsFilter!]!
@@ -6771,6 +6774,7 @@ enum IncidentsFilter {
   labelledBy
   x_opencti_workflow_id
   confidence
+  creator
 }
 input IncidentsFiltering {
   key: [IncidentsFilter!]!

@@ -33,6 +33,7 @@ const threatActorResolvers = {
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    creator: 'creator_id',
   },
   Mutation: {
     threatActorEdit: (_, { id }, context) => ({

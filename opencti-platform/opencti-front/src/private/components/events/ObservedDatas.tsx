@@ -1,7 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import ObservedDatasLines, { observedDatasLinesQuery } from './observed_data/ObservedDatasLines';
+import ObservedDatasLines, {
+  observedDatasLinesQuery,
+} from './observed_data/ObservedDatasLines';
 import ObservedDataCreation from './observed_data/ObservedDataCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -20,12 +22,16 @@ import { ModuleHelper } from '../../../utils/platformModulesHelper';
 const LOCAL_STORAGE_KEY = 'view-observed-data';
 
 interface ObservedDatasProps {
-  objectId: string,
-  authorId: string,
-  onChangeOpenExports: () => void,
+  objectId: string;
+  authorId: string;
+  onChangeOpenExports: () => void;
 }
 
-const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, authorId, onChangeOpenExports }) => {
+const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
+  objectId,
+  authorId,
+  onChangeOpenExports,
+}) => {
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -43,7 +49,11 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, author
       filterMode: 'or',
     });
   }
-  const { viewStorage, helpers: storageHelpers, paginationOptions } = usePaginationLocalStorage < ObservedDatasLinesPaginationQuery$variables >(
+  const {
+    viewStorage,
+    helpers: storageHelpers,
+    paginationOptions,
+  } = usePaginationLocalStorage<ObservedDatasLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       searchTerm: '',
@@ -72,7 +82,7 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, author
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle < ObservedDataLine_node$data >(LOCAL_STORAGE_KEY);
+  } = useEntityToggle<ObservedDataLine_node$data>(LOCAL_STORAGE_KEY);
 
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
@@ -159,7 +169,11 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, author
           <QueryRenderer
             query={observedDatasLinesQuery}
             variables={{ ...paginationOptions }}
-            render={({ props }: { props: ObservedDatasLinesPaginationQuery$data }) => (
+            render={({
+              props,
+            }: {
+              props: ObservedDatasLinesPaginationQuery$data;
+            }) => (
               <ObservedDatasLines
                 data={props}
                 paginationOptions={paginationOptions}
@@ -192,14 +206,14 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({ objectId, author
   return (
     <UserContext.Consumer>
       {({ helper }) => (
-    <ExportContextProvider>
-      <div>
-        {renderLines(helper)}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ObservedDataCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
-    </ExportContextProvider>
+        <ExportContextProvider>
+          <div>
+            {renderLines(helper)}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ObservedDataCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>
+        </ExportContextProvider>
       )}
     </UserContext.Consumer>
   );
