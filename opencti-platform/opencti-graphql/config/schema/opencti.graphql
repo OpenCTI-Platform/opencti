@@ -1771,6 +1771,11 @@ enum StixCoreObjectsFilter {
   incident_types
   targets
   relatedTo
+  hashes_MD5
+  hashes_SHA1
+  hashes_SHA256
+  hashes_SHA512
+  x_opencti_additional_names
 }
 input StixCoreObjectsFiltering {
   key: [StixCoreObjectsFilter!]!
@@ -6966,6 +6971,8 @@ enum StixCyberObservablesFilter {
   hashes_MD5
   hashes_SHA1
   hashes_SHA256
+  hashes_SHA512
+  x_opencti_additional_names
   creator
 }
 input StixCyberObservablesFiltering {
@@ -11291,6 +11298,7 @@ enum StixObjectOrStixRelationshipsFilter {
   hashes_MD5
   hashes_SHA1
   hashes_SHA256
+  hashes_SHA512
 }
 input StixObjectOrStixRelationshipsFiltering {
   key: [StixObjectOrStixRelationshipsFilter!]!

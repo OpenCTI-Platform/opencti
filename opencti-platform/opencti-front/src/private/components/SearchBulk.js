@@ -253,6 +253,11 @@ const SearchBulk = () => {
                     'value',
                     'subject',
                     'abstract',
+                    'hashes_MD5',
+                    'hashes_SHA1',
+                    'hashes_SHA256',
+                    'hashes_SHA512',
+                    'x_opencti_additional_names',
                   ],
                   values,
                 },
@@ -296,8 +301,14 @@ const SearchBulk = () => {
                           markings: resolvedStixCoreObject.objectMarking,
                           reports: resolvedStixCoreObject.reports,
                           updated_at: resolvedStixCoreObject.updated_at,
-                          author: R.pathOr('', ['createdBy', 'name'], resolvedStixCoreObject),
-                          creators: (resolvedStixCoreObject.creators ?? []).map((c) => c?.name).join(', '),
+                          author: R.pathOr(
+                            '',
+                            ['createdBy', 'name'],
+                            resolvedStixCoreObject,
+                          ),
+                          creators: (resolvedStixCoreObject.creators ?? [])
+                            .map((c) => c?.name)
+                            .join(', '),
                           in_platform: true,
                         }),
                       );
