@@ -6,7 +6,6 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
-import { useFormatter } from './i18n';
 
 const AutocompleteField = (props) => {
   const {
