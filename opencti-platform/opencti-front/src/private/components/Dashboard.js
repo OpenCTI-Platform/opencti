@@ -524,7 +524,7 @@ const LastIngestedAnalysis = () => {
               name
               report_types
             }
-            creator {
+            creators {
               id
               name
             }
@@ -606,7 +606,7 @@ const LastIngestedAnalysis = () => {
               {pathOr('', ['createdBy', 'name'], stixDomainObject)}
             </div>
             <div className={classes.itemCreator}>
-              {pathOr('', ['creator', 'name'], stixDomainObject)}
+              {(stixDomainObject.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div className={classes.itemDate}>
               {fsd(stixDomainObject.created_at)}

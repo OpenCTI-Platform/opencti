@@ -76,11 +76,17 @@ ExternalReferenceDetailsComponentProps
             <Typography
               variant="h3"
               gutterBottom={true}
-              style={{ marginTop: 20 }}
-            >
-              {t('Creator')}
+              style={{ marginTop: 20 }}>
+              {t('Creators')}
             </Typography>
-            <ItemCreator creator={externalReference.creator} />
+            <div>
+              {(externalReference.creators ?? []).map((c) => {
+                return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
+                  <ItemCreator creator={c} />
+                </div>;
+              })}
+              <div style={{ clear: 'both' }}/>
+            </div>
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
@@ -135,7 +141,7 @@ const ExternalReferenceDetails = createFragmentContainer(
         id
         external_id
         url
-        creator {
+        creators {
           id
           name
         }

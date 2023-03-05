@@ -118,7 +118,7 @@ const Tool = createFragmentContainer(ToolComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

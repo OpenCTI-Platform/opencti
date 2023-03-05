@@ -843,7 +843,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
       finalVal = [R.assoc(targetKey, valueToTake, currentJson)];
     }
   } else if (isMultiple) {
-    const currentValues = instance[key] || [];
+    const currentValues = (Array.isArray(instance[key]) ? instance[key] : [instance[key]]) ?? [];
     if (operation === UPDATE_OPERATION_ADD) {
       finalVal = R.pipe(R.append(value), R.flatten, R.uniq)(currentValues);
     } else if (operation === UPDATE_OPERATION_REMOVE) {
@@ -1315,6 +1315,11 @@ const transformPatchToInput = (patch, operations = {}) => {
 };
 const checkAttributeConsistency = (entityType, key) => {
   if (key.startsWith(RULE_PREFIX)) {
+    return;
+  }
+  // Always ok for creator_id, need a stronger schena definition
+  // Waiting for merge of https://github.com/OpenCTI-Platform/opencti/issues/1850
+  if (key === 'creator_id') {
     return;
   }
   let masterKey = key;
@@ -2313,6 +2318,19 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
       patchInputs.push(...patched.updatedInputs);
     }
   }
+  const creatorIds = [];
+  // Add support for existing creator_id that can be a simple string except of an array
+  if (isNotEmptyField(element.creator_id)) {
+    const idCreators = Array.isArray(element.creator_id) ? element.creator_id : [element.creator_id];
+    creatorIds.push(...idCreators);
+  }
+  if (!creatorIds.includes(user.id)) {
+    const patch = { creator_id: [...creatorIds, user.id] };
+    const operations = { creator_id: UPDATE_OPERATION_ADD };
+    const patched = await patchAttributeRaw(context, user, element, patch, { operations, upsert: true });
+    impactedInputs.push(...patched.impactedInputs);
+    patchInputs.push(...patched.updatedInputs);
+  }
   // Upsert observed data
   if (type === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
     const timePatch = handleRelationTimeUpdate(updatePatch, element, 'first_observed', 'last_observed');
@@ -2513,7 +2531,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.standard_id = standardId;
   data.entity_type = relationshipType;
   data.relationship_type = relationshipType;
-  data.creator_id = user.internal_id;
+  data.creator_id = [user.internal_id];
   data.created_at = today;
   data.updated_at = today;
   // stix-relationship
@@ -2849,7 +2867,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc(ID_INTERNAL, internalId),
     R.assoc(ID_STANDARD, standardId),
     R.assoc('entity_type', type),
-    R.assoc('creator_id', user.internal_id),
+    R.assoc('creator_id', [user.internal_id]),
     R.dissoc('update'),
     R.dissoc('file'),
     R.omit(schemaRelationsRefDefinition.getInputNames()),

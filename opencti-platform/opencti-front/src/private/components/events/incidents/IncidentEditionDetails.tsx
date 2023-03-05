@@ -9,9 +9,7 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import {
-  IncidentEditionDetailsFieldPatchMutation,
-} from './__generated__/IncidentEditionDetailsFieldPatchMutation.graphql';
+import { IncidentEditionDetailsFieldPatchMutation } from './__generated__/IncidentEditionDetailsFieldPatchMutation.graphql';
 import { IncidentEditionDetailsFocusMutation } from './__generated__/IncidentEditionDetailsFocusMutation.graphql';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentEditionDetails_incident$key } from './__generated__/IncidentEditionDetails_incident.graphql';
@@ -48,49 +46,63 @@ const incidentEditionDetailsFocus = graphql`
 `;
 
 const incidentEditionDetailsFragment = graphql`
-    fragment IncidentEditionDetails_incident on Incident {
-        id
-        first_seen
-        last_seen
-        source
-        objective
-        is_inferred
-    }
-  `;
+  fragment IncidentEditionDetails_incident on Incident {
+    id
+    first_seen
+    last_seen
+    source
+    objective
+    is_inferred
+  }
+`;
 
 const incidentEditionDetailsValidation = (t: (v: string) => string) => Yup.object().shape({
-  first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date().nullable()
-    .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date()
+    .nullable()
+    .min(
+      Yup.ref('first_seen'),
+      "The last seen date can't be before first seen date",
+    )
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   objective: Yup.string().nullable(),
   source: Yup.string().nullable(),
 });
 
 interface IncidentEditionDetailsProps {
-  incidentRef: IncidentEditionDetails_incident$key ;
-  context: readonly ({
+  incidentRef: IncidentEditionDetails_incident$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface IncidentEditionDetailsFormValues {
-  message?: string
-  references?: Option[]
-  first_seen?: Option
-  last_seen?: Option
+  message?: string;
+  references?: Option[];
+  first_seen?: Option;
+  last_seen?: Option;
 }
-const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
+const IncidentEditionDetails: FunctionComponent<
+IncidentEditionDetailsProps
+> = ({ incidentRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
 
   const incident = useFragment(incidentEditionDetailsFragment, incidentRef);
   const isInferred = incident.is_inferred;
 
-  const [commitFieldPatch] = useMutation<IncidentEditionDetailsFieldPatchMutation>(incidentMutationFieldPatch);
-  const [commitEditionDetailsFocus] = useMutation<IncidentEditionDetailsFocusMutation>(incidentEditionDetailsFocus);
+  const [commitFieldPatch] = useMutation<IncidentEditionDetailsFieldPatchMutation>(
+    incidentMutationFieldPatch,
+  );
+  const [commitEditionDetailsFocus] = useMutation<IncidentEditionDetailsFocusMutation>(
+    incidentEditionDetailsFocus,
+  );
 
   const handleChangeFocus = (name: string) => {
     commitEditionDetailsFocus({
@@ -103,7 +115,10 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
     });
   };
 
-  const onSubmit : FormikConfig<IncidentEditionDetailsFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<IncidentEditionDetailsFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -118,7 +133,8 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
       variables: {
         id: incident.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -154,88 +170,94 @@ const IncidentEditionDetails : FunctionComponent<IncidentEditionDetailsProps> = 
   };
 
   return (
-      <Formik enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={incidentEditionDetailsValidation(t)}
-        onSubmit={onSubmit}>
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={DateTimePickerField}
-              name="first_seen"
-              disabled={isInferred}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('First seen'),
-                variant: 'standard',
-                fullWidth: true,
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="first_seen" />
-                ),
-              }}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={incidentEditionDetailsValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={DateTimePickerField}
+            name="first_seen"
+            disabled={isInferred}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('First seen'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_seen"
+            label={t('Last seen')}
+            disabled={isInferred}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Last seen'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="source"
+            label={t('Source')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="source" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="objective"
+            label={t('Objective')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="objective" />
+            }
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              values={values.references}
+              id={incident.id}
+              open={false}
             />
-            <Field
-              component={DateTimePickerField}
-              name="last_seen"
-              label={t('Last seen')}
-              disabled={isInferred}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Last seen'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="last_seen" />
-                ),
-              }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="source"
-              label={t('Source')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={<SubscriptionFocus context={context} fieldName="source" />}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="objective"
-              label={t('Objective')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={<SubscriptionFocus context={context} fieldName="objective" />}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                values={values.references}
-                id={incident.id}
-                open={false}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

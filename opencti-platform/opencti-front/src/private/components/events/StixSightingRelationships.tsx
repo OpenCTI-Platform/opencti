@@ -13,9 +13,7 @@ import {
 } from './stix_sighting_relationships/__generated__/StixSightingRelationshipsLinesPaginationQuery.graphql';
 import { convertFilters } from '../../../utils/ListParameters';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import {
-  StixSightingRelationshipLine_node$data,
-} from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
+import { StixSightingRelationshipLine_node$data } from './stix_sighting_relationships/__generated__/StixSightingRelationshipLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 
@@ -73,13 +71,16 @@ const StixSightingRelationships = () => {
     viewStorage,
     paginationOptions: rawPaginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
-    filters: {} as Filters,
-    searchTerm: '',
-    sortBy: 'created',
-    orderAsc: false,
-    openExports: false,
-  });
+  } = usePaginationLocalStorage<StixSightingRelationshipsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      filters: {} as Filters,
+      searchTerm: '',
+      sortBy: 'created',
+      orderAsc: false,
+      openExports: false,
+    },
+  );
 
   const {
     numberOfElements,
@@ -98,14 +99,23 @@ const StixSightingRelationships = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<StixSightingRelationshipLine_node$data>(
-    LOCAL_STORAGE_KEY,
-  );
+  } = useEntityToggle<StixSightingRelationshipLine_node$data>(LOCAL_STORAGE_KEY);
 
-  const renderLines = (paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables) => {
+  const renderLines = (
+    paginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables,
+  ) => {
     let renderFilters = filters;
-    renderFilters = { ...renderFilters, entity_type: [{ id: 'Stix-Sighting-Relationship', value: 'Stix-Sighting-Relationship' }] };
-    return (<div>
+    renderFilters = {
+      ...renderFilters,
+      entity_type: [
+        {
+          id: 'Stix-Sighting-Relationship',
+          value: 'Stix-Sighting-Relationship',
+        },
+      ],
+    };
+    return (
+      <div>
         <ListLines
           sortBy={sortBy}
           orderAsc={orderAsc}
@@ -140,7 +150,11 @@ const StixSightingRelationships = () => {
           <QueryRenderer
             query={stixSightingRelationshipsLinesQuery}
             variables={paginationOptions}
-            render={({ props }: { props: StixSightingRelationshipsLinesPaginationQuery$data }) => (
+            render={({
+              props,
+            }: {
+              props: StixSightingRelationshipsLinesPaginationQuery$data;
+            }) => (
               <StixSightingRelationshipsLines
                 data={props}
                 paginationOptions={paginationOptions}
@@ -181,13 +195,13 @@ const StixSightingRelationships = () => {
   const enrichedPaginationOptions: StixSightingRelationshipsLinesPaginationQuery$variables = {
     ...rawPaginationOptions,
     toId: toSightingId,
-    filters: convertFilters(newFilters) as StixSightingRelationshipsFiltering[],
+    filters: convertFilters(
+      newFilters,
+    ) as StixSightingRelationshipsFiltering[],
   };
   return (
     <ExportContextProvider>
-    <div>
-      {renderLines(enrichedPaginationOptions)}
-    </div>
+      <div>{renderLines(enrichedPaginationOptions)}</div>
     </ExportContextProvider>
   );
 };

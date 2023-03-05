@@ -223,7 +223,7 @@ class Opinions extends Component {
         isSortable: isRuntimeSort,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: isRuntimeSort,
       },

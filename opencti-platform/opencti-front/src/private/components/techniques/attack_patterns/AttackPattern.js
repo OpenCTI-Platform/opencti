@@ -119,7 +119,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

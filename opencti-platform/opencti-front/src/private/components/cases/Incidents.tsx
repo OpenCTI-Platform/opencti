@@ -96,7 +96,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         isSortable: isRuntimeSort ?? false,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '11%',
         isSortable: isRuntimeSort ?? false,
       },
@@ -106,7 +106,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         isSortable: false,
       },
       created: {
-        label: 'Date',
+        label: 'Creation date',
         width: '10%',
         isSortable: true,
       },

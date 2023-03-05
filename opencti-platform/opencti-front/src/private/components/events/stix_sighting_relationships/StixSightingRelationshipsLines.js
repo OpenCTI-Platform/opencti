@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StixSightingRelationshipLine, StixSightingRelationshipLineDummy } from './StixSightingRelationshipLine';
+import {
+  StixSightingRelationshipLine,
+  StixSightingRelationshipLineDummy,
+} from './StixSightingRelationshipLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -37,7 +40,10 @@ class StixSightingRelationshipsLines extends Component {
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={data?.stixSightingRelationships?.edges ?? []}
-        globalCount={data?.stixSightingRelationships?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        globalCount={
+          data?.stixSightingRelationships?.pageInfo?.globalCount
+          ?? nbOfRowsToLoad
+        }
         LineComponent={<StixSightingRelationshipLine />}
         DummyLineComponent={<StixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}

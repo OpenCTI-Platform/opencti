@@ -13,7 +13,11 @@ import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -96,7 +100,11 @@ const ObservedDataEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const observedDataValidator = useSchemaEditionValidation('Observed-Data', basicShape, ['objects']);
+  const observedDataValidator = useSchemaEditionValidation(
+    'Observed-Data',
+    basicShape,
+    ['objects'],
+  );
 
   const queries = {
     fieldPatch: observedDataMutationFieldPatch,
@@ -104,7 +112,12 @@ const ObservedDataEditionOverviewComponent = (props) => {
     relationDelete: observedDataMutationRelationDelete,
     editionFocus: observedDataEditionOverviewFocus,
   };
-  const editor = useFormEditor(observedData, enableReferences, queries, observedDataValidator);
+  const editor = useFormEditor(
+    observedData,
+    enableReferences,
+    queries,
+    observedDataValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -178,155 +191,172 @@ const ObservedDataEditionOverviewComponent = (props) => {
   )(observedData);
 
   return (
-      <Formik enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={observedDataValidator}
-        onSubmit={onSubmit}>
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <div>
-            <Form style={{ margin: '20px 0 20px 0' }}>
-              <Field
-                component={DateTimePickerField}
-                name="first_observed"
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                TextFieldProps={{
-                  label: t('First observed'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  helperText: (
-                    <SubscriptionFocus context={context} fieldName="first_observed" />
-                  ),
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="last_observed"
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                TextFieldProps={{
-                  label: t('Last observed'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                  helperText: (
-                    <SubscriptionFocus context={context} fieldName="last_observed" />
-                  ),
-                }}
-              />
-              <Field
-                component={TextField}
-                variant="standard"
-                name="number_observed"
-                label={t('Number observed')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="number_observed" />
-                }
-              />
-              <ConfidenceField
-                name="confidence"
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={observedDataValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <div>
+          <Form style={{ margin: '20px 0 20px 0' }}>
+            <Field
+              component={DateTimePickerField}
+              name="first_observed"
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              TextFieldProps={{
+                label: t('First observed'),
+                variant: 'standard',
+                fullWidth: true,
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="first_observed"
+                  />
+                ),
+              }}
+            />
+            <Field
+              component={DateTimePickerField}
+              name="last_observed"
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              TextFieldProps={{
+                label: t('Last observed'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+                helperText: (
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="last_observed"
+                  />
+                ),
+              }}
+            />
+            <Field
+              component={TextField}
+              variant="standard"
+              name="number_observed"
+              label={t('Number observed')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+              onFocus={editor.changeFocus}
+              onSubmit={handleSubmitField}
+              helperText={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="number_observed"
+                />
+              }
+            />
+            <ConfidenceField
+              name="confidence"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              label={t('Confidence')}
+              fullWidth={true}
+              containerStyle={fieldSpacingContainerStyle}
+              editContext={context}
+              variant="edit"
+            />
+            {observedData.workflowEnabled && (
+              <StatusField
+                name="x_opencti_workflow_id"
+                type="Observed-Data"
                 onFocus={editor.changeFocus}
                 onChange={handleSubmitField}
-                label={t('Confidence')}
-                fullWidth={true}
-                containerStyle={fieldSpacingContainerStyle}
-                editContext={context}
-                variant="edit"
-              />
-              {observedData.workflowEnabled && (
-                <StatusField
-                  name="x_opencti_workflow_id"
-                  type="Observed-Data"
-                  onFocus={editor.changeFocus}
-                  onChange={handleSubmitField}
-                  setFieldValue={setFieldValue}
-                  style={{ marginTop: 20 }}
-                  helpertext={
-                    <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                  }
-                />
-              )}
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
                 setFieldValue={setFieldValue}
+                style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="createdBy" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
                 }
-                onChange={editor.changeCreated}
               />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldname="objectMarking" />
-                }
-                onChange={editor.changeMarking}
-              />
-              {enableReferences && (
-                <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={observedData.id}
+            )}
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              helpertext={
+                <SubscriptionFocus context={context} fieldName="createdBy" />
+              }
+              onChange={editor.changeCreated}
+            />
+            <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
                 />
-              )}
-            </Form>
-          </div>
-        )}
-      </Formik>
+              }
+              onChange={editor.changeMarking}
+            />
+            {enableReferences && (
+              <CommitMessage
+                submitForm={submitForm}
+                disabled={isSubmitting || !isValid || !dirty}
+                setFieldValue={setFieldValue}
+                open={false}
+                values={values.references}
+                id={observedData.id}
+              />
+            )}
+          </Form>
+        </div>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(ObservedDataEditionOverviewComponent, {
   observedData: graphql`
-      fragment ObservedDataEditionOverview_observedData on ObservedData {
-        id
-        confidence
-        first_observed
-        last_observed
-        number_observed
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        is_inferred
-        status {
+    fragment ObservedDataEditionOverview_observedData on ObservedData {
+      id
+      confidence
+      first_observed
+      last_observed
+      number_observed
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      is_inferred
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

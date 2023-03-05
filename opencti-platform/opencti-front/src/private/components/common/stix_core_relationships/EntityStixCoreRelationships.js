@@ -247,7 +247,7 @@ class EntityStixCoreRelationships extends Component {
         isSortable: isRuntimeSort,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '10%',
         isSortable: isRuntimeSort,
       },
@@ -461,7 +461,7 @@ class EntityStixCoreRelationships extends Component {
         isSortable: isRuntimeSort,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: isRuntimeSort,
       },

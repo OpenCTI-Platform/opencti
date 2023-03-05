@@ -109,7 +109,7 @@ class OpinionLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.creator.width }}
               >
-                {node.creator?.name}
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
               </div>
               <div
                 className={classes.bodyItem}
@@ -202,7 +202,7 @@ const OpinionLineFragment = createFragmentContainer(OpinionLineComponent, {
           }
         }
       }
-      creator {
+      creators {
         id
         name
       }

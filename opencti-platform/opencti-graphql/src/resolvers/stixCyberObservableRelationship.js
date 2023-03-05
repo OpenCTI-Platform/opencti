@@ -36,7 +36,7 @@ const stixCyberObservableRelationshipResolvers = {
     reports: (rel, _, context) => reportsLoader.load(rel.id, context, context.user),
     notes: (rel, _, context) => notesLoader.load(rel.id, context, context.user),
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
-    creator: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
+    creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
   },
   Mutation: {

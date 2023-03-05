@@ -212,7 +212,7 @@ class Relationships extends Component {
         isSortable: isRuntimeSort,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '7%',
         isSortable: true,
       },

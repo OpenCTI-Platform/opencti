@@ -42,36 +42,41 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 const incidentDetailsFragment = graphql`
-    fragment IncidentDetails_incident on Incident {
+  fragment IncidentDetails_incident on Incident {
+    id
+    first_seen
+    last_seen
+    objective
+    description
+    incident_type
+    severity
+    source
+    status {
       id
-      first_seen
-      last_seen
-      objective
-      description
-      incident_type
-      severity
-      source
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
+      order
+      template {
+        name
+        color
       }
-      workflowEnabled
-      is_inferred
     }
-  `;
+    workflowEnabled
+    is_inferred
+  }
+`;
 
 interface IncidentDetailsProps {
-  incidentData: IncidentDetails_incident$key ;
+  incidentData: IncidentDetails_incident$key;
 }
-const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData }) => {
+const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
+  incidentData,
+}) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
 
-  const incident: IncidentDetails_incident$data = useFragment(incidentDetailsFragment, incidentData);
+  const incident: IncidentDetails_incident$data = useFragment(
+    incidentDetailsFragment,
+    incidentData,
+  );
 
   const entitiesDataSelection = [
     {
@@ -131,7 +136,12 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({ incidentData
             <Typography variant="h3" gutterBottom={true}>
               {t('Severity')}
             </Typography>
-            <ItemOpenVocab key="type" small={true} type="incident_severity_ov" value={incident.severity}/>
+            <ItemOpenVocab
+              key="type"
+              small={true}
+              type="incident_severity_ov"
+              value={incident.severity}
+            />
             <Typography
               variant="h3"
               gutterBottom={true}

@@ -88,7 +88,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         isSortable: isRuntimeSort ?? false,
       },
       creator: {
-        label: 'Creator',
+        label: 'Creators',
         width: '12%',
         isSortable: isRuntimeSort ?? false,
       },

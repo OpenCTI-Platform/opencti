@@ -101,7 +101,7 @@ type AdministrativeArea implements BasicObject & StixCoreObject & StixDomainObje
     # AdministrativeArea
     country: Country
     # Technical
-    creator: Creator
+    creators: [Creator!]
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection

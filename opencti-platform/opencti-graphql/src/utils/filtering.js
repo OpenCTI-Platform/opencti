@@ -14,14 +14,15 @@ import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 
 // Resolutions
 export const MARKING_FILTER = 'markedBy';
-export const CREATOR_FILTER = 'createdBy';
+export const CREATED_BY_FILTER = 'createdBy';
+export const CREATOR_FILTER = 'creator';
 export const ASSIGNEE_FILTER = 'assigneeTo';
 export const OBJECT_CONTAINS_FILTER = 'objectContains';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
 export const RESOLUTION_FILTERS = [
   MARKING_FILTER,
-  CREATOR_FILTER,
+  CREATED_BY_FILTER,
   ASSIGNEE_FILTER,
   OBJECT_CONTAINS_FILTER,
   RELATION_FROM,
@@ -192,10 +193,24 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
           return false;
         }
       }
-      // Creator filtering
-      if (key === CREATOR_FILTER) {
+      // CreatedBy filtering
+      if (key === CREATED_BY_FILTER) {
         const ids = values.map((v) => v.id);
-        const isCreatorAvailable = stix.created_by_ref && ids.includes(stix.created_by_ref);
+        const isCreatedByAvailable = stix.created_by_ref && ids.includes(stix.created_by_ref);
+        // If creator is available but must not be
+        if (operator === 'not_eq' && isCreatedByAvailable) {
+          return false;
+        }
+        // If creator is not available but must be
+        if (operator === 'eq' && !isCreatedByAvailable) {
+          return false;
+        }
+      }
+      // Technical creator filter
+      if (key === CREATOR_FILTER) {
+        const creators = stix.extensions[STIX_EXT_OCTI]?.creator_ids ?? [];
+        const extractedValues = values.map((v) => v.id);
+        const isCreatorAvailable = extractedValues.some((r) => creators.includes(r));
         // If creator is available but must not be
         if (operator === 'not_eq' && isCreatorAvailable) {
           return false;
@@ -207,7 +222,7 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
       }
       // Assignee filtering
       if (key === ASSIGNEE_FILTER) {
-        const assignees = stix.extensions[STIX_EXT_OCTI]?.object_assignee_refs ?? [];
+        const assignees = stix.extensions[STIX_EXT_OCTI]?.assignee_ids ?? [];
         const extractedValues = values.map((v) => v.id);
         const isAssigneeAvailable = extractedValues.some((r) => assignees.includes(r));
         // If assignee is available but must not be

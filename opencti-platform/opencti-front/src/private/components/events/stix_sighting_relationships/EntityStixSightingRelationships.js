@@ -46,9 +46,9 @@ class EntityStixSightingRelationships extends Component {
       params = buildViewParamsFromUrlAndStorage(
         props.history,
         props.location,
-        `view-sightings-${
-          props.entityId
-        }-${props.stixCoreObjectTypes?.join('-')}`,
+        `view-sightings-${props.entityId}-${props.stixCoreObjectTypes?.join(
+          '-',
+        )}`,
       );
     }
     this.state = {

@@ -304,7 +304,7 @@ export const searchStixCoreObjectsLinesSearchQuery = graphql`
               }
             }
           }
-          creator {
+          creators {
             id
             name
           }
@@ -351,6 +351,10 @@ export default createPaginationContainer(
                 ... on Identity {
                   name
                 }
+              }
+              creators {
+                id
+                name
               }
               objectMarking {
                 edges {

@@ -296,16 +296,8 @@ const SearchBulk = () => {
                           markings: resolvedStixCoreObject.objectMarking,
                           reports: resolvedStixCoreObject.reports,
                           updated_at: resolvedStixCoreObject.updated_at,
-                          author: R.pathOr(
-                            '',
-                            ['createdBy', 'name'],
-                            resolvedStixCoreObject,
-                          ),
-                          creator: R.pathOr(
-                            '',
-                            ['creator', 'name'],
-                            resolvedStixCoreObject,
-                          ),
+                          author: R.pathOr('', ['createdBy', 'name'], resolvedStixCoreObject),
+                          creators: (resolvedStixCoreObject.creators ?? []).map((c) => c?.name).join(', '),
                           in_platform: true,
                         }),
                       );
@@ -462,7 +454,7 @@ const SearchBulk = () => {
                     {SortHeader('type', 'Type', true)}
                     {SortHeader('value', 'Value', true)}
                     {SortHeader('author', 'Author', true)}
-                    {SortHeader('creator', 'Creator', true)}
+                    {SortHeader('creator', 'Creators', true)}
                     {SortHeader('labels', 'Labels', true)}
                     {SortHeader('created_at', 'Creation date', true)}
                     {SortHeader('reports', 'Reports', true)}
@@ -534,7 +526,7 @@ const SearchBulk = () => {
                           className={classes.bodyItem}
                           style={inlineStyles.creator}
                         >
-                          {entity.in_platform && entity.creator}
+                          {entity.in_platform && entity.creators}
                         </div>
                         <div
                           className={classes.bodyItem}

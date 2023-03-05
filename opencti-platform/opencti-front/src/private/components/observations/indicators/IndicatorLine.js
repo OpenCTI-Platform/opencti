@@ -122,7 +122,7 @@ const IndicatorLineComponent = (props) => {
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {node.creator.name}
+              {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -183,7 +183,7 @@ export const IndicatorLine = createFragmentContainer(IndicatorLineComponent, {
           }
         }
       }
-      creator {
+      creators {
         id
         name
       }

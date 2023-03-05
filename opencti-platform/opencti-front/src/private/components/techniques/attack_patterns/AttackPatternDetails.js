@@ -187,10 +187,6 @@ const AttackPatternDetails = createFragmentContainer(
         x_mitre_id
         x_mitre_detection
         isSubAttackPattern
-        creator {
-          id
-          name
-        }
         killChainPhases {
           edges {
             node {

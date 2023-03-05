@@ -405,10 +405,7 @@ class StixSightingRelationshipCreationFromEntity extends Component {
   renderDomainObjectSearchResults() {
     const { stixCoreObjectTypes } = this.props;
 
-    if (
-      !stixCoreObjectTypes
-      || stixCoreObjectTypes.length === 0
-    ) {
+    if (!stixCoreObjectTypes || stixCoreObjectTypes.length === 0) {
       return null;
     }
 

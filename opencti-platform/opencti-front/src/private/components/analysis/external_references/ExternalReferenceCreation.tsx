@@ -93,10 +93,6 @@ export const externalReferenceCreationMutation = graphql`
       external_id
       created
       fileId
-      creator {
-        id
-        name
-      }
     }
   }
 `;

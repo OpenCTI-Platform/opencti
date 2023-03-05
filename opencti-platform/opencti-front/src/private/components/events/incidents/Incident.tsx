@@ -26,141 +26,146 @@ const useStyles = makeStyles(() => ({
 }));
 
 const incidentFragment = graphql`
-      fragment Incident_incident on Incident {
-          id
-          standard_id
-          x_opencti_stix_ids
-          spec_version
-          revoked
-          confidence
-          created
-          modified
-          created_at
-          updated_at
-          createdBy {
-              ... on Identity {
-                  id
-                  name
-                  entity_type
-              }
-          }
-          creator {
-              name
-          }
-          objectMarking {
-              edges {
-                  node {
-                      id
-                      definition_type
-                      definition
-                      x_opencti_order
-                      x_opencti_color
-                  }
-              }
-          }
-          objectLabel {
-              edges {
-                  node {
-                      id
-                      value
-                      color
-                  }
-              }
-          }
-          objectAssignee {
-              edges {
-                  node {
-                      id
-                      name
-                      entity_type
-                  }
-              }
-          }
-          name
-          aliases
-          status {
-              id
-              order
-              template {
-                  name
-                  color
-              }
-          }
-          workflowEnabled
-          ...IncidentDetails_incident
+  fragment Incident_incident on Incident {
+    id
+    standard_id
+    x_opencti_stix_ids
+    spec_version
+    revoked
+    confidence
+    created
+    modified
+    created_at
+    updated_at
+    createdBy {
+      ... on Identity {
+        id
+        name
+        entity_type
       }
-  `;
+    }
+    creators {
+      name
+    }
+    objectMarking {
+      edges {
+        node {
+          id
+          definition_type
+          definition
+          x_opencti_order
+          x_opencti_color
+        }
+      }
+    }
+    objectLabel {
+      edges {
+        node {
+          id
+          value
+          color
+        }
+      }
+    }
+    objectAssignee {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
+    }
+    name
+    aliases
+    status {
+      id
+      order
+      template {
+        name
+        color
+      }
+    }
+    workflowEnabled
+    ...IncidentDetails_incident
+  }
+`;
 
-const Incident = ({ incidentData }: { incidentData: Incident_incident$key }) => {
+const Incident = ({
+  incidentData,
+}: {
+  incidentData: Incident_incident$key;
+}) => {
   const classes = useStyles();
 
-  const incident = useFragment<Incident_incident$key>(incidentFragment, incidentData);
+  const incident = useFragment<Incident_incident$key>(
+    incidentFragment,
+    incidentData,
+  );
 
   return (
-      <div className={classes.container}>
-        <StixDomainObjectHeader
-          entityType={'Incident'}
-          stixDomainObject={incident}
-          PopoverComponent={IncidentPopover}
-        />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <IncidentDetails incidentData={incident} />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview
-              stixDomainObject={incident}
-              displayAssignees={true}
-            />
-          </Grid>
+    <div className={classes.container}>
+      <StixDomainObjectHeader
+        entityType={'Incident'}
+        stixDomainObject={incident}
+        PopoverComponent={IncidentPopover}
+      />
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <IncidentDetails incidentData={incident} />
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <SimpleStixObjectOrStixRelationshipStixCoreRelationships
-              stixObjectOrStixRelationshipId={incident.id}
-              stixObjectOrStixRelationshipLink={`/dashboard/events/incidents/${incident.id}/knowledge`}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={incident.id}
-            />
-          </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={incident.id} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory stixCoreObjectId={incident.id} />
-          </Grid>
-        </Grid>
-        <StixCoreObjectOrStixCoreRelationshipNotes
-          stixCoreObjectOrStixCoreRelationshipId={incident.id}
-          defaultMarking={(incident.objectMarking?.edges ?? []).map(
-            (edge) => edge.node,
-          )}
-        />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentEdition
-            incidentId={incident.id}
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <StixDomainObjectOverview
+            stixDomainObject={incident}
+            displayAssignees={true}
           />
-        </Security>
-      </div>
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6}>
+          <SimpleStixObjectOrStixRelationshipStixCoreRelationships
+            stixObjectOrStixRelationshipId={incident.id}
+            stixObjectOrStixRelationshipLink={`/dashboard/events/incidents/${incident.id}/knowledge`}
+          />
+        </Grid>
+        <Grid item={true} xs={6}>
+          <StixCoreObjectOrStixCoreRelationshipLastReports
+            stixCoreObjectOrStixCoreRelationshipId={incident.id}
+          />
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6}>
+          <StixCoreObjectExternalReferences stixCoreObjectId={incident.id} />
+        </Grid>
+        <Grid item={true} xs={6}>
+          <StixCoreObjectLatestHistory stixCoreObjectId={incident.id} />
+        </Grid>
+      </Grid>
+      <StixCoreObjectOrStixCoreRelationshipNotes
+        stixCoreObjectOrStixCoreRelationshipId={incident.id}
+        defaultMarking={(incident.objectMarking?.edges ?? []).map(
+          (edge) => edge.node,
+        )}
+      />
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <IncidentEdition incidentId={incident.id} />
+      </Security>
+    </div>
   );
 };
 

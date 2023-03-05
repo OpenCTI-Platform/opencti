@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import * as R from 'ramda';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -134,7 +133,7 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '12%' }}
                         >
-                          {R.pathOr('', ['creator', 'name'], stixCoreObject)}
+                          {(stixCoreObject.creators ?? []).map((c) => c?.name).join(', ')}
                         </div>
                         <div
                           className={classes.bodyItem}
@@ -221,7 +220,7 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
               relationship_type
               start_time
               stop_time
-              creator {
+              creators {
                 id
                 name
               }

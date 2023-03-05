@@ -122,7 +122,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

@@ -45,7 +45,7 @@ const dataSourceFragment = graphql`
         entity_type
       }
     }
-    creator {
+    creators {
       id
       name
     }

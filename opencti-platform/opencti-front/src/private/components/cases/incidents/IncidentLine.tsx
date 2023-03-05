@@ -113,7 +113,7 @@ const caseFragment = graphql`
         }
       }
     }
-    creator {
+    creators {
       id
       name
     }
@@ -204,7 +204,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {data.creator?.name}
+              {(data.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}

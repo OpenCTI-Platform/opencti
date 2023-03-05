@@ -27,10 +27,6 @@ const DataSourceDetailsFragment = graphql`
     description
     x_mitre_platforms
     collection_layers
-    creator {
-      id
-      name
-    }
     objectLabel {
       edges {
         node {

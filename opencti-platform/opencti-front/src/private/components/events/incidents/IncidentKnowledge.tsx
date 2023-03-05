@@ -24,16 +24,20 @@ const useStyles = makeStyles(() => ({
 }));
 
 const IncidentKnowledgeFragment = graphql`
-    fragment IncidentKnowledge_incident on Incident {
-        id
-        name
-        aliases
-        first_seen
-        last_seen
-    }
+  fragment IncidentKnowledge_incident on Incident {
+    id
+    name
+    aliases
+    first_seen
+    last_seen
+  }
 `;
 
-const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_incident$key }) => {
+const IncidentKnowledge = ({
+  incidentData,
+}: {
+  incidentData: IncidentKnowledge_incident$key;
+}) => {
   const classes = useStyles();
 
   const incident = useFragment<IncidentKnowledge_incident$key>(
@@ -47,7 +51,7 @@ const IncidentKnowledge = ({ incidentData }: { incidentData: IncidentKnowledge_i
       <StixDomainObjectHeader
         entityType={'Incident'}
         stixDomainObject={incident}
-        PopoverComponent={IncidentPopover }
+        PopoverComponent={IncidentPopover}
       />
       <Switch>
         <Route

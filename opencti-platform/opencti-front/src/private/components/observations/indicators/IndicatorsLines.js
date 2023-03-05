@@ -118,10 +118,6 @@ export default createPaginationContainer(
           edges {
             node {
               id
-              creator {
-                id
-                name
-              }
               ...IndicatorLine_node
             }
           }

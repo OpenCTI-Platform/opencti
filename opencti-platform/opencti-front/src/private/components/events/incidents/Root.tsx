@@ -13,8 +13,7 @@ import FileManager from '../../common/files/FileManager';
 import IncidentPopover from './IncidentPopover';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
-import StixCoreObjectOrStixCoreRelationshipContainers
-  from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
+import StixCoreObjectOrStixCoreRelationshipContainers from '../../common/containers/StixCoreObjectOrStixCoreRelationshipContainers';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import StixCoreObjectKnowledgeBar from '../../common/stix_core_objects/StixCoreObjectKnowledgeBar';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
@@ -65,7 +64,9 @@ const incidentQuery = graphql`
 
 const RootIncidentComponent = ({ queryRef }) => {
   const { incidentId } = useParams() as { incidentId: string };
-  const subConfig = useMemo<GraphQLSubscriptionConfig<RootIncidentSubscription>>(
+  const subConfig = useMemo<
+  GraphQLSubscriptionConfig<RootIncidentSubscription>
+  >(
     () => ({
       subscription,
       variables: { id: incidentId },
@@ -76,138 +77,134 @@ const RootIncidentComponent = ({ queryRef }) => {
   const data = usePreloadedQuery(incidentQuery, queryRef);
   const { incident, connectorsForImport, connectorsForExport } = data;
   return (
-      <div>
-        <>
-          {incident ? (
-                  <Switch>
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId"
-                      render={() => <Incident incidentData={incident} />}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId/knowledge"
-                      render={() => (
-                        <Redirect
-                          to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
-                        />
-                      )}
-                    />
-                    <Route
-                      path="/dashboard/events/incidents/:incidentId/knowledge"
-                      render={() => (
-                        <IncidentKnowledge
-                          incidentData={incident}
-                        />
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId/content"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Incident'}
-                            stixDomainObject={incident}
-                            PopoverComponent={IncidentPopover}
-                            disableSharing={true}
-                          />
-                          <StixDomainObjectContent
-                            {...routeProps}
-                            stixDomainObject={incident}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId/analysis"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Incident'}
-                            stixDomainObject={incident}
-                            PopoverComponent={IncidentPopover}
-                          />
-                          <StixCoreObjectOrStixCoreRelationshipContainers
-                            {...routeProps}
-                            stixDomainObjectOrStixCoreRelationship={
-                              incident
-                            }
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId/files"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Incident'}
-                            stixDomainObject={incident}
-                            PopoverComponent={IncidentPopover}
-                          />
-                          <FileManager
-                            {...routeProps}
-                            id={incidentId}
-                            connectorsImport={connectorsForImport}
-                            connectorsExport={connectorsForExport}
-                            entity={incident}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                    <Route
-                      exact
-                      path="/dashboard/events/incidents/:incidentId/history"
-                      render={(routeProps) => (
-                        <React.Fragment>
-                          <StixDomainObjectHeader
-                            entityType={'Incident'}
-                            stixDomainObject={incident}
-                            PopoverComponent={IncidentPopover}
-                          />
-                          <StixCoreObjectHistory
-                            {...routeProps}
-                            stixCoreObjectId={incidentId}
-                          />
-                        </React.Fragment>
-                      )}
-                    />
-                  </Switch>
-          ) : (
-            <ErrorNotFound />
-          )}
-        </>
-      </div>
+    <div>
+      <>
+        {incident ? (
+          <Switch>
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId"
+              render={() => <Incident incidentData={incident} />}
+            />
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId/knowledge"
+              render={() => (
+                <Redirect
+                  to={`/dashboard/events/incidents/${incidentId}/knowledge/overview`}
+                />
+              )}
+            />
+            <Route
+              path="/dashboard/events/incidents/:incidentId/knowledge"
+              render={() => <IncidentKnowledge incidentData={incident} />}
+            />
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId/content"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    entityType={'Incident'}
+                    stixDomainObject={incident}
+                    PopoverComponent={IncidentPopover}
+                    disableSharing={true}
+                  />
+                  <StixDomainObjectContent
+                    {...routeProps}
+                    stixDomainObject={incident}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId/analysis"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    entityType={'Incident'}
+                    stixDomainObject={incident}
+                    PopoverComponent={IncidentPopover}
+                  />
+                  <StixCoreObjectOrStixCoreRelationshipContainers
+                    {...routeProps}
+                    stixDomainObjectOrStixCoreRelationship={incident}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId/files"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    entityType={'Incident'}
+                    stixDomainObject={incident}
+                    PopoverComponent={IncidentPopover}
+                  />
+                  <FileManager
+                    {...routeProps}
+                    id={incidentId}
+                    connectorsImport={connectorsForImport}
+                    connectorsExport={connectorsForExport}
+                    entity={incident}
+                  />
+                </React.Fragment>
+              )}
+            />
+            <Route
+              exact
+              path="/dashboard/events/incidents/:incidentId/history"
+              render={(routeProps) => (
+                <React.Fragment>
+                  <StixDomainObjectHeader
+                    entityType={'Incident'}
+                    stixDomainObject={incident}
+                    PopoverComponent={IncidentPopover}
+                  />
+                  <StixCoreObjectHistory
+                    {...routeProps}
+                    stixCoreObjectId={incidentId}
+                  />
+                </React.Fragment>
+              )}
+            />
+          </Switch>
+        ) : (
+          <ErrorNotFound />
+        )}
+      </>
+    </div>
   );
 };
 
 const RootIncident = () => {
   const { incidentId } = useParams() as { incidentId: string };
-  const queryRef = useQueryLoading < RootIncidentQuery >(incidentQuery, { id: incidentId });
+  const queryRef = useQueryLoading<RootIncidentQuery>(incidentQuery, {
+    id: incidentId,
+  });
   const link = `/dashboard/events/incidents/${incidentId}/knowledge`;
   return (
     <div>
-        <TopBar />
-          <Route path="/dashboard/events/incidents/:incidentId/knowledge">
-            <StixCoreObjectKnowledgeBar
-              stixCoreObjectLink={link}
-              availableSections={[
-                'attribution',
-                'victimology',
-                'attack_patterns',
-                'malwares',
-                'channels',
-                'narratives',
-                'tools',
-                'vulnerabilities',
-                'observables',
-              ]}
-            />
-          </Route>
+      <TopBar />
+      <Route path="/dashboard/events/incidents/:incidentId/knowledge">
+        <StixCoreObjectKnowledgeBar
+          stixCoreObjectLink={link}
+          availableSections={[
+            'attribution',
+            'victimology',
+            'attack_patterns',
+            'malwares',
+            'channels',
+            'narratives',
+            'tools',
+            'vulnerabilities',
+            'observables',
+          ]}
+        />
+      </Route>
       {queryRef ? (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <RootIncidentComponent queryRef={queryRef} />

@@ -204,8 +204,14 @@ export const convertObjectReferences = (instance: StoreEntity, isInferred = fals
 
 // Extensions
 export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtension => {
+  const builtCreatorIds: string[] = [];
+  if (instance.creator_id) {
+    const arrayCreators = Array.isArray(instance.creator_id) ? instance.creator_id : [instance.creator_id];
+    builtCreatorIds.push(...arrayCreators);
+  }
   const octiExtensions: S.StixOpenctiExtension = {
     extension_type: 'property-extension',
+    // Attributes
     id: instance.internal_id,
     type: instance.entity_type,
     created_at: instance.created_at,
@@ -219,10 +225,13 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     })),
     stix_ids: (instance.x_opencti_stix_ids ?? []).filter((stixId: string) => isTrustedStixId(stixId)),
     is_inferred: instance._index ? isInferredIndex(instance._index) : undefined, // TODO Use case for empty _index?
-    workflow_id: instance.x_opencti_workflow_id,
+    // Refs
     granted_refs: (instance[INPUT_GRANTED_REFS] ?? []).map((m) => m.standard_id),
-    object_assignee_refs: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
     linked_to_refs: (instance[INPUT_LINKED] ?? []).map((m) => m.standard_id),
+    // Internals
+    creator_ids: builtCreatorIds,
+    assignee_ids: (instance[INPUT_ASSIGNEE] ?? []).map((m) => m.internal_id),
+    workflow_id: instance.x_opencti_workflow_id,
   };
   return cleanObject(octiExtensions);
 };

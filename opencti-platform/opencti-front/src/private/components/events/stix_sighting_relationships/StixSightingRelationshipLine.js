@@ -69,7 +69,21 @@ const styles = (theme) => ({
 
 class StixSightingRelationshipLineComponent extends Component {
   render() {
-    const { nsdt, t, fd, classes, dataColumns, node, paginationOptions, selectedElements, deSelectedElements, selectAll, onToggleEntity, onToggleShiftEntity, index } = this.props;
+    const {
+      nsdt,
+      t,
+      fd,
+      classes,
+      dataColumns,
+      node,
+      paginationOptions,
+      selectedElements,
+      deSelectedElements,
+      selectAll,
+      onToggleEntity,
+      onToggleShiftEntity,
+      index,
+    } = this.props;
     const entityFrom = node.from;
     const entityTo = node.to;
     const restrictedFrom = entityFrom === null;
@@ -101,7 +115,9 @@ class StixSightingRelationshipLineComponent extends Component {
           />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={!restrictedFrom ? entityFrom.entity_type : 'restricted'} />
+          <ItemIcon
+            type={!restrictedFrom ? entityFrom.entity_type : 'restricted'}
+          />
         </ListItemIcon>
         <ListItemText
           primary={

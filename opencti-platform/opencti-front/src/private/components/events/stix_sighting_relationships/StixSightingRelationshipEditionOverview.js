@@ -12,16 +12,26 @@ import makeStyles from '@mui/styles/makeStyles';
 import { buildDate } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';

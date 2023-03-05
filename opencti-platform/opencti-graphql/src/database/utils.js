@@ -17,8 +17,14 @@ import conf from '../config/conf';
 import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
 import { isStixRelationship } from '../schema/stixRelationship';
 import { truncate } from '../utils/mailData';
-import { isDateAttribute, isDictionaryAttribute, isJsonAttribute } from '../schema/schema-attributes';
+import {
+  isDateAttribute,
+  isDictionaryAttribute,
+  isJsonAttribute,
+  schemaAttributesDefinition
+} from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
+import { creators } from '../schema/attribute-definition';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -326,9 +332,13 @@ export const generateUpdateMessage = (inputs) => {
   const generatedMessage = patchElements.slice(0, 3).map(([type, operations]) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
-      let convertedKey = key;
-      if (schemaRelationsRefDefinition.convertInputNameToStixName(key)) {
-        convertedKey = schemaRelationsRefDefinition.convertInputNameToStixName(key);
+      let convertedKey;
+      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationsRefByInputName(key);
+      if (relationsRefDefinition) {
+        convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
+      } else {
+        const attributeDefinition = schemaAttributesDefinition.getAttribute(key);
+        convertedKey = attributeDefinition.label ?? attributeDefinition.name;
       }
       const fromArray = Array.isArray(value) ? value : [value];
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
@@ -336,6 +346,8 @@ export const generateUpdateMessage = (inputs) => {
         // If update is based on internal ref, we need to extract the value
         if (schemaRelationsRefDefinition.convertInputNameToStixName(key)) {
           message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
+        } else if (key === creators.name) {
+          message = 'itself'; // Creator special case
         } else if (isDictionaryAttribute(key)) {
           message = Object.entries(R.head(values)).map(([k, v]) => truncate(`${k}:${v}`)).join(', ');
         } else if (isJsonAttribute(key)) {

@@ -119,7 +119,7 @@ const Infrastructure = createFragmentContainer(InfrastructureComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

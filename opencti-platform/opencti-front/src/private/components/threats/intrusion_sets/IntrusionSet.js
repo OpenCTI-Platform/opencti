@@ -122,7 +122,7 @@ const IntrusionSet = createFragmentContainer(IntrusionSetComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

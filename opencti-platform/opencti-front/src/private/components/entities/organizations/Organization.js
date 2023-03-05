@@ -131,7 +131,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

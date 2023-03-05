@@ -71,10 +71,6 @@ const vulnerabilitiesLinesFragment = graphql`
           id
           name
           description
-          creator {
-            id
-            name
-          }
           ...VulnerabilityLine_node
         }
       }

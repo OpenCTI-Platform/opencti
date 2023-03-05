@@ -221,7 +221,7 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
         }
       }
     }
-    creator {
+    creators {
       id
       name
     }
@@ -330,7 +330,7 @@ EntityStixCoreRelationshipsEntitiesLineProps
               className={classes.bodyItem}
               style={{ width: dataColumns.creator.width }}
             >
-              {R.pathOr('', ['creator', 'name'], stixCoreObject)}
+              {(stixCoreObject.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}

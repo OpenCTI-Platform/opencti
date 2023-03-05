@@ -138,11 +138,19 @@ export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
-export const batchCreators = async (context, user, userIds) => {
-  const internalUserIds = Object.keys(INTERNAL_USERS);
+const internalUserIds = Object.keys(INTERNAL_USERS);
+export const batchCreator = async (context, user, userIds) => {
   const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
   const users = await elFindByIds(context, user, userToFinds, { toMap: true });
   return userIds.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER);
+};
+
+export const batchCreators = async (context, user, userListIds) => {
+  const userIds = userListIds.map((u) => (Array.isArray(u) ? u : [u]));
+  const allUserIds = userIds.flat();
+  const userToFinds = R.uniq(allUserIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
+  const users = await elFindByIds(context, user, userToFinds, { toMap: true });
+  return userIds.map((ids) => ids.map((id) => INTERNAL_USERS[id] || users[id] || SYSTEM_USER));
 };
 
 export const batchOrganizations = async (context, user, userId, opts = {}) => {

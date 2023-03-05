@@ -88,7 +88,6 @@ const threatActorMutationRelationDelete = graphql`
 const ThreatActorEditionOverviewComponent = (props) => {
   const { threatActor, enableReferences, context, handleClose } = props;
   const { t } = useFormatter();
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
@@ -101,7 +100,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
     'Threat-Actor',
     basicShape,
   );
-
   const queries = {
     fieldPatch: threatActorMutationFieldPatch,
     relationAdd: threatActorMutationRelationAdd,
@@ -114,7 +112,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
     queries,
     threatActorValidator,
   );
-
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -142,7 +139,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
       },
     });
   };
-
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
@@ -162,7 +158,6 @@ const ThreatActorEditionOverviewComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('createdBy', convertCreatedBy(threatActor)),
     R.assoc('killChainPhases', convertKillChainPhases(threatActor)),

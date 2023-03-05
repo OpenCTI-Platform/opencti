@@ -1,8 +1,10 @@
 import * as R from 'ramda';
 import {
   AttributeDefinition,
-  confidence, created,
+  confidence,
+  created,
   createdAt,
+  creators,
   entityType,
   IcreatedAtDay,
   IcreatedAtMonth,
@@ -28,6 +30,7 @@ export const stixSightingRelationshipsAttributes: { [k: string]: Array<Attribute
     updatedAt,
     xOpenctiStixIds,
     specVersion,
+    creators,
     revoked,
     confidence,
     lang,

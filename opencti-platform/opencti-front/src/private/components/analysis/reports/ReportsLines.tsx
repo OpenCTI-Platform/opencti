@@ -80,10 +80,6 @@ const reportsLineFragment = graphql`
               }
             }
           }
-          creator {
-            id
-            name
-          }
           ...ReportLine_node
         }
       }

@@ -43,10 +43,6 @@ const incidentFragment = graphql`
         entity_type
       }
     }
-    creator {
-      id
-      name
-    }
     objectMarking {
       edges {
         node {

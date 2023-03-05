@@ -24,10 +24,6 @@ const DataComponentDetailsFragment = graphql`
   fragment DataComponentDetails_dataComponent on DataComponent {
     id
     description
-    creator {
-      id
-      name
-    }
     objectLabel {
       edges {
         node {

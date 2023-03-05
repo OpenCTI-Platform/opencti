@@ -482,9 +482,21 @@ class StixSightingRelationshipContainer extends Component {
                     gutterBottom={true}
                     style={{ marginTop: 20 }}
                   >
-                    {t('Creator')}
+                    {t('Creators')}
                   </Typography>
-                  <ItemCreator creator={stixSightingRelationship.creator} />
+                  <div>
+                    {(stixSightingRelationship.creators ?? []).map((c) => {
+                      return (
+                        <div
+                          key={`creator-${c.id}`}
+                          style={{ float: 'left', marginRight: '10px' }}
+                        >
+                          <ItemCreator creator={c} />
+                        </div>
+                      );
+                    })}
+                    <div style={{ clear: 'both' }} />
+                  </div>
                 </Grid>
               </Grid>
             </Paper>
@@ -589,7 +601,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
         created_at
         updated_at
         is_inferred
-        creator {
+        creators {
           id
           name
         }

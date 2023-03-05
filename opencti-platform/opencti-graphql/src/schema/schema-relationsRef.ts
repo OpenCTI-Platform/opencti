@@ -4,6 +4,7 @@ import { getParentTypes } from './schemaUtils';
 
 export const schemaRelationsRefDefinition = {
   relationsRef: {} as Record<string, RelationRefDefinition[]>,
+  relationsRef_by_input: {} as Record<string, RelationRefDefinition>,
 
   inputNames: [] as string[],
   databaseNames: [] as string[],
@@ -33,19 +34,21 @@ export const schemaRelationsRefDefinition = {
         if (relationRefDefinition.checker) {
           this.registerChecker(relationRefDefinition.databaseName, relationRefDefinition.checker);
         }
-
         if (relationRefDefinition.multiple) {
           this.databaseNameMultiple.set(relationRefDefinition.databaseName);
           this.inputNameMultiple.set(relationRefDefinition.inputName);
         }
-
         this.databaseNameToInputName[relationRefDefinition.databaseName] = relationRefDefinition.inputName;
         this.inputNameToDatabaseName[relationRefDefinition.inputName] = relationRefDefinition.databaseName;
-
         this.stixNameToInputName[relationRefDefinition.stixName] = relationRefDefinition.inputName;
         this.inputNameToStixName[relationRefDefinition.inputName] = relationRefDefinition.stixName;
+        this.relationsRef_by_input[relationRefDefinition.inputName] = relationRefDefinition;
       }
     });
+  },
+
+  getRelationsRefByInputName(inputName: string): RelationRefDefinition {
+    return this.relationsRef_by_input[inputName];
   },
 
   getRelationsRef(entityType: string): RelationRefDefinition[] {

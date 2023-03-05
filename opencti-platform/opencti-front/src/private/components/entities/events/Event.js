@@ -118,7 +118,7 @@ const Event = createFragmentContainer(EventComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

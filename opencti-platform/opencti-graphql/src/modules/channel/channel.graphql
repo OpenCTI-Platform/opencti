@@ -97,7 +97,7 @@ type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     channel_types: [String]
     aliases: [String]
     # Technical
-    creator: Creator
+    creators: [Creator!]
     toStix: String
     importFiles(first: Int): FileConnection
     pendingFiles(first: Int): FileConnection

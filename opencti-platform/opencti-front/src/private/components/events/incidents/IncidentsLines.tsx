@@ -3,9 +3,15 @@ import { PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IncidentLine, IncidentLineDummy } from './IncidentLine';
 import { DataColumns } from '../../../../components/list_lines';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { IncidentsCardsAndLinesFragment, incidentsCardsAndLinesPaginationQuery } from './IncidentsCards';
+import {
+  IncidentsCardsAndLinesFragment,
+  incidentsCardsAndLinesPaginationQuery,
+} from './IncidentsCards';
 import {
   IncidentsCardsAndLinesPaginationQuery,
   IncidentsCardsAndLinesPaginationQuery$variables,
@@ -16,11 +22,11 @@ import { IncidentLine_node$data } from './__generated__/IncidentLine_node.graphq
 const nbOfRowsToLoad = 50;
 
 interface IncidentsLinesProps {
-  paginationOptions?: IncidentsCardsAndLinesPaginationQuery$variables,
-  dataColumns: DataColumns,
-  queryRef: PreloadedQuery<IncidentsCardsAndLinesPaginationQuery>,
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
-  onLabelClick: HandleAddFilter,
+  paginationOptions?: IncidentsCardsAndLinesPaginationQuery$variables;
+  dataColumns: DataColumns;
+  queryRef: PreloadedQuery<IncidentsCardsAndLinesPaginationQuery>;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick: HandleAddFilter;
   selectedElements: Record<string, IncidentLine_node$data>;
   deSelectedElements: Record<string, IncidentLine_node$data>;
   onToggleEntity: (
@@ -40,12 +46,10 @@ const IncidentsLines: FunctionComponent<IncidentsLinesProps> = ({
   deSelectedElements,
   selectAll,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<IncidentsCardsAndLinesPaginationQuery, IncidentsCardsAndLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  IncidentsCardsAndLinesPaginationQuery,
+  IncidentsCardsAndLines_data$key
+  >({
     linesQuery: incidentsCardsAndLinesPaginationQuery,
     linesFragment: IncidentsCardsAndLinesFragment,
     queryRef,

@@ -121,7 +121,7 @@ const Campaign = createFragmentContainer(CampaignComponent, {
           entity_type
         }
       }
-      creator {
+      creators {
         id
         name
       }

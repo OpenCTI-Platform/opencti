@@ -31,6 +31,7 @@ const incidentResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    creator: 'creator_id',
   },
   Mutation: {
     incidentEdit: (_, { id }, context) => ({

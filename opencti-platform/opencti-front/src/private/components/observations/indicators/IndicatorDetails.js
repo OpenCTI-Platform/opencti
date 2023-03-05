@@ -188,10 +188,6 @@ const IndicatorDetails = createFragmentContainer(IndicatorDetailsComponent, {
       x_opencti_detection
       x_mitre_platforms
       indicator_types
-      creator {
-        id
-        name
-      }
       objectLabel {
         edges {
           node {
