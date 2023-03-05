@@ -17,7 +17,13 @@ import {
   ScatterPlotOutlined,
   VisibilityOutlined,
 } from '@mui/icons-material';
-import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d } from 'mdi-material-ui';
+import {
+  AutoFix,
+  FamilyTree,
+  SelectAll,
+  SelectGroup,
+  Video3d,
+} from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -33,7 +39,13 @@ import Alert from '@mui/material/Alert';
 import AlertTitle from '@mui/material/AlertTitle';
 import Divider from '@mui/material/Divider';
 import TimeRange from 'react-timeline-range-slider';
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import {
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  YAxis,
+  ZAxis,
+} from 'recharts';
 import Badge from '@mui/material/Badge';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -48,14 +60,11 @@ import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation
-  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableRelationshipCreation
-  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
-import StixCyberObservableRelationshipEdition
-  from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
+import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
+import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
@@ -218,8 +227,12 @@ class ReportKnowledgeGraphBar extends Component {
   handleOpenEditItem() {
     if (
       this.props.numberOfSelectedNodes === 1
-      && !this.props.selectedNodes[0].parent_types.includes('basic-relationship')
-      && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
+      && !this.props.selectedNodes[0].parent_types.includes(
+        'basic-relationship',
+      )
+      && !this.props.selectedNodes[0].parent_types.includes(
+        'Stix-Cyber-Observable',
+      )
     ) {
       this.setState({ openEditDomainObject: true });
     } else if (
@@ -367,8 +380,7 @@ class ReportKnowledgeGraphBar extends Component {
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
         > 0
-      || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length
-        > 0;
+      || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length > 0;
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
         && numberOfSelectedLinks === 0
@@ -806,8 +818,13 @@ class ReportKnowledgeGraphBar extends Component {
                     containerStixCoreObjects={report.objects.edges}
                     knowledgeGraph={true}
                     defaultCreatedBy={report.createdBy ?? null}
-                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map((n) => n.node)}
-                    targetStixCoreObjectTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+                    defaultMarkingDefinitions={(
+                      report.objectMarking?.edges ?? []
+                    ).map((n) => n.node)}
+                    targetStixCoreObjectTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
                     onAdd={onAdd}
                     onDelete={onDelete}
                     confidence={report.confidence}
@@ -893,9 +910,9 @@ class ReportKnowledgeGraphBar extends Component {
                       this,
                     )}
                     defaultCreatedBy={report.createdBy ?? null}
-                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
-                      (n) => n.node,
-                    )}
+                    defaultMarkingDefinitions={(
+                      report.objectMarking?.edges ?? []
+                    ).map((n) => n.node)}
                   />
                 )}
                 {onAddRelation && (
@@ -925,9 +942,9 @@ class ReportKnowledgeGraphBar extends Component {
                     handleClose={this.handleCloseCreateNested.bind(this)}
                     handleResult={onAddRelation}
                     handleReverseRelation={this.handleReverseNested.bind(this)}
-                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
-                      (n) => n.node,
-                    )}
+                    defaultMarkingDefinitions={(
+                      report.objectMarking?.edges ?? []
+                    ).map((n) => n.node)}
                   />
                 )}
                 {onAddRelation && (
@@ -960,9 +977,9 @@ class ReportKnowledgeGraphBar extends Component {
                       this,
                     )}
                     defaultCreatedBy={report.createdBy ?? null}
-                    defaultMarkingDefinitions={(report.objectMarking?.edges ?? []).map(
-                      (n) => n.node,
-                    )}
+                    defaultMarkingDefinitions={(
+                      report.objectMarking?.edges ?? []
+                    ).map((n) => n.node)}
                   />
                 )}
                 {handleDeleteSelected && (

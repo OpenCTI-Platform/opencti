@@ -89,30 +89,36 @@ export const opinionCreationMutation = graphql`
 `;
 
 interface OpinionAddInput {
-  opinion: string
-  explanation: string
-  confidence: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
+  opinion: string;
+  explanation: string;
+  confidence: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
 }
 
 interface OpinionCreationProps {
-  paginationOptions: OpinionsLinesPaginationQuery$variables
+  paginationOptions: OpinionsLinesPaginationQuery$variables;
 }
 
 interface OpinionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: Option
-  defaultMarkingDefinitions?: Option[]
-  defaultConfidence?: number
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: Option;
+  defaultMarkingDefinitions?: Option[];
+  defaultConfidence?: number;
 }
 
-export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -125,7 +131,7 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({ updat
     opinion: '',
     explanation: '',
     confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -134,11 +140,7 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({ updat
   const [commit] = useMutation(opinionCreationMutation);
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    }: FormikHelpers<OpinionAddInput>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
     const finalValues = {
       opinion: values.opinion,
@@ -172,126 +174,133 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({ updat
     });
   };
 
-  return <Formik<OpinionAddInput>
+  return (
+    <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <OpenVocabField
-              label={t('Opinion')}
-              type="opinion_ov"
-              name="opinion"
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={false}
+            label={t('Opinion')}
+            type="opinion_ov"
+            name="opinion"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={false}
           />
           <Field
-              component={MarkDownField}
-              name="explanation"
-              label={t('Explanation')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="explanation"
+            label={t('Explanation')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
-const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({ paginationOptions }) => {
+const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_opinions',
-    paginationOptions,
-    'opinionAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_opinions', paginationOptions, 'opinionAdd');
 
   return (
-      <div>
-        <Fab onClick={handleOpen}
-            color="secondary"
-            aria-label="Add"
-            className={classes.createButton}>
-          <Add/>
-        </Fab>
-        <Drawer open={open} anchor="right"
-            elevation={1}
-            sx={{ zIndex: 1202 }}
-            classes={{ paper: classes.drawerPaper }}
-            onClose={handleClose}>
-          <div className={classes.header}>
-            <IconButton aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose}
-                size="large"
-                color="primary">
-              <Close fontSize="small" color="primary"/>
-            </IconButton>
-            <Typography variant="h6">{t('Create a opinions')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <OpinionCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
-          </div>
-        </Drawer>
-      </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a opinions')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <OpinionCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
+        </div>
+      </Drawer>
+    </div>
   );
 };
 

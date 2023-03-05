@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Route, withRouter } from 'react-router-dom';
 import { graphql } from 'react-relay';
-import { QueryRenderer, requestSubscription } from '../../../../relay/environment';
+import {
+  QueryRenderer,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TopBar from '../../nav/TopBar';
 import Note from './Note';
 import FileManager from '../../common/files/FileManager';
@@ -99,7 +102,7 @@ class RootNote extends Component {
                         <>
                           <ContainerHeader
                             container={props.note}
-                            PopoverComponent={<NotePopover note={props.note}/>}
+                            PopoverComponent={<NotePopover note={props.note} />}
                           />
                           <FileManager
                             {...routeProps}
@@ -118,7 +121,7 @@ class RootNote extends Component {
                         <>
                           <ContainerHeader
                             container={props.note}
-                            PopoverComponent={<NotePopover note={props.note}/>}
+                            PopoverComponent={<NotePopover note={props.note} />}
                           />
                           <StixCoreObjectHistory
                             {...routeProps}

@@ -1,36 +1,36 @@
-import React, { FunctionComponent, useState } from 'react';
-import { append, union } from 'ramda';
-import { Field } from 'formik';
-import { LanguageOutlined } from '@mui/icons-material';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
-import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import { externalReferencesQueriesSearchQuery } from '../../analysis/external_references/ExternalReferencesQueries';
-import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
-import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
-import { Option } from './ReferenceField';
+import React, { FunctionComponent, useState } from "react";
+import { append, union } from "ramda";
+import { Field } from "formik";
+import { RecordSourceSelectorProxy } from "relay-runtime";
+import makeStyles from "@mui/styles/makeStyles";
+import { commitMutation, fetchQuery } from "../../../../relay/environment";
+import AutocompleteField from "../../../../components/AutocompleteField";
+import { useFormatter } from "../../../../components/i18n";
+import { truncate } from "../../../../utils/String";
+import { externalReferencesQueriesSearchQuery } from "../../analysis/external_references/ExternalReferencesQueries";
+import ExternalReferenceCreation from "../../analysis/external_references/ExternalReferenceCreation";
+import { externalReferenceLinesMutationRelationAdd } from "../../analysis/external_references/AddExternalReferencesLines";
+import { Option } from "./ReferenceField";
 import {
   ExternalReferencesQueriesSearchQuery$data,
   ExternalReferencesQueriesSearchQuery$variables,
-} from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
-import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
-import { insertNode } from '../../../../utils/store';
+} from "../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql";
+import { ExternalReferenceCreationMutation$data } from "../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql";
+import { insertNode } from "../../../../utils/store";
+import ItemIcon from "../../../../components/ItemIcon";
 
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
-    display: 'inline-block',
+    display: "inline-block",
   },
   text: {
-    display: 'inline-block',
+    display: "inline-block",
     flexGrow: 1,
     marginLeft: 10,
   },
   autoCompleteIndicator: {
-    display: 'none',
+    display: "none",
   },
 }));
 
@@ -75,7 +75,7 @@ interface ExternalReferencesFieldProps {
 }
 
 export const ExternalReferencesField: FunctionComponent<
-ExternalReferencesFieldProps
+  ExternalReferencesFieldProps
 > = ({
   name,
   style,
@@ -90,20 +90,21 @@ ExternalReferencesFieldProps
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const [externalReferenceCreation, setExternalReferenceCreation] = useState(false);
+  const [externalReferenceCreation, setExternalReferenceCreation] =
+    useState(false);
   const [externalReferences, setExternalReferences] = useState<
-  {
-    label?: string;
-    value: string;
-    entity?: {
-      created?: string;
-      description: string | null;
-      external_id: string | null;
-      id: string;
-      source_name: string;
-      url: string | null;
-    };
-  }[]
+    {
+      label?: string;
+      value: string;
+      entity?: {
+        created?: string;
+        description: string | null;
+        external_id: string | null;
+        id: string;
+        source_name: string;
+        url: string | null;
+      };
+    }[]
   >([]);
 
   const handleOpenExternalReferenceCreation = () => {
@@ -115,13 +116,16 @@ ExternalReferencesFieldProps
   };
 
   const searchExternalReferences = (
-    event: React.ChangeEvent<HTMLInputElement>,
+    event: React.ChangeEvent<HTMLInputElement>
   ) => {
-    let filters: ExternalReferencesQueriesSearchQuery$variables['filters'] = [];
+    let filters: ExternalReferencesQueriesSearchQuery$variables["filters"] = [];
     if (id) {
-      filters = [{ key: ['usedBy'], values: [id] }];
+      filters = [{ key: ["usedBy"], values: [id] }];
     }
-    fetchQuery(externalReferencesQueriesSearchQuery, { search: event && event.target.value, filters })
+    fetchQuery(externalReferencesQueriesSearchQuery, {
+      search: event && event.target.value,
+      filters,
+    })
       .toPromise()
       .then((data) => {
         const newExternalReferencesEdges = ((
@@ -142,7 +146,7 @@ ExternalReferencesFieldProps
           .map((n) => ({
             label: `[${n.node.source_name}] ${truncate(
               n.node.description || n.node.url || n.node.external_id,
-              150,
+              150
             )}`,
             value: n.node.id,
             entity: n.node,
@@ -159,23 +163,23 @@ ExternalReferencesFieldProps
         name={name}
         multiple={true}
         textfieldprops={{
-          variant: 'standard',
-          label: t('External references'),
+          variant: "standard",
+          label: t("External references"),
           helperText: helpertext,
           onFocus: searchExternalReferences,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t("No available options")}
         options={externalReferences}
         onInputChange={searchExternalReferences}
         openCreate={handleOpenExternalReferenceCreation}
-        onChange={typeof onChange === 'function' ? onChange : null}
+        onChange={typeof onChange === "function" ? onChange : null}
         renderOption={(
           props: React.HTMLAttributes<HTMLLIElement>,
-          option: Option,
+          option: Option
         ) => (
           <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <LanguageOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="External-Reference" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
@@ -192,7 +196,10 @@ ExternalReferencesFieldProps
         creationCallback={(data: ExternalReferenceCreationMutation$data) => {
           const newExternalReference = data.externalReferenceAdd;
           if (id) {
-            const input = { fromId: id, relationship_type: 'external-reference' };
+            const input = {
+              fromId: id,
+              relationship_type: "external-reference",
+            };
             commitMutation({
               mutation: externalReferenceLinesMutationRelationAdd,
               variables: {
@@ -203,13 +210,13 @@ ExternalReferencesFieldProps
                 if (!noStoreUpdate) {
                   insertNode(
                     store,
-                    'Pagination_externalReferences',
+                    "Pagination_externalReferences",
                     undefined,
-                    'externalReferenceEdit',
+                    "externalReferenceEdit",
                     id,
-                    'relationAdd',
+                    "relationAdd",
                     input,
-                    'to',
+                    "to"
                   );
                 }
               },
@@ -221,11 +228,22 @@ ExternalReferencesFieldProps
             });
           }
           if (newExternalReference) {
-            const externalReferenceLabel = `[${newExternalReference.source_name}] ${truncate(
-              newExternalReference.description || newExternalReference.url || newExternalReference.external_id,
-              150,
+            const externalReferenceLabel = `[${
+              newExternalReference.source_name
+            }] ${truncate(
+              newExternalReference.description ||
+                newExternalReference.url ||
+                newExternalReference.external_id,
+              150
             )}`;
-            const newExternalReferences = append({ label: externalReferenceLabel, value: newExternalReference.id, entity: newExternalReference }, values || []);
+            const newExternalReferences = append(
+              {
+                label: externalReferenceLabel,
+                value: newExternalReference.id,
+                entity: newExternalReference,
+              },
+              values || []
+            );
             setFieldValue(name, newExternalReferences);
           }
         }}

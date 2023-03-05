@@ -167,7 +167,7 @@ const ExternalReferenceStixCoreObjects = createFragmentContainer(
               ... on AdministrativeArea {
                 name
                 description
-              }              
+              }
               ... on Country {
                 name
                 description

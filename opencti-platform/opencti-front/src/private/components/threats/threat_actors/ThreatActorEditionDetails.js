@@ -64,10 +64,13 @@ const threatActorValidation = (t) => Yup.object().shape({
   references: Yup.array(),
 });
 
-const ThreatActorEditionDetailsComponent = (props) => {
-  const { threatActor, enableReferences, context, handleClose } = props;
+const ThreatActorEditionDetailsComponent = ({
+  threatActor,
+  enableReferences,
+  context,
+  handleClose,
+}) => {
   const { t } = useFormatter();
-
   const handleChangeFocus = (name) => commitMutation({
     mutation: threatActorEditionDetailsFocus,
     variables: {
@@ -77,7 +80,6 @@ const ThreatActorEditionDetailsComponent = (props) => {
       },
     },
   });
-
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
     const references = R.pluck('value', values.references || []);
@@ -118,7 +120,6 @@ const ThreatActorEditionDetailsComponent = (props) => {
       },
     });
   };
-
   const handleSubmitField = (name, value) => {
     if (!enableReferences) {
       let finalValue = value;
@@ -139,24 +140,18 @@ const ThreatActorEditionDetailsComponent = (props) => {
         .catch(() => false);
     }
   };
-
   const initialValues = R.pipe(
     R.assoc('first_seen', buildDate(threatActor.first_seen)),
     R.assoc('last_seen', buildDate(threatActor.last_seen)),
     R.assoc(
       'secondary_motivations',
-      threatActor.secondary_motivations
-        ? threatActor.secondary_motivations
-        : [],
+      threatActor.secondary_motivations ? threatActor.secondary_motivations : [],
     ),
     R.assoc(
       'personal_motivations',
       threatActor.personal_motivations ? threatActor.personal_motivations : [],
     ),
-    R.assoc(
-      'goals',
-      R.join('\n', threatActor.goals ? threatActor.goals : []),
-    ),
+    R.assoc('goals', R.join('\n', threatActor.goals ? threatActor.goals : [])),
     R.assoc('roles', threatActor.roles ? threatActor.roles : []),
     R.pick([
       'first_seen',
@@ -171,176 +166,176 @@ const ThreatActorEditionDetailsComponent = (props) => {
     ]),
   )(threatActor);
   return (
-      <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={threatActorValidation(t)}
-          onSubmit={onSubmit}
-        >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-            isValid,
-            dirty,
-          }) => (
-            <div>
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={DateTimePickerField}
-                  name="first_seen"
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  TextFieldProps={{
-                    label: t('First seen'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    helperText: (
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="first_seen"
-                      />
-                    ),
-                  }}
+    <div>
+      <Formik
+        enableReinitialize={true}
+        initialValues={initialValues}
+        validationSchema={threatActorValidation(t)}
+        onSubmit={onSubmit}
+      >
+        {({
+          submitForm,
+          isSubmitting,
+          setFieldValue,
+          values,
+          isValid,
+          dirty,
+        }) => (
+          <div>
+            <Form style={{ margin: '20px 0 20px 0' }}>
+              <Field
+                component={DateTimePickerField}
+                name="first_seen"
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t('First seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="first_seen"
+                    />
+                  ),
+                }}
+              />
+              <Field
+                component={DateTimePickerField}
+                name="last_seen"
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                TextFieldProps={{
+                  label: t('Last seen'),
+                  variant: 'standard',
+                  fullWidth: true,
+                  style: { marginTop: 20 },
+                  helperText: (
+                    <SubscriptionFocus
+                      context={context}
+                      fieldName="last_seen"
+                    />
+                  ),
+                }}
+              />
+              <OpenVocabField
+                label={t('Sophistication')}
+                type="threat-actor-sophistication-ov"
+                name="sophistication"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Resource level')}
+                type="attack-resource-level-ov"
+                name="resource_level"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Roles')}
+                type="threat-actor-role-ov"
+                name="roles"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Primary motivation')}
+                type="attack-motivation-ov"
+                name="primary_motivation"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={false}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Secondary motivations')}
+                type="attack-motivation-ov"
+                name="secondary_motivations"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <OpenVocabField
+                label={t('Personal motivations')}
+                type="attack-motivation-ov"
+                name="personal_motivations"
+                onFocus={handleChangeFocus}
+                onChange={(name, value) => setFieldValue(name, value)}
+                onSubmit={handleSubmitField}
+                containerStyle={fieldSpacingContainerStyle}
+                variant="edit"
+                multiple={true}
+                editContext={context}
+              />
+              <Field
+                component={TextField}
+                variant="standard"
+                name="goals"
+                label={t('Goals (1 / line)')}
+                fullWidth={true}
+                multiline={true}
+                rows="4"
+                style={{ marginTop: 20 }}
+                onFocus={handleChangeFocus}
+                onSubmit={handleSubmitField}
+                helperText={
+                  <SubscriptionFocus context={context} fieldName="goals" />
+                }
+              />
+              {enableReferences && (
+                <CommitMessage
+                  submitForm={submitForm}
+                  disabled={isSubmitting || !isValid || !dirty}
+                  setFieldValue={setFieldValue}
+                  open={false}
+                  values={values.references}
+                  id={threatActor.id}
                 />
-                <Field
-                  component={DateTimePickerField}
-                  name="last_seen"
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  TextFieldProps={{
-                    label: t('Last seen'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                    helperText: (
-                      <SubscriptionFocus
-                        context={context}
-                        fieldName="last_seen"
-                      />
-                    ),
-                  }}
-                />
-                <OpenVocabField
-                  label={t('Sophistication')}
-                  type="threat-actor-sophistication-ov"
-                  name="sophistication"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Resource level')}
-                  type="attack-resource-level-ov"
-                  name="resource_level"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Roles')}
-                  type="threat-actor-role-ov"
-                  name="roles"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Primary motivation')}
-                  type="attack-motivation-ov"
-                  name="primary_motivation"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={false}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Secondary motivations')}
-                  type="attack-motivation-ov"
-                  name="secondary_motivations"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <OpenVocabField
-                  label={t('Personal motivations')}
-                  type="attack-motivation-ov"
-                  name="personal_motivations"
-                  onFocus={handleChangeFocus}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                  onSubmit={handleSubmitField}
-                  containerStyle={fieldSpacingContainerStyle}
-                  variant="edit"
-                  multiple={true}
-                  editContext={context}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="goals"
-                  label={t('Goals (1 / line)')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                  onFocus={handleChangeFocus}
-                  onSubmit={handleSubmitField}
-                  helperText={
-                    <SubscriptionFocus context={context} fieldName="goals" />
-                  }
-                />
-                {enableReferences && (
-                  <CommitMessage
-                    submitForm={submitForm}
-                    disabled={isSubmitting || !isValid || !dirty}
-                    setFieldValue={setFieldValue}
-                    open={false}
-                    values={values.references}
-                    id={threatActor.id}
-                  />
-                )}
-              </Form>
-            </div>
-          )}
-        </Formik>
-      </div>
+              )}
+            </Form>
+          </div>
+        )}
+      </Formik>
+    </div>
   );
 };
 
 export default createFragmentContainer(ThreatActorEditionDetailsComponent, {
   threatActor: graphql`
-      fragment ThreatActorEditionDetails_threatActor on ThreatActor {
-        id
-        first_seen
-        last_seen
-        sophistication
-        resource_level
-        primary_motivation
-        secondary_motivations
-        personal_motivations
-        goals
-        roles
-      }
-    `,
+    fragment ThreatActorEditionDetails_threatActor on ThreatActor {
+      id
+      first_seen
+      last_seen
+      sophistication
+      resource_level
+      primary_motivation
+      secondary_motivations
+      personal_motivations
+      goals
+      roles
+    }
+  `,
 });

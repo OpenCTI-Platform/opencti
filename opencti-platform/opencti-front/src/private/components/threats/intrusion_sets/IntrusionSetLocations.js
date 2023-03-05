@@ -51,7 +51,9 @@ class IntrusionSetLocationsComponent extends Component {
         const node = store.get(this.props.intrusionSet.id);
         const locations = node.getLinkedRecord('locations');
         const edges = locations.getLinkedRecords('edges');
-        const newEdges = edges.filter((n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id);
+        const newEdges = edges.filter(
+          (n) => n.getLinkedRecord('node').getValue('id') !== locationEdge.node.id,
+        );
         locations.setLinkedRecords(newEdges, 'edges');
       },
     });
@@ -98,7 +100,8 @@ class IntrusionSetLocationsComponent extends Component {
                     <IconButton
                       aria-label="Remove"
                       onClick={this.removeLocation.bind(this, locationEdge)}
-                      size="large">
+                      size="large"
+                    >
                       <LinkOff />
                     </IconButton>
                   </Security>

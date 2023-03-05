@@ -14,7 +14,12 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -105,7 +110,12 @@ const ReportEditionOverviewComponent = (props) => {
     relationDelete: reportMutationRelationDelete,
     editionFocus: reportEditionOverviewFocus,
   };
-  const editor = useFormEditor(report, enableReferences, queries, reportValidator);
+  const editor = useFormEditor(
+    report,
+    enableReferences,
+    queries,
+    reportValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -274,7 +284,10 @@ const ReportEditionOverviewComponent = (props) => {
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
             />
           )}

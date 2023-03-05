@@ -45,27 +45,31 @@ const OpinionEditionContainer = (props) => {
   const { editContext } = opinion;
 
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a opinions')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <OpinionEditionOverview opinion={opinion} context={editContext} handleClose={handleClose}/>
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a opinions')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <OpinionEditionOverview
+          opinion={opinion}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </div>
+    </div>
   );
 };
 

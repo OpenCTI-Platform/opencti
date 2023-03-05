@@ -48,9 +48,15 @@ const intrusionSetEditionDetailsFocus = graphql`
 `;
 
 const intrusionSetValidation = (t) => Yup.object().shape({
-  first_seen: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date().nullable()
-    .min(Yup.ref('first_seen'), "The last seen date can't be before first seen date")
+  first_seen: Yup.date()
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+  last_seen: Yup.date()
+    .nullable()
+    .min(
+      Yup.ref('first_seen'),
+      "The last seen date can't be before first seen date",
+    )
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   resource_level: Yup.string().nullable(),
   primary_motivation: Yup.string().nullable(),
@@ -79,9 +85,18 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     const inputValues = R.pipe(
       R.dissoc('message'),
       R.dissoc('references'),
-      R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
-      R.assoc('last_seen', values.last_seen ? parse(values.last_seen).format() : null),
-      R.assoc('goals', values.goals && values.goals.length ? R.split('\n', values.goals) : []),
+      R.assoc(
+        'first_seen',
+        values.first_seen ? parse(values.first_seen).format() : null,
+      ),
+      R.assoc(
+        'last_seen',
+        values.last_seen ? parse(values.last_seen).format() : null,
+      ),
+      R.assoc(
+        'goals',
+        values.goals && values.goals.length ? R.split('\n', values.goals) : [],
+      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -90,7 +105,8 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       variables: {
         id: intrusionSet.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       setSubmitting,
@@ -125,8 +141,16 @@ const IntrusionSetEditionDetailsComponent = (props) => {
   const initialValues = R.pipe(
     R.assoc('first_seen', buildDate(intrusionSet.first_seen)),
     R.assoc('last_seen', buildDate(intrusionSet.last_seen)),
-    R.assoc('secondary_motivations', intrusionSet.secondary_motivations ? intrusionSet.secondary_motivations : []),
-    R.assoc('goals', R.join('\n', intrusionSet.goals ? intrusionSet.goals : [])),
+    R.assoc(
+      'secondary_motivations',
+      intrusionSet.secondary_motivations
+        ? intrusionSet.secondary_motivations
+        : [],
+    ),
+    R.assoc(
+      'goals',
+      R.join('\n', intrusionSet.goals ? intrusionSet.goals : []),
+    ),
     R.assoc('references', []),
     R.pick([
       'references',
@@ -139,126 +163,127 @@ const IntrusionSetEditionDetailsComponent = (props) => {
     ]),
   )(intrusionSet);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={intrusionSetValidation(t)}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={DateTimePickerField}
-              name="first_seen"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('First seen'),
-                variant: 'standard',
-                fullWidth: true,
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="first_seen" />
-                ),
-              }}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={intrusionSetValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={DateTimePickerField}
+            name="first_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('First seen'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Last seen'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              ),
+            }}
+          />
+          <OpenVocabField
+            label={t('Resource level')}
+            type="attack-resource-level-ov"
+            name="resource_level"
+            onFocus={handleChangeFocus}
+            onChange={(name, value) => setFieldValue(name, value)}
+            onSubmit={handleSubmitField}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={false}
+            editContext={context}
+          />
+          <OpenVocabField
+            label={t('Primary motivation')}
+            type="attack-motivation-ov"
+            name="primary_motivation"
+            onFocus={handleChangeFocus}
+            onChange={(name, value) => setFieldValue(name, value)}
+            onSubmit={handleSubmitField}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={false}
+            editContext={context}
+          />
+          <OpenVocabField
+            label={t('Secondary motivations')}
+            type="attack-motivation-ov"
+            name="secondary_motivations"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="goals"
+            label={t('Goals (1 / line)')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="goals" />
+            }
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={intrusionSet.id}
             />
-            <Field
-              component={DateTimePickerField}
-              name="last_seen"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Last seen'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="last_seen" />
-                ),
-              }}
-            />
-            <OpenVocabField
-              label={t('Resource level')}
-              type="attack-resource-level-ov"
-              name="resource_level"
-              onFocus={handleChangeFocus}
-              onChange={(name, value) => setFieldValue(name, value)}
-              onSubmit={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={false}
-              editContext={context}
-            />
-            <OpenVocabField
-              label={t('Primary motivation')}
-              type="attack-motivation-ov"
-              name="primary_motivation"
-              onFocus={handleChangeFocus}
-              onChange={(name, value) => setFieldValue(name, value)}
-              onSubmit={handleSubmitField}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={false}
-              editContext={context}
-            />
-            <OpenVocabField
-              label={t('Secondary motivations')}
-              type="attack-motivation-ov"
-              name="secondary_motivations"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="goals"
-              label={t('Goals (1 / line)')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="goals" />
-              }
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}open={false}
-                values={values.references}
-                id={intrusionSet.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(IntrusionSetEditionDetailsComponent, {
   intrusionSet: graphql`
-      fragment IntrusionSetEditionDetails_intrusionSet on IntrusionSet {
-        id
-        first_seen
-        last_seen
-        resource_level
-        primary_motivation
-        secondary_motivations
-        goals
-      }
-    `,
+    fragment IntrusionSetEditionDetails_intrusionSet on IntrusionSet {
+      id
+      first_seen
+      last_seen
+      resource_level
+      primary_motivation
+      secondary_motivations
+      goals
+    }
+  `,
 });

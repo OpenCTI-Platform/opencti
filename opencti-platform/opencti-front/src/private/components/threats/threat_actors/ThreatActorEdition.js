@@ -78,14 +78,18 @@ class ThreatActorEdition extends Component {
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}>
+          onClose={this.handleClose.bind(this)}
+        >
           <QueryRenderer
             query={threatActorEditionQuery}
             variables={{ id: threatActorId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <ThreatActorEditionContainer threatActor={props.threatActor} handleClose={this.handleClose.bind(this)} />
+                  <ThreatActorEditionContainer
+                    threatActor={props.threatActor}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

@@ -74,7 +74,9 @@ class ThreatActorComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={threatActor.id} />
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={threatActor.id}
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={threatActor.id} />
@@ -82,7 +84,9 @@ class ThreatActorComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={threatActor.id}
-          defaultMarking={(threatActor.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(threatActor.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ThreatActorEdition threatActorId={threatActor.id} />

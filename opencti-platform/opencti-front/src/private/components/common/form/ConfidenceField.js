@@ -1,9 +1,9 @@
-import React, { Component } from 'react';
-import { Field } from 'formik';
-import MenuItem from '@mui/material/MenuItem';
-import inject18n from '../../../../components/i18n';
-import SelectField from '../../../../components/SelectField';
-import { SubscriptionFocus } from '../../../../components/Subscription';
+import React, { Component } from "react";
+import { Field } from "formik";
+import MenuItem from "@mui/material/MenuItem";
+import inject18n from "../../../../components/i18n";
+import SelectField from "../../../../components/SelectField";
+import { SubscriptionFocus } from "../../../../components/Subscription";
 
 class ConfidenceField extends Component {
   render() {
@@ -18,7 +18,7 @@ class ConfidenceField extends Component {
       editContext,
       disabled,
     } = this.props;
-    if (variant === 'edit') {
+    if (variant === "edit") {
       /* TODO Migrate to vocab with range 2555 */
       return (
         <Field
@@ -33,12 +33,13 @@ class ConfidenceField extends Component {
           containerstyle={containerStyle}
           helpertext={
             <SubscriptionFocus context={editContext} fieldName={name} />
-          }>
-          <MenuItem value="0">{t('None')}</MenuItem>
-          <MenuItem value="15">{t('Low')}</MenuItem>
-          <MenuItem value="50">{t('Moderate')}</MenuItem>
-          <MenuItem value="75">{t('Good')}</MenuItem>
-          <MenuItem value="85">{t('Strong')}</MenuItem>
+          }
+        >
+          <MenuItem value="0">{t("None")}</MenuItem>
+          <MenuItem value="15">{t("Low")}</MenuItem>
+          <MenuItem value="50">{t("Moderate")}</MenuItem>
+          <MenuItem value="75">{t("Good")}</MenuItem>
+          <MenuItem value="85">{t("Strong")}</MenuItem>
         </Field>
       );
     }
@@ -50,12 +51,13 @@ class ConfidenceField extends Component {
         name={name}
         label={label}
         fullWidth={true}
-        containerstyle={containerStyle}>
-        <MenuItem value="0">{t('None')}</MenuItem>
-        <MenuItem value="15">{t('Low')}</MenuItem>
-        <MenuItem value="50">{t('Moderate')}</MenuItem>
-        <MenuItem value="75">{t('Good')}</MenuItem>
-        <MenuItem value="85">{t('Strong')}</MenuItem>
+        containerstyle={containerStyle}
+      >
+        <MenuItem value="0">{t("None")}</MenuItem>
+        <MenuItem value="15">{t("Low")}</MenuItem>
+        <MenuItem value="50">{t("Moderate")}</MenuItem>
+        <MenuItem value="75">{t("Good")}</MenuItem>
+        <MenuItem value="85">{t("Strong")}</MenuItem>
       </Field>
     );
   }

@@ -11,7 +11,10 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -89,7 +92,13 @@ const attackPatternMutation = graphql`
   }
 `;
 
-export const AttackPatternCreationForm = ({ updater, onReset, onCompleted, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const AttackPatternCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -97,7 +106,10 @@ export const AttackPatternCreationForm = ({ updater, onReset, onCompleted, defau
     description: Yup.string().nullable(),
     x_mitre_id: Yup.string().nullable(),
   };
-  const attackPatternValidator = useSchemaCreationValidation('Attack-Pattern', basicShape);
+  const attackPatternValidator = useSchemaCreationValidation(
+    'Attack-Pattern',
+    basicShape,
+  );
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = pipe(
       assoc('createdBy', values.createdBy?.value),
@@ -130,8 +142,8 @@ export const AttackPatternCreationForm = ({ updater, onReset, onCompleted, defau
       },
     });
   };
-
-  return <Formik
+  return (
+    <Formik
       initialValues={{
         name: '',
         x_mitre_id: '',
@@ -144,94 +156,89 @@ export const AttackPatternCreationForm = ({ updater, onReset, onCompleted, defau
       }}
       validationSchema={attackPatternValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Attack-Pattern']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Attack-Pattern']}
           />
           <Field
-              component={TextField}
-              variant="standard"
-              name="x_mitre_id"
-              label={t('External ID')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+            component={TextField}
+            variant="standard"
+            name="x_mitre_id"
+            label={t('External ID')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <KillChainPhasesField
-              name="killChainPhases"
-              style={fieldSpacingContainerStyle}
+            name="killChainPhases"
+            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const AttackPatternCreation = ({ paginationOptions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
@@ -270,15 +277,13 @@ const AttackPatternCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">
-            {t('Create an attack pattern')}
-          </Typography>
+          <Typography variant="h6">{t('Create an attack pattern')}</Typography>
         </div>
         <div className={classes.container}>
           <AttackPatternCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

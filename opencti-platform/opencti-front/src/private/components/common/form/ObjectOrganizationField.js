@@ -1,27 +1,27 @@
-import React, { useState } from 'react';
-import { AccountBalanceOutlined } from '@mui/icons-material';
-import { Field } from 'formik';
-import { graphql } from 'react-relay';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
-import { makeStyles } from '@mui/styles';
-import { fetchQuery } from '../../../../relay/environment';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../components/i18n';
+import React, { useState } from "react";
+import { Field } from "formik";
+import { graphql } from "react-relay";
+import Alert from "@mui/material/Alert";
+import AlertTitle from "@mui/material/AlertTitle";
+import { makeStyles } from "@mui/styles";
+import { fetchQuery } from "../../../../relay/environment";
+import AutocompleteField from "../../../../components/AutocompleteField";
+import { useFormatter } from "../../../../components/i18n";
+import ItemIcon from "../../../../components/ItemIcon";
 
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
-    display: 'inline-block',
+    display: "inline-block",
   },
   text: {
-    display: 'inline-block',
+    display: "inline-block",
     flexGrow: 1,
     marginLeft: 10,
   },
   message: {
-    width: '100%',
-    overflow: 'hidden',
+    width: "100%",
+    overflow: "hidden",
   },
 }));
 
@@ -51,18 +51,24 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
   } = props;
 
-  const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({ label: n.name, value: n.id }));
+  const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
+    label: n.name,
+    value: n.id,
+  }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
   const classes = useStyles();
   const { t } = useFormatter();
 
   const searchOrganizations = (event) => {
     fetchQuery(searchObjectOrganizationFieldQuery, {
-      search: (event && event.target && event.target.value) ?? '',
+      search: (event && event.target && event.target.value) ?? "",
     })
       .toPromise()
       .then((data) => {
-        const searchResults = data.organizations.edges.map((n) => ({ label: n.node.name, value: n.node.id }));
+        const searchResults = data.organizations.edges.map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        }));
         setOrganizations(searchResults);
       });
   };
@@ -76,20 +82,20 @@ const ObjectOrganizationField = (props) => {
         disabled={disabled}
         style={style}
         textfieldprops={{
-          variant: 'standard',
-          label: label ? t(label) : '',
+          variant: "standard",
+          label: label ? t(label) : "",
           helperText: helpertext,
           fullWidth: true,
           onFocus: searchOrganizations,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t("No available options")}
         options={organizations}
         onInputChange={searchOrganizations}
-        onChange={typeof onChange === 'function' ? onChange : null}
+        onChange={typeof onChange === "function" ? onChange : null}
         renderOption={(renderProps, option) => (
           <li {...renderProps}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <AccountBalanceOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="Organization" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
@@ -98,28 +104,33 @@ const ObjectOrganizationField = (props) => {
     );
   }
   return (
-    <Alert severity="warning" variant="outlined" style={style} classes={{ message: classes.message }}>
-      <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
+    <Alert
+      severity="warning"
+      variant="outlined"
+      style={style}
+      classes={{ message: classes.message }}
+    >
+      <AlertTitle>{t(label ?? "Organizations restriction")}</AlertTitle>
       <Field
         component={AutocompleteField}
         name={name}
         multiple={multiple}
         disabled={disabled}
-        style={{ width: '100%', marginTop: 10 }}
+        style={{ width: "100%", marginTop: 10 }}
         textfieldprops={{
-          variant: 'standard',
+          variant: "standard",
           helperText: helpertext,
           fullWidth: true,
           onFocus: searchOrganizations,
         }}
-        noOptionsText={t('No available options')}
+        noOptionsText={t("No available options")}
         options={organizations}
         onInputChange={searchOrganizations}
-        onChange={typeof onChange === 'function' ? onChange : null}
+        onChange={typeof onChange === "function" ? onChange : null}
         renderOption={(renderProps, option) => (
           <li {...renderProps}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <AccountBalanceOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="Organization" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

@@ -9,7 +9,11 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
@@ -17,7 +21,10 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const opinionMutationFieldPatch = graphql`
-  mutation OpinionEditionOverviewFieldPatchMutation($id: ID!$input: [EditInput]!) {
+  mutation OpinionEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     opinionEdit(id: $id) {
       fieldPatch(input: $input) {
         ...OpinionEditionOverview_opinion
@@ -118,10 +125,12 @@ const OpinionEditionOverviewComponent = (props) => {
     ]),
   )(opinion);
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={opinionValidator}
-      onSubmit={() => {}}>
+      onSubmit={() => {}}
+    >
       {({ setFieldValue }) => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -170,7 +179,10 @@ const OpinionEditionOverviewComponent = (props) => {
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
                 }
               />
             )}
@@ -203,38 +215,38 @@ const OpinionEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(OpinionEditionOverviewComponent, {
   opinion: graphql`
-      fragment OpinionEditionOverview_opinion on Opinion {
-        id
-        opinion
-        explanation
-        confidence
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment OpinionEditionOverview_opinion on Opinion {
+      id
+      opinion
+      explanation
+      confidence
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

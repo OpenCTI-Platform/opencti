@@ -13,7 +13,11 @@ import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -99,7 +103,12 @@ const GroupingEditionOverviewComponent = (props) => {
     relationDelete: groupingMutationRelationDelete,
     editionFocus: groupingEditionOverviewFocus,
   };
-  const editor = useFormEditor(grouping, enableReferences, queries, groupingValidator);
+  const editor = useFormEditor(
+    grouping,
+    enableReferences,
+    queries,
+    groupingValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -121,7 +130,8 @@ const GroupingEditionOverviewComponent = (props) => {
       variables: {
         id: grouping.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -169,10 +179,12 @@ const GroupingEditionOverviewComponent = (props) => {
   )(grouping);
 
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={groupingValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -237,7 +249,10 @@ const GroupingEditionOverviewComponent = (props) => {
                 setFieldValue={setFieldValue}
                 style={{ marginTop: 20 }}
                 helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+                  <SubscriptionFocus
+                    context={context}
+                    fieldName="x_opencti_workflow_id"
+                  />
                 }
               />
             )}
@@ -254,7 +269,10 @@ const GroupingEditionOverviewComponent = (props) => {
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
               helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldname="objectMarking"
+                />
               }
               onChange={editor.changeMarking}
             />

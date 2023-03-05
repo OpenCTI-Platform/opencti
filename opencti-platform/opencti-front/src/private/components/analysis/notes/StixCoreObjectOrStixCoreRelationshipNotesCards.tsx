@@ -142,7 +142,10 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     likelihood: Yup.number().min(0).max(100),
   };
   // created & createdBy must be excluded from the validation, it will be handled directly by the backend
-  const noteValidator = useSchemaCreationValidation('Note', basicShape, ['created', 'createdBy']);
+  const noteValidator = useSchemaCreationValidation('Note', basicShape, [
+    'created',
+    'createdBy',
+  ]);
   const data = usePreloadedFragment<
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
@@ -203,15 +206,19 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       </Typography>
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <>
-          <IconButton color="secondary"
+          <IconButton
+            color="secondary"
             onClick={handleToggleWrite}
             classes={{ root: classes.createButton }}
-            size="large">
+            size="large"
+          >
             <EditOutlined fontSize="small" />
           </IconButton>
-          <AddNotes stixCoreObjectOrStixCoreRelationshipId={id}
-                    stixCoreObjectOrStixCoreRelationshipNotes={notes}
-                    paginationOptions={paginationOptions} />
+          <AddNotes
+            stixCoreObjectOrStixCoreRelationshipId={id}
+            stixCoreObjectOrStixCoreRelationshipNotes={notes}
+            paginationOptions={paginationOptions}
+          />
         </>
       </Security>
       <div className="clearfix" />
@@ -228,10 +235,15 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
           );
         })}
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
-        <Accordion style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+        <Accordion
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
           expanded={open}
-          variant="outlined">
-          <AccordionSummary expandIcon={<ExpandMoreOutlined />} onClick={handleToggleWrite}>
+          variant="outlined"
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreOutlined />}
+            onClick={handleToggleWrite}
+          >
             <Typography className={classes.heading}>
               <RateReviewOutlined />
               &nbsp;&nbsp;&nbsp;&nbsp;
@@ -239,10 +251,12 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            <Formik initialValues={initialValues}
+            <Formik
+              initialValues={initialValues}
               validationSchema={noteValidator}
               onSubmit={onSubmit}
-              onReset={handleToggleWrite}>
+              onReset={handleToggleWrite}
+            >
               {({
                 submitForm,
                 handleReset,
@@ -304,7 +318,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       variant="contained"
                       onClick={handleReset}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}>
+                      classes={{ root: classes.button }}
+                    >
                       {t('Cancel')}
                     </Button>
                     <Button
@@ -312,7 +327,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}>
+                      classes={{ root: classes.button }}
+                    >
                       {t('Create')}
                     </Button>
                   </div>

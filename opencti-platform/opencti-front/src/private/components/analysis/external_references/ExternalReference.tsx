@@ -42,10 +42,7 @@ ExternalReferenceComponentProps
       <ExternalReferenceHeader
         externalReference={externalReference}
         PopoverComponent={
-          <ExternalReferencePopover
-            id={''}
-            handleRemove={undefined}
-          />
+          <ExternalReferencePopover id={''} handleRemove={undefined} />
         }
       />
       <Grid

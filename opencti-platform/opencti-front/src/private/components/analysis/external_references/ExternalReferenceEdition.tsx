@@ -9,9 +9,7 @@ import ExternalReferenceEditionContainer from './ExternalReferenceEditionContain
 import { externalReferenceEditionOverviewFocus } from './ExternalReferenceEditionOverview';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
-import {
-  ExternalReferenceEditionContainerQuery$data,
-} from './__generated__/ExternalReferenceEditionContainerQuery.graphql';
+import { ExternalReferenceEditionContainerQuery$data } from './__generated__/ExternalReferenceEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -41,10 +39,12 @@ export const externalReferenceEditionQuery = graphql`
 `;
 
 interface ExternalReferenceEditionProps {
-  externalReferenceId: string,
+  externalReferenceId: string;
 }
 
-const ExternalReferenceEdition: FunctionComponent<ExternalReferenceEditionProps> = ({ externalReferenceId }) => {
+const ExternalReferenceEdition: FunctionComponent<
+ExternalReferenceEditionProps
+> = ({ externalReferenceId }) => {
   const classes = useStyles();
 
   const [open, setOpen] = useState(false);
@@ -91,7 +91,11 @@ const ExternalReferenceEdition: FunctionComponent<ExternalReferenceEditionProps>
         <QueryRenderer
           query={externalReferenceEditionQuery}
           variables={{ id: externalReferenceId }}
-          render={({ props }: { props: ExternalReferenceEditionContainerQuery$data }) => {
+          render={({
+            props,
+          }: {
+            props: ExternalReferenceEditionContainerQuery$data;
+          }) => {
             if (props && props.externalReference) {
               return (
                 <ExternalReferenceEditionContainer

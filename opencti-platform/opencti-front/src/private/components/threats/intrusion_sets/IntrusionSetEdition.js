@@ -86,7 +86,10 @@ class IntrusionSetEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <IntrusionSetEditionContainer intrusionSet={props.intrusionSet} handleClose={this.handleClose.bind(this)} />
+                  <IntrusionSetEditionContainer
+                    intrusionSet={props.intrusionSet}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

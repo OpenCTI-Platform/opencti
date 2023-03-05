@@ -62,31 +62,47 @@ const NoteEdition = ({ noteId }: { noteId: string }) => {
   };
 
   return (
-      <div>
-        <QueryRenderer query={noteEditionQuery}
-          variables={{ id: noteId }}
-          render={({ props }: { props: NoteEditionContainerQuery$data }) => {
-            if (props && props.note) {
-              return (
-                    <CollaborativeSecurity data={props.note} needs={[KNOWLEDGE_KNUPDATE]}>
-                        <>
-                            <Fab onClick={handleOpen} color="secondary"
-                                 aria-label="Edit" className={classes.editButton}>
-                                <Edit />
-                            </Fab>
-                            <Drawer open={open} anchor="right" elevation={1}
-                                    sx={{ zIndex: 1202 }} classes={{ paper: classes.drawerPaper }}
-                                    onClose={handleClose}>
-                                <NoteEditionContainer note={props.note} handleClose={handleClose} />
-                            </Drawer>
-                        </>
-                    </CollaborativeSecurity>
-              );
-            }
-            return <Loader variant={LoaderVariant.inElement} />;
-          }}
-        />
-      </div>
+    <div>
+      <QueryRenderer
+        query={noteEditionQuery}
+        variables={{ id: noteId }}
+        render={({ props }: { props: NoteEditionContainerQuery$data }) => {
+          if (props && props.note) {
+            return (
+              <CollaborativeSecurity
+                data={props.note}
+                needs={[KNOWLEDGE_KNUPDATE]}
+              >
+                <>
+                  <Fab
+                    onClick={handleOpen}
+                    color="secondary"
+                    aria-label="Edit"
+                    className={classes.editButton}
+                  >
+                    <Edit />
+                  </Fab>
+                  <Drawer
+                    open={open}
+                    anchor="right"
+                    elevation={1}
+                    sx={{ zIndex: 1202 }}
+                    classes={{ paper: classes.drawerPaper }}
+                    onClose={handleClose}
+                  >
+                    <NoteEditionContainer
+                      note={props.note}
+                      handleClose={handleClose}
+                    />
+                  </Drawer>
+                </>
+              </CollaborativeSecurity>
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement} />;
+        }}
+      />
+    </div>
   );
 };
 

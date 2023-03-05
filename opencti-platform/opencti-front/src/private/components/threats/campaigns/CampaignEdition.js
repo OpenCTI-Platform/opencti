@@ -86,7 +86,10 @@ class CampaignEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CampaignEditionContainer campaign={props.campaign} handleClose={this.handleClose.bind(this)} />
+                  <CampaignEditionContainer
+                    campaign={props.campaign}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

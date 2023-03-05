@@ -69,10 +69,7 @@ class NoteDetailsComponent extends Component {
               </Markdown>
             </Grid>
             <Grid item={true} xs={3}>
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-              >
+              <Typography variant="h3" gutterBottom={true}>
                 {t('Note types')}
               </Typography>
               {note.note_types?.map((noteType) => (

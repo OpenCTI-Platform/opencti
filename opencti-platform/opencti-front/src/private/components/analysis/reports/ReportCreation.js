@@ -12,7 +12,10 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -96,8 +99,14 @@ const reportMutation = graphql`
   }
 `;
 
-export const ReportCreationForm = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const ReportCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -146,7 +155,8 @@ export const ReportCreationForm = ({ updater, onReset, onCompleted,
     });
   };
 
-  return <Formik
+  return (
+    <Formik
       initialValues={{
         name: '',
         published: dayStartDate(),
@@ -161,102 +171,98 @@ export const ReportCreationForm = ({ updater, onReset, onCompleted,
       }}
       validationSchema={reportValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
           />
           <Field
-              component={DateTimePickerField}
-              name="published"
-              TextFieldProps={{
-                label: t('Publication date'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
+            component={DateTimePickerField}
+            name="published"
+            TextFieldProps={{
+              label: t('Publication date'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
           />
           <OpenVocabField
-              label={t('Report types')}
-              type="report_types_ov"
-              name="report_types"
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
+            label={t('Report types')}
+            type="report_types_ov"
+            name="report_types"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <ObjectAssigneeField
-              name="objectAssignee"
-              style={{ marginTop: 20, width: '100%' }}
+            name="objectAssignee"
+            style={{ marginTop: 20, width: '100%' }}
           />
           <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const ReportCreation = ({ paginationOptions }) => {
@@ -266,47 +272,49 @@ const ReportCreation = ({ paginationOptions }) => {
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store) => insertNode(
-    store,
-    'Pagination_reports',
-    paginationOptions,
-    'reportAdd',
-  );
+  const updater = (store) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
 
   return (
-      <div>
-        <Fab onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
-          <div>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose}
-                size="large"
-                color="primary"
-              >
-                <Close fontSize="small" color="primary" />
-              </IconButton>
-              <Typography variant="h6">{t('Create a report')}</Typography>
-            </div>
-            <div className={classes.container}>
-              <ReportCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
-            </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div>
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose}
+              size="large"
+              color="primary"
+            >
+              <Close fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Create a report')}</Typography>
           </div>
-        </Drawer>
-      </div>
+          <div className={classes.container}>
+            <ReportCreationForm
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
+          </div>
+        </div>
+      </Drawer>
+    </div>
   );
 };
 

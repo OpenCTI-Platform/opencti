@@ -1,7 +1,10 @@
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ExternalReferenceLine, ExternalReferenceLineDummy } from './ExternalReferenceLine';
+import {
+  ExternalReferenceLine,
+  ExternalReferenceLineDummy,
+} from './ExternalReferenceLine';
 import { ExternalReferencesLines_data$key } from './__generated__/ExternalReferencesLines_data.graphql';
 import {
   ExternalReferencesLinesPaginationQuery,

@@ -10,8 +10,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import ReportKnowledgeGraph, { reportKnowledgeGraphQuery } from './ReportKnowledgeGraph';
-import ReportKnowledgeCorrelation, { reportKnowledgeCorrelationQuery } from './ReportKnowledgeCorrelation';
+import ReportKnowledgeGraph, {
+  reportKnowledgeGraphQuery,
+} from './ReportKnowledgeGraph';
+import ReportKnowledgeCorrelation, {
+  reportKnowledgeCorrelationQuery,
+} from './ReportKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
 import ReportPopover from './ReportPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -20,7 +24,9 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
-import ReportKnowledgeTimeLine, { reportKnowledgeTimeLineQuery } from './ReportKnowledgeTimeLine';
+import ReportKnowledgeTimeLine, {
+  reportKnowledgeTimeLineQuery,
+} from './ReportKnowledgeTimeLine';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import Filters from '../../common/lists/Filters';
 import SearchInput from '../../../../components/SearchInput';

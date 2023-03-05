@@ -1,6 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import GroupingsLines, { groupingsLinesQuery } from './groupings/GroupingsLines';
+import GroupingsLines, {
+  groupingsLinesQuery,
+} from './groupings/GroupingsLines';
 import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
@@ -20,19 +22,17 @@ import { GroupingLineDummy } from './groupings/GroupingLine';
 const LOCAL_STORAGE_KEY = 'view-groupings';
 
 interface GroupingsProps {
-  objectId: string,
-  authorId: string,
-  onChangeOpenExports: () => void,
-  match: { params: { groupingContext: string } },
+  objectId: string;
+  authorId: string;
+  onChangeOpenExports: () => void;
+  match: { params: { groupingContext: string } };
 }
 
-const Groupings: FunctionComponent<GroupingsProps> = (
-  {
-    objectId,
-    authorId,
-    onChangeOpenExports,
-  },
-) => {
+const Groupings: FunctionComponent<GroupingsProps> = ({
+  objectId,
+  authorId,
+  onChangeOpenExports,
+}) => {
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -50,17 +50,23 @@ const Groupings: FunctionComponent<GroupingsProps> = (
       filterMode: 'or',
     });
   }
-
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage < GroupingsLinesPaginationQuery$variables >(LOCAL_STORAGE_KEY, {
-    numberOfElements: { number: 0, symbol: '', original: 0 },
-    filters: {},
-    searchTerm: '',
-    sortBy: 'created',
-    orderAsc: false,
-    openExports: false,
-    count: 25,
-  }, additionnalFilters);
-
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<GroupingsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      numberOfElements: { number: 0, symbol: '', original: 0 },
+      filters: {},
+      searchTerm: '',
+      sortBy: 'created',
+      orderAsc: false,
+      openExports: false,
+      count: 25,
+    },
+    additionnalFilters,
+  );
   const {
     numberOfElements,
     filters,
@@ -69,7 +75,6 @@ const Groupings: FunctionComponent<GroupingsProps> = (
     orderAsc,
     openExports,
   } = viewStorage;
-
   const {
     selectedElements,
     deSelectedElements,
@@ -78,12 +83,10 @@ const Groupings: FunctionComponent<GroupingsProps> = (
     handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle<GroupingLine_node$data>('view-groupings');
-
-  const queryRef = useQueryLoading < GroupingsLinesPaginationQuery >(
+  const queryRef = useQueryLoading<GroupingsLinesPaginationQuery>(
     groupingsLinesQuery,
     paginationOptions,
   );
-
   const renderLines = (helper: ModuleHelper | undefined) => {
     let exportContext = null;
     if (objectId) {
@@ -185,10 +188,7 @@ const Groupings: FunctionComponent<GroupingsProps> = (
                   {Array(20)
                     .fill(0)
                     .map((idx) => (
-                      <GroupingLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
+                      <GroupingLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
               }
@@ -220,18 +220,17 @@ const Groupings: FunctionComponent<GroupingsProps> = (
       </div>
     );
   };
-
   return (
-      <UserContext.Consumer>
-        {({ helper }) => (
-          <div>
-            {renderLines(helper)}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <GroupingCreation paginationOptions={paginationOptions} />
-            </Security>
-          </div>
-        )}
-      </UserContext.Consumer>
+    <UserContext.Consumer>
+      {({ helper }) => (
+        <div>
+          {renderLines(helper)}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <GroupingCreation paginationOptions={paginationOptions} />
+          </Security>
+        </div>
+      )}
+    </UserContext.Consumer>
   );
 };
 

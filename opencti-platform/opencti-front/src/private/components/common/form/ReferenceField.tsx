@@ -1,50 +1,50 @@
-import { Launch } from 'mdi-material-ui';
-import { Field } from 'formik';
-import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import { useFormatter } from '../../../../components/i18n';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { Launch } from "mdi-material-ui";
+import { Field } from "formik";
+import React, { FunctionComponent, ReactElement, ReactNode } from "react";
+import makeStyles from "@mui/styles/makeStyles";
+import AutocompleteField from "../../../../components/AutocompleteField";
+import { useFormatter } from "../../../../components/i18n";
+import { fieldSpacingContainerStyle } from "../../../../utils/field";
 
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
-    display: 'inline-block',
+    display: "inline-block",
   },
   text: {
-    display: 'inline-block',
+    display: "inline-block",
     flexGrow: 1,
     marginLeft: 10,
   },
 }));
 
 export interface Option {
-  value: string
-  label: string
-  color?: string
-  [key: string]: ReactNode
+  value: string;
+  label: string;
+  color?: string;
+  [key: string]: ReactNode;
 }
 
 interface RelationFieldProps {
-  name: string
-  label: string
-  variant?: string
-  helperText?: string
-  onFocus: () => void,
-  noOptionsText?: string,
-  options: Option[],
-  onChange: (name: string, value: Option) => void,
-  onInputChange: (v: string | null) => void,
-  value: unknown,
+  name: string;
+  label: string;
+  variant?: string;
+  helperText?: string;
+  onFocus: () => void;
+  noOptionsText?: string;
+  options: Option[];
+  onChange: (name: string, value: Option) => void;
+  onInputChange: (v: string | null) => void;
+  value: unknown;
 }
 
 const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   name,
   label,
-  variant = 'standard',
+  variant = "standard",
   helperText,
   onFocus,
-  noOptionsText = 'No available options',
+  noOptionsText = "No available options",
   options,
   onChange,
   onInputChange,

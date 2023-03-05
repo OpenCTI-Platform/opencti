@@ -20,15 +20,11 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import { Theme } from '../../../../components/Theme';
-import {
-  StixCoreObjectOrStixCoreRelationshipNoteCard_node$data,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$data } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import Transition from '../../../../components/Transition';
 import { NoteEditionContainerQuery$data } from './__generated__/NoteEditionContainerQuery.graphql';
 import { deleteNode } from '../../../../utils/store';
-import {
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -56,11 +52,11 @@ const NotePopoverDeletionMutation = graphql`
 `;
 
 interface NotePopoverProps {
-  id?: string
-  handleOpenRemoveExternal?: () => void
-  size?: 'medium' | 'large' | 'small' | undefined
-  note: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data
-  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables
+  id?: string;
+  handleOpenRemoveExternal?: () => void;
+  size?: 'medium' | 'large' | 'small' | undefined;
+  note: StixCoreObjectOrStixCoreRelationshipNoteCard_node$data;
+  paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
 }
 
 const NotePopover: FunctionComponent<NotePopoverProps> = ({
@@ -118,83 +114,81 @@ const NotePopover: FunctionComponent<NotePopoverProps> = ({
   const handleCloseEdit = () => setDisplayEdit(false);
 
   const handleOpenRemove = () => {
-    if (handleOpenRemoveExternal) { handleOpenRemoveExternal(); }
+    if (handleOpenRemoveExternal) {
+      handleOpenRemoveExternal();
+    }
     handleClose();
   };
 
   return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={handleOpen}
-          aria-haspopup="true"
-          size={size || 'large'}
-          style={{ marginTop: size === 'small' ? -3 : 3 }}>
-          <MoreVert />
-        </IconButton>
-        <Menu anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleClose}>
-          <MenuItem onClick={handleOpenEdit}>
-            {t('Update')}
+    <div className={classes.container}>
+      <IconButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        size={size || 'large'}
+        style={{ marginTop: size === 'small' ? -3 : 3 }}
+      >
+        <MoreVert />
+      </IconButton>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        {handleOpenRemoveExternal && (
+          <MenuItem onClick={handleOpenRemove}>
+            {t('Remove from this entity')}
           </MenuItem>
-          {handleOpenRemoveExternal && (
-            <MenuItem onClick={handleOpenRemove}>
-              {t('Remove from this entity')}
-            </MenuItem>
-          )}
-          <CollaborativeSecurity data={note} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={handleOpenDelete}>
-              {t('Delete')}
-            </MenuItem>
-          </CollaborativeSecurity>
-        </Menu>
-        <Dialog
-          open={displayDelete}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
-          onClose={handleCloseDelete}
+        )}
+        <CollaborativeSecurity
+          data={note}
+          needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
         >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this note?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={handleCloseDelete}
-              disabled={deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={submitDelete}
-              disabled={deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Drawer open={displayEdit}
-                anchor="right"
-                elevation={1}
-                sx={{ zIndex: 1202 }}
-                classes={{ paper: classes.drawerPaper }}
-                onClose={handleCloseEdit}>
-          <QueryRenderer
-            query={noteEditionQuery}
-            variables={{ id }}
-            render={({ props }: { props: NoteEditionContainerQuery$data }) => {
-              if (props && props.note) {
-                return (
-                  <NoteEditionContainer note={props.note} handleClose={handleCloseEdit}/>
-                );
-              }
-              return <Loader variant={LoaderVariant.inElement} />;
-            }}
-          />
-        </Drawer>
-      </div>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        </CollaborativeSecurity>
+      </Menu>
+      <Dialog
+        open={displayDelete}
+        PaperProps={{ elevation: 1 }}
+        TransitionComponent={Transition}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this note?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseDelete} disabled={deleting}>
+            {t('Cancel')}
+          </Button>
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
+            {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Drawer
+        open={displayEdit}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleCloseEdit}
+      >
+        <QueryRenderer
+          query={noteEditionQuery}
+          variables={{ id }}
+          render={({ props }: { props: NoteEditionContainerQuery$data }) => {
+            if (props && props.note) {
+              return (
+                <NoteEditionContainer
+                  note={props.note}
+                  handleClose={handleCloseEdit}
+                />
+              );
+            }
+            return <Loader variant={LoaderVariant.inElement} />;
+          }}
+        />
+      </Drawer>
+    </div>
   );
 };
 
