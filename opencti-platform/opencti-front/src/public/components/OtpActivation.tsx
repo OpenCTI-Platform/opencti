@@ -57,11 +57,11 @@ const validateOtpPatch = graphql`
 `;
 
 interface OtpProps {
-  secret: string,
-  uri: string,
+  secret: string;
+  uri: string;
 }
 
-const Otp:FunctionComponent<OtpProps> = ({ secret, uri }) => {
+const Otp: FunctionComponent<OtpProps> = ({ secret, uri }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const theme = useTheme();
@@ -121,7 +121,9 @@ const Otp:FunctionComponent<OtpProps> = ({ secret, uri }) => {
           variant="outlined"
           style={{ margin: '15px 0', justifyContent: 'center' }}
         >
-          {t('You need to activate a two-factor authentication. Please type the code generated in your application.')}
+          {t(
+            'You need to activate a two-factor authentication. Please type the code generated in your application.',
+          )}
         </Alert>
       )}
       <div className={classes.input}>

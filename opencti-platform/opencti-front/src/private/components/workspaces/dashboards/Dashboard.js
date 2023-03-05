@@ -17,32 +17,8 @@ import { commitMutation } from '../../../../relay/environment';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import Security from '../../../../utils/Security';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
-import ThreatVictimologyAll from './ThreatVictimologyAll';
-import ThreatVictimologySectors from './ThreatVictimologySectors';
-import ThreatVictimologyCountries from './ThreatVictimologyCountries';
-import ThreatVictimologyRegions from './ThreatVictimologyRegions';
-import ThreatActivityCampaigns from './ThreatActivityCampaigns';
-import ThreatActivityIndicators from './ThreatActivityIndicators';
-import ThreatActivityReports from './ThreatActivityReports';
-import EntityThreatsAll from './EntityThreatsAll';
-import EntityThreatsIntrusionSets from './EntityThreatsIntrusionSets';
-import EntityThreatsMalwares from './EntityThreatsMalwares';
-import EntityActivityCampaigns from './EntityActivityCampaigns';
-import EntityActivityIncidents from './EntityActivityIncidents';
-import EntityActivityReports from './EntityActivityReports';
 import WidgetPopover from './WidgetPopover';
-import GlobalVictimologyAll from './GlobalVictimologyAll';
-import GlobalVictimologySectors from './GlobalVictimologySectors';
-import GlobalVictimologyCountries from './GlobalVictimologyCountries';
-import GlobalVictimologyRegions from './GlobalVictimologyRegions';
-import GlobalActivityIntrusionSets from './GlobalActivityIntrusionSets';
-import GlobalActivityMalwares from './GlobalActivityMalwares';
-import GlobalActivityReports from './GlobalActivityReports';
-import GlobalActivityIndicators from './GlobalActivityIndicators';
-import GlobalActivityVulnerabilities from './GlobalActivityVulnerabilities';
-import ThreatVulnerabilities from './ThreatVulnerabilities';
 import { fromB64, toB64 } from '../../../../utils/String';
-import GlobalActivityStixCoreRelationships from './GlobalActivityStixCoreRelationships';
 import WidgetConfig from './WidgetConfig';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
@@ -70,6 +46,8 @@ import StixCoreRelationshipsTreeMap from '../../common/stix_core_relationships/S
 import StixCoreRelationshipsMap from '../../common/stix_core_relationships/StixCoreRelationshipsMap';
 import StixDomainObjectBookmarksList from '../../common/stix_domain_objects/StixDomainObjectBookmarksList';
 import StixCoreObjectsMultiHorizontalBars from '../../common/stix_core_objects/StixCoreObjectsMultiHorizontalBars';
+import { ErrorBoundary, SimpleError } from '../../Error';
+import { useFormatter } from '../../../../components/i18n';
 
 const ResponsiveGridLayout = WidthProvider(Responsive);
 
@@ -96,6 +74,7 @@ const useStyles = makeStyles(() => ({
 
 const DashboardComponent = ({ workspace, noToolbar }) => {
   const classes = useStyles();
+  const { t } = useFormatter();
   const [manifest, setManifest] = useState(
     workspace.manifest && workspace.manifest.length > 0
       ? JSON.parse(fromB64(workspace.manifest))
@@ -208,14 +187,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       saveManifest(newManifest);
     }
   };
-  const onConfigChange = (config) => {
-    const newManifest = R.assoc(
-      'widgets',
-      R.map((n) => R.assoc('config', config, n), manifest.widgets),
-      manifest,
-    );
-    saveManifest(newManifest);
-  };
   const getDayStartDate = () => {
     return dayStartDate(null, false);
   };
@@ -230,283 +201,6 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       return yearsAgo(relativeDate.split('-')[1]);
     }
     return null;
-  };
-  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
-  const renderGlobalVisualization = (widget, config) => {
-    const { relativeDate } = config;
-    const { timeField = 'technical' } = config;
-    const startDate = relativeDate
-      ? computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate ? getDayStartDate() : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <GlobalVictimologyAll
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'sectors':
-        return (
-          <GlobalVictimologySectors
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'regions':
-        return (
-          <GlobalVictimologyRegions
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'countries':
-        return (
-          <GlobalVictimologyCountries
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'intrusion-sets':
-        return (
-          <GlobalActivityIntrusionSets
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'malwares':
-        return (
-          <GlobalActivityMalwares
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'vulnerabilities':
-        return (
-          <GlobalActivityVulnerabilities
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <GlobalActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-            onConfigChange={onConfigChange}
-          />
-        );
-      case 'indicators':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'indicators_lifecycle':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-            field="revoked"
-          />
-        );
-      case 'indicators_detection':
-        return (
-          <GlobalActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-            field="x_opencti_detection"
-          />
-        );
-      case 'relationships_list':
-        return (
-          <GlobalActivityStixCoreRelationships
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-            onConfigChange={onConfigChange}
-          />
-        );
-      default:
-        return 'Go away!';
-    }
-  };
-  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
-  const renderThreatVisualization = (widget, config) => {
-    const { relativeDate } = config;
-    const { timeField = 'technical' } = config;
-    const startDate = relativeDate
-      ? computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate ? getDayStartDate() : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <ThreatVictimologyAll
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'sectors':
-        return (
-          <ThreatVictimologySectors
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'regions':
-        return (
-          <ThreatVictimologyRegions
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'countries':
-        return (
-          <ThreatVictimologyCountries
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'campaigns':
-        return (
-          <ThreatActivityCampaigns
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'indicators':
-        return (
-          <ThreatActivityIndicators
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'vulnerabilities':
-        return (
-          <ThreatVulnerabilities
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <ThreatActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      default:
-        return 'Go away!';
-    }
-  };
-  // TODO DEPCREATED TO BE REMOVED FROM 5.7.0
-  const renderEntityVisualization = (widget, config) => {
-    const { relativeDate } = config;
-    const { timeField = 'technical' } = config;
-    const startDate = relativeDate
-      ? computerRelativeDate(relativeDate)
-      : config.startDate;
-    const endDate = relativeDate ? getDayStartDate() : config.endDate;
-    switch (widget.dataType) {
-      case 'all':
-        return (
-          <EntityThreatsAll
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'intrusion-sets':
-        return (
-          <EntityThreatsIntrusionSets
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'malwares':
-        return (
-          <EntityThreatsMalwares
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'campaigns':
-        return (
-          <EntityActivityCampaigns
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'incidents':
-        return (
-          <EntityActivityIncidents
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      case 'reports':
-        return (
-          <EntityActivityReports
-            startDate={startDate}
-            endDate={endDate}
-            timeField={timeField}
-            widget={widget}
-          />
-        );
-      default:
-        return 'Go away!';
-    }
   };
   const renderEntitiesVisualization = (widget, config) => {
     const { relativeDate } = config;
@@ -822,20 +516,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             className="layout"
             margin={[20, 20]}
             rowHeight={50}
-            breakpoints={{
-              lg: 1200,
-              md: 1200,
-              sm: 1200,
-              xs: 1200,
-              xxs: 1200,
-            }}
-            cols={{
-              lg: 30,
-              md: 30,
-              sm: 30,
-              xs: 30,
-              xxs: 30,
-            }}
+            breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
+            cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
             isDraggable={false}
             isResizable={false}
           >
@@ -846,16 +528,24 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                 classes={{ root: classes.paper }}
                 variant="outlined"
               >
-                {widget.perspective === 'global'
-                  && renderGlobalVisualization(widget, manifest.config)}
-                {widget.perspective === 'threat'
-                  && renderThreatVisualization(widget, manifest.config)}
-                {widget.perspective === 'entity'
-                  && renderEntityVisualization(widget, manifest.config)}
-                {widget.perspective === 'entities'
-                  && renderEntitiesVisualization(widget, manifest.config)}
-                {widget.perspective === 'relationships'
-                  && renderRelationshipsVisualization(widget, manifest.config)}
+                <ErrorBoundary
+                  display={
+                    <div style={{ paddingTop: 28 }}>
+                      <SimpleError />
+                    </div>
+                  }
+                >
+                  {widget.perspective === 'entities'
+                    && renderEntitiesVisualization(widget, manifest.config)}
+                  {widget.perspective === 'relationships'
+                    && renderRelationshipsVisualization(widget, manifest.config)}
+                  {widget.perspective !== 'entities'
+                    && widget.perspective !== 'relationships' && (
+                      <div style={{ textAlign: 'center' }}>
+                        <i>{t('Deprecated')}</i>
+                      </div>
+                  )}
+                </ErrorBoundary>
               </Paper>
             ))}
           </ResponsiveGridLayout>
@@ -865,20 +555,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
           className="layout"
           margin={[20, 20]}
           rowHeight={50}
-          breakpoints={{
-            lg: 1200,
-            md: 1200,
-            sm: 1200,
-            xs: 1200,
-            xxs: 1200,
-          }}
-          cols={{
-            lg: 30,
-            md: 30,
-            sm: 30,
-            xs: 30,
-            xxs: 30,
-          }}
+          breakpoints={{ lg: 1200, md: 1200, sm: 1200, xs: 1200, xxs: 1200 }}
+          cols={{ lg: 30, md: 30, sm: 30, xs: 30, xxs: 30 }}
           isDraggable={!noToolbar}
           isResizable={!noToolbar}
           onLayoutChange={noToolbar ? () => true : onLayoutChange}
@@ -899,16 +577,24 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
                   onDelete={() => handleDeleteWidget(widget.id)}
                 />
               )}
-              {widget.perspective === 'global'
-                && renderGlobalVisualization(widget, manifest.config)}
-              {widget.perspective === 'threat'
-                && renderThreatVisualization(widget, manifest.config)}
-              {widget.perspective === 'entity'
-                && renderEntityVisualization(widget, manifest.config)}
-              {widget.perspective === 'entities'
-                && renderEntitiesVisualization(widget, manifest.config)}
-              {widget.perspective === 'relationships'
-                && renderRelationshipsVisualization(widget, manifest.config)}
+              <ErrorBoundary
+                display={
+                  <div style={{ paddingTop: 28 }}>
+                    <SimpleError />
+                  </div>
+                }
+              >
+                {widget.perspective === 'entities'
+                  && renderEntitiesVisualization(widget, manifest.config)}
+                {widget.perspective === 'relationships'
+                  && renderRelationshipsVisualization(widget, manifest.config)}
+                {widget.perspective !== 'entities'
+                  && widget.perspective !== 'relationships' && (
+                    <div style={{ textAlign: 'center' }}>
+                      <i>{t('Deprecated')}</i>
+                    </div>
+                )}
+              </ErrorBoundary>
             </Paper>
           ))}
         </ResponsiveGridLayout>

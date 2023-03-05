@@ -208,6 +208,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <HexagonOutline style={style} fontSize={fontSize} role="img" />;
     case 'stix-sighting-relationship':
       return <Visibility style={style} fontSize={fontSize} role="img" />;
+    case 'stix-internal-relationship':
+      return <VectorRadius style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Core-Relationship':
     case 'Relationship':
     case 'stix-core-relationship':

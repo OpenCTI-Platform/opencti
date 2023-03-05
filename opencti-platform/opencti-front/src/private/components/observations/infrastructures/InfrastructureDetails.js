@@ -120,11 +120,12 @@ class InfrastructureDetailsComponent extends Component {
           <br />
           <EntityStixCoreRelationshipsDonut
             variant="inEntity"
-            entityId={infrastructure.id}
+            fromId={infrastructure.id}
             toTypes={['Stix-Cyber-Observable']}
             relationshipType="consists-of"
             field="entity_type"
             height={260}
+            isTo={true}
           />
         </Paper>
       </div>

@@ -34,7 +34,7 @@ interface LoginFormValues {
 }
 
 interface RelayResponseError extends Error {
-  res?: RelayResponsePayload
+  res?: RelayResponsePayload;
 }
 
 const FLASH_COOKIE = 'opencti_flash';
@@ -54,7 +54,9 @@ const LoginForm = () => {
         input: values,
       },
       onError: (error: RelayResponseError) => {
-        const errorMessage = t(error.res?.errors?.at?.(0)?.message ?? 'Unknown');
+        const errorMessage = t(
+          error.res?.errors?.at?.(0)?.message ?? 'Unknown',
+        );
         setErrors({ email: errorMessage });
         setSubmitting(false);
       },

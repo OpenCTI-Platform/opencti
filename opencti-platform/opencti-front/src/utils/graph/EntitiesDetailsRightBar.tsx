@@ -9,7 +9,7 @@ import MenuItem from '@mui/material/MenuItem';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 
-const useStyles = makeStyles < Theme >((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: 250,
@@ -28,22 +28,30 @@ const useStyles = makeStyles < Theme >((theme) => ({
 }));
 
 export interface SelectedEntity {
-  id: string
-  label: string
-  relationship_type?: string
-  entity_type: string
+  id: string;
+  label: string;
+  relationship_type?: string;
+  entity_type: string;
 }
 
 interface EntityDetailsRightsBarProps {
-  selectedEntities: SelectedEntity[]
+  selectedEntities: SelectedEntity[];
 }
-const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> = ({ selectedEntities }) => {
+const EntitiesDetailsRightsBar: FunctionComponent<
+EntityDetailsRightsBarProps
+> = ({ selectedEntities }) => {
   const classes = useStyles();
 
-  const uniqSelectedEntities: SelectedEntity[] = selectedEntities.filter((item, index) => {
-    return selectedEntities.findIndex((entity) => entity.id === item.id) === index;
-  });
-  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(uniqSelectedEntities[0]);
+  const uniqSelectedEntities: SelectedEntity[] = selectedEntities.filter(
+    (item, index) => {
+      return (
+        selectedEntities.findIndex((entity) => entity.id === item.id) === index
+      );
+    },
+  );
+  const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(
+    uniqSelectedEntities[0],
+  );
   useEffect(() => {
     if (uniqSelectedEntities[0] !== selectedEntity) {
       setSelectedEntity(uniqSelectedEntities[0]);
@@ -51,7 +59,7 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
   }, [selectedEntities]);
   const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
     const { value } = event.target;
-    const entity = selectedEntities.find((el) => (el.id === value));
+    const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
       setSelectedEntity(uniqSelectedEntities[0]);
     } else {
@@ -67,12 +75,11 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
       classes={{ paper: classes.drawerPaper }}
     >
       <div className={classes.toolbar} />
-      <FormControl
-        className={classes.formControl}
-        fullWidth={true}
-      >
+      <FormControl className={classes.formControl} fullWidth={true}>
         <InputLabel id="entityField" className={classes.label}>
-          {selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type}
+          {selectedEntity.label.length > 1
+            ? selectedEntity.label
+            : selectedEntity.entity_type}
         </InputLabel>
         <Select
           labelId="entityField"
@@ -86,13 +93,11 @@ const EntitiesDetailsRightsBar: FunctionComponent<EntityDetailsRightsBarProps> =
           ))}
         </Select>
       </FormControl>
-        {selectedEntity.relationship_type
-          ? <RelationshipDetails
-          relation={selectedEntity}
-            />
-          : <EntityDetails
-          entity={selectedEntity}
-            />}
+      {selectedEntity.relationship_type ? (
+        <RelationshipDetails relation={selectedEntity} />
+      ) : (
+        <EntityDetails entity={selectedEntity} />
+      )}
     </Drawer>
   );
 };

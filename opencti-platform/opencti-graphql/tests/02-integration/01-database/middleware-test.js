@@ -700,6 +700,7 @@ describe('Relations distribution', () => {
       field: 'entity_type',
       operation: 'count',
       toTypes: ['Attack-Pattern'],
+      isTo: true,
     };
     const distribution = await distributionRelations(testContext, ADMIN_USER, options);
     expect(distribution.length).toEqual(1);

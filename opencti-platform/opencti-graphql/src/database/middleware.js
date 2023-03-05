@@ -202,6 +202,7 @@ import {
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
 import {
+  buildAggregationRelationFilter,
   buildEntityFilters,
   internalFindByIds,
   internalLoadById,
@@ -536,7 +537,7 @@ export const distributionRelations = async (context, user, args) => {
   const distributionDateAttribute = dateAttribute || 'created_at';
   // Using elastic can only be done if the distribution is a count on types
   const opts = { ...args, dateAttribute: distributionDateAttribute };
-  const distributionArgs = buildEntityFilters({ types, ...opts });
+  const distributionArgs = buildAggregationRelationFilter(types, opts);
   const distributionData = await elAggregationRelationsCount(context, user, args.onlyInferred ? READ_INDEX_INFERRED_RELATIONSHIPS : READ_RELATIONSHIPS_INDICES, distributionArgs);
   // Take a maximum amount of distribution depending on the ordering.
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;

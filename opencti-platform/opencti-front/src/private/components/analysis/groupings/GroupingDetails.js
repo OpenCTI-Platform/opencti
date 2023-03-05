@@ -136,11 +136,12 @@ const GroupingDetailsComponent = (props) => {
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Entities distribution')}
               variant="inEntity"
-              stixCoreObjectId={grouping.id}
+              fromId={grouping.id}
               toTypes={['Stix-Core-Object']}
               relationshipType="object"
               field="entity_type"
               seriesName={t('Number of entities')}
+              isTo={true}
             />
           </Grid>
         </Grid>

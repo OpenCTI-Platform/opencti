@@ -1,7 +1,8 @@
 import { truncate } from './String';
 import { isEmptyField } from './utils';
 
-export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null ? ''
+export const convertStatus = (t, element) => ((element?.status?.template?.name ?? null) === null
+  ? ''
   : {
     label: element?.status?.template?.name ?? null,
     color: element?.status?.template?.color ?? null,
@@ -42,5 +43,6 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
   value: n.node.id,
 }));
 
-export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy) ? ''
+export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy)
+  ? ''
   : { label: element.createdBy.name, value: element.createdBy.id });

@@ -182,6 +182,9 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on Case {
           name
         }
+        ... on Report {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }

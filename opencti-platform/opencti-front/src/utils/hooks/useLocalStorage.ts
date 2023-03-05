@@ -1,7 +1,11 @@
 import { Dispatch, SetStateAction, SyntheticEvent, useState } from 'react';
 import * as R from 'ramda';
 import { isEmptyField, isNotEmptyField, removeEmptyFields } from '../utils';
-import { Filters, OrderMode, PaginationOptions } from '../../components/list_lines';
+import {
+  Filters,
+  OrderMode,
+  PaginationOptions,
+} from '../../components/list_lines';
 import { BackendFilters, isUniqFilter } from '../filters/filtersUtils';
 import { convertFilters } from '../ListParameters';
 
@@ -45,13 +49,10 @@ export interface UseLocalStorageHelpers {
   handleChangeView: (value: string) => void;
 }
 
-const localStorageToPaginationOptions = ({
-  searchTerm,
-  filters,
-  sortBy,
-  orderAsc,
-  ...props
-}: LocalStorage, additionalFilters?: BackendFilters): PaginationOptions => {
+const localStorageToPaginationOptions = (
+  { searchTerm, filters, sortBy, orderAsc, ...props }: LocalStorage,
+  additionalFilters?: BackendFilters,
+): PaginationOptions => {
   // Remove only display options, not query linked
   const localOptions = { ...props };
   delete localOptions.redirectionMode;
@@ -73,7 +74,9 @@ const localStorageToPaginationOptions = ({
     basePagination.orderBy = sortBy;
   }
   if (filters) {
-    const paginationFilters = convertFilters(filters).concat(additionalFilters ?? []);
+    const paginationFilters = convertFilters(filters).concat(
+      additionalFilters ?? [],
+    );
     basePagination.filters = paginationFilters as unknown as Filters;
   }
   return basePagination;
@@ -118,13 +121,20 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
   });
 };
 
-const setStoredValueToHistory = (initialValue: LocalStorage, valueToStore: LocalStorage) => {
+const setStoredValueToHistory = (
+  initialValue: LocalStorage,
+  valueToStore: LocalStorage,
+) => {
   const searchParams = new URLSearchParams(window.location.search);
   const finalParams = searchParamsToStorage(searchParams);
   const urlParams = buildParamsFromHistory(valueToStore);
   if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
     const effectiveParams = new URLSearchParams(urlParams);
-    if (Object.entries(urlParams).some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)) {
+    if (
+      Object.entries(urlParams).some(
+        ([k, v]) => initialValue[k as keyof LocalStorage] !== v,
+      )
+    ) {
       window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
     } else {
       window.history.replaceState(null, '', window.location.pathname);
@@ -132,7 +142,10 @@ const setStoredValueToHistory = (initialValue: LocalStorage, valueToStore: Local
   }
 };
 
-const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStorage => {
+const useLocalStorage = (
+  key: string,
+  initialValue: LocalStorage,
+): UseLocalStorage => {
   // State to store our value
   // Pass initial state function to useState so logic is only executed once
   const [storedValue, setStoredValue] = useState<LocalStorage>(() => {
@@ -164,7 +177,9 @@ const useLocalStorage = (key: string, initialValue: LocalStorage): UseLocalStora
   });
   // Return a wrapped version of useState's setter function that ...
   // ... persists the new value to localStorage.
-  const setValue = (value: LocalStorage | ((val: LocalStorage) => LocalStorage)) => {
+  const setValue = (
+    value: LocalStorage | ((val: LocalStorage) => LocalStorage),
+  ) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;

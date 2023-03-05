@@ -1,17 +1,20 @@
 import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
 import { useState } from 'react';
-import { useVocabularyCategoryQuery, VocabularyCategory } from './__generated__/useVocabularyCategoryQuery.graphql';
+import {
+  useVocabularyCategoryQuery,
+  VocabularyCategory,
+} from './__generated__/useVocabularyCategoryQuery.graphql';
 import { ApplicationError, environment } from '../../relay/environment';
 
 export interface VocabularyDefinition {
-  key: string
-  description: string
-  entity_types: string[]
+  key: string;
+  description: string;
+  entity_types: string[];
   fields: {
-    key: string
-    required: boolean
-    multiple: boolean
-  }[]
+    key: string;
+    required: boolean;
+    multiple: boolean;
+  }[];
 }
 
 export const vocabCategoriesQuery = graphql`
@@ -50,11 +53,18 @@ export const vocabFragment = graphql`
   }
 `;
 
-const queryRef = loadQuery<useVocabularyCategoryQuery>(environment, vocabCategoriesQuery, {});
+const queryRef = loadQuery<useVocabularyCategoryQuery>(
+  environment,
+  vocabCategoriesQuery,
+  {},
+);
 
 const useVocabularyCategory = () => {
-  const data = usePreloadedQuery<useVocabularyCategoryQuery>(vocabCategoriesQuery, queryRef);
-  const vocabularyCategories = () => (data.vocabularyCategories.map(({ key }) => key)) as VocabularyCategory[];
+  const data = usePreloadedQuery<useVocabularyCategoryQuery>(
+    vocabCategoriesQuery,
+    queryRef,
+  );
+  const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key) as VocabularyCategory[];
   const categories = vocabularyCategories();
 
   const typeToCategory = (type: string): VocabularyCategory => {
@@ -66,7 +76,10 @@ const useVocabularyCategory = () => {
     return value;
   };
 
-  const fieldToCategory = (entityType: string, field: string): VocabularyCategory | undefined => {
+  const fieldToCategory = (
+    entityType: string,
+    field: string,
+  ): VocabularyCategory | undefined => {
     const entityCategories = data.vocabularyCategories.filter((v) => v.entity_types.includes(entityType));
     const findCategory = entityCategories.find((e) => e.fields.map((f) => f.key).includes(field));
     return findCategory?.key;
@@ -90,10 +103,14 @@ export const useVocabularyCategoryAsQuery = () => {
   const [sortBy, setSortBy] = useState('name');
   const [orderAsc, setOrderAsc] = useState(true);
 
-  const data = usePreloadedQuery<useVocabularyCategoryQuery>(vocabCategoriesQuery, queryRef);
+  const data = usePreloadedQuery<useVocabularyCategoryQuery>(
+    vocabCategoriesQuery,
+    queryRef,
+  );
   const definitions = data.vocabularyCategories;
 
-  const categories = definitions.filter(({ key }) => key.includes(searchTerm))
+  const categories = definitions
+    .filter(({ key }) => key.includes(searchTerm))
     .sort((a, b) => {
       let value;
       switch (sortBy) {

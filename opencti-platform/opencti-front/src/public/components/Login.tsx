@@ -81,8 +81,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface LoginProps {
-  type: string
-  settings: LoginRootPublicQuery$data['settings']
+  type: string;
+  settings: LoginRootPublicQuery$data['settings'];
 }
 
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
@@ -126,7 +126,13 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     }
   };
 
-  const renderExternalAuth = (authButtons: Array<{ provider: string | null, name: string, type: string | null }>) => (
+  const renderExternalAuth = (
+    authButtons: Array<{
+      provider: string | null;
+      name: string;
+      type: string | null;
+    }>,
+  ) => (
     <div style={{ marginTop: 10 }}>
       {authButtons.map((value, index) => (
         <Button
@@ -136,7 +142,8 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
           size="small"
           component="a"
           href={`${APP_BASE_PATH}/auth/${value.provider}`}
-          className={renderExternalAuthClassName(value.provider)}>
+          className={renderExternalAuthClassName(value.provider)}
+        >
           {renderExternalAuthButton(value.provider)}
           {value.name}
         </Button>
@@ -172,7 +179,11 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
 
   const loginScreen = () => (
     <div>
-      <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
+      <img
+        src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+        alt="logo"
+        className={classes.logo}
+      />
       {loginMessage && loginMessage.length > 0 && (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
@@ -194,13 +205,18 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     if (type === '2FA_VALIDATION') {
       return (
         <div>
-          <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo}/>
+          <img
+            src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+            alt="logo"
+            className={classes.logo}
+          />
           <Paper variant="outlined">
             <OTPForm />
           </Paper>
         </div>
       );
-    } if (type === '2FA_ACTIVATION') {
+    }
+    if (type === '2FA_ACTIVATION') {
       return <OtpActivationComponent />;
     }
     return loginScreen();

@@ -30,7 +30,9 @@ const entityTypesQuery = graphql`
         }
       }
     }
-    stixCyberObservableRelationshipTypes: subTypes(type: "stix-cyber-observable-relationship") {
+    stixCyberObservableRelationshipTypes: subTypes(
+      type: "stix-cyber-observable-relationship"
+    ) {
       edges {
         node {
           id
@@ -50,28 +52,52 @@ const entityTypesQuery = graphql`
 `;
 
 let EntityTypes: Record<string, Option[]> = {};
-const queryRef = loadQuery<useEntityTypesQuery>(environment, entityTypesQuery, {});
+const queryRef = loadQuery<useEntityTypesQuery>(
+  environment,
+  entityTypesQuery,
+  {},
+);
 
 const formatKey = (s: string) => s.replaceAll('-', '').replaceAll('_', '').toLowerCase();
 
 const useEntityTypes = () => {
-  const data = usePreloadedQuery<useEntityTypesQuery>(entityTypesQuery, queryRef);
+  const data = usePreloadedQuery<useEntityTypesQuery>(
+    entityTypesQuery,
+    queryRef,
+  );
 
   const { t } = useFormatter();
-  const optionBuilder = (type: string, d: { id: string, label: string }[]) => {
-    return d.map(({ id, label }) => ({
-      label: t(`${type}_${label}`),
-      value: id,
-    })).sort((a, b) => a.label.localeCompare(b.label));
+  const optionBuilder = (type: string, d: { id: string; label: string }[]) => {
+    return d
+      .map(({ id, label }) => ({
+        label: t(`${type}_${label}`),
+        value: id,
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
   };
 
   if (Object.keys(EntityTypes).length > 0) {
     EntityTypes = {
-      [formatKey('stixCoreRelationshipTypes')]: optionBuilder('relationship', data.stixCoreRelationshipTypes.edges.map(({ node }) => node)),
-      [formatKey('stixCyberObservableRelationshipTypes')]: optionBuilder('relationship', data.stixCyberObservableRelationshipTypes.edges.map(({ node }) => node)),
-      [formatKey('stixMetaRelationshipTypes')]: optionBuilder('relationship', data.stixMetaRelationshipTypes.edges.map(({ node }) => node)),
-      [formatKey('stixDomainObjectTypes')]: optionBuilder('entity', data.stixDomainObjectTypes.edges.map(({ node }) => node)),
-      [formatKey('stixCyberObservableTypes')]: optionBuilder('entity', data.stixCyberObservableTypes.edges.map(({ node }) => node)),
+      [formatKey('stixCoreRelationshipTypes')]: optionBuilder(
+        'relationship',
+        data.stixCoreRelationshipTypes.edges.map(({ node }) => node),
+      ),
+      [formatKey('stixCyberObservableRelationshipTypes')]: optionBuilder(
+        'relationship',
+        data.stixCyberObservableRelationshipTypes.edges.map(({ node }) => node),
+      ),
+      [formatKey('stixMetaRelationshipTypes')]: optionBuilder(
+        'relationship',
+        data.stixMetaRelationshipTypes.edges.map(({ node }) => node),
+      ),
+      [formatKey('stixDomainObjectTypes')]: optionBuilder(
+        'entity',
+        data.stixDomainObjectTypes.edges.map(({ node }) => node),
+      ),
+      [formatKey('stixCyberObservableTypes')]: optionBuilder(
+        'entity',
+        data.stixCyberObservableTypes.edges.map(({ node }) => node),
+      ),
     };
   }
 

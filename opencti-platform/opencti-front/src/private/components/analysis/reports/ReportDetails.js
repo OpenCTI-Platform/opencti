@@ -155,11 +155,12 @@ const ReportDetailsComponent = (props) => {
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Entities distribution')}
               variant="inEntity"
-              stixCoreObjectId={report.id}
+              fromId={report.id}
               toTypes={['Stix-Core-Object']}
               relationshipType="object"
               field="entity_type"
               seriesName={t('Number of entities')}
+              isTo={true}
             />
           </Grid>
         </Grid>

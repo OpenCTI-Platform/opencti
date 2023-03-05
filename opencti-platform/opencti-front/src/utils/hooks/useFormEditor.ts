@@ -2,7 +2,12 @@ import { GraphQLTaggedNode } from 'relay-runtime/lib/query/RelayModernGraphQLTag
 import { useMutation } from 'react-relay';
 import BaseSchema, { SchemaObjectDescription } from 'yup/lib/schema';
 import { Option } from '../../private/components/common/form/ReferenceField';
-import { convertAssignees, convertExternalReferences, convertKillChainPhases, convertMarkings } from '../edition';
+import {
+  convertAssignees,
+  convertExternalReferences,
+  convertKillChainPhases,
+  convertMarkings,
+} from '../edition';
 
 interface GenericData {
   id: string;
@@ -55,9 +60,14 @@ const useFormEditor = (
   const [commitEditionFocus] = useMutation(queries.editionFocus);
   const schemaFields = (validator.describe() as SchemaObjectDescription).fields;
 
-  const validate = (name: string, values: Option[] | Option, callback: () => void) => {
+  const validate = (
+    name: string,
+    values: Option[] | Option,
+    callback: () => void,
+  ) => {
     if (schemaFields[name]) {
-      validator.validateAt(name, { [name]: values })
+      validator
+        .validateAt(name, { [name]: values })
         .then(() => {
           callback();
         })
@@ -68,12 +78,21 @@ const useFormEditor = (
   };
 
   // Multiple
-  const changeMultiple = (name: string, values: Option[], relation: string, optionMapper: (data: unknown) => [Option]) => {
+  const changeMultiple = (
+    name: string,
+    values: Option[],
+    relation: string,
+    optionMapper: (data: unknown) => [Option],
+  ) => {
     if (!enableReferences) {
       validate(name, values, () => {
         const currentValues: [Option] = optionMapper(data);
-        const added = values.filter((v) => !currentValues.map((c) => c.value).includes(v.value));
-        const removed = currentValues.filter((c) => !values.map((v) => v.value).includes(c.value));
+        const added = values.filter(
+          (v) => !currentValues.map((c) => c.value).includes(v.value),
+        );
+        const removed = currentValues.filter(
+          (c) => !values.map((v) => v.value).includes(c.value),
+        );
         if (added.length > 0) {
           commitRelationAdd({
             variables: {
@@ -107,7 +126,12 @@ const useFormEditor = (
     changeMultiple(name, values, 'kill-chain-phase', convertKillChainPhases);
   };
   const changeExternalReferences = (name: string, values: Option[]) => {
-    changeMultiple(name, values, 'external-reference', convertExternalReferences);
+    changeMultiple(
+      name,
+      values,
+      'external-reference',
+      convertExternalReferences,
+    );
   };
 
   // Simple

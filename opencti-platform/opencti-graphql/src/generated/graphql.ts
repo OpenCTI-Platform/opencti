@@ -18856,6 +18856,7 @@ export enum StixCoreObjectsFilter {
   PatternType = 'pattern_type',
   Published = 'published',
   RelatedTo = 'relatedTo',
+  RelationshipType = 'relationship_type',
   ReportTypes = 'report_types',
   Subject = 'subject',
   Targets = 'targets',

@@ -4,7 +4,13 @@ import * as R from 'ramda';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis } from 'recharts';
+import {
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  YAxis,
+  ZAxis,
+} from 'recharts';
 import {
   AccountBalanceOutlined,
   AspectRatio,
@@ -17,7 +23,13 @@ import {
   OpenWithOutlined,
   ScatterPlotOutlined,
 } from '@mui/icons-material';
-import { AutoFix, FamilyTree, SelectAll, SelectGroup, Video3d } from 'mdi-material-ui';
+import {
+  AutoFix,
+  FamilyTree,
+  SelectAll,
+  SelectGroup,
+  Video3d,
+} from 'mdi-material-ui';
 import TimeRange from 'react-timeline-range-slider';
 import LinearProgress from '@mui/material/LinearProgress';
 import Tooltip from '@mui/material/Tooltip';
@@ -174,7 +186,9 @@ class InvestigationGraphBar extends Component {
     if (
       this.props.numberOfSelectedNodes === 1
       && !this.props.selectedNodes[0].relationship_type
-      && !this.props.selectedNodes[0].parent_types.includes('Stix-Cyber-Observable')
+      && !this.props.selectedNodes[0].parent_types.includes(
+        'Stix-Cyber-Observable',
+      )
     ) {
       this.setState({ openEditDomainObject: true });
     } else if (
@@ -718,9 +732,9 @@ class InvestigationGraphBar extends Component {
                   workspaceId={workspace.id}
                   workspaceStixCoreObjects={workspace.objects.edges}
                   defaultCreatedBy={workspace.createdBy ?? null}
-                  defaultMarkingDefinitions={(workspace.objectMarking?.edges ?? []).map(
-                    (n) => n.node,
-                  )}
+                  defaultMarkingDefinitions={(
+                    workspace.objectMarking?.edges ?? []
+                  ).map((n) => n.node)}
                   targetStixCoreObjectTypes={[
                     'Stix-Domain-Object',
                     'Stix-Cyber-Observable',

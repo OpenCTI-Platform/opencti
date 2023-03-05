@@ -59,23 +59,44 @@ const Index = () => {
         <Switch>
           <BoundaryRoute exact path="/dashboard" component={Dashboard} />
           <BoundaryRoute exact path="/dashboard/search" component={Search} />
-          <BoundaryRoute exact path="/dashboard/search/:keyword" component={Search} />
-          <BoundaryRoute exact path="/dashboard/id/:id" component={StixObjectOrStixRelationship} />
-          <BoundaryRoute exact path="/dashboard/search_bulk" component={SearchBulk} />
+          <BoundaryRoute
+            exact
+            path="/dashboard/search/:keyword"
+            component={Search}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/id/:id"
+            component={StixObjectOrStixRelationship}
+          />
+          <BoundaryRoute
+            exact
+            path="/dashboard/search_bulk"
+            component={SearchBulk}
+          />
           <BoundaryRoute path="/dashboard/analysis" component={RootAnalysis} />
           <BoundaryRoute path="/dashboard/cases" component={RootCases} />
           <BoundaryRoute path="/dashboard/events" component={RootEvents} />
           <Route path="/dashboard/observations" component={RootObservations} />
           <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
           <BoundaryRoute path="/dashboard/arsenal" component={RootArsenal} />
-          <BoundaryRoute path="/dashboard/techniques" component={RootTechnique} />
+          <BoundaryRoute
+            path="/dashboard/techniques"
+            component={RootTechnique}
+          />
           <BoundaryRoute path="/dashboard/entities" component={RootEntities} />
           <BoundaryRoute path="/dashboard/locations" component={RootLocation} />
           <BoundaryRoute path="/dashboard/data" render={RootData} />
-          <BoundaryRoute path="/dashboard/workspaces" component={RootWorkspaces} />
+          <BoundaryRoute
+            path="/dashboard/workspaces"
+            component={RootWorkspaces}
+          />
           <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
           <BoundaryRoute path="/dashboard/import" component={RootImport} />
-          <BoundaryRoute path="/dashboard/profile" component={RootNotifications} />
+          <BoundaryRoute
+            path="/dashboard/profile"
+            component={RootNotifications}
+          />
           <Route component={NoMatch} />
         </Switch>
       </Box>

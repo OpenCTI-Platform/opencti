@@ -144,7 +144,9 @@ class EntityStixCoreRelationshipsDonut extends Component {
   renderContent() {
     const {
       t,
-      entityId,
+      fromId,
+      toId,
+      fromTypes,
       toTypes,
       relationshipType,
       field,
@@ -156,11 +158,11 @@ class EntityStixCoreRelationshipsDonut extends Component {
       variant,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: !isTo ? entityId : null,
-      toId: isTo ? entityId : null,
+      fromId,
+      toId,
       relationship_type: relationshipType,
-      toTypes: !isTo ? toTypes : null,
-      fromTypes: isTo ? toTypes : null,
+      toTypes,
+      fromTypes,
       startDate: startDate || null,
       endDate: endDate || null,
       field,
@@ -275,9 +277,11 @@ class EntityStixCoreRelationshipsDonut extends Component {
 EntityStixCoreRelationshipsDonut.propTypes = {
   title: PropTypes.string,
   variant: PropTypes.string,
-  entityId: PropTypes.string,
+  fromId: PropTypes.string,
+  toId: PropTypes.string,
+  fromTypes: PropTypes.array,
+  toTypes: PropTypes.array,
   relationshipType: PropTypes.string,
-  entityType: PropTypes.string,
   startDate: PropTypes.string,
   endDate: PropTypes.string,
   dateAttribute: PropTypes.string,

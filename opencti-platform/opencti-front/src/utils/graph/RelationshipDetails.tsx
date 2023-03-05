@@ -14,9 +14,7 @@ import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
 import ItemAuthor from '../../components/ItemAuthor';
 import ItemConfidence from '../../components/ItemConfidence';
-import {
-  RelationshipDetailsQuery,
-} from './__generated__/RelationshipDetailsQuery.graphql';
+import { RelationshipDetailsQuery } from './__generated__/RelationshipDetailsQuery.graphql';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import RelationShipFromAndTo from './RelationShipFromAndTo';
@@ -35,81 +33,86 @@ const useStyles = makeStyles(() => ({
 }));
 
 const relationshipDetailsQuery = graphql`
-    query RelationshipDetailsQuery($id: String!) {
-        stixCoreRelationship(id: $id) {
-            id
-            entity_type
-            description
-            parent_types
-            start_time
-            stop_time
-            created
-            confidence
-            relationship_type
-            from {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            to {
-                ... on BasicObject {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on BasicRelationship {
-                    id
-                    entity_type
-                    parent_types
-                }
-                ... on StixCoreRelationship {
-                    relationship_type
-                }
-            }
-            created_at
-            createdBy {
-                ... on Identity {
-                    id
-                    name
-                    entity_type
-                }
-            }
-            objectMarking {
-                edges {
-                    node {
-                        id
-                        definition_type
-                        definition
-                        x_opencti_order
-                        x_opencti_color
-                    }
-                }
-            }
+  query RelationshipDetailsQuery($id: String!) {
+    stixCoreRelationship(id: $id) {
+      id
+      entity_type
+      description
+      parent_types
+      start_time
+      stop_time
+      created
+      confidence
+      relationship_type
+      from {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
         }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
+        }
+        ... on StixCoreRelationship {
+          relationship_type
+        }
+      }
+      created_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
     }
+  }
 `;
 interface RelationshipDetailsComponentProps {
-  queryRef: PreloadedQuery<RelationshipDetailsQuery>
+  queryRef: PreloadedQuery<RelationshipDetailsQuery>;
 }
-const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsComponentProps> = ({ queryRef }) => {
+const RelationshipDetailsComponent: FunctionComponent<
+RelationshipDetailsComponentProps
+> = ({ queryRef }) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
 
-  const entity = usePreloadedQuery<RelationshipDetailsQuery>(relationshipDetailsQuery, queryRef);
+  const entity = usePreloadedQuery<RelationshipDetailsQuery>(
+    relationshipDetailsQuery,
+    queryRef,
+  );
   const { stixCoreRelationship } = entity;
 
   if (!stixCoreRelationship) {
-    return (<ErrorNotFound/>);
+    return <ErrorNotFound />;
   }
   return (
     <div className={classes.relation}>
@@ -121,8 +124,8 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
         {t('Relation type')}
       </Typography>
       {stixCoreRelationship.relationship_type}
-      { stixCoreRelationship.from.entity_type
-        && <Tooltip title={t('View the item')}>
+      {stixCoreRelationship.from.entity_type && (
+        <Tooltip title={t('View the item')}>
           <span>
             <IconButton
               color="primary"
@@ -132,12 +135,13 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
               }/knowledge/relations/${stixCoreRelationship.id}`}
               size="small"
             >
-                <InfoOutlined/>
+              <InfoOutlined />
             </IconButton>
           </span>
-        </Tooltip> }
-      { stixCoreRelationship.description
-        && <div>
+        </Tooltip>
+      )}
+      {stixCoreRelationship.description && (
+        <div>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -146,63 +150,69 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
             {t('Description')}
           </Typography>
           <ExpandableMarkdown
-            source={ stixCoreRelationship.description}
+            source={stixCoreRelationship.description}
             limit={400}
           />
         </div>
-      }
-      { !stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
-        && <RelationShipFromAndTo
-        id={stixCoreRelationship.from.id}
-        direction={'From'}
-      />
-      }
-      { stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('From')}
-          </Typography>
-          {stixCoreRelationship.from.relationship_type}
-        </div>
-      }
-      { !stixCoreRelationship.to.relationship_type && stixCoreRelationship.to.id
-        && <RelationShipFromAndTo
-          id={stixCoreRelationship.to.id}
-          direction={'To'}
-        />
-      }
-      { stixCoreRelationship.to.relationship_type && stixCoreRelationship.to.id
-        && <div>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            className={classes.label}
-          >
-            {t('To')}
-          </Typography>
-          {stixCoreRelationship.to.relationship_type}
-        </div>
-      }
-      { (stixCoreRelationship.objectMarking && stixCoreRelationship.objectMarking.edges.length > 0)
-        && <div>
-          <Typography variant="h3"
-                      gutterBottom={true}
-                      className={classes.label}
-          >
-            {t('Marking')}
-          </Typography>
-         <ItemMarkings
-          markingDefinitionsEdges={ stixCoreRelationship.objectMarking.edges}
-          limit={2}
-        />
-        </div>
-      }
-      { stixCoreRelationship.createdBy
-        && <div>
+      )}
+      {!stixCoreRelationship.from.relationship_type
+        && stixCoreRelationship.from.id && (
+          <RelationShipFromAndTo
+            id={stixCoreRelationship.from.id}
+            direction={'From'}
+          />
+      )}
+      {stixCoreRelationship.from.relationship_type
+        && stixCoreRelationship.from.id && (
+          <div>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              className={classes.label}
+            >
+              {t('From')}
+            </Typography>
+            {stixCoreRelationship.from.relationship_type}
+          </div>
+      )}
+      {!stixCoreRelationship.to.relationship_type
+        && stixCoreRelationship.to.id && (
+          <RelationShipFromAndTo
+            id={stixCoreRelationship.to.id}
+            direction={'To'}
+          />
+      )}
+      {stixCoreRelationship.to.relationship_type
+        && stixCoreRelationship.to.id && (
+          <div>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              className={classes.label}
+            >
+              {t('To')}
+            </Typography>
+            {stixCoreRelationship.to.relationship_type}
+          </div>
+      )}
+      {stixCoreRelationship.objectMarking
+        && stixCoreRelationship.objectMarking.edges.length > 0 && (
+          <div>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              className={classes.label}
+            >
+              {t('Marking')}
+            </Typography>
+            <ItemMarkings
+              markingDefinitionsEdges={stixCoreRelationship.objectMarking.edges}
+              limit={2}
+            />
+          </div>
+      )}
+      {stixCoreRelationship.createdBy && (
+        <div>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -210,13 +220,11 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           >
             {t('Author')}
           </Typography>
-          <ItemAuthor
-            createdBy={stixCoreRelationship.createdBy}
-          />
+          <ItemAuthor createdBy={stixCoreRelationship.createdBy} />
         </div>
-      }
-      {stixCoreRelationship.confidence
-        && <div>
+      )}
+      {stixCoreRelationship.confidence && (
+        <div>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -226,20 +234,12 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
           </Typography>
           <ItemConfidence confidence={stixCoreRelationship.confidence} />
         </div>
-      }
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
+      )}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('First seen')}
       </Typography>
       {fldt(stixCoreRelationship.start_time)}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Last seen')}
       </Typography>
       {fldt(stixCoreRelationship.stop_time)}
@@ -248,11 +248,16 @@ const RelationshipDetailsComponent: FunctionComponent<RelationshipDetailsCompone
 };
 
 interface RelationshipDetailsProps {
-  relation: SelectedEntity
-  queryRef: PreloadedQuery<RelationshipDetailsQuery>
+  relation: SelectedEntity;
+  queryRef: PreloadedQuery<RelationshipDetailsQuery>;
 }
-const RelationshipDetails: FunctionComponent<Omit<RelationshipDetailsProps, 'queryRef'>> = ({ relation }) => {
-  const queryRef = useQueryLoading<RelationshipDetailsQuery>(relationshipDetailsQuery, { id: relation.id });
+const RelationshipDetails: FunctionComponent<
+Omit<RelationshipDetailsProps, 'queryRef'>
+> = ({ relation }) => {
+  const queryRef = useQueryLoading<RelationshipDetailsQuery>(
+    relationshipDetailsQuery,
+    { id: relation.id },
+  );
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
       <RelationshipDetailsComponent queryRef={queryRef} />
