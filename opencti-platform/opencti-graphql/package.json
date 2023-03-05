@@ -149,7 +149,7 @@
     "@types/uuid": "9.0.1",
     "@typescript-eslint/eslint-plugin": "5.54.0",
     "@typescript-eslint/parser": "5.54.0",
-    "@vitest/coverage-istanbul": "0.29.2",
+    "@vitest/coverage-istanbul": "0.28.5",
     "cross-env": "7.0.3",
     "esbuild": "0.16.17",
     "esbuild-plugin-import-glob": "0.1.1",

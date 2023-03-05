@@ -4301,9 +4301,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@vitest/coverage-istanbul@npm:0.29.2":
-  version: 0.29.2
-  resolution: "@vitest/coverage-istanbul@npm:0.29.2"
+"@vitest/coverage-istanbul@npm:0.28.5":
+  version: 0.28.5
+  resolution: "@vitest/coverage-istanbul@npm:0.28.5"
   dependencies:
     istanbul-lib-coverage: ^3.2.0
     istanbul-lib-instrument: ^5.2.1
@@ -4311,9 +4311,8 @@ __metadata:
     istanbul-lib-source-maps: ^4.0.1
     istanbul-reports: ^3.1.5
     test-exclude: ^6.0.0
-  peerDependencies:
-    vitest: ">=0.28.0 <1"
-  checksum: 8a067d8ddd7f4f1b669d5ba808ed624c3298ca40a26b564f25af0e348e3762aa56ae81101bf8e9a9cfaff561e529bc4669f549d88704bdb9d9ee608a2a4cdced
+    vitest: 0.28.5
+  checksum: 4bd1dd19172f57744c8a2885c7bd0db63e568394e2acdbfcbe568c05e058fdd1c2e86fd574527c994de9f073be4e6851935536bac13ec672e3d8cee03b701e29
   languageName: node
   linkType: hard
 
@@ -9987,7 +9986,7 @@ __metadata:
     "@types/uuid": 9.0.1
     "@typescript-eslint/eslint-plugin": 5.54.0
     "@typescript-eslint/parser": 5.54.0
-    "@vitest/coverage-istanbul": 0.29.2
+    "@vitest/coverage-istanbul": 0.28.5
     ajv: 8.12.0
     amqplib: 0.10.3
     antlr4: 4.11.0
