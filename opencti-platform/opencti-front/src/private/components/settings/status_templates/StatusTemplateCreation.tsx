@@ -21,12 +21,8 @@ import { commitMutation } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
-import {
-  StatusTemplateCreationContextualMutation$data,
-} from './__generated__/StatusTemplateCreationContextualMutation.graphql';
-import {
-  StatusTemplatesLinesPaginationQuery$variables,
-} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import { StatusTemplateCreationContextualMutation$data } from './__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -83,10 +79,12 @@ const statusTemplateMutation = graphql`
 `;
 
 const statusTemplateContextualMutation = graphql`
-  mutation StatusTemplateCreationContextualMutation($input: StatusTemplateAddInput!) {
+  mutation StatusTemplateCreationContextualMutation(
+    $input: StatusTemplateAddInput!
+  ) {
     statusTemplateAdd(input: $input) {
-        id
-        name
+      id
+      name
     }
   }
 `;
@@ -97,15 +95,19 @@ const statusTemplateValidation = (t: (name: string | object) => string) => Yup.o
 });
 
 interface StatusTemplateCreationProps {
-  contextual: boolean,
-  inputValueContextual: string,
-  creationCallback: (data: StatusTemplateCreationContextualMutation$data) => void,
-  handleCloseContextual: () => void,
-  openContextual: boolean,
-  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables,
+  contextual: boolean;
+  inputValueContextual: string;
+  creationCallback: (
+    data: StatusTemplateCreationContextualMutation$data
+  ) => void;
+  handleCloseContextual: () => void;
+  openContextual: boolean;
+  paginationOptions?: StatusTemplatesLinesPaginationQuery$variables;
 }
 
-const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = ({
+const StatusTemplateCreation: FunctionComponent<
+StatusTemplateCreationProps
+> = ({
   contextual,
   inputValueContextual,
   creationCallback,
@@ -122,9 +124,14 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
 
   const handleClose = () => setOpen(false);
 
-  const onSubmit: FormikConfig<{ name: string, color: string }>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<{ name: string; color: string }>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     commitMutation({
-      mutation: contextual ? statusTemplateContextualMutation : statusTemplateMutation,
+      mutation: contextual
+        ? statusTemplateContextualMutation
+        : statusTemplateMutation,
       variables: {
         input: values,
       },
@@ -139,7 +146,9 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
           );
         }
       },
-      onCompleted: (response: StatusTemplateCreationContextualMutation$data) => {
+      onCompleted: (
+        response: StatusTemplateCreationContextualMutation$data,
+      ) => {
         setSubmitting(false);
         resetForm();
         if (contextual) {
@@ -188,7 +197,9 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">{t('Create a status template')}</Typography>
+            <Typography variant="h6">
+              {t('Create a status template')}
+            </Typography>
           </div>
           <div className={classes.container}>
             <Formik
@@ -302,9 +313,7 @@ const StatusTemplateCreation: FunctionComponent<StatusTemplateCreationProps> = (
     );
   };
 
-  return (
-    contextual ? renderContextual() : renderClassic()
-  );
+  return contextual ? renderContextual() : renderClassic();
 };
 
 export default StatusTemplateCreation;

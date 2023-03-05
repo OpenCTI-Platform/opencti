@@ -54,11 +54,14 @@ const statusTemplateEditionQuery = graphql`
 `;
 
 interface StatusTemplatePopoverProps {
-  statusTemplateId: string,
-  paginationOptions: { search: string, orderMode: string, orderBy: string },
+  statusTemplateId: string;
+  paginationOptions: { search: string; orderMode: string; orderBy: string };
 }
 
-const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ statusTemplateId, paginationOptions }) => {
+const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({
+  statusTemplateId,
+  paginationOptions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -92,7 +95,12 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ 
       variables: {
         id: statusTemplateId,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(store, 'Pagination_statusTemplates', paginationOptions, statusTemplateId),
+      updater: (store: RecordSourceSelectorProxy) => deleteNode(
+        store,
+        'Pagination_statusTemplates',
+        paginationOptions,
+        statusTemplateId,
+      ),
       onCompleted: () => {
         setDeleting(false);
         handleCloseDelete();
@@ -106,24 +114,12 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ 
 
   return (
     <div className={classes.container}>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        size="large"
-      >
+      <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={displayUpdate}
@@ -136,7 +132,11 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ 
         <QueryRenderer
           query={statusTemplateEditionQuery}
           variables={{ id: statusTemplateId }}
-          render={({ props }: { props: StatusTemplatePopoverEditionQuery$data }) => {
+          render={({
+            props,
+          }: {
+            props: StatusTemplatePopoverEditionQuery$data;
+          }) => {
             if (props && props.statusTemplate) {
               return (
                 <StatusTemplateEdition
@@ -162,17 +162,10 @@ const StatusTemplatePopover: FunctionComponent<StatusTemplatePopoverProps> = ({ 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>

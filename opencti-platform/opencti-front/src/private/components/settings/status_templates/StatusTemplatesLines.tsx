@@ -4,17 +4,20 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import StatusTemplateLine, { DataColumnsType } from './StatusTemplateLine';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { StatusTemplatesLinesPaginationQuery, StatusTemplatesLinesPaginationQuery$variables } from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
+import {
+  StatusTemplatesLinesPaginationQuery,
+  StatusTemplatesLinesPaginationQuery$variables,
+} from './__generated__/StatusTemplatesLinesPaginationQuery.graphql';
 import { StatusTemplatesLines_data$key } from './__generated__/StatusTemplatesLines_data.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 
 const nbOfRowsToLoad = 50;
 
 interface StatusTemplatesLinesProps {
-  queryRef: PreloadedQuery<StatusTemplatesLinesPaginationQuery>,
-  dataColumns: DataColumnsType,
-  paginationOptions: StatusTemplatesLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
+  queryRef: PreloadedQuery<StatusTemplatesLinesPaginationQuery>;
+  dataColumns: DataColumnsType;
+  paginationOptions: StatusTemplatesLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
 }
 
 export const statusTemplatesLinesQuery = graphql`
@@ -26,13 +29,13 @@ export const statusTemplatesLinesQuery = graphql`
     $orderMode: OrderingMode
   ) {
     ...StatusTemplatesLines_data
-    @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-    )
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -44,7 +47,8 @@ const statusTemplatesLinesFragment = graphql`
     cursor: { type: "ID" }
     orderBy: { type: "StatusTemplateOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
-  ) @refetchable(queryName: "StatusTemplatesLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "StatusTemplatesLinesRefetchQuery") {
     statusTemplates(
       search: $search
       first: $count
@@ -72,12 +76,10 @@ const StatusTemplatesLines: FunctionComponent<StatusTemplatesLinesProps> = ({
   paginationOptions,
   setNumberOfElements,
 }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<StatusTemplatesLinesPaginationQuery, StatusTemplatesLines_data$key>({
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  StatusTemplatesLinesPaginationQuery,
+  StatusTemplatesLines_data$key
+  >({
     linesQuery: statusTemplatesLinesQuery,
     linesFragment: statusTemplatesLinesFragment,
     queryRef,
@@ -92,7 +94,9 @@ const StatusTemplatesLines: FunctionComponent<StatusTemplatesLinesProps> = ({
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.statusTemplates?.edges ?? []}
-      globalCount={data?.statusTemplates?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      globalCount={
+        data?.statusTemplates?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
       LineComponent={StatusTemplateLine}
       DummyLineComponent={StatusTemplateLineDummy}
       dataColumns={dataColumns}

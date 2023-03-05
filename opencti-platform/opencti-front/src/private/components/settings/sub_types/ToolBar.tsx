@@ -1,7 +1,12 @@
 import makeStyles from '@mui/styles/makeStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import { ClearOutlined, FileOpenOutlined, LocalOfferOutlined, VisibilityOffOutlined } from '@mui/icons-material';
+import {
+  ClearOutlined,
+  FileOpenOutlined,
+  LocalOfferOutlined,
+  VisibilityOffOutlined,
+} from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Toolbar from '@mui/material/Toolbar';
@@ -85,7 +90,6 @@ const ToolBar: FunctionComponent<{
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const entitySettings = useEntitySettings();
   let entitySettingsSelected;
   if (selectAll) {
@@ -100,7 +104,7 @@ const ToolBar: FunctionComponent<{
       if (keyword) {
         return (
           node.target_type.toLowerCase().indexOf(keyword.toLowerCase())
-          !== -1
+            !== -1
           || t(`entity_${node.target_type}`)
             .toLowerCase()
             .indexOf(keyword.toLowerCase()) !== -1
@@ -109,8 +113,9 @@ const ToolBar: FunctionComponent<{
       return true;
     },
   );
-
-  const [navOpen, setNavOpen] = useState<boolean>(localStorage.getItem('navOpen') === 'true');
+  const [navOpen, setNavOpen] = useState<boolean>(
+    localStorage.getItem('navOpen') === 'true',
+  );
   useEffect(() => {
     const subscription = MESSAGING$.toggleNav.subscribe({
       next: () => setNavOpen(localStorage.getItem('navOpen') === 'true'),
@@ -119,24 +124,21 @@ const ToolBar: FunctionComponent<{
       subscription.unsubscribe();
     };
   });
-
   const [display, setDisplay] = useState<boolean>(false);
   const [title, setTitle] = useState<string>('');
   const [description, setDescription] = useState<string>('');
   const [value, setValue] = useState<boolean>(false);
   const [key, setKey] = useState<string>('');
-  const [notAvailableSetting, setNotAvailableSetting] = useState<EntitySetting[]>([]);
-
+  const [notAvailableSetting, setNotAvailableSetting] = useState<
+  EntitySetting[]
+  >([]);
   const [commit] = useMutation(entitySettingsPatch);
-
   const handleOpen = () => setDisplay(true);
   const handleClose = () => {
     setDisplay(false);
     setValue(false);
   };
-
   const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter(({ [currentKey]: v }) => v === null);
-
   const handleOpenFilesRef = () => {
     handleOpen();
     setTitle(t('Entities automatic reference from files'));
@@ -150,7 +152,6 @@ const ToolBar: FunctionComponent<{
       retrieveNotAvailableSetting('platform_entity_files_ref'),
     );
   };
-
   const handleOpenHidden = () => {
     handleOpen();
     setTitle(t('Hidden entity types'));
@@ -162,7 +163,6 @@ const ToolBar: FunctionComponent<{
     setKey('platform_hidden_type');
     setNotAvailableSetting(retrieveNotAvailableSetting('platform_hidden_type'));
   };
-
   const handleOpenEnforceRef = () => {
     handleOpen();
     setTitle(t('Enforce reference on entity types'));
@@ -174,7 +174,6 @@ const ToolBar: FunctionComponent<{
     setKey('enforce_reference');
     setNotAvailableSetting(retrieveNotAvailableSetting('enforce_reference'));
   };
-
   const handleAction = () => {
     const ids = entitySettingsSelectedFiltered
       .filter(
@@ -191,7 +190,6 @@ const ToolBar: FunctionComponent<{
     });
     handleClose();
   };
-
   return (
     <Drawer
       anchor="bottom"
@@ -230,8 +228,8 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                === retrieveNotAvailableSetting('platform_entity_files_ref')
-                  .length
+                  === retrieveNotAvailableSetting('platform_entity_files_ref')
+                    .length
               }
               onClick={handleOpenFilesRef}
               color="primary"
@@ -248,7 +246,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                === retrieveNotAvailableSetting('platform_hidden_type').length
+                  === retrieveNotAvailableSetting('platform_hidden_type').length
               }
               onClick={handleOpenHidden}
               color="primary"
@@ -265,7 +263,7 @@ const ToolBar: FunctionComponent<{
               disabled={
                 numberOfSelectedElements === 0
                 || numberOfSelectedElements
-                === retrieveNotAvailableSetting('enforce_reference').length
+                  === retrieveNotAvailableSetting('enforce_reference').length
               }
               onClick={handleOpenEnforceRef}
               color="primary"

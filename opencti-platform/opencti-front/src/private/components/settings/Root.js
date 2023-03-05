@@ -65,9 +65,7 @@ const Root = () => (
       />
       <BoundaryRoute
         path="/dashboard/settings/entity_types/:subTypeId"
-        render={() => (
-          <RootSubType />
-        )}
+        render={() => <RootSubType />}
       />
       <BoundaryRoute
         exact

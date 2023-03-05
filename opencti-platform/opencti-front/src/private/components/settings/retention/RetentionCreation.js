@@ -112,7 +112,12 @@ const RetentionCreation = (props) => {
         input: { ...finalValues, filters: jsonFilters },
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_retentionRules', props.paginationOptions, 'retentionRuleAdd');
+        insertNode(
+          store,
+          'Pagination_retentionRules',
+          props.paginationOptions,
+          'retentionRuleAdd',
+        );
       },
       setSubmitting,
       onCompleted: () => {

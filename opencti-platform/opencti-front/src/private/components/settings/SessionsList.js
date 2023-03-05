@@ -193,7 +193,9 @@ class SessionsListComponent extends Component {
                               {nsdt(userSession.created)}
                             </div>
                             <div className={classes.ttl}>
-                              {Math.round(userSession.ttl / 60)} {t('minutes left')} / {Math.round(userSession.originalMaxAge / 60)}
+                              {Math.round(userSession.ttl / 60)}{' '}
+                              {t('minutes left')} /{' '}
+                              {Math.round(userSession.originalMaxAge / 60)}
                             </div>
                           </div>
                         }

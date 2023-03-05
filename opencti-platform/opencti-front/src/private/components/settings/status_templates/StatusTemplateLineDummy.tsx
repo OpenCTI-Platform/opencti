@@ -39,21 +39,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface StatusTemplateLineDummyProps {
-  dataColumns: DataColumnsType,
+  dataColumns: DataColumnsType;
 }
 
-const StatusTemplateLineDummy: FunctionComponent<StatusTemplateLineDummyProps> = ({ dataColumns }) => {
+const StatusTemplateLineDummy: FunctionComponent<
+StatusTemplateLineDummyProps
+> = ({ dataColumns }) => {
   const classes = useStyles();
 
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIconDisabled }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

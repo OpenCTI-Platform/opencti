@@ -17,13 +17,11 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
     },
     {
       path: '/dashboard/settings/vocabularies/statusTemplates',
-      label: 'Status Templates',
+      label: 'Status templates',
     },
   ];
 
-  return (
-    <NavToolbarMenu entries={entries} />
-  );
+  return <NavToolbarMenu entries={entries} />;
 };
 
 export default LabelsVocabulariesMenu;

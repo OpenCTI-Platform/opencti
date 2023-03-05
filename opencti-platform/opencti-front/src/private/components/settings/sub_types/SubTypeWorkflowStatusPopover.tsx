@@ -11,7 +11,9 @@ import DialogContentText from '@mui/material/DialogContentText';
 import MoreVert from '@mui/icons-material/MoreVert';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import SubTypeWorkflowStatusEdit, { statusEditQuery } from './SubTypeWorkflowStatusEdit';
+import SubTypeWorkflowStatusEdit, {
+  statusEditQuery,
+} from './SubTypeWorkflowStatusEdit';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
@@ -36,7 +38,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const workflowStatusDeletionMutation = graphql`
-  mutation SubTypeWorkflowStatusPopoverDeletionMutation($id: ID!, $statusId: String!) {
+  mutation SubTypeWorkflowStatusPopoverDeletionMutation(
+    $id: ID!
+    $statusId: String!
+  ) {
     subTypeEdit(id: $id) {
       statusDelete(statusId: $statusId) {
         ...SubTypeWorkflow_subType
@@ -46,41 +51,38 @@ const workflowStatusDeletionMutation = graphql`
 `;
 
 interface SubTypeStatusPopoverProps {
-  subTypeId: string
-  statusId: string
+  subTypeId: string;
+  statusId: string;
 }
 
-const SubTypeWorkflowStatusPopover: FunctionComponent<SubTypeStatusPopoverProps> = ({
-  subTypeId,
-  statusId,
-}) => {
+const SubTypeWorkflowStatusPopover: FunctionComponent<
+SubTypeStatusPopoverProps
+> = ({ subTypeId, statusId }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(statusEditQuery, { id: statusId });
+  const queryRef = useQueryLoading<SubTypeWorkflowStatusEditQuery>(
+    statusEditQuery,
+    { id: statusId },
+  );
 
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const [displayDelete, setDisplayDelete] = useState<boolean>(false);
   const [deleting, setDeleting] = useState<boolean>(false);
-
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleClose = () => setAnchorEl(null);
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
     handleClose();
   };
   const handleCloseUpdate = () => setDisplayUpdate(false);
-
   const handleOpenDelete = () => {
     setDisplayDelete(true);
     handleClose();
   };
   const handleCloseDelete = () => setDisplayDelete(false);
-
   const [commit] = useMutation(workflowStatusDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -94,29 +96,15 @@ const SubTypeWorkflowStatusPopover: FunctionComponent<SubTypeStatusPopoverProps>
       },
     });
   };
-
   return (
     <div className={classes.container}>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        size="large"
-      >
+      <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
-
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <SubTypeWorkflowStatusEdit
@@ -140,17 +128,10 @@ const SubTypeWorkflowStatusPopover: FunctionComponent<SubTypeStatusPopoverProps>
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>

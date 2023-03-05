@@ -107,7 +107,12 @@ class RetentionPopover extends Component {
         id: this.props.retentionRuleId,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_retentionRules', this.props.paginationOptions, this.props.retentionRuleId);
+        deleteNode(
+          store,
+          'Pagination_retentionRules',
+          this.props.paginationOptions,
+          this.props.retentionRuleId,
+        );
       },
       onCompleted: () => {
         this.setState({ deleting: false });

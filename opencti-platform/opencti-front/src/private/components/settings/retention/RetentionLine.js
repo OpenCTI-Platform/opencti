@@ -70,15 +70,18 @@ class RetentionLineComponent extends Component {
               >
                 {node.name}
               </div>
-              {filterPairs.length > 0
-                ? <FilterIconButton
-                filters={filters}
-                dataColumns={dataColumns}
-                classNameNumber={3}
-                styleNumber={3}
+              {filterPairs.length > 0 ? (
+                <FilterIconButton
+                  filters={filters}
+                  dataColumns={dataColumns}
+                  classNameNumber={3}
+                  styleNumber={3}
                 />
-                : (
-                  <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+              ) : (
+                <div
+                  className={classes.bodyItem}
+                  style={{ width: dataColumns.filters.width }}
+                >
                   <span>
                     <Chip
                       classes={{ root: classes.filter }}
@@ -89,9 +92,8 @@ class RetentionLineComponent extends Component {
                       }
                     />
                   </span>
-                  </div>
-                )
-              }
+                </div>
+              )}
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.retention.width }}

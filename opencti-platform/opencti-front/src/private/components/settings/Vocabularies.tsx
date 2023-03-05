@@ -4,7 +4,9 @@ import Chip from '@mui/material/Chip';
 import { useParams } from 'react-router-dom';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import VocabulariesLines, { vocabulariesLinesQuery } from './attributes/VocabulariesLines';
+import VocabulariesLines, {
+  vocabulariesLinesQuery,
+} from './attributes/VocabulariesLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { VocabulariesLines_DataQuery$variables } from './attributes/__generated__/VocabulariesLines_DataQuery.graphql';
 import { VocabulariesLinesPaginationQuery } from './attributes/__generated__/VocabulariesLinesPaginationQuery.graphql';
@@ -36,13 +38,19 @@ const Vocabularies = () => {
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
-  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(`view-vocabulary-${category}`, {
-    sortBy: 'name',
-    orderAsc: true,
-    searchTerm: '',
-    category,
-  });
-  const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(vocabulariesLinesQuery, paginationOptions);
+  const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<VocabulariesLines_DataQuery$variables>(
+    `view-vocabulary-${category}`,
+    {
+      sortBy: 'name',
+      orderAsc: true,
+      searchTerm: '',
+      category,
+    },
+  );
+  const queryRef = useQueryLoading<VocabulariesLinesPaginationQuery>(
+    vocabulariesLinesQuery,
+    paginationOptions,
+  );
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -100,7 +108,8 @@ const Vocabularies = () => {
       },
     };
     return (
-      <ListLines sortBy={viewStorage.sortBy}
+      <ListLines
+        sortBy={viewStorage.sortBy}
         iconExtension={true}
         orderAsc={viewStorage.orderAsc}
         dataColumns={dataColumns}
@@ -113,10 +122,13 @@ const Vocabularies = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={paginationOptions.search}
-        filters={viewStorage.filters}>
+        filters={viewStorage.filters}
+      >
         {queryRef && (
           <>
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <VocabulariesLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -150,7 +162,10 @@ const Vocabularies = () => {
     <div className={classes.container}>
       <LabelsVocabulariesMenu />
       {renderLines()}
-      <VocabularyCreation category={category} paginationOptions={paginationOptions} />
+      <VocabularyCreation
+        category={category}
+        paginationOptions={paginationOptions}
+      />
     </div>
   );
 };

@@ -6,7 +6,9 @@ import { Edit } from '@mui/icons-material';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import SubTypeWorkflow, { subTypeWorkflowEditionQuery } from './SubTypeWorkflow';
+import SubTypeWorkflow, {
+  subTypeWorkflowEditionQuery,
+} from './SubTypeWorkflow';
 import { SubTypeWorkflowEditionQuery } from './__generated__/SubTypeWorkflowEditionQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -25,12 +27,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const SubTypeStatusPopover = ({ subTypeId }: { subTypeId: string }) => {
   const classes = useStyles();
-
-  const queryRef = useQueryLoading<SubTypeWorkflowEditionQuery>(subTypeWorkflowEditionQuery, { id: subTypeId });
+  const queryRef = useQueryLoading<SubTypeWorkflowEditionQuery>(
+    subTypeWorkflowEditionQuery,
+    { id: subTypeId },
+  );
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
-
   return (
     <>
       <IconButton
@@ -51,7 +54,9 @@ const SubTypeStatusPopover = ({ subTypeId }: { subTypeId: string }) => {
         onClose={handleCloseUpdate}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <SubTypeWorkflow
               queryRef={queryRef}
               handleClose={handleCloseUpdate}

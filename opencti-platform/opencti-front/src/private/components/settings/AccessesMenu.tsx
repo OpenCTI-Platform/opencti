@@ -37,9 +37,7 @@ const SettingsMenu: FunctionComponent = () => {
     },
   ];
 
-  return (
-    <NavToolbarMenu entries={entries} />
-  );
+  return <NavToolbarMenu entries={entries} />;
 };
 
 export default SettingsMenu;

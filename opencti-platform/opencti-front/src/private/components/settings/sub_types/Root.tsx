@@ -21,7 +21,6 @@ export const subTypeQuery = graphql`
 
 const RootSubType = () => {
   const { subTypeId } = useParams() as { subTypeId: string };
-
   return (
     <div>
       <QueryRenderer
@@ -35,8 +34,7 @@ const RootSubType = () => {
                   <Route
                     exact
                     path="/dashboard/settings/entity_types/:subTypeId"
-                    render={() => (<SubType data={props.subType} />
-                    )}
+                    render={() => <SubType data={props.subType} />}
                   />
                 </Switch>
               );

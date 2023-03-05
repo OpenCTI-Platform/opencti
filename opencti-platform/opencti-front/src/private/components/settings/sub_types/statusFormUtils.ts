@@ -10,9 +10,9 @@ export const statusValidation = (t: (name: string | object) => string) => Yup.ob
 
 export interface StatusForm {
   template: {
-    label: string,
-    value: string,
-    color: string,
-  } | null
-  order: string,
+    label: string;
+    value: string;
+    color: string;
+  } | null;
+  order: string;
 }

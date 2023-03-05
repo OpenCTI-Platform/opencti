@@ -78,9 +78,7 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
     linesFragment: subTypesLinesFragment,
     queryRef,
   });
-
   const { t } = useFormatter();
-
   const filterOnSubType = ({ node }: { node: { label: string } }) => {
     if (keyword) {
       return (
@@ -100,17 +98,14 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
       t(`entity_${edgeB.node.label}`),
     );
   };
-
   const subTypes = (data?.subTypes?.edges ?? [])
     .filter(filterOnSubType)
     .sort(sortOnSubType);
-
   setNumberOfElements({
     number: subTypes.length.toString(),
     symbol: '',
     original: subTypes.length,
   });
-
   return (
     <ListLinesContent
       initialLoading={false}

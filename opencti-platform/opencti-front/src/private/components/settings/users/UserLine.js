@@ -94,11 +94,11 @@ class UserLineComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.otp.width }}
               >
-                  {node.otp_activated ? (
-                    <Security fontSize="small" color="secondary" />
-                  ) : (
-                    <HorizontalRule fontSize="small" color="primary" />
-                  )}
+                {node.otp_activated ? (
+                  <Security fontSize="small" color="secondary" />
+                ) : (
+                  <HorizontalRule fontSize="small" color="primary" />
+                )}
               </div>
               <div
                 className={classes.bodyItem}

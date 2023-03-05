@@ -41,20 +41,20 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 export type DataColumnsType = {
   name: {
-    label: string,
-    width: string,
-    isSortable: boolean,
-  },
+    label: string;
+    width: string;
+    isSortable: boolean;
+  };
   color: {
-    label: string,
-    width: string,
-    isSortable: boolean,
-  },
+    label: string;
+    width: string;
+    isSortable: boolean;
+  };
   usages: {
-    label: string,
-    width: string,
-    isSortable: boolean,
-  },
+    label: string;
+    width: string;
+    isSortable: boolean;
+  };
 };
 
 export const StatusTemplateLineFragment = graphql`
@@ -67,38 +67,54 @@ export const StatusTemplateLineFragment = graphql`
 `;
 
 interface StatusTemplateLineProps {
-  node: StatusTemplateLine_node$key,
-  dataColumns: DataColumnsType,
-  paginationOptions: { search: string, orderMode: string, orderBy: string },
+  node: StatusTemplateLine_node$key;
+  dataColumns: DataColumnsType;
+  paginationOptions: { search: string; orderMode: string; orderBy: string };
 }
 
-const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({ node, dataColumns, paginationOptions }) => {
+const StatusTemplateLine: FunctionComponent<StatusTemplateLineProps> = ({
+  node,
+  dataColumns,
+  paginationOptions,
+}) => {
   const classes = useStyles();
 
   const data = useFragment(StatusTemplateLineFragment, node);
 
   return (
-    <ListItemButton classes={{ root: classes.item }} divider={true} >
+    <ListItemButton classes={{ root: classes.item }} divider={true}>
       <ListItemIcon style={{ color: data.color }}>
         <FactCheckOutlined />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               {data.name}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.color.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.color.width }}
+            >
               {data.color}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.usages.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.usages.width }}
+            >
               {data.usages}
             </div>
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <StatusTemplatePopover statusTemplateId={data.id} paginationOptions={paginationOptions} />
+        <StatusTemplatePopover
+          statusTemplateId={data.id}
+          paginationOptions={paginationOptions}
+        />
       </ListItemSecondaryAction>
     </ListItemButton>
   );

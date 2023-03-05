@@ -28,7 +28,9 @@ import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+} from '../../../utils/hooks/useGranted';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
 import SwitchField from '../../../components/SwitchField';
 
@@ -339,8 +341,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -526,8 +527,7 @@ const Settings = () => {
                         ))}
                       </List>
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -584,8 +584,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -791,8 +790,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -1008,7 +1006,9 @@ const Settings = () => {
                             return (
                               <List style={{ marginTop: -20 }}>
                                 <ListItem divider={true}>
-                                  <ListItemText primary={`OpenCTI (${clusterInfo})`} />
+                                  <ListItemText
+                                    primary={`OpenCTI (${clusterInfo})`}
+                                  />
                                   <Chip label={version} color="primary" />
                                 </ListItem>
                                 <List component="div" disablePadding>

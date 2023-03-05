@@ -21,6 +21,7 @@ const useStyles = makeStyles(() => ({
     margin: '10px 0 0 0',
     padding: '15px',
     borderRadius: 6,
+    position: 'relative',
   },
 }));
 
@@ -57,16 +58,16 @@ export const subTypeFragment = graphql`
 const SubType = ({ data }: { data: SubType_subType$key }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
-  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, { targetType: subType.id });
-
+  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, {
+    targetType: subType.id,
+  });
   return (
     <>
       {queryRef && (
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <div>
+          <div style={{ marginBottom: 23 }}>
             <Typography variant="h1" gutterBottom={true}>
               {t(`entity_${subType.label}`)}
             </Typography>
@@ -81,11 +82,14 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
                   <EntitySetting queryRef={queryRef} />
                   <div style={{ marginTop: 10 }}>
                     <Typography variant="h3" gutterBottom={true}>
-                      {`${t('Workflow of')} ${t(`entity_${subType.label}`)}`}
+                      {t('Workflow')}
                       <SubTypeStatusPopover subTypeId={subType.id} />
                     </Typography>
                   </div>
-                  <ItemStatusTemplate statuses={statuses} disabled={!subType.workflowEnabled}/>
+                  <ItemStatusTemplate
+                    statuses={statuses}
+                    disabled={!subType.workflowEnabled}
+                  />
                 </Paper>
               </div>
             </Grid>

@@ -227,12 +227,24 @@ const RoleEditionOverviewComponent = ({ t, role, context }) => {
                         const isDisabled = matchingCapabilities.length > 0;
                         const isChecked = isDisabled || roleCapability !== undefined;
                         const capabilityDetail = CAPABILITY_INFORMATION[capability.name];
-                        const capabilityDetailText = capabilityDetail ? ` (${t(capabilityDetail)})` : '';
+                        const capabilityDetailText = capabilityDetail
+                          ? ` (${t(capabilityDetail)})`
+                          : '';
                         return (
-                          <ListItem key={capability.name} divider={true} style={{ paddingLeft }}>
-                            <ListItemText primary={t(capability.description) + capabilityDetailText} />
+                          <ListItem
+                            key={capability.name}
+                            divider={true}
+                            style={{ paddingLeft }}
+                          >
+                            <ListItemText
+                              primary={
+                                t(capability.description) + capabilityDetailText
+                              }
+                            />
                             <ListItemSecondaryAction>
-                              <Checkbox onChange={(event) => handleToggle(capability, event)}
+                              <Checkbox
+                                onChange={(event) => handleToggle(capability, event)
+                                }
                                 checked={isChecked}
                                 disabled={isDisabled}
                               />

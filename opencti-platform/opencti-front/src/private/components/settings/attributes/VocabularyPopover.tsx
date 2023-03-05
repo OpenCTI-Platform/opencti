@@ -15,9 +15,7 @@ import { graphql, useMutation } from 'react-relay';
 import VocabularyEdition from './VocabularyEdition';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  useVocabularyCategory_Vocabularynode$data,
-} from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
+import { useVocabularyCategory_Vocabularynode$data } from '../../../../utils/hooks/__generated__/useVocabularyCategory_Vocabularynode.graphql';
 import Transition from '../../../../components/Transition';
 import useDeletion from '../../../../utils/hooks/useDeletion';
 import { deleteNode } from '../../../../utils/store';
@@ -41,9 +39,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface VocabularyPopoverProps {
-  vocab: useVocabularyCategory_Vocabularynode$data
-  paginationOptions: LocalStorage
-  refetch: () => void
+  vocab: useVocabularyCategory_Vocabularynode$data;
+  paginationOptions: LocalStorage;
+  refetch: () => void;
 }
 
 const VocabularyPopoverDeletionMutation = graphql`
@@ -52,7 +50,11 @@ const VocabularyPopoverDeletionMutation = graphql`
   }
 `;
 
-const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, paginationOptions, refetch }) => {
+const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
+  vocab,
+  paginationOptions,
+  refetch,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -77,7 +79,9 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
     refetch();
   };
   let deleteLabel = t('Delete');
-  const deletable = !vocab.builtIn && (!vocab.category.fields.some(({ required }) => required) || vocab.usages.length === 0);
+  const deletable = !vocab.builtIn
+    && (!vocab.category.fields.some(({ required }) => required)
+      || vocab.usages.length === 0);
   if (!deletable) {
     if (vocab.builtIn) {
       deleteLabel = 'This item is built-in';
@@ -102,7 +106,12 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
         id: vocab.id,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_vocabularies', paginationOptions, vocab.id);
+        deleteNode(
+          store,
+          'Pagination_vocabularies',
+          paginationOptions,
+          vocab.id,
+        );
       },
       onCompleted: () => {
         setDeleting(false);
@@ -114,25 +123,12 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
 
   return (
     <div className={classes.container}>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        size="large"
-      >
+      <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
         <MoreVertOutlined />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t('Update')}
-        </MenuItem>
-        <MenuItem
-          onClick={handleOpenDelete}
-          disabled={!deletable}
-        >
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete} disabled={!deletable}>
           {deleteLabel}
         </MenuItem>
       </Menu>
@@ -149,17 +145,10 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -172,10 +161,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({ vocab, p
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseUpdate}
       >
-        <VocabularyEdition
-          vocab={vocab}
-          handleClose={handleCloseUpdate}
-        />
+        <VocabularyEdition vocab={vocab} handleClose={handleCloseUpdate} />
       </Drawer>
     </div>
   );

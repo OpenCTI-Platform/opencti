@@ -78,7 +78,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
   const { t } = useFormatter();
   const renderOptionIcon = (option: string) => {
     if (!node.settings?.availableSettings?.includes(option)) {
-      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'}/>;
+      return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
     }
     if ((node.settings as never)?.[option] === true) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
@@ -86,20 +86,27 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
     return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
   };
   return (
-    <ListItemButton key={node.id}
+    <ListItemButton
+      key={node.id}
       divider={true}
       classes={{ root: classes.item }}
       component={Link}
-      to={`/dashboard/settings/entity_types/${node.id}`}>
+      to={`/dashboard/settings/entity_types/${node.id}`}
+    >
       <ListItemIcon
         onClick={(event) => (event.shiftKey
           ? onToggleShiftEntity(index, { id: node.id }, event)
           : onToggleEntity({ id: node.id }, event))
         }
         classes={{ root: classes.itemIcon }}
-        style={{ minWidth: 40 }}>
-        <Checkbox edge="start"
-          checked={(selectAll && !(node.id in (deSelectedElements || {}))) || node.id in (selectedElements || {})}
+        style={{ minWidth: 40 }}
+      >
+        <Checkbox
+          edge="start"
+          checked={
+            (selectAll && !(node.id in (deSelectedElements || {})))
+            || node.id in (selectedElements || {})
+          }
           disableRipple={true}
         />
       </ListItemIcon>
@@ -109,23 +116,38 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       <ListItemText
         primary={
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.entity_type.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.entity_type.width }}
+            >
               {t(`entity_${node.label}`)}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.workflow_status.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.workflow_status.width }}
+            >
               {node.workflowEnabled ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined fontSize="small" color="primary" />
               )}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.enforce_reference.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.enforce_reference.width }}
+            >
               {renderOptionIcon('enforce_reference')}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.automatic_references.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.automatic_references.width }}
+            >
               {renderOptionIcon('platform_entity_files_ref')}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.hidden.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.hidden.width }}
+            >
               {renderOptionIcon('platform_hidden_type')}
             </div>
           </div>

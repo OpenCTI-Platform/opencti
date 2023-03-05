@@ -17,9 +17,21 @@ const groups = new Map<string, string[]>([
   ['Observations', ['Indicator', 'Infrastructure']],
   ['Threats', ['Threat-Actor', 'Intrusion-Set', 'Campaign']],
   ['Arsenal', ['Malware', 'Channel', 'Tool', 'Vulnerability']],
-  ['Techniques', ['Attack-Pattern', 'Narrative', 'Course-Of-Action', 'Data-Component', 'Data-Source']],
+  [
+    'Techniques',
+    [
+      'Attack-Pattern',
+      'Narrative',
+      'Course-Of-Action',
+      'Data-Component',
+      'Data-Source',
+    ],
+  ],
   ['Entities', ['Sector', 'Event', 'Organization', 'System', 'Individual']],
-  ['Locations', ['Region', 'Country', 'Administrative-Area', 'City', 'Position']],
+  [
+    'Locations',
+    ['Region', 'Country', 'Administrative-Area', 'City', 'Position'],
+  ],
 ]);
 const groupKeys = Array.from(groups.keys());
 
@@ -30,13 +42,17 @@ const findGroupKey = (value: string) => Array.from(groups.entries())
 const itemsFromGroup = (values: string[]) => {
   for (let i = 0; i < groupKeys.length; i += 1) {
     for (let j = 0; j < values.length; j += 1) {
-      if (values[j] === groupKeys[i]) { // Add element when group selected
+      if (values[j] === groupKeys[i]) {
+        // Add element when group selected
         values.splice(j, 1);
-        values.push(...groups.get(groupKeys[i]) ?? []);
-      } else if (values[j] === `not-${groupKeys[i]}`) { // Remove element when group unselected
+        values.push(...(groups.get(groupKeys[i]) ?? []));
+      } else if (values[j] === `not-${groupKeys[i]}`) {
+        // Remove element when group unselected
         values.splice(j, 1);
         // eslint-disable-next-line no-param-reassign
-        values = values.filter((el) => !(groups.get(groupKeys[i]) ?? []).includes(el));
+        values = values.filter(
+          (el) => !(groups.get(groupKeys[i]) ?? []).includes(el),
+        );
       }
     }
   }
@@ -44,16 +60,16 @@ const itemsFromGroup = (values: string[]) => {
 };
 
 interface EntitySettingHidden {
-  id: string
-  target_type: string
-  hidden: boolean
-  group: string
+  id: string;
+  target_type: string;
+  hidden: boolean;
+  group: string;
 }
 
 const HiddenTypesList = () => {
   const { t } = useFormatter();
-
-  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
+  const entitySettings = useEntitySettings()
+    .filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
       id: node.id,
       target_type: node.target_type,
@@ -61,8 +77,7 @@ const HiddenTypesList = () => {
       group: findGroupKey(node.target_type),
     }))
     .filter((entitySetting) => entitySetting.group !== undefined)
-    .sort((a, b) => (groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group)));
-
+    .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
   const entitySettingsHiddenGrouped = entitySettings.reduce(
     (entryMap, entry) => {
       const values = entryMap.get(entry.group) || [];
@@ -72,30 +87,39 @@ const HiddenTypesList = () => {
     },
     new Map<string, EntitySettingHidden[]>(),
   );
-
-  const [entitySettingsEntityType, setEntitySettingsEntityType] = useState<string[]>([
-    ...entitySettings.filter((node) => node.hidden).map((node) => node.target_type),
+  const [entitySettingsEntityType, setEntitySettingsEntityType] = useState<
+  string[]
+  >([
+    ...entitySettings
+      .filter((node) => node.hidden)
+      .map((node) => node.target_type),
   ]);
-
   const [commit] = useMutation(entitySettingsPatch);
   const handleChange = (values: string[]) => {
     const realValues = itemsFromGroup(values) ?? [];
-    const added = realValues.filter((x) => !entitySettingsEntityType.includes(x));
-    const removed = entitySettingsEntityType.filter((x) => !realValues.includes(x));
-
+    const added = realValues.filter(
+      (x) => !entitySettingsEntityType.includes(x),
+    );
+    const removed = entitySettingsEntityType.filter(
+      (x) => !realValues.includes(x),
+    );
     let entitySettingIds: string[] = [];
     let value;
-
     if (added.length > 0) {
-      entitySettingIds = entitySettings.filter((el) => added.includes(el.target_type)).map((node) => node.id);
+      entitySettingIds = entitySettings
+        .filter((el) => added.includes(el.target_type))
+        .map((node) => node.id);
       value = true.toString();
       setEntitySettingsEntityType(entitySettingsEntityType.concat(added));
     } else if (removed.length > 0) {
-      entitySettingIds = entitySettings.filter((el) => removed.includes(el.target_type)).map((node) => node.id);
+      entitySettingIds = entitySettings
+        .filter((el) => removed.includes(el.target_type))
+        .map((node) => node.id);
       value = false.toString();
-      setEntitySettingsEntityType(entitySettingsEntityType.filter((x) => !removed.includes(x)));
+      setEntitySettingsEntityType(
+        entitySettingsEntityType.filter((x) => !removed.includes(x)),
+      );
     }
-
     commit({
       variables: {
         ids: entitySettingIds,
@@ -103,39 +127,44 @@ const HiddenTypesList = () => {
       },
     });
   };
-
   const isSelectedGroup = (group: string) => {
-    return groups.get(group)?.every((el) => entitySettingsEntityType.includes(el));
+    return groups
+      .get(group)
+      ?.every((el) => entitySettingsEntityType.includes(el));
   };
-
   const computeItems = () => {
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
-      items.push((
-        <MenuItem key={key}
-                  value={isSelectedGroup(key) ? `not-${key}` : key}
-                  dense={true}>
+      items.push(
+        <MenuItem
+          key={key}
+          value={isSelectedGroup(key) ? `not-${key}` : key}
+          dense={true}
+        >
           <Checkbox checked={isSelectedGroup(key)} />
           {t(key)}
-        </MenuItem>
-      ));
-      (values as EntitySettingHidden[]).map((platformHiddenType) => (
-        items.push((
-          <MenuItem key={platformHiddenType.target_type}
-                    value={platformHiddenType.target_type}
-                    dense={true}>
+        </MenuItem>,
+      );
+      (values as EntitySettingHidden[]).map((platformHiddenType) => items.push(
+          <MenuItem
+            key={platformHiddenType.target_type}
+            value={platformHiddenType.target_type}
+            dense={true}
+          >
             <Checkbox
-              checked={entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
+              checked={
+                entitySettingsEntityType.indexOf(
+                  platformHiddenType.target_type,
+                ) > -1
+              }
               style={{ marginLeft: 10 }}
             />
             {t(`entity_${platformHiddenType.target_type}`)}
-          </MenuItem>
-        ))
+          </MenuItem>,
       ));
     });
     return items;
   };
-
   return (
     <Field
       component={SelectField}

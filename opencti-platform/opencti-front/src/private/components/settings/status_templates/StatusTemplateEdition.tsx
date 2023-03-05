@@ -44,29 +44,32 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const StatusTemplateEditionFragment = graphql`
-    fragment StatusTemplateEdition_statusTemplate on StatusTemplate {
-        id
-        name
-        color
-    }
+  fragment StatusTemplateEdition_statusTemplate on StatusTemplate {
+    id
+    name
+    color
+  }
 `;
 
 const statusTemplateMutationFieldPatch = graphql`
-    mutation StatusTemplateEditionFieldPatchMutation($id: ID!, $input: [EditInput!]!) {
-        statusTemplateFieldPatch(id: $id, input: $input) {
-            id
-            name
-            color
-        }
+  mutation StatusTemplateEditionFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
+    statusTemplateFieldPatch(id: $id, input: $input) {
+      id
+      name
+      color
     }
+  }
 `;
 
 const statusTemplateEditionFocus = graphql`
-    mutation StatusTemplateEditionFocusMutation($id: ID!, $input: EditContext!) {
-        statusTemplateContextPatch(id: $id, input: $input) {
-            id
-        }
+  mutation StatusTemplateEditionFocusMutation($id: ID!, $input: EditContext!) {
+    statusTemplateContextPatch(id: $id, input: $input) {
+      id
     }
+  }
 `;
 
 const statusTemplateValidation = (t: (name: string | object) => string) => Yup.object().shape({
@@ -75,11 +78,14 @@ const statusTemplateValidation = (t: (name: string | object) => string) => Yup.o
 });
 
 interface StatusTemplateEditionProps {
-  handleClose: () => void,
-  statusTemplate: StatusTemplateEdition_statusTemplate$key
+  handleClose: () => void;
+  statusTemplate: StatusTemplateEdition_statusTemplate$key;
 }
 
-const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({ handleClose, statusTemplate }) => {
+const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({
+  handleClose,
+  statusTemplate,
+}) => {
   const classes = useStyles();
   const data = useFragment(StatusTemplateEditionFragment, statusTemplate);
 
@@ -147,7 +153,8 @@ const StatusTemplateEdition: FunctionComponent<StatusTemplateEditionProps> = ({ 
           enableReinitialize={true}
           initialValues={initialValues}
           validationSchema={statusTemplateValidation(t)}
-          onSubmit={() => {}}>
+          onSubmit={() => {}}
+        >
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field

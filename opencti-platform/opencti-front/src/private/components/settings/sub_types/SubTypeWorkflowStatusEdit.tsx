@@ -52,10 +52,10 @@ export const statusEditFragment = graphql`
 type StatusEditForm = StatusForm & { order: NonNullable<StatusForm['order']> };
 
 interface StatusEditionProps {
-  subTypeId: string
-  handleClose: () => void
-  open: boolean
-  queryRef: PreloadedQuery<SubTypeWorkflowStatusEditQuery>
+  subTypeId: string;
+  handleClose: () => void;
+  open: boolean;
+  queryRef: PreloadedQuery<SubTypeWorkflowStatusEditQuery>;
 }
 
 const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
@@ -87,8 +87,10 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   };
 
   const [commit] = useMutation(statusEditFieldPatchMutation);
-
-  const handleSubmitStatusTemplate: FormikConfig<StatusEditForm>['onSubmit'] = (values, { setSubmitting }) => {
+  const handleSubmitStatusTemplate: FormikConfig<StatusEditForm>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const input = [
       { key: 'template_id', value: values.template?.value || '' },
       { key: 'order', value: values.order },
@@ -105,7 +107,6 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
       },
     });
   };
-
   return (
     <Formik
       initialValues={initialValues}
@@ -122,7 +123,11 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
           >
             <DialogTitle>{t('Update a status')}</DialogTitle>
             <DialogContent>
-              <StatusTemplateField name="template" setFieldValue={setFieldValue} helpertext={''} />
+              <StatusTemplateField
+                name="template"
+                setFieldValue={setFieldValue}
+                helpertext={''}
+              />
               <Field
                 component={TextField}
                 variant="standard"

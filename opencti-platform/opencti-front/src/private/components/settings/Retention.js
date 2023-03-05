@@ -16,7 +16,11 @@ const LOCAL_STORAGE_KEY = 'retention-view';
 const Retention = () => {
   const { t } = useFormatter();
   const { helper } = useContext(UserContext);
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     searchTerm: '',
   });
   const dataColumns = {
@@ -42,27 +46,36 @@ const Retention = () => {
     },
   };
   if (!helper.isRetentionManagerEnable()) {
-    return <Alert severity="info">{t(helper.generateDisableMessage(RETENTION_MANAGER))}</Alert>;
+    return (
+      <Alert severity="info">
+        {t(helper.generateDisableMessage(RETENTION_MANAGER))}
+      </Alert>
+    );
   }
   return (
-      <>
-        <ListLines dataColumns={dataColumns}
-            handleSearch={storageHelpers.handleSearch}
-            displayImport={false}
-            secondaryAction={true}
-            keyword={viewStorage.searchTerm}>
-          <QueryRenderer query={RetentionLinesQuery} variables={paginationOptions}
-              render={({ props }) => (
-                  <RetentionLines data={props}
-                      paginationOptions={paginationOptions}
-                      dataColumns={dataColumns}
-                      initialLoading={props === null}
-                  />
-              )}
-          />
-        </ListLines>
-        <RetentionCreation paginationOptions={paginationOptions} />
-      </>
+    <>
+      <ListLines
+        dataColumns={dataColumns}
+        handleSearch={storageHelpers.handleSearch}
+        displayImport={false}
+        secondaryAction={true}
+        keyword={viewStorage.searchTerm}
+      >
+        <QueryRenderer
+          query={RetentionLinesQuery}
+          variables={paginationOptions}
+          render={({ props }) => (
+            <RetentionLines
+              data={props}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
+        />
+      </ListLines>
+      <RetentionCreation paginationOptions={paginationOptions} />
+    </>
   );
 };
 

@@ -2,7 +2,9 @@ import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../../components/list_lines/ListLines';
 import StatusTemplateCreation from './StatusTemplateCreation';
-import StatusTemplatesLines, { statusTemplatesLinesQuery } from './StatusTemplatesLines';
+import StatusTemplatesLines, {
+  statusTemplatesLinesQuery,
+} from './StatusTemplatesLines';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import StatusTemplateLineDummy from './StatusTemplateLineDummy';
@@ -33,11 +35,7 @@ const StatusTemplates = () => {
   );
 
   const renderLines = () => {
-    const {
-      sortBy,
-      orderAsc,
-      searchTerm,
-    } = viewStorage;
+    const { sortBy, orderAsc, searchTerm } = viewStorage;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -55,7 +53,10 @@ const StatusTemplates = () => {
         isSortable: false,
       },
     };
-    const queryRef = useQueryLoading<StatusTemplatesLinesPaginationQuery>(statusTemplatesLinesQuery, paginationOptions);
+    const queryRef = useQueryLoading<StatusTemplatesLinesPaginationQuery>(
+      statusTemplatesLinesQuery,
+      paginationOptions,
+    );
 
     return (
       <ListLines
@@ -66,13 +67,23 @@ const StatusTemplates = () => {
         handleSearch={helpers.handleSearch}
         displayImport={false}
         secondaryAction={false}
-        keyword={searchTerm}>
-
+        keyword={searchTerm}
+      >
         {queryRef && (
-          <React.Suspense fallback={
-            <>{Array(20).fill(0)
-              .map((idx) => (<StatusTemplateLineDummy key={idx} dataColumns={dataColumns} />))}</>
-          }>
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <StatusTemplateLineDummy
+                      key={idx}
+                      dataColumns={dataColumns}
+                    />
+                  ))}
+              </>
+            }
+          >
             <StatusTemplatesLines
               queryRef={queryRef}
               paginationOptions={paginationOptions}
@@ -95,7 +106,8 @@ const StatusTemplates = () => {
         creationCallback={() => {}}
         handleCloseContextual={() => {}}
         inputValueContextual={''}
-        openContextual={false} />
+        openContextual={false}
+      />
     </div>
   );
 };

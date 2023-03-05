@@ -1,5 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Avatar from '@mui/material/Avatar';
@@ -78,8 +83,8 @@ export const subTypeWorkflowEditionFragment = graphql`
 `;
 
 interface SubTypeEditionContainerProps {
-  handleClose: () => void,
-  queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>,
+  handleClose: () => void;
+  queryRef: PreloadedQuery<SubTypeWorkflowEditionQuery>;
 }
 
 const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
@@ -89,9 +94,11 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const queryData = usePreloadedQuery(subTypeWorkflowEditionQuery, queryRef);
-
   if (queryData.subType) {
-    const subType = useFragment(subTypeWorkflowEditionFragment, queryData.subType) as SubTypeWorkflow_subType$data;
+    const subType = useFragment(
+      subTypeWorkflowEditionFragment,
+      queryData.subType,
+    ) as SubTypeWorkflow_subType$data;
     return (
       <div>
         <div className={classes.header}>
@@ -115,53 +122,59 @@ const SubTypeWorkflow: FunctionComponent<SubTypeEditionContainerProps> = ({
             aria-labelledby="nested-list-subheader"
             className={classes.root}
           >
-            {subType.statuses?.edges.filter((currentObject) => Boolean(currentObject.node.template)).map((statusEdge, idx) => {
-              const status = statusEdge.node;
-              if (status === null || status.template === null) {
-                return <ListItemText
-                  key={idx}
-                  primary={
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height="100%"
+            {subType.statuses?.edges
+              .filter((currentObject) => Boolean(currentObject.node.template))
+              .map((statusEdge, idx) => {
+                const status = statusEdge.node;
+                if (status === null || status.template === null) {
+                  return (
+                    <ListItemText
+                      key={idx}
+                      primary={
+                        <Skeleton
+                          animation="wave"
+                          variant="rectangular"
+                          width="90%"
+                          height="100%"
+                        />
+                      }
                     />
-                  }
-                />;
-              }
-              return (
-                <ListItem
-                  key={status.id}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                >
-                  <ListItemAvatar>
-                    <Avatar
-                      variant="square"
-                      style={{
-                        color: status.template.color,
-                        borderColor: status.template.color,
-                        backgroundColor: hexToRGB(status.template.color),
-                      }}
-                    >
-                      {status.order}
-                    </Avatar>
-                  </ListItemAvatar>
-                  <ListItemText primary={status.template.name} />
-                  <ListItemSecondaryAction>
-                    <SubTypeWorkflowStatusPopover subTypeId={subType.id} statusId={status.id} />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            })}
+                  );
+                }
+                return (
+                  <ListItem
+                    key={status.id}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                  >
+                    <ListItemAvatar>
+                      <Avatar
+                        variant="square"
+                        style={{
+                          color: status.template.color,
+                          borderColor: status.template.color,
+                          backgroundColor: hexToRGB(status.template.color),
+                        }}
+                      >
+                        {status.order}
+                      </Avatar>
+                    </ListItemAvatar>
+                    <ListItemText primary={status.template.name} />
+                    <ListItemSecondaryAction>
+                      <SubTypeWorkflowStatusPopover
+                        subTypeId={subType.id}
+                        statusId={status.id}
+                      />
+                    </ListItemSecondaryAction>
+                  </ListItem>
+                );
+              })}
           </List>
           <SubTypeWorkflowStatusAdd subTypeId={subType.id} display={true} />
         </div>
       </div>
     );
   }
-
   return <Loader variant={LoaderVariant.inElement} />;
 };
 
