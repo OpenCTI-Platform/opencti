@@ -23,7 +23,7 @@ const styles = () => ({
     float: 'left',
     textTransform: 'uppercase',
     borderRadius: '0',
-    width: 120,
+    width: 100,
   },
 });
 

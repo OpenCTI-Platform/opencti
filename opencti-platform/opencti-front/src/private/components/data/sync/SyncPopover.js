@@ -52,7 +52,7 @@ const syncPopoverDeletionMutation = graphql`
 
 const syncPopoverStartMutation = graphql`
   mutation SyncPopoverStartMutation($id: ID!) {
-      synchronizerStart(id: $id) {
+    synchronizerStart(id: $id) {
       id
       name
       uri
@@ -167,7 +167,12 @@ class SyncPopover extends Component {
         id: this.props.syncId,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_synchronizers', this.props.paginationOptions, this.props.syncId);
+        deleteNode(
+          store,
+          'Pagination_synchronizers',
+          this.props.paginationOptions,
+          this.props.syncId,
+        );
       },
       onCompleted: () => {
         this.setState({ deleting: false });
@@ -251,7 +256,12 @@ class SyncPopover extends Component {
             variables={{ id: syncId }}
             render={({ props }) => {
               if (props) {
-                return (<SyncEdition synchronizer={props.synchronizer} handleClose={this.handleCloseUpdate.bind(this)}/>);
+                return (
+                  <SyncEdition
+                    synchronizer={props.synchronizer}
+                    handleClose={this.handleCloseUpdate.bind(this)}
+                  />
+                );
               }
               return <Loader variant="inElement" />;
             }}

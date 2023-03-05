@@ -240,7 +240,11 @@ class TasksListComponent extends Component {
                               t(`filter_${currentFilter[0]}`),
                               20,
                             )}`;
-                            const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                            const localFilterMode = currentFilter[0].endsWith(
+                              'not_eq',
+                            )
+                              ? t('AND')
+                              : t('OR');
                             const values = (
                               <span>
                                 {R.map(
@@ -250,7 +254,9 @@ class TasksListComponent extends Component {
                                         ? truncate(o.value, 15)
                                         : t('No label')}{' '}
                                       {R.last(currentFilter[1]).value
-                                        !== o.value && <code>{localFilterMode}</code>}{' '}
+                                        !== o.value && (
+                                        <code>{localFilterMode}</code>
+                                      )}{' '}
                                     </span>
                                   ),
                                   currentFilter[1],

@@ -32,37 +32,41 @@ const Tasks = () => {
     filters: [{ key: 'completed', values: ['true'] }],
   };
   if (!helper.isTasksManagerEnable()) {
-    return <Alert severity="info">{t(helper.generateDisableMessage(TASK_MANAGER))}</Alert>;
+    return (
+      <Alert severity="info">
+        {t(helper.generateDisableMessage(TASK_MANAGER))}
+      </Alert>
+    );
   }
   return (
-      <div className={classes.container}>
-        <Typography variant="h4" gutterBottom={true}>
-          {t('In progress tasks')}
-        </Typography>
-        <QueryRenderer
-          query={tasksListQuery}
-          variables={optionsInProgress}
-          render={({ props }) => {
-            if (props) {
-              return <TasksList data={props} options={optionsInProgress} />;
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-        <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
-          {t('Completed tasks')}
-        </Typography>
-        <QueryRenderer
-          query={tasksListQuery}
-          variables={optionsFinished}
-          render={({ props }) => {
-            if (props) {
-              return <TasksList data={props} options={optionsFinished} />;
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </div>
+    <div className={classes.container}>
+      <Typography variant="h4" gutterBottom={true}>
+        {t('In progress tasks')}
+      </Typography>
+      <QueryRenderer
+        query={tasksListQuery}
+        variables={optionsInProgress}
+        render={({ props }) => {
+          if (props) {
+            return <TasksList data={props} options={optionsInProgress} />;
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
+      <Typography variant="h4" gutterBottom={true} style={{ marginTop: 35 }}>
+        {t('Completed tasks')}
+      </Typography>
+      <QueryRenderer
+        query={tasksListQuery}
+        variables={optionsFinished}
+        render={({ props }) => {
+          if (props) {
+            return <TasksList data={props} options={optionsFinished} />;
+          }
+          return <Loader variant="inElement" />;
+        }}
+      />
+    </div>
   );
 };
 

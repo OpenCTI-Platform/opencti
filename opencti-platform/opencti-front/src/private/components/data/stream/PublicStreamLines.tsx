@@ -1,4 +1,9 @@
-import { graphql, loadQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  loadQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import ListItemText from '@mui/material/ListItemText';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
@@ -79,7 +84,11 @@ const publicStreamLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicStreamLinesQuery>(environment, publicStreamLinesQuery, {});
+const queryRef = loadQuery<PublicStreamLinesQuery>(
+  environment,
+  publicStreamLinesQuery,
+  {},
+);
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -112,12 +121,14 @@ const dataColumns: DataColumns = {
     isSortable: false,
     render: (node) => {
       const nodeFilters = JSON.parse(node.filters);
-      return <FilterIconButton
+      return (
+        <FilterIconButton
           filters={nodeFilters}
           dataColumns={this}
           classNameNumber={3}
           styleNumber={3}
-      />;
+        />
+      );
     },
   },
 };
@@ -125,16 +136,15 @@ const dataColumns: DataColumns = {
 const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const stream = useFragment(publicStreamLinesFragment, node);
-  const browseClick = () => { window.location.pathname = `/stream/${stream.id}`; };
-  const copyClick = () => { copyToClipboard(t, window.location.origin); };
-
+  const browseClick = () => {
+    window.location.pathname = `/stream/${stream.id}`;
+  };
+  const copyClick = () => {
+    copyToClipboard(t, window.location.origin);
+  };
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      color="primary"
-      divider={true}>
+    <ListItem classes={{ root: classes.item }} color="primary" divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <Stream />
       </ListItemIcon>
@@ -142,7 +152,11 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
         primary={
           <div>
             {Object.values(dataColumns).map((value) => (
-              <div key={value.label} className={classes.bodyItem} style={{ width: value.width }}>
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
                 {value.render?.(stream, { t, classes })}
               </div>
             ))}
@@ -150,7 +164,11 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
         }
       />
       <ListItemSecondaryAction>
-        <Tooltip title={t('Copy uri to clipboard for your OpenCTI synchronizer configuration')}>
+        <Tooltip
+          title={t(
+            'Copy uri to clipboard for your OpenCTI synchronizer configuration',
+          )}
+        >
           <span>
             <IconButton onClick={copyClick} size="large" color="primary">
               <ContentCopy />
@@ -170,9 +188,12 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
 };
 
 const PublicStreamLines = () => {
-  const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(publicStreamLinesQuery, queryRef);
+  const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(
+    publicStreamLinesQuery,
+    queryRef,
+  );
   const { t } = useFormatter();
-  return (streamCollections && streamCollections.edges.length > 0) ? (
+  return streamCollections && streamCollections.edges.length > 0 ? (
     <>
       <Typography variant="h2" gutterBottom={true}>
         {t('Public stream collections')}
@@ -193,7 +214,12 @@ const PublicStreamLines = () => {
       <Typography variant="h2" gutterBottom={true}>
         {t('Public stream collections')}
       </Typography>
-      <Typography variant="h5" gutterBottom={true} color={'error'}>
+      <Typography
+        variant="h5"
+        gutterBottom={true}
+        color={'error'}
+        style={{ marginTop: 20 }}
+      >
         {t('No available public stream on this platform')}
       </Typography>
     </>

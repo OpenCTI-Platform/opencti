@@ -352,9 +352,7 @@ class Relationships extends Component {
     };
     return (
       <ExportContextProvider>
-      <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-      </div>
+        <div>{view === 'lines' ? this.renderLines(paginationOptions) : ''}</div>
       </ExportContextProvider>
     );
   }

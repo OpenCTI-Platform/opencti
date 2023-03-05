@@ -11,6 +11,8 @@ import * as R from 'ramda';
 import { difference, head, map, pathOr, pipe } from 'ramda';
 import Switch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
+import AlertTitle from '@mui/material/AlertTitle';
+import Alert from '@mui/material/Alert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -45,6 +47,14 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
   },
 });
 
@@ -225,16 +235,26 @@ const StreamCollectionEditionContainer = (props) => {
                 style={{ marginTop: 20 }}
                 onSubmit={handleSubmitField}
               />
-              <FormControlLabel
-                control={
-                  <Switch
-                    defaultChecked={initialValues.stream_public}
-                  />
-                }
-                style={{ marginTop: 20 }}
-                onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())}
-                label={t('Public')}
-              />
+              <Alert
+                icon={false}
+                classes={{ root: classes.alert, message: classes.message }}
+                severity="warning"
+                variant="outlined"
+                style={{ position: 'relative' }}
+              >
+                <AlertTitle>
+                  {t('Make this stream public and available to anyone')}
+                </AlertTitle>
+                <FormControlLabel
+                  control={
+                    <Switch defaultChecked={initialValues.stream_public} />
+                  }
+                  style={{ marginLeft: 1 }}
+                  onChange={(_, checked) => handleSubmitField('stream_public', checked.toString())
+                  }
+                  label={t('Public stream')}
+                />
+              </Alert>
               {!initialValues.stream_public && (
                 <GroupField
                   name="groups"

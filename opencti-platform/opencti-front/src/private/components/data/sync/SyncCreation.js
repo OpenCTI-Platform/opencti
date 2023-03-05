@@ -17,7 +17,12 @@ import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import Grid from '@mui/material/Grid';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, fetchQuery, handleErrorInForm, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  handleErrorInForm,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -111,13 +116,13 @@ const syncCreationValidation = (t) => Yup.object().shape({
 });
 
 export const syncStreamCollectionQuery = graphql`
-  query SyncCreationStreamCollectionQuery($uri: String!, $token: String, $ssl_verify: Boolean) {
+  query SyncCreationStreamCollectionQuery(
+    $uri: String!
+    $token: String
+    $ssl_verify: Boolean
+  ) {
     synchronizerFetch(
-      input: {
-        uri: $uri
-        token: $token
-        ssl_verify: $ssl_verify
-      }
+      input: { uri: $uri, token: $token, ssl_verify: $ssl_verify }
     ) {
       id
       name
@@ -158,7 +163,12 @@ const SyncCreation = ({ paginationOptions }) => {
       mutation: syncCreationMutation,
       variables: { input },
       updater: (store) => {
-        insertNode(store, 'Pagination_synchronizers', paginationOptions, 'synchronizerAdd');
+        insertNode(
+          store,
+          'Pagination_synchronizers',
+          paginationOptions,
+          'synchronizerAdd',
+        );
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -167,38 +177,68 @@ const SyncCreation = ({ paginationOptions }) => {
       setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
+        setVerified(false);
+        setStreams([]);
         resetForm();
         handleClose();
       },
     });
   };
   const onReset = () => handleClose();
-  const handleGetStreams = ({ uri, token, ssl_verify }, setErrors, currentErrors) => {
+  const handleGetStreams = (
+    { uri, token, ssl_verify },
+    setErrors,
+    currentErrors,
+  ) => {
     const args = { uri, token, ssl_verify: ssl_verify ?? false };
-    fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
-      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name, ...s }))];
-      if (resultStreams.length === 0) {
-        setErrors({ ...currentErrors, uri: 'No remote live stream available' });
-      } else {
-        setErrors(R.dissoc('uri', currentErrors));
-        setStreams(resultStreams);
-      }
-    }).catch((e) => {
-      const errors = e.res.errors.map((err) => ({ [err.data.field]: err.data.message }));
-      const formError = R.mergeAll(errors);
-      setErrors({ ...currentErrors, ...formError });
-      setStreams([]);
-    });
+    fetchQuery(syncStreamCollectionQuery, args)
+      .toPromise()
+      .then((result) => {
+        const resultStreams = [
+          ...result.synchronizerFetch.map((s) => ({
+            value: s.id,
+            label: s.name,
+            ...s,
+          })),
+        ];
+        if (resultStreams.length === 0) {
+          setErrors({
+            ...currentErrors,
+            uri: 'No remote live stream available',
+          });
+        } else {
+          setErrors(R.dissoc('uri', currentErrors));
+          setStreams(resultStreams);
+        }
+      })
+      .catch((e) => {
+        const errors = e.res.errors.map((err) => ({
+          [err.data.field]: err.data.message,
+        }));
+        const formError = R.mergeAll(errors);
+        setErrors({ ...currentErrors, ...formError });
+        setStreams([]);
+      });
   };
 
   return (
     <div>
-      <Fab onClick={handleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open} anchor="right" elevation={1}
-              sx={{ zIndex: 1202 }} classes={{ paper: classes.drawerPaper }}
-              onClose={handleClose}>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -212,19 +252,30 @@ const SyncCreation = ({ paginationOptions }) => {
           <Typography variant="h6">{t('Create a synchronizer')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik initialValues={{
-            name: '',
-            uri: '',
-            token: '',
-            current_state: dayStartDate(),
-            stream_id: '',
-            no_dependencies: false,
-            listen_deletion: true,
-            ssl_verify: false,
-          }}
-                  validationSchema={syncCreationValidation(t)}
-                  onSubmit={onSubmit} onReset={onReset}>
-            {({ submitForm, handleReset, isSubmitting, values, setFieldValue, setErrors, errors }) => {
+          <Formik
+            initialValues={{
+              name: '',
+              uri: '',
+              token: '',
+              current_state: dayStartDate(),
+              stream_id: '',
+              no_dependencies: false,
+              listen_deletion: true,
+              ssl_verify: false,
+            }}
+            validationSchema={syncCreationValidation(t)}
+            onSubmit={onSubmit}
+            onReset={onReset}
+          >
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              values,
+              setFieldValue,
+              setErrors,
+              errors,
+            }) => {
               return (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
@@ -234,77 +285,103 @@ const SyncCreation = ({ paginationOptions }) => {
                     label={t('Name')}
                     fullWidth={true}
                   />
-                  <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
-                         severity="warning"
-                         variant="outlined"
-                         style={{ position: 'relative' }}>
-                    <AlertTitle>
-                      {t('Remote OpenCTI configuration')}
-                    </AlertTitle>
-                    <Tooltip title={t('You need to configure a valid remote OpenCTI. Token is optional to consume public streams')}>
-                      <InformationOutline fontSize="small" color="primary" style={{ position: 'absolute', top: 10, right: 18 }} />
+                  <Alert
+                    icon={false}
+                    classes={{ root: classes.alert, message: classes.message }}
+                    severity="warning"
+                    variant="outlined"
+                    style={{ position: 'relative' }}
+                  >
+                    <AlertTitle>{t('Remote OpenCTI configuration')}</AlertTitle>
+                    <Tooltip
+                      title={t(
+                        'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
+                      )}
+                    >
+                      <InformationOutline
+                        fontSize="small"
+                        color="primary"
+                        style={{ position: 'absolute', top: 10, right: 18 }}
+                      />
                     </Tooltip>
-                    <Field component={TextField}
-                           variant="standard"
-                           name="uri"
-                           label={t('Remote OpenCTI URL')}
-                           fullWidth={true}
-                           disabled={streams.length > 0}
-                           style={{ marginTop: 20, width: '100%' }}
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="uri"
+                      label={t('Remote OpenCTI URL')}
+                      fullWidth={true}
+                      disabled={streams.length > 0}
+                      style={{ marginTop: 20, width: '100%' }}
                     />
-                    <Field component={TextField}
-                           variant="standard"
-                           name="token"
-                           label={t('Remote OpenCTI token')}
-                           fullWidth={true}
-                           disabled={streams.length > 0}
-                           style={{ marginTop: 20, width: '100%' }}
+                    <Field
+                      component={TextField}
+                      variant="standard"
+                      name="token"
+                      label={t('Remote OpenCTI token')}
+                      fullWidth={true}
+                      disabled={streams.length > 0}
+                      style={{ marginTop: 20, width: '100%' }}
                     />
                     {streams.length > 0 && (
-                        <Field
-                            component={SelectField}
-                            variant="standard"
-                            name="stream_id"
-                            label={t('Remote OpenCTI stream ID')}
-                            inputProps={{ name: 'stream_id', id: 'stream_id' }}
-                            containerstyle={{ marginTop: 20, width: '100%' }}>
-                          {streams.map(({ value, label, name, description, filters }) => (
-                              <EnrichedTooltip
-                                  key={value}
-                                  value={value}
+                      <Field
+                        component={SelectField}
+                        variant="standard"
+                        name="stream_id"
+                        label={t('Remote OpenCTI stream ID')}
+                        inputProps={{ name: 'stream_id', id: 'stream_id' }}
+                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        renderValue={(value) => streams
+                          .filter((stream) => stream.value === value)
+                          .at(0).name
+                        }
+                      >
+                        {streams.map(
+                          ({ value, label, name, description, filters }) => (
+                            <EnrichedTooltip
+                              key={value}
+                              value={value}
+                              style={{ overflow: 'hidden' }}
+                              title={
+                                <Grid
+                                  container
+                                  spacing={1}
                                   style={{ overflow: 'hidden' }}
-                                  title={
-                                    <Grid container spacing={1} style={{ overflow: 'hidden' }}>
-                                      <Grid key={name} item xs={12}>
-                                        <Typography>{name}</Typography>
-                                      </Grid>
-                                      <Grid key={description} item xs={12}>
-                                        <Typography>{description}</Typography>
-                                      </Grid>
-                                      <Grid key={filters} item xs={12}>
-                                        <FilterIconButton
-                                            filters={JSON.parse(filters)}
-                                            classNameNumber={3}
-                                            styleNumber={3}
-                                        />
-                                      </Grid>
-                                    </Grid>
-                                  }
-                                  placement="bottom"
-                              >
-                                <MenuItem key={value} value={value}>{label}</MenuItem>
-                              </EnrichedTooltip>
-                          ))}
-                        </Field>
+                                >
+                                  <Grid key={name} item xs={12}>
+                                    <Typography>{name}</Typography>
+                                  </Grid>
+                                  <Grid key={description} item xs={12}>
+                                    <Typography>{description}</Typography>
+                                  </Grid>
+                                  <Grid key={filters} item xs={12}>
+                                    <FilterIconButton
+                                      filters={JSON.parse(filters)}
+                                      classNameNumber={3}
+                                      styleNumber={3}
+                                    />
+                                  </Grid>
+                                </Grid>
+                              }
+                              placement="bottom-start"
+                            >
+                              <MenuItem key={value} value={value}>
+                                {label}
+                              </MenuItem>
+                            </EnrichedTooltip>
+                          ),
+                        )}
+                      </Field>
                     )}
                     <div className={classes.buttons}>
                       {streams.length === 0 && (
                         <Button
                           variant="contained"
                           color="secondary"
-                          onClick={() => handleGetStreams(values, setErrors, errors)}
+                          onClick={() => handleGetStreams(values, setErrors, errors)
+                          }
                           disabled={isSubmitting}
-                          classes={{ root: classes.button }}>
+                          classes={{ root: classes.button }}
+                        >
                           {t('Validate')}
                         </Button>
                       )}
@@ -318,7 +395,8 @@ const SyncCreation = ({ paginationOptions }) => {
                             setStreams([]);
                           }}
                           disabled={isSubmitting}
-                          classes={{ root: classes.button }}>
+                          classes={{ root: classes.button }}
+                        >
                           {t('Reset')}
                         </Button>
                       )}
@@ -326,7 +404,9 @@ const SyncCreation = ({ paginationOptions }) => {
                   </Alert>
                   <CreatorField
                     name={'user_id'}
-                    label={'User responsible for data creation (empty = system)'}
+                    label={t(
+                      'User responsible for data creation (empty = System)',
+                    )}
                     containerStyle={{ marginTop: 20, width: '100%' }}
                   />
                   <Field

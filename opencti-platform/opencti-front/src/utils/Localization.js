@@ -243,6 +243,9 @@ const i18n = {
       'Mandatory attributes': 'Atributos obligatorios',
       'Default mandatory attributes': 'Atributos obligatorios predeterminados',
       'Additional mandatory attributes': 'Atributos obligatorios adicionales',
+      'Make this stream public and available to anyone':
+        'Haz que esta transmisión sea pública y esté disponible para todos.',
+      'Public stream': 'Transmisión pública',
       'Dark theme': 'Tema oscuro',
       'Light theme': 'Tema claro',
       'Background color': 'Color de fondo',
@@ -320,6 +323,8 @@ const i18n = {
       'The value must be an URL': 'El valor debe ser una dirección URL',
       'Starting synchronization (empty = from start)':
         'Empezando sincronización (vacío = desde el comiendo)',
+      'User responsible for data creation (empty = System)':
+        'Usuario responsable de la creación de datos (vacío = System)',
       'The value must be a date (yyyy-MM-dd)':
         'El valor debe ser una fecha (AAAA-MM-DD)',
       'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
@@ -384,6 +389,7 @@ const i18n = {
       'Markdown source': 'Origen Markdown',
       'PDF viewer': 'Visor de PDF',
       'Last run:': 'Última ejecución:',
+      'Remote OpenCTI configuration': 'Configuración remota de OpenCTI',
       'Remote OpenCTI URL': 'Dirección URL de la instancia de OpenCTI remota',
       'Remote OpenCTI token':
         'Token de autenticación de la instancia de OpenCTI remota',
@@ -747,6 +753,9 @@ const i18n = {
       entity_Locations: 'Localizaciones',
       Connected: 'Conectado',
       Disconnected: 'Desconectado',
+      'Stream ID': 'ID de transmisión',
+      Running: 'Comenzó',
+      'Current state': 'Estado actual',
       'Enable 3D mode': 'Activar el modo 3D',
       'Disable 3D mode': 'Desactivar el modo 3D',
       'Enable tree mode': 'Activar el modo árbol',
@@ -2002,7 +2011,7 @@ const i18n = {
       'Enforce mandatory external references':
         'Appliquer les références externes obligatoires',
       'Enforce references': 'Appliquer les références',
-      'Hide in the platforme': 'Cacher dans la plateforme',
+      'Hide in the platform': 'Cacher dans la plateforme',
       'This configuration enables the requirement of a reference message on an entity update.':
         "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -2011,6 +2020,9 @@ const i18n = {
       'Default mandatory attributes': 'Attributs obligatoires par défaut',
       'Additional mandatory attributes':
         'Attributs obligatoires supplémentaires',
+      'Make this stream public and available to anyone':
+        'Rendre ce stream public et accessible à tous',
+      'Public stream': 'Stream public',
       Automatic: 'Automatique',
       Manual: 'Manuel',
       'Automatic trigger': 'Déclenchement automatique',
@@ -2078,6 +2090,8 @@ const i18n = {
       'The value must be an URL': 'La valeur doit être une URL',
       'Starting synchronization (empty = from start)':
         'Début de synchronisation (vide = début)',
+      'User responsible for data creation (empty = System)':
+        'Utilisateur responsable de la création des données (vide = System)',
       'The value must be a date (yyyy-MM-dd)':
         'La valeur doit être une date (dd/mm/aaaaa)',
       'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
@@ -2142,6 +2156,8 @@ const i18n = {
       'Markdown source': 'Source markdown',
       'PDF viewer': 'Visualiseur PDF',
       'Last run:': 'Dernière exécution:',
+      'Remote OpenCTI configuration':
+        'Configuration de la plateforme OpenCTI distante',
       'Remote OpenCTI URL': 'URL de la plateforme distante',
       'Remote OpenCTI token': 'Token de la plateforme distante',
       'Remote OpenCTI stream ID': 'ID du stream de la plateforme distante',
@@ -2497,6 +2513,9 @@ const i18n = {
       entity_Locations: 'Localisations',
       Connected: 'Connecté',
       Disconnected: 'Déconnecté',
+      'Stream ID': 'ID du stream',
+      Running: 'Démarré',
+      'Current state': 'Etat actuel',
       'Enable 3D mode': 'Activer le mode 3D',
       'Disable 3D mode': 'Désactiver le mode 3D',
       'Enable tree mode': 'Activer le mode arbre',
@@ -3712,6 +3731,9 @@ const i18n = {
       'Mandatory attributes': '必須属性',
       'Default mandatory attributes': 'デフォルトの必須属性',
       'Additional mandatory attributes': '追加の必須属性',
+      'Make this stream public and available to anyone':
+        'このストリームを公開して誰でも利用できるようにする',
+      'Public stream': '公開ストリーム',
       'Dark theme': 'ダークテーマ',
       'Light theme': 'ライトテーマ',
       'Background color': '背景色',
@@ -3788,6 +3810,8 @@ const i18n = {
       'The value must be an URL': 'URLを入力してください',
       'Starting synchronization (empty = from start)':
         '同期処理を開始します (値が未設定の場合、開始時刻が適用されます)',
+      'User responsible for data creation (empty = System)':
+        'データ作成を担当するユーザー (空 = System)',
       'The value must be a date (yyyy-MM-dd)':
         '日付(yyyy-MM-dd)を入力してください',
       'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
@@ -3852,6 +3876,7 @@ const i18n = {
       'Markdown source': 'マークダウンソース',
       'PDF viewer': 'PDFビューアー',
       'Last run:': '最終実行日時: ',
+      'Remote OpenCTI configuration': 'リモート OpenCTI 構成',
       'Remote OpenCTI URL': 'リモートOpenCTI URL',
       'Remote OpenCTI token': 'リモートOpenCTI トークン',
       'Remote OpenCTI stream ID': 'リモートOpenCTI ストリームID',
@@ -4209,6 +4234,9 @@ const i18n = {
       entity_Locations: '場所',
       Connected: '接続中',
       Disconnected: '切断中',
+      'Stream ID': 'ストリーム ID',
+      Running: '開始',
+      'Current state': '現在の状態',
       'Enable 3D mode': '3D表示にする',
       'Disable 3D mode': '3D表示をやめる',
       'Enable tree mode': 'ツリー表示にする',
@@ -5385,6 +5413,9 @@ const i18n = {
       'Mandatory attributes': '必須属性',
       'Default mandatory attributes': '默认强制属性',
       'Additional mandatory attributes': '额外的强制属性',
+      'Make this stream public and available to anyone':
+        '将此流公开并提供给任何人',
+      'Public stream': '公共流',
       Automatic: '自动',
       Manual: '手动',
       'Automatic trigger': '自动触发',
@@ -5448,6 +5479,8 @@ const i18n = {
       'The value must be an URL': '该值必须是一个URL',
       'Starting synchronization (empty = from start)':
         '開始同步(空的 = 從一開始)',
+      'User responsible for data creation (empty = System)':
+        '负责数据创建的用户（空 = System）',
       'The value must be a date (yyyy-MM-dd)': '该值必须是一个日期(yyyy-MM-dd)',
       'The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)':
         '该值必须是一个日期(yyyy-MM-dd hh:mm a)',
@@ -5509,6 +5542,7 @@ const i18n = {
       'Markdown source': 'Markdown源',
       'PDF viewer': 'PDF查看器',
       'Last run:': '上次运行:',
+      'Remote OpenCTI configuration': '远程 OpenCTI 配置',
       'Remote OpenCTI URL': '远程OpenCTI URL',
       'Remote OpenCTI token': '远程OpenCTI token',
       'Remote OpenCTI stream ID': '远程OpenCTI流ID',
@@ -5836,6 +5870,9 @@ const i18n = {
       entity_Locations: '地點',
       Connected: '连接的',
       Disconnected: '断开连接的',
+      'Stream ID': '流 ID',
+      Running: '开始',
+      'Current state': '当前状态',
       'Enable 3D mode': '启用3D模式',
       'Disable 3D mode': '禁用3D模式',
       'Enable tree mode': '启用树形模式',

@@ -6,6 +6,16 @@ import { copyToClipboard } from '../utils/utils';
 import { Theme } from './Theme';
 
 const styles = makeStyles<Theme>((theme) => ({
+  containerInline: {
+    position: 'relative',
+    padding: '2px 12px 2px 5px',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    backgroundColor: theme.palette.background.accent,
+    fontFamily: 'Consolas, monaco, monospace',
+    fontSize: 12,
+  },
   container: {
     position: 'relative',
     paddingRight: 18,
@@ -21,23 +31,42 @@ const styles = makeStyles<Theme>((theme) => ({
       color: theme.palette.primary.main,
     },
   },
+  iconInline: {
+    position: 'absolute',
+    right: 10,
+    cursor: 'pointer',
+    '&:hover': {
+      color: theme.palette.primary.main,
+    },
+  },
 }));
 
 interface ItemCopyProps {
   content: string;
+  variant: string;
 }
 
-const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content }) => {
+const ItemCopy: FunctionComponent<ItemCopyProps> = ({ content, variant }) => {
   const { t } = useFormatter();
   const classes = styles();
   return (
-    <div className={classes.container}>
+    <div
+      className={
+        variant === 'inLine' ? classes.containerInline : classes.container
+      }
+    >
       {content}
       <span
-        className={classes.icon}
-        onClick={() => copyToClipboard(t, content)}
+        className={variant === 'inLine' ? classes.iconInline : classes.icon}
+        onClick={(event) => {
+          event.stopPropagation();
+          event.preventDefault();
+          copyToClipboard(t, content);
+        }}
       >
-        <ContentCopyOutlined sx={{ fontSize: 18 }} />
+        <ContentCopyOutlined
+          sx={{ fontSize: variant === 'inLine' ? 12 : 18 }}
+        />
       </span>
     </div>
   );

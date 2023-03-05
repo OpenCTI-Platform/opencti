@@ -14,7 +14,11 @@ const LOCAL_STORAGE_KEY = 'sync-view';
 const Sync = () => {
   const { t } = useFormatter();
   const { helper } = useContext(UserContext);
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage(LOCAL_STORAGE_KEY, {
     sortBy: 'name',
     orderAsc: false,
     searchTerm: '',
@@ -48,32 +52,40 @@ const Sync = () => {
   };
 
   if (!helper.isSyncManagerEnable()) {
-    return <Alert severity="info">{t(helper.generateDisableMessage(SYNC_MANAGER))}</Alert>;
+    return (
+      <Alert severity="info">
+        {t(helper.generateDisableMessage(SYNC_MANAGER))}
+      </Alert>
+    );
   }
   return (
-      <>
-        <ListLines sortBy={viewStorage.sortBy}
-                   orderAsc={viewStorage.orderAsc}
-                   dataColumns={dataColumns}
-                   handleSort={storageHelpers.handleSort}
-                   handleSearch={storageHelpers.handleSearch}
-                   displayImport={false}
-                   secondaryAction={true}
-                   keyword={viewStorage.searchTerm}>
-          <QueryRenderer query={SyncLinesQuery}
-              variables={{ count: 200, ...paginationOptions }}
-              render={({ props }) => (
-                  <SyncLines data={props}
-                             paginationOptions={paginationOptions}
-                             refetchPaginationOptions={{ count: 200, ...paginationOptions }}
-                             dataColumns={dataColumns}
-                             initialLoading={props === null}
-                  />
-              )}
-          />
-        </ListLines>
-        <SyncCreation paginationOptions={paginationOptions} />
-      </>
+    <>
+      <ListLines
+        sortBy={viewStorage.sortBy}
+        orderAsc={viewStorage.orderAsc}
+        dataColumns={dataColumns}
+        handleSort={storageHelpers.handleSort}
+        handleSearch={storageHelpers.handleSearch}
+        displayImport={false}
+        secondaryAction={true}
+        keyword={viewStorage.searchTerm}
+      >
+        <QueryRenderer
+          query={SyncLinesQuery}
+          variables={{ count: 200, ...paginationOptions }}
+          render={({ props }) => (
+            <SyncLines
+              data={props}
+              paginationOptions={paginationOptions}
+              refetchPaginationOptions={{ count: 200, ...paginationOptions }}
+              dataColumns={dataColumns}
+              initialLoading={props === null}
+            />
+          )}
+        />
+      </ListLines>
+      <SyncCreation paginationOptions={paginationOptions} />
+    </>
   );
 };
 

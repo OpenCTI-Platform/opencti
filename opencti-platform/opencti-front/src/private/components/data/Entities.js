@@ -367,14 +367,14 @@ class Entities extends Component {
     };
     return (
       <ExportContextProvider>
-      <div className={classes.container}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <StixDomainObjectsRightBar
-          types={types}
-          handleToggle={this.handleToggle.bind(this)}
-          handleClear={this.handleClear.bind(this)}
-        />
-      </div>
+        <div className={classes.container}>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+          <StixDomainObjectsRightBar
+            types={types}
+            handleToggle={this.handleToggle.bind(this)}
+            handleClear={this.handleClear.bind(this)}
+          />
+        </div>
       </ExportContextProvider>
     );
   }

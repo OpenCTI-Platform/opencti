@@ -10,7 +10,10 @@ import logo from '../static/images/logo.png';
 import { Theme } from '../components/Theme';
 import { rootPublicQuery } from './LoginRoot';
 import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
-import { LoginRootPublicQuery, LoginRootPublicQuery$data } from './__generated__/LoginRootPublicQuery.graphql';
+import {
+  LoginRootPublicQuery,
+  LoginRootPublicQuery$data,
+} from './__generated__/LoginRootPublicQuery.graphql';
 import Message from '../components/Message';
 
 const useStyles = makeStyles({
@@ -26,29 +29,41 @@ const useStyles = makeStyles({
   },
 });
 
-const PublicRootWithStyle = ({ settings }: { settings: LoginRootPublicQuery$data['settings'] }) => {
+const PublicRootWithStyle = ({
+  settings,
+}: {
+  settings: LoginRootPublicQuery$data['settings'];
+}) => {
   const theme = useTheme<Theme>();
   const classes = useStyles();
-
   const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
-
   return (
-      <>
-        <Message />
-        <div className={classes.container}>
-          <img src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)} alt="logo" className={classes.logo} />
-          <PublicStreamLines />
-        </div>
-      </>
+    <>
+      <Message />
+      <div className={classes.container}>
+        <img
+          src={loginLogo && loginLogo.length > 0 ? loginLogo : fileUri(logo)}
+          alt="logo"
+          className={classes.logo}
+        />
+        <PublicStreamLines />
+      </div>
+    </>
   );
 };
 
-const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
+const queryRef = loadQuery<LoginRootPublicQuery>(
+  environment,
+  rootPublicQuery,
+  {},
+);
 const PublicRoot = () => {
-  const { settings } = usePreloadedQuery<LoginRootPublicQuery>(rootPublicQuery, queryRef);
-
+  const { settings } = usePreloadedQuery<LoginRootPublicQuery>(
+    rootPublicQuery,
+    queryRef,
+  );
   return (
     <StyledEngineProvider injectFirst={true}>
       <ConnectedThemeProvider settings={settings}>

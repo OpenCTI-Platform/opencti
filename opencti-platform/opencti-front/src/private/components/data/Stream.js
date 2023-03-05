@@ -65,20 +65,25 @@ class Stream extends Component {
       },
       description: {
         label: 'Description',
-        width: '25%',
-        isSortable: true,
-      },
-      stream_live: {
-        label: 'Status',
-        width: '10%',
+        width: '20%',
         isSortable: true,
       },
       filters: {
         label: 'Filters',
-        width: '40%',
+        width: '35%',
+      },
+      id: {
+        label: 'Stream ID',
+        width: '15%',
+        isSortable: true,
       },
       stream_public: {
         label: 'Public',
+        width: '8%',
+        isSortable: true,
+      },
+      stream_live: {
+        label: 'Status',
         width: '10%',
         isSortable: true,
       },
@@ -96,23 +101,35 @@ class Stream extends Component {
         message={
           <>
             <div>
-              {t('Global streams are available for granted users. Live at')}{' '}
-              <a href="/stream/live" target="_blank" style={{ color: theme.palette.secondary.main }}>
+              {t('Built-in streams are available for granted users: live at')}{' '}
+              <a
+                href="/stream/live"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
                 <i>/stream/live</i>
               </a>{' '}
               {t('and raw at')}{' '}
-              <a href="/stream" target="_blank" style={{ color: theme.palette.secondary.main }}>
+              <a
+                href="/stream"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
                 <i>/stream</i>
               </a>
-            </div>
-            <div>
-              {t('Public streams are available for anyone at')}{' '}
-              <a href="/public" target="_blank" style={{ color: theme.palette.secondary.main }}>
+              . {t('Public streams list is accessible for anyone at')}{' '}
+              <a
+                href="/public"
+                target="_blank"
+                style={{ color: theme.palette.secondary.main }}
+              >
                 <i>/public</i>
               </a>
+              .
             </div>
           </>
-        }>
+        }
+      >
         <QueryRenderer
           query={StreamLinesQuery}
           variables={{ count: 25, ...paginationOptions }}

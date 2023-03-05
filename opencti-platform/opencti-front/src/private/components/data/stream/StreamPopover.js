@@ -17,7 +17,9 @@ import MoreVert from '@mui/icons-material/MoreVert';
 import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
-import StreamCollectionEdition, { streamCollectionMutationFieldPatch } from './StreamCollectionEdition';
+import StreamCollectionEdition, {
+  streamCollectionMutationFieldPatch,
+} from './StreamCollectionEdition';
 
 const styles = (theme) => ({
   container: {
@@ -87,11 +89,17 @@ class StreamCollectionPopover extends Component {
   }
 
   handleOnOff() {
+    this.handleClose();
     commitMutation({
       mutation: streamCollectionMutationFieldPatch,
       variables: {
         id: this.props.streamCollection.id,
-        input: [{ key: 'stream_live', value: [(!this.props.streamCollection.stream_live).toString()] }],
+        input: [
+          {
+            key: 'stream_live',
+            value: [(!this.props.streamCollection.stream_live).toString()],
+          },
+        ],
       },
     });
   }

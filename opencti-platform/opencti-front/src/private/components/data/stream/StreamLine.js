@@ -10,10 +10,11 @@ import { MoreVert, Stream } from '@mui/icons-material';
 import { compose } from 'ramda';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
-import Chip from '@mui/material/Chip';
 import StreamPopover from './StreamPopover';
 import inject18n from '../../../../components/i18n';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import ItemCopy from '../../../../components/ItemCopy';
+import ItemBoolean from '../../../../components/ItemBoolean';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -62,27 +63,30 @@ class StreamLineLineComponent extends Component {
     const { classes, node, dataColumns, paginationOptions, t } = this.props;
     const filters = JSON.parse(node.filters);
     return (
-      <ListItem classes={{ root: classes.item }} divider={true} button={true}
-                component="a" href={`/stream/${node.id}`}>
+      <ListItem
+        classes={{ root: classes.item }}
+        divider={true}
+        button={true}
+        component="a"
+        href={`/stream/${node.id}`}
+      >
         <ListItemIcon classes={{ root: classes.itemIcon }}>
           <Stream />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.name.width }}
+              >
                 {node.name}
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.description.width }}>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.description.width }}
+              >
                 {node.description}
-              </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.stream_live.width }}>
-                <Chip
-                  classes={{ root: classes.chipInList }}
-                  color={node.stream_live ? 'success' : 'error'}
-                  variant="outlined"
-                  label={t(node.stream_live ? 'Started' : 'Stopped')}
-                />
               </div>
               <FilterIconButton
                 filters={filters}
@@ -90,18 +94,40 @@ class StreamLineLineComponent extends Component {
                 classNameNumber={3}
                 styleNumber={3}
               />
-              <div className={classes.bodyItem} style={{ width: dataColumns.stream_public.width }}>
-                <Chip
-                    classes={{ root: classes.chipInList }}
-                    variant="outlined"
-                    label={t(node.stream_public ? 'Public' : 'Private')}
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.id.width, paddingRight: 10 }}
+              >
+                <ItemCopy content={node.id} variant="inLine" />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stream_public.width }}
+              >
+                <ItemBoolean
+                  variant="inList"
+                  label={node.stream_public ? t('Yes') : t('No')}
+                  status={node.stream_public}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stream_live.width }}
+              >
+                <ItemBoolean
+                  variant="inList"
+                  label={node.stream_live ? t('Started') : t('Stopped')}
+                  status={node.stream_live}
                 />
               </div>
             </div>
           }
         />
         <ListItemSecondaryAction>
-          <StreamPopover streamCollection={node} paginationOptions={paginationOptions}/>
+          <StreamPopover
+            streamCollection={node}
+            paginationOptions={paginationOptions}
+          />
         </ListItemSecondaryAction>
       </ListItem>
     );
@@ -188,6 +214,28 @@ class StreamDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.filters.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stream_public.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.stream_live.width }}
               >
                 <Skeleton
                   animation="wave"

@@ -3,7 +3,11 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
-import { CheckCircleOutlined, Close, WarningOutlined } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  Close,
+  WarningOutlined,
+} from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import Button from '@mui/material/Button';
@@ -13,7 +17,11 @@ import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import { syncCheckMutation, syncStreamCollectionQuery } from './SyncCreation';
@@ -94,7 +102,9 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const [streams, setStreams] = useState([]);
-  const relatedUser = synchronizer.user ? { label: synchronizer.user.name, value: synchronizer.user.id } : '';
+  const relatedUser = synchronizer.user
+    ? { label: synchronizer.user.name, value: synchronizer.user.id }
+    : '';
   const initialValues = R.pipe(
     R.assoc('current_state', buildDate(synchronizer.current_state)),
     R.assoc('user_id', relatedUser),
@@ -110,7 +120,9 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
       'ssl_verify',
     ]),
   )(synchronizer);
-  const isStreamAccessible = isNotEmptyField(streams.find((s) => s.id === initialValues.stream_id));
+  const isStreamAccessible = isNotEmptyField(
+    streams.find((s) => s.id === initialValues.stream_id),
+  );
   const handleVerify = (values) => {
     commitMutation({
       mutation: syncCheckMutation,
@@ -145,12 +157,21 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
 
   const handleGetStreams = ({ uri, token, ssl_verify }) => {
     const args = { uri, token, ssl_verify: ssl_verify ?? false };
-    fetchQuery(syncStreamCollectionQuery, args).toPromise().then((result) => {
-      const resultStreams = [...result.synchronizerFetch.map((s) => ({ value: s.id, label: s.name, ...s }))];
-      setStreams(resultStreams);
-    }).catch(() => {
-      setStreams([]);
-    });
+    fetchQuery(syncStreamCollectionQuery, args)
+      .toPromise()
+      .then((result) => {
+        const resultStreams = [
+          ...result.synchronizerFetch.map((s) => ({
+            value: s.id,
+            label: s.name,
+            ...s,
+          })),
+        ];
+        setStreams(resultStreams);
+      })
+      .catch(() => {
+        setStreams([]);
+      });
   };
 
   useEffect(() => {
@@ -167,15 +188,18 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
           className={classes.closeButton}
           onClick={handleClose}
           size="large"
-          color="primary">
+          color="primary"
+        >
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6">{t('Update a synchronizer')}</Typography>
       </div>
       <div className={classes.container}>
-        <Formik enableReinitialize={true}
+        <Formik
+          enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={syncValidation(t)}>
+          validationSchema={syncValidation(t)}
+        >
           {({ values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -186,17 +210,35 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                 fullWidth={true}
                 onSubmit={handleSubmitField}
               />
-              <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
-                     severity="warning"
-                     variant="outlined"
-                     style={{ position: 'relative' }}>
+              <Alert
+                icon={false}
+                classes={{ root: classes.alert, message: classes.message }}
+                severity="warning"
+                variant="outlined"
+                style={{ position: 'relative' }}
+              >
                 <AlertTitle>
-                  &nbsp;&nbsp;{t('Remote OpenCTI configuration')} {isStreamAccessible ? <CheckCircleOutlined
-                    style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
-                  /> : <WarningOutlined style={{ fontSize: 22, color: '#f44336', float: 'left' }}/>}
+                  &nbsp;&nbsp;{t('Remote OpenCTI configuration')}{' '}
+                  {isStreamAccessible ? (
+                    <CheckCircleOutlined
+                      style={{ fontSize: 22, color: '#4caf50', float: 'left' }}
+                    />
+                  ) : (
+                    <WarningOutlined
+                      style={{ fontSize: 22, color: '#f44336', float: 'left' }}
+                    />
+                  )}
                 </AlertTitle>
-                <Tooltip title={t('You need to configure a valid remote OpenCTI. Token is optional to consume public streams')}>
-                  <InformationOutline fontSize="small" color="primary" style={{ position: 'absolute', top: 10, right: 18 }}/>
+                <Tooltip
+                  title={t(
+                    'You need to configure a valid remote OpenCTI. Token is optional to consume public streams',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ position: 'absolute', top: 10, right: 18 }}
+                  />
                 </Tooltip>
                 <Field
                   component={TextField}
@@ -217,21 +259,24 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
                   disabled={true}
                 />
                 <Field
-                    component={TextField}
-                    variant="standard"
-                    name="dd"
-                    label={t('Remote OpenCTI stream ID')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                    value={streams.find((s) => s.id === initialValues.stream_id)?.label ?? '-'}
-                    disabled={true}
+                  component={TextField}
+                  variant="standard"
+                  name="dd"
+                  label={t('Remote OpenCTI stream ID')}
+                  fullWidth={true}
+                  style={{ marginTop: 20 }}
+                  value={
+                    streams.find((s) => s.id === initialValues.stream_id)
+                      ?.label ?? '-'
+                  }
+                  disabled={true}
                 />
               </Alert>
               <CreatorField
-                  name={'user_id'}
-                  label={'User responsible for data creation (empty = system)'}
-                  containerStyle={{ marginTop: 20, width: '100%' }}
-                  onChange={handleSubmitField}
+                name={'user_id'}
+                label={t('User responsible for data creation (empty = System)')}
+                containerStyle={{ marginTop: 20, width: '100%' }}
+                onChange={handleSubmitField}
               />
               <Field
                 component={DateTimePickerField}

@@ -15,6 +15,8 @@ import * as R from 'ramda';
 import { evolve, pluck } from 'ramda';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import Switch from '@mui/material/Switch';
+import Alert from '@mui/material/Alert';
+import AlertTitle from '@mui/material/AlertTitle';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -66,6 +68,14 @@ const styles = (theme) => ({
   },
   title: {
     float: 'left',
+  },
+  alert: {
+    width: '100%',
+    marginTop: 20,
+  },
+  message: {
+    width: '100%',
+    overflow: 'hidden',
   },
 });
 
@@ -141,14 +151,12 @@ const StreamCollectionCreation = (props) => {
 
   const handleAddFilter = (key, id, value) => {
     if (filters[key] && filters[key].length > 0) {
-      setFilters(
-        {
-          ...filters,
-          [key]: isUniqFilter(key)
-            ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
-        },
-      );
+      setFilters({
+        ...filters,
+        [key]: isUniqFilter(key)
+          ? [{ id, value }]
+          : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+      });
     } else {
       setFilters({ ...filters, [key]: [{ id, value }] });
     }
@@ -200,7 +208,13 @@ const StreamCollectionCreation = (props) => {
             onSubmit={onSubmit}
             onReset={onReset}
           >
-            {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+            {({
+              submitForm,
+              handleReset,
+              isSubmitting,
+              setFieldValue,
+              values,
+            }) => (
               <Form style={{ margin: '20px 0 20px 0' }}>
                 <Field
                   component={TextField}
@@ -217,20 +231,32 @@ const StreamCollectionCreation = (props) => {
                   fullWidth={true}
                   style={{ marginTop: 20 }}
                 />
-                <FormControlLabel
-                  control={
-                    <Switch />
-                  }
-                  style={{ marginTop: 20 }}
-                  name='stream_public'
-                  onChange={(_, checked) => setFieldValue('stream_public', checked)}
-                  label={t('Public')}
-                />
-                {!values.stream_public && (<GroupField
-                  name="groups"
-                  helpertext={t('Let the field empty to grant all users')}
-                  style={{ marginTop: 20, width: '100%' }}
-                />)}
+                <Alert
+                  icon={false}
+                  classes={{ root: classes.alert, message: classes.message }}
+                  severity="warning"
+                  variant="outlined"
+                  style={{ position: 'relative' }}
+                >
+                  <AlertTitle>
+                    {t('Make this stream public and available to anyone')}
+                  </AlertTitle>
+                  <FormControlLabel
+                    control={<Switch />}
+                    style={{ marginLeft: 1 }}
+                    name="stream_public"
+                    onChange={(_, checked) => setFieldValue('stream_public', checked)
+                    }
+                    label={t('Public stream')}
+                  />
+                </Alert>
+                {!values.stream_public && (
+                  <GroupField
+                    name="groups"
+                    helpertext={t('Let the field empty to grant all users')}
+                    style={{ marginTop: 20, width: '100%' }}
+                  />
+                )}
                 <div style={{ marginTop: 35 }}>
                   <Filters
                     variant="text"

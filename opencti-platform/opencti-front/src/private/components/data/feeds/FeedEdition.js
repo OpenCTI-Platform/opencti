@@ -23,9 +23,7 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
-import {
-  stixCyberObservablesLinesAttributesQuery,
-} from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
 import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
