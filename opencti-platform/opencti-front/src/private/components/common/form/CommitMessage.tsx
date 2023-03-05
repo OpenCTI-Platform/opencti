@@ -1,16 +1,16 @@
-import React, { FunctionComponent, useState } from "react";
-import { Field } from "formik";
-import Dialog from "@mui/material/Dialog";
-import DialogContent from "@mui/material/DialogContent";
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
-import { useFormatter } from "../../../../components/i18n";
-import MarkDownField from "../../../../components/MarkDownField";
-import type { ExternalReferencesValues } from "./ExternalReferencesField";
-import { ExternalReferencesField } from "./ExternalReferencesField";
-import { BYPASSREFERENCE } from "../../../../utils/hooks/useGranted";
-import Security from "../../../../utils/Security";
+import React, { FunctionComponent, useState } from 'react';
+import { Field } from 'formik';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import { useFormatter } from '../../../../components/i18n';
+import MarkDownField from '../../../../components/MarkDownField';
+import type { ExternalReferencesValues } from './ExternalReferencesField';
+import { ExternalReferencesField } from './ExternalReferencesField';
+import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 interface CommitMessageProps {
   id: string;
@@ -43,7 +43,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   const handleControlClose = () => setControlOpen(false);
 
   const validateReferences = (
-    references: ExternalReferencesValues | undefined
+    references: ExternalReferencesValues | undefined,
   ) => !!references && references.length > 0;
 
   return (
@@ -55,9 +55,9 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             color="primary"
             onClick={handleOpen}
             disabled={disabled}
-            style={{ marginTop: 20, float: "right" }}
+            style={{ marginTop: 20, float: 'right' }}
           >
-            {t("Update")}
+            {t('Update')}
           </Button>
           <Security needs={[BYPASSREFERENCE]}>
             <Button
@@ -65,9 +65,9 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
               color="primary"
               onClick={submitForm}
               disabled={disabled}
-              style={{ marginTop: 20, marginRight: 20, float: "left" }}
+              style={{ marginTop: 20, marginRight: 20, float: 'left' }}
             >
-              {t("Direct Update")}
+              {t('Direct Update')}
             </Button>
           </Security>
         </>
@@ -78,11 +78,11 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         onClose={handleClose ?? handleControlClose}
         fullWidth={true}
       >
-        <DialogTitle>{t("Reference modification")}</DialogTitle>
+        <DialogTitle>{t('Reference modification')}</DialogTitle>
         <DialogContent>
           <ExternalReferencesField
             name="references"
-            style={{ marginTop: 20, width: "100%" }}
+            style={{ marginTop: 20, width: '100%' }}
             setFieldValue={setFieldValue}
             values={values}
             id={id}
@@ -91,7 +91,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
           <Field
             component={MarkDownField}
             name="message"
-            label={t("Message")}
+            label={t('Message')}
             fullWidth={true}
             multiline={true}
             rows="2"
@@ -104,7 +104,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
             onClick={submitForm}
             disabled={disabled || !validateReferences(values)}
           >
-            {t("Validate")}
+            {t('Validate')}
           </Button>
         </DialogActions>
       </Dialog>

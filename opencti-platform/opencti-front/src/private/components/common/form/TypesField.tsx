@@ -1,12 +1,12 @@
-import React, { FunctionComponent, useState } from "react";
-import { Field } from "formik";
-import { graphql } from "react-relay";
-import makeStyles from "@mui/styles/makeStyles";
-import { fetchQuery } from "../../../../relay/environment";
-import AutocompleteField from "../../../../components/AutocompleteField";
-import { useFormatter } from "../../../../components/i18n";
-import ItemIcon from "../../../../components/ItemIcon";
-import { TypesFieldTypesQuery$data } from "./__generated__/TypesFieldTypesQuery.graphql";
+import React, { FunctionComponent, useState } from 'react';
+import { Field } from 'formik';
+import { graphql } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
+import { fetchQuery } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
+import { TypesFieldTypesQuery$data } from './__generated__/TypesFieldTypesQuery.graphql';
 
 interface SearchTypesProps {
   name: string;
@@ -15,11 +15,11 @@ interface SearchTypesProps {
   helpertext?: string;
   multiple: boolean;
   types: (
-    | "Stix-Domain-Object"
-    | "Stix-Cyber-Observable"
-    | "stix-core-relationship"
-    | "stix-cyber-observable-relationship"
-    | "stix-meta-relationship"
+    | 'Stix-Domain-Object'
+    | 'Stix-Cyber-Observable'
+    | 'stix-core-relationship'
+    | 'stix-cyber-observable-relationship'
+    | 'stix-meta-relationship'
   )[];
 }
 
@@ -88,15 +88,15 @@ const typesFieldTypesQuery = graphql`
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
-    display: "inline-block",
+    display: 'inline-block',
   },
   text: {
-    display: "inline-block",
+    display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
   },
   autoCompleteIndicator: {
-    display: "none",
+    display: 'none',
   },
 }));
 
@@ -113,7 +113,7 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({
   const { t } = useFormatter();
   const optionBuilder = (
     type: string,
-    data: { node: { id: string; label: string } }[]
+    data: { node: { id: string; label: string } }[],
   ) => {
     return data
       .map((n) => ({
@@ -122,29 +122,28 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({
       }))
       .sort((a, b) => a.label.localeCompare(b.label))
       .filter(
-        ({ value }, index, arr) =>
-          arr.findIndex((o) => o.value === value) === index
+        ({ value }, index, arr) => arr.findIndex((o) => o.value === value) === index,
       );
   };
   const searchTypes = () => {
     fetchQuery(typesFieldTypesQuery, {
-      isDomain: types.includes("Stix-Domain-Object"),
-      isObservable: types.includes("Stix-Cyber-Observable"),
-      isCoreRelationship: types.includes("stix-core-relationship"),
+      isDomain: types.includes('Stix-Domain-Object'),
+      isObservable: types.includes('Stix-Cyber-Observable'),
+      isCoreRelationship: types.includes('stix-core-relationship'),
       isObservableRelationship: types.includes(
-        "stix-cyber-observable-relationship"
+        'stix-cyber-observable-relationship',
       ),
-      isMetaRelationship: types.includes("stix-meta-relationship"),
+      isMetaRelationship: types.includes('stix-meta-relationship'),
     })
       .toPromise()
       .then((data) => {
         const fetchData = data as TypesFieldTypesQuery$data;
-        const relationships = optionBuilder("relationship", [
+        const relationships = optionBuilder('relationship', [
           ...(fetchData.stixCoreRelationshipTypes?.edges ?? []),
           ...(fetchData.stixCyberObservableRelationshipTypes?.edges ?? []),
           ...(fetchData.stixMetaRelationshipTypes?.edges ?? []),
         ]);
-        const entities = optionBuilder("entity", [
+        const entities = optionBuilder('entity', [
           ...(fetchData.stixDomainObjectTypes?.edges ?? []),
           ...(fetchData.stixCyberObservableTypes?.edges ?? []),
         ]);
@@ -159,12 +158,12 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({
         name={name}
         multiple={multiple}
         textfieldprops={{
-          variant: "standard",
-          label: label || t("Types"),
+          variant: 'standard',
+          label: label || t('Types'),
           helperText: helpertext,
           onFocus: searchTypes,
         }}
-        noOptionsText={t("No available options")}
+        noOptionsText={t('No available options')}
         options={dataTypes}
         onInputChange={searchTypes}
         renderOption={(renderProps: object, option: SearchOption) => (

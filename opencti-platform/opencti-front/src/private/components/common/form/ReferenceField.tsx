@@ -1,18 +1,18 @@
-import { Launch } from "mdi-material-ui";
-import { Field } from "formik";
-import React, { FunctionComponent, ReactElement, ReactNode } from "react";
-import makeStyles from "@mui/styles/makeStyles";
-import AutocompleteField from "../../../../components/AutocompleteField";
-import { useFormatter } from "../../../../components/i18n";
-import { fieldSpacingContainerStyle } from "../../../../utils/field";
+import { Launch } from 'mdi-material-ui';
+import { Field } from 'formik';
+import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
+import makeStyles from '@mui/styles/makeStyles';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { useFormatter } from '../../../../components/i18n';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
   icon: {
     paddingTop: 4,
-    display: "inline-block",
+    display: 'inline-block',
   },
   text: {
-    display: "inline-block",
+    display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
   },
@@ -41,10 +41,10 @@ interface RelationFieldProps {
 const ReferenceField: FunctionComponent<RelationFieldProps> = ({
   name,
   label,
-  variant = "standard",
+  variant = 'standard',
   helperText,
   onFocus,
-  noOptionsText = "No available options",
+  noOptionsText = 'No available options',
   options,
   onChange,
   onInputChange,

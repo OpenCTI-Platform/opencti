@@ -1,15 +1,15 @@
-import React, { Component } from "react";
-import { compose, pathOr, pipe, map, union } from "ramda";
-import { debounce } from "rxjs/operators";
-import { Subject, timer } from "rxjs";
-import { Field } from "formik";
-import withStyles from "@mui/styles/withStyles";
-import { graphql } from "react-relay";
-import { fetchQuery } from "../../../../relay/environment";
-import AutocompleteField from "../../../../components/AutocompleteField";
-import inject18n from "../../../../components/i18n";
-import { defaultValue } from "../../../../utils/Graph";
-import ItemIcon from "../../../../components/ItemIcon";
+import React, { Component } from 'react';
+import { compose, pathOr, pipe, map, union } from 'ramda';
+import { debounce } from 'rxjs/operators';
+import { Subject, timer } from 'rxjs';
+import { Field } from 'formik';
+import withStyles from '@mui/styles/withStyles';
+import { graphql } from 'react-relay';
+import { fetchQuery } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import inject18n from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
@@ -164,22 +164,22 @@ export const stixDomainObjectsFieldSearchQuery = graphql`
 const styles = () => ({
   icon: {
     paddingTop: 4,
-    display: "inline-block",
+    display: 'inline-block',
   },
   text: {
-    display: "inline-block",
+    display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
   },
   autoCompleteIndicator: {
-    display: "none",
+    display: 'none',
   },
 });
 
 class StixDomainObjectsField extends Component {
   constructor(props) {
     super(props);
-    this.state = { stixDomainObjects: [], keyword: "" };
+    this.state = { stixDomainObjects: [], keyword: '' };
   }
 
   componentDidMount() {
@@ -195,25 +195,25 @@ class StixDomainObjectsField extends Component {
   handleSearch(event) {
     if (event && event.target && event.target.value) {
       this.setState({ keyword: event.target.value });
-      SEARCH$.next({ action: "Search" });
+      SEARCH$.next({ action: 'Search' });
     }
   }
 
   searchStixDomainObjects() {
     fetchQuery(stixDomainObjectsFieldSearchQuery, {
-      types: this.props.types || ["Stix-Domain-Object"],
+      types: this.props.types || ['Stix-Domain-Object'],
       search: this.state.keyword,
       first: 20,
     })
       .toPromise()
       .then((data) => {
         const labels = pipe(
-          pathOr([], ["stixDomainObjects", "edges"]),
+          pathOr([], ['stixDomainObjects', 'edges']),
           map((n) => ({
             label: defaultValue(n.node),
             value: n.node.id,
             type: n.node.entity_type,
-          }))
+          })),
         )(data);
         this.setState({
           stixDomainObjects: union(this.state.stixDomainObjects, labels),
@@ -231,15 +231,15 @@ class StixDomainObjectsField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
-            variant: "standard",
-            label: t("Entities"),
+            variant: 'standard',
+            label: t('Entities'),
             helperText: helpertext,
             onFocus: this.searchStixDomainObjects.bind(this),
           }}
-          noOptionsText={t("No available options")}
+          noOptionsText={t('No available options')}
           options={this.state.stixDomainObjects}
           onInputChange={this.handleSearch.bind(this)}
-          onChange={typeof onChange === "function" ? onChange.bind(this) : null}
+          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
           renderOption={(props, option) => (
             <li {...props}>
               <div className={classes.icon} style={{ color: option.color }}>

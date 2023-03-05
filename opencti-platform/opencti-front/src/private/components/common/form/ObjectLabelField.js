@@ -1,33 +1,33 @@
-import React, { Component } from "react";
-import { compose, pathOr, pipe, map, union, append } from "ramda";
-import { Field } from "formik";
-import withStyles from "@mui/styles/withStyles";
-import { Label } from "mdi-material-ui";
-import { fetchQuery } from "../../../../relay/environment";
-import AutocompleteField from "../../../../components/AutocompleteField";
-import inject18n from "../../../../components/i18n";
-import { labelsSearchQuery } from "../../settings/LabelsQuery";
-import LabelCreation from "../../settings/labels/LabelCreation";
+import React, { Component } from 'react';
+import { compose, pathOr, pipe, map, union, append } from 'ramda';
+import { Field } from 'formik';
+import withStyles from '@mui/styles/withStyles';
+import { Label } from 'mdi-material-ui';
+import { fetchQuery } from '../../../../relay/environment';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import inject18n from '../../../../components/i18n';
+import { labelsSearchQuery } from '../../settings/LabelsQuery';
+import LabelCreation from '../../settings/labels/LabelCreation';
 
 const styles = () => ({
   icon: {
     paddingTop: 4,
-    display: "inline-block",
+    display: 'inline-block',
   },
   text: {
-    display: "inline-block",
+    display: 'inline-block',
     flexGrow: 1,
     marginLeft: 10,
   },
   autoCompleteIndicator: {
-    display: "none",
+    display: 'none',
   },
 });
 
 class ObjectLabelField extends Component {
   constructor(props) {
     super(props);
-    this.state = { labelCreation: false, labelInput: "", labels: [] };
+    this.state = { labelCreation: false, labelInput: '', labels: [] };
   }
 
   handleOpenLabelCreation() {
@@ -40,20 +40,20 @@ class ObjectLabelField extends Component {
 
   searchLabels(event) {
     this.setState({
-      labelInput: event && event.target.value !== 0 ? event.target.value : "",
+      labelInput: event && event.target.value !== 0 ? event.target.value : '',
     });
     fetchQuery(labelsSearchQuery, {
-      search: event && event.target.value !== 0 ? event.target.value : "",
+      search: event && event.target.value !== 0 ? event.target.value : '',
     })
       .toPromise()
       .then((data) => {
         const labels = pipe(
-          pathOr([], ["labels", "edges"]),
+          pathOr([], ['labels', 'edges']),
           map((n) => ({
             label: n.node.value,
             value: n.node.id,
             color: n.node.color,
-          }))
+          })),
         )(data);
         this.setState({
           labels: union(this.state.labels, labels),
@@ -80,12 +80,12 @@ class ObjectLabelField extends Component {
           name={name}
           multiple={true}
           textfieldprops={{
-            variant: "standard",
-            label: t("Labels"),
+            variant: 'standard',
+            label: t('Labels'),
             helperText: helpertext,
             onFocus: this.searchLabels.bind(this),
           }}
-          noOptionsText={t("No available options")}
+          noOptionsText={t('No available options')}
           options={this.state.labels}
           onInputChange={this.searchLabels.bind(this)}
           openCreate={this.handleOpenLabelCreation.bind(this)}
@@ -113,8 +113,8 @@ class ObjectLabelField extends Component {
                   label: data.labelAdd.value,
                   value: data.labelAdd.id,
                 },
-                values
-              )
+                values,
+              ),
             );
           }}
         />

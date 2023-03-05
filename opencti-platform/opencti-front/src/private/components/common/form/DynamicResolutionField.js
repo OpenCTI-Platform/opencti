@@ -1,54 +1,54 @@
-import React, { useState, useEffect } from "react";
-import Grid from "@mui/material/Grid";
-import * as R from "ramda";
-import TextField from "@mui/material/TextField";
-import { useField } from "formik";
-import List from "@mui/material/List";
-import ListItem from "@mui/material/ListItem";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Typography from "@mui/material/Typography";
-import Select from "@mui/material/Select";
-import MenuItem from "@mui/material/MenuItem";
-import { v4 as uuid } from "uuid";
-import { fetchQuery } from "../../../../relay/environment";
-import { stixDomainObjectsLinesSearchQuery } from "../stix_domain_objects/StixDomainObjectsLines";
-import ItemIcon from "../../../../components/ItemIcon";
-import ItemBoolean from "../../../../components/ItemBoolean";
+import React, { useState, useEffect } from 'react';
+import Grid from '@mui/material/Grid';
+import * as R from 'ramda';
+import TextField from '@mui/material/TextField';
+import { useField } from 'formik';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Typography from '@mui/material/Typography';
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import { v4 as uuid } from 'uuid';
+import { fetchQuery } from '../../../../relay/environment';
+import { stixDomainObjectsLinesSearchQuery } from '../stix_domain_objects/StixDomainObjectsLines';
+import ItemIcon from '../../../../components/ItemIcon';
+import ItemBoolean from '../../../../components/ItemBoolean';
 import {
   convertFromStixType,
   convertToStixType,
-} from "../../../../utils/String";
-import { useFormatter } from "../../../../components/i18n";
-import { defaultValue } from "../../../../utils/Graph";
+} from '../../../../utils/String';
+import { useFormatter } from '../../../../components/i18n';
+import { defaultValue } from '../../../../utils/Graph';
 
 const inlineStyles = {
   type: {
     fontSize: 13,
-    float: "left",
-    width: "30%",
+    float: 'left',
+    width: '30%',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   default_value: {
     fontSize: 13,
-    float: "left",
-    width: "50%",
+    float: 'left',
+    width: '50%',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
   in_platform: {
     fontSize: 13,
-    float: "left",
-    width: "15%",
+    float: 'left',
+    width: '15%',
     height: 20,
-    whiteSpace: "nowrap",
-    overflow: "hidden",
-    textOverflow: "ellipsis",
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
   },
 };
 
@@ -63,21 +63,20 @@ const DynamicResolutionField = ({
 }) => {
   const { t } = useFormatter();
   const [textFieldValue, setTextFieldValue] = useState(
-    field.value.map((n) => n.name).join("\n")
+    field.value.map((n) => n.name).join('\n'),
   );
   // Similar to componentDidMount and componentDidUpdate:
   useEffect(() => {
     const fetchData = async () => {
-      const currentValueIndexed = R.indexBy(R.prop("name"), field.value);
+      const currentValueIndexed = R.indexBy(R.prop('name'), field.value);
       const resolvedEntities = await Promise.all(
         textFieldValue
-          .split("\n")
+          .split('\n')
           .filter((n) => n.length > 1)
           .map((val) => {
             const filteredStixDomainObjects = stixDomainObjects.filter(
-              (n) =>
-                types.includes(convertFromStixType(n.type)) &&
-                (n.name === val.trim() || n.value === val.trim())
+              (n) => types.includes(convertFromStixType(n.type))
+                && (n.name === val.trim() || n.value === val.trim()),
             );
             if (filteredStixDomainObjects.length > 0) {
               const firstStixDomainObject = R.head(filteredStixDomainObjects);
@@ -92,7 +91,7 @@ const DynamicResolutionField = ({
               types,
               filters: [
                 {
-                  key: ["name", "aliases", "x_opencti_aliases", "x_mitre_id"],
+                  key: ['name', 'aliases', 'x_opencti_aliases', 'x_mitre_id'],
                   values: val.trim(),
                 },
               ],
@@ -102,7 +101,7 @@ const DynamicResolutionField = ({
               .then((data) => {
                 const stixDomainObjectsEdges = data.stixDomainObjects.edges;
                 const firstStixDomainObject = R.head(
-                  stixDomainObjectsEdges
+                  stixDomainObjectsEdges,
                 )?.node;
                 if (firstStixDomainObject) {
                   return {
@@ -114,19 +113,19 @@ const DynamicResolutionField = ({
                 }
                 return currentValueIndexed[val]
                   ? {
-                      id: currentValueIndexed[val].id,
-                      type: currentValueIndexed[val].type,
-                      name: currentValueIndexed[val].name,
-                      in_platform: false,
-                    }
+                    id: currentValueIndexed[val].id,
+                    type: currentValueIndexed[val].type,
+                    name: currentValueIndexed[val].name,
+                    in_platform: false,
+                  }
                   : {
-                      id: `${convertToStixType(R.head(types))}--${uuid()}`,
-                      type: R.head(types),
-                      name: val.trim(),
-                      in_platform: false,
-                    };
+                    id: `${convertToStixType(R.head(types))}--${uuid()}`,
+                    type: R.head(types),
+                    name: val.trim(),
+                    in_platform: false,
+                  };
               });
-          })
+          }),
       );
       setFieldValue(field.name, resolvedEntities);
     };
@@ -136,29 +135,25 @@ const DynamicResolutionField = ({
     const { value } = event.target;
     setTextFieldValue(
       value
-        .split("\n")
-        .map((n) =>
-          n
-            .split(",")
-            .map((o) => o.split(";"))
-            .flat()
-        )
+        .split('\n')
+        .map((n) => n
+          .split(',')
+          .map((o) => o.split(';'))
+          .flat())
         .flat()
-        .join("\n")
+        .join('\n'),
     );
   };
   const handleChangeType = (id, event) => {
     setFieldValue(
       field.name,
-      field.value.map((n) =>
-        n.id === id
-          ? {
-              ...n,
-              id: `${convertToStixType(event.target.value)}--${uuid()}`,
-              type: event.target.value,
-            }
-          : n
-      )
+      field.value.map((n) => (n.id === id
+        ? {
+          ...n,
+          id: `${convertToStixType(event.target.value)}--${uuid()}`,
+          type: event.target.value,
+        }
+        : n)),
     );
   };
   const [, meta] = useField(field.name);
@@ -175,7 +170,7 @@ const DynamicResolutionField = ({
             multiline={true}
             fullWidth={true}
             minRows={6}
-            inputProps={{ style: { lineHeight: "34px" } }}
+            inputProps={{ style: { lineHeight: '34px' } }}
           />
         </Grid>
         <Grid item={true} xs={7}>
@@ -197,13 +192,12 @@ const DynamicResolutionField = ({
                               variant="standard"
                               labelId="type"
                               value={item.type}
-                              onChange={(event) =>
-                                handleChangeType(item.id, event)
+                              onChange={(event) => handleChangeType(item.id, event)
                               }
                               style={{
                                 margin: 0,
-                                width: "80%",
-                                height: "100%",
+                                width: '80%',
+                                height: '100%',
                               }}
                             >
                               {types.map((n) => (
@@ -224,10 +218,10 @@ const DynamicResolutionField = ({
                             label={
                               // eslint-disable-next-line no-nested-ternary
                               item.in_platform
-                                ? t("In platform")
+                                ? t('In platform')
                                 : item.in_platform === null
-                                ? t("N/A")
-                                : t("To create")
+                                  ? t('N/A')
+                                  : t('To create')
                             }
                           />
                         </div>
@@ -238,15 +232,15 @@ const DynamicResolutionField = ({
               ))}
             </List>
           ) : (
-            <div style={{ display: "table", height: "100%", width: "100%" }}>
+            <div style={{ display: 'table', height: '100%', width: '100%' }}>
               <span
                 style={{
-                  display: "table-cell",
-                  verticalAlign: "middle",
-                  textAlign: "center",
+                  display: 'table-cell',
+                  verticalAlign: 'middle',
+                  textAlign: 'center',
                 }}
               >
-                {t("No entities added in this context.")}
+                {t('No entities added in this context.')}
               </span>
             </div>
           )}

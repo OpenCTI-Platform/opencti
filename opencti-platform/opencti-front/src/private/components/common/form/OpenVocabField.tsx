@@ -1,17 +1,17 @@
-import React, { FunctionComponent } from "react";
-import { Field } from "formik";
-import MenuItem from "@mui/material/MenuItem";
-import { graphql, PreloadedQuery, usePreloadedQuery } from "react-relay";
-import Tooltip from "@mui/material/Tooltip";
-import { useFormatter } from "../../../../components/i18n";
-import { SubscriptionFocus } from "../../../../components/Subscription";
-import { Option } from "./ReferenceField";
-import AutocompleteField from "../../../../components/AutocompleteField";
-import { OpenVocabFieldQuery } from "./__generated__/OpenVocabFieldQuery.graphql";
-import Loader, { LoaderVariant } from "../../../../components/Loader";
-import useVocabularyCategory from "../../../../utils/hooks/useVocabularyCategory";
-import useQueryLoading from "../../../../utils/hooks/useQueryLoading";
-import { RenderOption } from "../../../../components/list_lines";
+import React, { FunctionComponent } from 'react';
+import { Field } from 'formik';
+import MenuItem from '@mui/material/MenuItem';
+import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
+import { useFormatter } from '../../../../components/i18n';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import { Option } from './ReferenceField';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { OpenVocabFieldQuery } from './__generated__/OpenVocabFieldQuery.graphql';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import { RenderOption } from '../../../../components/list_lines';
 
 interface OpenVocabProps {
   type: string;
@@ -42,7 +42,7 @@ const vocabularyQuery = graphql`
 `;
 
 const OpenVocabFieldComponent: FunctionComponent<
-  Omit<OpenVocabProps, "type">
+Omit<OpenVocabProps, 'type'>
 > = ({
   name,
   label,
@@ -58,7 +58,7 @@ const OpenVocabFieldComponent: FunctionComponent<
   const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
     vocabularyQuery,
-    queryRef
+    queryRef,
   );
   const openVocabList = (vocabularies?.edges ?? [])
     .map(({ node }) => node)
@@ -71,22 +71,20 @@ const OpenVocabFieldComponent: FunctionComponent<
   let internalOnChange: ((n: string, v: Option | Option[]) => void) | undefined;
   let internalOnSubmit: ((n: string, v: Option | Option[]) => void) | undefined;
   if (onChange) {
-    internalOnChange = (n: string, v: Option | Option[]) =>
-      Array.isArray(v)
-        ? onChange(
-            n,
-            v.map((nV) => nV?.value ?? nV)
-          )
-        : onChange(n, v?.value ?? v);
+    internalOnChange = (n: string, v: Option | Option[]) => (Array.isArray(v)
+      ? onChange(
+        n,
+        v.map((nV) => nV?.value ?? nV),
+      )
+      : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
-    internalOnSubmit = (n: string, v: Option | Option[]) =>
-      Array.isArray(v)
-        ? onSubmit?.(
-            n,
-            v.map((nV) => nV?.value ?? nV)
-          )
-        : onSubmit?.(n, v?.value ?? v);
+    internalOnSubmit = (n: string, v: Option | Option[]) => (Array.isArray(v)
+      ? onSubmit?.(
+        n,
+        v.map((nV) => nV?.value ?? nV),
+      )
+      : onSubmit?.(n, v?.value ?? v));
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (
     <Tooltip
@@ -98,7 +96,7 @@ const OpenVocabFieldComponent: FunctionComponent<
       <MenuItem value={value}>{t(value)}</MenuItem>
     </Tooltip>
   );
-  if (variant === "edit") {
+  if (variant === 'edit') {
     return (
       <Field
         component={AutocompleteField}
@@ -113,11 +111,10 @@ const OpenVocabFieldComponent: FunctionComponent<
         style={containerStyle}
         options={openVocabList}
         renderOption={renderOption}
-        isOptionEqualToValue={(option: Option, value: string) =>
-          option.value === value
+        isOptionEqualToValue={(option: Option, value: string) => option.value === value
         }
         textfieldprops={{
-          variant: "standard",
+          variant: 'standard',
           label,
           helperText: editContext ? (
             <SubscriptionFocus context={editContext} fieldName={name} />
@@ -136,11 +133,10 @@ const OpenVocabFieldComponent: FunctionComponent<
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) =>
-        option.value === value
+      isOptionEqualToValue={(option: Option, value: string) => option.value === value
       }
       textfieldprops={{
-        variant: "standard",
+        variant: 'standard',
         label: t(label),
         helperText: editContext ? (
           <SubscriptionFocus context={editContext} fieldName={name} />
@@ -150,8 +146,8 @@ const OpenVocabFieldComponent: FunctionComponent<
   );
 };
 
-const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, "queryRef">> = (
-  props
+const OpenVocabField: FunctionComponent<Omit<OpenVocabProps, 'queryRef'>> = (
+  props,
 ) => {
   const { typeToCategory } = useVocabularyCategory();
   const queryRef = useQueryLoading<OpenVocabFieldQuery>(vocabularyQuery, {

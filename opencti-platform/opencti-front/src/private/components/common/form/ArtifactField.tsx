@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useState } from "react";
-import { graphql, useLazyLoadQuery } from "react-relay";
-import type { Option } from "./ReferenceField";
-import ReferenceField from "./ReferenceField";
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useLazyLoadQuery } from 'react-relay';
+import type { Option } from './ReferenceField';
+import ReferenceField from './ReferenceField';
 import {
   ArtifactFieldGetQuery,
   StixCyberObservablesFiltering,
-} from "./__generated__/ArtifactFieldGetQuery.graphql";
+} from './__generated__/ArtifactFieldGetQuery.graphql';
 
 interface ArtifactFieldProps {
   attributeName: string;
@@ -35,8 +35,8 @@ const ArtifactField: FunctionComponent<ArtifactFieldProps> = ({
 }) => {
   const [search, setSearch] = useState<string | null>(null);
   const filters = [
-    { key: ["entity_type"], values: ["artifact"] },
-    search ? { key: ["name"], values: [search] } : undefined,
+    { key: ['entity_type'], values: ['artifact'] },
+    search ? { key: ['name'], values: [search] } : undefined,
   ].filter((f) => Boolean(f)) as StixCyberObservablesFiltering[];
   const data = useLazyLoadQuery<ArtifactFieldGetQuery>(artifactQuery, {
     filters,
