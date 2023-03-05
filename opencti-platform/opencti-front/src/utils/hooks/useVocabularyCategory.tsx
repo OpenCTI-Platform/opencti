@@ -66,7 +66,6 @@ const useVocabularyCategory = () => {
   );
   const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key) as VocabularyCategory[];
   const categories = vocabularyCategories();
-
   const typeToCategory = (type: string): VocabularyCategory => {
     const formattedType = type.toLowerCase().replaceAll('-', '_');
     const value = categories.find((v) => v === formattedType);
@@ -75,7 +74,6 @@ const useVocabularyCategory = () => {
     }
     return value;
   };
-
   const fieldToCategory = (
     entityType: string,
     field: string,
@@ -84,11 +82,9 @@ const useVocabularyCategory = () => {
     const findCategory = entityCategories.find((e) => e.fields.map((f) => f.key).includes(field));
     return findCategory?.key;
   };
-
   const isVocabularyField = (entityType: string, field: string): boolean => {
     return fieldToCategory(entityType, field) !== undefined;
   };
-
   return {
     categories,
     isVocabularyField,
@@ -102,13 +98,11 @@ export const useVocabularyCategoryAsQuery = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [orderAsc, setOrderAsc] = useState(true);
-
   const data = usePreloadedQuery<useVocabularyCategoryQuery>(
     vocabCategoriesQuery,
     queryRef,
   );
   const definitions = data.vocabularyCategories;
-
   const categories = definitions
     .filter(({ key }) => key.includes(searchTerm))
     .sort((a, b) => {

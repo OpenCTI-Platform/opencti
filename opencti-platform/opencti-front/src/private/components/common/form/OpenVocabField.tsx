@@ -3,7 +3,6 @@ import { Field } from 'formik';
 import MenuItem from '@mui/material/MenuItem';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import Tooltip from '@mui/material/Tooltip';
-import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import { Option } from './ReferenceField';
 import AutocompleteField from '../../../../components/AutocompleteField';
@@ -29,14 +28,14 @@ interface OpenVocabProps {
 
 export const vocabularyQuery = graphql`
   query OpenVocabFieldQuery(
-      $category: VocabularyCategory!
-      $orderBy: VocabularyOrdering
-      $orderMode: OrderingMode
+    $category: VocabularyCategory!
+    $orderBy: VocabularyOrdering
+    $orderMode: OrderingMode
   ) {
     vocabularies(
-        category: $category
-        orderBy: $orderBy
-        orderMode: $orderMode
+      category: $category
+      orderBy: $orderBy
+      orderMode: $orderMode
     ) {
       edges {
         node {
@@ -63,7 +62,6 @@ Omit<OpenVocabProps, 'type'>
   editContext,
   queryRef,
 }) => {
-  const { t } = useFormatter();
   const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
     vocabularyQuery,
     queryRef,
@@ -101,7 +99,7 @@ Omit<OpenVocabProps, 'type'>
       title={description}
       placement="bottom-start"
     >
-      <MenuItem value={value}>{t(value)}</MenuItem>
+      <MenuItem value={value}>{value}</MenuItem>
     </Tooltip>
   );
   if (variant === 'edit') {
@@ -145,7 +143,7 @@ Omit<OpenVocabProps, 'type'>
       }
       textfieldprops={{
         variant: 'standard',
-        label: t(label),
+        label,
         helperText: editContext ? (
           <SubscriptionFocus context={editContext} fieldName={name} />
         ) : undefined,

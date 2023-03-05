@@ -14,9 +14,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesSubTypesQuery } from '../stix_cyber_observables/StixCyberObservablesLines';
 import { Theme } from '../../../../components/Theme';
-import {
-  StixCyberObservablesLinesSubTypesQuery$data,
-} from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
+import { StixCyberObservablesLinesSubTypesQuery$data } from '../stix_cyber_observables/__generated__/StixCyberObservablesLinesSubTypesQuery.graphql';
 import { vocabularyQuery } from '../../common/form/OpenVocabField';
 import { OpenVocabFieldQuery$data } from '../../common/form/__generated__/OpenVocabFieldQuery.graphql';
 
@@ -54,12 +52,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface IndicatorsRightBarProps {
-  indicatorTypes: string[],
-  observableTypes: string[],
-  handleToggleIndicatorType: (name: string) => void,
-  handleToggleObservableType: (name: string) => void,
-  handleClearObservableTypes: () => void,
-  openExports?: boolean,
+  indicatorTypes: string[];
+  observableTypes: string[];
+  handleToggleIndicatorType: (name: string) => void;
+  handleToggleObservableType: (name: string) => void;
+  handleClearObservableTypes: () => void;
+  openExports?: boolean;
 }
 
 const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
@@ -68,10 +66,10 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
   handleToggleIndicatorType,
   handleToggleObservableType,
   handleClearObservableTypes,
-  openExports }) => {
+  openExports,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   return (
     <Drawer
       variant="permanent"
@@ -93,33 +91,41 @@ const IndicatorsRightBar: FunctionComponent<IndicatorsRightBarProps> = ({
           return (
             <List
               subheader={
-                <ListSubheader component="div">{t('Pattern type')}</ListSubheader>
+                <ListSubheader component="div">
+                  {t('Pattern type')}
+                </ListSubheader>
               }
             >
-              {patternTypes && patternTypes.map((patternType) => <ListItem
-                key={patternType.node.id}
-                dense={true}
-                button={true}
-                onClick={() => handleToggleIndicatorType(patternType.node.name)}
-                classes={{ root: classes.item }}
-              >
-                <Checkbox
-                  checked={indicatorTypes.includes(patternType.node.name)}
-                  disableRipple={true}
-                  size="small"
-                />
-                <ListItemText primary={t(`${patternType.node.name}`)}/>
-              </ListItem>)
-              }
+              {patternTypes
+                && patternTypes.map((patternType) => (
+                  <ListItem
+                    key={patternType.node.id}
+                    dense={true}
+                    button={true}
+                    onClick={() => handleToggleIndicatorType(patternType.node.name)
+                    }
+                    classes={{ root: classes.item }}
+                  >
+                    <Checkbox
+                      checked={indicatorTypes.includes(patternType.node.name)}
+                      disableRipple={true}
+                      size="small"
+                    />
+                    <ListItemText primary={patternType.node.name} />
+                  </ListItem>
+                ))}
             </List>
           );
-        }
-        }
+        }}
       />
       <QueryRenderer
         query={stixCyberObservablesLinesSubTypesQuery}
         variables={{ type: 'Stix-Cyber-Observable' }}
-        render={({ props }: { props: StixCyberObservablesLinesSubTypesQuery$data }) => {
+        render={({
+          props,
+        }: {
+          props: StixCyberObservablesLinesSubTypesQuery$data;
+        }) => {
           if (props && props.subTypes) {
             const subTypesEdges = props.subTypes.edges;
             const sortByLabel = sortBy(compose(toLower, prop('tlabel')));
