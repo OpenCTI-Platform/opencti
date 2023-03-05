@@ -2,14 +2,15 @@ import type { AuthContext, AuthUser } from '../../types/user';
 import { createEntity, deleteElementById, updateAttribute } from '../../database/middleware';
 import type { EditInput, QueryVocabulariesArgs, VocabularyAddInput, } from '../../generated/graphql';
 import { VocabularyFilter } from '../../generated/graphql';
-import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
+import { countAllThings, listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityVocabulary, ENTITY_TYPE_VOCABULARY } from './vocabulary-types';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { elRawSearch, elRawUpdateByQuery } from '../../database/engine';
+import { elRawUpdateByQuery } from '../../database/engine';
 import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
+import { UnsupportedError } from '../../config/errors';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
@@ -41,53 +42,15 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
 
 export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, vocabulary: BasicStoreEntityVocabulary) => {
   const categoryDefinition = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
-  if (categoryDefinition) {
-    const query = {
-      index: READ_ENTITIES_INDICES,
-      body: {
-        query: {
-          bool: {
-            must: [
-              {
-                bool: {
-                  should: [
-                    ...categoryDefinition.fields.map((f) => ({
-                      match: {
-                        [`${f.key}.keyword`]: {
-                          query: vocabulary.name
-                        }
-                      }
-                    })),
-                  ],
-                  minimum_should_match: 1
-                }
-              },
-              {
-                bool: {
-                  should: [
-                    ...categoryDefinition.fields.map((f) => ({
-                      exists: {
-                        field: f.key,
-                      }
-                    })),
-                  ],
-                  minimum_should_match: 1
-                }
-              }
-            ],
-          },
-        }
-      },
-    };
-    const { hits } = await elRawSearch(
-      context,
-      user,
-      ENTITY_TYPE_VOCABULARY,
-      query,
-    );
-    return hits.hits.map((h: { _id: string }) => h._id);
+  if (!categoryDefinition) {
+    throw UnsupportedError(`Cant find category for vocaulary ${vocabulary.name}`);
   }
-  return [];
+  return countAllThings(context, user, {
+    filters: [
+      { key: 'entity_type', values: categoryDefinition.entity_types },
+      { key: categoryDefinition.fields.map((f) => f.key), values: [vocabulary.name] }
+    ]
+  });
 };
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
