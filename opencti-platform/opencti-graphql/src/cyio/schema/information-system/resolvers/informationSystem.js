@@ -13,13 +13,12 @@ import {
 } from '../domain/informationSystem.js';
 import { findDescriptionBlockByIri } from '../domain/descriptionBlock.js';
 import { findInformationTypeByIri } from '../domain/informationType.js';
-// import { findSystemImplementation } from '../domain/systemImplementation.js';
 
 
 const cyioInformationSystemResolvers = {
   Query: {
     // Information System
-    informationSystems: async (_, args, { dbName, dataSources, selectMap }) => findAllInformationSystems(args, dbName, dataSources, selectMap.getNode('node')),
+    informationSystems: async (_, args, { user, token, kauth, clientId, dbName, dataSources, selectMap }) => findAllInformationSystems(args, dbName, dataSources, selectMap.getNode('node')),
     informationSystem: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationSystemById(id, dbName, dataSources, selectMap.getNode('informationSystem')),
     informationSystemSecurityStatus: async (_, { id }, {dbName, dataSources, selectMap }) => getInformationSystemSecurityStatus( id,dbName, dataSources, selectMap.getNode('node')),
   },

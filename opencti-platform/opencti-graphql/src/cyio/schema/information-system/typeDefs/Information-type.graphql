@@ -1,4 +1,5 @@
 extend type Query {
+  # Information Type
   informationType(id: ID!): InformationType @hasPermission(resources:"Asset:view")
   informationTypes(
     first: Int
@@ -9,16 +10,48 @@ extend type Query {
     filterMode: FilterMode
     search: String
   ): InformationTypeConnection @hasPermission(resources: "Asset:view")
+  # ImpactDefinition
+  impactDefinition(id: ID!): ImpactDefinition @hasPermission(resources:"Asset:view")
+  impactDefinitions(
+    first: Int
+    offset: Int
+    orderedBy: ImpactDefinitionOrdering
+    orderMode: OrderingMode
+    filters: [ImpactDefinitionFiltering]
+    filterMode: FilterMode
+  ): ImpactDefinitionConnection @hasPermission(resources:"Asset:view")
+  # Categorization
+  categorization(id: ID!): Categorization @hasPermission(resources:"Asset:view")
+  categorizations(
+    first: Int
+    offset: Int
+    orderedBy: CategorizationOrdering
+    orderMode: OrderingMode
+    filters: [CategorizationFiltering]
+    filterMode: FilterMode
+  ): CategorizationConnection @hasPermission(resources: "Asset:view")
 }
 
 extend type Mutation {
+  # Information Type
   createInformationType(input: InformationTypeInput!): InformationType @hasPermission(resources: "Asset:update")
   deleteInformationType(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteInformationTypes(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editInformationType(id: ID!, input: [EditInput]!, commitMessage: String): InformationType @hasPermission(resources: "Asset:update")
-  #
   attachToInformationType(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
   detachFromInformationType(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  # Impact Definition
+  createImpactDefinition(input: ImpactDefinitionInput!): ImpactDefinition @hasPermission(resources: "Asset:update")
+  deleteImpactDefinition(id: ID!): ID @hasPermission(resources: "Asset:delete")
+  deleteImpactDefinitions(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
+  editImpactDefinition(id: ID!, input: [EditInput]!, commitMessage: String): ImpactDefinition @hasPermission(resources: "Asset:update")
+  # Categorization
+  createCategorization(input: CategorizationInput!): Categorization @hasPermission(resources: "Asset:update")
+  deleteCategorization(id: ID!): ID @hasPermission(resources: "Asset:delete")
+  deleteCategorizations(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
+  editCategorization(id: ID!, input: [EditInput]!, commitMessage: String): Categorization @hasPermission(resources: "Asset:update")
+  attachToCategorization(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
+  detachFromCategorization(id: ID!, field: String!, entityId: ID!): Boolean @hasPermission(resources: "Asset:update")
 }
 
 ## -------- Information Type
@@ -59,36 +92,56 @@ type InformationType implements BasicObject & LifecycleObject & OscalObject {
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
-  # Information Type
   "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
   props: [Property]
+  # Information Type
+  "Identifies a human readable name for the information type that should be shown to the user.  This is typically composed of the identifier and the title."
+  display_name: String
   "Identifies a human readable name for the information type. This title should be meaningful within the context of the system."
   title: String!
   "Identities a summary of how this information type is used within the system."
   description: String!
   "Identifies a set of references to information type information, such as NIST SP 800-60."
-  categorizations: [InformationTypeEntry]
+  categorizations: [Categorization]
   "Identifies the expected level of impact resulting from the unauthorized disclosure of the described information."
-  confidentiality_impact: ImpactLevel!
+  confidentiality_impact: ImpactDefinition
   "Identifies the expected level of impact resulting from the unauthorized modification of the described information."
-  integrity_impact: ImpactLevel!
+  integrity_impact: ImpactDefinition
   "Identifies the expected level of impact resulting from the disruption of access to or use of the described information or the information system."
-  availability_impact: ImpactLevel!
+  availability_impact: ImpactDefinition
+  # Security Categorization
+  "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  identifier: String
+  "Identifies the information type identification system used."
+  system: URL
+  "Identifies a categorization of an information type."
+  category: String 
 }
 
+"""
+Defines the fields that can be used when creating an information type.
+The categorization field is used to reference InformationTypes contained within a catalog
+"""
 input InformationTypeInput {
   "Identifies a human readable name for the information type. This title should be meaningful within the context of the system."
   title: String!
   "Identities a summary of how this information type is used within the system."
   description: String!
   "Identifies a set of references to information type information, such as NIST SP 800-60."
-  categorizations: [ID]
+  categorizations: [CategorizationInput]
   "Identifies the expected level of impact resulting from the unauthorized disclosure of the described information."
-  confidentiality_impact: ImpactLevelInput!
+  confidentiality_impact: ImpactDefinitionInput!
   "Identifies the expected level of impact resulting from the unauthorized modification of the described information."
-  integrity_impact: ImpactLevelInput!
+  integrity_impact: ImpactDefinitionInput!
   "Identifies the expected level of impact resulting from the disruption of access to or use of the described information or the information system."
-  availability_impact: ImpactLevelInput!
+  availability_impact: ImpactDefinitionInput!
+  # Security Categorization
+   "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  identifier: String
+  "Identifies the information type identification system used."
+  system: URL
+  "Identifies a categorization of an information type."
+  category: String 
 }
 
 # Information Type Connection
@@ -134,61 +187,134 @@ enum InformationTypeFilter {
 }
 ## --------
 
-## -------- Impact Level
+## -------- Impact Definition
 """
-Defines the overall level of expected impact resulting from unauthorized 
+Defines the overall expected impact resulting from unauthorized 
 disclosure, modification, or loss of access to information.
 """
-type ImpactLevel implements BasicObject & LifecycleObject & OscalObject {
+type ImpactDefinition implements ComplexDatatype {
   # BasicObject
   "Uniquely identifies this object."
   id: ID!
-  "Identifies the identifier defined by the standard."
-  standard_id: String!
   "Identifies the type of the Object."
   entity_type: String!
-  "Identifies the parent types of this object."
-  parent_types: [String]!
-  # LifecycleObject
-  "Identities the date and time at which the object was originally created."
-  created: Timestamp
-  "Identifies the date and time at which the object was last modified."
-  modified: Timestamp
-  "Identifies a set of terms used to describe this object. The terms are user-defined or trust-group defined."
-  labels: [CyioLabel]
-  # OscalObject
-  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
-  links: [CyioExternalReference]
-  "Identifies one or more references to additional commentary on the Model."
-  remarks: [CyioNote]
-  "Identifies one or more relationships to other entities."
-  relationships(
-    first: Int
-    offset: Int
-    orderedBy: OscalRelationshipsOrdering
-    orderMode: OrderingMode
-    filters: [OscalRelationshipsFiltering]
-    filterMode: FilterMode
-    search: String
-  ): OscalRelationshipConnection
   # Impact Level
   "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
   props: [Property]
-  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
-  base_impact_level: FIPS199!
-  "Identifies the selected (Confidentiality, Integrity, or Availability) security impact level."
-  selected_impact_level: FIPS199
-  "Identifies the justification for the change in impact level, if the selected is different from the base impact level provided in the categorization."
+  "Identifies a list of CyioExternalReferences, each of which refers to information external to the data model. This property is used to provide one or more URLs, descriptions, or IDs to records in other systems."
+  links: [CyioExternalReference]
+  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact."
+  base_impact: FIPS199!
+  "Identifies the selected (Confidentiality, Integrity, or Availability) security impact."
+  selected_impact: FIPS199
+  "Identifies the justification for the change in impact, if the selected is different from the base impact provided in the categorization."
   adjustment_justification: String
+  "Identifies a detailed description of the impact."
+  explanation: String
+  "Identifies a detailed description as to why an impact is recommended to be scored in a certain way."
+  recommendation: String
 }
-
-input ImpactLevelInput {
-  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact level."
-  base_impact_level: FIPS199!
-  "Identifies the selected (Confidentiality, Integrity, or Availability) security impact level."
-  selected_impact_level: FIPS199
-  "Identifies the justification for the change in impact level, if the selected is different from the base impact level provided in the categorization."
+"""
+Defines the fields that to be used when creating an Impact Definition.
+"""
+input ImpactDefinitionInput {
+  "Identifies the prescribed base (Confidentiality, Integrity, or Availability) security impact."
+  base_impact: FIPS199!
+  "Identifies the selected (Confidentiality, Integrity, or Availability) security impact."
+  selected_impact: FIPS199
+  "Identifies the justification for the change in impact, if the selected is different from the base impact provided in the categorization."
   adjustment_justification: String
+  "Identifies a detailed description of the impact."
+  explanation: String
+  "Identifies a detailed description as to why an impact is recommended to be scored in a certain way."
+  recommendation: String
+}
+# Information Type Connection
+type ImpactDefinitionConnection {
+  pageInfo: PageInfo!
+  edges: [ImpactDefinitionEdge]
+}
+type ImpactDefinitionEdge {
+  cursor: String,
+  node: ImpactDefinition!
+}
+# slicing types
+"Defines the list of fields that can be used to order by for an Information Type."
+enum ImpactDefinitionOrdering {
+    "Base Impact"
+    base_impact
+    "Select Impact"
+    selected_impact
+}
+# Filtering types
+input ImpactDefinitionFiltering {
+  key: ImpactDefinitionFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+"Defines the list of fields that can be filtered upon for Impact Definition."
+enum ImpactDefinitionFilter {
+    "Base Impact"
+    base_impact
+    "Select Impact"
+    selected_impact
 }
 ## --------
 
+## -------- Categorization
+"""
+Defines a categorization for an information type.
+"""
+type Categorization implements ComplexDatatype {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the type of the Object."
+  entity_type: String!
+  # Categorization
+  "Identifies the information type identification system used. This represents the catalog from which the information types are from."
+  system: URL
+   "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  information_type: InformationType
+}
+"""
+Defines the fields that to be used when creating a Categorization.
+"""
+input CategorizationInput {
+  # Categorization
+  "Identifies the information type identification system (catalog) used."
+  catalog: ID!
+  "Identifies the information type identification system used. This represents the catalog from which the information types are from."
+  system: URL!
+   "Identifies a unique identifier, qualified by the given identification system used, for an information type."
+  information_type: ID!
+}
+# Information Type Connection
+type CategorizationConnection {
+  pageInfo: PageInfo!
+  edges: [CategorizationEdge]
+}
+type CategorizationEdge {
+  cursor: String,
+  node: Categorization!
+}
+# slicing types
+"Defines the list of fields that can be used to order by for a Categorization."
+enum CategorizationOrdering {
+    "Categorization System"
+    system
+}
+# Filtering types
+input CategorizationFiltering {
+  key: CategorizationFilter!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+"Defines the list of fields that can be filtered upon for Categorization."
+enum CategorizationFilter {
+    "Categorization System"
+    system
+}
+## --------
