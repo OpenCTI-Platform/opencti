@@ -214,7 +214,7 @@ class Relationships extends Component {
       creator: {
         label: 'Creators',
         width: '7%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       created_at: {
         label: 'Creation date',

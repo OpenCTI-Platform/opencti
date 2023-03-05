@@ -321,16 +321,16 @@ class StixCyberObservables extends Component {
     };
     return (
       <ExportContextProvider>
-      <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ArtifactCreation
-            paginationKey="Pagination_stixCyberObservables"
-            paginationOptions={paginationOptions}
-            openExports={openExports}
-          />
-        </Security>
-      </div>
+        <div>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ArtifactCreation
+              paginationKey="Pagination_stixCyberObservables"
+              paginationOptions={paginationOptions}
+              openExports={openExports}
+            />
+          </Security>
+        </div>
       </ExportContextProvider>
     );
   }

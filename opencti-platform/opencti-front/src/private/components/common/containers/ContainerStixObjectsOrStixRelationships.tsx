@@ -58,7 +58,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
   const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper?.isRuntimeFieldEnable();
+  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     entity_type: {
       label: 'Type',
@@ -73,12 +73,12 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     createdBy: {
       label: 'Author',
       width: '12%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     creator: {
       label: 'Creator',
       width: '12%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     objectLabel: {
       label: 'Labels',
@@ -92,7 +92,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     },
     objectMarking: {
       label: 'Marking',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
       width: '8%',
     },
   };

@@ -18,8 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SearchInput from '../../../../components/SearchInput';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -175,7 +174,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
 
   // eslint-disable-next-line class-methods-use-this
   buildColumns(helper) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    const isRuntimeSort = helper.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -190,12 +189,12 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -255,7 +254,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             exportEntityType="Container"
             exportContext={exportContext}
             keyword={searchTerm}
-            handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(this)}
+            handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(
+              this,
+            )}
             redirectionMode={redirectionMode}
             filters={filters}
             paginationOptions={paginationOptions}
@@ -319,7 +320,10 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               />
             </div>
           )}
-          <Filters availableFilterKeys={availableFilterKeys} handleAddFilter={this.handleAddFilter.bind(this)}/>
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+          />
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={this.handleRemoveFilter.bind(this)}

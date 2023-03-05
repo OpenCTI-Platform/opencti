@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StixDomainObjectIndicatorLine, StixDomainObjectIndicatorLineDummy } from './StixDomainObjectIndicatorLine';
+import {
+  StixDomainObjectIndicatorLine,
+  StixDomainObjectIndicatorLineDummy,
+} from './StixDomainObjectIndicatorLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 
 const nbOfRowsToLoad = 50;
@@ -37,7 +40,9 @@ class StixDomainObjectIndicatorsLines extends Component {
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
         dataList={this.props.data?.indicators?.edges ?? []}
-        globalCount={this.props.data?.indicators?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+        globalCount={
+          this.props.data?.indicators?.pageInfo?.globalCount ?? nbOfRowsToLoad
+        }
         LineComponent={<StixDomainObjectIndicatorLine />}
         DummyLineComponent={<StixDomainObjectIndicatorLineDummy />}
         dataColumns={dataColumns}

@@ -133,7 +133,9 @@ class StixCyberObservableNestedEntitiesLinesComponent extends Component {
                           className={classes.bodyItem}
                           style={{ width: '12%' }}
                         >
-                          {(stixCoreObject.creators ?? []).map((c) => c?.name).join(', ')}
+                          {(stixCoreObject.creators ?? [])
+                            .map((c) => c?.name)
+                            .join(', ')}
                         </div>
                         <div
                           className={classes.bodyItem}

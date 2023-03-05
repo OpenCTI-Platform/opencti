@@ -77,7 +77,7 @@ const Incidents: FunctionComponent = () => {
     paginationOptions,
   );
   // eslint-disable-next-line class-methods-use-this
-  const isRuntimeSort = helper?.isRuntimeFieldEnable();
+  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
   const buildColumns = {
     name: {
       label: 'Name',
@@ -97,12 +97,12 @@ const Incidents: FunctionComponent = () => {
     createdBy: {
       label: 'Author',
       width: '11%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     creator: {
       label: 'Creators',
       width: '11%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     objectLabel: {
       label: 'Labels',
@@ -122,7 +122,7 @@ const Incidents: FunctionComponent = () => {
     objectMarking: {
       label: 'Marking',
       width: '8%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
   };
   const renderCards = () => {

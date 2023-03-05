@@ -88,7 +88,9 @@ class StixCyberObservableComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
-          defaultMarking={(stixCyberObservable.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(stixCyberObservable.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <StixCyberObservableEdition

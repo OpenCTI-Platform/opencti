@@ -15,7 +15,12 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { buildDate, parse } from '../../../../utils/Time';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
@@ -86,7 +91,12 @@ const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, enableReferences }) => {
+const IndicatorEditionOverviewComponent = ({
+  indicator,
+  handleClose,
+  context,
+  enableReferences,
+}) => {
   const { t } = useFormatter();
 
   const basicShape = {
@@ -94,9 +104,15 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     indicator_types: Yup.array(),
     confidence: Yup.number(),
     pattern: Yup.string().required(t('This field is required')),
-    valid_from: Yup.date().nullable().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date().nullable()
-      .min(Yup.ref('valid_from'), "The valid until date can't be before valid from date")
+    valid_from: Yup.date()
+      .nullable()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
+    valid_until: Yup.date()
+      .nullable()
+      .min(
+        Yup.ref('valid_from'),
+        "The valid until date can't be before valid from date",
+      )
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array().nullable(),
     x_opencti_score: Yup.number().nullable(),
@@ -105,7 +121,10 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const indicatorValidator = useSchemaEditionValidation('Indicator', basicShape);
+  const indicatorValidator = useSchemaEditionValidation(
+    'Indicator',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: indicatorMutationFieldPatch,
@@ -113,7 +132,12 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     relationDelete: indicatorMutationRelationDelete,
     editionFocus: indicatorEditionOverviewFocus,
   };
-  const editor = useFormEditor(indicator, enableReferences, queries, indicatorValidator);
+  const editor = useFormEditor(
+    indicator,
+    enableReferences,
+    queries,
+    indicatorValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -127,8 +151,14 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
       R.assoc('indicator_types', values.indicator_types),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-      R.assoc('valid_from', values.valid_from ? parse(values.valid_from).format() : null),
-      R.assoc('valid_until', values.valid_from ? parse(values.valid_until).format() : null),
+      R.assoc(
+        'valid_from',
+        values.valid_from ? parse(values.valid_from).format() : null,
+      ),
+      R.assoc(
+        'valid_until',
+        values.valid_from ? parse(values.valid_until).format() : null,
+      ),
       R.toPairs,
       R.map((n) => ({ key: n[0], value: adaptFieldValue(n[1]) })),
     )(values);
@@ -201,186 +231,214 @@ const IndicatorEditionOverviewComponent = ({ indicator, handleClose, context, en
     ]),
   )(indicator);
   return (
-      <Formik enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={indicatorValidator}
-        onSubmit={onSubmit}>
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <OpenVocabField
-              label={t('Indicator types')}
-              type="indicator-type-ov"
-              name="indicator_types"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <ConfidenceField
-              name="confidence"
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={indicatorValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <OpenVocabField
+            label={t('Indicator types')}
+            type="indicator-type-ov"
+            name="indicator_types"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="pattern"
+            label={t('Indicator pattern')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="pattern" />
+            }
+          />
+          <Field
+            component={DateTimePickerField}
+            name="valid_from"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Valid from'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="valid_from" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="valid_until"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Valid until'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="valid_until" />
+              ),
+            }}
+          />
+          <OpenVocabField
+            label={t('Platforms')}
+            type="platforms_ov"
+            name="x_mitre_platforms"
+            variant={'edit'}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            editContext={context}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_score"
+            label={t('Score')}
+            type="number"
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_score"
+              />
+            }
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldName="killChainPhases"
+              />
+            }
+            onChange={editor.changeKillChainPhases}
+          />
+          {indicator.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Indicator"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={fieldSpacingContainerStyle}
-              editContext={context}
-              variant="edit"
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="pattern"
-              label={t('Indicator pattern')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
+              setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="pattern" />
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
             />
-            <Field
-              component={DateTimePickerField}
-              name="valid_from"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Valid from'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="valid_from" />
-                ),
-              }}
-            />
-            <Field
-              component={DateTimePickerField}
-              name="valid_until"
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Valid until'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="valid_until"/>
-                ),
-              }}
-            />
-            <OpenVocabField
-              label={t('Platforms')}
-              type="platforms_ov"
-              name="x_mitre_platforms"
-              variant={'edit'}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
-              editContext={context}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="x_opencti_score"
-              label={t('Score')}
-              type="number"
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={<SubscriptionFocus context={context} fieldName="x_opencti_score"/>}
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={<SubscriptionFocus context={context} fieldName="description" />}
-            />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={<SubscriptionFocus context={context} fieldName="killChainPhases"/>}
-              onChange={editor.changeKillChainPhases}
-            />
-            {indicator.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Indicator"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={<SubscriptionFocus context={context} fieldName="x_opencti_workflow_id"/>}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          <Field
+            component={SwitchField}
+            type="checkbox"
+            name="x_opencti_detection"
+            label={t('Detection')}
+            containerstyle={{ marginTop: 20 }}
+            onChange={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_detection"
               />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+            }
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
-              helpertext={<SubscriptionFocus context={context} fieldName="createdBy" />}
-              onChange={editor.changeCreated}
+              open={false}
+              values={values.references}
+              id={indicator.id}
             />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-              helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
-              onChange={editor.changeMarking}
-            />
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="x_opencti_detection"
-              label={t('Detection')}
-              containerstyle={{ marginTop: 20 }}
-              onChange={handleSubmitField}
-              helperText={<SubscriptionFocus context={context} fieldName="x_opencti_detection"/>}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={indicator.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 

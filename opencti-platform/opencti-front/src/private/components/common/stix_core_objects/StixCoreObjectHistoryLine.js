@@ -347,66 +347,71 @@ class StixCoreObjectHistoryLineComponent extends Component {
             {node.context_data.external_references
               && node.context_data.external_references.length > 0 && (
                 <List>
-                  {node.context_data.external_references.map((externalReference) => {
-                    const externalReferenceId = externalReference.external_id
-                      ? `(${externalReference.external_id})`
-                      : '';
-                    let externalReferenceSecondary = '';
-                    if (
-                      externalReference.url
-                      && externalReference.url.length > 0
-                    ) {
-                      externalReferenceSecondary = externalReference.url;
-                    } else if (
-                      externalReference.description
-                      && externalReference.description.length > 0
-                    ) {
-                      externalReferenceSecondary = externalReference.description;
-                    }
-                    if (externalReference.url) {
+                  {node.context_data.external_references.map(
+                    (externalReference) => {
+                      const externalReferenceId = externalReference.external_id
+                        ? `(${externalReference.external_id})`
+                        : '';
+                      let externalReferenceSecondary = '';
+                      if (
+                        externalReference.url
+                        && externalReference.url.length > 0
+                      ) {
+                        externalReferenceSecondary = externalReference.url;
+                      } else if (
+                        externalReference.description
+                        && externalReference.description.length > 0
+                      ) {
+                        externalReferenceSecondary = externalReference.description;
+                      }
+                      if (externalReference.url) {
+                        return (
+                          <ListItem
+                            key={externalReference.id}
+                            dense={true}
+                            divider={true}
+                            button={true}
+                            onClick={this.handleOpenExternalLink.bind(
+                              this,
+                              externalReference.url,
+                            )}
+                          >
+                            <ListItemIcon>
+                              <LanguageOutlined />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={`${externalReference.source_name} ${externalReferenceId}`}
+                              secondary={truncate(
+                                externalReferenceSecondary,
+                                90,
+                              )}
+                            />
+                          </ListItem>
+                        );
+                      }
                       return (
                         <ListItem
                           key={externalReference.id}
                           dense={true}
                           divider={true}
-                          button={true}
-                          onClick={this.handleOpenExternalLink.bind(
-                            this,
-                            externalReference.url,
-                          )}
+                          button={false}
                         >
                           <ListItemIcon>
-                            <LanguageOutlined />
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
                           </ListItemIcon>
                           <ListItemText
                             primary={`${externalReference.source_name} ${externalReferenceId}`}
-                            secondary={truncate(externalReferenceSecondary, 90)}
+                            secondary={truncate(
+                              externalReference.description,
+                              120,
+                            )}
                           />
                         </ListItem>
                       );
-                    }
-                    return (
-                      <ListItem
-                        key={externalReference.id}
-                        dense={true}
-                        divider={true}
-                        button={false}
-                      >
-                        <ListItemIcon>
-                          <Avatar classes={{ root: classes.avatar }}>
-                            {externalReference.source_name.substring(0, 1)}
-                          </Avatar>
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${externalReference.source_name} ${externalReferenceId}`}
-                          secondary={truncate(
-                            externalReference.description,
-                            120,
-                          )}
-                        />
-                      </ListItem>
-                    );
-                  })}
+                    },
+                  )}
                 </List>
             )}
           </Paper>

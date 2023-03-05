@@ -133,7 +133,9 @@ const FileWorkComponent = (props) => {
                 dense={true}
                 button={true}
                 divider={true}
-                classes={{ root: nested ? classes.nestedNested : classes.nested }}
+                classes={{
+                  root: nested ? classes.nestedNested : classes.nested,
+                }}
                 disabled={work.status === 'deleting'}
               >
                 <ListItemIcon>

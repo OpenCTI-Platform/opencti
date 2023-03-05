@@ -40,7 +40,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const isRuntimeSort = helper?.isRuntimeFieldEnable();
+  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     source_name: {
       label: 'Source name',
@@ -60,7 +60,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     creator: {
       label: 'Creator',
       width: '12%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     created: {
       label: 'Creation date',

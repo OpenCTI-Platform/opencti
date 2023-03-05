@@ -46,9 +46,10 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
     this.setState({
       expandedLines: {
         ...this.state.expandedLines,
-        [lineKey]: this.state.expandedLines[lineKey] !== undefined
-          ? !this.state.expandedLines[lineKey]
-          : false,
+        [lineKey]:
+          this.state.expandedLines[lineKey] !== undefined
+            ? !this.state.expandedLines[lineKey]
+            : false,
       },
     });
   }

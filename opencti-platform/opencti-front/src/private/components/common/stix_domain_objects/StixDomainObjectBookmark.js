@@ -229,7 +229,7 @@ const StixDomainObjectBookmarkFragment = createFragmentContainer(
           name
         }
         ... on AdministrativeArea {
-            name
+          name
         }
         ... on Country {
           name

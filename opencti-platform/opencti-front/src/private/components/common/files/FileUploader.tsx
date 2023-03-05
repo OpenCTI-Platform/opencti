@@ -31,15 +31,30 @@ const fileUploaderEntityMutation = graphql`
 `;
 
 interface FileUploaderProps {
-  entityId: string,
-  onUploadSuccess: (id?: string) => unknown,
-  color: 'inherit' | 'primary' | 'secondary' | 'success' | 'error' | 'info' | 'warning' | undefined,
-  accept?: string,
-  size: 'small' | 'large' | 'medium' | undefined,
-  nameInCallback?: boolean,
+  entityId: string;
+  onUploadSuccess: (id?: string) => unknown;
+  color:
+  | 'inherit'
+  | 'primary'
+  | 'secondary'
+  | 'success'
+  | 'error'
+  | 'info'
+  | 'warning'
+  | undefined;
+  accept?: string;
+  size: 'small' | 'large' | 'medium' | undefined;
+  nameInCallback?: boolean;
 }
 
-const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUploadSuccess, color, accept, size, nameInCallback }) => {
+const FileUploader: FunctionComponent<FileUploaderProps> = ({
+  entityId,
+  onUploadSuccess,
+  color,
+  accept,
+  size,
+  nameInCallback,
+}) => {
   const { t } = useFormatter();
 
   const uploadRef = useRef<HTMLInputElement | null>(null);
@@ -56,14 +71,19 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
       optimisticUpdater: () => {
         setUpload(file.name);
       },
-      onCompleted: (result: FileUploaderEntityMutation$data | FileUploaderGlobalMutation$data) => {
+      onCompleted: (
+        result:
+        | FileUploaderEntityMutation$data
+        | FileUploaderGlobalMutation$data,
+      ) => {
         if (uploadRef.current?.value) {
           uploadRef.current.value = ''; // Reset the upload input
         }
         setUpload(null);
         MESSAGING$.notifySuccess('File successfully uploaded');
         const fileId = entityId
-          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit?.importPush?.id
+          ? (result as FileUploaderEntityMutation$data).stixCoreObjectEdit
+            ?.importPush?.id
           : (result as FileUploaderGlobalMutation$data).uploadImport?.id;
         if (nameInCallback) {
           onUploadSuccess(fileId);
@@ -85,18 +105,12 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
           ref={uploadRef}
           type="file"
           style={{ display: 'none' }}
-          onChange={({
-            target: {
-              validity,
-              files,
-            },
-          }) => {
+          onChange={({ target: { validity, files } }) => {
             const file = files?.item(0);
             if (file && validity.valid) {
               handleUpload(file);
             }
-          }
-          }
+          }}
           accept={accept}
         />
       ) : (
@@ -104,18 +118,12 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({ entityId, onUpload
           ref={uploadRef}
           type="file"
           style={{ display: 'none' }}
-          onChange={({
-            target: {
-              validity,
-              files,
-            },
-          }) => {
+          onChange={({ target: { validity, files } }) => {
             const file = files?.item(0);
             if (file && validity.valid) {
               handleUpload(file);
             }
-          }
-          }
+          }}
         />
       )}
       {upload ? (

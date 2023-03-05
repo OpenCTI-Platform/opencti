@@ -81,13 +81,20 @@ const StixCoreObjectsNumber = ({
   const renderContent = () => {
     const selection = dataSelection[0];
     let types = ['Stix-Core-Object'];
-    if (selection.filters.entity_type && selection.filters.entity_type.length > 0) {
-      if (selection.filters.entity_type.filter((o) => o.id === 'all').length === 0) {
+    if (
+      selection.filters.entity_type
+      && selection.filters.entity_type.length > 0
+    ) {
+      if (
+        selection.filters.entity_type.filter((o) => o.id === 'all').length === 0
+      ) {
         types = selection.filters.entity_type.map((o) => o.id);
       }
     }
     const filters = convertFilters(R.dissoc('entity_type', selection.filters));
-    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0 ? selection.date_attribute : 'created_at';
+    const dateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+      ? selection.date_attribute
+      : 'created_at';
     if (startDate) {
       filters.push({ key: dateAttribute, values: [startDate], operator: 'gt' });
     }

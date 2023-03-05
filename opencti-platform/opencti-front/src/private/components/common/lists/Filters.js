@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import {
+  FiltersVariant,
+  isUniqFilter,
+} from '../../../../utils/filters/filtersUtils';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
 import DialogFilters from './DialogFilters';

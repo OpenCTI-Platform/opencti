@@ -98,7 +98,11 @@ class StixCyberObservableEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableEditionContainer variant={variant} stixCyberObservable={props.stixCyberObservable} handleClose={this.handleClose.bind(this)} />
+                  <StixCyberObservableEditionContainer
+                    variant={variant}
+                    stixCyberObservable={props.stixCyberObservable}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;
@@ -110,13 +114,7 @@ class StixCyberObservableEdition extends Component {
   }
 
   renderInGraph() {
-    const {
-      classes,
-      stixCyberObservableId,
-      open,
-      handleClose,
-      variant,
-    } = this.props;
+    const { classes, stixCyberObservableId, open, handleClose, variant } = this.props;
     return (
       <Drawer
         open={open}
@@ -151,7 +149,8 @@ class StixCyberObservableEdition extends Component {
   }
 
   render() {
-    if (this.props.handleClose) { // in a graph bar
+    if (this.props.handleClose) {
+      // in a graph bar
       return this.renderInGraph();
     }
     return this.renderClassic();

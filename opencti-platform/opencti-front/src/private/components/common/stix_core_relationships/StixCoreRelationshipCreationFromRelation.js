@@ -518,10 +518,7 @@ class StixCoreRelationshipCreationFromRelation extends Component {
     const stixDomainObjectsPaginationOptions = {
       search,
       types: stixCoreObjectTypes
-        ? R.filter(
-          (n) => n !== 'Stix-Cyber-Observable',
-          stixCoreObjectTypes,
-        )
+        ? R.filter((n) => n !== 'Stix-Cyber-Observable', stixCoreObjectTypes)
         : null,
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',

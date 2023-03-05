@@ -39,115 +39,125 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
     map((n) => ({ key: n[0], value: n[1] })),
     filter(
       (n) => n.value
-          && !includes(n.key, ignoredAttributes)
-          && !n.key.startsWith('__'),
+        && !includes(n.key, ignoredAttributes)
+        && !n.key.startsWith('__'),
     ),
   )(stixCyberObservable);
   const file = stixCyberObservable.importFiles
-      && stixCyberObservable.importFiles.edges.length > 0
+    && stixCyberObservable.importFiles.edges.length > 0
     ? stixCyberObservable.importFiles.edges[0].node
     : null;
   return (
-      <div style={{ height: '100%' }} className="break">
-        <Typography variant="h4" gutterBottom={true}>
-          {t('Details')}
-        </Typography>
-        <Paper classes={{ root: classes.paper }} variant="outlined">
-          <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
-            {file && (
-              <Grid item={true} xs={6}>
-                <Typography variant="h3" gutterBottom={true}>
-                  {t('File')}
-                </Typography>
-                <Button
-                  href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                    file.id,
-                  )}`}
-                  variant="outlined"
-                  color="secondary"
-                  size="small"
-                  startIcon={<GetAppOutlined />}
-                >
-                  {t('Download')} ({b(file.size)})
-                </Button>
-              </Grid>
-            )}
+    <div style={{ height: '100%' }} className="break">
+      <Typography variant="h4" gutterBottom={true}>
+        {t('Details')}
+      </Typography>
+      <Paper classes={{ root: classes.paper }} variant="outlined">
+        <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
+          {file && (
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
+                {t('File')}
               </Typography>
-              <ExpandableMarkdown
-                source={stixCyberObservable.x_opencti_description}
-                limit={400}
-              />
+              <Button
+                href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
+                  file.id,
+                )}`}
+                variant="outlined"
+                color="secondary"
+                size="small"
+                startIcon={<GetAppOutlined />}
+              >
+                {t('Download')} ({b(file.size)})
+              </Button>
             </Grid>
-            {observableAttributes.map((observableAttribute) => {
-              if (observableAttribute.key === 'hashes') {
-                return observableAttribute.value.map((hash) => (
-                  <Grid key={hash.algorithm} item={true} xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {hash.algorithm} - hashes
-                    </Typography>
-                    <pre>
-                      <ItemCopy content={hash.hash} />
-                    </pre>
-                  </Grid>
-                ));
-              }
-              if (observableAttribute.key === 'startup_info') {
-                return observableAttribute.value.map((hash) => (
-                  <Grid key={hash.key} item={true} xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {hash.key} - startup_info
-                    </Typography>
-                    <pre>
-                      <ItemCopy content={hash.value} />
-                    </pre>
-                  </Grid>
-                ));
-              }
-              if (isVocabularyField(stixCyberObservable.entity_type, observableAttribute.key)) {
-                return (
-                  <Grid key={observableAttribute.key} item={true} xs={6}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t(observableAttribute.key)}
-                    </Typography>
-                    <ItemOpenVocab
-                      small={false}
-                      type={fieldToCategory(stixCyberObservable.entity_type, observableAttribute.key)}
-                      value={observableAttribute.value}
-                    />
-                  </Grid>
-                );
-              }
-              let finalValue = observableAttribute.value;
-              if (includes(observableAttribute.key, dateAttributes)) {
-                finalValue = fldt(finalValue);
-              }
-              if (finalValue === true) {
-                finalValue = 'TRUE';
-              } else if (finalValue === false) {
-                finalValue = 'FALSE';
-              }
-              if (Array.isArray(finalValue)) {
-                finalValue = finalValue.join('\n');
-              }
+          )}
+          <Grid item={true} xs={6}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Description')}
+            </Typography>
+            <ExpandableMarkdown
+              source={stixCyberObservable.x_opencti_description}
+              limit={400}
+            />
+          </Grid>
+          {observableAttributes.map((observableAttribute) => {
+            if (observableAttribute.key === 'hashes') {
+              return observableAttribute.value.map((hash) => (
+                <Grid key={hash.algorithm} item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {hash.algorithm} - hashes
+                  </Typography>
+                  <pre>
+                    <ItemCopy content={hash.hash} />
+                  </pre>
+                </Grid>
+              ));
+            }
+            if (observableAttribute.key === 'startup_info') {
+              return observableAttribute.value.map((hash) => (
+                <Grid key={hash.key} item={true} xs={6}>
+                  <Typography variant="h3" gutterBottom={true}>
+                    {hash.key} - startup_info
+                  </Typography>
+                  <pre>
+                    <ItemCopy content={hash.value} />
+                  </pre>
+                </Grid>
+              ));
+            }
+            if (
+              isVocabularyField(
+                stixCyberObservable.entity_type,
+                observableAttribute.key,
+              )
+            ) {
               return (
                 <Grid key={observableAttribute.key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
-                    {t(observableAttribute.key.replace('attribute_', ''))}
+                    {t(observableAttribute.key)}
                   </Typography>
-                  <pre>
-                    <ItemCopy content={finalValue || '-'} />
-                  </pre>
+                  <ItemOpenVocab
+                    small={false}
+                    type={fieldToCategory(
+                      stixCyberObservable.entity_type,
+                      observableAttribute.key,
+                    )}
+                    value={observableAttribute.value}
+                  />
                 </Grid>
               );
-            })}
-          </Grid>
-          <Divider />
-          <StixCyberObservableIndicators stixCyberObservable={stixCyberObservable} />
-        </Paper>
-      </div>
+            }
+            let finalValue = observableAttribute.value;
+            if (includes(observableAttribute.key, dateAttributes)) {
+              finalValue = fldt(finalValue);
+            }
+            if (finalValue === true) {
+              finalValue = 'TRUE';
+            } else if (finalValue === false) {
+              finalValue = 'FALSE';
+            }
+            if (Array.isArray(finalValue)) {
+              finalValue = finalValue.join('\n');
+            }
+            return (
+              <Grid key={observableAttribute.key} item={true} xs={6}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t(observableAttribute.key.replace('attribute_', ''))}
+                </Typography>
+                <pre>
+                  <ItemCopy content={finalValue || '-'} />
+                </pre>
+              </Grid>
+            );
+          })}
+        </Grid>
+        <Divider />
+        <StixCyberObservableIndicators
+          stixCyberObservable={stixCyberObservable}
+        />
+      </Paper>
+    </div>
   );
 };
 

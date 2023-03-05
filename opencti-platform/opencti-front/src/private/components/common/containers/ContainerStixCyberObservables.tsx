@@ -3,7 +3,9 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../../components/list_lines/ListLines';
-import ContainerStixCyberObservablesLines, { containerStixCyberObservablesLinesQuery } from './ContainerStixCyberObservablesLines';
+import ContainerStixCyberObservablesLines, {
+  containerStixCyberObservablesLinesQuery,
+} from './ContainerStixCyberObservablesLines';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
 import { defaultValue } from '../../../../utils/Graph';
@@ -72,7 +74,9 @@ interface ContainerStixCyberObservablesComponentProps {
   container: ContainerStixCyberObservables_container$data;
 }
 
-const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyberObservablesComponentProps> = ({ container }) => {
+const ContainerStixCyberObservablesComponent: FunctionComponent<
+ContainerStixCyberObservablesComponentProps
+> = ({ container }) => {
   const classes = useStyles();
   const LOCAL_STORAGE_KEY = `view-container-${container.id}-stix-cyber-observables`;
   const {
@@ -121,24 +125,33 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   // Format filters Front (object)
   const toolbarFilters = {
     containedBy: [{ id: container.id, value: defaultValue(container) }],
-    entity_type: types && types.length > 0 ? types.map((n) => ({ id: n, value: n })) : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
+    entity_type:
+      types && types.length > 0
+        ? types.map((n) => ({ id: n, value: n }))
+        : [{ id: 'Stix-Cyber-Observable', value: 'Stix-Cyber-Observable' }],
     ...filters,
   };
   // Format filters query (options + filters)
   const paginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
-    filters: convertFilters(toolbarFilters) as StixObjectOrStixRelationshipsFiltering[],
+    filters: convertFilters(
+      toolbarFilters,
+    ) as StixObjectOrStixRelationshipsFiltering[],
   };
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;
   if (selectAll) {
-    numberOfSelectedElements = (numberOfElements?.original ?? 0) - Object.keys(deSelectedElements).length;
+    numberOfSelectedElements = (numberOfElements?.original ?? 0)
+      - Object.keys(deSelectedElements).length;
   }
 
   const handleToggle = (type: string) => {
     if (types?.includes(type)) {
-      handleAddProperty('types', types.filter((x) => x !== type));
+      handleAddProperty(
+        'types',
+        types.filter((x) => x !== type),
+      );
     } else {
       handleAddProperty('types', types ? [...types, type] : [type]);
     }
@@ -157,7 +170,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       filters: toolbarFilters,
       searchTerm: searchTerm ?? '',
       query: ContainerStixCyberObservablesLinesSearchQuery,
-      selectedValues: Object.values(selectedElements).map(({ observable_value }) => observable_value),
+      selectedValues: Object.values(selectedElements).map(
+        ({ observable_value }) => observable_value,
+      ),
       deselectedIds: Object.values(deSelectedElements).map((o) => o.id),
       elementId: container.id,
       getValuesForCopy,
@@ -170,7 +185,9 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   };
 
   const handleToggleSelectEntity = (
-    entity: StixCyberObservableLine_node$data | StixCyberObservableLine_node$data[],
+    entity:
+    | StixCyberObservableLine_node$data
+    | StixCyberObservableLine_node$data[],
     event: React.SyntheticEvent,
     forceRemove: StixCyberObservableLine_node$data[],
   ) => {
@@ -232,7 +249,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
   };
 
   const buildColumns = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -242,7 +259,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       observable_value: {
         label: 'Value',
         width: '30%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -252,7 +269,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       createdBy: {
         label: 'Creator',
         width: '15%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       created_at: {
         label: 'Creation date',
@@ -261,7 +278,7 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
     };
   };
@@ -275,75 +292,75 @@ const ContainerStixCyberObservablesComponent: FunctionComponent<ContainerStixCyb
     <UserContext.Consumer>
       {({ helper }) => (
         <ExportContextProvider>
-        <div className={classes.container}>
-          <ListLines
-            sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={buildColumns(helper)}
-            handleSort={handleSort}
-            handleSearch={handleSearch}
-            secondaryAction={true}
-            numberOfElements={numberOfElements}
-            handleAddFilter={handleAddFilter}
-            handleRemoveFilter={handleRemoveFilter}
-            handleToggleSelectAll={handleToggleSelectAll}
-            selectAll={selectAll}
-            iconExtension={true}
-            handleToggleExports={handleToggleExports}
-            exportEntityType="Stix-Cyber-Observable"
-            openExports={openExports}
-            exportContext={`of-container-${container.id}`}
-            filters={filters}
-            availableFilterKeys={[
-              'labelledBy',
-              'markedBy',
-              'created_at_start_date',
-              'created_at_end_date',
-              'x_opencti_score',
-              'createdBy',
-              'sightedBy',
-            ]}
-            paginationOptions={paginationOptions}
-          >
-            {queryRef && (
-              <React.Suspense
-                fallback={<Loader variant={LoaderVariant.inElement} />}
-              >
-                <ContainerStixCyberObservablesLines
-                  queryRef={queryRef}
-                  paginationOptions={paginationOptions}
-                  dataColumns={buildColumns(helper)}
-                  setNumberOfElements={handleSetNumberOfElements}
-                  onTypesChange={handleToggle}
-                  openExports={openExports}
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  onToggleEntity={handleToggleSelectEntity}
-                  selectAll={selectAll}
-                  setSelectedElements={setSelectedElements}
-                />
-              </React.Suspense>
-            )}
-          </ListLines>
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            search={searchTerm}
-            filters={toolbarFilters}
-            handleClearSelectedElements={handleClearSelectedElements}
-            variant="large"
-            container={container}
-            handleCopy={handleCopy}
-          />
-          <StixCyberObservablesRightBar
-            types={types}
-            handleToggle={handleToggle}
-            handleClear={handleClear}
-            openExports={openExports}
-          />
-        </div>
+          <div className={classes.container}>
+            <ListLines
+              sortBy={sortBy}
+              orderAsc={orderAsc}
+              dataColumns={buildColumns(helper)}
+              handleSort={handleSort}
+              handleSearch={handleSearch}
+              secondaryAction={true}
+              numberOfElements={numberOfElements}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={handleRemoveFilter}
+              handleToggleSelectAll={handleToggleSelectAll}
+              selectAll={selectAll}
+              iconExtension={true}
+              handleToggleExports={handleToggleExports}
+              exportEntityType="Stix-Cyber-Observable"
+              openExports={openExports}
+              exportContext={`of-container-${container.id}`}
+              filters={filters}
+              availableFilterKeys={[
+                'labelledBy',
+                'markedBy',
+                'created_at_start_date',
+                'created_at_end_date',
+                'x_opencti_score',
+                'createdBy',
+                'sightedBy',
+              ]}
+              paginationOptions={paginationOptions}
+            >
+              {queryRef && (
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <ContainerStixCyberObservablesLines
+                    queryRef={queryRef}
+                    paginationOptions={paginationOptions}
+                    dataColumns={buildColumns(helper)}
+                    setNumberOfElements={handleSetNumberOfElements}
+                    onTypesChange={handleToggle}
+                    openExports={openExports}
+                    selectedElements={selectedElements}
+                    deSelectedElements={deSelectedElements}
+                    onToggleEntity={handleToggleSelectEntity}
+                    selectAll={selectAll}
+                    setSelectedElements={setSelectedElements}
+                  />
+                </React.Suspense>
+              )}
+            </ListLines>
+            <ToolBar
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              numberOfSelectedElements={numberOfSelectedElements}
+              selectAll={selectAll}
+              search={searchTerm}
+              filters={toolbarFilters}
+              handleClearSelectedElements={handleClearSelectedElements}
+              variant="large"
+              container={container}
+              handleCopy={handleCopy}
+            />
+            <StixCyberObservablesRightBar
+              types={types}
+              handleToggle={handleToggle}
+              handleClear={handleClear}
+              openExports={openExports}
+            />
+          </div>
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

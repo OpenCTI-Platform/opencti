@@ -499,11 +499,16 @@ class StixCoreRelationshipContainer extends Component {
                   </Typography>
                   <div>
                     {(stixCoreRelationship.creators ?? []).map((c) => {
-                      return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
-                        <ItemCreator creator={c} />
-                      </div>;
+                      return (
+                        <div
+                          key={`creator-${c.id}`}
+                          style={{ float: 'left', marginRight: '10px' }}
+                        >
+                          <ItemCreator creator={c} />
+                        </div>
+                      );
                     })}
-                    <div style={{ clear: 'both' }}/>
+                    <div style={{ clear: 'both' }} />
                   </div>
                 </Grid>
               </Grid>
@@ -512,7 +517,7 @@ class StixCoreRelationshipContainer extends Component {
         </Grid>
         <div>
           {stixCoreRelationship.x_opencti_inferences !== null ? (
-              <div style={{ margin: '50px 0 0 0' }}>
+            <div style={{ margin: '50px 0 0 0' }}>
               <Typography variant="h4" gutterBottom={true}>
                 {t('Inference explanation')} (
                 {stixCoreRelationship.x_opencti_inferences.length})

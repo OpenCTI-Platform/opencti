@@ -299,28 +299,20 @@ class LocationCreation extends Component {
                     fullWidth={true}
                     containerstyle={{ marginTop: 20, width: '100%' }}
                   >
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>
-                    ) : (
-                      ''
                     )}
                     <MenuItem value="Organization">
                       {t('Organization')}
                     </MenuItem>
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Region">{t('Region')}</MenuItem>
-                    ) : (
-                      ''
                     )}
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="Country">{t('Country')}</MenuItem>
-                    ) : (
-                      ''
                     )}
-                    {!onlyAuthors ? (
+                    {!onlyAuthors && (
                       <MenuItem value="City">{t('City')}</MenuItem>
-                    ) : (
-                      ''
                     )}
                     <MenuItem value="Individual">{t('Individual')}</MenuItem>
                   </Field>

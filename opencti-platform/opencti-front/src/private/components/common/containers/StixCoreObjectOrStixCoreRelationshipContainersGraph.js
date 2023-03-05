@@ -545,10 +545,8 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           </div>
         </div>
         <div className="clearfix" />
-        {(selectedEntities.length > 0) && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-          />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
         <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}

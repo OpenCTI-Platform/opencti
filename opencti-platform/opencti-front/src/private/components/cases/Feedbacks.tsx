@@ -70,7 +70,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -85,12 +85,12 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -110,7 +110,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       objectMarking: {
         label: 'Marking',
         width: '8%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
     };
     const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(

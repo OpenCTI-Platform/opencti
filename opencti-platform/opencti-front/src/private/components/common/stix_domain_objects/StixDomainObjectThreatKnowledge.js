@@ -7,7 +7,11 @@ import CardContent from '@mui/material/CardContent';
 import Grid from '@mui/material/Grid';
 import withStyles from '@mui/styles/withStyles';
 import { HexagonMultipleOutline, ShieldSearch } from 'mdi-material-ui';
-import { DescriptionOutlined, DeviceHubOutlined, SettingsOutlined } from '@mui/icons-material';
+import {
+  DescriptionOutlined,
+  DeviceHubOutlined,
+  SettingsOutlined,
+} from '@mui/icons-material';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import * as R from 'ramda';
@@ -26,8 +30,7 @@ import inject18n from '../../../../components/i18n';
 import ItemNumberDifference from '../../../../components/ItemNumberDifference';
 import { resolveLink } from '../../../../utils/Entity';
 import StixCoreObjectReportsHorizontalBars from '../../analysis/reports/StixCoreObjectReportsHorizontalBars';
-import StixCoreObjectStixCoreRelationshipsCloud
-  from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
+import StixCoreObjectStixCoreRelationshipsCloud from '../stix_core_relationships/StixCoreObjectStixCoreRelationshipsCloud';
 import StixDomainObjectGlobalKillChain from './StixDomainObjectGlobalKillChain';
 import StixDomainObjectTimeline from './StixDomainObjectTimeline';
 import Loader from '../../../../components/Loader';
@@ -493,7 +496,9 @@ class StixDomainObjectThreatKnowledge extends Component {
                   t(`filter_${currentFilter[0]}`),
                   20,
                 )}`;
-                const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                const localFilterMode = currentFilter[0].endsWith('not_eq')
+                  ? t('AND')
+                  : t('OR');
                 const values = (
                   <span>
                     {R.map(

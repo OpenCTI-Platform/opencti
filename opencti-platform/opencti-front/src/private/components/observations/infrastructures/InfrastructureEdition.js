@@ -86,7 +86,10 @@ class InfrastructureEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <InfrastructureEditionContainer infrastructure={props.infrastructure} handleClose={this.handleClose.bind(this)} />
+                  <InfrastructureEditionContainer
+                    infrastructure={props.infrastructure}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

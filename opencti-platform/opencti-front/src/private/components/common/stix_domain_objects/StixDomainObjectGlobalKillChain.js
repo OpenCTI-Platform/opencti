@@ -346,7 +346,7 @@ const StixDomainObjectGlobalKillChain = createRefetchContainer(
                   name
                 }
                 ... on AdministrativeArea {
-                    name
+                  name
                 }
                 ... on Country {
                   name

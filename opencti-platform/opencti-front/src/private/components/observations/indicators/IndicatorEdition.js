@@ -52,37 +52,40 @@ const IndicatorEdition = ({ indicatorId }) => {
   };
 
   return (
-      <div>
-        <Fab
-          onClick={handleOpen}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={open}
-          anchor="right"
-          sx={{ zIndex: 1202 }}
-          elevation={1}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
-          <QueryRenderer
-            query={indicatorEditionQuery}
-            variables={{ id: indicatorId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <IndicatorEditionContainer indicator={props.indicator} handleClose={handleClose} />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
-      </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Edit"
+        className={classes.editButton}
+      >
+        <Edit />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        sx={{ zIndex: 1202 }}
+        elevation={1}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <QueryRenderer
+          query={indicatorEditionQuery}
+          variables={{ id: indicatorId }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <IndicatorEditionContainer
+                  indicator={props.indicator}
+                  handleClose={handleClose}
+                />
+              );
+            }
+            return <Loader variant="inElement" />;
+          }}
+        />
+      </Drawer>
+    </div>
   );
 };
 

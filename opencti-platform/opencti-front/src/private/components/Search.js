@@ -183,7 +183,7 @@ class Search extends Component {
       creator: {
         label: 'Creator',
         width: '12%',
-        isSortable: true,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',

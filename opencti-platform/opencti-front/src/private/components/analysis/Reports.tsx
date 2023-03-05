@@ -1,4 +1,4 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useContext } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
@@ -12,7 +12,6 @@ import {
   ReportsLinesPaginationQuery$variables,
 } from './reports/__generated__/ReportsLinesPaginationQuery.graphql';
 import { Filters } from '../../../components/list_lines';
-import { ModuleHelper } from '../../../utils/platformModulesHelper';
 import { ReportLine_node$data } from './reports/__generated__/ReportLine_node.graphql';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -32,6 +31,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
+  const { helper } = useContext(UserContext);
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -87,7 +87,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     reportsLinesQuery,
     paginationOptions,
   );
-  const renderLines = (helper: ModuleHelper | undefined) => {
+  const renderLines = () => {
     let exportContext = null;
     if (objectId) {
       exportContext = `of-entity-${objectId}`;
@@ -99,7 +99,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       ...renderFilters,
       entity_type: [{ id: 'Report', value: 'Report' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Title',
@@ -114,12 +114,12 @@ const Reports: FunctionComponent<ReportsProps> = ({
       createdBy: {
         label: 'Author',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       creator: {
         label: 'Creators',
         width: '12%',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -138,7 +138,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       },
       objectMarking: {
         label: 'Marking',
-        isSortable: isRuntimeSort ?? false,
+        isSortable: isRuntimeSort,
         width: '8%',
       },
     };
@@ -220,18 +220,14 @@ const Reports: FunctionComponent<ReportsProps> = ({
     );
   };
   return (
-    <UserContext.Consumer>
-      {({ helper }) => (
-        <ExportContextProvider>
+      <ExportContextProvider>
           <div>
-            {renderLines(helper)}
+            {renderLines()}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ReportCreation paginationOptions={paginationOptions} />
             </Security>
           </div>
-        </ExportContextProvider>
-      )}
-    </UserContext.Consumer>
+      </ExportContextProvider>
   );
 };
 
