@@ -77,7 +77,8 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
   const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
-  return deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+  await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+  return statusTemplateId;
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
   await setEditContext(user, statusTemplateId, input);

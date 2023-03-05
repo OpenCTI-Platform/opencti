@@ -36,7 +36,8 @@ export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
   if (element) {
     if (isStixObject(element.entity_type) || isStixRelationship(element.entity_type)) {
-      return deleteElementById(context, user, element.id, element.entity_type);
+      await deleteElementById(context, user, element.id, element.entity_type);
+      return element.id;
     }
     throw UnsupportedError('This method can only delete Stix element');
   }

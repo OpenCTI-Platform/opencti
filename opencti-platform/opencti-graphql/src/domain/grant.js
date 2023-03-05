@@ -1,5 +1,5 @@
 import { assoc, dissoc, map, propOr, pipe } from 'ramda';
-import { createEntity, createRelation, deleteElementById } from '../database/middleware';
+import { createEntity, createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
@@ -31,5 +31,3 @@ export const addRole = async (context, user, role) => {
   logAudit.info(user, ROLE_CREATION, { role });
   return roleEntity;
 };
-
-export const roleDelete = (context, user, roleId) => deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);

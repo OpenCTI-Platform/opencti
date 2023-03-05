@@ -102,7 +102,8 @@ export const addStixSightingRelationship = async (context, user, stixSightingRel
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].ADDED_TOPIC, created, user);
 };
 export const stixSightingRelationshipDelete = async (context, user, stixSightingRelationshipId) => {
-  return deleteElementById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  await deleteElementById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
+  return stixSightingRelationshipId;
 };
 export const stixSightingRelationshipEditField = async (context, user, relationshipId, input, opts) => {
   const { element } = await updateAttribute(context, user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);

@@ -3251,7 +3251,7 @@ export const deleteElementById = async (context, user, elementId, type, opts = {
     throw FunctionalError('You need to specify a type when deleting an entity');
   }
   const { element: deleted } = await internalDeleteElementById(context, user, elementId, opts);
-  return deleted.internal_id;
+  return deleted;
 };
 export const deleteInferredRuleElement = async (rule, instance, deletedDependencies, opts = {}) => {
   const context = executionContext(rule.name, RULE_MANAGER_USER);

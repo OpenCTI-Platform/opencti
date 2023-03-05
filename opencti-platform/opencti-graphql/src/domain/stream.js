@@ -76,8 +76,9 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const streamCollectionDelete = async (context, user, collectionId) => {
-  const elementId = await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
-  return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, elementId, user);
+  const element = await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
+  await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, element, user);
+  return collectionId;
 };
 export const streamCollectionCleanContext = async (context, user, collectionId) => {
   await delEditContext(user, collectionId);
