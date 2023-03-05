@@ -89,12 +89,13 @@ export const operatingSystems: RelationRefDefinition = {
   mandatoryType: 'no',
   multiple: true,
 };
-export const sample: RelationRefDefinition = {
+
+export const samples: RelationRefDefinition = {
   inputName: INPUT_SAMPLE,
   databaseName: RELATION_SAMPLE,
-  stixName: 'sample_ref',
+  stixName: 'sample_refs',
   mandatoryType: 'no',
-  multiple: false,
+  multiple: true,
 };
 
 export const contains: RelationRefDefinition = {
@@ -289,7 +290,7 @@ export const serviceDlls: RelationRefDefinition = {
 
 export const STIX_CYBER_OBSERVABLE_RELATIONSHIPS: RelationRefDefinition[] = [
   operatingSystems,
-  sample,
+  samples,
   contains,
   resolvesTo,
   belongsTo,

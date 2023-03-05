@@ -41,6 +41,7 @@ import {
   objectOrganization,
   objects
 } from '../../schema/stixMetaRelationship';
+import { operatingSystems, samples } from '../../schema/stixCyberObservableRelationship';
 
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_DOMAIN_OBJECT, [createdBy, objectMarking, objectLabel, externalReferences]);
 schemaRelationsRefDefinition.registerRelationsRef(ABSTRACT_STIX_CYBER_OBSERVABLE, [createdBy, objectMarking, objectLabel, externalReferences]);
@@ -53,7 +54,7 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CONTAINER, [object
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_ATTACK_PATTERN, [killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INDICATOR, [killChainPhases]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_INFRASTRUCTURE, [killChainPhases, objectOrganization]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [killChainPhases, objectOrganization]);
+schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [samples, operatingSystems, killChainPhases, objectOrganization]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_TOOL, [killChainPhases]);
 
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_CAMPAIGN, [objectOrganization]);

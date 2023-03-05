@@ -15,7 +15,6 @@ import {
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE
 } from '../../schema/stixCyberObservable';
-import { ENTITY_TYPE_MALWARE } from '../../schema/stixDomainObject';
 import {
   bcc,
   belongsTo,
@@ -33,12 +32,10 @@ import {
   image,
   obsContent,
   openedConnections,
-  operatingSystems,
   parent,
   parentDirectory,
   rawEmail,
   resolvesTo,
-  sample,
   sender,
   serviceDlls,
   src,
@@ -62,4 +59,3 @@ schemaRelationsRefDefinition.registerRelationsRef(ENTITY_PROCESS, [openedConnect
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_KEY, [values, creatorUser]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_WINDOWS_REGISTRY_VALUE_TYPE, [values]);
 schemaRelationsRefDefinition.registerRelationsRef(ENTITY_HASHED_OBSERVABLE_ARTIFACT, [rawEmail, bodyRaw, obsContent]);
-schemaRelationsRefDefinition.registerRelationsRef(ENTITY_TYPE_MALWARE, [sample, operatingSystems]);

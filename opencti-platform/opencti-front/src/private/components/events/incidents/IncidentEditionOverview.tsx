@@ -166,6 +166,8 @@ IncidentEditionOverviewProps
   const incident = useFragment(incidentEditionOverviewFragment, incidentRef);
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
+    incident_type: Yup.string().nullable(),
+    severity: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
@@ -235,7 +237,6 @@ IncidentEditionOverviewProps
   const initialValues = {
     name: incident.name,
     description: incident.description,
-    source: incident.source,
     incident_type: incident.incident_type,
     severity: incident.severity,
     createdBy: convertCreatedBy(incident) as Option,
@@ -322,19 +323,6 @@ IncidentEditionOverviewProps
             onSubmit={handleSubmitField}
             helperText={
               <SubscriptionFocus context={context} fieldName="description" />
-            }
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="source"
-            label={t('Source')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-            onFocus={editor.changeFocus}
-            onSubmit={handleSubmitField}
-            helperText={
-              <SubscriptionFocus context={context} fieldName="Source" />
             }
           />
           <ObjectAssigneeField
