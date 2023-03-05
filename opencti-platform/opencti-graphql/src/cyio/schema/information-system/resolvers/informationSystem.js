@@ -13,7 +13,6 @@ import {
 } from '../domain/informationSystem.js';
 import { findDescriptionBlockByIri } from '../domain/descriptionBlock.js';
 import { findInformationTypeByIri } from '../domain/informationType.js';
-// import { findSystemImplementation } from '../domain/systemImplementation.js';
 
 
 const cyioInformationSystemResolvers = {

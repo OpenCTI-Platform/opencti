@@ -2,11 +2,28 @@ import conf from '../../../../config/conf';
 import {
   findAllInformationTypes,
   findInformationTypeById,
+  findInformationTypeByIri,
   createInformationType,
   deleteInformationTypeById,
   editInformationTypeById,
+  attachToInformationType,
+  detachFromInformationType,
+  // 
+  findAllImpactDefinitions,
+  findImpactDefinitionById,
   findImpactDefinitionByIri,
+  createImpactDefinition,
+  deleteImpactDefinitionById,
+  editImpactDefinitionById,
+  // 
+  findAllCategorizations,
+  findCategorizationById,
   findCategorizationByIri,
+  createCategorization,
+  deleteCategorizationById,
+  editCategorizationById,
+  attachToCategorization,
+  detachFromCategorization,
 } from '../domain/informationType.js';
 
 const cyioInformationTypeResolvers = {
@@ -14,6 +31,12 @@ const cyioInformationTypeResolvers = {
     // Information System
     informationTypes: async (_, args, { dbName, dataSources, selectMap }) => findAllInformationTypes(args, dbName, dataSources, selectMap.getNode('node')),
     informationType: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationTypeById(id, dbName, dataSources, selectMap.getNode('informationType')),
+    // Impact Definition
+    impactDefinitions: async (_, args, { dbName, dataSources, selectMap }) => findAllImpactDefinitions(args, dbName, dataSources, selectMap.getNode('node')),
+    impactDefinition: async (_, { id }, { dbName, dataSources, selectMap }) => findImpactDefinitionById(id, dbName, dataSources, selectMap.getNode('impactDefinition')),
+    // Categorizations
+    categorizations: async (_, args, { dbName, dataSources, selectMap }) => findAllCategorizations(args, dbName, dataSources, selectMap.getNode('node')),
+    categorization: async (_, { id }, { dbName, dataSources, selectMap }) => findCategorizationById(id, dbName, dataSources, selectMap.getNode('categorization')),
   },
   Mutation: {
     // Information System
@@ -23,6 +46,18 @@ const cyioInformationTypeResolvers = {
     editInformationType: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editInformationTypeById(id, input, dbName, dataSources, selectMap.getNode("editInformationType"), schema),
     attachToInformationType: async (_, { id, field, entryId }, { dbName, dataSources }) => attachToInformationType(id, field, entryId ,dbName, dataSources),
     detachFromInformationType: async (_, { id, field, entryId }, { dbName, dataSources }) => detachFromInformationType(id, field, entryId ,dbName, dataSources),
+    // Impact Definition
+    createImpactDefinition: async (_, { input }, { dbName, selectMap, dataSources }) => createImpactDefinition(input, dbName, dataSources, selectMap.getNode("createImpactDefinition")),
+    deleteImpactDefinition: async (_, { id }, { dbName, dataSources }) => deleteImpactDefinitionById( id, dbName, dataSources),
+    deleteImpactDefinitions: async (_, { ids }, { dbName, dataSources }) => deleteImpactDefinitionById( ids, dbName, dataSources),
+    editImpactDefinition: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editImpactDefinitionById(id, input, dbName, dataSources, selectMap.getNode("editImpactDefinition"), schema),
+    // Categorization
+    createCategorization: async (_, { input }, { dbName, selectMap, dataSources }) => createCategorization(input, dbName, dataSources, selectMap.getNode("createCategorization")),
+    deleteCategorization: async (_, { id }, { dbName, dataSources }) => deleteCategorizationById( id, dbName, dataSources),
+    deleteCategorizations: async (_, { ids }, { dbName, dataSources }) => deleteCategorizationById( ids, dbName, dataSources),
+    editCategorization: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editCategorizationById(id, input, dbName, dataSources, selectMap.getNode("editCategorization"), schema),
+    attachToCategorization: async (_, { id, field, entryId }, { dbName, dataSources }) => attachToCategorization(id, field, entryId ,dbName, dataSources),
+    detachFromCategorization: async (_, { id, field, entryId }, { dbName, dataSources }) => detachFromCategorization(id, field, entryId ,dbName, dataSources),
   },
   InformationType: {
     categorizations: async (parent, _, { dbName, dataSources, selectMap }) => {
@@ -82,6 +117,15 @@ const cyioInformationTypeResolvers = {
       return results;
     },
 	},
+  Categorization: {
+    information_type: async (parent, _, { dataSources, selectMap }) => {
+      if (parent.information_type_iri === undefined) return null;
+      let dbName = conf.get('app:database:context') || 'cyber-context';
+      let infoType = findInformationTypeByIri(parent.information_type_iri, dbName, dataSources, selectMap.getNode('information_type'));
+      if (infoType === undefined || infoType === null) return null;
+      return infoType;
+    },
+  },
   // Map enum GraphQL values to data model required values
   FIPS199: {
     fips_199_low: 'fips-199-low',

@@ -36,6 +36,7 @@ import {
   deleteCategorizationByIriQuery,
   attachToCategorizationQuery,
   detachFromCategorizationQuery,
+  getCategorizationIri,
 } from '../schema/sparql/informationType.js';
 import {
   singularizeInformationTypeCatalogSchema,
@@ -136,7 +137,7 @@ export const findAllInformationTypes = async (args, dbName, dataSources, select 
 
     if (select.includes('display_name')) {
       let display_name = (resultItem.identifier ? resultItem.identifier : '') + "  " +
-                          (resultItem.title ? result.title : '');
+                          (resultItem.title ? resultItem.title : '');
       display_name = display_name.trim();
       if (display_name.length > 0) response[0].display_name = display_name;
     }
@@ -222,6 +223,7 @@ export const createInformationType = async (input, dbName, dataSources, select) 
 		'confidentiality_impact': { values: input.confidentiality_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery },
 		'integrity_impact': { values: input.integrity_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery} ,
 		'availability_impact': { values: input.availability_impact, props: {}, objectType: 'impact-definition', insertFunction: insertImpactDefinitionQuery },
+    'categorizations': { values: input.categorizations, props: {}, objectType: 'categorization', insertFunction: insertCategorizationQuery },
   };
 	for (let [fieldName, fieldInfo] of Object.entries(nestedDefinitions)) {
     if (fieldInfo.values === undefined || fieldInfo.values === null) continue;
@@ -244,9 +246,9 @@ export const createInformationType = async (input, dbName, dataSources, select) 
 
   // Collect all the referenced objects and remove them from input array
   let objectReferences = {
-    'categorizations': { ids: input.categorizations, objectType: 'categorization' },
+    // 'categorizations': { ids: input.categorizations, objectType: 'categorization' },
   };
-  if (input.categorizations) delete input.categorizations;
+  // if (input.categorizations) delete input.categorizations;
   
   // create the Information Type object
   let response;
@@ -262,7 +264,7 @@ export const createInformationType = async (input, dbName, dataSources, select) 
     throw e
   }
 
-  // Attach any impact definitions
+  // Attach any nested definitions
   for (let [key, value] of Object.entries(nestedDefinitions)) {
 		let itemName = value.objectType.replace(/-/g, ' ');
     if (Object.keys(value.props).length !== 0 ) {
@@ -347,7 +349,7 @@ export const createInformationType = async (input, dbName, dataSources, select) 
 };
 
 export const deleteInformationTypeById = async ( id, dbName, dataSources ) => {
-  let select = ['iri','id','object_type','confidentiality_impact','integrity_impact','availability_impact'];
+  let select = ['iri','id','object_type','confidentiality_impact','integrity_impact','availability_impact','categorizations'];
   let idArray = [];
   if (!Array.isArray(id)) {
     idArray = [id];
@@ -375,48 +377,29 @@ export const deleteInformationTypeById = async ( id, dbName, dataSources ) => {
     }
     if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${itemId}`);
 
-    // Delete any associated confidentiality impact
-    if (response[0].confidentiality_impact ) {
-      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].confidentiality_impact);
-      try {
-        let results = await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery,
-          queryId: "Delete Confidentiality Impact Definition"
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
-      }
-    }
-
-    // Delete any associated integrity impact
-    if (response[0].integrity_impact ) {
-      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].integrity_impact);
-      try {
-        let results = await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery,
-          queryId: "Delete Integrity Impact Definition"
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
-      }
-    }
-    
-    // Delete any associated availability impact
-    if (response[0].availability_impact ) {
-      let sparqlQuery = deleteImpactDefinitionByIriQuery(response[0].availability_impact);
-      try {
-        let results = await dataSources.Stardog.delete({
-          dbName,
-          sparqlQuery,
-          queryId: "Delete Availability Impact Definition"
-        });
-      } catch (e) {
-        console.log(e)
-        throw e
+    let infoType = response[0];
+    let nestedReferences = {
+      'confidentiality_impact': { iris: infoType.confidentiality_impact, deleteFunction: deleteImpactDefinitionByIriQuery },
+      'integrity_impact': { iris: infoType.integrity_impact, deleteFunction: deleteImpactDefinitionByIriQuery },
+      'availability_impact': { iris: infoType.availability_impact, deleteFunction: deleteImpactDefinitionByIriQuery },
+      'categorizations': { iris: infoType.categorizations, deleteFunction: deleteCategorizationByIriQuery },
+    };
+    // delete any nested nodes that are private to the information system
+    for (let [fieldName, fieldInfo] of Object.entries(nestedReferences)) {
+      if (fieldInfo.iris === undefined || fieldInfo.iris === null) continue;
+      if (!Array.isArray(fieldInfo.iris)) fieldInfo.iris = [fieldInfo.iris];
+      for( let nestedIri of fieldInfo.iris) {
+        let sparqlQuery = fieldInfo.deleteFunction(nestedIri);
+        try {
+          let results = await dataSources.Stardog.delete({
+            dbName,
+            sparqlQuery,
+            queryId: `Delete ${fieldName}`
+          });
+        } catch (e) {
+          console.log(e)
+          throw e
+        }
       }
     }
 
@@ -801,7 +784,7 @@ export const findImpactDefinitionByIri = async (iri, dbName, dataSources, select
   return reducer(response[0]);  
 };
 
-export const findAllImpactDefinitionEntries = async (args, dbName, dataSources, select ) => {
+export const findAllImpactDefinitions = async (args, dbName, dataSources, select ) => {
   const sparqlQuery = selectAllImpactDefinitionsQuery(select, args);
   let response;
   try {
@@ -1333,7 +1316,7 @@ export const findCategorizationByIri = async (iri, dbName, dataSources, select) 
   return reducer(response[0]);  
 };
 
-export const findAllCategorizationEntries = async (args, dbName, dataSources, select ) => {
+export const findAllCategorizations = async (args, dbName, dataSources, select ) => {
   const sparqlQuery = selectAllCategorizationsQuery(select, args);
   let response;
   try {
@@ -1455,8 +1438,8 @@ export const createCategorization = async (input, dbName, dataSources, selectMap
   delete input.system;
 
   // check if catalog's information type exists
-  if (!checkIfValidUUID(input.information_type_id)) throw new UserInputError(`Invalid identifier: ${input.information_type_id}`);
-  sparqlQuery = selectInformationTypeQuery(input.information_type_id, selectCheck);
+  if (!checkIfValidUUID(input.information_type)) throw new UserInputError(`Invalid identifier: ${input.information_type}`);
+  sparqlQuery = selectInformationTypeQuery(input.information_type, selectCheck);
   response = await dataSources.Stardog.queryById({
     dbName: contextDB,
     sparqlQuery,
@@ -1465,7 +1448,7 @@ export const createCategorization = async (input, dbName, dataSources, selectMap
   });
   if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
   let informationType_iri = `<${response[0].iri}>`;
-  delete input.information_type_id;
+  delete input.information_type;
 
   // create the Categorization object
     let {iri, id, query} = insertCategorizationQuery(input);
@@ -1643,7 +1626,7 @@ export const editCategorizationById = async (id, input, dbName, dataSources, sel
           objectType = 'information-type-catalog';
           fieldType = 'id';
           break;
-        case 'information_type_id':
+        case 'information_type':
           objectType = 'information-type';
           fieldType = 'id';
           break;
@@ -1726,7 +1709,7 @@ export const attachToCategorization = async (id, field, entityId, dbName, dataSo
 
   let attachableObjects = {
     'system_catalog': 'information-type-catalog',
-    'information_type_id': 'information-type',
+    'information_type': 'information-type',
   }
   let objectType = attachableObjects[field];
   try {
@@ -1790,7 +1773,7 @@ export const detachFromCategorization = async (id, field, entityId, dbName, data
 
   let attachableObjects = {
     'system_catalog': 'information-type-catalog',
-    'information_type_id': 'information-type',
+    'information_type': 'information-type',
   }
   let objectType = attachableObjects[field];
   try {

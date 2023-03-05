@@ -7,6 +7,7 @@ import {
   detachQuery,
   generateId, 
   DARKLIGHT_NS,
+  checkIfValidUUID,
 } from '../../../utils.js';
   
   // Reducer Selection
@@ -69,6 +70,18 @@ const diagramReducer = (item) => {
     ...(item.remarks && { remarks_iris: item.remarks }),
   }
 };
+
+
+// Utility
+export const getDescriptionBlockIri = (id) => {
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/description-block--${id}>`;
+}
+
+export const getDiagramRefIri = (id) => {
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/diagram--${id}>`;
+}
 
 
 // Query Builders - DescriptionBlock

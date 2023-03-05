@@ -7,6 +7,7 @@ import {
   detachQuery,
   generateId, 
   DARKLIGHT_NS,
+  checkIfValidUUID,
 } from '../../../utils.js';
   
   // Reducer Selection
@@ -98,12 +99,30 @@ const categorizationReducer = (item) => {
       iri: item.iri,
       id: item.id,
       ...(item.object_type && { entity_type: item.object_type }),
+      ...(item.system && { system: item.system }),
       // hints for field-level resolver queries
-      ...(item.system_catalog && { system_catalog_iri: item.system_catalog }),
+      ...(item.catalog && { catalog_iri: item.catalog }),
 			...(item.information_type && { information_type_iri: item.information_type }),
 		}
 };
-  
+
+// Utility
+export const getInformationTypeIri = (id) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/information-type--${id}>`;
+}
+export const getImpactDefinitionIri = (id) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/impact-definition--${id}>`;
+}
+export const getCategorizationIri = (id) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/categorization--${id}>`;
+}
+
 
 // Query Builders - Information Type
 export const selectInformationTypeQuery = (id, select) => {
@@ -457,6 +476,7 @@ export const selectCategorizationByIriQuery = (iri, select) => {
   // this is needed to assist in the determination of the type of the data source
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
+  if (!select.includes('catalog')) select.push('catalog');
 
   const { selectionClause, predicates } = buildSelectVariables(categorizationPredicateMap, select);
   return `
@@ -513,10 +533,18 @@ export const insertCategorizationQuery = (propValues) => {
     if (categorizationPredicateMap.hasOwnProperty(propPair[0])) {
       if (Array.isArray(propPair[1])) {
         for (let value of propPair[1]) {
+          if (categorizationPredicateMap[propPair[0]].hasOwnProperty('ref_binding')) {
+            insertPredicates.push(categorizationPredicateMap[propPair[0]].ref_binding(iri, value));
+          } else {
           insertPredicates.push(categorizationPredicateMap[propPair[0]].binding(iri, value));
+          }
         }  
       } else {
-        insertPredicates.push(categorizationPredicateMap[propPair[0]].binding(iri, propPair[1]));
+        if (categorizationPredicateMap[propPair[0]].hasOwnProperty('ref_binding')) {
+          insertPredicates.push(categorizationPredicateMap[propPair[0]].ref_binding(iri, propPair[1]));
+        } else {
+          insertPredicates.push(categorizationPredicateMap[propPair[0]].binding(iri, propPair[1]));
+        }
       }
     }
   });
@@ -835,14 +863,21 @@ export const categorizationPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
-	system_catalog: {
+	catalog: {
     predicate: "<http://csrc.nist.gov/ns/oscal/info-system#system_catalog>",
-    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "system_catalog");},
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "catalog");},
+    ref_binding: function (iri, value) { return parameterizePredicate(iri, value ? `<http://cyio.darklight.ai/information-type-catalog--${value}>`: null, this.predicate, "catalog");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+	},
+	system: {
+    predicate: "<http://nist.gov/ns/sp800-60#system>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:anyURI`: null, this.predicate, "system");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 	information_type: {
     predicate: "<http://csrc.nist.gov/ns/oscal/info-system#information_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "information_type");},
+    ref_binding: function (iri, value) { return parameterizePredicate(iri, value ? `<http://cyio.darklight.ai/information-type--${value}>`: null, this.predicate, "information_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
 	},
 };
@@ -901,7 +936,8 @@ export const singularizeCategorizationSchema = {
     "iri": true,
     "object_type": true,
     "entity_type": true,
-    "system_catalog": true,
+    "catalog": true,
+    "system": true,
     "information_type": true,
   }
 };
