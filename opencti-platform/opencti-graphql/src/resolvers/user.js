@@ -9,7 +9,7 @@ import {
   batchOrganizations,
   batchRoleCapabilities,
   batchRoles,
-  batchCreators,
+  batchCreator,
   bookmarks,
   deleteBookmark,
   findAll,
@@ -55,7 +55,7 @@ const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
 const rolesLoader = batchLoader(batchRoles);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
-const creatorLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 
 const userResolvers = {
   Query: {

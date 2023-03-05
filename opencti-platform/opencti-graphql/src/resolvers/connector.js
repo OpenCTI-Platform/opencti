@@ -30,12 +30,12 @@ import {
   updateProcessedTime,
   updateReceivedTime, worksForConnector,
 } from '../domain/work';
-import { batchCreators } from '../domain/user';
+import { batchCreator } from '../domain/user';
 import { now } from '../utils/format';
 import { connectors, connectorsForImport, connectorsForWorker } from '../database/repository';
 import { batchLoader } from '../database/middleware';
 
-const creatorLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 
 const connectorResolvers = {
   Query: {

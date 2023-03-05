@@ -1,9 +1,9 @@
 import { deleteTask, createQueryTask, findAll, findById } from '../domain/task';
 import { createListTask } from '../domain/task-common';
 import { batchLoader } from '../database/middleware';
-import { batchCreators } from '../domain/user';
+import { batchCreator } from '../domain/user';
 
-const creatorsLoader = batchLoader(batchCreators);
+const creatorLoader = batchLoader(batchCreator);
 
 const taskResolvers = {
   Query: {
@@ -24,7 +24,7 @@ const taskResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    initiator: (task, _, context) => creatorsLoader.load(task.initiator_id, context, context.user),
+    initiator: (task, _, context) => creatorLoader.load(task.initiator_id, context, context.user),
   },
 };
 
