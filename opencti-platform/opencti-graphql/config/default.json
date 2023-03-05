@@ -24,9 +24,12 @@
       "logs_max_files": 7,
       "logs_directory": "./logs"
     },
-    "graphql_playground": {
-      "enabled": true,
-      "force_disabled_introspection": false
+    "graphql": {
+      "armor_enabled": true,
+      "playground": {
+        "enabled": true,
+        "force_disabled_introspection": false
+      }
     },
     "telemetry": {
       "tracing": {

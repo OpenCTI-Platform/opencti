@@ -1,6 +1,7 @@
 import { ApolloServer, UserInputError } from 'apollo-server-express';
 import { ApolloServerPluginLandingPageGraphQLPlayground, ApolloServerPluginLandingPageDisabled } from 'apollo-server-core';
 import { formatError as apolloFormatError } from 'apollo-errors';
+import { ApolloArmor } from '@escape.tech/graphql-armor';
 import { dissocPath } from 'ramda';
 import ConstraintDirectiveError from 'graphql-constraint-directive/lib/error';
 import createSchema from './schema';
@@ -9,7 +10,7 @@ import {
   DEV_MODE,
   PLAYGROUND_INTROSPECTION_DISABLED,
   ENABLED_TRACING,
-  PLAYGROUND_ENABLED
+  PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED
 } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
 import { ValidationError } from '../config/errors';
@@ -20,7 +21,33 @@ import { executionContext } from '../utils/access';
 
 const createApolloServer = () => {
   const schema = createSchema();
-  const appolloPlugins = [loggerPlugin, httpResponsePlugin];
+  const apolloPlugins = [loggerPlugin, httpResponsePlugin];
+  const apolloValidationRules = [];
+  if (GRAPHQL_ARMOR_ENABLED) {
+    const armor = new ApolloArmor({
+      costLimit: { // Blocking too expensive requests (DoS attack attempts).
+        maxCost: 10000
+      },
+      blockFieldSuggestion: { // It will prevent suggesting fields in case of an erroneous request.
+        enabled: true,
+      },
+      maxAliases: { // Limit the number of aliases in a document.
+        n: 15,
+      },
+      maxDirectives: { // Limit the number of directives in a document.
+        n: 50,
+      },
+      maxDepth: { // maxDepth: Limit the depth of a document.
+        n: 20,
+      },
+      maxTokens: { // Limit the number of GraphQL tokens in a document.
+        n: 2000,
+      }
+    });
+    const protection = armor.protect();
+    apolloPlugins.push(...protection.plugins);
+    apolloValidationRules.push(...protection.validationRules);
+  }
   // In production mode, we use static from the server
   const playgroundOptions = DEV_MODE ? {} : {
     cdnUrl: `${basePath}/static`,
@@ -28,7 +55,7 @@ const createApolloServer = () => {
     faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
   };
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
-  appolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
+  apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
   const secureIntrospectionPlugin = {
     requestDidStart: ({ request, context }) => {
@@ -41,14 +68,15 @@ const createApolloServer = () => {
       }
     },
   };
-  appolloPlugins.push(secureIntrospectionPlugin);
+  apolloPlugins.push(secureIntrospectionPlugin);
   if (ENABLED_TRACING) {
-    appolloPlugins.push(telemetryPlugin);
+    apolloPlugins.push(telemetryPlugin);
   }
   const apolloServer = new ApolloServer({
     schema,
     introspection: true, // Will be disabled by plugin if needed
     persistedQueries: false,
+    validationRules: apolloValidationRules,
     async context({ req, res, connection }) {
       const executeContext = executionContext('api');
       executeContext.req = req;
@@ -65,7 +93,7 @@ const createApolloServer = () => {
       return executeContext;
     },
     tracing: DEV_MODE,
-    plugins: appolloPlugins,
+    plugins: apolloPlugins,
     formatError: (error) => {
       let e = apolloFormatError(error);
       if (e instanceof UserInputError) {

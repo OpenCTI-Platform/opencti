@@ -356,8 +356,9 @@ export const configureCA = (certificates) => {
 export const PORT = nconf.get('app:port');
 
 // Playground
-export const PLAYGROUND_INTROSPECTION_DISABLED = booleanConf('app:graphql_playground:force_disabled_introspection', false);
-export const PLAYGROUND_ENABLED = booleanConf('app:graphql_playground:enabled', true);
+export const PLAYGROUND_INTROSPECTION_DISABLED = booleanConf('app:graphql:playground:force_disabled_introspection', false);
+export const PLAYGROUND_ENABLED = booleanConf('app:graphql:playground:enabled', true);
+export const GRAPHQL_ARMOR_ENABLED = booleanConf('app:graphql:armor_enabled', true);
 
 // Default activated managers
 export const ENABLED_API = booleanConf('app:enabled', true);
