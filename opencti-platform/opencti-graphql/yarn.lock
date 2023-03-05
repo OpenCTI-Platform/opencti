@@ -8684,10 +8684,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jose@npm:4.11.2":
-  version: 4.11.2
-  resolution: "jose@npm:4.11.2"
-  checksum: bc9b2271c31683603857b2fd2903afa29f826fffd4bcefc0845355ed86995def87eaadf502033207996109d76698c912e5a986e279326d9629321a50504fe466
+"jose@npm:4.13.1":
+  version: 4.13.1
+  resolution: "jose@npm:4.13.1"
+  checksum: 89be959573beee69bd443493887d78799fd42340b45afa2c6681beda30314bcdfa5575f6977203c199e4c3e0ec2fc18d3c94745e7f0d59db51dedfae0efee63d
   languageName: node
   linkType: hard
 
