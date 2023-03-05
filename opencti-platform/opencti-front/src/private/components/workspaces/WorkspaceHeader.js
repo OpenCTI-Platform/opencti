@@ -85,9 +85,6 @@ const WorkspaceHeader = ({
   const { t } = useFormatter();
   const [openTag, setOpenTag] = useState(false);
   const [openTags, setOpenTags] = useState(false);
-
-  const handleToggleOpenTags = () => setOpenTags(!openTags);
-  const handleToggleCreateTag = () => setOpenTag(!openTag);
   const getCurrentTags = () => workspace.tags;
   const onSubmitCreateTag = (data, { resetForm }) => {
     const currentTags = getCurrentTags();
@@ -285,7 +282,7 @@ const WorkspaceHeader = ({
             <Button
               color="primary"
               aria-tag="More"
-              onClick={handleToggleOpenTags}
+              onClick={() => setOpenTags(!openTags)}
               style={{ fontSize: 14 }}
             >
               <DotsHorizontalCircleOutline />
@@ -296,7 +293,7 @@ const WorkspaceHeader = ({
               style={{ float: 'left', marginTop: -5 }}
               color={openTag ? 'primary' : 'secondary'}
               aria-tag="Tag"
-              onClick={handleToggleCreateTag}
+              onClick={() => setOpenTag(!openTag)}
               size="large"
             >
               {openTag ? <Close fontSize="small" /> : <Add fontSize="small" />}
