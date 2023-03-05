@@ -26,10 +26,17 @@ export const rootPublicQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<LoginRootPublicQuery>(environment, rootPublicQuery, {});
+const queryRef = loadQuery<LoginRootPublicQuery>(
+  environment,
+  rootPublicQuery,
+  {},
+);
 
 const LoginRoot = ({ type }: { type: string }) => {
-  const data = usePreloadedQuery<LoginRootPublicQuery>(rootPublicQuery, queryRef);
+  const data = usePreloadedQuery<LoginRootPublicQuery>(
+    rootPublicQuery,
+    queryRef,
+  );
   const { settings } = data;
   return (
     <StyledEngineProvider injectFirst={true}>

@@ -92,7 +92,7 @@ const investigationGraphStixCoreObjectQuery = graphql`
         name
       }
       ... on Channel {
-          name
+        name
       }
       ... on Note {
         attribute_abstract
@@ -181,22 +181,22 @@ const investigationGraphStixCoreObjectQuery = graphql`
         observableName: name
       }
       ... on Event {
-          name
+        name
       }
       ... on Case {
-          name
+        name
       }
       ... on Narrative {
-          name
+        name
       }
       ... on DataComponent {
-          name
+        name
       }
       ... on DataSource {
-          name
+        name
       }
       ... on Language {
-          name
+        name
       }
     }
   }
@@ -1780,10 +1780,8 @@ class InvestigationGraphComponent extends Component {
             )}
           </Formik>
         </Dialog>
-        {(selectedEntities.length > 0) && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-          />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
         <InvestigationGraphBar
           displayProgress={displayProgress}
@@ -2169,30 +2167,30 @@ const InvestigationGraph = createFragmentContainer(
                 last_seen
               }
               ... on Event {
-                  name
-                  description
-                  start_time
-                  stop_time
+                name
+                description
+                start_time
+                stop_time
               }
               ... on Channel {
-                  name
-                  description
+                name
+                description
               }
               ... on Narrative {
-                  name
-                  description
+                name
+                description
               }
               ... on Language {
-                  name
+                name
               }
               ... on DataComponent {
-                  name
+                name
               }
               ... on DataSource {
-                  name
+                name
               }
               ... on Case {
-                  name
+                name
               }
               ... on StixCyberObservable {
                 observable_value

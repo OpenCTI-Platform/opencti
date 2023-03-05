@@ -45,6 +45,7 @@ const stixDomainObjectVictimologyMapQuery = graphql`
     $endDate: DateTime
     $dateAttribute: String
     $limit: Int
+    $isTo: Boolean
   ) {
     stixCoreRelationshipsDistribution(
       fromId: $fromId
@@ -56,6 +57,7 @@ const stixDomainObjectVictimologyMapQuery = graphql`
       endDate: $endDate
       dateAttribute: $dateAttribute
       limit: $limit
+      isTo: $isTo
     ) {
       label
       value
@@ -94,6 +96,7 @@ class StixDomainObjectVictimologyMap extends Component {
           dateAttribute:
             timeField === 'functional' ? 'start_time' : 'created_at',
           limit: 20,
+          isTo: true,
         }}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsDistribution) {

@@ -24,10 +24,7 @@ export const SETTINGS_SETACCESSES = 'SETTINGS_SETACCESSES';
 export const SETTINGS_SETMARKINGS = 'SETTINGS_SETMARKINGS';
 export const SETTINGS_SETLABELS = 'SETTINGS_SETLABELS';
 
-const useGranted = (
-  capabilities: string[],
-  matchAll = false,
-): boolean => {
+const useGranted = (capabilities: string[], matchAll = false): boolean => {
   const { me } = useAuth();
 
   const userCapabilities = (me.capabilities ?? []).map((c) => c.name);

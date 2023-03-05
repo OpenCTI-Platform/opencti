@@ -58,7 +58,7 @@ class StixDomainObjectVictimology extends Component {
       relationship_type: 'targets',
     };
     return (
-      <div>
+      <div style={{ marginTop: 15 }}>
         <div className={classes.stats}>
           <Grid container={true} spacing={3}>
             <Grid
@@ -68,10 +68,11 @@ class StixDomainObjectVictimology extends Component {
             >
               <EntityStixCoreRelationshipsHorizontalBars
                 title={t('Victimology (sectors)')}
-                stixCoreObjectId={stixDomainObjectId}
+                fromId={stixDomainObjectId}
                 toTypes={['Sector']}
                 relationshipType="targets"
                 field="internal_id"
+                isTo={true}
               />
             </Grid>
             <Grid
@@ -81,10 +82,11 @@ class StixDomainObjectVictimology extends Component {
             >
               <EntityStixCoreRelationshipsHorizontalBars
                 title={t('Victimology (regions)')}
-                stixCoreObjectId={stixDomainObjectId}
+                fromId={stixDomainObjectId}
                 toTypes={['Region']}
                 relationshipType="targets"
                 field="internal_id"
+                isTo={true}
               />
             </Grid>
             <Grid
@@ -99,10 +101,11 @@ class StixDomainObjectVictimology extends Component {
             >
               <EntityStixCoreRelationshipsHorizontalBars
                 title={t('Victimology (countries)')}
-                stixCoreObjectId={stixDomainObjectId}
+                fromId={stixDomainObjectId}
                 toTypes={['Country']}
                 relationshipType="targets"
                 field="internal_id"
+                isTo={true}
               />
             </Grid>
             <Grid

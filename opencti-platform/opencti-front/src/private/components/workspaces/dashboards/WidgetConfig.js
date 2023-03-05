@@ -320,7 +320,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
     dynamicFrom: {},
     dynamicTo: {},
   };
-  const [dataSelection, setDataSelection] = useState(widget?.dataSelection ?? [initialSelection]);
+  const [dataSelection, setDataSelection] = useState(
+    widget?.dataSelection ?? [initialSelection],
+  );
   const [parameters, setParameters] = useState(widget?.parameters ?? {});
   const handleClose = () => {
     if (!widget) {
@@ -710,7 +712,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {Array(dataSelection.length)
           .fill(0)
           .map((_, i) => {
-            const style = dataSelection[i].perspective === 'entities' ? 'step_entity' : 'step_relationship';
+            const style = dataSelection[i].perspective === 'entities'
+              ? 'step_entity'
+              : 'step_relationship';
             return (
               <div key={i} className={classes[style]}>
                 <IconButton
@@ -729,7 +733,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     label={`${t('Label')} (${dataSelection[i].perspective})`}
                     fullWidth={true}
                     value={dataSelection[i].label}
-                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)}
+                    onChange={(event) => handleChangeDataValidationLabel(i, event.target.value)
+                    }
                     InputProps={{
                       endAdornment: (
                         <InputAdornment
@@ -755,9 +760,14 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                             }
                             noDirectFilters={true}
                           />
-                          {(dataSelection[i].perspective ?? perspective) === 'relationships' && (
-                            <Filters availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+                          {(dataSelection[i].perspective ?? perspective)
+                            === 'relationships' && (
+                            <Filters
+                              availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={[
+                                'Stix-Domain-Object',
+                                'Stix-Cyber-Observable',
+                              ]}
                               handleAddFilter={(key, id, value) => handleAddDataValidationDynamicFrom(
                                 i,
                                 key,
@@ -769,9 +779,14 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                               type="from"
                             />
                           )}
-                          {(dataSelection[i].perspective ?? perspective) === 'relationships' && (
-                            <Filters availableFilterKeys={entitiesFilters}
-                              availableEntityTypes={['Stix-Domain-Object', 'Stix-Cyber-Observable']}
+                          {(dataSelection[i].perspective ?? perspective)
+                            === 'relationships' && (
+                            <Filters
+                              availableFilterKeys={entitiesFilters}
+                              availableEntityTypes={[
+                                'Stix-Domain-Object',
+                                'Stix-Cyber-Observable',
+                              ]}
                               handleAddFilter={(key, id, value) => handleAddDataValidationDynamicTo(
                                 i,
                                 key,
@@ -795,7 +810,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
-                    const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                    const localFilterMode = currentFilter[0].endsWith('not_eq')
+                      ? t('AND')
+                      : t('OR');
                     const values = (
                       <span>
                         {R.map(
@@ -840,7 +857,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
-                    const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                    const localFilterMode = currentFilter[0].endsWith('not_eq')
+                      ? t('AND')
+                      : t('OR');
                     const values = (
                       <span>
                         {R.map(
@@ -889,7 +908,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       t(`filter_${currentFilter[0]}`),
                       20,
                     )}`;
-                    const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+                    const localFilterMode = currentFilter[0].endsWith('not_eq')
+                      ? t('AND')
+                      : t('OR');
                     const values = (
                       <span>
                         {R.map(
@@ -954,12 +975,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         {perspective === 'relationships' && (
           <div className={classes.add}>
             <Button
-                style={{ marginRight: 20 }}
-                variant="contained"
-                disabled={getCurrentDataSelectionLimit() === dataSelection.length}
-                size="small"
-                onClick={() => handleAddDataSelection('relationships')}
-                classes={{ root: classes.buttonAdd }}>
+              style={{ marginRight: 20 }}
+              variant="contained"
+              disabled={getCurrentDataSelectionLimit() === dataSelection.length}
+              size="small"
+              onClick={() => handleAddDataSelection('relationships')}
+              classes={{ root: classes.buttonAdd }}
+            >
               <AddOutlined fontSize="small" /> {t('Relationships')}
             </Button>
             <Button
@@ -968,7 +990,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
               color="secondary"
               size="small"
               onClick={() => handleAddDataSelection('entities')}
-              classes={{ root: classes.buttonAdd }}>
+              classes={{ root: classes.buttonAdd }}
+            >
               <AddOutlined fontSize="small" /> {t('Entities')}
             </Button>
           </div>
@@ -1029,7 +1052,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                   <div style={{ display: 'flex', width: '100%' }}>
                     <FormControl fullWidth={true} style={{ flex: 1 }}>
                       <InputLabel id="relative" variant="standard" size="small">
-                        {isNotEmptyField(dataSelection[i].label) ? dataSelection[i].label : 'Unspecified'}
+                        {isNotEmptyField(dataSelection[i].label)
+                          ? dataSelection[i].label
+                          : 'Unspecified'}
                       </InputLabel>
                       <Select
                         variant="standard"
@@ -1060,13 +1085,18 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                     </FormControl>
                   </div>
                   {getCurrentAvailableParameters().includes('attribute') && (
-                    <div style={{ display: 'flex', width: '100%', marginTop: 20 }}>
+                    <div
+                      style={{ display: 'flex', width: '100%', marginTop: 20 }}
+                    >
                       {dataSelection[i].perspective === 'relationships' && (
-                        <FormControl className={classes.formControl} fullWidth={true}
+                        <FormControl
+                          className={classes.formControl}
+                          fullWidth={true}
                           style={{
                             flex: 1,
                             marginRight: 20,
-                          }}>
+                          }}
+                        >
                           <InputLabel variant="standard">
                             {t('Attribute')}
                           </InputLabel>
@@ -1092,10 +1122,13 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                       )}
                       {dataSelection[i].perspective === 'entities'
                         && getCurrentSelectedEntityTypes(i).length > 0 && (
-                          <FormControl className={classes.formControl} fullWidth={true}
+                          <FormControl
+                            className={classes.formControl}
+                            fullWidth={true}
                             style={{
                               flex: 1,
-                            }}>
+                            }}
+                          >
                             <InputLabel variant="standard">
                               {t('Attribute')}
                             </InputLabel>
@@ -1205,11 +1238,15 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                         />
                       )}
                       {dataSelection[i].perspective === 'relationships' && (
-                        <Tooltip title={t('Enable if the displayed data is the source of the relationships.')}>
+                        <Tooltip
+                          title={t(
+                            'Enable if the displayed data is the source of the relationships.',
+                          )}
+                        >
                           <InformationOutline
                             fontSize="small"
                             color="primary"
-                            style={{ marginTop: 10 }}
+                            style={{ marginTop: 14 }}
                           />
                         </Tooltip>
                       )}

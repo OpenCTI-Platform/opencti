@@ -319,17 +319,17 @@ class Search extends Component {
     };
     return (
       <ExportContextProvider>
-      <div>
-        <TopBar keyword={searchTerm} />
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          style={{ margin: '-5px 20px 0 0', float: 'left' }}
-        >
-          {t('Search for an entity')}
-        </Typography>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-      </div>
+        <div>
+          <TopBar keyword={searchTerm} />
+          <Typography
+            variant="h1"
+            gutterBottom={true}
+            style={{ margin: '-5px 20px 0 0', float: 'left' }}
+          >
+            {t('Search for an entity')}
+          </Typography>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+        </div>
       </ExportContextProvider>
     );
   }

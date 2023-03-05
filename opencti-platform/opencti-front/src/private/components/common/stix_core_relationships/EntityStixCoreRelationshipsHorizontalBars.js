@@ -143,8 +143,10 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
   renderContent() {
     const {
       t,
-      stixCoreObjectId,
+      fromId,
+      toId,
       relationshipType,
+      fromTypes,
       toTypes,
       field,
       isTo,
@@ -155,11 +157,11 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
       seriesName,
     } = this.props;
     const stixCoreRelationshipsDistributionVariables = {
-      fromId: !isTo ? stixCoreObjectId : null,
-      toId: isTo ? stixCoreObjectId : null,
       relationship_type: relationshipType,
-      toTypes: !isTo ? toTypes : null,
-      fromTypes: isTo ? toTypes : null,
+      fromId,
+      toId,
+      fromTypes,
+      toTypes,
       field: field || 'entity_type',
       startDate: startDate || null,
       endDate: endDate || null,
@@ -277,8 +279,10 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
 }
 
 EntityStixCoreRelationshipsHorizontalBars.propTypes = {
-  stixCoreObjectId: PropTypes.string,
   relationshipType: PropTypes.string,
+  fromId: PropTypes.string,
+  toId: PropTypes.string,
+  fromTypes: PropTypes.array,
   toTypes: PropTypes.array,
   title: PropTypes.string,
   field: PropTypes.string,

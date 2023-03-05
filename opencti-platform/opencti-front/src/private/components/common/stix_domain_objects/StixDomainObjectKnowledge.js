@@ -244,12 +244,16 @@ class StixDomainObjectKnowledge extends Component {
         <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
           <Grid item={true} xs={6} style={{ height: 350 }}>
             <EntityStixCoreRelationshipsHorizontalBars
-              stixCoreObjectId={stixDomainObjectId}
+              toId={stixDomainObjectId}
+              fromTypes={[
+                'Threat-Actor',
+                'Intrusion-Set',
+                'Campaign',
+                'Malware',
+              ]}
               relationshipType="targets"
-              toTypes={['Threat-Actor', 'Intrusion-Set', 'Campaign', 'Malware']}
               title={t('Top 10 threats targeting this entity')}
               field="internal_id"
-              isTo={true}
             />
           </Grid>
           <Grid item={true} xs={6} style={{ height: 350 }}>

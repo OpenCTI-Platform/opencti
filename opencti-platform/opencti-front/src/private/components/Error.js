@@ -31,7 +31,10 @@ class ErrorBoundaryComponent extends React.Component {
       const retroErrors = this.state.error.data?.res?.errors ?? [];
       const types = map((e) => e.name, [...baseErrors, ...retroErrors]);
       // Access error must be forwarded
-      if (includes('ForbiddenAccess', types) || includes('AuthRequired', types)) {
+      if (
+        includes('ForbiddenAccess', types)
+        || includes('AuthRequired', types)
+      ) {
         // eslint-disable-next-line @typescript-eslint/no-throw-literal
         throw this.state.error;
       }

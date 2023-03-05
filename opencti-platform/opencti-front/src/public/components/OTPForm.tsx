@@ -98,7 +98,9 @@ const OTPForm = () => {
           variant="outlined"
           style={{ margin: '15px 0', justifyContent: 'center' }}
         >
-          {t('You need to validate your two-factor authentication. Please type the code generated in your application')}
+          {t(
+            'You need to validate your two-factor authentication. Please type the code generated in your application',
+          )}
         </Alert>
       )}
       <div className={classes.input}>
