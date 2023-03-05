@@ -15,9 +15,7 @@ import {
   EntityStixCoreRelationshipsEntitiesPaginationQuery$variables,
 } from './__generated__/EntityStixCoreRelationshipsEntitiesPaginationQuery.graphql';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
-import {
-  EntityStixCoreRelationshipsEntities_data$key,
-} from './__generated__/EntityStixCoreRelationshipsEntities_data.graphql';
+import { EntityStixCoreRelationshipsEntities_data$key } from './__generated__/EntityStixCoreRelationshipsEntities_data.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -118,7 +116,9 @@ EntityStixCoreRelationshipsEntitiesProps
   setNumberOfElements,
 }) => {
   const { data, loadMore, hasMore, isLoadingMore } = usePreloadedPaginationFragment<
-  EntityStixCoreRelationshipsEntitiesPaginationQuery, EntityStixCoreRelationshipsEntities_data$key>({
+  EntityStixCoreRelationshipsEntitiesPaginationQuery,
+  EntityStixCoreRelationshipsEntities_data$key
+  >({
     queryRef,
     linesQuery: entityStixCoreRelationshipsEntitiesQuery,
     linesFragment: entityStixCoreRelationshipsEntitiesFragment,
@@ -132,7 +132,9 @@ EntityStixCoreRelationshipsEntitiesProps
       hasMore={hasMore}
       isLoading={isLoadingMore}
       dataList={data?.stixCoreObjects?.edges ?? []}
-      globalCount={data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      globalCount={
+        data?.stixCoreObjects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+      }
       LineComponent={EntityStixCoreRelationshipsEntitiesLine}
       DummyLineComponent={EntityStixCoreRelationshipsEntitiesLineDummy}
       dataColumns={dataColumns}

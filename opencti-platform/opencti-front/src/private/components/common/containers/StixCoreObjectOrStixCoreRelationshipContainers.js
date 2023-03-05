@@ -18,8 +18,7 @@ import StixCoreObjectOrStixCoreRelationshipContainersGraph, {
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 } from './StixCoreObjectOrStixCoreRelationshipContainersGraph';
 import Loader from '../../../../components/Loader';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SearchInput from '../../../../components/SearchInput';
 import { UserContext } from '../../../../utils/hooks/useAuth';
@@ -255,7 +254,9 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             exportEntityType="Container"
             exportContext={exportContext}
             keyword={searchTerm}
-            handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(this)}
+            handleSwitchRedirectionMode={this.handleSwitchRedirectionMode.bind(
+              this,
+            )}
             redirectionMode={redirectionMode}
             filters={filters}
             paginationOptions={paginationOptions}
@@ -319,7 +320,10 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
               />
             </div>
           )}
-          <Filters availableFilterKeys={availableFilterKeys} handleAddFilter={this.handleAddFilter.bind(this)}/>
+          <Filters
+            availableFilterKeys={availableFilterKeys}
+            handleAddFilter={this.handleAddFilter.bind(this)}
+          />
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={this.handleRemoveFilter.bind(this)}

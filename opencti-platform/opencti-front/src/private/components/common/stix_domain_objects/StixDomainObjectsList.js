@@ -479,7 +479,9 @@ class StixDomainObjectsList extends Component {
           <div className={classes.filters}>
             {R.map((currentFilter) => {
               const label = `${truncate(t(`filter_${currentFilter[0]}`), 20)}`;
-              const localFilterMode = currentFilter[0].endsWith('not_eq') ? t('AND') : t('OR');
+              const localFilterMode = currentFilter[0].endsWith('not_eq')
+                ? t('AND')
+                : t('OR');
               const values = (
                 <span>
                   {R.map(

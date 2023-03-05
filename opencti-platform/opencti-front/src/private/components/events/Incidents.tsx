@@ -97,12 +97,12 @@ const Incidents: FunctionComponent = () => {
     createdBy: {
       label: 'Author',
       width: '11%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     creator: {
       label: 'Creators',
       width: '11%',
-      isSortable: isRuntimeSort ?? false,
+      isSortable: isRuntimeSort,
     },
     objectLabel: {
       label: 'Labels',

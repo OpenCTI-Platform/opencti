@@ -83,7 +83,12 @@ export const ContainerStixObjectsOrStixRelationshipsLinesQuery = graphql`
         }
       }
       ...ContainerStixObjectsOrStixRelationshipsLines_container
-        @arguments(types: $types, count: $count, orderBy: $orderBy, orderMode: $orderMode)
+        @arguments(
+          types: $types
+          count: $count
+          orderBy: $orderBy
+          orderMode: $orderMode
+        )
     }
   }
 `;
@@ -103,8 +108,12 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
       ) {
         id
-        objects(types: $types, first: $count, orderBy: $orderBy, orderMode: $orderMode)
-          @connection(key: "Pagination_objects") {
+        objects(
+          types: $types
+          first: $count
+          orderBy: $orderBy
+          orderMode: $orderMode
+        ) @connection(key: "Pagination_objects") {
           edges {
             types
             node {

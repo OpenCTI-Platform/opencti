@@ -205,7 +205,9 @@ class StixDomainObjectOverview extends Component {
                     {t('Assignees')}
                   </Typography>
                   <ItemAssignees
-                    assigneesEdges={stixDomainObject.objectAssignee?.edges ?? []}
+                    assigneesEdges={
+                      stixDomainObject.objectAssignee?.edges ?? []
+                    }
                   />
                 </div>
               )}
@@ -242,16 +244,25 @@ class StixDomainObjectOverview extends Component {
                 {t('Creation date (in this platform)')}
               </Typography>
               {fldt(stixDomainObject.created_at)}
-              <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+              <Typography
+                variant="h3"
+                gutterBottom={true}
+                style={{ marginTop: 20 }}
+              >
                 {t('Creators')}
               </Typography>
               <div>
                 {(stixDomainObject.creators ?? []).map((c) => {
-                  return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
+                  return (
+                    <div
+                      key={`creator-${c.id}`}
+                      style={{ float: 'left', marginRight: '10px' }}
+                    >
                       <ItemCreator creator={c} />
-                    </div>;
+                    </div>
+                  );
                 })}
-                <div style={{ clear: 'both' }}/>
+                <div style={{ clear: 'both' }} />
               </div>
               <div style={{ marginTop: 20 }}>
                 <Typography

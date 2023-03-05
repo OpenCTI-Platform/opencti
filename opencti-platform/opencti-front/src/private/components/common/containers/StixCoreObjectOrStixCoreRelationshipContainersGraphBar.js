@@ -368,8 +368,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     display: 'flex',
                     height: '100%',
                   }}
-                >
-                </div>
+                ></div>
               )}
               <div className="clearfix" />
             </div>
@@ -763,8 +762,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
                     to={viewLink}
                     disabled={!viewEnabled}
                     size="large"
-                  >
-                  </IconButton>
+                  ></IconButton>
                 </span>
               </Tooltip>
             </div>

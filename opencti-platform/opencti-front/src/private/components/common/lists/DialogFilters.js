@@ -55,9 +55,7 @@ const DialogFilters = ({
           {filterElement}
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseFilters}>
-            {t('Cancel')}
-          </Button>
+          <Button onClick={handleCloseFilters}>{t('Cancel')}</Button>
           <Button color="secondary" onClick={handleSearch}>
             {t('Search')}
           </Button>

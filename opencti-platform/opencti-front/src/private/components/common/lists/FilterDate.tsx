@@ -4,10 +4,15 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { useFormatter } from '../../../../components/i18n';
 
 interface FilterDateProps {
-  defaultHandleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event?: React.KeyboardEvent) => void
-  filterKey: string
-  inputValues: Record<string, string | Date>
-  setInputValues: Dispatch<Record<string, string | Date>>
+  defaultHandleAddFilter: (
+    k: string,
+    id: string,
+    value: Record<string, unknown> | string,
+    event?: React.KeyboardEvent
+  ) => void;
+  filterKey: string;
+  inputValues: Record<string, string | Date>;
+  setInputValues: Dispatch<Record<string, string | Date>>;
 }
 
 const FilterDate: FunctionComponent<FilterDateProps> = ({
@@ -30,7 +35,10 @@ const FilterDate: FunctionComponent<FilterDateProps> = ({
 
   const handleValidateDate = (event: KeyboardEvent<HTMLElement>) => {
     if (event.key === 'Enter') {
-      if (inputValues[filterKey].toString() !== 'Invalid Date' && inputValues[filterKey] instanceof Date) {
+      if (
+        inputValues[filterKey].toString() !== 'Invalid Date'
+        && inputValues[filterKey] instanceof Date
+      ) {
         handleAcceptDate(inputValues[filterKey] as Date);
       }
     }

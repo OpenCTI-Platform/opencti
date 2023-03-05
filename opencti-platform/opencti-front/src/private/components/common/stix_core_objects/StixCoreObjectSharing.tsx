@@ -19,7 +19,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { truncate } from '../../../../utils/String';
 import { StixCoreObjectSharingQuery$data } from './__generated__/StixCoreObjectSharingQuery.graphql';
-import useGranted, { KNOWLEDGE_KNUPDATE_KNORGARESTRICT } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+} from '../../../../utils/hooks/useGranted';
 
 // region types
 interface ContainerHeaderSharedProps {
@@ -113,10 +115,16 @@ const StixCoreObjectSharing: FunctionComponent<ContainerHeaderSharedProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const [displaySharing, setDisplaySharing] = useState(false);
-  const userIsOrganizationEditor = useGranted([KNOWLEDGE_KNUPDATE_KNORGARESTRICT]);
+  const userIsOrganizationEditor = useGranted([
+    KNOWLEDGE_KNUPDATE_KNORGARESTRICT,
+  ]);
   // If user not an organization organizer, return empty div
   if (!userIsOrganizationEditor) {
-    return variant === 'header' ? <div style={{ display: 'inline-block' }} /> : <div style={{ marginTop: -20 }} />;
+    return variant === 'header' ? (
+      <div style={{ display: 'inline-block' }} />
+    ) : (
+      <div style={{ marginTop: -20 }} />
+    );
   }
   const handleOpenSharing = () => setDisplaySharing(true);
   const handleCloseSharing = () => setDisplaySharing(false);

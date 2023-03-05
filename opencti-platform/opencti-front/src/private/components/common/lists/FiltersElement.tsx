@@ -3,7 +3,10 @@ import TextField from '@mui/material/TextField';
 import React, { Dispatch, FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters, FiltersVariant } from '../../../../utils/filters/filtersUtils';
+import {
+  directFilters,
+  FiltersVariant,
+} from '../../../../utils/filters/filtersUtils';
 import FilterDate from './FilterDate';
 import FilterAutocomplete from './FilterAutocomplete';
 import { Theme } from '../../../../components/Theme';
@@ -17,18 +20,23 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FiltersElementProps {
-  variant?: string,
-  keyword: string,
-  availableFilterKeys: string[],
-  handleChangeKeyword: (event: React.SyntheticEvent) => void,
-  noDirectFilters?: boolean,
-  setInputValues: Dispatch<Record<string, string | Date>>,
-  inputValues: Record<string, string | Date>,
-  defaultHandleAddFilter: (k: string, id: string, value: Record<string, unknown> | string, event?: React.SyntheticEvent) => void,
-  availableEntityTypes?: string[],
-  availableRelationshipTypes?: string[],
-  availableRelationFilterTypes?: Record<string, string[]>,
-  allEntityTypes?: boolean,
+  variant?: string;
+  keyword: string;
+  availableFilterKeys: string[];
+  handleChangeKeyword: (event: React.SyntheticEvent) => void;
+  noDirectFilters?: boolean;
+  setInputValues: Dispatch<Record<string, string | Date>>;
+  inputValues: Record<string, string | Date>;
+  defaultHandleAddFilter: (
+    k: string,
+    id: string,
+    value: Record<string, unknown> | string,
+    event?: React.SyntheticEvent
+  ) => void;
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  availableRelationFilterTypes?: Record<string, string[]>;
+  allEntityTypes?: boolean;
 }
 
 const FiltersElement: FunctionComponent<FiltersElementProps> = ({
@@ -62,37 +70,40 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
             />
           </Grid>
         )}
-        {availableFilterKeys.filter(
-          (n) => noDirectFilters || !directFilters.includes(n),
-        ).map((filterKey) => {
-          if (filterKey.endsWith('start_date') || filterKey.endsWith('end_date')) {
+        {availableFilterKeys
+          .filter((n) => noDirectFilters || !directFilters.includes(n))
+          .map((filterKey) => {
+            if (
+              filterKey.endsWith('start_date')
+              || filterKey.endsWith('end_date')
+            ) {
+              return (
+                <Grid key={filterKey} item={true} xs={6}>
+                  <FilterDate
+                    defaultHandleAddFilter={defaultHandleAddFilter}
+                    filterKey={filterKey}
+                    inputValues={inputValues}
+                    setInputValues={setInputValues}
+                  />
+                </Grid>
+              );
+            }
             return (
               <Grid key={filterKey} item={true} xs={6}>
-                <FilterDate
-                  defaultHandleAddFilter={defaultHandleAddFilter}
+                <FilterAutocomplete
                   filterKey={filterKey}
+                  defaultHandleAddFilter={defaultHandleAddFilter}
                   inputValues={inputValues}
                   setInputValues={setInputValues}
+                  availableEntityTypes={availableEntityTypes}
+                  availableRelationshipTypes={availableRelationshipTypes}
+                  availableRelationFilterTypes={availableRelationFilterTypes}
+                  allEntityTypes={allEntityTypes}
+                  openOnFocus={true}
                 />
               </Grid>
             );
-          }
-          return (
-            <Grid key={filterKey} item={true} xs={6}>
-              <FilterAutocomplete
-                filterKey={filterKey}
-                defaultHandleAddFilter={defaultHandleAddFilter}
-                inputValues={inputValues}
-                setInputValues={setInputValues}
-                availableEntityTypes={availableEntityTypes}
-                availableRelationshipTypes={availableRelationshipTypes}
-                availableRelationFilterTypes={availableRelationFilterTypes}
-                allEntityTypes={allEntityTypes}
-                openOnFocus={true}
-              />
-            </Grid>
-          );
-        })}
+          })}
       </Grid>
       <div className={classes.helpertext}>
         {t('Use')} <code>alt</code> + <code>click</code> {t('to exclude items')}

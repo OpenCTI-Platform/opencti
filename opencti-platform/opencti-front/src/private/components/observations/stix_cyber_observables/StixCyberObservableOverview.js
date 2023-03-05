@@ -186,11 +186,16 @@ class StixCyberObservableOverview extends Component {
               </Typography>
               <div>
                 {(stixCyberObservable.creators ?? []).map((c) => {
-                  return <div key={`creator-${c.id}`} style={{ float: 'left', marginRight: '10px' }}>
-                    <ItemCreator creator={c} />
-                  </div>;
+                  return (
+                    <div
+                      key={`creator-${c.id}`}
+                      style={{ float: 'left', marginRight: '10px' }}
+                    >
+                      <ItemCreator creator={c} />
+                    </div>
+                  );
                 })}
-                <div style={{ clear: 'both' }}/>
+                <div style={{ clear: 'both' }} />
               </div>
               <Typography
                 variant="h3"

@@ -7,11 +7,17 @@ import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, requestSubscription } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { typesWithoutName } from '../../../../utils/Entity';
@@ -139,11 +145,7 @@ const StixDomainObjectEditionContainer = (props) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const {
-    handleClose,
-    stixDomainObject,
-    noStoreUpdate,
-  } = props;
+  const { handleClose, stixDomainObject, noStoreUpdate } = props;
 
   const enableReferences = useIsEnforceReference(stixDomainObject.entity_type);
 
@@ -334,12 +336,7 @@ const StixDomainObjectEditionContainer = (props) => {
           validationSchema={stixDomainObjectValidation(t)}
           onSubmit={onSubmit}
         >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               {'name' in stixDomainObject && (
                 <Field
@@ -354,10 +351,7 @@ const StixDomainObjectEditionContainer = (props) => {
                   onFocus={handleChangeFocus}
                   onSubmit={handleSubmitField}
                   helperText={
-                    <SubscriptionFocus
-                      context={editContext}
-                      fieldName="name"
-                    />
+                    <SubscriptionFocus context={editContext} fieldName="name" />
                   }
                 />
               )}

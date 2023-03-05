@@ -165,18 +165,18 @@ export const containerHeaderObjectsQuery = graphql`
               name
             }
             ... on Note {
-                attribute_abstract
-                content
+              attribute_abstract
+              content
             }
             ... on Opinion {
-                opinion
+              opinion
             }
             ... on Report {
-                name
-                published
+              name
+              published
             }
             ... on Grouping {
-                name
+              name
             }
             ... on Individual {
               name
@@ -271,25 +271,25 @@ export const containerHeaderObjectsQuery = graphql`
               observableName: name
             }
             ... on Label {
-                value
-                color
+              value
+              color
             }
             ... on MarkingDefinition {
-                definition
-                x_opencti_color
+              definition
+              x_opencti_color
             }
             ... on KillChainPhase {
-                kill_chain_name
-                phase_name
+              kill_chain_name
+              phase_name
             }
             ... on ExternalReference {
-                url
-                source_name
+              url
+              source_name
             }
             ... on BasicRelationship {
-                id
-                entity_type
-                parent_types
+              id
+              entity_type
+              parent_types
             }
             ... on BasicRelationship {
               id

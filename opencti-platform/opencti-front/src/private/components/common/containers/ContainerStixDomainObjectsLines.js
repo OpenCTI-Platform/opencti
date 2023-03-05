@@ -2,7 +2,10 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { ContainerStixDomainObjectLine, ContainerStixDomainObjectLineDummy } from './ContainerStixDomainObjectLine';
+import {
+  ContainerStixDomainObjectLine,
+  ContainerStixDomainObjectLineDummy,
+} from './ContainerStixDomainObjectLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -45,7 +48,9 @@ class ContainerStixDomainObjectsLines extends Component {
           isLoading={relay.isLoading.bind(this)}
           dataList={container?.objects?.edges ?? []}
           paginationOptions={paginationOptions}
-          globalCount={container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+          globalCount={
+            container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+          }
           LineComponent={
             <ContainerStixDomainObjectLine
               containerId={container?.id ?? null}

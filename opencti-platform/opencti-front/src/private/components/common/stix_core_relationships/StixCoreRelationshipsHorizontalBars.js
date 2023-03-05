@@ -174,10 +174,10 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
         }
         ... on DataComponent {
-            name
+          name
         }
         ... on DataSource {
-            name
+          name
         }
         ... on Case {
           name

@@ -12,7 +12,10 @@ import { useFormatter } from '../../../../components/i18n';
 import useSearchEntities from '../../../../utils/filters/useSearchEntities';
 import { Theme } from '../../../../components/Theme';
 import SearchScopeElement from './SearchScopeElement';
-import { EqFilters, onlyGroupOrganization } from '../../../../utils/filters/filtersUtils';
+import {
+  EqFilters,
+  onlyGroupOrganization,
+} from '../../../../utils/filters/filtersUtils';
 import { HandleAddFilter } from '../../../../utils/hooks/useLocalStorage';
 import { Option } from '../form/ReferenceField';
 
@@ -82,7 +85,11 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
   ].includes(filterKey);
   const handleChange = (event: SyntheticEvent, value: OptionValue | null) => {
     if (value) {
-      if (EqFilters.includes(filterKey) && (event as unknown as MouseEvent).altKey && event.type === 'click') {
+      if (
+        EqFilters.includes(filterKey)
+        && (event as unknown as MouseEvent).altKey
+        && event.type === 'click'
+      ) {
         const filterAdd = `${filterKey}_not_eq`;
         defaultHandleAddFilter(filterAdd, value.value, value.label, event);
       } else {

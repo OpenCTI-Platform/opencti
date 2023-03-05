@@ -284,7 +284,10 @@ class StixDomainObjectIndicators extends Component {
     if (observableTypes.length) {
       finalFilters = {
         ...finalFilters,
-        x_opencti_main_observable_type: observableTypes.map((n) => ({ id: n, value: n })),
+        x_opencti_main_observable_type: observableTypes.map((n) => ({
+          id: n,
+          value: n,
+        })),
       };
     }
     return (
@@ -393,9 +396,7 @@ class StixDomainObjectIndicators extends Component {
         {
           key: 'x_opencti_main_observable_type',
           operator: 'match',
-          values: observableTypes.map(
-            (type) => type.toLowerCase().replace(/\*/g, ''),
-          ),
+          values: observableTypes.map((type) => type.toLowerCase().replace(/\*/g, '')),
         },
         finalFilters,
       );
@@ -408,34 +409,36 @@ class StixDomainObjectIndicators extends Component {
     };
     return (
       <ExportContextProvider>
-      <div style={{ marginTop: 20, paddingRight: 250 }}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            entityId={stixDomainObjectId}
-            isRelationReversed={true}
-            targetStixDomainObjectTypes={['Indicator']}
-            paginationOptions={paginationOptions}
+        <div style={{ marginTop: 20, paddingRight: 250 }}>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <StixCoreRelationshipCreationFromEntity
+              entityId={stixDomainObjectId}
+              isRelationReversed={true}
+              targetStixDomainObjectTypes={['Indicator']}
+              paginationOptions={paginationOptions}
+              openExports={openExports}
+              paddingRight={270}
+              connectionKey="Pagination_indicators"
+              defaultStartTime={defaultStartTime}
+              defaultStopTime={defaultStopTime}
+            />
+          </Security>
+          <IndicatorsRightBar
+            indicatorTypes={indicatorTypes}
+            observableTypes={observableTypes}
+            handleToggleIndicatorType={this.handleToggleIndicatorType.bind(
+              this,
+            )}
+            handleToggleObservableType={this.handleToggleObservableType.bind(
+              this,
+            )}
+            handleClearObservableTypes={this.handleClearObservableTypes.bind(
+              this,
+            )}
             openExports={openExports}
-            paddingRight={270}
-            connectionKey="Pagination_indicators"
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
           />
-        </Security>
-        <IndicatorsRightBar
-          indicatorTypes={indicatorTypes}
-          observableTypes={observableTypes}
-          handleToggleIndicatorType={this.handleToggleIndicatorType.bind(this)}
-          handleToggleObservableType={this.handleToggleObservableType.bind(
-            this,
-          )}
-          handleClearObservableTypes={this.handleClearObservableTypes.bind(
-            this,
-          )}
-          openExports={openExports}
-        />
-      </div>
+        </div>
       </ExportContextProvider>
     );
   }

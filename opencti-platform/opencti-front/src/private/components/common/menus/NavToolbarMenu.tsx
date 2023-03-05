@@ -22,9 +22,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export interface MenuEntry {
-  path: string
-  label: string
-  icon?: ReactElement
+  path: string;
+  label: string;
+  icon?: ReactElement;
 }
 
 const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({
@@ -51,15 +51,15 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({
               selected={location.pathname.includes(entry.path)}
               dense={false}
             >
-              {entry.icon
-              && <ListItemIcon classes={{ root: classes.itemIcon }}>
+              {entry.icon && (
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
                   {entry.icon}
-                </ListItemIcon>}
+                </ListItemIcon>
+              )}
               <ListItemText primary={t(entry.label)} />
             </MenuItem>
           );
-        })
-        }
+        })}
       </MenuList>
     </Drawer>
   );

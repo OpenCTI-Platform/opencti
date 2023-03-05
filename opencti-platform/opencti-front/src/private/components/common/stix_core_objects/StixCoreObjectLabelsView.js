@@ -35,7 +35,10 @@ import LabelCreation from '../../settings/labels/LabelCreation';
 import Security from '../../../../utils/Security';
 import { hexToRGB } from '../../../../utils/Colors';
 import { truncate } from '../../../../utils/String';
-import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+  SETTINGS_SETLABELS,
+} from '../../../../utils/hooks/useGranted';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

@@ -308,7 +308,10 @@ class Indicators extends Component {
     if (observableTypes.length) {
       finalFilters = {
         ...finalFilters,
-        x_opencti_main_observable_type: observableTypes.map((n) => ({ id: n, value: n })),
+        x_opencti_main_observable_type: observableTypes.map((n) => ({
+          id: n,
+          value: n,
+        })),
       };
     }
     return (
@@ -426,27 +429,29 @@ class Indicators extends Component {
     };
     return (
       <ExportContextProvider>
-      <div className={classes.container}>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IndicatorCreation
-            paginationOptions={paginationOptions}
+        <div className={classes.container}>
+          {view === 'lines' ? this.renderLines(paginationOptions) : ''}
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <IndicatorCreation
+              paginationOptions={paginationOptions}
+              openExports={openExports}
+            />
+          </Security>
+          <IndicatorsRightBar
+            indicatorTypes={indicatorTypes}
+            observableTypes={observableTypes}
+            handleToggleIndicatorType={this.handleToggleIndicatorType.bind(
+              this,
+            )}
+            handleToggleObservableType={this.handleToggleObservableType.bind(
+              this,
+            )}
+            handleClearObservableTypes={this.handleClearObservableTypes.bind(
+              this,
+            )}
             openExports={openExports}
           />
-        </Security>
-        <IndicatorsRightBar
-          indicatorTypes={indicatorTypes}
-          observableTypes={observableTypes}
-          handleToggleIndicatorType={this.handleToggleIndicatorType.bind(this)}
-          handleToggleObservableType={this.handleToggleObservableType.bind(
-            this,
-          )}
-          handleClearObservableTypes={this.handleClearObservableTypes.bind(
-            this,
-          )}
-          openExports={openExports}
-        />
-      </div>
+        </div>
       </ExportContextProvider>
     );
   }

@@ -1,7 +1,18 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import { assoc, difference, filter, fromPairs, head, includes, map, pathOr, pick, pipe } from 'ramda';
+import {
+  assoc,
+  difference,
+  filter,
+  fromPairs,
+  head,
+  includes,
+  map,
+  pathOr,
+  pick,
+  pipe,
+} from 'ramda';
 import { useHistory } from 'react-router-dom';
 import * as R from 'ramda';
 import TextField from '../../../../components/TextField';
@@ -92,7 +103,12 @@ const stixCyberObservableMutationRelationDelete = graphql`
   }
 `;
 
-const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enableReferences, context, handleClose }) => {
+const StixCyberObservableEditionOverviewComponent = ({
+  stixCyberObservable,
+  enableReferences,
+  context,
+  handleClose,
+}) => {
   const history = useHistory();
   const { t } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
@@ -235,264 +251,205 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
   };
 
   return (
-      <QueryRenderer
-        query={stixCyberObservablesLinesAttributesQuery}
-        variables={{ elementType: [stixCyberObservable.entity_type] }}
-        render={({ props }) => {
-          if (props && props.schemaAttributes) {
-            const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
-              ? ''
-              : {
-                label: stixCyberObservable?.createdBy?.name ?? null,
-                value: stixCyberObservable?.createdBy?.id ?? null,
-              };
-            const objectMarking = pipe(
-              pathOr([], ['objectMarking', 'edges']),
-              map((n) => ({
-                label: n.node.definition,
-                value: n.node.id,
-              })),
-            )(stixCyberObservable);
-            const initialValues = pipe(
-              assoc('createdBy', createdBy),
-              assoc('objectMarking', objectMarking),
-              pick([
-                'x_opencti_score',
-                'x_opencti_description',
-                'createdBy',
-                'killChainPhases',
-                'objectMarking',
-              ]),
-            )(stixCyberObservable);
-            const attributes = pipe(
-              map((n) => n.node),
-              filter(
-                (n) => !includes(n.value, ignoredAttributes)
-                  && !n.value.startsWith('i_'),
-              ),
-            )(props.schemaAttributes.edges);
-            for (const attribute of attributes) {
-              if (includes(attribute.value, dateAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[attribute.value]
-                  ? buildDate(stixCyberObservable[attribute.value])
-                  : null;
-              } else if (includes(attribute.value, multipleAttributes)) {
-                initialValues[attribute.value] = stixCyberObservable[attribute.value]
-                  ? stixCyberObservable[attribute.value].join(',')
-                  : null;
-              } else if (attribute.value === 'hashes') {
-                const hashes = pipe(
-                  map((n) => [n.algorithm, n.hash]),
-                  fromPairs,
-                )(stixCyberObservable.hashes);
-                initialValues.hashes_MD5 = hashes.MD5;
-                initialValues['hashes_SHA-1'] = hashes['SHA-1'];
-                initialValues['hashes_SHA-256'] = hashes['SHA-256'];
-                initialValues['hashes_SHA-512'] = hashes['SGA-512'];
-              } else {
-                initialValues[attribute.value] = stixCyberObservable[attribute.value];
-              }
+    <QueryRenderer
+      query={stixCyberObservablesLinesAttributesQuery}
+      variables={{ elementType: [stixCyberObservable.entity_type] }}
+      render={({ props }) => {
+        if (props && props.schemaAttributes) {
+          const createdBy = (stixCyberObservable?.createdBy?.name ?? null) === null
+            ? ''
+            : {
+              label: stixCyberObservable?.createdBy?.name ?? null,
+              value: stixCyberObservable?.createdBy?.id ?? null,
+            };
+          const objectMarking = pipe(
+            pathOr([], ['objectMarking', 'edges']),
+            map((n) => ({
+              label: n.node.definition,
+              value: n.node.id,
+            })),
+          )(stixCyberObservable);
+          const initialValues = pipe(
+            assoc('createdBy', createdBy),
+            assoc('objectMarking', objectMarking),
+            pick([
+              'x_opencti_score',
+              'x_opencti_description',
+              'createdBy',
+              'killChainPhases',
+              'objectMarking',
+            ]),
+          )(stixCyberObservable);
+          const attributes = pipe(
+            map((n) => n.node),
+            filter(
+              (n) => !includes(n.value, ignoredAttributes)
+                && !n.value.startsWith('i_'),
+            ),
+          )(props.schemaAttributes.edges);
+          for (const attribute of attributes) {
+            if (includes(attribute.value, dateAttributes)) {
+              initialValues[attribute.value] = stixCyberObservable[
+                attribute.value
+              ]
+                ? buildDate(stixCyberObservable[attribute.value])
+                : null;
+            } else if (includes(attribute.value, multipleAttributes)) {
+              initialValues[attribute.value] = stixCyberObservable[
+                attribute.value
+              ]
+                ? stixCyberObservable[attribute.value].join(',')
+                : null;
+            } else if (attribute.value === 'hashes') {
+              const hashes = pipe(
+                map((n) => [n.algorithm, n.hash]),
+                fromPairs,
+              )(stixCyberObservable.hashes);
+              initialValues.hashes_MD5 = hashes.MD5;
+              initialValues['hashes_SHA-1'] = hashes['SHA-1'];
+              initialValues['hashes_SHA-256'] = hashes['SHA-256'];
+              initialValues['hashes_SHA-512'] = hashes['SGA-512'];
+            } else {
+              initialValues[attribute.value] = stixCyberObservable[attribute.value];
             }
-            return (
-              <Formik
-                enableReinitialize={true}
-                initialValues={initialValues}
-                onSubmit={onSubmit}
-              >
-                {({ setFieldValue }) => (
-                  <Form style={{ margin: '20px 0 20px 0' }}>
-                    <Field
-                      component={TextField}
-                      variant="standard"
-                      name="x_opencti_score"
-                      label={t('Score')}
-                      fullWidth={true}
-                      type="number"
-                      onFocus={handleChangeFocus}
-                      onSubmit={handleSubmitField}
-                      helperText={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_score"
-                        />
-                      }
-                    />
-                    <Field
-                      component={MarkDownField}
-                      name="x_opencti_description"
-                      label={t('Description')}
-                      fullWidth={true}
-                      multiline={true}
-                      rows="4"
-                      style={{ marginTop: 20 }}
-                      onFocus={handleChangeFocus}
-                      onSubmit={handleSubmitField}
-                      helperText={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldName="x_opencti_description"
-                        />
-                      }
-                    />
-                    {attributes.map((attribute) => {
-                      if (attribute.value === 'hashes') {
-                        return (
-                          <div key={attribute.value}>
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="hashes_MD5"
-                              label={t('hash_md5')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={handleChangeFocus}
-                              onSubmit={handleSubmitField}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName="hashes_MD5"
-                                />
-                              }
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="hashes_SHA-1"
-                              label={t('hash_sha-1')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={handleChangeFocus}
-                              onSubmit={handleSubmitField}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName="hashes_SHA-1"
-                                />
-                              }
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="hashes_SHA-256"
-                              label={t('hash_sha-256')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={handleChangeFocus}
-                              onSubmit={handleSubmitField}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName="hashes_SHA-256"
-                                />
-                              }
-                            />
-                            <Field
-                              component={TextField}
-                              variant="standard"
-                              name="hashes.SHA-512"
-                              label={t('hash_sha-512')}
-                              fullWidth={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={handleChangeFocus}
-                              onSubmit={handleSubmitField}
-                              helperText={
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName="hashes_SHA-512"
-                                />
-                              }
-                            />
-                          </div>
-                        );
-                      }
-                      if (includes(attribute.value, dateAttributes)) {
-                        return (
-                          <Field
-                            component={DateTimePickerField}
-                            key={attribute.value}
-                            name={attribute.value}
-                            withSeconds={true}
-                            onFocus={handleChangeFocus}
-                            onSubmit={handleSubmitField}
-                            TextFieldProps={{
-                              label: attribute.value,
-                              variant: 'standard',
-                              fullWidth: true,
-                              style: { marginTop: 20 },
-                              helperText: (
-                                <SubscriptionFocus
-                                  context={context}
-                                  fieldName={attribute.value}
-                                />
-                              ),
-                            }}
-                          />
-                        );
-                      }
-                      if (includes(attribute.value, numberAttributes)) {
-                        return (
+          }
+          return (
+            <Formik
+              enableReinitialize={true}
+              initialValues={initialValues}
+              onSubmit={onSubmit}
+            >
+              {({ setFieldValue }) => (
+                <Form style={{ margin: '20px 0 20px 0' }}>
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="x_opencti_score"
+                    label={t('Score')}
+                    fullWidth={true}
+                    type="number"
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="x_opencti_score"
+                      />
+                    }
+                  />
+                  <Field
+                    component={MarkDownField}
+                    name="x_opencti_description"
+                    label={t('Description')}
+                    fullWidth={true}
+                    multiline={true}
+                    rows="4"
+                    style={{ marginTop: 20 }}
+                    onFocus={handleChangeFocus}
+                    onSubmit={handleSubmitField}
+                    helperText={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="x_opencti_description"
+                      />
+                    }
+                  />
+                  {attributes.map((attribute) => {
+                    if (attribute.value === 'hashes') {
+                      return (
+                        <div key={attribute.value}>
                           <Field
                             component={TextField}
                             variant="standard"
-                            key={attribute.value}
-                            name={attribute.value}
-                            label={attribute.value}
+                            name="hashes_MD5"
+                            label={t('hash_md5')}
                             fullWidth={true}
-                            number={true}
                             style={{ marginTop: 20 }}
                             onFocus={handleChangeFocus}
                             onSubmit={handleSubmitField}
                             helperText={
                               <SubscriptionFocus
                                 context={context}
-                                fieldName={attribute.value}
+                                fieldName="hashes_MD5"
                               />
                             }
                           />
-                        );
-                      }
-                      if (includes(attribute.value, booleanAttributes)) {
-                        return (
                           <Field
-                            component={SwitchField}
-                            type="checkbox"
-                            key={attribute.value}
-                            name={attribute.value}
-                            label={attribute.value}
-                            containerstyle={{ marginTop: 20 }}
-                            onChange={handleSubmitField}
+                            component={TextField}
+                            variant="standard"
+                            name="hashes_SHA-1"
+                            label={t('hash_sha-1')}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                            onFocus={handleChangeFocus}
+                            onSubmit={handleSubmitField}
+                            helperText={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="hashes_SHA-1"
+                              />
+                            }
                           />
-                        );
-                      }
-                      if (isVocabularyField(stixCyberObservable.entity_type, attribute.value)) {
-                        return (
-                          <OpenVocabField
-                            key={attribute.value}
-                            label={t(attribute.value)}
-                            type={fieldToCategory(stixCyberObservable.entity_type, attribute.value)}
-                            name={attribute.value}
-                            variant={'edit'}
-                            onChange={handleSubmitField}
-                            containerStyle={fieldSpacingContainerStyle}
-                            multiple={false}
-                            editContext={context}
+                          <Field
+                            component={TextField}
+                            variant="standard"
+                            name="hashes_SHA-256"
+                            label={t('hash_sha-256')}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                            onFocus={handleChangeFocus}
+                            onSubmit={handleSubmitField}
+                            helperText={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="hashes_SHA-256"
+                              />
+                            }
                           />
-                        );
-                      }
-                      if (attribute.value === 'obsContent') {
-                        const artifact = stixCyberObservable[attribute.value];
-                        return (
-                          <ArtifactField
-                            key={attribute.value}
-                            attributeName={attribute.value}
-                            attributeValue={artifact ? {
-                              label: artifact.observable_value ?? artifact.id,
-                              value: artifact.id,
-                            } : undefined}
-                            onChange={handleChangeRef}
+                          <Field
+                            component={TextField}
+                            variant="standard"
+                            name="hashes.SHA-512"
+                            label={t('hash_sha-512')}
+                            fullWidth={true}
+                            style={{ marginTop: 20 }}
+                            onFocus={handleChangeFocus}
+                            onSubmit={handleSubmitField}
+                            helperText={
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName="hashes_SHA-512"
+                              />
+                            }
                           />
-                        );
-                      }
+                        </div>
+                      );
+                    }
+                    if (includes(attribute.value, dateAttributes)) {
+                      return (
+                        <Field
+                          component={DateTimePickerField}
+                          key={attribute.value}
+                          name={attribute.value}
+                          withSeconds={true}
+                          onFocus={handleChangeFocus}
+                          onSubmit={handleSubmitField}
+                          TextFieldProps={{
+                            label: attribute.value,
+                            variant: 'standard',
+                            fullWidth: true,
+                            style: { marginTop: 20 },
+                            helperText: (
+                              <SubscriptionFocus
+                                context={context}
+                                fieldName={attribute.value}
+                              />
+                            ),
+                          }}
+                        />
+                      );
+                    }
+                    if (includes(attribute.value, numberAttributes)) {
                       return (
                         <Field
                           component={TextField}
@@ -501,6 +458,7 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
                           name={attribute.value}
                           label={attribute.value}
                           fullWidth={true}
+                          number={true}
                           style={{ marginTop: 20 }}
                           onFocus={handleChangeFocus}
                           onSubmit={handleSubmitField}
@@ -512,38 +470,113 @@ const StixCyberObservableEditionOverviewComponent = ({ stixCyberObservable, enab
                           }
                         />
                       );
-                    })}
-                    <CreatedByField
-                      name="createdBy"
-                      style={fieldSpacingContainerStyle}
-                      setFieldValue={setFieldValue}
-                      helpertext={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldName="createdBy"
+                    }
+                    if (includes(attribute.value, booleanAttributes)) {
+                      return (
+                        <Field
+                          component={SwitchField}
+                          type="checkbox"
+                          key={attribute.value}
+                          name={attribute.value}
+                          label={attribute.value}
+                          containerstyle={{ marginTop: 20 }}
+                          onChange={handleSubmitField}
                         />
-                      }
-                      onChange={handleChangeCreatedBy}
-                    />
-                    <ObjectMarkingField
-                      name="objectMarking"
-                      style={fieldSpacingContainerStyle}
-                      helpertext={
-                        <SubscriptionFocus
-                          context={context}
-                          fieldname="objectMarking"
+                      );
+                    }
+                    if (
+                      isVocabularyField(
+                        stixCyberObservable.entity_type,
+                        attribute.value,
+                      )
+                    ) {
+                      return (
+                        <OpenVocabField
+                          key={attribute.value}
+                          label={t(attribute.value)}
+                          type={fieldToCategory(
+                            stixCyberObservable.entity_type,
+                            attribute.value,
+                          )}
+                          name={attribute.value}
+                          variant={'edit'}
+                          onChange={handleSubmitField}
+                          containerStyle={fieldSpacingContainerStyle}
+                          multiple={false}
+                          editContext={context}
                         />
-                      }
-                      onChange={handleChangeObjectMarking}
-                    />
-                  </Form>
-                )}
-              </Formik>
-            );
-          }
-          return <div />;
-        }}
-      />
+                      );
+                    }
+                    if (attribute.value === 'obsContent') {
+                      const artifact = stixCyberObservable[attribute.value];
+                      return (
+                        <ArtifactField
+                          key={attribute.value}
+                          attributeName={attribute.value}
+                          attributeValue={
+                            artifact
+                              ? {
+                                label:
+                                    artifact.observable_value ?? artifact.id,
+                                value: artifact.id,
+                              }
+                              : undefined
+                          }
+                          onChange={handleChangeRef}
+                        />
+                      );
+                    }
+                    return (
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        key={attribute.value}
+                        name={attribute.value}
+                        label={attribute.value}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                        onFocus={handleChangeFocus}
+                        onSubmit={handleSubmitField}
+                        helperText={
+                          <SubscriptionFocus
+                            context={context}
+                            fieldName={attribute.value}
+                          />
+                        }
+                      />
+                    );
+                  })}
+                  <CreatedByField
+                    name="createdBy"
+                    style={fieldSpacingContainerStyle}
+                    setFieldValue={setFieldValue}
+                    helpertext={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldName="createdBy"
+                      />
+                    }
+                    onChange={handleChangeCreatedBy}
+                  />
+                  <ObjectMarkingField
+                    name="objectMarking"
+                    style={fieldSpacingContainerStyle}
+                    helpertext={
+                      <SubscriptionFocus
+                        context={context}
+                        fieldname="objectMarking"
+                      />
+                    }
+                    onChange={handleChangeObjectMarking}
+                  />
+                </Form>
+              )}
+            </Formik>
+          );
+        }
+        return <div />;
+      }}
+    />
   );
 };
 
@@ -605,7 +638,7 @@ const StixCyberObservableEditionOverview = createFragmentContainer(
           ctime
           mtime
           atime
-          obsContent{
+          obsContent {
             id
             ... on Artifact {
               observable_value

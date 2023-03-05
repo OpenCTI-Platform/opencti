@@ -12,9 +12,15 @@ import makeStyles from '@mui/styles/makeStyles';
 import { buildDate, parse } from '../../../../utils/Time';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, requestSubscription } from '../../../../relay/environment';
+import {
+  commitMutation,
+  requestSubscription,
+} from '../../../../relay/environment';
 import MarkDownField from '../../../../components/MarkDownField';
-import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
+import {
+  SubscriptionAvatars,
+  SubscriptionFocus,
+} from '../../../../components/Subscription';
 import SelectField from '../../../../components/SelectField';
 import KillChainPhasesField from '../form/KillChainPhasesField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
@@ -22,7 +28,11 @@ import CreatedByField from '../form/CreatedByField';
 import ConfidenceField from '../form/ConfidenceField';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -388,12 +398,7 @@ const StixCoreRelationshipEditionContainer = ({
           validationSchema={stixCoreRelationshipValidation(t)}
           onSubmit={onSubmit}
         >
-          {({
-            submitForm,
-            isSubmitting,
-            setFieldValue,
-            values,
-          }) => (
+          {({ submitForm, isSubmitting, setFieldValue, values }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <ConfidenceField
                 component={SelectField}

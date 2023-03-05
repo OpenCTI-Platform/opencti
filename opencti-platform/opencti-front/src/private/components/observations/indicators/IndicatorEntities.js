@@ -134,31 +134,35 @@ class IndicatorEntities extends Component {
     return (
       <div className={classes.container}>
         <UserContext.Consumer>
-          {({ helper }) => (<>
-        {view === 'lines' ? this.renderLines(helper, paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <StixCoreRelationshipCreationFromEntity
-            paginationOptions={paginationOptions}
-            entityId={indicatorId}
-            isRelationReversed={false}
-            targetStixDomainObjectTypes={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Incident',
-              'Malware',
-              'Infrastructure',
-              'Tool',
-              'Vulnerability',
-              'Attack-Pattern',
-              'Indicator',
-            ]}
-            defaultStartTime={defaultStartTime}
-            defaultStopTime={defaultStopTime}
-          />
-        </Security>
-              </>)}
-              </UserContext.Consumer>
+          {({ helper }) => (
+            <>
+              {view === 'lines'
+                ? this.renderLines(helper, paginationOptions)
+                : ''}
+              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+                <StixCoreRelationshipCreationFromEntity
+                  paginationOptions={paginationOptions}
+                  entityId={indicatorId}
+                  isRelationReversed={false}
+                  targetStixDomainObjectTypes={[
+                    'Threat-Actor',
+                    'Intrusion-Set',
+                    'Campaign',
+                    'Incident',
+                    'Malware',
+                    'Infrastructure',
+                    'Tool',
+                    'Vulnerability',
+                    'Attack-Pattern',
+                    'Indicator',
+                  ]}
+                  defaultStartTime={defaultStartTime}
+                  defaultStopTime={defaultStopTime}
+                />
+              </Security>
+            </>
+          )}
+        </UserContext.Consumer>
       </div>
     );
   }
