@@ -80,7 +80,7 @@ Omit<ItemOpenVocabProps, 'type'>
     : { marginTop: 7 };
   return (
     <span className={classes.container}>
-      <pre style={preStyle}>{t(value)}</pre>
+      <pre style={preStyle}>{value}</pre>
       <Tooltip title={t(description)}>
         <InformationOutline
           className={small ? classes.smallIcon : classes.icon}
