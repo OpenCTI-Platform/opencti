@@ -58,7 +58,9 @@ const GroupingComponent = ({ grouping }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={grouping.id}
-        defaultMarking={(grouping.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarking={(grouping.objectMarking?.edges ?? []).map(
+          (edge) => edge.node,
+        )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <GroupingEdition groupingId={grouping.id} />

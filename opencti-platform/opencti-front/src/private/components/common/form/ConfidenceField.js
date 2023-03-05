@@ -33,7 +33,8 @@ class ConfidenceField extends Component {
           containerstyle={containerStyle}
           helpertext={
             <SubscriptionFocus context={editContext} fieldName={name} />
-          }>
+          }
+        >
           <MenuItem value="0">{t('None')}</MenuItem>
           <MenuItem value="15">{t('Low')}</MenuItem>
           <MenuItem value="50">{t('Moderate')}</MenuItem>
@@ -50,7 +51,8 @@ class ConfidenceField extends Component {
         name={name}
         label={label}
         fullWidth={true}
-        containerstyle={containerStyle}>
+        containerstyle={containerStyle}
+      >
         <MenuItem value="0">{t('None')}</MenuItem>
         <MenuItem value="15">{t('Low')}</MenuItem>
         <MenuItem value="50">{t('Moderate')}</MenuItem>

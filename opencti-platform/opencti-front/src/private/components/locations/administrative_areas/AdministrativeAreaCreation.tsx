@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -10,6 +10,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -75,6 +76,10 @@ const administrativeAreaMutation = graphql`
     $input: AdministrativeAreaAddInput!
   ) {
     administrativeAreaAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...AdministrativeAreaLine_node
     }
   }
@@ -91,15 +96,18 @@ interface AdministrativeAreaAddInput {
   externalReferences: Option[]
 }
 
-const AdministrativeAreaCreation = ({
-  paginationOptions,
-}: {
-  paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
-}) => {
+interface AdministrativeAreaFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAreaFormProps> = ({ updater, onReset, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState<boolean>(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -107,9 +115,6 @@ const AdministrativeAreaCreation = ({
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
   const administrativeAreaValidator = useSchemaCreationValidation('Administrative-Area', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
   const [commit] = useMutation(administrativeAreaMutation);
   const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
     values,
@@ -130,142 +135,174 @@ const AdministrativeAreaCreation = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_administrativeAreas',
-          paginationOptions,
-          'administrativeAreaAdd',
-        );
+        if (updater) {
+          updater(store, 'administrativeAreaAdd');
+        }
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
+  return <Formik<AdministrativeAreaAddInput>
+      initialValues={{
+        name: '',
+        description: '',
+        latitude: '',
+        longitude: '',
+        createdBy: defaultCreatedBy ?? undefined,
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+      }}
+      validationSchema={administrativeAreaValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+  >
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Administrative-Area']}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="latitude"
+              label={t('Latitude')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="longitude"
+              label={t('Longitude')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const AdministrativeAreaCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: AdministrativeAreasLinesPaginationQuery$variables;
+}) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => {
+    insertNode(
+      store,
+      'Pagination_administrativeAreas',
+      paginationOptions,
+      'administrativeAreaAdd',
+    );
+  };
   return (
     <div>
-      <Fab onClick={handleOpen} color="secondary" aria-label="Add" className={classes.createButton}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an area')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<AdministrativeAreaAddInput>
-            initialValues={{
-              name: '',
-              description: '',
-              latitude: '',
-              longitude: '',
-              createdBy: undefined,
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={administrativeAreaValidator}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['Administrative-Area']}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="latitude"
-                  label={t('Latitude')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="longitude"
-                  label={t('Longitude')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <AdministrativeAreaCreationForm
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>

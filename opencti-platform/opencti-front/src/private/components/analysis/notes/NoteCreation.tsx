@@ -6,7 +6,6 @@ import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
@@ -14,6 +13,7 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -89,6 +89,9 @@ export const noteCreationUserMutation = graphql`
   mutation NoteCreationUserMutation($input: NoteUserAddInput!) {
     userNoteAdd(input: $input) {
       id
+      entity_type
+      attribute_abstract
+      content
       ...NoteLine_node
     }
   }
@@ -98,22 +101,25 @@ export const noteCreationMutation = graphql`
   mutation NoteCreationMutation($input: NoteAddInput!) {
     noteAdd(input: $input) {
       id
+      entity_type
+      attribute_abstract
+      content
       ...NoteLine_node
     }
   }
 `;
 
 interface NoteAddInput {
-  created: Date
-  attribute_abstract: string
-  content: string
-  note_types: string[]
-  confidence: number
-  likelihood?: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
+  created: Date;
+  attribute_abstract: string;
+  content: string;
+  note_types: string[];
+  confidence: number;
+  likelihood?: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
 }
 
 interface NoteCreationProps {
@@ -123,18 +129,28 @@ interface NoteCreationProps {
   paginationOptions: NotesLinesPaginationQuery$variables;
 }
 
-const NoteCreation: FunctionComponent<NoteCreationProps> = ({
+interface NoteFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: Option;
+  defaultMarkingDefinitions?: Option[];
+  defaultConfidence?: number;
+}
+
+export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
+  updater,
+  onReset,
   inputValue,
-  display,
-  contextual,
-  paginationOptions,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
 }) => {
-  const { t } = useFormatter();
   const classes = useStyles();
-
-  const [open, setOpen] = useState(false);
+  const { t } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-
   const basicShape = {
     created: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -146,21 +162,20 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
     likelihood: Yup.number().min(0).max(100),
   };
   // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
-  const noteValidator = useSchemaCreationValidation('Note', basicShape, userIsKnowledgeEditor ? [] : ['createdBy']);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
+  const noteValidator = useSchemaCreationValidation(
+    'Note',
+    basicShape,
+    userIsKnowledgeEditor ? [] : ['createdBy'],
+  );
   const initialValues: NoteAddInput = {
     created: dayStartDate(),
     attribute_abstract: '',
     content: inputValue || '',
     note_types: [],
-    confidence: 75,
+    confidence: defaultConfidence ?? 75,
     likelihood: 50,
-    createdBy: '' as unknown as Option,
-    objectMarking: [],
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+    objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
   };
@@ -191,102 +206,141 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(
-          store,
-          'Pagination_notes',
-          paginationOptions,
-          userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd',
-        );
+        if (updater) {
+          updater(store, userIsKnowledgeEditor ? 'noteAdd' : 'userNoteAdd');
+        }
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
-  const fields = (
-    setFieldValue: (
-      field: string,
-      value: unknown,
-      shouldValidate?: boolean | undefined
-    ) => void,
-    values: NoteAddInput,
-  ) => (
-    <>
-      <Field
-        component={DateTimePickerField}
-        name="created"
-        TextFieldProps={{
-          label: t('Publication date'),
-          variant: 'standard',
-          fullWidth: true,
-        }}
-      />
-      <Field
-        component={TextField}
-        variant="standard"
-        name="attribute_abstract"
-        label={t('Abstract')}
-        fullWidth={true}
-        style={{ marginTop: 20 }}
-      />
-      <Field
-        component={MarkDownField}
-        name="content"
-        label={t('Content')}
-        fullWidth={true}
-        multiline={true}
-        rows="4"
-        style={{ marginTop: 20 }}
-      />
-      <OpenVocabField
-        label={t('Note types')}
-        type="note_types_ov"
-        name="note_types"
-        onChange={(name, value) => setFieldValue(name, value)}
-        containerStyle={fieldSpacingContainerStyle}
-        multiple={true}
-      />
-      <ConfidenceField
-        name="confidence"
-        label={t('Confidence')}
-        fullWidth={true}
-        containerStyle={fieldSpacingContainerStyle}
-      />
-      <Field
-        component={SliderField}
-        variant="standard"
-        name="likelihood"
-        label={t('Likelihood')}
-        fullWidth={true}
-        style={{ marginTop: 20 }}
-      />
-      {userIsKnowledgeEditor && (
-        <CreatedByField
-          name="createdBy"
-          style={{ marginTop: 10 }}
-          setFieldValue={setFieldValue}
-        />
+
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={noteValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={DateTimePickerField}
+            name="created"
+            TextFieldProps={{
+              label: t('Publication date'),
+              variant: 'standard',
+              fullWidth: true,
+            }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="attribute_abstract"
+            label={t('Abstract')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={MarkDownField}
+            name="content"
+            label={t('Content')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <OpenVocabField
+            label={t('Note types')}
+            type="note_types_ov"
+            name="note_types"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+          />
+          <ConfidenceField
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={SliderField}
+            variant="standard"
+            name="likelihood"
+            label={t('Likelihood')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          {userIsKnowledgeEditor && (
+            <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 10 }}
+              setFieldValue={setFieldValue}
+            />
+          )}
+          <ObjectLabelField
+            name="objectLabel"
+            style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
-      <ObjectLabelField
-        name="objectLabel"
-        style={{ marginTop: userIsKnowledgeEditor ? 20 : 10 }}
-        setFieldValue={setFieldValue}
-        values={values.objectLabel}
-      />
-      <ObjectMarkingField
-        name="objectMarking"
-        style={fieldSpacingContainerStyle}
-      />
-      <ExternalReferencesField
-        name="externalReferences"
-        style={fieldSpacingContainerStyle}
-        setFieldValue={setFieldValue}
-        values={values.externalReferences}
-      />
-    </>
+    </Formik>
   );
+};
+
+const NoteCreation: FunctionComponent<NoteCreationProps> = ({
+  inputValue,
+  display,
+  contextual,
+  paginationOptions,
+}) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy, key: string) => {
+    return insertNode(store, 'Pagination_notes', paginationOptions, key);
+  };
+
   const renderClassic = () => {
     return (
       <div>
@@ -319,43 +373,12 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
             <Typography variant="h6">{t('Create a note')}</Typography>
           </div>
           <div className={classes.container}>
-            <Formik
-              initialValues={initialValues}
-              validationSchema={noteValidator}
-              onSubmit={onSubmit}
-              onReset={onReset}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  {fields(setFieldValue, values)}
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            <NoteCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
           </div>
         </Drawer>
       </div>
@@ -373,38 +396,15 @@ const NoteCreation: FunctionComponent<NoteCreationProps> = ({
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-          <Formik
-            enableReinitialize={true}
-            initialValues={initialValues}
-            validationSchema={noteValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form>
-                <DialogTitle>{t('Create a note')}</DialogTitle>
-                <DialogContent>{fields(setFieldValue, values)}</DialogContent>
-                <DialogActions>
-                  <Button onClick={handleReset} disabled={isSubmitting}>
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                  >
-                    {t('Create')}
-                  </Button>
-                </DialogActions>
-              </Form>
-            )}
-          </Formik>
+          <DialogTitle>{t('Create a note')}</DialogTitle>
+          <DialogContent>
+            <NoteCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
+          </DialogContent>
         </Dialog>
       </div>
     );

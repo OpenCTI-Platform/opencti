@@ -87,16 +87,25 @@ const useStyles = makeStyles((theme) => ({
 const groupingMutation = graphql`
   mutation GroupingCreationMutation($input: GroupingAddInput!) {
     groupingAdd(input: $input) {
+      id
+      name
+      entity_type
+      description
       ...GroupingLine_node
     }
   }
 `;
 
-const GroupingCreation = ({ paginationOptions }) => {
+export const GroupingCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number().nullable(),
@@ -104,11 +113,10 @@ const GroupingCreation = ({ paginationOptions }) => {
     description: Yup.string().nullable(),
   };
   const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
-
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
-        confidence: parseInt(values.confidence, 10),
+        confidence: () => parseInt(values.confidence, 10),
         createdBy: R.path(['value']),
         objectMarking: R.pluck('value'),
         objectLabel: R.pluck('value'),
@@ -121,12 +129,11 @@ const GroupingCreation = ({ paginationOptions }) => {
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_groupings',
-        paginationOptions,
-        'groupingAdd',
-      ),
+      updater: (store) => {
+        if (updater) {
+          updater(store, 'groupingAdd');
+        }
+      },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -135,11 +142,113 @@ const GroupingCreation = ({ paginationOptions }) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        setOpen(false);
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
+  return (
+    <Formik
+      initialValues={{
+        name: '',
+        confidence: defaultConfidence ?? 75,
+        context: '',
+        description: '',
+        createdBy: defaultCreatedBy ?? '',
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+      }}
+      validationSchema={groupingValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+          />
+          <ConfidenceField
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          <OpenVocabField
+            label={t('Context')}
+            type="grouping-context-ov"
+            name="context"
+            multiple={false}
+            containerStyle={fieldSpacingContainerStyle}
+            onChange={setFieldValue}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+};
+
+const GroupingCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const onReset = () => setOpen(false);
+  const updater = (store) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <div>
       <Fab
@@ -171,102 +280,11 @@ const GroupingCreation = ({ paginationOptions }) => {
           <Typography variant="h6">{t('Create a grouping')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              confidence: 75,
-              context: '',
-              description: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={groupingValidator}
-            onSubmit={onSubmit}
-            onReset={() => setOpen(false)}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                />
-                <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
-                  containerStyle={fieldSpacingContainerStyle}
-                />
-                <OpenVocabField
-                  label={t('Context')}
-                  type="grouping-context-ov"
-                  name="context"
-                  multiple={false}
-                  containerStyle={fieldSpacingContainerStyle}
-                  onChange={setFieldValue}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <GroupingCreationForm
+            updater={updater}
+            onCompleted={onReset}
+            onReset={onReset}
+          />
         </div>
       </Drawer>
     </div>

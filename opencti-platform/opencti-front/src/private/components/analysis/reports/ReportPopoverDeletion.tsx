@@ -109,7 +109,8 @@ const ReportPopoverDeletion: FunctionComponent<ReportPopoverDeletionProps> = ({
                 </FormGroup>
               </Alert>
             );
-          }}></QueryRenderer>
+          }}
+        ></QueryRenderer>
       </DialogContent>
       <DialogActions>
         <Button onClick={handleCloseDelete} disabled={deleting}>

@@ -11,7 +11,10 @@ import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -69,28 +72,35 @@ const useStyles = makeStyles((theme) => ({
 const threatActorMutation = graphql`
   mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
     threatActorAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...ThreatActorCard_node
     }
   }
 `;
 
-const ThreatActorCreation = ({ paginationOptions }) => {
+export const ThreatActorCreationForm = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().required(t('This field is required')),
     threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const threatActorValidator = useSchemaCreationValidation('Threat-Actor', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
+  const threatActorValidator = useSchemaCreationValidation(
+    'Threat-Actor',
+    basicShape,
+  );
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const adaptedValues = R.evolve(
       {
@@ -107,12 +117,11 @@ const ThreatActorCreation = ({ paginationOptions }) => {
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => insertNode(
-        store,
-        'Pagination_threatActors',
-        paginationOptions,
-        'threatActorAdd',
-      ),
+      updater: (store) => {
+        if (updater) {
+          updater(store, 'threatActorAdd');
+        }
+      },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -121,11 +130,124 @@ const ThreatActorCreation = ({ paginationOptions }) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
+  return (
+    <Formik
+      initialValues={{
+        name: '',
+        threat_actor_types: [],
+        confidence: defaultConfidence ?? 75,
+        description: '',
+        createdBy: defaultCreatedBy ?? '',
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+      }}
+      validationSchema={threatActorValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+            ]}
+          />
+          <OpenVocabField
+            type="threat-actor-type-ov"
+            name="threat_actor_types"
+            label={t('Threat actor types')}
+            multiple={true}
+            containerStyle={{ width: '100%', marginTop: 20 }}
+            onChange={setFieldValue}
+          />
+          <ConfidenceField
+            name="confidence"
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={{ width: '100%', marginTop: 20 }}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
+};
 
+const ThreatActorCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_threatActors',
+    paginationOptions,
+    'threatActorAdd',
+  );
   return (
     <div>
       <Fab
@@ -157,108 +279,11 @@ const ThreatActorCreation = ({ paginationOptions }) => {
           <Typography variant="h6">{t('Create a threat actor')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              threat_actor_types: [],
-              confidence: 75,
-              description: '',
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={threatActorValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={[
-                    'Threat-Actor',
-                    'Intrusion-Set',
-                    'Campaign',
-                    'Malware',
-                  ]}
-                />
-                <OpenVocabField
-                  type="threat-actor-type-ov"
-                  name="threat_actor_types"
-                  label={t('Threat actor types')}
-                  multiple={true}
-                  containerStyle={{ width: '100%', marginTop: 20 }}
-                  onChange={setFieldValue}
-                />
-                <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
-                  containerStyle={{ width: '100%', marginTop: 20 }}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <ThreatActorCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>

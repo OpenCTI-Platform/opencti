@@ -7,9 +7,7 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import {
-  ExternalReferenceEditionOverview_externalReference$data,
-} from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
+import { ExternalReferenceEditionOverview_externalReference$data } from './__generated__/ExternalReferenceEditionOverview_externalReference.graphql';
 
 export const externalReferenceMutationFieldPatch = graphql`
   mutation ExternalReferenceEditionOverviewFieldPatchMutation(
@@ -46,15 +44,26 @@ const externalReferenceValidation = (t: (value: string) => string) => Yup.object
 });
 
 interface ExternalReferenceEditionOverviewComponentProps {
-  externalReference: ExternalReferenceEditionOverview_externalReference$data,
-  context: readonly ({ readonly focusOn: string | null; readonly name: string; } | null)[] | null,
+  externalReference: ExternalReferenceEditionOverview_externalReference$data;
+  context:
+  | readonly ({
+    readonly focusOn: string | null;
+    readonly name: string;
+  } | null)[]
+  | null;
 }
 
-const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalReferenceEditionOverviewComponentProps> = ({ externalReference, context }) => {
+const ExternalReferenceEditionOverviewComponent: FunctionComponent<
+ExternalReferenceEditionOverviewComponentProps
+> = ({ externalReference, context }) => {
   const { t } = useFormatter();
 
-  const [commitMutationExternalReferenceEditionOverviewFocus] = useMutation(externalReferenceEditionOverviewFocus);
-  const [commitMutationExternalReferenceMutationFieldPatch] = useMutation(externalReferenceMutationFieldPatch);
+  const [commitMutationExternalReferenceEditionOverviewFocus] = useMutation(
+    externalReferenceEditionOverviewFocus,
+  );
+  const [commitMutationExternalReferenceMutationFieldPatch] = useMutation(
+    externalReferenceMutationFieldPatch,
+  );
 
   const initialValues = pick(
     ['source_name', 'external_id', 'url', 'description'],
@@ -90,7 +99,8 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={externalReferenceValidation(t)}
-      onSubmit={() => {}}>
+      onSubmit={() => {}}
+    >
       {() => (
         <div>
           <Form style={{ margin: '20px 0 20px 0' }}>
@@ -103,10 +113,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="source_name"
-                />
+                <SubscriptionFocus context={context} fieldName="source_name" />
               }
             />
             <Field
@@ -119,10 +126,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="external_id"
-                />
+                <SubscriptionFocus context={context} fieldName="external_id" />
               }
             />
             <Field
@@ -150,10 +154,7 @@ const ExternalReferenceEditionOverviewComponent: FunctionComponent<ExternalRefer
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="description"
-                />
+                <SubscriptionFocus context={context} fieldName="description" />
               }
             />
           </Form>

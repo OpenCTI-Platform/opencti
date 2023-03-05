@@ -37,16 +37,12 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const ThreatActorEditionContainer = (props) => {
+const ThreatActorEditionContainer = ({ handleClose, threatActor }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const { handleClose, threatActor } = props;
   const { editContext } = threatActor;
-
   const [currentTab, setCurrentTab] = useState(0);
   const handleChangeTab = (event, value) => setCurrentTab(value);
-
   return (
     <div>
       <div className={classes.header}>
@@ -67,10 +63,7 @@ const ThreatActorEditionContainer = (props) => {
       </div>
       <div className={classes.container}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={handleChangeTab}
-          >
+          <Tabs value={currentTab} onChange={handleChangeTab}>
             <Tab label={t('Overview')} />
             <Tab label={t('Details')} />
           </Tabs>

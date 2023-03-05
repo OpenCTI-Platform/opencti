@@ -12,7 +12,12 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -91,7 +96,10 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const intrusionSetValidator = useSchemaEditionValidation('Intrusion-Set', basicShape);
+  const intrusionSetValidator = useSchemaEditionValidation(
+    'Intrusion-Set',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: intrusionSetMutationFieldPatch,
@@ -99,7 +107,12 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     relationDelete: intrusionSetMutationRelationDelete,
     editionFocus: intrusionSetEditionOverviewFocus,
   };
-  const editor = useFormEditor(intrusionSet, enableReferences, queries, intrusionSetValidator);
+  const editor = useFormEditor(
+    intrusionSet,
+    enableReferences,
+    queries,
+    intrusionSetValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -122,7 +135,7 @@ const IntrusionSetEditionOverviewComponent = (props) => {
         id: intrusionSet.id,
         input: inputValues,
         commitMessage:
-        commitMessage && commitMessage.length > 0 ? commitMessage : null,
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references,
       },
       onCompleted: () => {
@@ -170,140 +183,140 @@ const IntrusionSetEditionOverviewComponent = (props) => {
     ]),
   )(intrusionSet);
   return (
-  <Formik
-    enableReinitialize={true}
-    initialValues={initialValues}
-    validationSchema={intrusionSetValidator}
-    onSubmit={onSubmit}
-  >
-    {({
-      submitForm,
-      isSubmitting,
-      setFieldValue,
-      values,
-      isValid,
-      dirty,
-    }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          onFocus={editor.changeFocus}
-          onSubmit={handleSubmitField}
-          helperText={
-            <SubscriptionFocus context={context} fieldName="name" />
-          }
-        />
-        <ConfidenceField
-          name="confidence"
-          onFocus={editor.changeFocus}
-          onChange={handleSubmitField}
-          label={t('Confidence')}
-          fullWidth={true}
-          containerStyle={fieldSpacingContainerStyle}
-          editContext={context}
-          variant="edit"
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-          onFocus={editor.changeFocus}
-          onSubmit={handleSubmitField}
-          helperText={
-            <SubscriptionFocus context={context} fieldName="description" />
-          }
-        />
-        {intrusionSet.workflowEnabled && (
-          <StatusField
-            name="x_opencti_workflow_id"
-            type="Intrusion-Set"
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={intrusionSetValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            setFieldValue={setFieldValue}
-            style={{ marginTop: 20 }}
-            helpertext={
-              <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
             }
           />
-        )}
-        <CreatedByField
-          name="createdBy"
-          style={{ marginTop: 20, width: '100%' }}
-          setFieldValue={setFieldValue}
-          helpertext={
-            <SubscriptionFocus context={context} fieldName="createdBy" />
-          }
-          onChange={editor.changeCreated}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{ marginTop: 20, width: '100%' }}
-          helpertext={
-            <SubscriptionFocus
-              context={context}
-              fieldname="objectMarking"
-            />
-          }
-          onChange={editor.changeMarking}
-        />
-        {enableReferences && (
-          <CommitMessage
-            submitForm={submitForm}
-            disabled={isSubmitting || !isValid || !dirty}
-            setFieldValue={setFieldValue}
-            open={false}
-            values={values.references}
-            id={intrusionSet.id}
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={fieldSpacingContainerStyle}
+            editContext={context}
+            variant="edit"
           />
-        )}
-      </Form>
-    )}
-  </Formik>
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          {intrusionSet.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Intrusion-Set"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
+              }
+            />
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={intrusionSet.id}
+            />
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(IntrusionSetEditionOverviewComponent, {
   intrusionSet: graphql`
-      fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
-        id
-        name
-        confidence
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment IntrusionSetEditionOverview_intrusionSet on IntrusionSet {
+      id
+      name
+      confidence
+      description
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

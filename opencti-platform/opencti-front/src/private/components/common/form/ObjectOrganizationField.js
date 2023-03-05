@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { AccountBalanceOutlined } from '@mui/icons-material';
 import { Field } from 'formik';
 import { graphql } from 'react-relay';
 import Alert from '@mui/material/Alert';
@@ -8,6 +7,7 @@ import { makeStyles } from '@mui/styles';
 import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -51,7 +51,10 @@ const ObjectOrganizationField = (props) => {
     multiple = true,
   } = props;
 
-  const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({ label: n.name, value: n.id }));
+  const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
+    label: n.name,
+    value: n.id,
+  }));
   const [organizations, setOrganizations] = useState(defaultStateOrganizations);
   const classes = useStyles();
   const { t } = useFormatter();
@@ -62,7 +65,10 @@ const ObjectOrganizationField = (props) => {
     })
       .toPromise()
       .then((data) => {
-        const searchResults = data.organizations.edges.map((n) => ({ label: n.node.name, value: n.node.id }));
+        const searchResults = data.organizations.edges.map((n) => ({
+          label: n.node.name,
+          value: n.node.id,
+        }));
         setOrganizations(searchResults);
       });
   };
@@ -88,8 +94,8 @@ const ObjectOrganizationField = (props) => {
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(renderProps, option) => (
           <li {...renderProps}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <AccountBalanceOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="Organization" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
@@ -98,7 +104,12 @@ const ObjectOrganizationField = (props) => {
     );
   }
   return (
-    <Alert severity="warning" variant="outlined" style={style} classes={{ message: classes.message }}>
+    <Alert
+      severity="warning"
+      variant="outlined"
+      style={style}
+      classes={{ message: classes.message }}
+    >
       <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
       <Field
         component={AutocompleteField}
@@ -118,8 +129,8 @@ const ObjectOrganizationField = (props) => {
         onChange={typeof onChange === 'function' ? onChange : null}
         renderOption={(renderProps, option) => (
           <li {...renderProps}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <AccountBalanceOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="Organization" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

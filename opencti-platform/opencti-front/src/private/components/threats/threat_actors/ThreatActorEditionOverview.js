@@ -12,7 +12,12 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useFormatter } from '../../../../components/i18n';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -92,7 +97,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const threatActorValidator = useSchemaEditionValidation('Threat-Actor', basicShape);
+  const threatActorValidator = useSchemaEditionValidation(
+    'Threat-Actor',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: threatActorMutationFieldPatch,
@@ -100,7 +108,12 @@ const ThreatActorEditionOverviewComponent = (props) => {
     relationDelete: threatActorMutationRelationDelete,
     editionFocus: threatActorEditionOverviewFocus,
   };
-  const editor = useFormEditor(threatActor, enableReferences, queries, threatActorValidator);
+  const editor = useFormEditor(
+    threatActor,
+    enableReferences,
+    queries,
+    threatActorValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -156,7 +169,10 @@ const ThreatActorEditionOverviewComponent = (props) => {
     R.assoc('objectMarking', convertMarkings(threatActor)),
     R.assoc('x_opencti_workflow_id', convertStatus(t, threatActor)),
     R.assoc('references', []),
-    R.assoc('threat_actor_types', threatActor.threat_actor_types ? threatActor.threat_actor_types : []),
+    R.assoc(
+      'threat_actor_types',
+      threatActor.threat_actor_types ? threatActor.threat_actor_types : [],
+    ),
     R.pick([
       'name',
       'references',
@@ -170,150 +186,153 @@ const ThreatActorEditionOverviewComponent = (props) => {
     ]),
   )(threatActor);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={{ ...initialValues, references: [] }}
-        validationSchema={threatActorValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <OpenVocabField
-              variant="edit"
-              type="threat-actor-type-ov"
-              name="threat_actor_types"
-              label={t('Threat actor types')}
-              containerStyle={{ width: '100%', marginTop: 20 }}
-              multiple={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              editContext={context}
-            />
-            <ConfidenceField
-              name="confidence"
+    <Formik
+      enableReinitialize={true}
+      initialValues={{ ...initialValues, references: [] }}
+      validationSchema={threatActorValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <OpenVocabField
+            variant="edit"
+            type="threat-actor-type-ov"
+            name="threat_actor_types"
+            label={t('Threat actor types')}
+            containerStyle={{ width: '100%', marginTop: 20 }}
+            multiple={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            editContext={context}
+          />
+          <ConfidenceField
+            name="confidence"
+            onFocus={editor.changeFocus}
+            onChange={handleSubmitField}
+            label={t('Confidence')}
+            fullWidth={true}
+            containerStyle={{ width: '100%', marginTop: 20 }}
+            editContext={context}
+            variant="edit"
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          {threatActor.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Threat-Actor"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
-              label={t('Confidence')}
-              fullWidth={true}
-              containerStyle={{ width: '100%', marginTop: 20 }}
-              editContext={context}
-              variant="edit"
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            {threatActor.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Threat-Actor"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} field="x_opencti_workflow_id" />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
               setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+                <SubscriptionFocus
+                  context={context}
+                  field="x_opencti_workflow_id"
+                />
               }
-              onChange={editor.changeCreated}
             />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
-              onChange={editor.changeMarking}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={{ marginTop: 20, width: '100%' }}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{ marginTop: 20, width: '100%' }}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={threatActor.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={threatActor.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(ThreatActorEditionOverviewComponent, {
   threatActor: graphql`
-      fragment ThreatActorEditionOverview_threatActor on ThreatActor {
-        id
-        name
-        threat_actor_types
-        confidence
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment ThreatActorEditionOverview_threatActor on ThreatActor {
+      id
+      name
+      threat_actor_types
+      confidence
+      description
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

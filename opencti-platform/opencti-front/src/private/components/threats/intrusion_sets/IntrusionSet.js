@@ -84,7 +84,9 @@ class IntrusionSetComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={intrusionSet.id}
-          defaultMarking={(intrusionSet.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(intrusionSet.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IntrusionSetEdition intrusionSetId={intrusionSet.id} />

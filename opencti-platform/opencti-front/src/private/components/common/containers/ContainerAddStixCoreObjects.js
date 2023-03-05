@@ -254,11 +254,7 @@ class ContainerAddStixCoreObjects extends Component {
           confidence={confidence}
           defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinitions={defaultMarkingDefinitions}
-          stixCoreObjectTypes={
-            targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0
-              ? targetStixCoreObjectTypes
-              : []
-          }
+          stixCoreObjectTypes={targetStixCoreObjectTypes && targetStixCoreObjectTypes.length > 0 ? targetStixCoreObjectTypes : []}
           speeddial={true}
           open={openCreateEntity}
           handleClose={this.handleCloseCreateEntity.bind(this)}
@@ -281,11 +277,7 @@ class ContainerAddStixCoreObjects extends Component {
 
   renderEntityCreation(paginationOptions) {
     const { targetStixCoreObjectTypes } = this.props;
-    if (
-      targetStixCoreObjectTypes
-      && ContainerAddStixCoreObjects.isTypeDomainObject(
-        targetStixCoreObjectTypes,
-      )
+    if (targetStixCoreObjectTypes && ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes)
       && !ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
     ) {
       return this.renderDomainObjectCreation(paginationOptions);

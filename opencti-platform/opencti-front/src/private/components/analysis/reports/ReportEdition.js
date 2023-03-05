@@ -86,7 +86,10 @@ class ReportEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <ReportEditionContainer report={props.report} handleClose={this.handleClose.bind(this)} />
+                  <ReportEditionContainer
+                    report={props.report}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

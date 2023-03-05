@@ -9,7 +9,6 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
@@ -21,6 +20,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -71,6 +71,7 @@ const sectorMutation = graphql`
       id
       name
       description
+      entity_type
       isSubSector
       subSectors {
         edges {
@@ -85,30 +86,15 @@ const sectorMutation = graphql`
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_sectors',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const SectorCreation = ({ paginationOptions }) => {
+export const SectorCreationForm = ({ updater, onReset, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const sectorValidator = useSchemaCreationValidation('Sector', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc('createdBy', values.createdBy?.value),
@@ -122,10 +108,9 @@ const SectorCreation = ({ paginationOptions }) => {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('sectorAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(store, container.getDataID(), paginationOptions, newEdge);
+        if (updater) {
+          updater(store, 'sectorAdd');
+        }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -135,29 +120,123 @@ const SectorCreation = ({ paginationOptions }) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
+  return <Formik initialValues={{
+    name: '',
+    description: '',
+    createdBy: defaultCreatedBy ?? '',
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+  }}
+      validationSchema={sectorValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Sector']}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const SectorCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_sectors',
+    paginationOptions,
+    'sectorAdd',
+  );
+
   return (
       <div>
-        <Fab
-          onClick={handleOpen}
+        <Fab onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
         >
           <Add />
         </Fab>
-        <Drawer
-          open={open}
+        <Drawer open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}
-        >
+          onClose={handleClose}>
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -171,87 +250,7 @@ const SectorCreation = ({ paginationOptions }) => {
             <Typography variant="h6">{t('Create a sector')}</Typography>
           </div>
           <div className={classes.container}>
-            <Formik
-              initialValues={{
-                name: '',
-                description: '',
-                createdBy: '',
-                objectMarking: [],
-                objectLabel: [],
-                externalReferences: [],
-              }}
-              validationSchema={sectorValidator}
-              onSubmit={onSubmit}
-              onReset={onReset}
-            >
-              {({
-                submitForm,
-                handleReset,
-                isSubmitting,
-                setFieldValue,
-                values,
-              }) => (
-                <Form style={{ margin: '20px 0 20px 0' }}>
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Sector']}
-                  />
-                  <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <CreatedByField
-                    name="createdBy"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                  />
-                  <ObjectMarkingField
-                    name="objectMarking"
-                    style={fieldSpacingContainerStyle}
-                  />
-                  <ExternalReferencesField
-                    name="externalReferences"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                  />
-                  <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      variant="contained"
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Create')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
+            <SectorCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
           </div>
         </Drawer>
       </div>

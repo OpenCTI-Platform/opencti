@@ -9,9 +9,7 @@ import StatusTemplateCreation from '../../settings/status_templates/StatusTempla
 import { useFormatter } from '../../../../components/i18n';
 import { StatusTemplateFieldSearchQuery$data } from './__generated__/StatusTemplateFieldSearchQuery.graphql';
 import { Option } from './ReferenceField';
-import {
-  StatusTemplateCreationContextualMutation$data,
-} from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
+import { StatusTemplateCreationContextualMutation$data } from '../../settings/status_templates/__generated__/StatusTemplateCreationContextualMutation.graphql';
 
 const useStyles = makeStyles(() => ({
   icon: {

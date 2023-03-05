@@ -342,12 +342,12 @@ class Notes extends Component {
       <UserContext.Consumer>
         {({ helper }) => (
           <ExportContextProvider>
-          <div>
-            {view === 'lines' && this.renderLines(paginationOptions, helper)}
-            <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
-              <NoteCreation paginationOptions={paginationOptions} />
-            </Security>
-          </div>
+            <div>
+              {view === 'lines' && this.renderLines(paginationOptions, helper)}
+              <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
+                <NoteCreation paginationOptions={paginationOptions} />
+              </Security>
+            </div>
           </ExportContextProvider>
         )}
       </UserContext.Consumer>

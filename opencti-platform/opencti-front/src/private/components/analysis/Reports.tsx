@@ -22,9 +22,9 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 const LOCAL_STORAGE_KEY = 'view-reports';
 
 interface ReportsProps {
-  objectId: string,
-  authorId: string,
-  onChangeOpenExports: () => void,
+  objectId: string;
+  authorId: string;
+  onChangeOpenExports: () => void;
 }
 
 const Reports: FunctionComponent<ReportsProps> = ({
@@ -49,19 +49,22 @@ const Reports: FunctionComponent<ReportsProps> = ({
       filterMode: 'or',
     });
   }
-
   const {
     viewStorage,
     paginationOptions,
     helpers: storageHelpers,
-  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(LOCAL_STORAGE_KEY, {
-    filters: {} as Filters,
-    searchTerm: '',
-    sortBy: 'published',
-    orderAsc: false,
-    openExports: false,
-    redirectionMode: 'overview',
-  }, additionnalFilters);
+  } = usePaginationLocalStorage<ReportsLinesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY,
+    {
+      filters: {} as Filters,
+      searchTerm: '',
+      sortBy: 'published',
+      orderAsc: false,
+      openExports: false,
+      redirectionMode: 'overview',
+    },
+    additionnalFilters,
+  );
   const {
     numberOfElements,
     filters,
@@ -79,9 +82,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
     handleToggleSelectAll,
     onToggleEntity,
     numberOfSelectedElements,
-  } = useEntityToggle<ReportLine_node$data>(
-    'view-reports',
-  );
+  } = useEntityToggle<ReportLine_node$data>('view-reports');
   const queryRef = useQueryLoading<ReportsLinesPaginationQuery>(
     reportsLinesQuery,
     paginationOptions,
@@ -94,8 +95,10 @@ const Reports: FunctionComponent<ReportsProps> = ({
       exportContext = `of-entity-${authorId}`;
     }
     let renderFilters = filters;
-    renderFilters = { ...renderFilters, entity_type: [{ id: 'Report', value: 'Report' }] };
-
+    renderFilters = {
+      ...renderFilters,
+      entity_type: [{ id: 'Report', value: 'Report' }],
+    };
     const isRuntimeSort = helper?.isRuntimeFieldEnable();
     const dataColumns = {
       name: {
@@ -183,10 +186,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
                   {Array(20)
                     .fill(0)
                     .map((idx) => (
-                      <ReportLineDummy
-                        key={idx}
-                        dataColumns={dataColumns}
-                      />
+                      <ReportLineDummy key={idx} dataColumns={dataColumns} />
                     ))}
                 </>
               }
@@ -219,17 +219,16 @@ const Reports: FunctionComponent<ReportsProps> = ({
       </div>
     );
   };
-
   return (
     <UserContext.Consumer>
       {({ helper }) => (
         <ExportContextProvider>
-        <div>
-          {renderLines(helper)}
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <ReportCreation paginationOptions={paginationOptions} />
-          </Security>
-        </div>
+          <div>
+            {renderLines(helper)}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <ReportCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>
         </ExportContextProvider>
       )}
     </UserContext.Consumer>

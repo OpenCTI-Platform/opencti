@@ -7,9 +7,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
-import {
-  ExternalReferenceOverview_externalReference$data,
-} from './__generated__/ExternalReferenceOverview_externalReference.graphql';
+import { ExternalReferenceOverview_externalReference$data } from './__generated__/ExternalReferenceOverview_externalReference.graphql';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -22,10 +20,12 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ExternalReferenceOverviewComponentProps {
-  externalReference: ExternalReferenceOverview_externalReference$data,
+  externalReference: ExternalReferenceOverview_externalReference$data;
 }
 
-const ExternalReferenceOverviewComponent: FunctionComponent<ExternalReferenceOverviewComponentProps> = ({ externalReference }) => {
+const ExternalReferenceOverviewComponent: FunctionComponent<
+ExternalReferenceOverviewComponentProps
+> = ({ externalReference }) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
 

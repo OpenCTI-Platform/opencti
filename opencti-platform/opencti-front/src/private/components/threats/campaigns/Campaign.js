@@ -82,7 +82,9 @@ class CampaignComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={campaign.id}
-          defaultMarking={(campaign.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarking={(campaign.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CampaignEdition campaignId={campaign.id} />

@@ -127,87 +127,88 @@ const CampaignEditionDetailsComponent = (props) => {
     R.pick(['first_seen', 'last_seen', 'objective']),
   )(campaign);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={campaignValidation(t)}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={DateTimePickerField}
-              name="first_seen"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('First seen'),
-                variant: 'standard',
-                fullWidth: true,
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="first_seen" />
-                ),
-              }}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={campaignValidation(t)}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={DateTimePickerField}
+            name="first_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('First seen'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="first_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_seen"
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Last seen'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="last_seen" />
+              ),
+            }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="objective"
+            label={t('Objective')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="objective" />
+            }
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={campaign.id}
             />
-            <Field
-              component={DateTimePickerField}
-              name="last_seen"
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              TextFieldProps={{
-                label: t('Last seen'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-                helperText: (
-                  <SubscriptionFocus context={context} fieldName="last_seen" />
-                ),
-              }}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="objective"
-              label={t('Objective')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="objective" />
-              }
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}open={false}
-                values={values.references}
-                id={campaign.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(CampaignEditionDetailsComponent, {
   campaign: graphql`
-      fragment CampaignEditionDetails_campaign on Campaign {
-        id
-        first_seen
-        last_seen
-        objective
-      }
-    `,
+    fragment CampaignEditionDetails_campaign on Campaign {
+      id
+      first_seen
+      last_seen
+      objective
+    }
+  `,
 });

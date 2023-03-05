@@ -17,14 +17,15 @@ import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  commitMutation,
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { insertNode } from '../../../../utils/store';
-import {
-  ExternalReferencesLinesPaginationQuery$variables,
-} from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
+import { ExternalReferencesLinesPaginationQuery$variables } from './__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import {
   ExternalReferenceAddInput,
@@ -310,13 +311,21 @@ ExternalReferenceCreationProps
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      FormControlProps={{
+                        style: { marginTop: 20, width: '100%' },
+                      }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{
                         classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChange: (
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
                           const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                          const externalIdValue = (
+                            document.getElementById(
+                              'external_id',
+                            ) as HTMLInputElement
+                          ).value;
                           if (!externalIdValue && fileName) {
                             setFieldValue('external_id', fileName);
                           }
@@ -383,7 +392,7 @@ ExternalReferenceCreationProps
           <Formik
             enableReinitialize={true}
             onSubmit={!handleCloseContextual ? onSubmit : onSubmitContextual}
-            initialValues= {{
+            initialValues={{
               source_name: inputValue,
               external_id: '',
               url: '',
@@ -435,9 +444,15 @@ ExternalReferenceCreationProps
                           fullWidth: true,
                           variant: 'standard',
                         },
-                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
+                        onChange: (
+                          event: React.ChangeEvent<HTMLInputElement>,
+                        ) => {
                           const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                          const externalIdValue = (
+                            document.getElementById(
+                              'external_id',
+                            ) as HTMLInputElement
+                          ).value;
                           if (!externalIdValue && fileName) {
                             setFieldValue('external_id', fileName);
                           }

@@ -1,11 +1,5 @@
 import React, { Component } from 'react';
-import {
-  compose,
-  pathOr,
-  pipe,
-  map,
-  union,
-} from 'ramda';
+import { compose, pathOr, pipe, map, union } from 'ramda';
 import { debounce } from 'rxjs/operators';
 import { Subject, timer } from 'rxjs';
 import { Field } from 'formik';

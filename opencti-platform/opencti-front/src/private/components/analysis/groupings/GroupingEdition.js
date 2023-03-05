@@ -74,7 +74,10 @@ const GroupingEdition = ({ groupingId }) => {
           render={({ props }) => {
             if (props) {
               return (
-                <GroupingEditionContainer grouping={props.grouping} handleClose={handleClose} />
+                <GroupingEditionContainer
+                  grouping={props.grouping}
+                  handleClose={handleClose}
+                />
               );
             }
             return <Loader variant="inElement" />;

@@ -56,25 +56,43 @@ Omit<OpenVocabProps, 'type'>
   queryRef,
 }) => {
   const { t } = useFormatter();
-  const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(vocabularyQuery, queryRef);
+  const { vocabularies } = usePreloadedQuery<OpenVocabFieldQuery>(
+    vocabularyQuery,
+    queryRef,
+  );
   const openVocabList = (vocabularies?.edges ?? [])
     .map(({ node }) => node)
-    .map(({ name: value, description }) => ({ value, label: value, description }))
+    .map(({ name: value, description }) => ({
+      value,
+      label: value,
+      description,
+    }))
     .sort((a, b) => a.label.localeCompare(b.label));
   let internalOnChange: ((n: string, v: Option | Option[]) => void) | undefined;
   let internalOnSubmit: ((n: string, v: Option | Option[]) => void) | undefined;
   if (onChange) {
     internalOnChange = (n: string, v: Option | Option[]) => (Array.isArray(v)
-      ? onChange(n, v.map((nV) => nV?.value ?? nV))
+      ? onChange(
+        n,
+        v.map((nV) => nV?.value ?? nV),
+      )
       : onChange(n, v?.value ?? v));
   }
   if (onSubmit) {
     internalOnSubmit = (n: string, v: Option | Option[]) => (Array.isArray(v)
-      ? onSubmit?.(n, v.map((nV) => nV?.value ?? nV))
+      ? onSubmit?.(
+        n,
+        v.map((nV) => nV?.value ?? nV),
+      )
       : onSubmit?.(n, v?.value ?? v));
   }
   const renderOption: RenderOption = (optionProps, { value, description }) => (
-    <Tooltip {...optionProps} key={value} title={description}>
+    <Tooltip
+      {...optionProps}
+      key={value}
+      title={description}
+      placement="bottom-start"
+    >
       <MenuItem value={value}>{t(value)}</MenuItem>
     </Tooltip>
   );
@@ -93,7 +111,8 @@ Omit<OpenVocabProps, 'type'>
         style={containerStyle}
         options={openVocabList}
         renderOption={renderOption}
-        isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+        isOptionEqualToValue={(option: Option, value: string) => option.value === value
+        }
         textfieldprops={{
           variant: 'standard',
           label,
@@ -114,7 +133,8 @@ Omit<OpenVocabProps, 'type'>
       style={containerStyle}
       options={openVocabList}
       renderOption={renderOption}
-      isOptionEqualToValue={(option: Option, value: string) => option.value === value}
+      isOptionEqualToValue={(option: Option, value: string) => option.value === value
+      }
       textfieldprops={{
         variant: 'standard',
         label: t(label),

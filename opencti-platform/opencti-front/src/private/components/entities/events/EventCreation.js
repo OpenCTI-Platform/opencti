@@ -8,7 +8,6 @@ import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
@@ -24,6 +23,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -71,26 +71,19 @@ const useStyles = makeStyles((theme) => ({
 const eventMutation = graphql`
   mutation EventCreationMutation($input: EventAddInput!) {
     eventAdd(input: $input) {
+      id
+      name
+      entity_type
+      description
       ...EventLine_node
     }
   }
 `;
 
-const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
-  const userProxy = store.get(userId);
-  const conn = ConnectionHandler.getConnection(
-    userProxy,
-    'Pagination_events',
-    paginationOptions,
-  );
-  ConnectionHandler.insertEdgeBefore(conn, newEdge);
-};
-
-const EventCreation = ({ paginationOptions }) => {
+export const EventCreationForm = ({ updater, onReset, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const [open, setOpen] = useState(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -104,11 +97,6 @@ const EventCreation = ({ paginationOptions }) => {
       .nullable(),
   };
   const eventValidator = useSchemaCreationValidation('Event', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
       R.assoc(
@@ -130,15 +118,9 @@ const EventCreation = ({ paginationOptions }) => {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField('eventAdd');
-        const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
-        const container = store.getRoot();
-        sharedUpdater(
-          store,
-          container.getDataID(),
-          paginationOptions,
-          newEdge,
-        );
+        if (updater) {
+          updater(store, 'eventAdd');
+        }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
@@ -148,19 +130,147 @@ const EventCreation = ({ paginationOptions }) => {
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
 
+  return <Formik initialValues={{
+    name: '',
+    description: '',
+    event_types: [],
+    start_time: null,
+    stop_time: null,
+    createdBy: defaultCreatedBy ?? '',
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+  }}
+      validationSchema={eventValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Event']}
+          />
+          <OpenVocabField
+              label={t('Event types')}
+              type="event-type-ov"
+              name="event_types"
+              containerStyle={fieldSpacingContainerStyle}
+              multiple={true}
+              onChange={(name, value) => setFieldValue(name, value)}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={DateTimePickerField}
+              name="start_time"
+              TextFieldProps={{
+                label: t('Start date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+          />
+          <Field
+              component={DateTimePickerField}
+              name="stop_time"
+              TextFieldProps={{
+                label: t('End date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const EventCreation = ({ paginationOptions }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+
+  const updater = (store) => insertNode(
+    store,
+    'Pagination_events',
+    paginationOptions,
+    'eventAdd',
+  );
+
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
+      <Fab onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}
-      >
+        className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer
@@ -169,133 +279,24 @@ const EventCreation = ({ paginationOptions }) => {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
+        onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary"
-          >
+            color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an event')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik
-            initialValues={{
-              name: '',
-              description: '',
-              event_types: [],
-              start_time: null,
-              stop_time: null,
-              createdBy: '',
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={eventValidator}
-            onSubmit={onSubmit}
-            onReset={onReset}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['Event']}
-                />
-                <OpenVocabField
-                  label={t('Event types')}
-                  type="event-type-ov"
-                  name="event_types"
-                  containerStyle={fieldSpacingContainerStyle}
-                  multiple={true}
-                  onChange={(name, value) => setFieldValue(name, value)}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={DateTimePickerField}
-                  name="start_time"
-                  TextFieldProps={{
-                    label: t('Start date'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                  }}
-                />
-                <Field
-                  component={DateTimePickerField}
-                  name="stop_time"
-                  TextFieldProps={{
-                    label: t('End date'),
-                    variant: 'standard',
-                    fullWidth: true,
-                    style: { marginTop: 20 },
-                  }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <EventCreationForm
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={onReset}
+          />
         </div>
       </Drawer>
     </div>

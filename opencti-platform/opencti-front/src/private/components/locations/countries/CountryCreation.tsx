@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -11,6 +11,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
 import * as R from 'ramda';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -80,6 +81,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
   countryAdd(input: $input) {
+    id
+    name
+    description
+    entity_type
       ...CountryLine_node
     }
   }
@@ -94,21 +99,23 @@ interface CountryAddInput {
   externalReferences: Option[]
 }
 
-const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
-  const { t } = useFormatter();
+interface CountryFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updater, onReset, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
-
-  const [open, setOpen] = useState<boolean>(false);
-
+  const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
   const countryValidator = useSchemaCreationValidation('Country', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   const [commit] = useMutation(countryMutation);
 
   const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -123,15 +130,123 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_countries', paginationOptions, 'countryAdd');
+        if (updater) {
+          updater(store, 'countryAdd');
+        }
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
+
+  return <Formik<CountryAddInput>
+      initialValues={{
+        name: '',
+        description: '',
+        createdBy: defaultCreatedBy ?? undefined,
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+      }}
+      validationSchema={countryValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['Country']}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows="4"
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={{
+                marginTop: 20,
+                width: '100%',
+              }}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={fieldSpacingContainerStyle}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const onReset = () => handleClose();
+
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_countries',
+    paginationOptions,
+    'countryAdd',
+  );
 
   return (
     <div>
@@ -148,7 +263,8 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton aria-label="Close"
+          <IconButton
+            aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
@@ -158,93 +274,11 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
           <Typography variant="h6">{t('Create a country')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<CountryAddInput>
-            initialValues={{
-              name: '',
-              description: '',
-              createdBy: undefined,
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={countryValidator}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['Country']}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows="4"
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={{
-                    marginTop: 20,
-                    width: '100%',
-                  }}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{
-                    marginTop: 20,
-                    width: '100%',
-                  }}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={fieldSpacingContainerStyle}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <CountryCreationForm
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={onReset}
+          />
         </div>
       </Drawer>
     </div>

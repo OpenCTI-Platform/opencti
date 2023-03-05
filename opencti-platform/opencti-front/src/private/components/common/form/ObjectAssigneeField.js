@@ -99,15 +99,7 @@ class ObjectAssigneeField extends Component {
   }
 
   render() {
-    const {
-      t,
-      name,
-      style,
-      classes,
-      onChange,
-      helpertext,
-      disabled,
-    } = this.props;
+    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
     return (
       <div>
         <Field

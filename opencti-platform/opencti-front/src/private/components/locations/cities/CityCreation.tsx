@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -10,6 +10,7 @@ import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -70,6 +71,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const cityMutation = graphql`
   mutation CityCreationMutation($input: CityAddInput!) {
     cityAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
       ...CityLine_node
     }
   }
@@ -86,12 +91,18 @@ interface CityAddInput {
   externalReferences: Option[]
 }
 
-const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPaginationQuery$variables }) => {
+interface CityFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void
+  onCompleted?: () => void
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, onReset, onCompleted,
+  defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
-  const [open, setOpen] = useState<boolean>(false);
-
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
@@ -99,10 +110,6 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
   const cityValidator = useSchemaCreationValidation('City', basicShape);
-
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-
   const [commit] = useMutation(cityMutation);
 
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -121,15 +128,133 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_cities', paginationOptions, 'cityAdd');
+        if (updater) {
+          updater(store, 'cityAdd');
+        }
       },
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
-        handleClose();
+        if (onCompleted) {
+          onCompleted();
+        }
       },
     });
   };
+
+  return <Formik<CityAddInput>
+      initialValues={{
+        name: '',
+        description: '',
+        latitude: '',
+        longitude: '',
+        createdBy: defaultCreatedBy ?? { value: '', label: '' },
+        objectMarking: defaultMarkingDefinitions ?? [],
+        objectLabel: [],
+        externalReferences: [],
+      }}
+      validationSchema={cityValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
+    {({
+      submitForm,
+      handleReset,
+      isSubmitting,
+      setFieldValue,
+      values,
+    }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+              component={TextField}
+              variant="standard"
+              name="name"
+              label={t('Name')}
+              fullWidth={true}
+              detectDuplicate={['City']}
+          />
+          <Field
+              component={MarkDownField}
+              name="description"
+              label={t('Description')}
+              fullWidth={true}
+              multiline={true}
+              rows={4}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="latitude"
+              label={t('Latitude')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="longitude"
+              label={t('Longitude')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+              name="createdBy"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+              name="objectLabel"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values.objectLabel}
+          />
+          <ObjectMarkingField
+              name="objectMarking"
+              style={{ marginTop: 20, width: '100%' }}
+          />
+          <ExternalReferencesField
+              name="externalReferences"
+              style={{ marginTop: 20, width: '100%' }}
+              setFieldValue={setFieldValue}
+              values={values.externalReferences}
+          />
+          <div className={classes.buttons}>
+            <Button
+                variant="contained"
+                onClick={handleReset}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+                variant="contained"
+                color="secondary"
+                onClick={submitForm}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+    )}
+  </Formik>;
+};
+
+const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPaginationQuery$variables }) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+
+  const [open, setOpen] = useState<boolean>(false);
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_cities',
+    paginationOptions,
+    'cityAdd',
+  );
 
   return (
     <div>
@@ -146,7 +271,8 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton aria-label="Close"
+          <IconButton
+            aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
@@ -156,105 +282,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
           <Typography variant="h6">{t('Create a city')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<CityAddInput>
-            initialValues={{
-              name: '',
-              description: '',
-              latitude: '',
-              longitude: '',
-              createdBy: undefined,
-              objectMarking: [],
-              objectLabel: [],
-              externalReferences: [],
-            }}
-            validationSchema={cityValidator}
-            onSubmit={onSubmit}
-            onReset={handleClose}
-          >
-            {({
-              submitForm,
-              handleReset,
-              isSubmitting,
-              setFieldValue,
-              values,
-            }) => (
-              <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="name"
-                  label={t('Name')}
-                  fullWidth={true}
-                  detectDuplicate={['City']}
-                />
-                <Field
-                  component={MarkDownField}
-                  name="description"
-                  label={t('Description')}
-                  fullWidth={true}
-                  multiline={true}
-                  rows={4}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="latitude"
-                  label={t('Latitude')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="longitude"
-                  label={t('Longitude')}
-                  fullWidth={true}
-                  style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                  name="createdBy"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                  name="objectLabel"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                  name="objectMarking"
-                  style={{ marginTop: 20, width: '100%' }}
-                />
-                <ExternalReferencesField
-                  name="externalReferences"
-                  style={{ marginTop: 20, width: '100%' }}
-                  setFieldValue={setFieldValue}
-                  values={values.externalReferences}
-                />
-                <div className={classes.buttons}>
-                  <Button
-                    variant="contained"
-                    onClick={handleReset}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Cancel')}
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="secondary"
-                    onClick={submitForm}
-                    disabled={isSubmitting}
-                    classes={{ root: classes.button }}
-                  >
-                    {t('Create')}
-                  </Button>
-                </div>
-              </Form>
-            )}
-          </Formik>
+          <CityCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
         </div>
       </Drawer>
     </div>

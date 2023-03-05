@@ -19,23 +19,23 @@ const useStyles = makeStyles(() => ({
 }));
 
 export interface Option {
-  value: string
-  label: string
-  color?: string
-  [key: string]: ReactNode
+  value: string;
+  label: string;
+  color?: string;
+  [key: string]: ReactNode;
 }
 
 interface RelationFieldProps {
-  name: string
-  label: string
-  variant?: string
-  helperText?: string
-  onFocus: () => void,
-  noOptionsText?: string,
-  options: Option[],
-  onChange: (name: string, value: Option) => void,
-  onInputChange: (v: string | null) => void,
-  value: unknown,
+  name: string;
+  label: string;
+  variant?: string;
+  helperText?: string;
+  onFocus: () => void;
+  noOptionsText?: string;
+  options: Option[];
+  onChange: (name: string, value: Option) => void;
+  onInputChange: (v: string | null) => void;
+  value: unknown;
 }
 
 const ReferenceField: FunctionComponent<RelationFieldProps> = ({

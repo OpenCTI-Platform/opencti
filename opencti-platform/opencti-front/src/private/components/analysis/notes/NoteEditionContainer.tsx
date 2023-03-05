@@ -40,38 +40,45 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface NoteEditionContainerProps {
-  note: NoteEditionContainer_note$data
-  handleClose: () => void,
+  note: NoteEditionContainer_note$data;
+  handleClose: () => void;
 }
 
-const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({ note, handleClose }) => {
+const NoteEditionContainer: FunctionComponent<NoteEditionContainerProps> = ({
+  note,
+  handleClose,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
   const { editContext } = note;
 
   return (
-      <div>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose.bind(this)}
-            size="large"
-            color="primary"
-          >
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Update a note')}
-          </Typography>
-          <SubscriptionAvatars context={editContext} />
-          <div className="clearfix" />
-        </div>
-        <div className={classes.container}>
-          <NoteEditionOverview note={note} context={editContext} handleClose={handleClose} />
-        </div>
+    <div>
+      <div className={classes.header}>
+        <IconButton
+          aria-label="Close"
+          className={classes.closeButton}
+          onClick={handleClose.bind(this)}
+          size="large"
+          color="primary"
+        >
+          <Close fontSize="small" color="primary" />
+        </IconButton>
+        <Typography variant="h6" classes={{ root: classes.title }}>
+          {t('Update a note')}
+        </Typography>
+        <SubscriptionAvatars context={editContext} />
+        <div className="clearfix" />
       </div>
+      <div className={classes.container}>
+        <NoteEditionOverview
+          note={note}
+          context={editContext}
+          handleClose={handleClose}
+        />
+      </div>
+    </div>
   );
 };
 

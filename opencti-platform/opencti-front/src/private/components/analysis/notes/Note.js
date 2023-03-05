@@ -12,7 +12,8 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
 import { CollaborativeSecurity } from '../../../../utils/Security';
 import {
-  KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
   KNOWLEDGE_KNUPDATE_KNDELETE,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -74,10 +75,12 @@ class NoteComponent extends Component {
             />
           </Grid>
         </Grid>
-        <Grid container={true}
+        <Grid
+          container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}>
+          style={{ marginTop: 25 }}
+        >
           <Grid item={true} xs={6}>
             <StixCoreObjectExternalReferences stixCoreObjectId={note.id} />
           </Grid>

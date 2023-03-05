@@ -8,13 +8,19 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import TextField from '../../../../components/TextField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import { NoteEditionOverview_note$data } from './__generated__/NoteEditionOverview_note.graphql';
@@ -23,7 +29,10 @@ import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySet
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 
 export const noteMutationFieldPatch = graphql`
-  mutation NoteEditionOverviewFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+  mutation NoteEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
     noteEdit(id: $id) {
       fieldPatch(input: $input) {
         ...NoteEditionOverview_note
@@ -80,7 +89,7 @@ interface NoteEditionOverviewProps {
     readonly name: string;
   } | null)[]
   | null;
-  handleClose: () => void
+  handleClose: () => void;
 }
 
 const NoteEditionOverviewComponent: FunctionComponent<
@@ -114,7 +123,10 @@ NoteEditionOverviewProps
   };
   const editor = useFormEditor(note, false, queries, noteValidator);
 
-  const handleSubmitField = (name: string, value: Option | string | string[]) => {
+  const handleSubmitField = (
+    name: string,
+    value: Option | string | string[],
+  ) => {
     let finalValue = value ?? '';
     if (name === 'x_opencti_workflow_id') {
       finalValue = (value as Option).value;
@@ -145,10 +157,12 @@ NoteEditionOverviewProps
   };
 
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={noteValidator}
-      onSubmit={() => {}}>
+      onSubmit={() => {}}
+    >
       {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field

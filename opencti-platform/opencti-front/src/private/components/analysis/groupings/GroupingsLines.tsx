@@ -2,7 +2,10 @@ import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { GroupingLine, GroupingLineDummy } from './GroupingLine';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
 import { GroupingLine_node$data } from './__generated__/GroupingLine_node.graphql';
@@ -15,78 +18,78 @@ import { GroupingsLines_data$key } from './__generated__/GroupingsLines_data.gra
 const nbOfRowsToLoad = 50;
 
 export const groupingsLinesQuery = graphql`
-    query GroupingsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $orderBy: GroupingsOrdering
-        $orderMode: OrderingMode
-        $filters: [GroupingsFiltering!]
-    ) {
-        ...GroupingsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        )
-    }
+  query GroupingsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $orderBy: GroupingsOrdering
+    $orderMode: OrderingMode
+    $filters: [GroupingsFiltering!]
+  ) {
+    ...GroupingsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
+  }
 `;
 
 const groupingsLineFragment = graphql`
-    fragment GroupingsLines_data on Query
-    @argumentDefinitions(
-        search: { type: "String" }
-        count: { type: "Int", defaultValue: 25 }
-        cursor: { type: "ID" }
-        orderBy: { type: "GroupingsOrdering", defaultValue: name }
-        orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "[GroupingsFiltering!]" }
-    )
-    @refetchable(queryName: "GroupingsLinesRefetchQuery") {
-        groupings(
-            search: $search
-            first: $count
-            after: $cursor
-            orderBy: $orderBy
-            orderMode: $orderMode
-            filters: $filters
-        ) @connection(key: "Pagination_groupings") {
+  fragment GroupingsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    orderBy: { type: "GroupingsOrdering", defaultValue: name }
+    orderMode: { type: "OrderingMode", defaultValue: asc }
+    filters: { type: "[GroupingsFiltering!]" }
+  )
+  @refetchable(queryName: "GroupingsLinesRefetchQuery") {
+    groupings(
+      search: $search
+      first: $count
+      after: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_groupings") {
+      edges {
+        node {
+          id
+          name
+          context
+          createdBy {
+            ... on Identity {
+              id
+              name
+              entity_type
+            }
+          }
+          objectMarking {
             edges {
-                node {
-                    id
-                    name
-                    context
-                    createdBy {
-                        ... on Identity {
-                            id
-                            name
-                            entity_type
-                        }
-                    }
-                    objectMarking {
-                        edges {
-                            node {
-                                id
-                                definition_type
-                                definition
-                                x_opencti_order
-                                x_opencti_color
-                            }
-                        }
-                    }
-                    ...GroupingLine_node
-                }
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
-            pageInfo {
-                endCursor
-                hasNextPage
-                globalCount
-            }
+          }
+          ...GroupingLine_node
         }
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
     }
+  }
 `;
 
 interface GroupingsLinesProps {
@@ -101,33 +104,30 @@ interface GroupingsLinesProps {
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
-  onLabelClick?: HandleAddFilter,
+  onLabelClick?: HandleAddFilter;
 }
 
-const GroupingsLines: FunctionComponent<GroupingsLinesProps> = (
-  {
-    paginationOptions,
-    queryRef,
-    dataColumns,
-    onLabelClick,
-    setNumberOfElements,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  },
-) => {
+const GroupingsLines: FunctionComponent<GroupingsLinesProps> = ({
+  paginationOptions,
+  queryRef,
+  dataColumns,
+  onLabelClick,
+  setNumberOfElements,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+}) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   GroupingsLinesPaginationQuery,
-  GroupingsLines_data$key>(
-    {
-      linesQuery: groupingsLinesQuery,
-      linesFragment: groupingsLineFragment,
-      queryRef,
-      nodePath: ['groupings', 'pageInfo', 'globalCount'],
-      setNumberOfElements,
-    },
-  );
+  GroupingsLines_data$key
+  >({
+    linesQuery: groupingsLinesQuery,
+    linesFragment: groupingsLineFragment,
+    queryRef,
+    nodePath: ['groupings', 'pageInfo', 'globalCount'],
+    setNumberOfElements,
+  });
 
   return (
     <ListLinesContent

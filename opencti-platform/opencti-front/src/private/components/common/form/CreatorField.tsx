@@ -44,7 +44,13 @@ const CreatorFieldQuery = graphql`
   }
 `;
 
-const CreatorField: FunctionComponent<CreatorFieldProps> = ({ name, label, containerStyle, onChange, helpertext }) => {
+const CreatorField: FunctionComponent<CreatorFieldProps> = ({
+  name,
+  label,
+  containerStyle,
+  onChange,
+  helpertext,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [creators, setCreators] = useState<
@@ -61,8 +67,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({ name, label, conta
       .toPromise()
       .then((data) => {
         const NewCreators = (
-          (data as CreatorFieldSearchQuery$data)?.creators
-            ?.edges ?? []
+          (data as CreatorFieldSearchQuery$data)?.creators?.edges ?? []
         ).map((n) => ({
           label: n?.node.name,
           value: n?.node.id,
@@ -100,7 +105,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({ name, label, conta
         ) => (
           <li {...props}>
             <div className={classes.icon} style={{ color: option.color }}>
-                <ItemIcon type="User" />
+              <ItemIcon type="User" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>

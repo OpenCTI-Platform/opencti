@@ -1,7 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { append, union } from 'ramda';
 import { Field } from 'formik';
-import { LanguageOutlined } from '@mui/icons-material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
@@ -18,6 +17,7 @@ import {
 } from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
 import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
 import { insertNode } from '../../../../utils/store';
+import ItemIcon from '../../../../components/ItemIcon';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -121,7 +121,10 @@ ExternalReferencesFieldProps
     if (id) {
       filters = [{ key: ['usedBy'], values: [id] }];
     }
-    fetchQuery(externalReferencesQueriesSearchQuery, { search: event && event.target.value, filters })
+    fetchQuery(externalReferencesQueriesSearchQuery, {
+      search: event && event.target.value,
+      filters,
+    })
       .toPromise()
       .then((data) => {
         const newExternalReferencesEdges = ((
@@ -174,8 +177,8 @@ ExternalReferencesFieldProps
           option: Option,
         ) => (
           <li {...props}>
-            <div className={classes.icon} style={{ color: option.color }}>
-              <LanguageOutlined />
+            <div className={classes.icon}>
+              <ItemIcon type="External-Reference" />
             </div>
             <div className={classes.text}>{option.label}</div>
           </li>
@@ -192,7 +195,10 @@ ExternalReferencesFieldProps
         creationCallback={(data: ExternalReferenceCreationMutation$data) => {
           const newExternalReference = data.externalReferenceAdd;
           if (id) {
-            const input = { fromId: id, relationship_type: 'external-reference' };
+            const input = {
+              fromId: id,
+              relationship_type: 'external-reference',
+            };
             commitMutation({
               mutation: externalReferenceLinesMutationRelationAdd,
               variables: {
@@ -221,11 +227,22 @@ ExternalReferencesFieldProps
             });
           }
           if (newExternalReference) {
-            const externalReferenceLabel = `[${newExternalReference.source_name}] ${truncate(
-              newExternalReference.description || newExternalReference.url || newExternalReference.external_id,
+            const externalReferenceLabel = `[${
+              newExternalReference.source_name
+            }] ${truncate(
+              newExternalReference.description
+                || newExternalReference.url
+                || newExternalReference.external_id,
               150,
             )}`;
-            const newExternalReferences = append({ label: externalReferenceLabel, value: newExternalReference.id, entity: newExternalReference }, values || []);
+            const newExternalReferences = append(
+              {
+                label: externalReferenceLabel,
+                value: newExternalReference.id,
+                entity: newExternalReference,
+              },
+              values || [],
+            );
             setFieldValue(name, newExternalReferences);
           }
         }}

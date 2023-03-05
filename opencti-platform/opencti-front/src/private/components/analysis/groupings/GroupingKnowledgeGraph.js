@@ -113,126 +113,126 @@ const groupingKnowledgeGraphStixCoreObjectQuery = graphql`
         }
       }
       ... on StixDomainObject {
-          created
+        created
       }
       ... on AttackPattern {
-          name
-          x_mitre_id
+        name
+        x_mitre_id
       }
       ... on Campaign {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on CourseOfAction {
-          name
+        name
       }
       ... on Channel {
-          name
+        name
       }
       ... on Note {
-          attribute_abstract
-          content
+        attribute_abstract
+        content
       }
       ... on ObservedData {
-          name
-          first_observed
-          last_observed
+        name
+        first_observed
+        last_observed
       }
       ... on Opinion {
-          opinion
+        opinion
       }
       ... on Report {
-          name
-          published
+        name
+        published
       }
       ... on Grouping {
-          name
-          description
+        name
+        description
       }
       ... on Individual {
-          name
+        name
       }
       ... on Organization {
-          name
+        name
       }
       ... on Sector {
-          name
+        name
       }
       ... on System {
-          name
+        name
       }
       ... on Indicator {
-          name
-          valid_from
+        name
+        valid_from
       }
       ... on Infrastructure {
-          name
+        name
       }
       ... on IntrusionSet {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on Position {
-          name
+        name
       }
       ... on City {
-          name
+        name
       }
       ... on AdministrativeArea {
-          name
+        name
       }
       ... on Country {
-          name
+        name
       }
       ... on Region {
-          name
+        name
       }
       ... on Malware {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on ThreatActor {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on Tool {
-          name
+        name
       }
       ... on Vulnerability {
-          name
+        name
       }
       ... on Incident {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on StixCyberObservable {
-          observable_value
+        observable_value
       }
       ... on StixFile {
-          observableName: name
+        observableName: name
       }
       ... on Event {
-          name
+        name
       }
       ... on Case {
-          name
+        name
       }
       ... on Narrative {
-          name
+        name
       }
       ... on DataComponent {
-          name
+        name
       }
       ... on DataSource {
-          name
+        name
       }
       ... on Language {
-          name
+        name
       }
     }
   }
@@ -1202,10 +1202,8 @@ class GroupingKnowledgeGraphComponent extends Component {
           enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {(selectedEntities.length > 0) && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-          />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
         <GroupingKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
@@ -1511,150 +1509,150 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                 }
               }
               ... on StixDomainObject {
-                  is_inferred
-                  created
+                is_inferred
+                created
               }
               ... on AttackPattern {
-                  name
-                  x_mitre_id
+                name
+                x_mitre_id
               }
               ... on Campaign {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on ObservedData {
-                  name
+                name
               }
               ... on CourseOfAction {
-                  name
+                name
               }
               ... on Note {
-                  attribute_abstract
-                  content
+                attribute_abstract
+                content
               }
               ... on Opinion {
-                  opinion
+                opinion
               }
               ... on Report {
-                  name
-                  published
+                name
+                published
               }
               ... on Grouping {
-                  name
+                name
               }
               ... on Individual {
-                  name
+                name
               }
               ... on Organization {
-                  name
+                name
               }
               ... on Sector {
-                  name
+                name
               }
               ... on System {
-                  name
+                name
               }
               ... on Indicator {
-                  name
-                  valid_from
+                name
+                valid_from
               }
               ... on Infrastructure {
-                  name
+                name
               }
               ... on IntrusionSet {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Position {
-                  name
+                name
               }
               ... on City {
-                  name
+                name
               }
               ... on AdministrativeArea {
-                  name
+                name
               }
               ... on Country {
-                  name
+                name
               }
               ... on Region {
-                  name
+                name
               }
               ... on Malware {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Tool {
-                  name
+                name
               }
               ... on Vulnerability {
-                  name
+                name
               }
               ... on Incident {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Event {
-                  name
-                  description
-                  start_time
-                  stop_time
+                name
+                description
+                start_time
+                stop_time
               }
               ... on Channel {
-                  name
-                  description
+                name
+                description
               }
               ... on Narrative {
-                  name
-                  description
+                name
+                description
               }
               ... on Language {
-                  name
+                name
               }
               ... on DataComponent {
-                  name
+                name
               }
               ... on DataSource {
-                  name
+                name
               }
               ... on Case {
-                  name
+                name
               }
               ... on StixCyberObservable {
-                  observable_value
+                observable_value
               }
               ... on StixFile {
-                  observableName: name
+                observableName: name
               }
               ... on Label {
-                  value
-                  color
+                value
+                color
               }
               ... on MarkingDefinition {
-                  definition
-                  x_opencti_color
+                definition
+                x_opencti_color
               }
               ... on KillChainPhase {
-                  kill_chain_name
-                  phase_name
+                kill_chain_name
+                phase_name
               }
               ... on ExternalReference {
-                  url
-                  source_name
+                url
+                source_name
               }
               ... on BasicRelationship {
-                  id
-                  entity_type
-                  parent_types
+                id
+                entity_type
+                parent_types
               }
               ... on BasicRelationship {
                 id
