@@ -34,7 +34,7 @@ const useStyles = makeStyles(() => ({
 
 const Vocabularies = () => {
   const classes = useStyles();
-  const { t } = useFormatter();
+  const { t, n } = useFormatter();
   const params = useParams() as { category: string };
   const { typeToCategory } = useVocabularyCategory();
   const category = typeToCategory(params.category);
@@ -96,15 +96,15 @@ const Vocabularies = () => {
       },
       description: {
         label: 'Description',
-        width: '30%',
+        width: '25%',
         isSortable: true,
         render: (node: useVocabularyCategory_Vocabularynode$data) => node.description,
       },
       usages: {
         label: 'Usages',
-        width: '5%',
+        width: '10%',
         isSortable: false,
-        render: (node: useVocabularyCategory_Vocabularynode$data) => node.usages.length,
+        render: (node: useVocabularyCategory_Vocabularynode$data) => n(node.usages),
       },
     };
     return (

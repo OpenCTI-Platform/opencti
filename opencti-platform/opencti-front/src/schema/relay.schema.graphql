@@ -9451,7 +9451,7 @@ type Vocabulary implements BasicObject & StixObject & StixMetaObject {
   category: VocabularyDefinition!
   name: String!
   description: String
-  usages: [String!]!
+  usages: Int!
   aliases: [String!]
   builtIn: Boolean
 }

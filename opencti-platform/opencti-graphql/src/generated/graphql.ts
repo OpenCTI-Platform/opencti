@@ -23033,7 +23033,7 @@ export type Vocabulary = BasicObject & StixMetaObject & StixObject & {
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   updated_at: Scalars['DateTime'];
-  usages: Array<Scalars['String']>;
+  usages: Scalars['Int'];
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
@@ -31772,7 +31772,7 @@ export type VocabularyResolvers<ContextType = any, ParentType extends ResolversP
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  usages?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  usages?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
