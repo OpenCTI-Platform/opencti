@@ -57,23 +57,18 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>(null);
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
-
   const handleOpen = (event: React.MouseEvent) => {
     setAnchorEl(event.currentTarget);
   };
-
   const handleClose = () => {
     setAnchorEl(null);
   };
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
     handleClose();
   };
-
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
     refetch();
@@ -81,7 +76,7 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
   let deleteLabel = t('Delete');
   const deletable = !vocab.builtIn
     && (!vocab.category.fields.some(({ required }) => required)
-      || vocab.usages.length === 0);
+      || vocab.usages === 0);
   if (!deletable) {
     if (vocab.builtIn) {
       deleteLabel = 'This item is built-in';
@@ -89,7 +84,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       deleteLabel = 'Some fields in usage are mandatory';
     }
   }
-
   const {
     deleting,
     handleOpenDelete,
@@ -98,7 +92,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
     setDeleting,
   } = useDeletion({ handleClose });
   const [commit] = useMutation(VocabularyPopoverDeletionMutation);
-
   const submitDelete = () => {
     setDeleting(true);
     commit({
@@ -120,7 +113,6 @@ const VocabularyPopover: FunctionComponent<VocabularyPopoverProps> = ({
       },
     });
   };
-
   return (
     <div className={classes.container}>
       <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
