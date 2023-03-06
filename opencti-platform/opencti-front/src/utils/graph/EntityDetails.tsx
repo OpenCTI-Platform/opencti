@@ -444,7 +444,7 @@ EntityDetailsComponentProps
           ? (<Chip
             color="primary"
             variant="outlined"
-            label={reportsEdges?.length}
+            label={reportsEdges.length}
             style={{ marginLeft: 10 }}
           />) : (
             ''
@@ -481,7 +481,7 @@ EntityDetailsComponentProps
                 </ListItem>
               );
             }
-            return (<div></div>);
+            return ('');
           })
           }
         </List>)

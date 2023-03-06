@@ -73,12 +73,12 @@ EntityDetailsRightsBarProps
     if (!selectedEntity.relationship_type) {
       return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
     }
-    if (selectedEntity.relationship_type && selectedEntity.source && selectedEntity.target) {
+    if (selectedEntity.source && selectedEntity.target) {
       const source = selectedEntity.source.label;
       const target = selectedEntity.target.label;
       return (`${source} to ${target}`);
     }
-    if (selectedEntity.relationship_type && selectedEntity.fromId && selectedEntity.toId) {
+    if (selectedEntity.fromId && selectedEntity.toId) {
       const source = selectedEntity.fromId;
       const target = selectedEntity.toId;
       return (`${source} to ${target}`);

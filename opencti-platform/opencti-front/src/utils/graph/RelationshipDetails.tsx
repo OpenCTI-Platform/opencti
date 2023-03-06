@@ -403,7 +403,7 @@ RelationshipDetailsComponentProps
           ? (<Chip
             color="primary"
             variant="outlined"
-            label={reportsEdges?.length}
+            label={reportsEdges.length}
             style={{ marginLeft: 10 }}
           />) : (
             ''
@@ -440,7 +440,7 @@ RelationshipDetailsComponentProps
                 </ListItem>
               );
             }
-            return (<div></div>);
+            return ('');
           })
           }
         </List>)
