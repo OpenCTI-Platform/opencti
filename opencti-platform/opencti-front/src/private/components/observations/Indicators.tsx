@@ -197,6 +197,7 @@ const Indicators = () => {
                 'revoked',
                 'creator',
                 'confidence',
+                'indicator_types',
               ]}
             >
               {queryRef && (
