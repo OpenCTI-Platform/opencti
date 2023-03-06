@@ -16738,6 +16738,7 @@ export type QueryStixMetaRelationshipsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
+  isTo?: InputMaybe<Scalars['Boolean']>;
   limit?: InputMaybe<Scalars['Int']>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;

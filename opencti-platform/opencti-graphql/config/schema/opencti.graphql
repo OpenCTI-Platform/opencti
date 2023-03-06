@@ -12800,6 +12800,7 @@ type Query {
     dateAttribute: String
     limit: Int
     order: String
+    isTo: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
   stixMetaRelationshipsNumber(types: [String], fromId: StixRef, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
 

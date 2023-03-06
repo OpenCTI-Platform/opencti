@@ -298,6 +298,7 @@ const TopLabelsCard = ({ classes }) => {
       $endDate: DateTime
       $dateAttribute: String
       $limit: Int
+      $isTo: Boolean
     ) {
       stixMetaRelationshipsDistribution(
         field: $field
@@ -308,6 +309,7 @@ const TopLabelsCard = ({ classes }) => {
         endDate: $endDate
         dateAttribute: $dateAttribute
         limit: $limit
+        isTo: $isTo
       ) {
         label
         value
@@ -330,6 +332,7 @@ const TopLabelsCard = ({ classes }) => {
     toTypes: ['Label'],
     startDate: monthsAgo(3),
     limit: 9,
+    isTo: true,
   };
   const data = useLazyLoadQuery(
     dashboardStixMetaRelationshipsDistributionQuery,
