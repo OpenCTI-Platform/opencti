@@ -6,15 +6,13 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
+import * as R from 'ramda';
 import { evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  commitMutation,
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -359,10 +357,11 @@ const IndicatorCreation = ({ paginationOptions }) => {
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
+  const paginationOptionsUpdater = R.dissoc('indicatorTypes', R.dissoc('observableTypes', paginationOptions));
   const updater = (store) => insertNode(
     store,
     'Pagination_indicators',
-    paginationOptions,
+    paginationOptionsUpdater,
     'indicatorAdd',
   );
 
