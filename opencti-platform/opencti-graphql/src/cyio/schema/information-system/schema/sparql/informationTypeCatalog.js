@@ -8,6 +8,7 @@ import {
   generateId, 
   DARKLIGHT_NS,
 } from '../../../utils.js';
+import { informationTypePredicateMap } from './informationType.js';
   
   // Reducer Selection
 export function getReducer(type) {
@@ -232,6 +233,112 @@ export const detachFromInformationTypeCatalogQuery = (id, field, itemIris) => {
 
   return detachQuery(iri, statements, informationTypeCatalogPredicateMap, '<http://nist.gov/ns/sp800-60#InformationTypeCatalog>');
 }
+
+// Retrieves all the categories within a catalog
+export const selectCatalogCategoriesQuery = (id) => {
+  return selectCatalogCategoriesByIriQuery(`http://cyio.darklight.ai/information-type-catalog--${id}`);
+}
+
+export const selectCatalogCategoriesByIriQuery = (iri) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  let select = ['category']
+
+  const { selectionClause, predicates } = buildSelectVariables(informationTypePredicateMap, select);
+
+  return `
+  SELECT DISTINCT ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?catalog)
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#InformationType> .
+    ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+        ?catalog a <http://nist.gov/ns/sp800-60#InformationTypeCatalog> ;
+        <http://nist.gov/ns/sp800-60#entries> ?iri .
+      }
+    }
+  } ORDER BY ASC(?category)
+  `
+}
+
+export const selectCatalogCategoryMembersQuery= (id, categoryName, select) => {
+  return selectCatalogCategoryMembersByIriQuery(`http://cyio.darklight.ai/information-type-catalog--${id}`, categoryName, select);
+}
+
+export const selectCatalogCategoryMembersByIriQuery = (iri, categoryName, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+
+  // push predicates that are required to detect that its a catalog's information type
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
+  if (select.includes('display_name')) {
+    if (!select.includes('identifier')) select.push('identifier');
+    if (!select.includes('category')) select.push('category');
+    if (!select.includes('system')) select.push('system');  
+  }
+
+  const { selectionClause, predicates } = buildSelectVariables(informationTypePredicateMap, select);
+  let categoryPredicate = informationTypePredicateMap['category'].predicate;
+
+  return `
+  SELECT DISTINCT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    BIND(${iri} AS ?catalog)
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#InformationType> .
+    ?iri ${categoryPredicate} "${categoryName}" .
+    ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+        ?catalog a <http://nist.gov/ns/sp800-60#InformationTypeCatalog> ;
+          <http://nist.gov/ns/sp800-60#entries> ?iri .
+      }
+    }
+  } GROUP BY ?iri ${selectionClause} ORDER BY ASC(?identifier)
+  `
+}
+
+export const selectCatalogMemberQuery = (id, infoTypeId, select) => {
+  return selectCatalogMemberByIriQuery(`http://cyio.darklight.ai/information-type-catalog--${id}`, 
+                                       `http://cyio.darklight.ai/information-type--${infoTypeId}`, 
+                                       select);
+}
+
+export const selectCatalogMemberByIriQuery = (iri, infoTypeIri, select) => {
+  if (!iri.startsWith('<')) iri = `<${iri}>`;
+  if (!infoTypeIri.startsWith('<')) infoTypeIri = `<${infoTypeIri}>`;
+
+  // push predicates that are required to detect that its a catalog's information type
+  if (!select.includes('identifier')) select.push('identifier');
+  if (!select.includes('category')) select.push('category');
+  if (!select.includes('system')) select.push('system');
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('object_type')) select.push('object_type');
+
+  const { selectionClause, predicates } = buildSelectVariables(informationTypePredicateMap, select);
+  
+  return `
+  SELECT DISTINCT ?iri ${selectionClause}
+  FROM <tag:stardog:api:context:local>
+  WHERE {
+    ?iri a <http://csrc.nist.gov/ns/oscal/info-system#InformationType> .
+    ${predicates}
+    {
+      SELECT DISTINCT ?iri
+      WHERE {
+        BIND(${iri} AS ?catalog)
+        BIND (${infoTypeIri} AS ?iri)
+        ?catalog a <http://nist.gov/ns/sp800-60#InformationTypeCatalog> ;
+          <http://nist.gov/ns/sp800-60#entries> ?iri .
+      }
+    }
+  } GROUP BY ?iri ${selectionClause}
+  `
+}
+
 
 // Predicate Maps
 export const informationTypeCatalogPredicateMap = {

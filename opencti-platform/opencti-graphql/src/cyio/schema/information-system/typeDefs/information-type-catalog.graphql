@@ -11,6 +11,9 @@ extend type Query {
     filterMode: FilterMode
     search: String
   ): InformationTypeCatalogConnection @hasPermission(resources: "Asset:view")
+  getCatalogCategories(id: ID!): [String] @hasPermission(resources: "Asset:view")
+  getCategoryMembers(id: ID!, categoryName: String!): [InformationType] @hasPermission(resources: "Asset:view")
+  getInformationTypeFromCatalog(id: ID!, infoTypeId: ID!): InformationType @hasPermission(resources: "Asset:view")
 }
 
 extend type Mutation {
@@ -19,7 +22,11 @@ extend type Mutation {
   deleteInformationTypeCatalog(id: ID!): ID @hasPermission(resources: "Asset:delete")
   deleteInformationTypeCatalogs(ids: [ID!]!): [ID] @hasPermission(resources: "Asset:delete")
   editInformationTypeCatalog(id: ID!, input: [EditInput]!, commitMessage:String): InformationTypeCatalog @hasPermission(resources: "Asset:update")
-  #
+  # Create/Delete/Edit Catalog Entries
+  createCatalogEntry(catalogId: ID!, input:InformationTypeInput!): InformationType @hasPermission(resources: "Asset:update")
+  deleteCatalogEntry(catalogId: ID!, entryId: ID!): ID @hasPermission(resources: "Asset:delete")
+  editCatalogEntry(catalogId: ID!, entryId: ID!, input: [EditInput]!, commitMessage:String): InformationType @hasPermission(resources: "Asset:update")
+  # Attach & Detach
   addInformationTypeToCatalog(id: ID!, entryId: ID!): ID @hasPermission(resources: "Asset:update")
   removeInformationTypeFromCatalog(id: ID!, entryId: ID!): ID @hasPermission(resources: "Asset:update")
 }
@@ -54,7 +61,7 @@ type InformationTypeCatalog implements BasicObject & LifecycleObject {
   "Identifies the information type identification system used."
   system: URL!
   "Identifies a reference to an information type in the catalog"
-  entries: [InformationTypeEntry]
+  entries: [InformationType]
 }
 input InformationTypeCatalogInput {
   "Identifies a human readable name for the catalog of information types."
@@ -105,4 +112,3 @@ enum InformationTypeCatalogFilter {
     label_name
 }
 ## --------
-

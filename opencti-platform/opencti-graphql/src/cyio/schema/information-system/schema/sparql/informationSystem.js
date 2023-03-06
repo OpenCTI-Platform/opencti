@@ -7,6 +7,7 @@ import {
   detachQuery,
   generateId, 
   DARKLIGHT_NS,
+  checkIfValidUUID,
 } from '../../../utils.js';
   
   // Reducer Selection
@@ -76,7 +77,13 @@ const informationSystemReducer = (item) => {
       ...(item.top_risk_severity && { top_risk_severity: item.top_risk_severity }),
     }
 };
-  
+
+
+// Utility
+export const getInformationTypeIri = (id) => {
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/information-system--${id}>`;
+}
 
 // Query Builders - Information System
 export const selectInformationSystemQuery = (id, select) => {
