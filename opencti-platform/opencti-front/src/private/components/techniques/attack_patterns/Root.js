@@ -91,6 +91,7 @@ class RootAttackPattern extends Component {
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
+              'victimology',
               'threat_actors',
               'intrusion_sets',
               'campaigns',

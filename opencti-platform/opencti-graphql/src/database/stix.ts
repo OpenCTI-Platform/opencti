@@ -178,6 +178,12 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_IDENTITY_SECTOR}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
+  [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_IDENTITY_SYSTEM}`]: [
+    { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
+  [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_EVENT}`]: [
+    { name: RELATION_TARGETS, type: REL_BUILT_IN }
+  ],
   [`${ENTITY_TYPE_ATTACK_PATTERN}_${ENTITY_TYPE_LOCATION_POSITION}`]: [
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
