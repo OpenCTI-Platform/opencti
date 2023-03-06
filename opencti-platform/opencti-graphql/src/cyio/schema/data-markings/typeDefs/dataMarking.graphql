@@ -276,13 +276,14 @@ enum UnmodifiedResale {
 # Order Enum
 enum DataMarkingOrdering {
   definition_type
-  color
   created
   modified
+  name
 }
 # Filter Types
 enum DataMarkingFilter {
-  definition
+  "Type of DataMarking"
+  definition_type
 }
 input DataMarkingFiltering {
   key: [DataMarkingFilter!]!

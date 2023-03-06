@@ -25,7 +25,7 @@ import {
 } from '../schema/sparql/dataMarkings.js';
 
 export const findAllDataMarkings = async (args, dbName, dataSources, selectMap) => {
-  const sparqlQuery = selectAllDataMarkingsQuery(selectMap.getNode('node'), args);
+  const sparqlQuery = selectAllDataMarkingsQuery(null, args);
   const configDB = conf.get('app:config:db_name') || 'cyio-config';
   let response;
   try {
