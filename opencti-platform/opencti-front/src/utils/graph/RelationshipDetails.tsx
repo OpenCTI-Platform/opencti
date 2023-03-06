@@ -216,7 +216,7 @@ RelationshipDetailsComponentProps
               <InfoOutlined />
             </IconButton>
           </span>
-        </Tooltip>}
+        </Tooltip>)}
       {!stixCoreRelationship.from.relationship_type && stixCoreRelationship.from.id
         && <RelationShipFromAndTo
           id={stixCoreRelationship.from.id}
