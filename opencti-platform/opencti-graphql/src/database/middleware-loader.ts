@@ -13,7 +13,7 @@ import type {
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 
-const MAX_SEARCH_SIZE = 5000;
+export const MAX_SEARCH_SIZE = 5000;
 
 export interface Filter {
   key: any ;

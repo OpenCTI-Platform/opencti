@@ -6,63 +6,22 @@ import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetFrom,
-  listThroughGetTo,
-  patchAttribute,
-  updateAttribute,
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetFrom, listThroughGetTo, patchAttribute, updateAttribute, } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_USER,
-} from '../schema/internalObject';
-import {
-  isInternalRelationship,
-  RELATION_ACCESSES_TO,
-  RELATION_HAS_CAPABILITY,
-  RELATION_HAS_ROLE,
-  RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO,
-} from '../schema/internalRelationship';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { findAll as allMarkings } from './markingDefinition';
 import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import {
-  convertRelationToAction,
-  IMPERSONATE_ACTION,
-  LOGIN_ACTION,
-  LOGOUT_ACTION,
-  ROLE_DELETION,
-  USER_CREATION,
-  USER_DELETION,
-} from '../config/audit';
+import { convertRelationToAction, IMPERSONATE_ACTION, LOGIN_ACTION, LOGOUT_ACTION, ROLE_DELETION, USER_CREATION, USER_DELETION, } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import {
-  BYPASS,
-  executionContext,
-  INTERNAL_USERS,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
-import { getEntityFromCache } from '../database/cache';
+import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -182,7 +141,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = map((c) => c.name, capabilities);
   const shouldBypass = userCapabilities.includes(BYPASS) || userId === OPENCTI_ADMIN_UUID;
-  const allMarkingsPromise = allMarkings(context, SYSTEM_USER).then((data) => R.map((i) => i.node, data.edges));
+  const allMarkingsPromise = getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   let userMarkingsPromise;
   if (shouldBypass) {
     userMarkingsPromise = allMarkingsPromise;

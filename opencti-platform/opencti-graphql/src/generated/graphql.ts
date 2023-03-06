@@ -15846,6 +15846,7 @@ export type QueryMarkingDefinitionArgs = {
 
 export type QueryMarkingDefinitionsArgs = {
   after?: InputMaybe<Scalars['ID']>;
+  allowPrefixWildcardSearch?: InputMaybe<Scalars['Boolean']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<MarkingDefinitionsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
