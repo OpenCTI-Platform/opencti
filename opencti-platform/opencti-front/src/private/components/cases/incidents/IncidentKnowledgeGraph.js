@@ -9,6 +9,7 @@ import ForceGraph2D from 'react-force-graph-2d';
 import ForceGraph3D from 'react-force-graph-3d';
 import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
+import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import {
@@ -38,6 +39,7 @@ import {
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import IncidentPopover from './IncidentPopover';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import { hexToRGB } from '../../../../utils/Colors';
 
 const ignoredStixCoreObjectsTypes = ['Incident', 'Note', 'Opinion'];
 
@@ -135,126 +137,126 @@ const incidentKnowledgeGraphStixCoreObjectQuery = graphql`
         }
       }
       ... on StixDomainObject {
-          created
+        created
       }
       ... on AttackPattern {
-          name
-          x_mitre_id
+        name
+        x_mitre_id
       }
       ... on Campaign {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on CourseOfAction {
-          name
+        name
       }
       ... on Channel {
-          name
+        name
       }
       ... on Note {
-          attribute_abstract
-          content
+        attribute_abstract
+        content
       }
       ... on ObservedData {
-          name
-          first_observed
-          last_observed
+        name
+        first_observed
+        last_observed
       }
       ... on Opinion {
-          opinion
+        opinion
       }
       ... on Report {
-          name
-          published
+        name
+        published
       }
       ... on Grouping {
-          name
-          description
+        name
+        description
       }
       ... on Individual {
-          name
+        name
       }
       ... on Organization {
-          name
+        name
       }
       ... on Sector {
-          name
+        name
       }
       ... on System {
-          name
+        name
       }
       ... on Indicator {
-          name
-          valid_from
+        name
+        valid_from
       }
       ... on Infrastructure {
-          name
+        name
       }
       ... on IntrusionSet {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on Position {
-          name
+        name
       }
       ... on City {
-          name
+        name
       }
       ... on AdministrativeArea {
-          name
+        name
       }
       ... on Country {
-          name
+        name
       }
       ... on Region {
-          name
+        name
       }
       ... on Malware {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on ThreatActor {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on Tool {
-          name
+        name
       }
       ... on Vulnerability {
-          name
+        name
       }
       ... on Incident {
-          name
-          first_seen
-          last_seen
+        name
+        first_seen
+        last_seen
       }
       ... on StixCyberObservable {
-          observable_value
+        observable_value
       }
       ... on StixFile {
-          observableName: name
+        observableName: name
       }
       ... on Event {
-          name
+        name
       }
       ... on Case {
-          name
+        name
       }
       ... on Narrative {
-          name
+        name
       }
       ... on DataComponent {
-          name
+        name
       }
       ... on DataSource {
-          name
+        name
       }
       ... on Language {
-          name
+        name
       }
     }
   }
@@ -512,9 +514,16 @@ class IncidentKnowledgeGraphComponent extends Component {
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
+      selectModeFree: R.propOr(false, 'selectModeFree', params),
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       displayTimeRange: R.propOr(false, 'displayTimeRange', params),
+      rectSelected: {
+        origin: [0, 0],
+        target: [0, 0],
+        shiftKey: false,
+        altKey: false,
+      },
       selectedTimeRangeInterval: timeRangeInterval,
       allStixCoreObjectsTypes,
       allMarkedBy,
@@ -616,6 +625,10 @@ class IncidentKnowledgeGraphComponent extends Component {
 
   handleToggle3DMode() {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
+  }
+
+  handleToggleSelectModeFree() {
+    this.setState({ selectModeFree: !this.state.selectModeFree }, () => this.saveParameters());
   }
 
   handleToggleTreeMode(modeTree) {
@@ -1131,6 +1144,71 @@ class IncidentKnowledgeGraphComponent extends Component {
     }, 1500);
   }
 
+  inSelectionRect(n) {
+    const graphOrigin = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.origin[0],
+      this.state.rectSelected.origin[1],
+    );
+    const graphTarget = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.target[0],
+      this.state.rectSelected.target[1],
+    );
+    return (
+      n.x >= graphOrigin.x
+      && n.x <= graphTarget.x
+      && n.y >= graphOrigin.y
+      && n.y <= graphTarget.y
+    );
+  }
+
+  handleRectSelectMove(e, coords) {
+    if (this.state.selectModeFree) {
+      const container = document.getElementsByTagName('canvas')[0];
+      const { left, top } = container.getBoundingClientRect();
+      this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.origin[1] = R.min(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.target[0] = R.max(coords.origin[0], coords.target[0]) - left;
+      this.state.rectSelected.target[1] = R.max(coords.origin[1], coords.target[1]) - top;
+      this.state.rectSelected.shiftKey = e.shiftKey;
+      this.state.rectSelected.altKey = e.altKey;
+    }
+  }
+
+  handleRectSelectUp() {
+    if (
+      this.state.selectModeFree
+      && (this.state.rectSelected.origin[0]
+        !== this.state.rectSelected.target[0]
+        || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1])
+    ) {
+      if (
+        !this.state.rectSelected.shiftKey
+        && !this.state.rectSelected.altKey
+      ) {
+        this.selectedLinks.clear();
+        this.selectedNodes.clear();
+      }
+      if (this.state.rectSelected.altKey) {
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.delete(n),
+          this.state.graphData.nodes,
+        );
+      } else {
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.add(n),
+          this.state.graphData.nodes,
+        );
+      }
+      this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
+    }
+    this.state.rectSelected = {
+      origin: [0, 0],
+      target: [0, 0],
+      shiftKey: false,
+      altKey: false,
+    };
+  }
+
   handleSelectAll() {
     this.selectedLinks.clear();
     this.selectedNodes.clear();
@@ -1215,6 +1293,7 @@ class IncidentKnowledgeGraphComponent extends Component {
       allMarkedBy,
       allCreatedBy,
       stixCoreObjectsTypes,
+      selectModeFree,
       markedBy,
       createdBy,
       graphData,
@@ -1247,10 +1326,8 @@ class IncidentKnowledgeGraphComponent extends Component {
           enableSuggestions={false}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {(selectedEntities.length > 0) && (
-          <EntitiesDetailsRightsBar
-            selectedEntities={selectedEntities}
-          />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
         )}
         <IncidentKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
@@ -1265,8 +1342,12 @@ class IncidentKnowledgeGraphComponent extends Component {
             this,
           )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+            this,
+          )}
           stixCoreObjectsTypes={allStixCoreObjectsTypes}
           currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+          currentSelectModeFree={selectModeFree}
           markedBy={allMarkedBy}
           currentMarkedBy={markedBy}
           createdBy={allCreatedBy}
@@ -1396,103 +1477,118 @@ class IncidentKnowledgeGraphComponent extends Component {
             }
           />
         ) : (
-          <ForceGraph2D
-            ref={this.graph}
-            width={graphWidth}
-            height={graphHeight}
-            graphData={graphData}
-            onZoom={this.onZoom.bind(this)}
-            onZoomEnd={this.handleZoomEnd.bind(this)}
-            nodeRelSize={4}
-            nodeCanvasObject={(node, ctx) => nodePaint(
-              {
-                selected: theme.palette.secondary.main,
-                inferred: theme.palette.warning.main,
-              },
-              node,
-              node.color,
-              ctx,
-              this.selectedNodes.has(node),
-              node.isNestedInferred,
-            )
-            }
-            nodePointerAreaPaint={nodeAreaPaint}
-            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-            // linkDirectionalParticleWidth={1}
-            // linkDirectionalParticleSpeed={() => 0.004}
-            linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(link, ctx) => (displayLabels
-              ? linkPaint(link, ctx, theme.palette.text.primary)
-              : null)
-            }
-            linkColor={(link) => {
-              // eslint-disable-next-line no-nested-ternary
-              return this.selectedLinks.has(link)
-                ? theme.palette.secondary.main
-                : link.isNestedInferred
-                  ? theme.palette.warning.main
-                  : theme.palette.primary.main;
+          <RectangleSelection
+            onSelect={(e, coords) => {
+              this.handleRectSelectMove(e, coords);
             }}
-            linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)
-            }
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
+            onMouseUp={(e) => {
+              this.handleRectSelectUp(e);
             }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
+            style={{
+              backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+              borderColor: theme.palette.warning.main,
+            }}
+            disabled={!selectModeFree}
+          >
+            <ForceGraph2D
+              ref={this.graph}
+              width={graphWidth}
+              height={graphHeight}
+              graphData={graphData}
+              onZoom={this.onZoom.bind(this)}
+              onZoomEnd={this.handleZoomEnd.bind(this)}
+              nodeRelSize={4}
+              enablePanInteraction={!selectModeFree}
+              nodeCanvasObject={(node, ctx) => nodePaint(
+                {
+                  selected: theme.palette.secondary.main,
+                  inferred: theme.palette.warning.main,
+                },
+                node,
+                node.color,
+                ctx,
+                this.selectedNodes.has(node),
+                node.isNestedInferred,
+              )
               }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
+              nodePointerAreaPaint={nodeAreaPaint}
+              // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+              // linkDirectionalParticleWidth={1}
+              // linkDirectionalParticleSpeed={() => 0.004}
+              linkCanvasObjectMode={() => 'after'}
+              linkCanvasObject={(link, ctx) => (displayLabels
+                ? linkPaint(link, ctx, theme.palette.text.primary)
+                : null)
+              }
+              linkColor={(link) => {
+                // eslint-disable-next-line no-nested-ternary
+                return this.selectedLinks.has(link)
+                  ? theme.palette.secondary.main
+                  : link.isNestedInferred
+                    ? theme.palette.warning.main
+                    : theme.palette.primary.main;
+              }}
+              linkLineDash={(link) => (link.inferred || link.isNestedInferred ? [2, 1] : null)
+              }
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={0.99}
+              onNodeClick={this.handleNodeClick.bind(this)}
+              onNodeRightClick={(node) => {
+                // eslint-disable-next-line no-param-reassign
+                node.fx = undefined;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = undefined;
+                this.handleDragEnd();
+                this.forceUpdate();
+              }}
+              onNodeDrag={(node, translate) => {
+                if (this.selectedNodes.has(node)) {
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node)
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                  });
+                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                    ));
+                }
+              }}
+              onNodeDragEnd={(node) => {
+                if (this.selectedNodes.has(node)) {
+                  // finished moving a selected node
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node) // don't touch node being dragged
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => {
+                      ['x', 'y'].forEach(
+                        // eslint-disable-next-line no-param-reassign,no-return-assign
+                        (coord) => (selNode[`f${coord}`] = undefined),
+                      );
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fx = selNode.x;
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fy = selNode.y;
+                    });
+                }
+                // eslint-disable-next-line no-param-reassign
+                node.fx = node.x;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = node.y;
+                this.handleDragEnd();
+              }}
+              onLinkClick={this.handleLinkClick.bind(this)}
+              onBackgroundClick={this.handleBackgroundClick.bind(this)}
+              cooldownTicks={modeFixed ? 0 : undefined}
+              dagMode={
+                // eslint-disable-next-line no-nested-ternary
+                modeTree === 'horizontal'
+                  ? 'lr'
+                  : modeTree === 'vertical'
+                    ? 'td'
+                    : undefined
               }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              this.handleDragEnd();
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-            dagLevelDistance={50}
-          />
+              dagLevelDistance={50}
+            />
+          </RectangleSelection>
         )}
       </div>
     );
@@ -1565,150 +1661,150 @@ const IncidentKnowledgeGraph = createFragmentContainer(
                 }
               }
               ... on StixDomainObject {
-                  is_inferred
-                  created
+                is_inferred
+                created
               }
               ... on AttackPattern {
-                  name
-                  x_mitre_id
+                name
+                x_mitre_id
               }
               ... on Campaign {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on ObservedData {
-                  name
+                name
               }
               ... on CourseOfAction {
-                  name
+                name
               }
               ... on Note {
-                  attribute_abstract
-                  content
+                attribute_abstract
+                content
               }
               ... on Opinion {
-                  opinion
+                opinion
               }
               ... on Report {
-                  name
-                  published
+                name
+                published
               }
               ... on Grouping {
-                  name
+                name
               }
               ... on Individual {
-                  name
+                name
               }
               ... on Organization {
-                  name
+                name
               }
               ... on Sector {
-                  name
+                name
               }
               ... on System {
-                  name
+                name
               }
               ... on Indicator {
-                  name
-                  valid_from
+                name
+                valid_from
               }
               ... on Infrastructure {
-                  name
+                name
               }
               ... on IntrusionSet {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Position {
-                  name
+                name
               }
               ... on City {
-                  name
+                name
               }
               ... on AdministrativeArea {
-                  name
+                name
               }
               ... on Country {
-                  name
+                name
               }
               ... on Region {
-                  name
+                name
               }
               ... on Malware {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on ThreatActor {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Tool {
-                  name
+                name
               }
               ... on Vulnerability {
-                  name
+                name
               }
               ... on Incident {
-                  name
-                  first_seen
-                  last_seen
+                name
+                first_seen
+                last_seen
               }
               ... on Event {
-                  name
-                  description
-                  start_time
-                  stop_time
+                name
+                description
+                start_time
+                stop_time
               }
               ... on Channel {
-                  name
-                  description
+                name
+                description
               }
               ... on Narrative {
-                  name
-                  description
+                name
+                description
               }
               ... on Language {
-                  name
+                name
               }
               ... on DataComponent {
-                  name
+                name
               }
               ... on DataSource {
-                  name
+                name
               }
               ... on Case {
-                  name
+                name
               }
               ... on StixCyberObservable {
-                  observable_value
+                observable_value
               }
               ... on StixFile {
-                  observableName: name
+                observableName: name
               }
               ... on Label {
-                  value
-                  color
+                value
+                color
               }
               ... on MarkingDefinition {
-                  definition
-                  x_opencti_color
+                definition
+                x_opencti_color
               }
               ... on KillChainPhase {
-                  kill_chain_name
-                  phase_name
+                kill_chain_name
+                phase_name
               }
               ... on ExternalReference {
-                  url
-                  source_name
+                url
+                source_name
               }
               ... on BasicRelationship {
-                  id
-                  entity_type
-                  parent_types
+                id
+                entity_type
+                parent_types
               }
               ... on BasicRelationship {
                 id

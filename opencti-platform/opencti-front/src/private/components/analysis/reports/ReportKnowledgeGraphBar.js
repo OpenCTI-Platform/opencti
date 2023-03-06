@@ -22,6 +22,7 @@ import {
   FamilyTree,
   SelectAll,
   SelectGroup,
+  SelectionDrag,
   Video3d,
 } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -324,6 +325,7 @@ class ReportKnowledgeGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectModeFree,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -331,6 +333,7 @@ class ReportKnowledgeGraphBar extends Component {
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
       handleZoomToFit,
+      handleToggleSelectModeFree,
       stixCoreObjectsTypes,
       createdBy,
       markedBy,
@@ -558,6 +561,17 @@ class ReportKnowledgeGraphBar extends Component {
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Free rectangle select')}>
+                <span>
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <SelectionDrag />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>
                   <IconButton
@@ -1121,6 +1135,7 @@ ReportKnowledgeGraphBar.propTypes = {
   t: PropTypes.func,
   report: PropTypes.object,
   handleToggle3DMode: PropTypes.func,
+  handleToggleSelectModeFree: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
   currentModeTree: PropTypes.string,
