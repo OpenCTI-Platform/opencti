@@ -1,5 +1,6 @@
 import * as R from 'ramda';
 import React from 'react';
+import { Base64 } from 'js-base64';
 import Tooltip from '@mui/material/Tooltip';
 import { APP_BASE_PATH } from '../relay/environment';
 
@@ -71,9 +72,9 @@ export const isValidStixBundle = (bundle) => {
   }
 };
 
-export const toB64 = (str) => window.btoa(unescape(encodeURIComponent(str)));
+export const toB64 = (str) => Base64.encodeURI(str);
 
-export const fromB64 = (str) => decodeURIComponent(escape(window.atob(str)));
+export const fromB64 = (str) => Base64.decode(str);
 
 export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
 
