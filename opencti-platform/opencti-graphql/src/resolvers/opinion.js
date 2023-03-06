@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {
   addOpinion,
   findAll,
@@ -25,7 +26,22 @@ import {
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
-import { buildRefRelationKey } from '../schema/general';
+import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
+import { addIndividual } from '../domain/individual';
+import { userSessionRefresh } from '../domain/user';
+import { BYPASS, isUserHasCapability } from '../utils/access';
+import { ForbiddenAccess } from '../config/errors';
+
+// Needs to have edit rights or needs to be creator of the opinion
+const checkUserAccess = async (context, user, id) => {
+  const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+  const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_UPDATE);
+  const opinion = await findById(context, user, id);
+  const isCreator = opinion[RELATION_CREATED_BY] ? opinion[RELATION_CREATED_BY] === user.individual_id : false;
+  const isCollaborationAllowed = userCapabilities.includes(KNOWLEDGE_COLLABORATION) && isCreator;
+  const accessGranted = isAuthorized || isCollaborationAllowed;
+  if (!accessGranted) throw ForbiddenAccess();
+};
 
 const opinionResolvers = {
   Query: {
@@ -66,14 +82,51 @@ const opinionResolvers = {
   },
   Mutation: {
     opinionEdit: (_, { id }, context) => ({
-      delete: () => stixDomainObjectDelete(context, context.user, id),
-      fieldPatch: ({ input, commitMessage, references }) => stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references }),
-      contextPatch: ({ input }) => stixDomainObjectEditContext(context, context.user, id, input),
-      contextClean: () => stixDomainObjectCleanContext(context, context.user, id),
-      relationAdd: ({ input }) => stixDomainObjectAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      delete: async () => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectDelete(context, context.user, id);
+      },
+      fieldPatch: async ({ input, commitMessage, references }) => {
+        await checkUserAccess(context, context.user, id);
+        const isManager = isUserHasCapability(context.user, KNOWLEDGE_UPDATE);
+        const availableInputs = isManager ? input : input.filter((i) => i.key !== 'createdBy');
+        return stixDomainObjectEditField(context, context.user, id, availableInputs, { commitMessage, references });
+      },
+      contextPatch: async ({ input }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectEditContext(context, context.user, id, input);
+      },
+      contextClean: async () => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectCleanContext(context, context.user, id);
+      },
+      relationAdd: async ({ input }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectAddRelation(context, context.user, id, input);
+      },
+      relationDelete: async ({ toId, relationship_type: relationshipType }) => {
+        await checkUserAccess(context, context.user, id);
+        return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
+      },
     }),
-    opinionAdd: (_, { input }, context) => addOpinion(context, context.user, input),
+    // For collaborative creation
+    userOpinionAdd: async (_, { input }, context) => {
+      const { user } = context;
+      const opinionToCreate = { ...input };
+      opinionToCreate.createdBy = user.individual_id;
+      if (opinionToCreate.createdBy === undefined) {
+        const individualInput = { name: user.name, contact_information: user.user_email };
+        // We need to bypass validation here has we maybe not setup all require fields
+        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+        opinionToCreate.createdBy = individual.id;
+        await userSessionRefresh(user.internal_id);
+      }
+      return addOpinion(context, user, opinionToCreate);
+    },
+    // For knowledge
+    opinionAdd: (_, { input }, context) => {
+      return addOpinion(context, context.user, input);
+    },
   },
 };
 

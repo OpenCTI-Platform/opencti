@@ -1,6 +1,6 @@
-import { expect, it, describe } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, queryAsAdmin } from '../../utils/testQuery';
+import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
 import { now } from '../../../src/utils/format';
 
