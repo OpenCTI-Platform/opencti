@@ -124,7 +124,7 @@
     "index_creation_pattern": "-000001",
     "search_ignore_throttled": false,
     "max_pagination_result": 5000,
-    "max_concurrency": 2
+    "max_concurrency": 4
   },
   "minio": {
     "bucket_name": "opencti-bucket",

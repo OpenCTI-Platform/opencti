@@ -169,13 +169,13 @@ export const computeAvailableMarkings = (markings, all) => {
     const { id } = mark;
     const findMarking = R.find((m) => m.id === id, all);
     computedMarkings.push(findMarking);
-    const { x_opencti_order: order, definition_type: type } = findMarking;
+    const { x_opencti_order: order, definition_type: type } = findMarking ?? {};
     const matchingMarkings = R.filter((m) => {
       return id !== m.id && m.definition_type === type && m.x_opencti_order <= order;
     }, all);
     computedMarkings.push(...matchingMarkings);
   }
-  return R.uniqBy((m) => m.id, computedMarkings);
+  return R.uniqBy((m) => m?.id ?? '', computedMarkings);
 };
 
 const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
