@@ -136,6 +136,13 @@ ContainerStixCyberObservablesComponentProps
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
     filters: convertFilters(
+      filters,
+    ) as StixObjectOrStixRelationshipsFiltering[],
+  };
+  const exportPaginationOptions = {
+    ...rawPaginationOptions,
+    types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
+    filters: convertFilters(
       toolbarFilters,
     ) as StixObjectOrStixRelationshipsFiltering[],
   };
@@ -320,7 +327,7 @@ ContainerStixCyberObservablesComponentProps
                 'createdBy',
                 'sightedBy',
               ]}
-              paginationOptions={paginationOptions}
+              paginationOptions={exportPaginationOptions}
             >
               {queryRef && (
                 <React.Suspense
