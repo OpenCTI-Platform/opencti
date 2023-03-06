@@ -267,7 +267,7 @@ export const createInformationSystem = async (input, dbName, dataSources, select
   if (input.authenticator_assurance_level === undefined) input.authenticator_assurance_level = 'AAL1';
   if (input.federation_assurance_level === undefined) input.federation_assurance_level = 'UNKNOWN';
 
-  // If not specified, supply default objectives impact levels
+  // If not specified, supply default objectives impact
   let { confidentiality, integrity, availability } = await computeSecurityObjectives(input.information_types);
   if (input.security_objective_confidentiality === undefined) input.security_objective_confidentiality = confidentiality;
   if (input.security_objective_integrity === undefined) input.security_objective_integrity = integrity;
@@ -1011,9 +1011,9 @@ export const computeSecurityObjectives = async ( infoTypes ) => {
   let availability = 'fips-199-low';
 
   if (infoTypes === undefined || infoTypes === null) {
-    confidentiality = conf.get('app:config:default_confidentiality_impact_level') || 'fips-199-low';
-    integrity = conf.get('app:config:default_integrity_impact_level') || 'fips-199-low';
-    availability = conf.get('app:config:default_availability_impact_level') || 'fips-199-low';
+    confidentiality = conf.get('app:config:default_confidentiality_impact') || 'fips-199-low';
+    integrity = conf.get('app:config:default_integrity_impact') || 'fips-199-low';
+    availability = conf.get('app:config:default_availability_impact') || 'fips-199-low';
     return { confidentiality, integrity, availability }
   }
 
@@ -1025,16 +1025,16 @@ export const computeSecurityObjectives = async ( infoTypes ) => {
       let result = await findInformationTypeByIri(item.iri, dbName, dataSources, null);
       let infoType = {
         confidentiality_impact: {
-          base_impact_level: result.confidentiality_base_impact_level,
-          selected_impact_level: result.confidentiality_selected_impact_level
+          base_impact: result.confidentiality_base_impact,
+          selected_impact: result.confidentiality_selected_impact
         },
         integrity_impact: {
-          base_impact_level: result.integrity_base_impact_level,
-          selected_impact_level: result.integrity_selected_impact_level
+          base_impact: result.integrity_base_impact,
+          selected_impact: result.integrity_selected_impact
         },
         availability_impact: {
-          base_impact_level: result.availability_base_impact_level,
-          selected_impact_level: result.availability_selected_impact_level
+          base_impact: result.availability_base_impact,
+          selected_impact: result.availability_selected_impact
         }
       }
       results.push(infoType);
@@ -1044,27 +1044,27 @@ export const computeSecurityObjectives = async ( infoTypes ) => {
 
   for (let infoType of infoTypes) {
     // process confidentiality impact
-    if (impactIsGreater(confidentiality, infoType.confidentiality_impact.base_impact_level))
-      confidentiality = infoType.confidentiality_impact.base_impact_level;
-    if (infoType.confidentiality_impact.selected_impact_level !== undefined) {
-      if (impactIsGreater(confidentiality, infoType.confidentiality_impact.selected_impact_level))
-      confidentiality = infoType.confidentiality_impact.selected_impact_level;
+    if (impactIsGreater(confidentiality, infoType.confidentiality_impact.base_impact))
+      confidentiality = infoType.confidentiality_impact.base_impact;
+    if (infoType.confidentiality_impact.selected_impact !== undefined) {
+      if (impactIsGreater(confidentiality, infoType.confidentiality_impact.selected_impact))
+      confidentiality = infoType.confidentiality_impact.selected_impact;
     }
 
     // process integrity impact
-    if (impactIsGreater(integrity, infoType.integrity_impact.base_impact_level))
-      integrity = infoType.integrity_impact.base_impact_level;
-    if (infoType.integrity_impact.selected_impact_level !== undefined) {
-      if (impactIsGreater(integrity, infoType.integrity_impact.selected_impact_level))
-      integrity = infoType.integrity_impact.selected_impact_level;
+    if (impactIsGreater(integrity, infoType.integrity_impact.base_impact))
+      integrity = infoType.integrity_impact.base_impact;
+    if (infoType.integrity_impact.selected_impact !== undefined) {
+      if (impactIsGreater(integrity, infoType.integrity_impact.selected_impact))
+      integrity = infoType.integrity_impact.selected_impact;
     }
 
     // process availability impact
-    if (impactIsGreater(availability, infoType.availability_impact.base_impact_level))
-      availability = infoType.availability_impact.base_impact_level;
-    if (infoType.availability_impact.selected_impact_level !== undefined) {
-      if (impactIsGreater(availability, infoType.availability_impact.selected_impact_level))
-      availability = infoType.availability_impact.selected_impact_level;
+    if (impactIsGreater(availability, infoType.availability_impact.base_impact))
+      availability = infoType.availability_impact.base_impact;
+    if (infoType.availability_impact.selected_impact !== undefined) {
+      if (impactIsGreater(availability, infoType.availability_impact.selected_impact))
+      availability = infoType.availability_impact.selected_impact;
     }
   }
 

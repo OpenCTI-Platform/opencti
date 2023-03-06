@@ -1,5 +1,5 @@
-import { UserInputError } from 'apollo-server-express';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, CyioError } from '../../utils.js';
+import { UserInputError } from 'apollo-server-errors';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID } from '../../utils.js';
 import conf from '../../../../config/conf';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 import { attachToSystemConfiguration, detachFromSystemConfiguration } from '../../system-configuration/domain/system-configuration.js';
@@ -14,16 +14,26 @@ import {
   deleteInformationTypeCatalogQuery,
   attachToInformationTypeCatalogQuery,
   detachFromInformationTypeCatalogQuery,
+  selectCatalogCategoriesQuery,
+  selectCatalogCategoryMembersQuery,
+  selectCatalogMemberQuery,
 } from '../schema/sparql/informationTypeCatalog.js';
 import {
-  deleteInformationTypeEntryByIriQuery,
-  singularizeInformationTypeEntrySchema,  
-} from '../schema/sparql/informationTypeEntry.js';
+  createInformationType,
+  deleteInformationTypeById,
+  editInformationTypeById
+} from '../domain/informationType.js';
+import {
+  getReducer as getInformationTypeReducer,
+  deleteInformationTypeByIriQuery,
+  singularizeInformationTypeSchema,  
+} from '../schema/sparql/informationType.js';
+
 
 // Information Type Catalog
 export const findInformationTypeCatalogById = async (id, dbName, dataSources, select) => {
   // ensure the id is a valid UUID
-  if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
 
   let iri = `<http://cyio.darklight.ai/information-type-catalog--${id}>`;
   return findInformationTypeCatalogByIri(iri, dbName, dataSources, select);
@@ -199,7 +209,7 @@ export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources 
   let removedIds = []
   for (let itemId of idArray) {
     let response;
-    if (!checkIfValidUUID(itemId)) throw new CyioError(`Invalid identifier: ${itemId}`);  
+    if (!checkIfValidUUID(itemId)) throw new UserInputError(`Invalid identifier: ${itemId}`);  
 
     // check if object with id exists
     let sparqlQuery = selectInformationTypeCatalogQuery(itemId, select);
@@ -214,7 +224,7 @@ export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources 
       console.log(e)
       throw e
     }
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${itemId}`);
+    if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${itemId}`);
 
     // Detach the Information Type Catalog to the System Configuration
     await detachFromSystemConfiguration(itemId, 'information-type-catalog', dataSources);
@@ -222,12 +232,12 @@ export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources 
     // delete any entries in the Catalog
     if (response[0].entries !== undefined && response[0].entries !== null) {
       for (let entryIri of response[0].entries) {
-        let query = deleteInformationTypeEntryByIriQuery(entryIri);
+        let query = deleteInformationTypeByIriQuery(entryIri);
         try {
           response = await dataSources.Stardog.delete({
             dbName: contextDB,
             sparqlQuery: query,
-            queryId: "Delete Information Type Entry in Catalog"
+            queryId: "Delete Information Type in Catalog"
           });
         } catch (e) {
           console.log(e)
@@ -257,10 +267,10 @@ export const deleteInformationTypeCatalogById = async ( id, dbName, dataSources 
 
 export const editInformationTypeCatalogById = async (id, input, dbName, dataSources, select, schema) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
-  if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);  
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
 
   // make sure there is input data containing what is to be edited
-  if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+  if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
 
   // WORKAROUND to remove immutable fields
   input = input.filter(element => (element.key !== 'id' && element.key !== 'created' && element.key !== 'modified'));
@@ -278,7 +288,7 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
     queryId: "Select Information Type Catalog",
     singularizeSchema: singularizeInformationTypeCatalogSchema
   });
-  if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+  if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   // determine operation, if missing
   for (let editItem of input) {
@@ -289,7 +299,7 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
       editItem.operation = 'remove';
       continue;
     }
-    if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+    if (Array.isArray(editItem.value) && editItem.value[0] === null) throw new UserInputError(`Field "${editItem.key}" has invalid value "null"`);
 
     if (!response[0].hasOwnProperty(editItem.key)) {
       editItem.operation = 'add';
@@ -301,16 +311,18 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
     }
   }
 
-  // Push an edit to update the modified time of the object
-  const timestamp = new Date().toISOString();
-  if (!response[0].hasOwnProperty('created')) {
-    let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+  // Push an edit to update the modified time of the object, if supported
+  if (informationTypeCatalogPredicateMap.hasOwnProperty('modified')) {
+    const timestamp = new Date().toISOString();
+    if (!response[0].hasOwnProperty('created')) {
+      let update = {key: "created", value:[`${timestamp}`], operation: "add"}
+      input.push(update);
+    }
+    let operation = "replace";
+    if (!response[0].hasOwnProperty('modified')) operation = "add";
+    let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
     input.push(update);
   }
-  let operation = "replace";
-  if (!response[0].hasOwnProperty('modified')) operation = "add";
-  let update = {key: "modified", value:[`${timestamp}`], operation: `${operation}`}
-  input.push(update);
 
   // Handle the update to fields that have references to other object instances
   for (let editItem  of input) {
@@ -336,7 +348,7 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
           queryId: "Obtaining IRI for the object with id",
           singularizeSchema: singularizeInformationTypeCatalogSchema
         });
-        if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
+        if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
         iris.push(`<${result[0].iri}>`);
       }
     }
@@ -374,22 +386,154 @@ export const editInformationTypeCatalogById = async (id, input, dbName, dataSour
   return reducer(result[0]);
 };
 
-export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSources) => {
+export const createCatalogEntry = async (catalogId, input, dbName, dataSources, select) => {
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let sparqlQuery;
+  let response;
 
-  if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);  
-  if (!checkIfValidUUID(entryId)) throw new CyioError(`Invalid identifier: ${entryId}`);  
+  // check to make sure catalog ID is valid format
+  if (!checkIfValidUUID(catalogId)) throw new UserInputError(`Invalid identifier: ${catalogId}`);
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(catalogId, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
   
-  // check to see if they entity to be attached is an Information Type Entry
-  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type-entry');
+  // create the Information Type
+  response = await createInformationType(input, contextDB, dataSources, select)
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+
+  // attach the entity to the Information Type Catalog instance
+  // response = await addInformationTypeToCatalog( catalogId, response[0].id, contextDB, dataSources);
+  let iris = `<${response.iri}>`;
+  sparqlQuery = attachToInformationTypeCatalogQuery(catalogId, 'entries', iris);
+  await dataSources.Stardog.create({
+    dbName: contextDB,
+    sparqlQuery,
+    queryId: 'Attaching to Information Type Catalog',
+  });
+
+  return response;
+};
+
+export const deleteCatalogEntry = async (catalogId, entryId, dbName, dataSources) => {
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check to make sure catalog ID is valid format
+  if (!checkIfValidUUID(catalogId)) throw new UserInputError(`Invalid identifier: ${catalogId}`);
+  if (!checkIfValidUUID(entryId)) throw new UserInputError(`Invalid identifier: ${entryId}`);
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(catalogId, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+  
+  // check to see if they entity to be deleted is an Information Type
+  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type');
   let result = await dataSources.Stardog.queryById({
     dbName: contextDB,
     sparqlQuery,
     queryId: "Obtaining IRI for object with id to attached",
-    singularizeSchema: singularizeInformationTypeEntrySchema
+    singularizeSchema: singularizeInformationTypeSchema
   });
-  if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${entryId}`);
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
+  let iris = `<${result[0].iri}>`;
+  
+  // attach the entity to the Information Type Catalog instance
+  sparqlQuery = detachFromInformationTypeCatalogQuery(catalogId, 'entries', iris);
+  await dataSources.Stardog.delete({
+    dbName,
+    sparqlQuery,
+    queryId: 'Detaching to Information Type Catalog',
+  });
+
+  // delete the information type
+  response = await deleteInformationTypeById(entryId, contextDB, dataSources);
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
+  return entryId;
+};
+
+export const editCatalogEntry = async (catalogId, entryId, input, dbName, dataSources, select) => {
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  if (!checkIfValidUUID(catalogId)) throw new UserInputError(`Invalid identifier: ${id}`);  
+  if (!checkIfValidUUID(entryId)) throw new UserInputError(`Invalid identifier: ${entryId}`);
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(catalogId, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+  
+  // check to see if they entity to be attached is an Information Type
+  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type');
+  let result = await dataSources.Stardog.queryById({
+    dbName: contextDB,
+    sparqlQuery,
+    queryId: "Obtaining IRI for object with id to attached",
+    singularizeSchema: singularizeInformationTypeSchema
+  });
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
+  let iris = `<${result[0].iri}>`;
+
+  response = await editInformationTypeById(entryId, input, dbName, dataSources, select, schema);
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
+
+  return response;
+}
+
+export const addInformationTypeToCatalog = async (id, entryId, dbName, dataSources) => {
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
+  if (!checkIfValidUUID(entryId)) throw new UserInputError(`Invalid identifier: ${entryId}`);  
+  
+  // check to see if they entity to be attached is an Information Type
+  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type');
+  let result = await dataSources.Stardog.queryById({
+    dbName: contextDB,
+    sparqlQuery,
+    queryId: "Obtaining IRI for object with id to attached",
+    singularizeSchema: singularizeInformationTypeSchema
+  });
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
   let iris = `<${result[0].iri}>`;
 
   // attach the entity to the Information Type Catalog instance
@@ -405,18 +549,18 @@ export const removeInformationTypeFromCatalog = async (id, entryId, dbName, data
   let contextDB = conf.get('app:database:context') || 'cyber-context';
   let sparqlQuery;
 
-  if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);  
-  if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${entryId}`);  
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${entryId}`);  
 
-  // check to see if they entity to be attached is an Information Type Entry
-  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type-entry');
+  // check to see if they entity to be attached is an Information Type
+  sparqlQuery = selectObjectIriByIdQuery(entryId, 'information-type');
   let result = await dataSources.Stardog.queryById({
     dbName: contextDB,
     sparqlQuery,
     queryId: "Obtaining IRI for object with id to detached",
-    singularizeSchema: singularizeInformationTypeEntrySchema
+    singularizeSchema: singularizeInformationTypeSchema
   });
-  if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${entryId}`);
+  if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${entryId}`);
   let iris = `<${result[0].iri}>`;
   
   // attach the entity to the Information Type Catalog instance
@@ -428,3 +572,148 @@ export const removeInformationTypeFromCatalog = async (id, entryId, dbName, data
   });
 };
 
+export const fetchCatalogCategories = async (id, dbName, dataSources) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+
+  // retrieve the list of categories
+  sparqlQuery = selectCatalogCategoriesQuery(id);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog Categories",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
+  if (response[0].category) return response[0].category;
+  return [];
+};
+
+export const fetchCategoryMembers = async (id, categoryName, dbName, dataSources, select) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+
+  // retrieve the members of the category
+  sparqlQuery = selectCatalogCategoryMembersQuery(id, categoryName, select);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Members of a Category in Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+
+  const reducer = getInformationTypeReducer("INFORMATION-TYPE");
+  let results = []
+  for (let result of response ) {
+    if (select.includes('display_name')) {
+      let display_name = (result.identifier ? result.identifier : '') + "  " +
+                          (result.title ? result.title : '');
+      display_name = display_name.trim();
+      if (display_name.length > 0) result.display_name = display_name;
+    }
+  
+    results.push(reducer(result))
+  }
+
+  return results;
+};
+
+export const fetchInformationTypeFromCatalog = async (id, infoTypeId, dbName, dataSources, select) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  if (!checkIfValidUUID(infoTypeId)) throw new UserInputError(`Invalid identifier: ${infoTypeId}`);
+
+  let contextDB = conf.get('app:database:context') || 'cyber-context';
+  let sparqlQuery;
+  let response;
+
+  // check if catalog with the specified id exists
+  let selectCheck = ['id','object_type','catalog'];
+  sparqlQuery = selectInformationTypeCatalogQuery(id, selectCheck);
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: contextDB,
+      sparqlQuery,
+      queryId: "Select Information Type Catalog",
+      singularizeSchema: singularizeInformationTypeCatalogSchema
+    });
+  } catch (e) {
+    console.log(e)
+    throw e
+  }
+  if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${catalogId}`);
+
+    // retrieve the specific member from the category
+    sparqlQuery = selectCatalogMemberQuery(id, infoTypeId, select);
+    try {
+      response = await dataSources.Stardog.queryById({
+        dbName: contextDB,
+        sparqlQuery,
+        queryId: "Select specific member in Information Type Catalog",
+        singularizeSchema: singularizeInformationTypeSchema
+      });
+    } catch (e) {
+      console.log(e)
+      throw e
+    }
+  
+  const reducer = getInformationTypeReducer("INFORMATION-TYPE");
+  let result = response[0];
+  if (select.includes('display_name')) {
+    let display_name = (result.identifier ? result.identifier : '') + "  " +
+                        (result.title ? result.title : '');
+    display_name = display_name.trim();
+    if (display_name.length > 0) result.display_name = display_name;
+  }
+  return reducer(result);
+};

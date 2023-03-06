@@ -87,14 +87,13 @@ import {
   informationTypeCatalogPredicateMap, // attachToInformationTypeCatalogQuery, detachFromInformationTypeCatalogQuery
 } from '../information-system/schema/sparql/informationTypeCatalog.js';
 import {
-  informationTypeEntryPredicateMap, // attachToInformationTypeEntryQuery, detachFromInformationTypeEntryQuery
-} from '../information-system/schema/sparql/informationTypeEntry.js';
-import {
   descriptionBlockPredicateMap, // attachToDescriptionBlockQuery, detachFromDescriptionBlockQuery,
   diagramPredicateMap, // attachToDiagramQuery, detachFromDiagramQuery
 } from '../information-system/schema/sparql/descriptionBlock.js';
 import {
   informationTypePredicateMap, // attachToInformationTypeQuery, detachFromInformationTypeQuery
+  impactDefinitionPredicateMap,
+  categorizationPredicateMap,
 } from '../information-system/schema/sparql/informationType.js';
 import {
   oscalUserPredicateMap, // attachToOscalUserQuery, detachFromOscalUserQuery,
@@ -293,6 +292,12 @@ export const objectMap = {
     classIri:  "http://csrc.nist.gov/ns/oscal/common#AuthorizedPrivilege",
     iriTemplate: "http://cyio.darklight.ai/authorized-privilege",
   },
+  "categorization": {
+    predicateMap: categorizationPredicateMap,
+    graphQLType: "Categorization",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#Categorization",
+    iriTemplate: "http://cyio.darklight.ai/categorization",
+  },
   "characterization": {
     predicateMap: characterizationPredicateMap,
     // attachQuery: attachToCharacterizationQuery,
@@ -418,6 +423,12 @@ export const objectMap = {
     classIri: "http://darklight.ai/ns/nist-7693-dlex#Hypervisor",
     iriTemplate: "http://darklight.ai/ns/nist-7693-dlex#Hypervisor",
   },
+  "impact-definition": {
+    predicateMap: impactDefinitionPredicateMap,
+    graphQLType: "ImpactDefinition",
+    classIri: "http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition",
+    iriTemplate: "http://cyio.darklight.ai/impact-definition",
+  },
   "inventory-item": {
     predicateMap: inventoryItemPredicateMap,
     // attachQuery: attachToInventoryItemQuery,
@@ -441,14 +452,6 @@ export const objectMap = {
     graphQLType: "InformationTypeCatalog",
     classIri: "http://nist.gov/ns/sp800-60#InformationTypeCatalog",
     iriTemplate: "http://cyio.darklight.ai/information-type-catalog"
-  },
-  "information-type-entry": {
-    predicateMap: informationTypeEntryPredicateMap,
-    // attachQuery: attachToInformationTypeEntryQuery,
-    // detachQuery: detachFromInformationTypeEntryQuery,
-    graphQLType: "InformationTypeEntry",
-    classIri: "http://nist.gov/ns/sp800-60#InformationTypeEntry",
-    iriTemplate: "http://cyio.darklight.ai/information-type-entry"
   },
   "information-system": {
     predicateMap: informationSystemPredicateMap,

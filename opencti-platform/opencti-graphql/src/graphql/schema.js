@@ -137,7 +137,6 @@ import cyioWorkActivityResolvers from '../cyio/schema/data-sources/resolvers/wor
 import cyioInformationSystemResolvers from '../cyio/schema/information-system/resolvers/informationSystem.js';
 import cyioInformationTypeResolvers from '../cyio/schema/information-system/resolvers/informationType.js';
 import cyioInformationTypeCatalogResolvers from '../cyio/schema/information-system/resolvers/informationTypeCatalog.js';
-import cyioInformationTypeEntryResolvers from '../cyio/schema/information-system/resolvers/informationTypeEntry.js';
 import cyioDescriptionBlockResolvers from '../cyio/schema/information-system/resolvers/descriptionBlock.js';
 import cyioOscalUserResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalUser.js';
 import cyioOscalLeveragedAuthorizationResolvers from '../cyio/schema/risk-assessments/oscal-common/resolvers/oscalLeveragedAuthorization.js';
@@ -291,7 +290,6 @@ const createSchema = () => {
     cyioInformationSystemResolvers,
     cyioInformationTypeResolvers,
     cyioInformationTypeCatalogResolvers,
-    cyioInformationTypeEntryResolvers,
     cyioDescriptionBlockResolvers,
     cyioOscalUserResolvers,
     cyioOscalLeveragedAuthorizationResolvers,
