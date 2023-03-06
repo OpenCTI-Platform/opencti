@@ -67,6 +67,11 @@ const styles = (theme) => ({
     margin: '0 5px 10px 0',
   },
   chip: { borderRadius: '4px' },
+  btnFlexContainer: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    marginTop: '10px',
+  },
   btns: {
     margin: '0 20px 0 0',
   },
@@ -326,10 +331,7 @@ class DataSourceDetailsComponent extends Component {
                 </Grid>
               </Grid>
               <Grid container item xs={12}>
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  }}>
+                <div className={classes.btnFlexContainer}>
                   <div className={classes.btnContainer}>
                     <Button
                       color='primary'
@@ -343,7 +345,7 @@ class DataSourceDetailsComponent extends Component {
                     </Button>
                   </div>
                   <div className={classes.btnContainer}>
-                  <Button
+                    <Button
                       color='primary'
                       variant='contained'
                       startIcon={<LaunchIcon />}

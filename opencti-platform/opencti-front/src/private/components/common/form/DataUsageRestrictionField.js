@@ -1,32 +1,34 @@
-/* eslint-disable */
-/* refactor */
 import React, { Component } from 'react';
 import { Field } from 'formik';
 import * as R from 'ramda';
 import MenuItem from '@material-ui/core/MenuItem';
-import Tooltip from '@material-ui/core/Tooltip';
-import { Information } from 'mdi-material-ui';
-import graphql from 'babel-plugin-relay/macro'
+import graphql from 'babel-plugin-relay/macro';
 import inject18n from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { fetchQuery } from '../../../../relay/environment';
 
 const dataUsageRestrictionFieldQuery = graphql`
-  query DataUsageRestrictionFieldQuery {
-    dataMarkings {
+  query DataUsageRestrictionFieldQuery($filters: [DataMarkingFiltering] $orderMode: OrderingMode, $orderedBy: DataMarkingOrdering) {
+    dataMarkings(
+      orderedBy: $orderedBy 
+      orderMode: $orderMode
+      filters: $filters
+    ) {
       edges {
         node {
+          __typename
           ... on IEPMarking {
             id
+            iep_version
             name
-          }
-          ... on TLPMarking {
-            id
-            name
-          }
-          ... on StatementMarking {
-            id
-            name
+            description
+            start_date
+            end_date
+            encrypt_in_transit
+            permitted_actions
+            affected_party_notifications
+            attribution
+            unmodified_resale
           }
         }
       }
@@ -39,10 +41,20 @@ class DataUsageRestrictionField extends Component {
     super(props);
     this.state = {
       list: [],
-    }
+    };
   }
+
   componentDidMount() {
-    fetchQuery(dataUsageRestrictionFieldQuery)
+    fetchQuery(dataUsageRestrictionFieldQuery, {
+      filters: [
+        {
+          key: 'definition_type',
+          values: 'iep',
+        },
+      ],
+      orderMode: 'asc',
+      orderedBy: 'name',
+    })
       .toPromise()
       .then((data) => {
         const dataMarkings = R.pipe(
@@ -55,10 +67,10 @@ class DataUsageRestrictionField extends Component {
         this.setState({
           list: [
             ...this.state.list,
-            dataMarkings
+            ...dataMarkings,
           ],
         });
-      })
+      });
   }
 
   render() {
@@ -69,20 +81,11 @@ class DataUsageRestrictionField extends Component {
       label,
       style,
       variant,
-      onChange,
-      onFocus,
       multiple,
       containerstyle,
-      editContext,
       disabled,
       helperText,
     } = this.props;
-    console.log(this.state.list)
-    const RolesFieldList = R.pathOr(
-      [],
-      ['RolesFieldEntities'],
-      this.state.RolesFieldList,
-    );
     return (
       <div>
         <div className="clearfix" />
@@ -99,12 +102,12 @@ class DataUsageRestrictionField extends Component {
           style={style}
           helperText={helperText}
         >
-          {/* {RolesFieldList.map((resp, key) => (
-            resp.id
-            && <MenuItem value={resp.id}>
-              {resp.name}
+          {this.state.list.map((item, key) => (
+            item.id
+            && <MenuItem key={key} value={item.id}>
+              {t(item.name)}
             </MenuItem>
-          ))} */}
+          ))}
         </Field>
       </div>
     );
