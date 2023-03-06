@@ -1,6 +1,7 @@
 import React from 'react';
-import { KeyboardDatePicker } from '@material-ui/pickers';
+import { KeyboardDatePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { fieldToKeyboardDatePicker } from 'formik-material-ui-pickers';
+import MomentUtils from '@date-io/moment';
 import { parse } from '../utils/Time';
 
 const DatePickerField = (props) => {
@@ -45,18 +46,20 @@ const DatePickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   return (
-    <KeyboardDatePicker
-      {...fieldToKeyboardDatePicker(props)}
-      variant="inline"
-      disableToolbar={false}
-      autoOk={true}
-      allowKeyboardControl={true}
-      format="YYYY-MM-DD"
-      onAccept={internalOnAccept}
-      onChange={internalOnChange}
-      onFocus={internalOnFocus}
-      onBlur={internalOnBlur}
-    />
+    <MuiPickersUtilsProvider utils={MomentUtils}>
+      <KeyboardDatePicker
+        {...fieldToKeyboardDatePicker(props)}
+        variant="inline"
+        disableToolbar={false}
+        autoOk={true}
+        allowKeyboardControl={true}
+        format="YYYY-MM-DD"
+        onAccept={internalOnAccept}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
+        onBlur={internalOnBlur}
+      />
+    </MuiPickersUtilsProvider>
   );
 };
 
