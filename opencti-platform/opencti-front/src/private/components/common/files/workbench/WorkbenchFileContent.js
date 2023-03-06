@@ -2131,11 +2131,21 @@ class WorkbenchFileContentComponent extends Component {
     const { stixCyberObservables, stixCoreRelationships, containers } = this.state;
     const observable = R.head(stixCyberObservables.filter((n) => n.id === observableId)) || {};
     const stixType = convertToStixType(event.target.value);
-    const updatedObservable = {
+    let updatedObservable = {
       ...observable,
       id: `${stixType}--${uuid()}`,
       type: stixType,
     };
+    // Properly handle conversion
+    if (observable.type === 'file') {
+      if (observable.name) {
+        updatedObservable = { ...updatedObservable, value: observable.name };
+      }
+    } else if (stixType === 'file') {
+      if (observable.value) {
+        updatedObservable = { ...updatedObservable, name: observable.value };
+      }
+    }
     const updatedStixCoreRelationships = stixCoreRelationships.map((n) => {
       if (n.source_ref === observableId) {
         return R.assoc('source_ref', updatedObservable.id, n);
@@ -2158,15 +2168,33 @@ class WorkbenchFileContentComponent extends Component {
       }
       return n;
     });
+    const observableDefaultKey = defaultKey(updatedObservable);
+    const observablesOfSameTypeAndKey = stixCyberObservables.filter(
+      (n) => n.type === updatedObservable.type
+        && observableDefaultKey
+        && n[observableDefaultKey]
+        && n[observableDefaultKey].length > 0,
+    );
+    const otherObservables = stixCyberObservables.filter(
+      (n) => n.type !== updatedObservable.type
+        || !observableDefaultKey
+        || !n[observableDefaultKey]
+        || n[observableDefaultKey].length === 0,
+    );
     this.setState(
       {
-        stixCyberObservables: uniqWithByFields(
-          ['value', 'type'],
-          R.uniqBy(R.prop('id'), [
-            ...stixCyberObservables.filter((n) => n.id !== observableId),
-            updatedObservable,
-          ]),
-        ),
+        stixCyberObservables: [
+          ...uniqWithByFields(
+            observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
+            R.uniqBy(R.prop('id'), [
+              ...observablesOfSameTypeAndKey.filter(
+                (n) => n.id !== observable.id,
+              ),
+              updatedObservable,
+            ]),
+          ),
+          ...otherObservables.filter((n) => n.id !== observable.id),
+        ],
         stixCoreRelationships: updatedStixCoreRelationships,
         containers: updatedContainers,
       },
@@ -2242,19 +2270,33 @@ class WorkbenchFileContentComponent extends Component {
       id: observable.id ? observable.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
+    const observableDefaultKey = defaultKey(updatedObservable);
+    const observablesOfSameTypeAndKey = stixCyberObservables.filter(
+      (n) => n.type === updatedObservable.type
+        && observableDefaultKey
+        && n[observableDefaultKey]
+        && n[observableDefaultKey].length > 0,
+    );
+    const otherObservables = stixCyberObservables.filter(
+      (n) => n.type !== updatedObservable.type
+        || !observableDefaultKey
+        || !n[observableDefaultKey]
+        || n[observableDefaultKey].length === 0,
+    );
     this.setState(
       {
-        stixCyberObservables: uniqWithByFields(
-          defaultKey(updatedObservable)
-            ? [defaultKey(updatedObservable), 'type']
-            : ['id'],
-          R.uniqBy(R.prop('id'), [
-            ...stixCyberObservables.filter(
-              (n) => n.id !== updatedObservable.id,
-            ),
-            updatedObservable,
-          ]),
-        ),
+        stixCyberObservables: [
+          ...uniqWithByFields(
+            observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
+            R.uniqBy(R.prop('id'), [
+              ...observablesOfSameTypeAndKey.filter(
+                (n) => n.id !== updatedObservable.id,
+              ),
+              updatedObservable,
+            ]),
+          ),
+          ...otherObservables.filter((n) => n.id !== updatedObservable.id),
+        ],
         stixDomainObjects: uniqWithByFields(
           ['name', 'type'],
           R.uniqBy(R.prop('id'), [

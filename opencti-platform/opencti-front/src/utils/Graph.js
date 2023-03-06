@@ -327,11 +327,11 @@ export const defaultKey = (n) => {
   if (n.hashes) {
     return 'hashes';
   }
-  if (n.value) {
-    return 'value';
-  }
   if (n.name) {
     return 'name';
+  }
+  if (n.value) {
+    return 'value';
   }
   if (n.observable_value) {
     return 'observable_value';

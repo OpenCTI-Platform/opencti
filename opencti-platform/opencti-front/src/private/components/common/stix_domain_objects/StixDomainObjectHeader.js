@@ -354,18 +354,25 @@ const StixDomainObjectHeader = (props) => {
                   needs={[KNOWLEDGE_KNUPDATE]}
                   key={label}
                   placeholder={
-                    <Chip classes={{ root: classes.alias }} label={label} />
+                    <Tooltip title={label}>
+                      <Chip
+                        classes={{ root: classes.alias }}
+                        label={truncate(label, 40)}
+                      />
+                    </Tooltip>
                   }
                 >
-                  <Chip
-                    classes={{ root: classes.alias }}
-                    label={label}
-                    onDelete={
-                      enableReferences
-                        ? () => handleOpenCommitDelete(label)
-                        : () => deleteAlias(label)
-                    }
-                  />
+                  <Tooltip title={label}>
+                    <Chip
+                      classes={{ root: classes.alias }}
+                      label={truncate(label, 40)}
+                      onDelete={
+                        enableReferences
+                          ? () => handleOpenCommitDelete(label)
+                          : () => deleteAlias(label)
+                      }
+                    />
+                  </Tooltip>
                 </Security>
             ),
           )}

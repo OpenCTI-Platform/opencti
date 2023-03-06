@@ -6,6 +6,7 @@ import MUIAutocomplete from '@mui/material/Autocomplete';
 import { fieldToTextField } from 'formik-mui';
 import { useField } from 'formik';
 import { isNil } from 'ramda';
+import { truncate } from '../utils/String';
 
 const AutocompleteField = (props) => {
   const {
@@ -46,7 +47,9 @@ const AutocompleteField = (props) => {
         selectOnFocus={true}
         autoHighlight={true}
         handleHomeEndKeys={true}
-        getOptionLabel={(option) => (typeof option === 'object' ? option.label : option)
+        getOptionLabel={(option) => (typeof option === 'object'
+          ? truncate(option.label, 40)
+          : truncate(option, 40))
         }
         noOptionsText={noOptionsText}
         {...fieldProps}
