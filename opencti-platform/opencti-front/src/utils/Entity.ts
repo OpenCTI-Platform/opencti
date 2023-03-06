@@ -175,6 +175,7 @@ export const ignoredAttributes = [
   'indicators',
   'importFiles',
   'startup_info',
+  'creator_id',
 ];
 
 export const workbenchAttributes = [
