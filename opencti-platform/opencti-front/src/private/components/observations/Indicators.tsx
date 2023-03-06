@@ -40,7 +40,7 @@ const Indicators = () => {
       {
         key: 'pattern_type',
         values: indicatorTypes,
-        operator: 'match',
+        operator: 'eq',
         filterMode: 'or',
       },
     );
@@ -50,7 +50,7 @@ const Indicators = () => {
       {
         key: 'x_opencti_main_observable_type',
         values: observableTypes,
-        operator: 'match',
+        operator: 'eq',
         filterMode: 'or',
       },
     );
