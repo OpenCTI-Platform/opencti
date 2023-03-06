@@ -34,7 +34,9 @@ export interface SelectedEntity {
   source? : SelectedEntity
   target?: SelectedEntity
   fromId?: string
+  fromType?: string
   toId?: string
+  toType?: string
 }
 
 interface EntityDetailsRightsBarProps {
@@ -78,9 +80,9 @@ EntityDetailsRightsBarProps
       const target = selectedEntity.target.label;
       return (`${source} to ${target}`);
     }
-    if (selectedEntity.fromId && selectedEntity.toId) {
-      const source = selectedEntity.fromId;
-      const target = selectedEntity.toId;
+    if (selectedEntity.fromType && selectedEntity.toType) {
+      const source = selectedEntity.fromType;
+      const target = selectedEntity.toType;
       return (`${source} to ${target}`);
     }
     return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
