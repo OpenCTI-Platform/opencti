@@ -482,6 +482,17 @@ class InvestigationGraphBar extends Component {
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Free rectangle select')}>
+                <span>
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <SelectionDrag />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>
                   <IconButton
@@ -526,17 +537,6 @@ class InvestigationGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
-              <Tooltip title={t('Free Rectangle Select')}>
-                <span>
-                  <IconButton
-                    color={currentSelectModeFree ? 'secondary' : 'primary'}
-                    size="large"
-                    onClick={handleToggleSelectModeFree.bind(this)}
-                  >
-                    <SelectionDrag />
-                  </IconButton>
-                </span>
-              </Tooltip>
               <Tooltip title={t('Select all nodes')}>
                 <span>
                   <IconButton

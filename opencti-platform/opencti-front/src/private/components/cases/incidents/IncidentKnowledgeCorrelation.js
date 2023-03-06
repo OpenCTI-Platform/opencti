@@ -29,6 +29,7 @@ import {
 } from '../../../../utils/ListParameters';
 import IncidentKnowledgeGraphBar from './IncidentKnowledgeGraphBar';
 import { incidentMutationFieldPatch } from './IncidentEditionOverview';
+import { hexToRGB } from '../../../../utils/Colors';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -284,7 +285,12 @@ class IncidentKnowledgeCorrelationComponent extends Component {
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
       selectModeFree: R.propOr(false, 'selectModeFree', params),
-      rectSelected: { origin: [0, 0], target: [0, 0], shiftKey: false, altKey: false },
+      rectSelected: {
+        origin: [0, 0],
+        target: [0, 0],
+        shiftKey: false,
+        altKey: false,
+      },
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       selectedTimeRangeInterval: timeRangeInterval,
@@ -640,16 +646,24 @@ class IncidentKnowledgeCorrelationComponent extends Component {
   }
 
   inSelectionRect(n) {
-    const graphOrigin = this.graph.current.screen2GraphCoords(this.state.rectSelected.origin[0], this.state.rectSelected.origin[1]);
-    const graphTarget = this.graph.current.screen2GraphCoords(this.state.rectSelected.target[0], this.state.rectSelected.target[1]);
-    return (n.x >= graphOrigin.x) && (n.x <= graphTarget.x)
-      && (n.y >= graphOrigin.y) && (n.y <= graphTarget.y);
+    const graphOrigin = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.origin[0],
+      this.state.rectSelected.origin[1],
+    );
+    const graphTarget = this.graph.current.screen2GraphCoords(
+      this.state.rectSelected.target[0],
+      this.state.rectSelected.target[1],
+    );
+    return (
+      n.x >= graphOrigin.x
+      && n.x <= graphTarget.x
+      && n.y >= graphOrigin.y
+      && n.y <= graphTarget.y
+    );
   }
 
   handleRectSelectMove(e, coords) {
-    if (
-      this.state.selectModeFree
-    ) {
+    if (this.state.selectModeFree) {
       const container = document.getElementsByTagName('canvas')[0];
       const { left, top } = container.getBoundingClientRect();
       this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
@@ -664,25 +678,36 @@ class IncidentKnowledgeCorrelationComponent extends Component {
   handleRectSelectUp() {
     if (
       this.state.selectModeFree
-      && (
-        this.state.rectSelected.origin[0] !== this.state.rectSelected.target[0]
-        || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1]
-      )
+      && (this.state.rectSelected.origin[0]
+        !== this.state.rectSelected.target[0]
+        || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1])
     ) {
       if (
-        !this.state.rectSelected.shiftKey && !this.state.rectSelected.altKey
+        !this.state.rectSelected.shiftKey
+        && !this.state.rectSelected.altKey
       ) {
         this.selectedLinks.clear();
         this.selectedNodes.clear();
       }
       if (this.state.rectSelected.altKey) {
-        R.map((n) => this.inSelectionRect(n) && this.selectedNodes.delete(n), this.state.graphData.nodes);
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.delete(n),
+          this.state.graphData.nodes,
+        );
       } else {
-        R.map((n) => this.inSelectionRect(n) && this.selectedNodes.add(n), this.state.graphData.nodes);
+        R.map(
+          (n) => this.inSelectionRect(n) && this.selectedNodes.add(n),
+          this.state.graphData.nodes,
+        );
       }
       this.setState({ numberOfSelectedNodes: this.selectedNodes.size });
     }
-    this.state.rectSelected = { origin: [0, 0], target: [0, 0], shiftKey: false, altKey: false };
+    this.state.rectSelected = {
+      origin: [0, 0],
+      target: [0, 0],
+      shiftKey: false,
+      altKey: false,
+    };
   }
 
   handleSelectAll() {
@@ -867,7 +892,9 @@ class IncidentKnowledgeCorrelationComponent extends Component {
             this,
           )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(this)}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+            this,
+          )}
           stixCoreObjectsTypes={stixCoreObjectsTypes}
           currentStixCoreObjectsTypes={currentStixCoreObjectsTypes}
           currentSelectModeFree={selectModeFree}
@@ -994,114 +1021,118 @@ class IncidentKnowledgeCorrelationComponent extends Component {
             }
           />
         ) : (
-         <RectangleSelection
-           onSelect={(e, coords) => { this.handleRectSelectMove(e, coords); }}
-           onMouseUp={(e) => { this.handleRectSelectUp(e); }}
-           style={{
-             backgroundColor: 'rgba(0,0,255,0.4)',
-             borderColor: 'orange',
-           }}
-           disabled={!selectModeFree}
+          <RectangleSelection
+            onSelect={(e, coords) => {
+              this.handleRectSelectMove(e, coords);
+            }}
+            onMouseUp={(e) => {
+              this.handleRectSelectUp(e);
+            }}
+            style={{
+              backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+              borderColor: theme.palette.warning.main,
+            }}
+            disabled={!selectModeFree}
           >
-          <ForceGraph2D
-            ref={this.graph}
-            width={width}
-            height={height}
-            graphData={graphData}
-            onZoom={this.onZoom.bind(this)}
-            onZoomEnd={this.handleZoomEnd.bind(this)}
-            nodeRelSize={4}
-            enablePanInteraction={!selectModeFree}
-            nodeCanvasObject={(
-              node,
-              ctx, //
-            ) =>
-              // eslint-disable-next-line implicit-arrow-linebreak
-              nodePaint(
-                {
-                  selected: theme.palette.secondary.main,
-                  inferred: theme.palette.warning.main,
-                },
+            <ForceGraph2D
+              ref={this.graph}
+              width={width}
+              height={height}
+              graphData={graphData}
+              onZoom={this.onZoom.bind(this)}
+              onZoomEnd={this.handleZoomEnd.bind(this)}
+              nodeRelSize={4}
+              enablePanInteraction={!selectModeFree}
+              nodeCanvasObject={(
                 node,
-                node.color,
-                ctx,
-                this.selectedNodes.has(node),
-              )
-            }
-            nodePointerAreaPaint={nodeAreaPaint}
-            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-            // linkDirectionalParticleWidth={1}
-            // linkDirectionalParticleSpeed={() => 0.004}
-            linkCanvasObjectMode={() => 'after'}
-            linkCanvasObject={(
-              link,
-              ctx, //
-            ) =>
-              // eslint-disable-next-line implicit-arrow-linebreak
-              linkPaint(link, ctx, theme.palette.text.primary)
-            }
-            linkColor={(link) => (this.selectedLinks.has(link)
-              ? theme.palette.secondary.main
-              : theme.palette.primary.main)
-            }
-            linkDirectionalArrowLength={3}
-            linkDirectionalArrowRelPos={0.99}
-            onNodeClick={this.handleNodeClick.bind(this)}
-            onNodeRightClick={(node) => {
-              // eslint-disable-next-line no-param-reassign
-              node.fx = undefined;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = undefined;
-              this.handleDragEnd();
-              this.forceUpdate();
-            }}
-            onNodeDrag={(node, translate) => {
-              if (this.selectedNodes.has(node)) {
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node)
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => ['x', 'y'].forEach(
-                    // eslint-disable-next-line no-param-reassign,no-return-assign
-                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                  ));
+                ctx, //
+              ) =>
+                // eslint-disable-next-line implicit-arrow-linebreak
+                nodePaint(
+                  {
+                    selected: theme.palette.secondary.main,
+                    inferred: theme.palette.warning.main,
+                  },
+                  node,
+                  node.color,
+                  ctx,
+                  this.selectedNodes.has(node),
+                )
               }
-            }}
-            onNodeDragEnd={(node) => {
-              if (this.selectedNodes.has(node)) {
-                // finished moving a selected node
-                [...this.selectedNodes]
-                  .filter((selNode) => selNode !== node) // don't touch node being dragged
-                  // eslint-disable-next-line no-shadow
-                  .forEach((selNode) => {
-                    ['x', 'y'].forEach(
+              nodePointerAreaPaint={nodeAreaPaint}
+              // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+              // linkDirectionalParticleWidth={1}
+              // linkDirectionalParticleSpeed={() => 0.004}
+              linkCanvasObjectMode={() => 'after'}
+              linkCanvasObject={(
+                link,
+                ctx, //
+              ) =>
+                // eslint-disable-next-line implicit-arrow-linebreak
+                linkPaint(link, ctx, theme.palette.text.primary)
+              }
+              linkColor={(link) => (this.selectedLinks.has(link)
+                ? theme.palette.secondary.main
+                : theme.palette.primary.main)
+              }
+              linkDirectionalArrowLength={3}
+              linkDirectionalArrowRelPos={0.99}
+              onNodeClick={this.handleNodeClick.bind(this)}
+              onNodeRightClick={(node) => {
+                // eslint-disable-next-line no-param-reassign
+                node.fx = undefined;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = undefined;
+                this.handleDragEnd();
+                this.forceUpdate();
+              }}
+              onNodeDrag={(node, translate) => {
+                if (this.selectedNodes.has(node)) {
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node)
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = undefined),
-                    );
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fx = selNode.x;
-                    // eslint-disable-next-line no-param-reassign
-                    selNode.fy = selNode.y;
-                  });
+                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                    ));
+                }
+              }}
+              onNodeDragEnd={(node) => {
+                if (this.selectedNodes.has(node)) {
+                  // finished moving a selected node
+                  [...this.selectedNodes]
+                    .filter((selNode) => selNode !== node) // don't touch node being dragged
+                    // eslint-disable-next-line no-shadow
+                    .forEach((selNode) => {
+                      ['x', 'y'].forEach(
+                        // eslint-disable-next-line no-param-reassign,no-return-assign
+                        (coord) => (selNode[`f${coord}`] = undefined),
+                      );
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fx = selNode.x;
+                      // eslint-disable-next-line no-param-reassign
+                      selNode.fy = selNode.y;
+                    });
+                }
+                // eslint-disable-next-line no-param-reassign
+                node.fx = node.x;
+                // eslint-disable-next-line no-param-reassign
+                node.fy = node.y;
+                this.handleDragEnd();
+              }}
+              onLinkClick={this.handleLinkClick.bind(this)}
+              onBackgroundClick={this.handleBackgroundClick.bind(this)}
+              cooldownTicks={modeFixed ? 0 : undefined}
+              dagMode={
+                // eslint-disable-next-line no-nested-ternary
+                modeTree === 'horizontal'
+                  ? 'lr'
+                  : modeTree === 'vertical'
+                    ? 'td'
+                    : undefined
               }
-              // eslint-disable-next-line no-param-reassign
-              node.fx = node.x;
-              // eslint-disable-next-line no-param-reassign
-              node.fy = node.y;
-              this.handleDragEnd();
-            }}
-            onLinkClick={this.handleLinkClick.bind(this)}
-            onBackgroundClick={this.handleBackgroundClick.bind(this)}
-            cooldownTicks={modeFixed ? 0 : undefined}
-            dagMode={
-              // eslint-disable-next-line no-nested-ternary
-              modeTree === 'horizontal'
-                ? 'lr'
-                : modeTree === 'vertical'
-                  ? 'td'
-                  : undefined
-            }
-          />
-         </RectangleSelection>
+            />
+          </RectangleSelection>
         )}
       </div>
     );
