@@ -940,7 +940,7 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
     const partialElement = partialSearch[searchIndex];
     const cleanElement = specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${useWildcardPrefix && '*'}${cleanElement}${useWildcardSuffix && '*'}`);
+      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}${useWildcardSuffix ? '*' : ''}`);
     }
   }
   // Return the elastic search engine expected bool should terms
