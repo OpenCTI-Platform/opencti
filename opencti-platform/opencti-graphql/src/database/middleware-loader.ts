@@ -415,17 +415,23 @@ export const internalLoadById = async <T extends BasicStoreObject>(
   context: AuthContext,
   user: AuthUser,
   id: string | undefined,
-  args: { type?: string } & Record<string, string> = {}
+  type?: string,
 ): Promise<T> => {
-  const { type } = args;
   // TODO Remove when all Typescript
   return await elLoadById(context, user, id, type as unknown as null) as unknown as T;
 };
 
-export const storeLoadById = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, id: string, type: string, args: Record<string, string> = {}): Promise<T> => {
+export const storeLoadById = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, id: string, type: string): Promise<T> => {
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
-  const loadArgs = R.assoc<string, Record<string, string>, string>('type', type, args);
-  return internalLoadById<T>(context, user, id, loadArgs);
+  return internalLoadById<T>(context, user, id, type);
+};
+
+export const storeLoadByIds = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {
+  if (R.isNil(type) || R.isEmpty(type)) {
+    throw FunctionalError('You need to specify a type when loading a element');
+  }
+  const hits = await elFindByIds(context, user, ids, { type, indices: READ_DATA_INDICES });
+  return ids.map((id) => (hits as T[]).find((h: T) => h.internal_id === id)) as T[];
 };
