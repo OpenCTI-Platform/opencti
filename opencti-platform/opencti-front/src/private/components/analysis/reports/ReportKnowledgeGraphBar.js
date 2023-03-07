@@ -66,7 +66,6 @@ import StixSightingRelationshipEdition from '../../events/stix_sighting_relation
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
 import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
-import { MESSAGING$ } from '../../../../relay/environment';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
 const styles = () => ({
@@ -113,18 +112,7 @@ class ReportKnowledgeGraphBar extends Component {
       openEditObservable: false,
       displayRemove: false,
       deleteObject: false,
-      navOpen: localStorage.getItem('navOpen') === 'true',
     };
-  }
-
-  componentDidMount() {
-    this.subscription = MESSAGING$.toggleNav.subscribe({
-      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleOpenRemove() {
@@ -357,6 +345,7 @@ class ReportKnowledgeGraphBar extends Component {
       handleTimeRangeChange,
       timeRangeValues,
       theme,
+      navOpen,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -379,7 +368,6 @@ class ReportKnowledgeGraphBar extends Component {
       openEditObservable,
       openEditNested,
       deleteObject,
-      navOpen,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
         > 0
@@ -1173,6 +1161,7 @@ ReportKnowledgeGraphBar.propTypes = {
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
+  navOpen: PropTypes.bool,
 };
 
 export default R.compose(

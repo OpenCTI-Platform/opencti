@@ -564,6 +564,7 @@ const StixDomainPanel = ({
           value={type}
           onChange={(event) => setType(event.target.value)}
           fullWidth={true}
+          size="small"
         >
           {availableEntityTypes.map((availableType) => (
             <MenuItem key={availableType.value} value={availableType.value}>

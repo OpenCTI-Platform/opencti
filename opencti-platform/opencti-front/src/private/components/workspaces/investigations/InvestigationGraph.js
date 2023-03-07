@@ -34,7 +34,11 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
@@ -901,6 +905,7 @@ class InvestigationGraphComponent extends Component {
       zoomed: false,
       keyword: '',
       prevClick: null,
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
 
@@ -931,17 +936,22 @@ class InvestigationGraphComponent extends Component {
   }
 
   componentDidMount() {
-    this.subscription = PARAMETERS$.subscribe({
+    this.subscription1 = PARAMETERS$.subscribe({
       next: () => this.saveParameters(),
     });
-    this.subscription = POSITIONS$.subscribe({
+    this.subscription2 = POSITIONS$.subscribe({
       next: () => this.savePositions(),
+    });
+    this.subscription3 = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.initialize();
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription3.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -1770,8 +1780,9 @@ class InvestigationGraphComponent extends Component {
       width,
       height,
       openExpandElements,
+      navOpen,
     } = this.state;
-    const graphWidth = width || window.innerWidth - 210;
+    const graphWidth = width || window.innerWidth - (navOpen ? 210 : 70);
     const graphHeight = height || window.innerHeight - 180;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
@@ -1859,9 +1870,6 @@ class InvestigationGraphComponent extends Component {
             )}
           </Formik>
         </Dialog>
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
-        )}
         <InvestigationGraphBar
           displayProgress={displayProgress}
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
@@ -1913,7 +1921,11 @@ class InvestigationGraphComponent extends Component {
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
           handleSearch={this.handleSearch.bind(this)}
+          navOpen={navOpen}
         />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
+        )}
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}

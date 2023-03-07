@@ -43,7 +43,6 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
-import { MESSAGING$ } from '../../../../relay/environment';
 
 const styles = () => ({
   bottomNav: {
@@ -81,18 +80,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       openEditRelation: false,
       openEditEntity: false,
       displayRemove: false,
-      navOpen: localStorage.getItem('navOpen') === 'true',
     };
-  }
-
-  componentDidMount() {
-    this.subscription = MESSAGING$.toggleNav.subscribe({
-      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -185,6 +173,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       timeRangeValues,
       disabled,
       theme,
+      navOpen,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -195,7 +184,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       anchorElCreatedBy,
       openSelectByType,
       anchorElSelectByType,
-      navOpen,
     } = this.state;
     if (disabled) {
       return (
@@ -870,6 +858,7 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphBar.propTypes = {
   timeRangeValues: PropTypes.array,
   disabled: PropTypes.bool,
   theme: PropTypes.object,
+  navOpen: PropTypes.bool,
 };
 
 export default R.compose(

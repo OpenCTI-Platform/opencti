@@ -676,7 +676,7 @@ const inputResolveRefs = async (context, user, input, type) => {
       existingFields.forEach(({ key, required, multiple }) => {
         const resolvedData = inputResolved[key];
         if (isEmptyField(resolvedData) && required) {
-          throw FunctionalError('Vocabulary value is mandatory', { key });
+          throw FunctionalError(`Missing mandatory attribute for vocabulary ${key}`);
         }
         if (isNotEmptyField(resolvedData)) {
           const isArrayValues = Array.isArray(resolvedData);

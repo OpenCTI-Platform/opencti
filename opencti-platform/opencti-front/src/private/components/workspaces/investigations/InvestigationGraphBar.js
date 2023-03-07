@@ -58,7 +58,6 @@ import { dateFormat } from '../../../../utils/Time';
 import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import SearchInput from '../../../../components/SearchInput';
-import { MESSAGING$ } from '../../../../relay/environment';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
 const styles = () => ({
@@ -99,18 +98,7 @@ class InvestigationGraphBar extends Component {
       displayRemove: false,
       relationReversed: false,
       openCreatedRelation: false,
-      navOpen: localStorage.getItem('navOpen') === 'true',
     };
-  }
-
-  componentDidMount() {
-    this.subscription = MESSAGING$.toggleNav.subscribe({
-      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleOpenRemove() {
@@ -276,6 +264,7 @@ class InvestigationGraphBar extends Component {
       lastLinkFirstSeen,
       lastLinkLastSeen,
       handleOpenExpandElements,
+      navOpen,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -291,7 +280,6 @@ class InvestigationGraphBar extends Component {
       openEditObservable,
       relationReversed,
       openCreatedRelation,
-      navOpen,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred).length > 0
       || selectedLinks.filter((n) => n.inferred).length > 0;
@@ -988,6 +976,7 @@ InvestigationGraphBar.propTypes = {
   theme: PropTypes.object,
   lastLinkFirstSeen: PropTypes.string,
   lastLinkLastSeen: PropTypes.string,
+  navOpen: PropTypes.bool,
 };
 
 export default R.compose(

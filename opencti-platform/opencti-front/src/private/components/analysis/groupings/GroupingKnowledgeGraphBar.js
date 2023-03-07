@@ -61,7 +61,6 @@ import StixSightingRelationshipEdition from '../../events/stix_sighting_relation
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
 import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
-import { MESSAGING$ } from '../../../../relay/environment';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 
 const styles = () => ({
@@ -107,18 +106,7 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditDomainObject: false,
       openEditObservable: false,
       displayRemove: false,
-      navOpen: localStorage.getItem('navOpen') === 'true',
     };
-  }
-
-  componentDidMount() {
-    this.subscription = MESSAGING$.toggleNav.subscribe({
-      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
-    });
-  }
-
-  componentWillUnmount() {
-    this.subscription.unsubscribe();
   }
 
   handleOpenRemove() {
@@ -345,6 +333,7 @@ class GroupingKnowledgeGraphBar extends Component {
       handleTimeRangeChange,
       timeRangeValues,
       theme,
+      navOpen,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -366,7 +355,6 @@ class GroupingKnowledgeGraphBar extends Component {
       openEditDomainObject,
       openEditObservable,
       openEditNested,
-      navOpen,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred).length > 0
       || selectedLinks.filter((n) => n.inferred).length > 0;
@@ -1135,6 +1123,7 @@ GroupingKnowledgeGraphBar.propTypes = {
   selectedTimeRangeInterval: PropTypes.array,
   timeRangeValues: PropTypes.array,
   theme: PropTypes.object,
+  navOpen: PropTypes.bool,
 };
 
 export default R.compose(

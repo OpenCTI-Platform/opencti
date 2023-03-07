@@ -27,7 +27,7 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
 import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
@@ -134,6 +134,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       height: null,
       zoomed: false,
       keyword: '',
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
 
@@ -164,17 +165,22 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   componentDidMount() {
-    this.subscription = PARAMETERS$.subscribe({
+    this.subscription1 = PARAMETERS$.subscribe({
       next: () => this.saveParameters(),
     });
-    this.subscription = POSITIONS$.subscribe({
+    this.subscription2 = POSITIONS$.subscribe({
       next: () => this.savePositions(),
+    });
+    this.subscription3 = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.initialize();
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -486,9 +492,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       numberOfSelectedLinks,
       displayTimeRange,
       selectedTimeRangeInterval,
+      navOpen,
     } = this.state;
-    const width = window.innerWidth - 210;
-    const height = window.innerHeight - 210;
+    const width = window.innerWidth - (navOpen ? 210 : 70);
+    const height = window.innerHeight - 180;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
@@ -545,9 +552,6 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           </div>
         </div>
         <div className="clearfix" />
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
-        )}
         <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -584,7 +588,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           timeRangeValues={timeRangeValues}
           handleChangeView={handleChangeView.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          navOpen={navOpen}
         />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+            navOpen={navOpen}
+          />
+        )}
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}

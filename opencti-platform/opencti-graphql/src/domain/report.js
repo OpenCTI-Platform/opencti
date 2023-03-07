@@ -31,6 +31,12 @@ export const findAll = async (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], args);
 };
 
+export const findReportsForObject = async (context, user, objectId, args) => {
+  const filters = [...(args.filters ?? []), { key: buildRefRelationKey(RELATION_OBJECT), values: [objectId] }];
+  const finalArgs = { ...args, filters };
+  return listEntities(context, user, [ENTITY_TYPE_CONTAINER_REPORT], finalArgs);
+};
+
 // Entities tab
 export const reportContainsStixObjectOrStixRelationship = async (context, user, reportId, thingId) => {
   const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).id : thingId;

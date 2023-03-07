@@ -11,7 +11,11 @@ import withTheme from '@mui/styles/withTheme';
 import { withRouter } from 'react-router-dom';
 import RectangleSelection from 'react-rectangle-selection';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import {
   applyFilters,
   buildGraphData,
@@ -538,6 +542,7 @@ class IncidentKnowledgeGraphComponent extends Component {
       height: null,
       zoomed: false,
       keyword: '',
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
 
@@ -568,17 +573,22 @@ class IncidentKnowledgeGraphComponent extends Component {
   }
 
   componentDidMount() {
-    this.subscription = PARAMETERS$.subscribe({
+    this.subscription1 = PARAMETERS$.subscribe({
       next: () => this.saveParameters(),
     });
-    this.subscription = POSITIONS$.subscribe({
+    this.subscription2 = POSITIONS$.subscribe({
       next: () => this.savePositions(),
+    });
+    this.subscription3 = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.initialize();
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -1303,8 +1313,10 @@ class IncidentKnowledgeGraphComponent extends Component {
       selectedTimeRangeInterval,
       width,
       height,
+      navOpen,
     } = this.state;
-    const graphWidth = width || window.innerWidth - 210;
+    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
+    const graphWidth = width || window.innerWidth - (navOpen ? 210 : 70);
     const graphHeight = height || window.innerHeight - 180;
     const displayLabels = graphData.links.length < 200;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
@@ -1312,7 +1324,6 @@ class IncidentKnowledgeGraphComponent extends Component {
       timeRangeInterval,
       this.graphObjects,
     );
-    const selectedEntities = [...this.selectedLinks, ...this.selectedNodes];
     return (
       <div>
         <ContainerHeader
@@ -1326,9 +1337,6 @@ class IncidentKnowledgeGraphComponent extends Component {
           enableSuggestions={false}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
-        {selectedEntities.length > 0 && (
-          <EntitiesDetailsRightsBar selectedEntities={selectedEntities} />
-        )}
         <IncidentKnowledgeGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -1377,7 +1385,14 @@ class IncidentKnowledgeGraphComponent extends Component {
           handleTimeRangeChange={this.handleTimeRangeChange.bind(this)}
           timeRangeValues={timeRangeValues}
           handleSearch={this.handleSearch.bind(this)}
+          navOpen={navOpen}
         />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+            navOpen={navOpen}
+          />
+        )}
         {mode3D ? (
           <ForceGraph3D
             ref={this.graph}
