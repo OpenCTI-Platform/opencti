@@ -202,6 +202,7 @@ export const createUserType = async (input, dbName, dataSources, select) => {
                         .replace(/[\u2019\u2019]/g, "\\'")
                         .replace(/[\u201C\u201D]/g, '\\"');
         }
+        if (value === undefined || value === null) continue;
         nestedDefinitions[fieldName]['props'][key] = value;
       }
     }
