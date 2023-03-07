@@ -48,7 +48,6 @@ export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
 
 export const EVENT_CURRENT_VERSION = '4';
-const MAX_RETRY_COMMAND = 10;
 
 const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
@@ -66,7 +65,7 @@ const redisOptions = (): RedisOptions => ({
   lazyConnect: true,
   enableAutoPipelining: false,
   enableOfflineQueue: true,
-  maxRetriesPerRequest: MAX_RETRY_COMMAND,
+  maxRetriesPerRequest: null, // Retry forever
   showFriendlyErrorStack: DEV_MODE,
 });
 

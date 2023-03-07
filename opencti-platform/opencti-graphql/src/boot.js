@@ -156,6 +156,7 @@ const shutdownModules = async () => {
 };
 // endregion
 
+// region platform start and stop
 export const platformStart = async () => {
   logApp.info('[OPENCTI] Starting platform');
   try {
@@ -183,6 +184,12 @@ export const platformStop = async () => {
   await shutdownRedisClients();
   logApp.info(`[OPENCTI] Platform stopped ${new Date().getTime() - stopTime} ms`);
 };
+// endregion
+
+// region signals management
+process.on('unhandledRejection', (reason, p) => {
+  logApp.error('[OPENCTI] Unhandled Rejection', { promise: p, reason });
+});
 
 ['SIGTERM', 'SIGINT', 'message'].forEach((signal) => {
   process.on(signal, async (message) => {
@@ -201,3 +208,4 @@ export const platformStop = async () => {
     }
   });
 });
+// endregion
