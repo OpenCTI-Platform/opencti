@@ -156,6 +156,9 @@ const entitiesFilters = [
   'markedBy',
   'labelledBy',
   'createdBy',
+  'creator',
+  'x_opencti_workflow_id',
+  'assigneeTo',
   'objectContains',
   'x_opencti_score',
   'x_opencti_detection',
@@ -163,7 +166,6 @@ const entitiesFilters = [
   'confidence',
   'pattern_type',
   'killChainPhase',
-  'creator',
   'malware_types',
   'relationship_type',
 ];
