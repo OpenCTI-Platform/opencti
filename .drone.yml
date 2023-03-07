@@ -98,15 +98,15 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.0.8
+    image: redis:7.0.9
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
       ES_JAVA_OPTS: -Xms2g -Xmx2g
   - name: minio
-    image: minio/minio:RELEASE.2023-01-31T02-24-19Z
+    image: minio/minio:RELEASE.2023-02-27T18-10-45Z
     environment:
       MINIO_ROOT_USER: ChangeMe
       MINIO_ROOT_PASSWORD: ChangeMe
