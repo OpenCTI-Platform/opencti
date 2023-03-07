@@ -14,7 +14,8 @@ export const findById = (context, user, markingDefinitionId) => {
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], args);
+  // Force looking with prefix wildcard for markings
+  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 export const addMarkingDefinition = async (context, user, markingDefinition) => {

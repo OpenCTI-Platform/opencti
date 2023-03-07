@@ -920,7 +920,8 @@ const BASE_SEARCH_ATTRIBUTES = [
   // Add all other attributes
   '*',
 ];
-export const elGenerateFullTextSearchShould = (search) => {
+export const elGenerateFullTextSearchShould = (search, args = {}) => {
+  const { useWildcardPrefix = false, useWildcardSuffix = true } = args;
   let decodedSearch;
   try {
     decodedSearch = decodeURIComponent(search).trim();
@@ -939,7 +940,7 @@ export const elGenerateFullTextSearchShould = (search) => {
     const partialElement = partialSearch[searchIndex];
     const cleanElement = specialElasticCharsEscape(partialElement);
     if (isNotEmptyField(cleanElement)) {
-      querySearch.push(`${cleanElement}*`);
+      querySearch.push(`${useWildcardPrefix ? '*' : ''}${cleanElement}${useWildcardSuffix ? '*' : ''}`);
     }
   }
   // Return the elastic search engine expected bool should terms
@@ -1217,7 +1218,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     }
   }
   if (search !== null && search.length > 0) {
-    const shouldSearch = elGenerateFullTextSearchShould(search);
+    const shouldSearch = elGenerateFullTextSearchShould(search, options);
     const bool = {
       bool: {
         should: shouldSearch,
