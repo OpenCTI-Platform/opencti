@@ -194,6 +194,7 @@ export const computingDeviceAssetReducer = (item) => {
     ...(item.mac_address && { mac_addr_iri: item.mac_address }),
     ...(item.ports && { ports_iri: item.ports }),
     ...(item.connected_to_network && { conn_network_iri: item.connected_to_network }),
+    ...(item.responsible_parties && { responsible_party_iris: item.responsible_parties }),
   };
 };
 export const ipAddressReducer = (item) => {
@@ -965,5 +966,10 @@ export const computingDevicePredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+  },
+  responsible_parties: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_parties>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "responsible_parties");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 };

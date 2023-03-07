@@ -30,6 +30,7 @@ import {
   getReducer as getGlobalReducer,
 } from '../../global/resolvers/sparql-query.js';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
+import { findResponsiblePartyByIri } from '../../risk-assessments/oscal-common/domain/oscalResponsibleParty.js';
 
 const computingDeviceResolvers = {
   Query: {
@@ -903,6 +904,16 @@ const computingDeviceResolvers = {
         return results;
       }
       return [];
+    },
+    responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.responsible_party_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.responsible_party_iris) {
+        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
     },
   },
   ComputingDeviceKind: {

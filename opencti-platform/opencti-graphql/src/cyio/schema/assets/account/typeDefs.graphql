@@ -29,7 +29,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
   }
 
   "Captures identifying information about an account on a computer."
@@ -63,7 +63,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
   }
 
   "Captures identifying information about a special type of computer account that is not used by a human, is privileged, and often used to execute applications, run automated services, virtual machine instances and other processes."
@@ -97,7 +97,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
   }
 
   "Captures identifying information about a user account on a computer."
@@ -131,7 +131,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
   }
 
   union AccountKind = ComputerAccountAsset | ServiceAssetAccountAsset | UserAccountAsset
