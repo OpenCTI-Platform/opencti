@@ -2,11 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
 import { Link } from 'react-router-dom';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  OpenInNewOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
@@ -15,7 +11,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import { useFormatter } from '../../components/i18n';
 import ItemAuthor from '../../components/ItemAuthor';
 import useQueryLoading from '../hooks/useQueryLoading';
@@ -31,7 +26,6 @@ import { defaultValue } from '../Graph';
 import { hexToRGB, itemColor } from '../Colors';
 import { truncate } from '../String';
 import ItemCreator from '../../components/ItemCreator';
-import { resolveLink } from '../Entity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -73,12 +67,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: 120,
     textTransform: 'uppercase',
     borderRadius: '0',
-  },
-  external: {
-    position: 'fixed',
-    bottom: 5,
-    right: 5,
-    color: theme.palette.text?.secondary,
   },
 }));
 
@@ -492,15 +480,6 @@ EntityDetailsComponentProps
           )}
         </Button>
       )}
-      <IconButton
-        component={Link}
-        target="_blank"
-        to={`${resolveLink(stixCoreObject.entity_type)}//${stixCoreObject.id}`}
-        classes={{ root: classes.external }}
-        size="small"
-      >
-        <OpenInNewOutlined fontSize="small" />
-      </IconButton>
     </div>
   );
 };

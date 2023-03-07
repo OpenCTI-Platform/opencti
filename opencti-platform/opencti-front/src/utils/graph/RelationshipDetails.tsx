@@ -6,7 +6,6 @@ import { Link } from 'react-router-dom';
 import {
   ExpandLessOutlined,
   ExpandMoreOutlined,
-  OpenInNewOutlined,
 } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
@@ -15,7 +14,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
-import IconButton from '@mui/material/IconButton';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { useFormatter } from '../../components/i18n';
@@ -31,7 +29,6 @@ import { Theme } from '../../components/Theme';
 import ItemIcon from '../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../Colors';
 import ItemCreator from '../../components/ItemCreator';
-import { resolveLink } from '../Entity';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   label: {
@@ -450,37 +447,6 @@ RelationshipDetailsComponentProps
             <ExpandMoreOutlined fontSize="small" />
           )}
         </Button>
-      )}
-      {stixCoreRelationship.from
-        && !stixCoreRelationship.from.relationship_type
-        && stixCoreRelationship.from.entity_type && (
-          <IconButton
-            component={Link}
-            target="_blank"
-            to={`${resolveLink(stixCoreRelationship.from.entity_type)}/${
-              stixCoreRelationship.from.id
-            }/knowledge/relations/${stixCoreRelationship.id}`}
-            classes={{ root: classes.external }}
-            size="small"
-          >
-            <OpenInNewOutlined fontSize="small" />
-          </IconButton>
-      )}
-      {stixCoreRelationship.from
-        && stixCoreRelationship.from.relationship_type
-        && stixCoreRelationship.to
-        && stixCoreRelationship.to.entity_type && (
-          <IconButton
-            component={Link}
-            target="_blank"
-            to={`${resolveLink(stixCoreRelationship.to.entity_type)}/${
-              stixCoreRelationship.to.id
-            }/knowledge/relations/${stixCoreRelationship.id}`}
-            classes={{ root: classes.external }}
-            size="small"
-          >
-            <OpenInNewOutlined fontSize="small" />
-          </IconButton>
       )}
     </div>
   );

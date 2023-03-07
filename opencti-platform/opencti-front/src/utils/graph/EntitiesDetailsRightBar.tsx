@@ -7,6 +7,9 @@ import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import { useTheme } from '@mui/styles';
+import IconButton from '@mui/material/IconButton';
+import { Link } from 'react-router-dom';
+import { OpenInNewOutlined } from '@mui/icons-material';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../components/i18n';
@@ -21,8 +24,12 @@ const useStyles = makeStyles<Theme>(() => ({
     maxWidth: 400,
     height: '60%',
     maxHeight: '60%',
-    padding: '20px 20px 20px 20px',
+    padding: '60px 0 20px 20px',
     zIndex: 900,
+  },
+  external: {
+    marginTop: -2,
+    paddingLeft: 10,
   },
 }));
 
@@ -91,27 +98,57 @@ EntityDetailsRightsBarProps
       PaperProps={{ variant: 'outlined' }}
       transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <FormControl fullWidth={true} size="small">
-        <InputLabel id="label">{t('Object')}</InputLabel>
-        <Select
-          labelId="label"
-          label={t('Object')}
-          fullWidth={true}
-          onChange={handleSelectEntity}
-          value={selectedEntity.id}
-        >
-          {uniqSelectedEntities.map((entity) => (
-            <MenuItem key={entity.id} value={entity.id}>
-              {entity.label}
-            </MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-      {selectedEntity.relationship_type ? (
-        <RelationshipDetails relation={selectedEntity} />
-      ) : (
-        <EntityDetails entity={selectedEntity} />
-      )}
+      <div
+        style={{
+          display: 'flex',
+          position: 'fixed',
+          left: 20,
+          top: 20,
+          width: 360,
+        }}
+      >
+        <FormControl fullWidth={true} size="small" style={{ flex: 'grow' }}>
+          <InputLabel id="label">{t('Object')}</InputLabel>
+          <Select
+            labelId="label"
+            label={t('Object')}
+            fullWidth={true}
+            onChange={handleSelectEntity}
+            value={selectedEntity.id}
+          >
+            {uniqSelectedEntities.map((entity) => (
+              <MenuItem key={entity.id} value={entity.id}>
+                {entity.label}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+        <div className={classes.external}>
+          <IconButton
+            component={Link}
+            target="_blank"
+            to={`/dashboard/id/${selectedEntity.id}`}
+            size="medium"
+          >
+            <OpenInNewOutlined fontSize="medium" />
+          </IconButton>
+        </div>
+      </div>
+      <div className="clearfix" />
+      <div
+        style={{
+          height: '100%',
+          maxHeight: '100%',
+          overflowY: 'auto',
+          paddingRight: 20,
+        }}
+      >
+        {selectedEntity.relationship_type ? (
+          <RelationshipDetails relation={selectedEntity} />
+        ) : (
+          <EntityDetails entity={selectedEntity} />
+        )}
+      </div>
     </Drawer>
   );
 };
