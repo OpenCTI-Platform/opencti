@@ -9,7 +9,6 @@ import {
   batchNotes,
   batchObservedData,
   batchOpinions,
-  batchReports,
   findAll,
   findById,
   stixCoreObjectAddRelation,

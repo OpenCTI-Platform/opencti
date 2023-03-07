@@ -325,11 +325,11 @@ RelationshipDetailsComponentProps
       </div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {`${t('Last')} ${
-          (stixCoreRelationship?.reports?.pageInfo.globalCount ?? 0) >= 10
+          (stixCoreRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
             ? 10
-            : stixCoreRelationship?.reports?.pageInfo.globalCount
+            : stixCoreRelationship.reports?.pageInfo.globalCount
         } ${t('reports')} ${t('of')} ${
-          stixCoreRelationship?.reports?.pageInfo.globalCount
+          stixCoreRelationship.reports?.pageInfo.globalCount
         }`}
       </Typography>
       {reportsEdges && reportsEdges.length > 0 && (

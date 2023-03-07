@@ -363,11 +363,11 @@ EntityDetailsComponentProps
       </div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {`${t('Last')} ${
-          (stixCoreObject?.reports?.pageInfo.globalCount ?? 0) >= 10
+          (stixCoreObject.reports?.pageInfo.globalCount ?? 0) >= 10
             ? 10
-            : stixCoreObject?.reports?.pageInfo.globalCount
+            : stixCoreObject.reports?.pageInfo.globalCount
         } ${t('reports')} ${t('of')} ${
-          stixCoreObject?.reports?.pageInfo.globalCount
+          stixCoreObject.reports?.pageInfo.globalCount
         }`}
       </Typography>
       {reportsEdges && reportsEdges.length > 0 ? (
