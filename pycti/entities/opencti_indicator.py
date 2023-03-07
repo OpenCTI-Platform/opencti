@@ -357,6 +357,7 @@ class Indicator:
         if (
             name is not None
             and pattern is not None
+            and pattern_type is not None
             and x_opencti_main_observable_type is not None
         ):
             if x_opencti_main_observable_type == "File":
@@ -381,8 +382,6 @@ class Indicator:
                     }
                 }
             """
-            if pattern_type is None:
-                pattern_type = "stix2"
             result = self.opencti.query(
                 query,
                 {
@@ -421,7 +420,7 @@ class Indicator:
         else:
             LOGGER.error(
                 "[opencti_indicator] Missing parameters: "
-                "name or pattern or x_opencti_main_observable_type"
+                "name or pattern or pattern_type or x_opencti_main_observable_type"
             )
 
     def add_stix_cyber_observable(self, **kwargs):
