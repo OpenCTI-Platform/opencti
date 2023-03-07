@@ -66,6 +66,8 @@ class ExportButtons extends Component {
     }
     setTimeout(() => {
       const container = document.getElementById(domElementId);
+      const buttons = document.getElementById('export-buttons');
+      buttons.setAttribute('style', 'display: none');
       const { offsetWidth, offsetHeight } = container;
       if (theme === currentTheme.palette.mode && this.adjust) {
         container.setAttribute('style', 'width:3840px; height:2160px');
@@ -86,6 +88,7 @@ class ExportButtons extends Component {
           pixelRatio,
           this.adjust,
         ).then(() => {
+          buttons.setAttribute('style', 'display: block');
           if (theme !== currentTheme.palette.mode) {
             commitLocalUpdate((store) => {
               const me = store.getRoot().getLinkedRecord('me');
@@ -122,6 +125,8 @@ class ExportButtons extends Component {
       });
     }
     setTimeout(() => {
+      const buttons = document.getElementById('export-buttons');
+      buttons.setAttribute('style', 'display: none');
       exportPdf(
         domElementId,
         name,
@@ -134,6 +139,7 @@ class ExportButtons extends Component {
         pixelRatio,
         this.adjust,
       ).then(() => {
+        buttons.setAttribute('style', 'display: block');
         if (theme !== currentTheme.palette.mode) {
           commitLocalUpdate((store) => {
             const me = store.getRoot().getLinkedRecord('me');
@@ -151,7 +157,7 @@ class ExportButtons extends Component {
     const { anchorElImage, anchorElPdf, exporting } = this.state;
     const { classes, t, domElementId, name, csvData, csvFileName } = this.props;
     return (
-      <div className={classes.exportButtons}>
+      <div className={classes.exportButtons} id="export-buttons">
         <ToggleButtonGroup size="small" color="secondary" exclusive={true}>
           <Tooltip title={t('Export to image')}>
             <ToggleButton onClick={this.handleOpenImage.bind(this)}>
