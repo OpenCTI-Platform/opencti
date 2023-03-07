@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { LayersClearOutlined, MoreVert } from '@mui/icons-material';
 import * as R from 'ramda';
-import Chip from '@mui/material/Chip';
 import Slide from '@mui/material/Slide';
 import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
@@ -64,10 +63,7 @@ class RetentionLineComponent extends Component {
         <ListItemText
           primary={
             <div>
-              <div
-                className={classes.bodyItem}
-                style={{ width: dataColumns.name.width }}
-              >
+              <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
                 {node.name}
               </div>
               {filterPairs.length > 0 ? (
@@ -78,20 +74,8 @@ class RetentionLineComponent extends Component {
                   styleNumber={3}
                 />
               ) : (
-                <div
-                  className={classes.bodyItem}
-                  style={{ width: dataColumns.filters.width }}
-                >
-                  <span>
-                    <Chip
-                      classes={{ root: classes.filter }}
-                      label={
-                        <div>
-                          <strong>{t('Everything')}</strong>
-                        </div>
-                      }
-                    />
-                  </span>
+                <div className={classes.bodyItem} style={{ width: dataColumns.filters.width }}>
+                  <span>{t('Everything')}</span>
                 </div>
               )}
               <div

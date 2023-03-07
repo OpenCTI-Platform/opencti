@@ -126,10 +126,7 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
   const lastKey = last(toPairs(filters))?.[0];
 
   return (
-    <div
-      className={finalClassName}
-      style={{ width: dataColumns?.filters.width }}
-    >
+    <div className={finalClassName} style={{ width: dataColumns?.filters.width }}>
       {toPairs(filters).map((currentFilter) => {
         const filterKey = currentFilter[0];
         const filterContent = currentFilter[1];
