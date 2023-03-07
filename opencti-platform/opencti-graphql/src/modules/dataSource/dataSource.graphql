@@ -205,7 +205,7 @@ type Mutation {
     dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
     dataSourceContextPatch(id: ID!, input: EditContext!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
     dataSourceContextClean(id: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataSourceRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataSourceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE])
     dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
     dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])

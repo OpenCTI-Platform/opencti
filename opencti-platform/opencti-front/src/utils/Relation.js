@@ -1,4 +1,4 @@
-import { append, keys, pipe, filter, map, split, includes } from 'ramda';
+import { append, includes } from 'ramda';
 
 const relationsTypesMapping = {
   'Administrative-Area_Country': ['located-at'],
@@ -314,65 +314,6 @@ const relationsTypesMapping = {
   targets_Position: ['located-at'],
 };
 
-const stixCyberObservableRelationshipTypesMapping = {
-  'Artifact_Email-Message': ['raw-email'],
-  'Artifact_Email-Mime-Part-Type': ['body-raw'],
-  Malware_Artifact: ['sample'],
-  Artifact_StixFile: ['obs_content'],
-  Directory_Directory: ['contains'],
-  Directory_StixFile: ['contains'],
-  'Domain-Name_Domain-Name': ['obs_resolves-to'],
-  'Domain-Name_IPv4-Addr': ['obs_resolves-to'],
-  'Domain-Name_IPv6-Addr': ['obs_resolves-to'],
-  'Email-Message_Email-Addr': ['from', 'sender', 'to', 'cc', 'bcc'],
-  'Email-Addr_User-Account': ['obs_belongs-to'],
-  'Email-Mime-Part-Type_Email-Message': ['body-multipart'],
-  'IPv4-Addr_Autonomous-System': ['obs_belongs-to'],
-  'IPv4-Addr_Mac-Addr': ['obs_resolves-to'],
-  'IPv6-Addr_Autonomous-System': ['obs_belongs-to'],
-  'IPv6-Addr_Mac-Addr': ['obs_resolves-to'],
-  'Network-Traffic_Artifact': ['src-payload', 'dst-payload'],
-  'Network-Traffic_Domain-Name': ['src', 'dst'],
-  'Network-Traffic_IPv4-Addr': ['src', 'dst'],
-  'Network-Traffic_IPv6-Addr': ['src', 'dst'],
-  'Network-Traffic_Mac-Addr': ['src', 'dst'],
-  'Network-Traffic_Network-Traffic': ['encapsulates', 'encapsulated-by'],
-  'Observed-Data_StixFile': ['obs_content'],
-  'Process_Network-Traffic': ['opened-connection'],
-  Process_Process: ['parent', 'child'],
-  Process_StixFile: ['service-dll', 'image'],
-  'Process_User-Account': ['creator-user'],
-  Malware_Software: ['operating-system'],
-  StixFile_Artifact: ['contains'],
-  'StixFile_Autonomous-System': ['contains'],
-  StixFile_Directory: ['parent-directory', 'contains'],
-  'StixFile_Domain-Name': ['contains'],
-  'StixFile_Email-Addr': ['contains'],
-  'StixFile_Email-Message': ['contains'],
-  'StixFile_Email-Mime-Part-Type': ['contains', 'body-raw'],
-  'StixFile_IPv4-Addr': ['contains'],
-  'StixFile_IPv6-Addr': ['contains'],
-  'StixFile_Mac-Addr': ['contains'],
-  Malware_StixFile: ['sample'],
-  StixFile_Mutex: ['contains'],
-  'StixFile_Network-Traffic': ['contains'],
-  StixFile_Process: ['contains'],
-  StixFile_Software: ['contains'],
-  StixFile_StixFile: ['contains'],
-  StixFile_Url: ['contains'],
-  'StixFile_User-Account': ['contains'],
-  'StixFile_Windows-Registry-Key': ['contains'],
-  'StixFile_Windows-Registry-Value-Type': ['contains'],
-  'StixFile_Cryptocurrency-Wallet': ['contains'],
-  'StixFile_Cryptographic-Key': ['contains'],
-  StixFile_Hostname: ['contains'],
-  StixFile_Text: ['contains'],
-  'StixFile_User-Agent': ['contains'],
-  'StixFile_x509-Certificate': ['contains'],
-  'Windows-Registry-Key_Windows-Registry-Value-Type': ['values'],
-  'Windows-Registry-Key_User-Account': ['creator-user'],
-};
-
 export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
   if (relatedTo) {
     return relationsTypesMapping[`${fromType}_${toType}`]
@@ -384,33 +325,9 @@ export const resolveRelationsTypes = (fromType, toType, relatedTo = true) => {
     : [];
 };
 
-export const resolveStixCyberObservableRelationshipsTypes = (
-  fromType,
-  toType,
-) => (stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
-  ? stixCyberObservableRelationshipTypesMapping[`${fromType}_${toType}`]
-  : ['x_opencti_linked-to']);
-
-export const resolveTargetTypes = (fromType) => pipe(
-  keys,
-  filter((n) => n.includes(fromType)),
-  map((n) => split('_', n)[1]),
-)(relationsTypesMapping);
-
-export const resolveStixCyberObservableRelationshipsTargetTypes = (
-  fromType,
-) => {
-  const toTypes = pipe(
-    keys,
-    filter((n) => n.includes(fromType)),
-    map((n) => split('_', n)[1]),
-  )(stixCyberObservableRelationshipTypesMapping);
-  const fromTypes = pipe(
-    keys,
-    filter((n) => n.includes(fromType)),
-    map((n) => split('_', n)[0]),
-  )(stixCyberObservableRelationshipTypesMapping);
-  return { fromTypes, toTypes };
-};
-
 export const hasKillChainPhase = (type) => includes(type, ['uses', 'exploits', 'drops', 'indicates']);
+
+export const onlyLinkedTo = (relationshipTypes) => relationshipTypes.length === 1 && relationshipTypes.includes('x_opencti_linked-to');
+
+// retro-compatibility with cyber-observable-relationship
+export const isStixNestedRefRelationship = (type) => ['stix-ref-relationship', 'stix-cyber-observable-relationship'].includes(type);

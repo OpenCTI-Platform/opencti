@@ -6,7 +6,7 @@ import type { StixRelation, StixSighting } from '../../types/stix-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import { buildPeriodFromDates, computeRangeIntersection } from '../../utils/format';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { computeAverage } from '../../database/utils';
 import { createRuleContent } from '../rules';
 import { createInferredRelation, deleteInferredRuleElement } from '../../database/middleware';

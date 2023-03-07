@@ -290,7 +290,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
           id
           entity_type
           parent_types
-          ... on StixMetaRelationship {
+          ... on StixRefRelationship {
             created_at
           }
           ... on StixCoreRelationship {
@@ -342,7 +342,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
               }
             }
           }
-          ... on StixCyberObservableRelationship {
+          ... on StixRefRelationship {
             start_time
             stop_time
             relationship_type
@@ -796,7 +796,7 @@ const investigationGraphStixRelationshipsQuery = graphql`
 const investigationGraphRelationsAddMutation = graphql`
   mutation InvestigationGraphRelationsAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipsAddInput
+    $input: StixRefRelationshipsAddInput!
   ) {
     workspaceEdit(id: $id) {
       relationsAdd(input: $input) {
@@ -1829,7 +1829,7 @@ class InvestigationGraphComponent extends Component {
                   <TypesField
                     types={[
                       'stix-core-relationship',
-                      'stix-cyber-observable-relationship',
+                      'stix-nested-ref-relationship',
                     ]}
                     name="relationship_types"
                     label={t('All types of relationship')}
@@ -2364,7 +2364,7 @@ const InvestigationGraph = createFragmentContainer(
                   }
                 }
               }
-              ... on StixMetaRelationship {
+              ... on StixRefRelationship {
                 created_at
               }
               ... on StixCoreRelationship {

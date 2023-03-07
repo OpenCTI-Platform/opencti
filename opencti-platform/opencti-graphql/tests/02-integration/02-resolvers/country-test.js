@@ -158,7 +158,7 @@ describe('Country resolver standard behavior', () => {
   });
   it('should add relation in country', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CountryEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation CountryEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         countryEdit(id: $id) {
           relationAdd(input: $input) {
             id

@@ -2,7 +2,7 @@
 import * as jsonpatch from 'fast-json-patch';
 import * as R from 'ramda';
 import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from '../database/middleware';
-import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { createRuleContent } from './rules';
 import { generateInternalType } from '../schema/schemaUtils';
 import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules';
@@ -103,7 +103,7 @@ const buildContainerRefsRule = (ruleDefinition: RuleDefinition, containerType: s
       if (deletedTargetRefs.length > 0) {
         inputs.push({ key: INPUT_OBJECTS, value: deletedTargetRefs, operation: UPDATE_OPERATION_REMOVE });
       }
-      const message = generateUpdateMessage(inputs);
+      const message = generateUpdateMessage(report.extensions[STIX_EXT_OCTI].type, inputs);
       const updateEvent = buildStixUpdateEvent(RULE_MANAGER_USER, report, updatedReport, message);
       await publishStixToStream(context, RULE_MANAGER_USER, updateEvent);
     }

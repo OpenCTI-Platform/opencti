@@ -1,8 +1,8 @@
 import {
   addIndicator,
+  batchObservables,
   findAll,
   findById,
-  batchObservables,
   indicatorsDistributionByEntity,
   indicatorsNumber,
   indicatorsNumberByEntity,
@@ -17,18 +17,18 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
+import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
+import { buildRefRelationKey } from '../schema/general';
+import { batchLoader, distributionEntities } from '../database/middleware';
+import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
+import { batchKillChainPhases } from '../domain/stixCoreObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import {
   RELATION_CREATED_BY,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
-} from '../schema/stixMetaRelationship';
-import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
-import { buildRefRelationKey } from '../schema/general';
-import { distributionEntities, batchLoader } from '../database/middleware';
-import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+} from '../schema/stixRefRelationship';
 
 const killChainPhasesLoader = batchLoader(batchKillChainPhases);
 const batchObservablesLoader = batchLoader(batchObservables);

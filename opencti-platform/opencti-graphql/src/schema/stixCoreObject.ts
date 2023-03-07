@@ -3,15 +3,8 @@ import { isStixDomainObject } from './stixDomainObject';
 import { isStixMetaObject } from './stixMetaObject';
 import { isInternalObject } from './internalObject';
 import { ABSTRACT_BASIC_OBJECT, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_OBJECT, buildRefRelationKey } from './general';
-import { isStixRelationShipExceptMeta } from './stixRelationship';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_KILL_CHAIN_PHASE,
-  RELATION_OBJECT,
-  RELATION_OBJECT_LABEL,
-  RELATION_OBJECT_MARKING
-} from './stixMetaRelationship';
+import { isStixRelationshipExceptRef } from './stixRelationship';
+import { RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_KILL_CHAIN_PHASE, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from './stixRefRelationship';
 import { RELATION_INDICATES, RELATION_RELATED_TO, RELATION_TARGETS } from './stixCoreRelationship';
 import { RELATION_PARTICIPATE_TO } from './internalRelationship';
 import type { StoreObject } from '../types/store';
@@ -22,7 +15,7 @@ export const isStixCoreObject = (type: string) => isStixDomainObject(type) || is
 export const isStixObject = (type: string) => isStixCoreObject(type) || isStixMetaObject(type) || type === ABSTRACT_STIX_OBJECT;
 export const isBasicObject = (type: string) => isInternalObject(type) || isStixObject(type) || type === ABSTRACT_BASIC_OBJECT;
 export const isStixExportableData = (instance: StoreObject) => isStixObject(instance.entity_type)
-  || isStixRelationShipExceptMeta(instance.entity_type) || INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type);
+  || isStixRelationshipExceptRef(instance.entity_type) || INTERNAL_EXPORTABLE_TYPES.includes(instance.entity_type);
 
 export const stixCoreObjectOptions = {
   StixCoreObjectsFilter: {

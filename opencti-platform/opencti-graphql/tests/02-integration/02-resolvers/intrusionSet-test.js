@@ -142,7 +142,7 @@ describe('Intrusion set resolver standard behavior', () => {
   });
   it('should add relation in intrusion set', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IntrusionSetEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation IntrusionSetEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         intrusionSetEdit(id: $id) {
           relationAdd(input: $input) {
             id

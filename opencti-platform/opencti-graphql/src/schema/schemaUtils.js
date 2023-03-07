@@ -1,19 +1,42 @@
 import crypto from 'node:crypto';
 import validator from 'validator';
 import { isStixCyberObservable } from './stixCyberObservable';
-import { isStixDomainObject, isStixDomainObjectCase, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation, } from './stixDomainObject';
+import {
+  isStixDomainObject,
+  isStixDomainObjectCase,
+  isStixDomainObjectContainer,
+  isStixDomainObjectIdentity,
+  isStixDomainObjectLocation,
+} from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';
-import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_INTERNAL_OBJECT, ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING, } from './general';
+import {
+  ABSTRACT_BASIC_OBJECT,
+  ABSTRACT_BASIC_RELATIONSHIP,
+  ABSTRACT_INTERNAL_OBJECT,
+  ABSTRACT_INTERNAL_RELATIONSHIP,
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_META_OBJECT,
+  ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  ABSTRACT_STIX_RELATIONSHIP,
+  ENTITY_TYPE_CONTAINER,
+  ENTITY_TYPE_IDENTITY,
+  ENTITY_TYPE_LOCATION,
+  STIX_TYPE_RELATION,
+  STIX_TYPE_SIGHTING,
+} from './general';
 import { isInternalObject } from './internalObject';
 import { isStixCoreRelationship } from './stixCoreRelationship';
-import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
-import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
+import { isStixRefRelationship } from './stixRefRelationship';
 
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
@@ -69,15 +92,11 @@ export const getParentTypes = (type) => {
     parentTypes.push(ABSTRACT_BASIC_OBJECT);
     if (isInternalObject(type)) {
       parentTypes.push(ABSTRACT_INTERNAL_OBJECT);
-      return parentTypes;
-    }
-    if (isStixObject(type)) {
+    } else if (isStixObject(type)) {
       parentTypes.push(ABSTRACT_STIX_OBJECT);
       if (isStixMetaObject(type)) {
         parentTypes.push(ABSTRACT_STIX_META_OBJECT);
-        return parentTypes;
-      }
-      if (isStixCoreObject(type)) {
+      } else if (isStixCoreObject(type)) {
         parentTypes.push(ABSTRACT_STIX_CORE_OBJECT);
         if (isStixDomainObject(type)) {
           parentTypes.push(ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -93,34 +112,29 @@ export const getParentTypes = (type) => {
           if (isStixDomainObjectCase(type)) {
             parentTypes.push(ENTITY_TYPE_CONTAINER_CASE);
           }
-          return parentTypes;
         }
         if (isStixCyberObservable(type)) {
           parentTypes.push(ABSTRACT_STIX_CYBER_OBSERVABLE);
-          return parentTypes;
         }
       }
     }
-  }
-  if (isBasicRelationship(type)) {
+  } else if (isBasicRelationship(type)) {
     parentTypes.push(ABSTRACT_BASIC_RELATIONSHIP);
     if (isInternalRelationship(type)) {
       parentTypes.push(ABSTRACT_INTERNAL_RELATIONSHIP);
-      return parentTypes;
-    }
-    if (isStixRelationship(type)) {
+    } else if (isStixRelationship(type)) {
       parentTypes.push(ABSTRACT_STIX_RELATIONSHIP);
-      if (isStixMetaRelationship(type)) {
-        parentTypes.push(ABSTRACT_STIX_META_RELATIONSHIP);
+      if (isStixRefRelationship(type)) {
+        parentTypes.push(ABSTRACT_STIX_REF_RELATIONSHIP);
       }
       if (isStixCoreRelationship(type)) {
         parentTypes.push(ABSTRACT_STIX_CORE_RELATIONSHIP);
       }
-      if (isStixCyberObservableRelationship(type)) {
-        parentTypes.push(ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP);
-      }
-      return parentTypes;
     }
   }
-  throw DatabaseError(`Type ${type} not supported`);
+  if (parentTypes.length === 0) {
+    throw DatabaseError(`Type ${type} not supported`);
+  }
+
+  return parentTypes;
 };

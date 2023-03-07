@@ -9,7 +9,7 @@ import { findById as findMarkingDefinitionById } from './markingDefinition';
 import { now, observableValue } from '../utils/format';
 import { createWork } from './work';
 import { pushToConnector } from '../database/rabbitmq';
-import { RELATION_GRANTED_TO } from '../schema/stixMetaRelationship';
+import { RELATION_GRANTED_TO } from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -17,20 +17,14 @@ import {
   isStixDomainObjectShareableContainer,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  INPUT_GRANTED_REFS
-} from '../schema/general';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, INPUT_GRANTED_REFS } from '../schema/general';
 import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './task';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById } from '../database/middleware-loader';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaTypesDefinition } from '../schema/schema-types';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -167,7 +161,7 @@ export const batchObjectOrganizations = (context, user, stixCoreObjectIds) => {
 };
 
 const createSharingTask = async (context, type, containerId, organizationId) => {
-  const allowedDomainsShared = schemaAttributesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
+  const allowedDomainsShared = schemaTypesDefinition.get(ABSTRACT_STIX_DOMAIN_OBJECT)
     .filter((s) => {
       if (s === ENTITY_TYPE_CONTAINER_OPINION || s === ENTITY_TYPE_CONTAINER_NOTE) return false;
       return !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(s).includes(o));

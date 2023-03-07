@@ -10,7 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
-import StixCyberObservableRelationshipPopover from '../stix_cyber_observable_relationships/StixCyberObservableRelationshipPopover';
+import StixNestedRefRelationshipPopover from '../stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 
@@ -55,13 +55,13 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
     return (
       <div>
         {data
-          && data.stixCyberObservableRelationships
-          && data.stixCyberObservableRelationships.edges.map(
-            (stixCyberObservableRelationEdge) => {
-              const stixCyberObservableRelationship = stixCyberObservableRelationEdge.node;
-              const stixCoreObject = stixCyberObservableRelationship.from.id === stixDomainObjectId
-                ? stixCyberObservableRelationship.to
-                : stixCyberObservableRelationship.from;
+          && data.stixNestedRefRelationships
+          && data.stixNestedRefRelationships.edges.map(
+            (edge) => {
+              const { node } = edge;
+              const stixCoreObject = node.from.id === stixDomainObjectId
+                ? node.to
+                : node.from;
               const link = `${resolveLink(stixCoreObject.entity_type)}/${
                 stixCoreObject.id
               }`;
@@ -85,7 +85,7 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                           style={{ width: '20%' }}
                         >
                           {t(
-                            `relationship_${stixCyberObservableRelationship.relationship_type}`,
+                            `relationship_${node.relationship_type}`,
                           )}
                         </div>
                         <div
@@ -101,17 +101,14 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
                           {defaultValue(stixCoreObject)}
                         </div>
                         <div className={classes.bodyItem}>
-                          {fsd(stixCyberObservableRelationship.start_time)}
+                          {fsd(node.start_time)}
                         </div>
                       </div>
                     }
                   />
                   <ListItemSecondaryAction>
-                    <StixCyberObservableRelationshipPopover
-                      stixCyberObservableRelationshipId={
-                        stixCyberObservableRelationship.id
-                      }
-                      paginationOptions={paginationOptions}
+                    <StixNestedRefRelationshipPopover stixNestedRefRelationshipId={ node.id }
+                                                      paginationOptions={paginationOptions}
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
@@ -137,7 +134,7 @@ export const stixDomainObjectNestedEntitiesLinesQuery = graphql`
     $elementId: String
     $search: String
     $count: Int!
-    $orderBy: StixCyberObservableRelationshipsOrdering
+    $orderBy: StixRefRelationshipsOrdering
     $orderMode: OrderingMode
   ) {
     ...StixDomainObjectNestedEntitiesLines_data
@@ -160,16 +157,16 @@ const StixDomainObjectNestedEntitiesLines = createFragmentContainer(
         elementId: { type: "String" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
-        orderBy: { type: "StixCyberObservableRelationshipsOrdering" }
+        orderBy: { type: "StixRefRelationshipsOrdering" }
         orderMode: { type: "OrderingMode" }
       ) {
-        stixCyberObservableRelationships(
+        stixNestedRefRelationships(
           elementId: $elementId
           search: $search
           first: $count
           orderBy: $orderBy
           orderMode: $orderMode
-        ) @connection(key: "Pagination_stixCyberObservableRelationships") {
+        ) @connection(key: "Pagination_stixNestedRefRelationships") {
           edges {
             node {
               id

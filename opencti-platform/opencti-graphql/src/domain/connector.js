@@ -27,7 +27,7 @@ export const loadConnectorById = (context, user, id) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((connector) => completeConnector(connector));
 };
 export const connectorForWork = async (context, user, id) => {
-  const work = await elLoadById(context, user, id, ENTITY_TYPE_WORK, READ_INDEX_HISTORY);
+  const work = await elLoadById(context, user, id, { type: ENTITY_TYPE_WORK, indices: READ_INDEX_HISTORY });
   if (work) return loadConnectorById(context, user, work.connector_id);
   return null;
 };

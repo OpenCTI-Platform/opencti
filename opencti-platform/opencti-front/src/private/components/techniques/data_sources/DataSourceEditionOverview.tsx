@@ -52,7 +52,7 @@ export const dataSourceEditionOverviewFocus = graphql`
 const dataSourceMutationRelationAdd = graphql`
   mutation DataSourceEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     dataSourceRelationAdd(id: $id, input: $input) {
       from {

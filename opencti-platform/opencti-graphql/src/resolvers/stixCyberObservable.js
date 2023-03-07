@@ -12,7 +12,6 @@ import {
   findById,
   promoteObservableToIndicator,
   stixCyberObservableAddRelation,
-  stixCyberObservableAddRelations,
   stixCyberObservableCleanContext,
   stixCyberObservableDelete,
   stixCyberObservableDeleteRelation,
@@ -110,7 +109,6 @@ const stixCyberObservableResolvers = {
       contextPatch: ({ input }) => stixCyberObservableEditContext(context, context.user, id, input),
       contextClean: () => stixCyberObservableCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCyberObservableAddRelation(context, context.user, id, input),
-      relationsAdd: ({ input }) => stixCyberObservableAddRelations(context, context.user, id, input),
       relationDelete: ({ toId, relationship_type: relationshipType }) => {
         return stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType);
       },

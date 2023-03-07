@@ -126,7 +126,7 @@ export const stixCoreRelationshipEditionFocus = graphql`
 const stixCoreRelationshipMutationRelationAdd = graphql`
   mutation StixCoreRelationshipEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     stixCoreRelationshipEdit(id: $id) {
       relationAdd(input: $input) {

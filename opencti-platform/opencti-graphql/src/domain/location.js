@@ -6,7 +6,7 @@ import { notify } from '../database/redis';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, ENTITY_TYPE_LOCATION } from '../schema/general';
 import { isStixDomainObjectLocation } from '../schema/stixDomainObject';
 import { FunctionalError } from '../config/errors';
-import { schemaAttributesDefinition } from '../schema/schema-attributes';
+import { schemaTypesDefinition } from '../schema/schema-types';
 
 export const findById = async (context, user, locationId) => {
   return storeLoadById(context, user, locationId, ENTITY_TYPE_LOCATION);
@@ -26,7 +26,7 @@ export const findAll = async (context, user, args) => {
 export const addLocation = async (context, user, location) => {
   const { type } = location;
   if (!isStixDomainObjectLocation(type)) {
-    const supportedTypes = schemaAttributesDefinition.get(ENTITY_TYPE_LOCATION).join(', ');
+    const supportedTypes = schemaTypesDefinition.get(ENTITY_TYPE_LOCATION).join(', ');
     throw FunctionalError(`Invalid location type ${type}, please provide one of ${supportedTypes}`);
   }
   const locationToCreate = R.pipe(

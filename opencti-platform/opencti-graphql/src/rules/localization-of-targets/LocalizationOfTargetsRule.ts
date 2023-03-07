@@ -8,7 +8,7 @@ import { computeAverage } from '../../database/utils';
 import type { StixRelation } from '../../types/stix-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreObject, BasicStoreRelation, StoreObject } from '../../types/store';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 import { internalLoadById } from '../../database/middleware-loader';
 

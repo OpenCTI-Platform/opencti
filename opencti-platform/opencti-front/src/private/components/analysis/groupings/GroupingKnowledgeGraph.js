@@ -69,7 +69,7 @@ const groupingKnowledgeGraphCheckRelationQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         groupings {
           edges {
             node {
@@ -305,7 +305,7 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         relationship_type
         start_time
         stop_time
@@ -342,6 +342,7 @@ const groupingKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         created_at
+        datable
         objectMarking {
           edges {
             node {
@@ -1731,11 +1732,12 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   }
                 }
               }
-              ... on StixCyberObservableRelationship {
+              ... on StixRefRelationship {
                 relationship_type
                 start_time
                 stop_time
                 confidence
+                created
                 is_inferred
                 from {
                   ... on BasicObject {
@@ -1768,6 +1770,7 @@ const GroupingKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 created_at
+                datable
                 objectMarking {
                   edges {
                     node {

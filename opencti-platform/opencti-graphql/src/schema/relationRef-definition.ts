@@ -8,7 +8,8 @@ export interface RelationRefDefinition {
   stixName: string
   mandatoryType: MandatoryType
   multiple: boolean
-  checker?: Checker // TODO: after migration checker will be mandatory
+  checker: Checker
   label?: string
   description?: string
+  datable?: boolean // Allow to update start_time & stop_time attributes
 }

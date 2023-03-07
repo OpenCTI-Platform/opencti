@@ -12,35 +12,24 @@ import {
   ABSTRACT_INTERNAL_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,
   ABSTRACT_STIX_META_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
   ENTITY_TYPE_CONTAINER,
   ENTITY_TYPE_LOCATION,
 } from './general';
 import { UnsupportedError } from '../config/errors';
-import {
-  AttributeDefinition,
-  confidence,
-  iAliasedIds,
-  lang,
-  revoked,
-  standardId,
-  xOpenctiStixIds
-} from './attribute-definition';
+import { AttributeDefinition, iAliasedIds, standardId } from './attribute-definition';
 import { depsKeysRegister, schemaAttributesDefinition } from './schema-attributes';
 import { STIX_CORE_RELATIONSHIPS } from './stixCoreRelationship';
 import type { ValidatorFn } from './validator-register';
 import { registerEntityValidator } from './validator-register';
 import type { Resolvers } from '../generated/graphql';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
-import {
-  isStixDomainObject,
-  registerStixDomainAliased,
-  resolveAliasesField
-} from './stixDomainObject';
+import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
 import { registerInternalObject } from './internalObject';
 import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-common';
 import type { RelationRefDefinition } from './relationRef-definition';
+import { schemaTypesDefinition } from './schema-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
@@ -82,34 +71,34 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   if (definition.type.category) {
     switch (definition.type.category) {
       case ENTITY_TYPE_LOCATION:
-        schemaAttributesDefinition.add(ENTITY_TYPE_LOCATION, definition.type.name);
-        schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
+        schemaTypesDefinition.add(ENTITY_TYPE_LOCATION, definition.type.name);
+        schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter);
         break;
       case ENTITY_TYPE_CONTAINER:
-        schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
+        schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         // Hack to handle Case, a feature has been created to fix it :)
         if (definition.type.name !== ENTITY_TYPE_CONTAINER_CASE) {
-          schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
+          schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
           registerStixDomainConverter(definition.type.name, definition.converter);
         }
         break;
       case ENTITY_TYPE_CONTAINER_CASE:
-        schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER_CASE, definition.type.name);
-        schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
-        schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
+        schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER_CASE, definition.type.name);
+        schemaTypesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
+        schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter);
         break;
       case ABSTRACT_STIX_DOMAIN_OBJECT:
-        schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
+        schemaTypesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter);
         break;
       case ABSTRACT_STIX_META_OBJECT:
-        schemaAttributesDefinition.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
+        schemaTypesDefinition.add(ABSTRACT_STIX_META_OBJECT, definition.type.name);
         registerStixMetaConverter(definition.type.name, definition.converter);
         break;
       case ABSTRACT_INTERNAL_OBJECT:
-        schemaAttributesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
+        schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
         registerInternalObject(definition.type.name);
         break;
       default:
@@ -140,9 +129,6 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   if (definition.type.aliased) {
     attributes.push(...[resolveAliasesField(definition.type.name), iAliasedIds]);
   }
-  if (isStixDomainObject(definition.type.category)) {
-    attributes.push(...[xOpenctiStixIds, revoked, confidence, lang]);
-  }
   schemaAttributesDefinition.registerAttributes(definition.type.name, attributes);
 
   // Register dependency keys for input resolved refs
@@ -160,10 +146,8 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
   });
 
   // Register relations ref
-  if (definition.relationsRefs) {
-    schemaRelationsRefDefinition.registerRelationsRef(definition.type.name, definition.relationsRefs);
-    definition.relationsRefs?.forEach((source) => {
-      schemaAttributesDefinition.add(ABSTRACT_STIX_META_RELATIONSHIP, source.databaseName);
-    });
-  }
+  schemaRelationsRefDefinition.registerRelationsRef(definition.type.name, definition.relationsRefs || []);
+  definition.relationsRefs?.forEach((source) => {
+    schemaTypesDefinition.add(ABSTRACT_STIX_REF_RELATIONSHIP, source.databaseName);
+  });
 };

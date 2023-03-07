@@ -7,7 +7,7 @@ import { isNotEmptyField } from '../database/utils';
 import { getEntityValidatorCreation, getEntityValidatorUpdate } from './validator-register';
 import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
-import { externalReferences } from './stixMetaRelationship';
+import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
 
 const ajv = new Ajv();
@@ -20,7 +20,7 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
     const inputEntries = Object.entries(input);
     inputEntries.forEach(([key, value]) => {
       if (isJsonAttribute(key)) {
-        const attribute = availableAttributes.find((attr) => attr.name === key);
+        const attribute = availableAttributes.get(key);
         if (!attribute) {
           throw ValidationError(key, {
             message: 'This attribute is not declared for this type',

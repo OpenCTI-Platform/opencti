@@ -7,33 +7,21 @@ import { DatabaseError, UnsupportedError } from '../config/errors';
 import * as I from './internalObject';
 import { isInternalObject } from './internalObject';
 import * as D from './stixDomainObject';
-import {
-  ENTITY_TYPE_ATTACK_PATTERN,
-  isStixDomainObject,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
-  isStixObjectAliased,
-} from './stixDomainObject';
+import { ENTITY_TYPE_ATTACK_PATTERN, isStixDomainObject, isStixDomainObjectIdentity, isStixDomainObjectLocation, isStixObjectAliased } from './stixDomainObject';
 import * as M from './stixMetaObject';
 import { isStixMetaObject } from './stixMetaObject';
 import * as C from './stixCyberObservable';
 import { isStixCyberObservable, isStixCyberObservableHashedObservable } from './stixCyberObservable';
-import {
-  BASE_TYPE_RELATION,
-  OASIS_NAMESPACE,
-  OPENCTI_NAMESPACE,
-  OPENCTI_PLATFORM_UUID
-} from './general';
+import { BASE_TYPE_RELATION, OASIS_NAMESPACE, OPENCTI_NAMESPACE, OPENCTI_PLATFORM_UUID } from './general';
 import { isInternalRelationship } from './internalRelationship';
 import { isStixCoreRelationship } from './stixCoreRelationship';
-import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
-import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
 import { isEmptyField, isNotEmptyField, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { now } from '../utils/format';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { isBasicRelationship } from './stixRelationship';
 import { convertTypeToStixType } from '../database/stix-converter';
+import { isStixRefRelationship } from './stixRefRelationship';
 
 // region hashes
 const MD5 = 'MD5';
@@ -440,8 +428,7 @@ export const generateStandardId = (type, data) => {
   // Relations
   if (isInternalRelationship(type)) return `internal-relationship--${generateInternalId()}`;
   if (isStixCoreRelationship(type)) return `relationship--${generateInternalId()}`;
-  if (isStixMetaRelationship(type)) return `relationship-meta--${generateInternalId()}`;
-  if (isStixCyberObservableRelationship(type)) return `relationship-meta--${generateInternalId()}`;
+  if (isStixRefRelationship(type)) return `relationship-meta--${generateInternalId()}`;
   if (isStixSightingRelationship(type)) return `sighting--${generateInternalId()}`;
   // Unknown
   throw UnsupportedError(`${type} is not supported by the platform`);

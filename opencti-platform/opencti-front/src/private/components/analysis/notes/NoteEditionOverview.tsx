@@ -55,7 +55,7 @@ export const noteEditionOverviewFocus = graphql`
 const noteMutationRelationAdd = graphql`
   mutation NoteEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     noteEdit(id: $id) {
       relationAdd(input: $input) {

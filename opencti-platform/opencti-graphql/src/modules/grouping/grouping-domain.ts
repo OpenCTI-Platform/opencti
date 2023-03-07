@@ -18,7 +18,7 @@ import {
 } from '../../database/middleware-loader';
 import { BasicStoreEntityGrouping, ENTITY_TYPE_CONTAINER_GROUPING, GroupingNumberResult } from './grouping-types';
 import { isStixId } from '../../schema/schemaUtils';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixRefRelationship';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
 import type { DomainFindById } from '../../domain/domainTypes';

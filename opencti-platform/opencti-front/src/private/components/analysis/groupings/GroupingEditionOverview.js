@@ -57,7 +57,7 @@ export const groupingEditionOverviewFocus = graphql`
 const groupingMutationRelationAdd = graphql`
   mutation GroupingEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     groupingRelationAdd(id: $id, input: $input) {
       from {

@@ -8,7 +8,7 @@ import type { RelationTypes, RuleDefinition, RuleRuntime } from '../types/rules'
 import type { BasicStoreRelation, StoreObject } from '../types/store';
 import type { StixRelation } from '../types/stix-sro';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import { RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../utils/access';
 
 const buildRelationToRelationRule = (ruleDefinition: RuleDefinition, relationTypes: RelationTypes): RuleRuntime => {

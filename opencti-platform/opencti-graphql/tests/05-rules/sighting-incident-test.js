@@ -12,7 +12,7 @@ import { ENTITY_TYPE_INCIDENT, ENTITY_TYPE_INDICATOR } from '../../src/schema/st
 import RuleSightingIncident from '../../src/rules/sighting-incident/SightingIncidentRule';
 import { RELATION_RELATED_TO, RELATION_TARGETS } from '../../src/schema/stixCoreRelationship';
 import { internalLoadById, listRelations } from '../../src/database/middleware-loader';
-import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
 
 const TLP_CLEAR_ID = 'marking-definition--613f2e26-407d-48c7-9eca-b8e91df99dc9';

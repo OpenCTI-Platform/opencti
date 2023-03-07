@@ -9,7 +9,7 @@ import {
 } from '../domain/stixDomainObject';
 import { batchLoader } from '../database/middleware';
 import { buildRefRelationKey } from '../schema/general';
-import { RELATION_CREATED_BY } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY } from '../schema/stixRefRelationship';
 
 const batchRegionLoader = batchLoader(batchRegion);
 

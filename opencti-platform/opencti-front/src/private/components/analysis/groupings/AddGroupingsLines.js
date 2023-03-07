@@ -27,7 +27,7 @@ const styles = (theme) => ({
 const groupingLinesMutationRelationAdd = graphql`
   mutation AddGroupingsLinesRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     groupingRelationAdd(id: $id, input: $input) {
       id

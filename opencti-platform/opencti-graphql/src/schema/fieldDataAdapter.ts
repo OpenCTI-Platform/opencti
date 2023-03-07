@@ -13,18 +13,6 @@ export const SENSITIVE_HASHES = ['SSDEEP', 'SDHASH'];
 export const FUZZY_HASH_ALGORITHMS = ['SSDEEP', 'SDHASH', 'TLSH', 'LZJD'];
 
 export const noReferenceAttributes = ['x_opencti_graph_data'];
-export const statsDateAttributes = [
-  'created_at',
-  'first_seen',
-  'last_seen',
-  'start_time',
-  'stop_time',
-  'published',
-  'valid_from',
-  'valid_until',
-  'first_observed',
-  'last_observed',
-];
 export const dateForStartAttributes = ['first_seen', 'start_time', 'valid_from', 'first_observed'];
 export const dateForEndAttributes = ['last_seen', 'stop_time', 'valid_until', 'last_observed'];
 export const dateForLimitsAttributes = [...dateForStartAttributes, ...dateForEndAttributes];

@@ -155,7 +155,7 @@ describe('Indicator resolver standard behavior', () => {
   });
   it('should add relation in indicator', async () => {
     const RELATION_ADD_QUERY = gql`
-        mutation IndicatorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+        mutation IndicatorEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
             indicatorEdit(id: $id) {
                 relationAdd(input: $input) {
                     id

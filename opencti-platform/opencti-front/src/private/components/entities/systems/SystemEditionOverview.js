@@ -49,7 +49,7 @@ export const systemEditionOverviewFocus = graphql`
 const systemMutationRelationAdd = graphql`
   mutation SystemEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     systemEdit(id: $id) {
       relationAdd(input: $input) {

@@ -369,7 +369,7 @@ describe('Opinion resolver standard behavior', () => {
   });
   it('should add relation in opinion', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation OpinionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation OpinionEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         opinionEdit(id: $id) {
           relationAdd(input: $input) {
             id

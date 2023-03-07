@@ -53,7 +53,7 @@ export const toolEditionOverviewFocus = graphql`
 const toolMutationRelationAdd = graphql`
   mutation ToolEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     toolEdit(id: $id) {
       relationAdd(input: $input) {

@@ -1,6 +1,6 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
-import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { paginateAllThings, listThings, listAllThings } from '../database/middleware';
 import { listEntities, listRelations, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER, ID_INFERRED, ID_INTERNAL } from '../schema/general';
@@ -23,8 +23,7 @@ export const findAll = async (context, user, args) => {
 
 export const objects = async (context, user, containerId, args) => {
   const key = buildRefRelationKey(RELATION_OBJECT, '*');
-  const types = args.types ? args.types
-    : ['Stix-Core-Object', 'stix-core-relationship', 'stix-sighting-relationship', 'stix-cyber-observable-relationship'];
+  const types = args.types ? args.types : ['Stix-Core-Object', 'stix-relationship'];
   const filters = [{ key, values: [containerId], operator: 'wildcard' }, ...(args.filters || [])];
   const data = args.all ? await paginateAllThings(context, user, types, R.assoc('filters', filters, args))
     : await listThings(context, user, types, R.assoc('filters', filters, args));

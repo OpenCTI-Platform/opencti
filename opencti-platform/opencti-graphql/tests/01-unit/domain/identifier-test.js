@@ -5,7 +5,8 @@ import { cleanStixIds } from '../../../src/database/stix';
 import { generateInternalType } from '../../../src/schema/schemaUtils';
 import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
-import '../../../src/modules/index'; // Need to import registration files
+import '../../../src/modules/index';
+import { ENTITY_TYPE_CONTAINER_REPORT } from '../../../src/schema/stixDomainObject'; // Need to import registration files
 
 describe('identifier', () => {
   it('should name correctly normalize', () => {
@@ -146,10 +147,10 @@ describe('identifier', () => {
   });
 
   it('should relation to input name', () => {
-    let name = schemaRelationsRefDefinition.convertDatabaseNameToInputName('object-marking');
+    let name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object-marking');
     expect(name).toEqual('objectMarking');
     // eslint-disable-next-line dot-notation
-    name = schemaRelationsRefDefinition.convertDatabaseNameToInputName('object');
+    name = schemaRelationsRefDefinition.convertDatabaseNameToInputName(ENTITY_TYPE_CONTAINER_REPORT, 'object');
     expect(name).toEqual('objects');
   });
 

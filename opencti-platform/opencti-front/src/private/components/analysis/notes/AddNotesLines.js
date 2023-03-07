@@ -27,7 +27,7 @@ const styles = (theme) => ({
 export const noteLinesMutationRelationAdd = graphql`
   mutation AddNotesLinesRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     noteEdit(id: $id) {
       relationAdd(input: $input) {

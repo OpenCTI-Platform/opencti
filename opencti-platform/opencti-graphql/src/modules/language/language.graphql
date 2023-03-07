@@ -189,6 +189,6 @@ type Mutation {
     languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language @auth(for: [KNOWLEDGE_KNUPDATE])
     languageContextPatch(id: ID!, input: EditContext!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
     languageContextClean(id: ID!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
-    languageRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    languageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language @auth(for: [KNOWLEDGE_KNUPDATE])
 }

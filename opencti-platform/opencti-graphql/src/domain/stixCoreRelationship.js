@@ -19,21 +19,15 @@ import {
   READ_INDEX_STIX_CORE_RELATIONSHIPS
 } from '../database/utils';
 import { isStixCoreRelationship, stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
+import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ENTITY_TYPE_IDENTITY
-} from '../schema/general';
-import {
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -56,7 +50,10 @@ import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
 import { upload } from '../database/file-storage';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipDeleteRelation
+} from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -253,20 +250,10 @@ export const stixCoreRelationshipEditField = async (context, user, stixCoreRelat
   return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
 
+// region relation ref
 export const stixCoreRelationshipAddRelation = async (context, user, stixCoreRelationshipId, input) => {
-  const stixCoreRelationship = await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
-  if (!stixCoreRelationship) {
-    throw FunctionalError('Cannot add the relation, stix-core-relationship cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = R.assoc('fromId', stixCoreRelationshipId, input);
-  return createRelation(context, user, finalInput).then((relationData) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_RELATIONSHIP].EDIT_TOPIC, relationData, user);
-  });
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixCoreRelationshipId, input, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
-
 export const stixCoreRelationshipDeleteRelation = async (context, user, stixCoreRelationshipId, toId, relationshipType) => {
   return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreRelationshipId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };

@@ -250,7 +250,7 @@ describe('Grouping resolver standard behavior', () => {
   });
   it('should add relation in grouping', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation GroupingEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation GroupingEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         groupingRelationAdd(id: $id, input: $input) {
           id
           from {

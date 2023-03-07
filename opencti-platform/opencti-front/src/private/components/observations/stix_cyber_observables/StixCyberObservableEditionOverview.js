@@ -76,7 +76,7 @@ export const stixCyberObservableEditionOverviewFocus = graphql`
 const stixCyberObservableMutationRelationAdd = graphql`
   mutation StixCyberObservableEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     stixCyberObservableEdit(id: $id) {
       relationAdd(input: $input) {

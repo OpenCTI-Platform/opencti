@@ -263,7 +263,7 @@ describe('StixDomainObject resolver standard behavior', () => {
   });
   it('should add relation in stixDomainObject', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation StixDomainObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation StixDomainObjectEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         stixDomainObjectEdit(id: $id) {
           relationAdd(input: $input) {
             id

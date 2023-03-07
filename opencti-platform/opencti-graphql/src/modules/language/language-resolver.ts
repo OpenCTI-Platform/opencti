@@ -1,7 +1,7 @@
 import type { Resolvers } from '../../generated/graphql';
 import { addLanguage, findAll, findById } from './language-domain';
 import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import {
   stixDomainObjectAddRelation,
   stixDomainObjectCleanContext,

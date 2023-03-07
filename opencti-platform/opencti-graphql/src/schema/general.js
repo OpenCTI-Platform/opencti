@@ -54,6 +54,7 @@ export const ABSTRACT_INTERNAL_RELATIONSHIP = 'internal-relationship';
 export const ABSTRACT_STIX_RELATIONSHIP = 'stix-relationship';
 export const ABSTRACT_STIX_CORE_RELATIONSHIP = 'stix-core-relationship';
 export const ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP = 'stix-cyber-observable-relationship';
+export const ABSTRACT_STIX_REF_RELATIONSHIP = 'stix-ref-relationship';
 export const ABSTRACT_STIX_META_RELATIONSHIP = 'stix-meta-relationship';
 
 // Entities
@@ -88,6 +89,7 @@ export const ABSTRACT_TYPES = [
   ABSTRACT_INTERNAL_RELATIONSHIP,
   ABSTRACT_STIX_RELATIONSHIP,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
+  ABSTRACT_STIX_REF_RELATIONSHIP,
   ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
 ];

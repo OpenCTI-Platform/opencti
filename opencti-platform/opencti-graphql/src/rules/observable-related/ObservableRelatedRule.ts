@@ -9,7 +9,7 @@ import { listAllRelations } from '../../database/middleware-loader';
 import type { StixRelation } from '../../types/stix-sro';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { BasicStoreRelation, StoreObject } from '../../types/store';
-import { RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { executionContext, RULE_MANAGER_USER } from '../../utils/access';
 
 const ruleRelatedObservableBuilder = () => {

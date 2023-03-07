@@ -18,8 +18,7 @@ interface SearchTypesProps {
     | 'Stix-Domain-Object'
     | 'Stix-Cyber-Observable'
     | 'stix-core-relationship'
-    | 'stix-cyber-observable-relationship'
-    | 'stix-meta-relationship'
+    | 'stix-nested-ref-relationship'
   )[];
 }
 
@@ -33,8 +32,7 @@ const typesFieldTypesQuery = graphql`
     $isDomain: Boolean!
     $isObservable: Boolean!
     $isCoreRelationship: Boolean!
-    $isObservableRelationship: Boolean!
-    $isMetaRelationship: Boolean!
+    $isNestedRefRelationship: Boolean!
   ) {
     stixDomainObjectTypes: subTypes(type: "Stix-Domain-Object")
       @include(if: $isDomain) {
@@ -63,18 +61,8 @@ const typesFieldTypesQuery = graphql`
         }
       }
     }
-    stixCyberObservableRelationshipTypes: subTypes(
-      type: "stix-cyber-observable-relationship"
-    ) @include(if: $isObservableRelationship) {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    stixMetaRelationshipTypes: subTypes(type: "stix-meta-relationship")
-      @include(if: $isMetaRelationship) {
+    stixNestedRefRelationshipTypes: subTypes(type: "stix-nested-ref-relationship")
+    @include(if: $isNestedRefRelationship) {
       edges {
         node {
           id
@@ -130,18 +118,14 @@ const TypesField: FunctionComponent<SearchTypesProps> = ({
       isDomain: types.includes('Stix-Domain-Object'),
       isObservable: types.includes('Stix-Cyber-Observable'),
       isCoreRelationship: types.includes('stix-core-relationship'),
-      isObservableRelationship: types.includes(
-        'stix-cyber-observable-relationship',
-      ),
-      isMetaRelationship: types.includes('stix-meta-relationship'),
+      isNestedRefRelationship: types.includes('stix-nested-ref-relationship'),
     })
       .toPromise()
       .then((data) => {
         const fetchData = data as TypesFieldTypesQuery$data;
         const relationships = optionBuilder('relationship', [
           ...(fetchData.stixCoreRelationshipTypes?.edges ?? []),
-          ...(fetchData.stixCyberObservableRelationshipTypes?.edges ?? []),
-          ...(fetchData.stixMetaRelationshipTypes?.edges ?? []),
+          ...(fetchData.stixNestedRefRelationshipTypes?.edges ?? []),
         ]);
         const entities = optionBuilder('entity', [
           ...(fetchData.stixDomainObjectTypes?.edges ?? []),

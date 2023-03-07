@@ -49,7 +49,7 @@ export const narrativeEditionOverviewFocus = graphql`
 const narrativeMutationRelationAdd = graphql`
   mutation NarrativeEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     narrativeRelationAdd(id: $id, input: $input) {
       from {

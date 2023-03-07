@@ -50,7 +50,7 @@ export const eventEditionOverviewFocus = graphql`
 const eventMutationRelationAdd = graphql`
   mutation EventEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     eventRelationAdd(id: $id, input: $input) {
       from {

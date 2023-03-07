@@ -14,7 +14,6 @@ import {
   timeSeriesRelations,
   updateAttribute,
 } from '../../../src/database/middleware';
-import { attributeEditField, getRuntimeAttributeValues } from '../../../src/domain/attribute';
 import { elFindByIds, elLoadById, elRawSearch, ES_IGNORE_THROTTLED } from '../../../src/database/engine';
 import { ADMIN_USER, testContext } from '../../utils/testQuery';
 import {
@@ -27,7 +26,10 @@ import {
   ENTITY_TYPE_MALWARE,
   ENTITY_TYPE_THREAT_ACTOR,
 } from '../../../src/schema/stixDomainObject';
-import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../../../src/schema/general';
+import {
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  buildRefRelationKey
+} from '../../../src/schema/general';
 import {
   RELATION_ATTRIBUTED_TO,
   RELATION_MITIGATES,
@@ -35,7 +37,7 @@ import {
   RELATION_USES
 } from '../../../src/schema/stixCoreRelationship';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE } from '../../../src/schema/stixCyberObservable';
-import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { addLabel } from '../../../src/domain/label';
 import { ENTITY_TYPE_LABEL } from '../../../src/schema/stixMetaObject';
 import {
@@ -127,16 +129,12 @@ describe('Attribute updater', () => {
     expect(update01.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(testContext, ADMIN_USER, stixId);
     expect(campaign.first_seen).toEqual('2020-02-20T08:45:43.366Z');
-    expect(campaign.i_first_seen_day).toEqual('2020-02-20');
-    expect(campaign.i_first_seen_month).toEqual('2020-02');
-    expect(campaign.i_first_seen_year).toEqual('2020');
     // Value back to before
     patch = { first_seen: '2020-02-27T08:45:43.365Z' };
     const { element: update02 } = await patchAttribute(testContext, ADMIN_USER, campaignId, type, patch);
     expect(update02.internal_id).toEqual(campaignId);
     campaign = await internalLoadById(testContext, ADMIN_USER, stixId);
     expect(campaign.first_seen).toEqual('2020-02-27T08:45:43.365Z');
-    expect(campaign.i_first_seen_day).toEqual('2020-02-27');
   });
   it('should update numeric', async () => {
     const stixId = 'relationship--efc9bbb8-e606-4fb1-83ae-d74690fd0416';
@@ -256,9 +254,9 @@ describe('Relations listing', () => {
     const stixCoreRelationships = await listRelations(testContext, ADMIN_USER, 'stix-core-relationship');
     expect(stixCoreRelationships).not.toBeNull();
     expect(stixCoreRelationships.edges.length).toEqual(22);
-    const stixMetaRelationships = await listRelations(testContext, ADMIN_USER, 'stix-meta-relationship');
-    expect(stixMetaRelationships).not.toBeNull();
-    expect(stixMetaRelationships.edges.length).toEqual(112);
+    const stixRefRelationships = await listRelations(testContext, ADMIN_USER, 'stix-ref-relationship');
+    expect(stixRefRelationships).not.toBeNull();
+    expect(stixRefRelationships.edges.length).toEqual(112);
   });
   it('should list relations with roles', async () => {
     const stixRelations = await listRelations(testContext, ADMIN_USER, 'uses', {
@@ -482,44 +480,6 @@ describe('Element loader', () => {
     expect(identity.x_opencti_aliases.length).toEqual(2);
     expect(identity.x_opencti_aliases.includes('Computer Incident')).toBeTruthy();
     expect(identity.x_opencti_aliases.includes('Incident')).toBeTruthy();
-  });
-});
-
-describe('Attribute updated and indexed correctly', () => {
-  it('should entity report attribute updated', async () => {
-    const attrValues = await getRuntimeAttributeValues(testContext, ADMIN_USER, { attributeName: 'report_types' });
-    expect(attrValues).not.toBeNull();
-    expect(attrValues.edges.length).toEqual(1);
-    const typeMap = new Map(attrValues.edges.map((i) => [i.node.value, i]));
-    const threatReportAttribute = typeMap.get('threat-report');
-    expect(threatReportAttribute).not.toBeUndefined();
-    const attributeName = threatReportAttribute.node.key;
-    // 01. Get the report directly and test if type is "Threat report".
-    const stixId = 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7';
-    let report = await storeLoadById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report).not.toBeNull();
-    expect(report.report_types).toEqual(['threat-report']);
-    // 02. Update attribute "Threat report" to "Threat test"
-    let updatedAttribute = await attributeEditField(testContext, {
-      id: attributeName,
-      previous: 'threat-report',
-      current: 'threat-test',
-    });
-    expect(updatedAttribute).not.toBeNull();
-    // 03. Get the report directly and test if type is Threat test
-    report = await storeLoadById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report).not.toBeNull();
-    expect(report.report_types).toEqual(['threat-test']);
-    // 04. Back to original configuration
-    updatedAttribute = await attributeEditField(testContext, {
-      id: attributeName,
-      previous: 'threat-test',
-      current: 'threat-report',
-    });
-    expect(updatedAttribute).not.toBeNull();
-    report = await storeLoadById(testContext, ADMIN_USER, stixId, ENTITY_TYPE_CONTAINER_REPORT);
-    expect(report).not.toBeNull();
-    expect(report.report_types).toEqual(['threat-report']);
   });
 });
 
@@ -816,7 +776,7 @@ describe('Upsert and merge entities', () => {
       loadMalware.internal_id,
       clear.internal_id,
       RELATION_OBJECT_MARKING,
-      ABSTRACT_STIX_META_RELATIONSHIP
+      ABSTRACT_STIX_REF_RELATIONSHIP
     );
     const checkers = await elFindByIds(testContext, ADMIN_USER, loadMalware.id);
     const test = await internalLoadById(testContext, ADMIN_USER, testMarking);
@@ -957,8 +917,8 @@ describe('Upsert and merge entities', () => {
     expect(loadedThreat.aliases.length).toEqual(6); // [THREAT_SOURCE_01, THREAT_SOURCE_02, THREAT_SOURCE_03, THREAT_SOURCE_04, THREAT_SOURCE_05, THREAT_SOURCE_06]
     expect(loadedThreat.i_aliases_ids.length).toEqual(7);
     expect(loadedThreat.goals).toEqual(['MY GOAL']);
-    expect(loadedThreat['object-marking'].length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
-    expect(loadedThreat['object-label'].length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
+    expect(loadedThreat.objectMarking.length).toEqual(3); // [testMarking, clearMarking, mitreMarking]
+    expect(loadedThreat.objectLabel.length).toEqual(5); // ['report', 'opinion', 'note', 'malware', 'identity']
     // expect(loadedThreat[INTERNAL_FROM_FIELD].uses.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]
     const froms = await listAllRelations(testContext, ADMIN_USER, 'stix-core-relationship', { fromId: loadedThreat.internal_id });
     expect(froms.length).toEqual(3); // [MALWARE_TEST_01, MALWARE_TEST_02, MALWARE_TEST_03]

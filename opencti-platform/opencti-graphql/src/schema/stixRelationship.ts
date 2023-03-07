@@ -1,14 +1,14 @@
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixSightingRelationship } from './stixSightingRelationship';
-import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
-import { isStixMetaRelationship } from './stixMetaRelationship';
 import { isInternalRelationship } from './internalRelationship';
+import { ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_STIX_RELATIONSHIP } from './general';
+import { isStixRefRelationship } from './stixRefRelationship';
 
-export const isStixRelationShipExceptMeta = (type: string) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
+export const isStixRelationshipExceptRef = (type: string) => isStixCoreRelationship(type) || isStixSightingRelationship(type);
 
 export const isStixRelationship = (type: string) => isStixCoreRelationship(type)
   || isStixSightingRelationship(type)
-  || isStixCyberObservableRelationship(type)
-  || isStixMetaRelationship(type);
+  || isStixRefRelationship(type)
+  || type === ABSTRACT_STIX_RELATIONSHIP;
 
-export const isBasicRelationship = (type: string) => isInternalRelationship(type) || isStixRelationship(type);
+export const isBasicRelationship = (type: string) => isInternalRelationship(type) || isStixRelationship(type) || type === ABSTRACT_BASIC_RELATIONSHIP;

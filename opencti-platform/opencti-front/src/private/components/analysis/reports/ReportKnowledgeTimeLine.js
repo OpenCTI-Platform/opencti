@@ -668,7 +668,7 @@ export default createFragmentContainer(ReportKnowledgeTimeLineComponent, {
                 }
               }
             }
-            ... on StixCyberObservableRelationship {
+            ... on StixRefRelationship {
               relationship_type
               start_time
               stop_time

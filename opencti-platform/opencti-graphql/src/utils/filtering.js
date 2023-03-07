@@ -4,7 +4,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';

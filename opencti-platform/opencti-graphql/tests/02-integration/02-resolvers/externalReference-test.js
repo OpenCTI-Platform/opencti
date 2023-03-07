@@ -161,7 +161,7 @@ describe('ExternalReference resolver standard behavior', () => {
     const campaign = await elLoadById(testContext, ADMIN_USER, 'campaign--92d46985-17a6-4610-8be8-cc70c82ed214');
     campaignId = campaign.internal_id;
     const RELATION_ADD_QUERY = gql`
-      mutation ExternalReferenceEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation ExternalReferenceEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         externalReferenceEdit(id: $id) {
           relationAdd(input: $input) {
             id

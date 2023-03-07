@@ -1,5 +1,5 @@
 import * as R from 'ramda';
-import { elAttributeValues, elUpdateAttributeValue } from '../database/engine';
+import { elAttributeValues } from '../database/engine';
 import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -110,13 +110,4 @@ export const getRuntimeAttributeValues = (context: AuthContext, user: AuthUser, 
 
 export const getSchemaAttributeValues = (elementTypes: string[]) => {
   return queryAttributeNames(elementTypes);
-};
-
-export const attributeEditField = async (context: AuthContext, {
-  id,
-  previous,
-  current
-}: { id: string, previous: string, current: string }) => {
-  await elUpdateAttributeValue(context, id, previous, current);
-  return id;
 };

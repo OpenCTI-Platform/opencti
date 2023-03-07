@@ -52,7 +52,7 @@ export const dataComponentEditionOverviewFocus = graphql`
 const dataComponentMutationRelationAdd = graphql`
   mutation DataComponentEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     dataComponentRelationAdd(id: $id, input: $input) {
       from {

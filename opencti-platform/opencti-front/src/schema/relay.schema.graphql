@@ -5392,7 +5392,6 @@ interface StixCyberObservable {
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -5432,7 +5431,6 @@ type AutonomousSystem implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   number: Int
   name: String
   rir: String
@@ -5481,7 +5479,6 @@ type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   path: String!
   path_enc: String
   ctime: DateTime
@@ -5534,7 +5531,6 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
   x_opencti_score: Int
   x_opencti_description: String
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -5579,7 +5575,6 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   display_name: String
   creators: [Creator!]
@@ -5626,7 +5621,6 @@ type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   is_multipart: Boolean
   attribute_date: DateTime
   content_type: String
@@ -5683,7 +5677,6 @@ type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & St
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   body: String
   content_type: String
   content_disposition: String
@@ -5755,7 +5748,6 @@ interface HashedObservable {
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   creators: [Creator!]
   toStix: String
@@ -5796,7 +5788,6 @@ type Artifact implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   mime_type: String
   payload_bin: String
@@ -5853,7 +5844,6 @@ type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   extensions: String
   size: Int
@@ -5919,7 +5909,6 @@ type X509Certificate implements BasicObject & StixObject & StixCoreObject & Stix
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   hashes: [Hash]
   is_self_signed: Boolean
   version: String
@@ -6018,7 +6007,6 @@ type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   countries: CountryConnection
   creators: [Creator!]
@@ -6066,7 +6054,6 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   countries: CountryConnection
   creators: [Creator!]
@@ -6112,7 +6099,6 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6157,7 +6143,6 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   creators: [Creator!]
   toStix: String
@@ -6202,7 +6187,6 @@ type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixC
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   start: DateTime
   end: DateTime
@@ -6266,7 +6250,6 @@ type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObs
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   is_hidden: Boolean
   pid: Int
@@ -6353,7 +6336,6 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   cpe: String
   swid: String
@@ -6409,7 +6391,6 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6454,7 +6435,6 @@ type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   extensions: String
   user_id: String
   credential: String
@@ -6526,7 +6506,6 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   attribute_key: String
   modified_time: DateTime
   number_of_subkeys: Int
@@ -6575,7 +6554,6 @@ type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObje
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   name: String
   data: String
   data_type: String
@@ -6624,7 +6602,6 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6669,7 +6646,6 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6714,7 +6690,6 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6759,7 +6734,6 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6804,7 +6778,6 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6849,7 +6822,6 @@ type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   iban: String
   bic: String
   account_number: String
@@ -6898,7 +6870,6 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   value: String
   creators: [Creator!]
   toStix: String
@@ -6943,7 +6914,6 @@ type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCybe
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   card_number: String
   expiration_date: DateTime
   cvv: Int
@@ -6994,7 +6964,6 @@ type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyb
   x_opencti_description: String
   observable_value: String!
   indicators(first: Int): IndicatorConnection
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode): StixCyberObservableRelationshipConnection
   title: String
   description: String
   content: String
@@ -7120,9 +7089,9 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting | Creator
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting | Creator
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
 
 union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
 
@@ -7442,7 +7411,7 @@ input StixSightingRelationshipAddInput {
   update: Boolean
 }
 
-enum StixCyberObservableRelationshipsOrdering {
+enum StixRefRelationshipsOrdering {
   relationship_type
   entity_type
   confidence
@@ -7459,28 +7428,28 @@ enum StixCyberObservableRelationshipsOrdering {
   toCreatedAt
 }
 
-enum StixCyberObservableRelationshipsFilter {
+enum StixRefRelationshipsFilter {
   created_at
 }
 
-input StixCyberObservableRelationshipsFiltering {
-  key: [StixCyberObservableRelationshipsFilter!]!
+input StixRefRelationshipsFiltering {
+  key: [StixRefRelationshipsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
-type StixCyberObservableRelationshipConnection {
+type StixRefRelationshipConnection {
   pageInfo: PageInfo!
-  edges: [StixCyberObservableRelationshipEdge]
+  edges: [StixRefRelationshipEdge]
 }
 
-type StixCyberObservableRelationshipEdge {
+type StixRefRelationshipEdge {
   cursor: String!
-  node: StixCyberObservableRelationship!
+  node: StixRefRelationship!
 }
 
-type StixCyberObservableRelationship implements BasicRelationship & StixRelationship {
+type StixRefRelationship implements BasicRelationship & StixRelationship {
   id: ID!
   entity_type: String!
   parent_types: [String]!
@@ -7503,17 +7472,26 @@ type StixCyberObservableRelationship implements BasicRelationship & StixRelation
   relationship_type: String!
   start_time: DateTime
   stop_time: DateTime
+  created: DateTime
+  modified: DateTime
   confidence: Int
   objectMarking: MarkingDefinitionConnection
+  datable: Boolean
   creators: [Creator!]
   editContext: [EditUserContext!]
 }
 
-input StixCyberObservableRelationshipAddInput {
+type DefinitionRefRelationship {
+  entity: StixObjectOrStixRelationship!
+  from: [String!]
+  to: [String!]
+}
+
+input StixRefRelationshipAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
-  fromId: StixRef!
-  toId: StixRef!
+  fromId: StixRef
+  toId: StixRef
   relationship_type: String!
   confidence: Int
   createdBy: String
@@ -7527,60 +7505,10 @@ input StixCyberObservableRelationshipAddInput {
   update: Boolean
 }
 
-enum StixMetaRelationshipsOrdering {
-  created_at
-  updated_at
-}
-
-enum StixMetaRelationshipsFilter {
-  created_at
-}
-
-input StixMetaRelationshipsFiltering {
-  key: [StixMetaRelationshipsFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type StixMetaRelationshipConnection {
-  pageInfo: PageInfo!
-  edges: [StixMetaRelationshipEdge]
-}
-
-type StixMetaRelationshipEdge {
-  cursor: String!
-  node: StixMetaRelationship!
-}
-
-type StixMetaRelationship implements BasicRelationship & StixRelationship {
-  id: ID!
-  entity_type: String!
-  parent_types: [String]!
-  fromRole: String
-  toRole: String
-  created_at: DateTime!
-  updated_at: DateTime!
-  standard_id: String!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  from: StixObjectOrStixRelationship!
-  to: StixObjectOrStixRelationship!
-  x_opencti_inferences: [Inference]
-  creators: [Creator!]
-}
-
-input StixMetaRelationshipAddInput {
+input StixRefRelationshipsAddInput {
   relationship_type: String!
-  fromId: ID
-  toId: ID
-}
-
-input StixMetaRelationshipsAddInput {
-  relationship_type: String!
-  fromIds: [ID]
-  toIds: [ID]
+  fromIds: [StixRef]
+  toIds: [StixRef]
 }
 
 type Query {
@@ -7748,10 +7676,6 @@ type Query {
   stixCyberObservablesNumber(types: [String], authorId: String, endDate: DateTime, filters: [StixCyberObservablesFiltering], filterMode: FilterMode, search: String): Number
   stixCyberObservablesTimeSeries(types: [String], filters: [StixCyberObservablesFiltering], filterMode: FilterMode, search: String): [TimeSeries]
   stixCyberObservablesDistribution(objectId: String, field: String!, dateAttribute: String, operation: String!, filters: [StixCyberObservablesFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixMetaRelationship(id: String): StixMetaRelationship
-  stixMetaRelationships(first: Int, after: ID, orderBy: StixMetaRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixMetaRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixMetaRelationshipConnection
-  stixMetaRelationshipsDistribution(field: String!, operation: StatsOperation!, relationship_type: [String], toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String, isTo: Boolean): [Distribution]
-  stixMetaRelationshipsNumber(types: [String], fromId: StixRef, endDate: DateTime): Number
   stixRelationship(id: String): StixRelationship
   stixRelationships(first: Int, after: ID, orderBy: StixRelationshipsOrdering, orderMode: OrderingMode, elementId: String, elementWithTargetTypes: [String], fromId: StixRef, fromRole: String, fromTypes: [String], toId: StixRef, toRole: String, toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, startDate: DateTime, endDate: DateTime, confidences: [Int], search: String, filters: [StixRelationshipsFiltering], filterMode: FilterMode, stix: Boolean): StixRelationshipConnection
   stixCoreRelationship(id: String): StixCoreRelationship
@@ -7766,11 +7690,11 @@ type Query {
   stixSightingRelationshipsTimeSeries(elementId: String, fromId: StixRef, toId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, fromTypes: [String], toTypes: [String], search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode): [TimeSeries]
   stixSightingRelationshipsDistribution(elementId: String, fromId: StixRef, toId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String, fromTypes: [String], toTypes: [String], search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode): [Distribution]
   stixSightingRelationshipsNumber(elementId: String, fromId: StixRef, toId: StixRef, endDate: DateTime, fromTypes: [String], toTypes: [String], search: String, filters: [StixSightingRelationshipsFiltering], filterMode: FilterMode): Number
-  stixCyberObservableRelationship(id: String): StixCyberObservableRelationship
-  stixCyberObservableRelationships(first: Int, after: ID, orderBy: StixCyberObservableRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: [StixCyberObservableRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixCyberObservableRelationshipConnection
-  stixCyberObservableRelationshipsTimeSeries(fromId: StixRef, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!): [TimeSeries]
-  stixCyberObservableRelationshipsDistribution(fromId: StixRef!, field: String!, operation: StatsOperation!, toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String): [Distribution]
-  stixCyberObservableRelationshipsNumber(fromId: StixRef, endDate: DateTime): Number
+  stixRefRelationship(id: String): StixRefRelationship
+  stixRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: [StixRefRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixRefRelationshipConnection
+  stixNestedRefRelationships(first: Int, after: ID, orderBy: StixRefRelationshipsOrdering, orderMode: OrderingMode, elementId: String, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: [String], startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, search: String, filters: [StixRefRelationshipsFiltering], filterMode: FilterMode, toStix: Boolean): StixRefRelationshipConnection
+  stixSchemaRefRelationships(id: String, toType: String): DefinitionRefRelationship
+  stixRefRelationshipsDistribution(field: String!, operation: StatsOperation!, relationship_type: [String], toTypes: [String], startDate: DateTime, endDate: DateTime, dateAttribute: String, limit: Int, order: String, isTo: Boolean): [Distribution]
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship
   stixCoreObjectOrStixCoreRelationship(id: String!): StixCoreObjectOrStixCoreRelationship
   channel(id: String!): Channel
@@ -7830,7 +7754,7 @@ type Subscription {
   stixCyberObservable(id: ID!): StixCyberObservable
   stixCoreRelationship(id: ID!): StixCoreRelationship
   stixSightingRelationship(id: ID!): StixSightingRelationship
-  stixCyberObservableRelationship(id: ID!): StixCyberObservableRelationship
+  stixRefRelationship(id: ID!): StixRefRelationship
   externalReference(id: ID!): ExternalReference
   notification: Notification
   notificationsNumber: NotificationCount
@@ -7896,8 +7820,8 @@ type AttributeEditMutations {
 type WorkspaceEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): Workspace
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationsAdd(input: StixMetaRelationshipsAddInput): Workspace
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!): Workspace
   relationDelete(toId: StixRef!, relationship_type: String!): Workspace
   relationsDelete(toIds: [String]!, relationship_type: String!): Workspace
   contextPatch(input: EditContext): Workspace
@@ -7945,7 +7869,7 @@ type ExternalReferenceEditMutations {
   fieldPatch(input: [EditInput]!): ExternalReference
   contextPatch(input: EditContext): ExternalReference
   contextClean: ExternalReference
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(fromId: StixRef!, relationship_type: String!): ExternalReference
   askEnrichment(connectorId: ID!): Work
   importPush(file: Upload!, noTriggerImport: Boolean): File
@@ -7956,14 +7880,14 @@ type KillChainPhaseEditMutations {
   fieldPatch(input: [EditInput]!): KillChainPhase
   contextPatch(input: EditContext): KillChainPhase
   contextClean: KillChainPhase
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): KillChainPhase
 }
 
 type StixCoreObjectEditMutations {
   delete: ID
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationsAdd(input: StixMetaRelationshipsAddInput): StixCoreObject
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!): StixCoreObject
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
@@ -7979,8 +7903,8 @@ type StixDomainObjectEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixDomainObject
   contextPatch(input: EditContext): StixDomainObject
   contextClean: StixDomainObject
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationsAdd(input: StixMetaRelationshipsAddInput): StixDomainObject
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!): StixDomainObject
   relationDelete(toId: StixRef!, relationship_type: String): StixDomainObject
   importPush(file: Upload!, noTriggerImport: Boolean): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
@@ -7992,7 +7916,7 @@ type AttackPatternEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): AttackPattern
   contextPatch(input: EditContext): AttackPattern
   contextClean: AttackPattern
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): AttackPattern
 }
 
@@ -8001,7 +7925,7 @@ type CampaignEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Campaign
   contextPatch(input: EditContext): Campaign
   contextClean: Campaign
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Campaign
 }
 
@@ -8010,7 +7934,7 @@ type ContainerEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Container
   contextPatch(input: EditContext): Container
   contextClean: Container
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Container
 }
 
@@ -8019,7 +7943,7 @@ type NoteEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Note
   contextPatch(input: EditContext): Note
   contextClean: Note
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Note
 }
 
@@ -8028,7 +7952,7 @@ type ObservedDataEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ObservedData
   contextPatch(input: EditContext): ObservedData
   contextClean: ObservedData
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): ObservedData
 }
 
@@ -8037,7 +7961,7 @@ type OpinionEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion
   contextPatch(input: EditContext): Opinion
   contextClean: Opinion
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Opinion
 }
 
@@ -8046,7 +7970,7 @@ type ReportEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report
   contextPatch(input: EditContext): Report
   contextClean: Report
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Report
 }
 
@@ -8055,7 +7979,7 @@ type CourseOfActionEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): CourseOfAction
   contextPatch(input: EditContext): CourseOfAction
   contextClean: CourseOfAction
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): CourseOfAction
 }
 
@@ -8064,7 +7988,7 @@ type IdentityEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Identity
   contextPatch(input: EditContext): Identity
   contextClean: Identity
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Identity
 }
 
@@ -8073,7 +7997,7 @@ type IndividualEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Individual
   contextPatch(input: EditContext): Individual
   contextClean: Individual
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Individual
 }
 
@@ -8082,7 +8006,7 @@ type OrganizationEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Organization
   contextPatch(input: EditContext): Organization
   contextClean: Organization
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Organization
 }
 
@@ -8091,7 +8015,7 @@ type SectorEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Sector
   contextPatch(input: EditContext): Sector
   contextClean: Sector
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Sector
 }
 
@@ -8100,7 +8024,7 @@ type SystemEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): System
   contextPatch(input: EditContext): System
   contextClean: System
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): System
 }
 
@@ -8109,7 +8033,7 @@ type IndicatorEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Indicator
   contextPatch(input: EditContext): Indicator
   contextClean: Indicator
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Indicator
 }
 
@@ -8118,7 +8042,7 @@ type InfrastructureEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Infrastructure
   contextPatch(input: EditContext): Infrastructure
   contextClean: Infrastructure
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Infrastructure
 }
 
@@ -8127,7 +8051,7 @@ type IntrusionSetEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): IntrusionSet
   contextPatch(input: EditContext): IntrusionSet
   contextClean: IntrusionSet
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): IntrusionSet
 }
 
@@ -8136,7 +8060,7 @@ type LocationEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Location
   contextPatch(input: EditContext): Location
   contextClean: Location
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Location
 }
 
@@ -8145,7 +8069,7 @@ type CityEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): City
   contextPatch(input: EditContext): City
   contextClean: City
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): City
 }
 
@@ -8154,7 +8078,7 @@ type CountryEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Country
   contextPatch(input: EditContext): Country
   contextClean: Country
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Country
 }
 
@@ -8163,7 +8087,7 @@ type RegionEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Region
   contextPatch(input: EditContext): Region
   contextClean: Region
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Region
 }
 
@@ -8172,7 +8096,7 @@ type PositionEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Position
   contextPatch(input: EditContext): Position
   contextClean: Position
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Position
 }
 
@@ -8181,7 +8105,7 @@ type MalwareEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Malware
   contextPatch(input: EditContext): Malware
   contextClean: Malware
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Malware
 }
 
@@ -8190,7 +8114,7 @@ type ThreatActorEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): ThreatActor
   contextPatch(input: EditContext): ThreatActor
   contextClean: ThreatActor
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): ThreatActor
 }
 
@@ -8199,7 +8123,7 @@ type ToolEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Tool
   contextPatch(input: EditContext): Tool
   contextClean: Tool
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Tool
 }
 
@@ -8208,7 +8132,7 @@ type VulnerabilityEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Vulnerability
   contextPatch(input: EditContext): Vulnerability
   contextClean: Vulnerability
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Vulnerability
 }
 
@@ -8217,7 +8141,7 @@ type IncidentEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Incident
   contextPatch(input: EditContext): Incident
   contextClean: Incident
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Incident
 }
 
@@ -8226,8 +8150,8 @@ type StixCyberObservableEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCyberObservable
   contextPatch(input: EditContext): StixCyberObservable
   contextClean: StixCyberObservable
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
-  relationsAdd(input: StixMetaRelationshipsAddInput): StixCyberObservable
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!): StixCyberObservable
   relationDelete(toId: StixRef!, relationship_type: String!): StixCyberObservable
   promote: StixCyberObservable
   importPush(file: Upload!, noTriggerImport: Boolean): File
@@ -8244,7 +8168,7 @@ type StixCoreRelationshipEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixCoreRelationship
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship
@@ -8255,17 +8179,16 @@ type StixSightingRelationshipEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixSightingRelationship
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship
 }
 
-type StixCyberObservableRelationshipEditMutations {
+type StixRefRelationshipEditMutations {
   delete: ID
-  fieldPatch(input: [EditInput]!): StixCyberObservableRelationship
-  contextPatch(input: EditContext): StixCyberObservableRelationship
-  contextClean: StixCyberObservableRelationship
+  fieldPatch(input: [EditInput]!): StixRefRelationship
+  contextPatch(input: EditContext): StixRefRelationship
 }
 
 type Mutation {
@@ -8410,8 +8333,8 @@ type Mutation {
   stixCoreRelationshipsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode, selectedIds: [String]): FileConnection
   stixCoreRelationshipDelete(fromId: StixRef!, toId: StixRef!, relationship_type: String!): Boolean!
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
-  stixCyberObservableRelationshipAdd(input: StixCyberObservableRelationshipAddInput): StixCyberObservableRelationship
-  stixCyberObservableRelationshipEdit(id: ID!): StixCyberObservableRelationshipEditMutations
+  stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
+  stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
   stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   channelAdd(input: ChannelAddInput!): Channel
@@ -8419,35 +8342,35 @@ type Mutation {
   channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel
   channelContextPatch(id: ID!, input: EditContext!): Channel
   channelContextClean(id: ID!): Channel
-  channelRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
   languageAdd(input: LanguageAddInput!): Language
   languageDelete(id: ID!): ID
   languageFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Language
   languageContextPatch(id: ID!, input: EditContext!): Language
   languageContextClean(id: ID!): Language
-  languageRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  languageRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   languageRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Language
   eventAdd(input: EventAddInput!): Event
   eventDelete(id: ID!): ID
   eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event
   eventContextPatch(id: ID!, input: EditContext!): Event
   eventContextClean(id: ID!): Event
-  eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  eventRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event
   groupingAdd(input: GroupingAddInput!): Grouping
   groupingDelete(id: ID!): ID
   groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping
   groupingContextPatch(id: ID!, input: EditContext): Grouping
   groupingContextClean(id: ID!): Grouping
-  groupingRelationAdd(id: ID!, input: StixMetaRelationshipAddInput): StixMetaRelationship
+  groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship
   groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping
   narrativeAdd(input: NarrativeAddInput!): Narrative
   narrativeDelete(id: ID!): ID
   narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative
   narrativeContextPatch(id: ID!, input: EditContext!): Narrative
   narrativeContextClean(id: ID!): Narrative
-  narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative
   triggerDelete(id: ID!): ID
   triggerFieldPatch(id: ID!, input: [EditInput!]!): Trigger
@@ -8460,14 +8383,14 @@ type Mutation {
   dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent
   dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent
   dataComponentContextClean(id: ID!): DataComponent
-  dataComponentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  dataComponentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent
   dataSourceAdd(input: DataSourceAddInput!): DataSource
   dataSourceDelete(id: ID!): ID
   dataSourceFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataSource
   dataSourceContextPatch(id: ID!, input: EditContext!): DataSource
   dataSourceContextClean(id: ID!): DataSource
-  dataSourceRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  dataSourceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   dataSourceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataSource
   dataSourceDataComponentAdd(id: ID!, dataComponentId: ID!): DataSource
   dataSourceDataComponentDelete(id: ID!, dataComponentId: ID!): DataSource
@@ -8479,10 +8402,10 @@ type Mutation {
   administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea
   administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea
   administrativeAreaContextClean(id: ID!): AdministrativeArea
-  administrativeAreaRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
   caseDelete(id: ID!): ID
-  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  caseRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case
   caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case
   caseContextPatch(id: ID!, input: EditContext!): Case

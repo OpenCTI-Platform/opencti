@@ -3,7 +3,7 @@ import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import type { Context, Span, Tracer } from '@opentelemetry/api';
 import { context as telemetryContext, trace } from '@opentelemetry/api';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
-import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';

@@ -7,6 +7,7 @@ import { ENTITY_TYPE_DATA_SOURCE } from '../../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSource> = {
   type: {
@@ -37,6 +38,9 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
+  relationsRefs: [
+    objectOrganization
+  ],
   representative: (stix: StixDataSource) => {
     return stix.name;
   },

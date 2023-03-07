@@ -103,7 +103,7 @@ const feedbackEditionOverviewFragment = graphql`
 const feedbackMutationRelationAdd = graphql`
   mutation FeedbackEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     feedbackRelationAdd(id: $id, input: $input) {
       from {

@@ -46,7 +46,7 @@ export const administrativeAreaEditionOverviewFocus = graphql`
 const administrativeAreaMutationRelationAdd = graphql`
     mutation AdministrativeAreaEditionOverviewRelationAddMutation(
         $id: ID!
-        $input: StixMetaRelationshipAddInput!
+        $input: StixRefRelationshipAddInput!
     ) {
         administrativeAreaRelationAdd(id: $id, input: $input) {
             id

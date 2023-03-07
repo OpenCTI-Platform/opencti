@@ -198,6 +198,6 @@ type Mutation {
     administrativeAreaFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
     administrativeAreaContextPatch(id: ID!, input: EditContext!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
     administrativeAreaContextClean(id: ID!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
-    administrativeAreaRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea @auth(for: [KNOWLEDGE_KNUPDATE])
 }

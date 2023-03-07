@@ -52,7 +52,7 @@ export const courseOfActionEditionOverviewFocus = graphql`
 const courseOfActionMutationRelationAdd = graphql`
   mutation CourseOfActionEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     courseOfActionEdit(id: $id) {
       relationAdd(input: $input) {

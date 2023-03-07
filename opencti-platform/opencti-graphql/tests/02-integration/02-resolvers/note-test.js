@@ -196,7 +196,7 @@ describe('Note resolver standard behavior', () => {
   });
   it('should add relation in note', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation NoteEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         noteEdit(id: $id) {
           relationAdd(input: $input) {
             id

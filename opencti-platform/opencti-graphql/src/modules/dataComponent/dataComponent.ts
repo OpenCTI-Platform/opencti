@@ -15,6 +15,7 @@ import { ATTRIBUTE_DATA_SOURCE, RELATION_DATA_SOURCE } from './dataComponent-dom
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, StixDataComponent> = {
   type: {
@@ -61,7 +62,8 @@ const DATA_COMPONENT_DEFINITION: ModuleDefinition<StoreEntityDataComponent, Stix
       mandatoryType: 'no',
       multiple: false,
       checker: (fromType, toType) => toType === ENTITY_TYPE_DATA_SOURCE
-    }
+    },
+    objectOrganization
   ],
   representative: (stix: StixDataComponent) => {
     return stix.name;

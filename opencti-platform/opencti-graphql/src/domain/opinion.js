@@ -9,7 +9,7 @@ import { internalLoadById, listEntities, storeLoadById } from '../database/middl
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_OPINION } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';

@@ -7,7 +7,7 @@ import {
   stixDomainObjectDeleteRelation,
   stixDomainObjectDelete,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { ENTITY_TYPE_LOCATION_ADMINISTRATIVE_AREA } from '../modules/administrativeArea/administrativeArea-types';
 

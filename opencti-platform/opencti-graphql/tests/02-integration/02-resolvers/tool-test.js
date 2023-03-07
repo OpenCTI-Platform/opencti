@@ -155,7 +155,7 @@ describe('Tool resolver standard behavior', () => {
   });
   it('should add relation in tool', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ToolEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation ToolEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         toolEdit(id: $id) {
           relationAdd(input: $input) {
             id

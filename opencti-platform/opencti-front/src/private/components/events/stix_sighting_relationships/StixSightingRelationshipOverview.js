@@ -633,7 +633,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               entity_type
               parent_types
             }
-            ... on StixMetaRelationship {
+            ... on StixRefRelationship {
               from {
                 ... on BasicObject {
                   id

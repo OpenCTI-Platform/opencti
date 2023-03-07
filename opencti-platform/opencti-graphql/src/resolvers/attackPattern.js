@@ -17,7 +17,7 @@ import {
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
 import { batchKillChainPhases } from '../domain/stixCoreObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { batchLoader } from '../database/middleware';
 import { RELATION_MITIGATES } from '../schema/stixCoreRelationship';

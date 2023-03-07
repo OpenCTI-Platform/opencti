@@ -647,7 +647,7 @@ export const buildCorrelationData = (
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
-        parent_types: ['basic-relationship', 'stix-meta-relationship'],
+        parent_types: ['basic-relationship'],
         entity_type: 'basic-relationship',
         relationship_type: 'reported-in',
         source: n.id,
@@ -663,6 +663,7 @@ export const buildCorrelationData = (
         defaultDate: jsDate(defaultDate(n)),
         markedBy: n.markedBy,
         createdBy: n.createdBy,
+        datable: true,
       }),
       R.filter(
         (m) => m
@@ -797,7 +798,7 @@ export const buildCaseCorrelationData = (
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
-        parent_types: ['basic-relationship', 'stix-meta-relationship'],
+        parent_types: ['basic-relationship'],
         entity_type: 'basic-relationship',
         relationship_type: 'caseed-in',
         source: n.id,
@@ -813,6 +814,7 @@ export const buildCaseCorrelationData = (
         defaultDate: jsDate(defaultDate(n)),
         markedBy: n.markedBy,
         createdBy: n.createdBy,
+        datable: true,
       }),
       R.filter(
         (m) => m
@@ -992,6 +994,7 @@ export const buildGraphData = (objects, graphData, t) => {
         !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
           ? n.createdBy
           : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
+      datable: n.datable,
     })),
   )(objects);
   const nestedLinks = R.pipe(

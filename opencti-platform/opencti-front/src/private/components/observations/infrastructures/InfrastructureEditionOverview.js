@@ -63,7 +63,7 @@ export const infrastructureEditionOverviewFocus = graphql`
 const infrastructureMutationRelationAdd = graphql`
   mutation InfrastructureEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     infrastructureEdit(id: $id) {
       relationAdd(input: $input) {

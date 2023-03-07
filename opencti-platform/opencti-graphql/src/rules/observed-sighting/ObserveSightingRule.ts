@@ -3,7 +3,7 @@ import { createInferredRelation, deleteInferredRuleElement, stixLoadById, } from
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import def from './ObserveSightingDefinition';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
 import { createRuleContent } from '../rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';

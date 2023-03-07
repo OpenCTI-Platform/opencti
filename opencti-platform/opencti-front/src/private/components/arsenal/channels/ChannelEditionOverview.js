@@ -49,7 +49,7 @@ export const channelEditionOverviewFocus = graphql`
 const channelMutationRelationAdd = graphql`
   mutation ChannelEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     channelRelationAdd(id: $id, input: $input) {
       from {

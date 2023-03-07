@@ -3,7 +3,7 @@ import {
   RELATION_CREATED_BY, RELATION_EXTERNAL_REFERENCE, RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
-} from './stixMetaRelationship';
+} from './stixRefRelationship';
 import { RELATION_RELATED_TO } from './stixCoreRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
 

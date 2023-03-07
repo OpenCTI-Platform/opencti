@@ -370,7 +370,7 @@ describe('Report resolver standard behavior', () => {
   });
   it('should add relation in report', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ReportEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation ReportEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         reportEdit(id: $id) {
           relationAdd(input: $input) {
             id

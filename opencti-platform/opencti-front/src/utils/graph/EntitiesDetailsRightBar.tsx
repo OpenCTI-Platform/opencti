@@ -13,6 +13,7 @@ import { OpenInNewOutlined } from '@mui/icons-material';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
 import { useFormatter } from '../../components/i18n';
+import { isStixNestedRefRelationship } from '../Relation';
 
 const useStyles = makeStyles<Theme>(() => ({
   drawerPaper: {
@@ -38,6 +39,7 @@ export interface SelectedEntity {
   label: string;
   relationship_type?: string;
   entity_type: string;
+  parent_types: string[];
   source?: SelectedEntity;
   target?: SelectedEntity;
   fromId?: string;
@@ -123,16 +125,19 @@ EntityDetailsRightsBarProps
             ))}
           </Select>
         </FormControl>
-        <div className={classes.external}>
-          <IconButton
-            component={Link}
-            target="_blank"
-            to={`/dashboard/id/${selectedEntity.id}`}
-            size="medium"
-          >
-            <OpenInNewOutlined fontSize="medium" />
-          </IconButton>
-        </div>
+        {/* Need to be handle */}
+        { !selectedEntity.parent_types.some((el) => isStixNestedRefRelationship(el))
+          && <div className={classes.external}>
+            <IconButton
+              component={Link}
+              target="_blank"
+              to={`/dashboard/id/${selectedEntity.id}`}
+              size="medium"
+            >
+              <OpenInNewOutlined fontSize="medium" />
+            </IconButton>
+          </div>
+        }
       </div>
       <div className="clearfix" />
       <div

@@ -203,6 +203,6 @@ type Mutation {
     dataComponentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
     dataComponentContextPatch(id: ID!, input: EditContext!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
     dataComponentContextClean(id: ID!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
-    dataComponentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    dataComponentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     dataComponentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): DataComponent @auth(for: [KNOWLEDGE_KNUPDATE])
 }

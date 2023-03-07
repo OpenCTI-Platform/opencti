@@ -74,7 +74,7 @@ const styles = () => ({
 const stixCoreObjectMutationRelationsAdd = graphql`
   mutation StixCoreObjectLabelsViewRelationsAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipsAddInput!
+    $input: StixRefRelationshipsAddInput!
   ) {
     stixCoreObjectEdit(id: $id) {
       relationsAdd(input: $input) {

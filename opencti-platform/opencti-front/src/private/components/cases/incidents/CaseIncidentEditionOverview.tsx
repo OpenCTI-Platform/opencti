@@ -113,7 +113,7 @@ const caseIncidentEditionOverviewFragment = graphql`
 const caseIncidentMutationRelationAdd = graphql`
   mutation CaseIncidentEditionOverviewCaseRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     caseRelationAdd(id: $id, input: $input) {
       from {

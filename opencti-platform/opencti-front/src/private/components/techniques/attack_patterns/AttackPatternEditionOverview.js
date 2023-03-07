@@ -53,7 +53,7 @@ export const attackPatternEditionOverviewFocus = graphql`
 const attackPatternMutationRelationAdd = graphql`
   mutation AttackPatternEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     attackPatternEdit(id: $id) {
       relationAdd(input: $input) {

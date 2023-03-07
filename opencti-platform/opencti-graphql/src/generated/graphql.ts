@@ -368,7 +368,6 @@ export type Artifact = BasicObject & HashedObservable & StixCoreObject & StixCyb
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   url?: Maybe<Scalars['String']>;
@@ -507,31 +506,6 @@ export type ArtifactStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type ArtifactStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -792,7 +766,7 @@ export type AttackPatternEditMutations = {
   contextPatch?: Maybe<AttackPattern>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<AttackPattern>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<AttackPattern>;
 };
 
@@ -810,7 +784,7 @@ export type AttackPatternEditMutationsFieldPatchArgs = {
 
 
 export type AttackPatternEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -923,7 +897,6 @@ export type AutonomousSystem = BasicObject & StixCoreObject & StixCyberObservabl
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -1063,31 +1036,6 @@ export type AutonomousSystemStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type AutonomousSystemStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type AutonomousSystemAddInput = {
   name?: InputMaybe<Scalars['String']>;
   number: Scalars['Int'];
@@ -1129,7 +1077,6 @@ export type BankAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -1267,31 +1214,6 @@ export type BankAccountStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type BankAccountStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -1539,7 +1461,7 @@ export type CampaignEditMutations = {
   contextPatch?: Maybe<Campaign>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Campaign>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Campaign>;
 };
 
@@ -1557,7 +1479,7 @@ export type CampaignEditMutationsFieldPatchArgs = {
 
 
 export type CampaignEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -2684,7 +2606,7 @@ export type CityEditMutations = {
   contextPatch?: Maybe<City>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<City>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<City>;
 };
 
@@ -2702,7 +2624,7 @@ export type CityEditMutationsFieldPatchArgs = {
 
 
 export type CityEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -2944,7 +2866,7 @@ export type ContainerEditMutations = {
   contextPatch?: Maybe<Container>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Container>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Container>;
 };
 
@@ -2962,7 +2884,7 @@ export type ContainerEditMutationsFieldPatchArgs = {
 
 
 export type ContainerEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -3274,7 +3196,7 @@ export type CountryEditMutations = {
   contextPatch?: Maybe<Country>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Country>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Country>;
 };
 
@@ -3292,7 +3214,7 @@ export type CountryEditMutationsFieldPatchArgs = {
 
 
 export type CountryEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -3518,7 +3440,7 @@ export type CourseOfActionEditMutations = {
   contextPatch?: Maybe<CourseOfAction>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<CourseOfAction>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<CourseOfAction>;
 };
 
@@ -3536,7 +3458,7 @@ export type CourseOfActionEditMutationsFieldPatchArgs = {
 
 
 export type CourseOfActionEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -3630,7 +3552,6 @@ export type CryptocurrencyWallet = BasicObject & StixCoreObject & StixCyberObser
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -3771,31 +3692,6 @@ export type CryptocurrencyWalletStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type CryptocurrencyWalletStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type CryptocurrencyWalletAddInput = {
   value?: InputMaybe<Scalars['String']>;
 };
@@ -3832,7 +3728,6 @@ export type CryptographicKey = BasicObject & StixCoreObject & StixCyberObservabl
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -3970,31 +3865,6 @@ export type CryptographicKeyStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type CryptographicKeyStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -4487,6 +4357,13 @@ export enum DataSourcesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DefinitionRefRelationship = {
+  __typename?: 'DefinitionRefRelationship';
+  entity: StixObjectOrStixRelationship;
+  from?: Maybe<Array<Scalars['String']>>;
+  to?: Maybe<Array<Scalars['String']>>;
+};
+
 /** Dependency information containing the name and the deployed version. */
 export type DependencyVersion = {
   __typename?: 'DependencyVersion';
@@ -4549,7 +4426,6 @@ export type Directory = BasicObject & StixCoreObject & StixCyberObservable & Sti
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -4689,31 +4565,6 @@ export type DirectoryStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type DirectoryStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type DirectoryAddInput = {
   atime?: InputMaybe<Scalars['DateTime']>;
   ctime?: InputMaybe<Scalars['DateTime']>;
@@ -4784,7 +4635,6 @@ export type DomainName = BasicObject & StixCoreObject & StixCyberObservable & St
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -4925,31 +4775,6 @@ export type DomainNameStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type DomainNameStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type DomainNameAddInput = {
   value: Scalars['String'];
 };
@@ -5017,7 +4842,6 @@ export type EmailAddr = BasicObject & StixCoreObject & StixCyberObservable & Sti
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -5158,31 +4982,6 @@ export type EmailAddrStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type EmailAddrStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type EmailAddrAddInput = {
   display_name?: InputMaybe<Scalars['String']>;
   value?: InputMaybe<Scalars['String']>;
@@ -5226,7 +5025,6 @@ export type EmailMessage = BasicObject & StixCoreObject & StixCyberObservable & 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   subject?: Maybe<Scalars['String']>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
@@ -5367,31 +5165,6 @@ export type EmailMessageStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type EmailMessageStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type EmailMessageAddInput = {
   attribute_date?: InputMaybe<Scalars['DateTime']>;
   body?: InputMaybe<Scalars['String']>;
@@ -5437,7 +5210,6 @@ export type EmailMimePartType = BasicObject & StixCoreObject & StixCyberObservab
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -5574,31 +5346,6 @@ export type EmailMimePartTypeStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type EmailMimePartTypeStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -5996,7 +5743,7 @@ export type ExternalReferenceEditMutations = {
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<ExternalReference>;
   importPush?: Maybe<File>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<ExternalReference>;
 };
 
@@ -6023,7 +5770,7 @@ export type ExternalReferenceEditMutationsImportPushArgs = {
 
 
 export type ExternalReferenceEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -6842,7 +6589,6 @@ export type HashedObservable = {
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -6981,31 +6727,6 @@ export type HashedObservableStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type HashedObservableStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'Hostname';
   cases?: Maybe<CaseConnection>;
@@ -7038,7 +6759,6 @@ export type Hostname = BasicObject & StixCoreObject & StixCyberObservable & Stix
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -7179,31 +6899,6 @@ export type HostnameStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type HostnameStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type HostnameAddInput = {
   value?: InputMaybe<Scalars['String']>;
 };
@@ -7241,7 +6936,6 @@ export type IPv4Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -7382,31 +7076,6 @@ export type IPv4AddrStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type IPv4AddrStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type IPv4AddrAddInput = {
   belongsTo?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   resolvesTo?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -7446,7 +7115,6 @@ export type IPv6Addr = BasicObject & StixCoreObject & StixCyberObservable & Stix
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -7584,31 +7252,6 @@ export type IPv6AddrStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type IPv6AddrStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -7866,7 +7509,7 @@ export type IdentityEditMutations = {
   contextPatch?: Maybe<Identity>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Identity>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Identity>;
 };
 
@@ -7884,7 +7527,7 @@ export type IdentityEditMutationsFieldPatchArgs = {
 
 
 export type IdentityEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -8125,7 +7768,7 @@ export type IncidentEditMutations = {
   contextPatch?: Maybe<Incident>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Incident>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Incident>;
 };
 
@@ -8143,7 +7786,7 @@ export type IncidentEditMutationsFieldPatchArgs = {
 
 
 export type IncidentEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -8438,7 +8081,7 @@ export type IndicatorEditMutations = {
   contextPatch?: Maybe<Indicator>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Indicator>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Indicator>;
 };
 
@@ -8456,7 +8099,7 @@ export type IndicatorEditMutationsFieldPatchArgs = {
 
 
 export type IndicatorEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -8743,7 +8386,7 @@ export type IndividualEditMutations = {
   contextPatch?: Maybe<Individual>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Individual>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Individual>;
 };
 
@@ -8761,7 +8404,7 @@ export type IndividualEditMutationsFieldPatchArgs = {
 
 
 export type IndividualEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -9040,7 +8683,7 @@ export type InfrastructureEditMutations = {
   contextPatch?: Maybe<Infrastructure>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Infrastructure>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Infrastructure>;
 };
 
@@ -9058,7 +8701,7 @@ export type InfrastructureEditMutationsFieldPatchArgs = {
 
 
 export type InfrastructureEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -9362,7 +9005,7 @@ export type IntrusionSetEditMutations = {
   contextPatch?: Maybe<IntrusionSet>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<IntrusionSet>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<IntrusionSet>;
 };
 
@@ -9380,7 +9023,7 @@ export type IntrusionSetEditMutationsFieldPatchArgs = {
 
 
 export type IntrusionSetEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -9474,7 +9117,7 @@ export type KillChainPhaseEditMutations = {
   contextPatch?: Maybe<KillChainPhase>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<KillChainPhase>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<KillChainPhase>;
 };
 
@@ -9490,7 +9133,7 @@ export type KillChainPhaseEditMutationsFieldPatchArgs = {
 
 
 export type KillChainPhaseEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -10076,7 +9719,7 @@ export type LocationEditMutations = {
   contextPatch?: Maybe<Location>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Location>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Location>;
 };
 
@@ -10094,7 +9737,7 @@ export type LocationEditMutationsFieldPatchArgs = {
 
 
 export type LocationEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -10224,7 +9867,6 @@ export type MacAddr = BasicObject & StixCoreObject & StixCyberObservable & StixO
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -10362,31 +10004,6 @@ export type MacAddrStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MacAddrStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -10623,7 +10240,7 @@ export type MalwareEditMutations = {
   contextPatch?: Maybe<Malware>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Malware>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Malware>;
 };
 
@@ -10641,7 +10258,7 @@ export type MalwareEditMutationsFieldPatchArgs = {
 
 
 export type MalwareEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -10860,7 +10477,6 @@ export type MediaContent = BasicObject & StixCoreObject & StixCyberObservable & 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   title?: Maybe<Scalars['String']>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
@@ -11002,31 +10618,6 @@ export type MediaContentStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type MediaContentStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type MediaContentAddInput = {
   content?: InputMaybe<Scalars['String']>;
   media_category?: InputMaybe<Scalars['String']>;
@@ -11065,7 +10656,7 @@ export type Mutation = {
   administrativeAreaContextPatch?: Maybe<AdministrativeArea>;
   administrativeAreaDelete?: Maybe<Scalars['ID']>;
   administrativeAreaFieldPatch?: Maybe<AdministrativeArea>;
-  administrativeAreaRelationAdd?: Maybe<StixMetaRelationship>;
+  administrativeAreaRelationAdd?: Maybe<StixRefRelationship>;
   administrativeAreaRelationDelete?: Maybe<AdministrativeArea>;
   artifactImport?: Maybe<Artifact>;
   askJobImport?: Maybe<File>;
@@ -11086,14 +10677,14 @@ export type Mutation = {
   caseIncidentFieldPatch?: Maybe<CaseIncident>;
   caseIncidentRelationAdd?: Maybe<StixMetaRelationship>;
   caseIncidentRelationDelete?: Maybe<CaseIncident>;
-  caseRelationAdd?: Maybe<StixMetaRelationship>;
+  caseRelationAdd?: Maybe<StixRefRelationship>;
   caseRelationDelete?: Maybe<Case>;
   channelAdd?: Maybe<Channel>;
   channelContextClean?: Maybe<Channel>;
   channelContextPatch?: Maybe<Channel>;
   channelDelete?: Maybe<Scalars['ID']>;
   channelFieldPatch?: Maybe<Channel>;
-  channelRelationAdd?: Maybe<StixMetaRelationship>;
+  channelRelationAdd?: Maybe<StixRefRelationship>;
   channelRelationDelete?: Maybe<Channel>;
   cityAdd?: Maybe<City>;
   cityEdit?: Maybe<CityEditMutations>;
@@ -11107,7 +10698,7 @@ export type Mutation = {
   dataComponentContextPatch?: Maybe<DataComponent>;
   dataComponentDelete?: Maybe<Scalars['ID']>;
   dataComponentFieldPatch?: Maybe<DataComponent>;
-  dataComponentRelationAdd?: Maybe<StixMetaRelationship>;
+  dataComponentRelationAdd?: Maybe<StixRefRelationship>;
   dataComponentRelationDelete?: Maybe<DataComponent>;
   dataSourceAdd?: Maybe<DataSource>;
   dataSourceContextClean?: Maybe<DataSource>;
@@ -11116,7 +10707,7 @@ export type Mutation = {
   dataSourceDataComponentDelete?: Maybe<DataSource>;
   dataSourceDelete?: Maybe<Scalars['ID']>;
   dataSourceFieldPatch?: Maybe<DataSource>;
-  dataSourceRelationAdd?: Maybe<StixMetaRelationship>;
+  dataSourceRelationAdd?: Maybe<StixRefRelationship>;
   dataSourceRelationDelete?: Maybe<DataSource>;
   deleteConnector: Scalars['ID'];
   deleteImport?: Maybe<Scalars['Boolean']>;
@@ -11127,7 +10718,7 @@ export type Mutation = {
   eventContextPatch?: Maybe<Event>;
   eventDelete?: Maybe<Scalars['ID']>;
   eventFieldPatch?: Maybe<Event>;
-  eventRelationAdd?: Maybe<StixMetaRelationship>;
+  eventRelationAdd?: Maybe<StixRefRelationship>;
   eventRelationDelete?: Maybe<Event>;
   externalReferenceAdd?: Maybe<ExternalReference>;
   externalReferenceEdit?: Maybe<ExternalReferenceEditMutations>;
@@ -11148,7 +10739,7 @@ export type Mutation = {
   groupingContextPatch?: Maybe<Grouping>;
   groupingDelete?: Maybe<Scalars['ID']>;
   groupingFieldPatch?: Maybe<Grouping>;
-  groupingRelationAdd?: Maybe<StixMetaRelationship>;
+  groupingRelationAdd?: Maybe<StixRefRelationship>;
   groupingRelationDelete?: Maybe<Grouping>;
   identityAdd?: Maybe<Identity>;
   identityEdit?: Maybe<IdentityEditMutations>;
@@ -11171,7 +10762,7 @@ export type Mutation = {
   languageContextPatch?: Maybe<Language>;
   languageDelete?: Maybe<Scalars['ID']>;
   languageFieldPatch?: Maybe<Language>;
-  languageRelationAdd?: Maybe<StixMetaRelationship>;
+  languageRelationAdd?: Maybe<StixRefRelationship>;
   languageRelationDelete?: Maybe<Language>;
   listTaskAdd: Task;
   locationAdd?: Maybe<Location>;
@@ -11188,7 +10779,7 @@ export type Mutation = {
   narrativeContextPatch?: Maybe<Narrative>;
   narrativeDelete?: Maybe<Scalars['ID']>;
   narrativeFieldPatch?: Maybe<Narrative>;
-  narrativeRelationAdd?: Maybe<StixMetaRelationship>;
+  narrativeRelationAdd?: Maybe<StixRefRelationship>;
   narrativeRelationDelete?: Maybe<Narrative>;
   noteAdd?: Maybe<Note>;
   noteEdit?: Maybe<NoteEditMutations>;
@@ -11242,8 +10833,6 @@ export type Mutation = {
   stixCoreRelationshipsExportPush?: Maybe<Scalars['Boolean']>;
   stixCyberObservableAdd?: Maybe<StixCyberObservable>;
   stixCyberObservableEdit?: Maybe<StixCyberObservableEditMutations>;
-  stixCyberObservableRelationshipAdd?: Maybe<StixCyberObservableRelationship>;
-  stixCyberObservableRelationshipEdit?: Maybe<StixCyberObservableRelationshipEditMutations>;
   stixCyberObservablesExportAsk?: Maybe<FileConnection>;
   stixCyberObservablesExportPush?: Maybe<Scalars['Boolean']>;
   stixDomainObjectAdd?: Maybe<StixDomainObject>;
@@ -11252,6 +10841,8 @@ export type Mutation = {
   stixDomainObjectsExportAsk?: Maybe<FileConnection>;
   stixDomainObjectsExportPush?: Maybe<Scalars['Boolean']>;
   stixEdit?: Maybe<StixEditMutations>;
+  stixRefRelationshipAdd?: Maybe<StixRefRelationship>;
+  stixRefRelationshipEdit?: Maybe<StixRefRelationshipEditMutations>;
   stixRelationshipEdit?: Maybe<StixRelationshipEditMutations>;
   stixSightingRelationshipAdd?: Maybe<StixSightingRelationship>;
   stixSightingRelationshipEdit?: Maybe<StixSightingRelationshipEditMutations>;
@@ -11327,7 +10918,7 @@ export type MutationAdministrativeAreaFieldPatchArgs = {
 
 export type MutationAdministrativeAreaRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11454,7 +11045,7 @@ export type MutationCaseIncidentRelationDeleteArgs = {
 
 export type MutationCaseRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11496,7 +11087,7 @@ export type MutationChannelFieldPatchArgs = {
 
 export type MutationChannelRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11573,7 +11164,7 @@ export type MutationDataComponentFieldPatchArgs = {
 
 export type MutationDataComponentRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11627,7 +11218,7 @@ export type MutationDataSourceFieldPatchArgs = {
 
 export type MutationDataSourceRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11692,7 +11283,7 @@ export type MutationEventFieldPatchArgs = {
 
 export type MutationEventRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11812,7 +11403,7 @@ export type MutationGroupingFieldPatchArgs = {
 
 export type MutationGroupingRelationAddArgs = {
   id: Scalars['ID'];
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input?: InputMaybe<StixRefRelationshipAddInput>;
 };
 
 
@@ -11934,7 +11525,7 @@ export type MutationLanguageFieldPatchArgs = {
 
 export type MutationLanguageRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -12017,7 +11608,7 @@ export type MutationNarrativeFieldPatchArgs = {
 
 export type MutationNarrativeRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -12359,16 +11950,6 @@ export type MutationStixCyberObservableEditArgs = {
 };
 
 
-export type MutationStixCyberObservableRelationshipAddArgs = {
-  input?: InputMaybe<StixCyberObservableRelationshipAddInput>;
-};
-
-
-export type MutationStixCyberObservableRelationshipEditArgs = {
-  id: Scalars['ID'];
-};
-
-
 export type MutationStixCyberObservablesExportAskArgs = {
   context?: InputMaybe<Scalars['String']>;
   elementId?: InputMaybe<Scalars['String']>;
@@ -12432,6 +12013,16 @@ export type MutationStixDomainObjectsExportPushArgs = {
 
 
 export type MutationStixEditArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationStixRefRelationshipAddArgs = {
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationStixRefRelationshipEditArgs = {
   id: Scalars['ID'];
 };
 
@@ -12679,7 +12270,6 @@ export type Mutex = BasicObject & StixCoreObject & StixCyberObservable & StixObj
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -12816,31 +12406,6 @@ export type MutexStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MutexStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13135,7 +12700,6 @@ export type NetworkTraffic = BasicObject & StixCoreObject & StixCyberObservable 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -13272,31 +12836,6 @@ export type NetworkTrafficStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type NetworkTrafficStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -13558,7 +13097,7 @@ export type NoteEditMutations = {
   contextPatch?: Maybe<Note>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Note>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Note>;
 };
 
@@ -13576,7 +13115,7 @@ export type NoteEditMutationsFieldPatchArgs = {
 
 
 export type NoteEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -13965,7 +13504,7 @@ export type ObservedDataEditMutations = {
   contextPatch?: Maybe<ObservedData>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<ObservedData>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<ObservedData>;
 };
 
@@ -13983,7 +13522,7 @@ export type ObservedDataEditMutationsFieldPatchArgs = {
 
 
 export type ObservedDataEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -14272,7 +13811,7 @@ export type OpinionEditMutations = {
   contextPatch?: Maybe<Opinion>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Opinion>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Opinion>;
 };
 
@@ -14290,7 +13829,7 @@ export type OpinionEditMutationsFieldPatchArgs = {
 
 
 export type OpinionEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -14584,7 +14123,7 @@ export type OrganizationEditMutations = {
   contextPatch?: Maybe<Organization>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Organization>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Organization>;
 };
 
@@ -14602,7 +14141,7 @@ export type OrganizationEditMutationsFieldPatchArgs = {
 
 
 export type OrganizationEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -14716,7 +14255,6 @@ export type PaymentCard = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -14856,31 +14394,6 @@ export type PaymentCardStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type PaymentCardStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type PaymentCardAddInput = {
   card_number: Scalars['String'];
   cvv?: InputMaybe<Scalars['Int']>;
@@ -14920,7 +14433,6 @@ export type PhoneNumber = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -15058,31 +14570,6 @@ export type PhoneNumberStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type PhoneNumberStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15312,7 +14799,7 @@ export type PositionEditMutations = {
   contextPatch?: Maybe<Position>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Position>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Position>;
 };
 
@@ -15330,7 +14817,7 @@ export type PositionEditMutationsFieldPatchArgs = {
 
 
 export type PositionEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -15425,7 +14912,6 @@ export type Process = BasicObject & StixCoreObject & StixCyberObservable & StixO
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   window_title?: Maybe<Scalars['String']>;
@@ -15563,31 +15049,6 @@ export type ProcessStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type ProcessStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -15798,11 +15259,6 @@ export type Query = {
   stixCoreRelationshipsNumber?: Maybe<Number>;
   stixCoreRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixCyberObservable?: Maybe<StixCyberObservable>;
-  stixCyberObservableRelationship?: Maybe<StixCyberObservableRelationship>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
-  stixCyberObservableRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationshipsNumber?: Maybe<Number>;
-  stixCyberObservableRelationshipsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
   stixCyberObservables?: Maybe<StixCyberObservableConnection>;
   stixCyberObservablesDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCyberObservablesExportFiles?: Maybe<FileConnection>;
@@ -15814,13 +15270,14 @@ export type Query = {
   stixDomainObjectsExportFiles?: Maybe<FileConnection>;
   stixDomainObjectsNumber?: Maybe<Number>;
   stixDomainObjectsTimeSeries?: Maybe<Array<Maybe<TimeSeries>>>;
-  stixMetaRelationship?: Maybe<StixMetaRelationship>;
-  stixMetaRelationships?: Maybe<StixMetaRelationshipConnection>;
-  stixMetaRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixMetaRelationshipsNumber?: Maybe<Number>;
+  stixNestedRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixObjectOrStixRelationship?: Maybe<StixObjectOrStixRelationship>;
+  stixRefRelationship?: Maybe<StixRefRelationship>;
+  stixRefRelationships?: Maybe<StixRefRelationshipConnection>;
+  stixRefRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixRelationship?: Maybe<StixRelationship>;
   stixRelationships?: Maybe<StixRelationshipConnection>;
+  stixSchemaRefRelationships?: Maybe<DefinitionRefRelationship>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   stixSightingRelationships?: Maybe<StixSightingRelationshipConnection>;
   stixSightingRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
@@ -17234,62 +16691,6 @@ export type QueryStixCyberObservableArgs = {
 };
 
 
-export type QueryStixCyberObservableRelationshipArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  elementId?: InputMaybe<Scalars['String']>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toStix?: InputMaybe<Scalars['Boolean']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type QueryStixCyberObservableRelationshipsDistributionArgs = {
-  dateAttribute?: InputMaybe<Scalars['String']>;
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  field: Scalars['String'];
-  fromId: Scalars['StixRef'];
-  limit?: InputMaybe<Scalars['Int']>;
-  operation: StatsOperation;
-  order?: InputMaybe<Scalars['String']>;
-  startDate?: InputMaybe<Scalars['DateTime']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type QueryStixCyberObservableRelationshipsNumberArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-};
-
-
-export type QueryStixCyberObservableRelationshipsTimeSeriesArgs = {
-  endDate: Scalars['DateTime'];
-  field: Scalars['String'];
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  interval: Scalars['String'];
-  operation: StatsOperation;
-  startDate: Scalars['DateTime'];
-};
-
-
 export type QueryStixCyberObservablesArgs = {
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
@@ -17405,44 +16806,61 @@ export type QueryStixDomainObjectsTimeSeriesArgs = {
 };
 
 
-export type QueryStixMetaRelationshipArgs = {
-  id?: InputMaybe<Scalars['String']>;
-};
-
-
-export type QueryStixMetaRelationshipsArgs = {
+export type QueryStixNestedRefRelationshipsArgs = {
   after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
   elementId?: InputMaybe<Scalars['String']>;
-  elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  endDate?: InputMaybe<Scalars['DateTime']>;
   filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixMetaRelationshipsFiltering>>>;
+  filters?: InputMaybe<Array<InputMaybe<StixRefRelationshipsFiltering>>>;
   first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
   fromId?: InputMaybe<Scalars['StixRef']>;
-  fromRole?: InputMaybe<Scalars['String']>;
   fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixMetaRelationshipsOrdering>;
+  orderBy?: InputMaybe<StixRefRelationshipsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   search?: InputMaybe<Scalars['String']>;
-  startDate?: InputMaybe<Scalars['DateTime']>;
   startTimeStart?: InputMaybe<Scalars['DateTime']>;
   startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stix?: InputMaybe<Scalars['Boolean']>;
   stopTimeStart?: InputMaybe<Scalars['DateTime']>;
   stopTimeStop?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Scalars['StixRef']>;
-  toRole?: InputMaybe<Scalars['String']>;
+  toStix?: InputMaybe<Scalars['Boolean']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
-export type QueryStixMetaRelationshipsDistributionArgs = {
+export type QueryStixObjectOrStixRelationshipArgs = {
+  id: Scalars['String'];
+};
+
+
+export type QueryStixRefRelationshipArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
+
+export type QueryStixRefRelationshipsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  elementId?: InputMaybe<Scalars['String']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixRefRelationshipsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
+  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  orderBy?: InputMaybe<StixRefRelationshipsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  search?: InputMaybe<Scalars['String']>;
+  startTimeStart?: InputMaybe<Scalars['DateTime']>;
+  startTimeStop?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
+  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
+  toStix?: InputMaybe<Scalars['Boolean']>;
+  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryStixRefRelationshipsDistributionArgs = {
   dateAttribute?: InputMaybe<Scalars['String']>;
   endDate?: InputMaybe<Scalars['DateTime']>;
   field: Scalars['String'];
@@ -17453,18 +16871,6 @@ export type QueryStixMetaRelationshipsDistributionArgs = {
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type QueryStixMetaRelationshipsNumberArgs = {
-  endDate?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type QueryStixObjectOrStixRelationshipArgs = {
-  id: Scalars['String'];
 };
 
 
@@ -17502,6 +16908,12 @@ export type QueryStixRelationshipsArgs = {
   toId?: InputMaybe<Scalars['StixRef']>;
   toRole?: InputMaybe<Scalars['String']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryStixSchemaRefRelationshipsArgs = {
+  id?: InputMaybe<Scalars['String']>;
+  toType?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -18095,7 +17507,7 @@ export type RegionEditMutations = {
   contextPatch?: Maybe<Region>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Region>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Region>;
 };
 
@@ -18113,7 +17525,7 @@ export type RegionEditMutationsFieldPatchArgs = {
 
 
 export type RegionEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -18414,7 +17826,7 @@ export type ReportEditMutations = {
   contextPatch?: Maybe<Report>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Report>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Report>;
 };
 
@@ -18437,7 +17849,7 @@ export type ReportEditMutationsFieldPatchArgs = {
 
 
 export type ReportEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -18870,7 +18282,7 @@ export type SectorEditMutations = {
   contextPatch?: Maybe<Sector>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Sector>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Sector>;
 };
 
@@ -18888,7 +18300,7 @@ export type SectorEditMutationsFieldPatchArgs = {
 
 
 export type SectorEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -19038,7 +18450,6 @@ export type Software = BasicObject & StixCoreObject & StixCyberObservable & Stix
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   swid?: Maybe<Scalars['String']>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
@@ -19179,31 +18590,6 @@ export type SoftwareStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type SoftwareStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -19480,7 +18866,7 @@ export type StixCoreObjectEditMutations = {
   exportAsk?: Maybe<Array<Maybe<File>>>;
   exportPush?: Maybe<Scalars['Boolean']>;
   importPush?: Maybe<File>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixCoreObject>;
   relationsAdd?: Maybe<StixCoreObject>;
   restrictionOrganizationAdd?: Maybe<StixCoreObject>;
@@ -19512,7 +18898,7 @@ export type StixCoreObjectEditMutationsImportPushArgs = {
 
 
 export type StixCoreObjectEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -19523,7 +18909,7 @@ export type StixCoreObjectEditMutationsRelationDeleteArgs = {
 
 
 export type StixCoreObjectEditMutationsRelationsAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipsAddInput>;
+  input: StixRefRelationshipsAddInput;
 };
 
 
@@ -19778,7 +19164,7 @@ export type StixCoreRelationshipEditMutations = {
   contextPatch?: Maybe<StixCoreRelationship>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<StixCoreRelationship>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixCoreRelationship>;
   restrictionOrganizationAdd?: Maybe<StixCoreRelationship>;
   restrictionOrganizationDelete?: Maybe<StixCoreRelationship>;
@@ -19798,7 +19184,7 @@ export type StixCoreRelationshipEditMutationsFieldPatchArgs = {
 
 
 export type StixCoreRelationshipEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -19939,7 +19325,6 @@ export type StixCyberObservable = {
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -20078,31 +19463,6 @@ export type StixCyberObservableStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type StixCyberObservableStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type StixCyberObservableConnection = {
   __typename?: 'StixCyberObservableConnection';
   edges: Array<StixCyberObservableEdge>;
@@ -20125,7 +19485,7 @@ export type StixCyberObservableEditMutations = {
   fieldPatch?: Maybe<StixCyberObservable>;
   importPush?: Maybe<File>;
   promote?: Maybe<StixCyberObservable>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixCyberObservable>;
   relationsAdd?: Maybe<StixCyberObservable>;
 };
@@ -20162,7 +19522,7 @@ export type StixCyberObservableEditMutationsImportPushArgs = {
 
 
 export type StixCyberObservableEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -20173,139 +19533,8 @@ export type StixCyberObservableEditMutationsRelationDeleteArgs = {
 
 
 export type StixCyberObservableEditMutationsRelationsAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipsAddInput>;
+  input: StixRefRelationshipsAddInput;
 };
-
-export type StixCyberObservableRelationship = BasicRelationship & StixRelationship & {
-  __typename?: 'StixCyberObservableRelationship';
-  cases?: Maybe<CaseConnection>;
-  confidence?: Maybe<Scalars['Int']>;
-  created_at: Scalars['DateTime'];
-  creators?: Maybe<Array<Creator>>;
-  editContext?: Maybe<Array<EditUserContext>>;
-  entity_type: Scalars['String'];
-  from: StixObjectOrStixRelationship;
-  fromRole?: Maybe<Scalars['String']>;
-  groupings?: Maybe<GroupingConnection>;
-  id: Scalars['ID'];
-  is_inferred: Scalars['Boolean'];
-  notes?: Maybe<NoteConnection>;
-  objectMarking?: Maybe<MarkingDefinitionConnection>;
-  opinions?: Maybe<OpinionConnection>;
-  parent_types: Array<Maybe<Scalars['String']>>;
-  relationship_type: Scalars['String'];
-  reports?: Maybe<ReportConnection>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  start_time?: Maybe<Scalars['DateTime']>;
-  stop_time?: Maybe<Scalars['DateTime']>;
-  to: StixObjectOrStixRelationship;
-  toRole?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
-};
-
-
-export type StixCyberObservableRelationshipCasesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type StixCyberObservableRelationshipGroupingsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type StixCyberObservableRelationshipNotesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type StixCyberObservableRelationshipOpinionsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-
-export type StixCyberObservableRelationshipReportsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-};
-
-export type StixCyberObservableRelationshipAddInput = {
-  clientMutationId?: InputMaybe<Scalars['String']>;
-  confidence?: InputMaybe<Scalars['Int']>;
-  created?: InputMaybe<Scalars['DateTime']>;
-  createdBy?: InputMaybe<Scalars['String']>;
-  fromId: Scalars['StixRef'];
-  modified?: InputMaybe<Scalars['DateTime']>;
-  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  relationship_type: Scalars['String'];
-  start_time?: InputMaybe<Scalars['DateTime']>;
-  stix_id?: InputMaybe<Scalars['StixId']>;
-  stop_time?: InputMaybe<Scalars['DateTime']>;
-  toId: Scalars['StixRef'];
-  update?: InputMaybe<Scalars['Boolean']>;
-  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
-};
-
-export type StixCyberObservableRelationshipConnection = {
-  __typename?: 'StixCyberObservableRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixCyberObservableRelationshipEdge>>>;
-  pageInfo: PageInfo;
-};
-
-export type StixCyberObservableRelationshipEdge = {
-  __typename?: 'StixCyberObservableRelationshipEdge';
-  cursor: Scalars['String'];
-  node: StixCyberObservableRelationship;
-};
-
-export type StixCyberObservableRelationshipEditMutations = {
-  __typename?: 'StixCyberObservableRelationshipEditMutations';
-  contextClean?: Maybe<StixCyberObservableRelationship>;
-  contextPatch?: Maybe<StixCyberObservableRelationship>;
-  delete?: Maybe<Scalars['ID']>;
-  fieldPatch?: Maybe<StixCyberObservableRelationship>;
-};
-
-
-export type StixCyberObservableRelationshipEditMutationsContextPatchArgs = {
-  input?: InputMaybe<EditContext>;
-};
-
-
-export type StixCyberObservableRelationshipEditMutationsFieldPatchArgs = {
-  input: Array<InputMaybe<EditInput>>;
-};
-
-export enum StixCyberObservableRelationshipsFilter {
-  CreatedAt = 'created_at'
-}
-
-export type StixCyberObservableRelationshipsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<StixCyberObservableRelationshipsFilter>;
-  operator?: InputMaybe<Scalars['String']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export enum StixCyberObservableRelationshipsOrdering {
-  Confidence = 'confidence',
-  Created = 'created',
-  CreatedAt = 'created_at',
-  EntityType = 'entity_type',
-  Modified = 'modified',
-  RelationshipType = 'relationship_type',
-  StartTime = 'start_time',
-  StopTime = 'stop_time',
-  ToCreatedAt = 'toCreatedAt',
-  ToName = 'toName',
-  ToPatternType = 'toPatternType',
-  ToValidFrom = 'toValidFrom',
-  ToValidUntil = 'toValidUntil',
-  UpdatedAt = 'updated_at'
-}
 
 export enum StixCyberObservablesFilter {
   Confidence = 'confidence',
@@ -20566,7 +19795,7 @@ export type StixDomainObjectEditMutations = {
   exportPush?: Maybe<Scalars['Boolean']>;
   fieldPatch?: Maybe<StixDomainObject>;
   importPush?: Maybe<File>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixDomainObject>;
   relationsAdd?: Maybe<StixDomainObject>;
 };
@@ -20608,7 +19837,7 @@ export type StixDomainObjectEditMutationsImportPushArgs = {
 
 
 export type StixDomainObjectEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -20619,7 +19848,7 @@ export type StixDomainObjectEditMutationsRelationDeleteArgs = {
 
 
 export type StixDomainObjectEditMutationsRelationsAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipsAddInput>;
+  input: StixRefRelationshipsAddInput;
 };
 
 export enum StixDomainObjectsFilter {
@@ -20757,7 +19986,6 @@ export type StixFile = BasicObject & HashedObservable & StixCoreObject & StixCyb
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_additional_names?: Maybe<Array<Maybe<Scalars['String']>>>;
@@ -20898,31 +20126,6 @@ export type StixFileStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type StixFileStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type StixFileAddInput = {
   atime?: InputMaybe<Scalars['DateTime']>;
   ctime?: InputMaybe<Scalars['DateTime']>;
@@ -20963,65 +20166,6 @@ export type StixMetaObject = {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
-export type StixMetaRelationship = BasicRelationship & StixRelationship & {
-  __typename?: 'StixMetaRelationship';
-  created_at: Scalars['DateTime'];
-  creators?: Maybe<Array<Creator>>;
-  entity_type: Scalars['String'];
-  from: StixObjectOrStixRelationship;
-  fromRole?: Maybe<Scalars['String']>;
-  id: Scalars['ID'];
-  is_inferred: Scalars['Boolean'];
-  parent_types: Array<Maybe<Scalars['String']>>;
-  spec_version: Scalars['String'];
-  standard_id: Scalars['String'];
-  to: StixObjectOrStixRelationship;
-  toRole?: Maybe<Scalars['String']>;
-  updated_at: Scalars['DateTime'];
-  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
-  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
-};
-
-export type StixMetaRelationshipAddInput = {
-  fromId?: InputMaybe<Scalars['ID']>;
-  relationship_type: Scalars['String'];
-  toId?: InputMaybe<Scalars['ID']>;
-};
-
-export type StixMetaRelationshipConnection = {
-  __typename?: 'StixMetaRelationshipConnection';
-  edges?: Maybe<Array<Maybe<StixMetaRelationshipEdge>>>;
-  pageInfo: PageInfo;
-};
-
-export type StixMetaRelationshipEdge = {
-  __typename?: 'StixMetaRelationshipEdge';
-  cursor: Scalars['String'];
-  node: StixMetaRelationship;
-};
-
-export type StixMetaRelationshipsAddInput = {
-  fromIds?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
-  relationship_type: Scalars['String'];
-  toIds?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
-};
-
-export enum StixMetaRelationshipsFilter {
-  CreatedAt = 'created_at'
-}
-
-export type StixMetaRelationshipsFiltering = {
-  filterMode?: InputMaybe<FilterMode>;
-  key: Array<StixMetaRelationshipsFilter>;
-  operator?: InputMaybe<Scalars['String']>;
-  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-export enum StixMetaRelationshipsOrdering {
-  CreatedAt = 'created_at',
-  UpdatedAt = 'updated_at'
-}
-
 export type StixObject = {
   created_at: Scalars['DateTime'];
   creators?: Maybe<Array<Creator>>;
@@ -21036,7 +20180,7 @@ export type StixObject = {
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
-export type StixObjectOrStixRelationship = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixCyberObservableRelationship | StixFile | StixMetaRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
+export type StixObjectOrStixRelationship = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | Channel | City | Country | CourseOfAction | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
 
 export type StixObjectOrStixRelationshipConnection = {
   __typename?: 'StixObjectOrStixRelationshipConnection';
@@ -21050,7 +20194,7 @@ export type StixObjectOrStixRelationshipEdge = {
   node: StixObjectOrStixRelationship;
 };
 
-export type StixObjectOrStixRelationshipOrCreator = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | Channel | City | Country | CourseOfAction | Creator | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixCyberObservableRelationship | StixFile | StixMetaRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
+export type StixObjectOrStixRelationshipOrCreator = AdministrativeArea | Artifact | AttackPattern | AutonomousSystem | BankAccount | Campaign | CaseIncident | Channel | City | Country | CourseOfAction | Creator | CryptocurrencyWallet | CryptographicKey | DataComponent | DataSource | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | EntitySetting | Event | ExternalReference | Feedback | Grouping | Hostname | IPv4Addr | IPv6Addr | Incident | Indicator | Individual | Infrastructure | IntrusionSet | KillChainPhase | Label | Language | MacAddr | Malware | MarkingDefinition | MediaContent | Mutex | Narrative | NetworkTraffic | Note | ObservedData | Opinion | Organization | PaymentCard | PhoneNumber | Position | Process | Region | Report | Sector | Software | StixCoreRelationship | StixFile | StixRefRelationship | StixSightingRelationship | System | Text | ThreatActor | Tool | Url | UserAccount | UserAgent | Vulnerability | WindowsRegistryKey | WindowsRegistryValueType | X509Certificate;
 
 export type StixObjectOrStixRelationshipRefConnection = {
   __typename?: 'StixObjectOrStixRelationshipRefConnection';
@@ -21110,6 +20254,145 @@ export enum StixObjectOrStixRelationshipsOrdering {
   ObservableValue = 'observable_value',
   RelationshipType = 'relationship_type',
   StartTime = 'start_time',
+  UpdatedAt = 'updated_at'
+}
+
+export type StixRefRelationship = BasicRelationship & StixRelationship & {
+  __typename?: 'StixRefRelationship';
+  cases?: Maybe<CaseConnection>;
+  confidence?: Maybe<Scalars['Int']>;
+  created?: Maybe<Scalars['DateTime']>;
+  created_at: Scalars['DateTime'];
+  creators?: Maybe<Array<Creator>>;
+  datable?: Maybe<Scalars['Boolean']>;
+  editContext?: Maybe<Array<EditUserContext>>;
+  entity_type: Scalars['String'];
+  from: StixObjectOrStixRelationship;
+  fromRole?: Maybe<Scalars['String']>;
+  groupings?: Maybe<GroupingConnection>;
+  id: Scalars['ID'];
+  is_inferred: Scalars['Boolean'];
+  modified?: Maybe<Scalars['DateTime']>;
+  notes?: Maybe<NoteConnection>;
+  objectMarking?: Maybe<MarkingDefinitionConnection>;
+  opinions?: Maybe<OpinionConnection>;
+  parent_types: Array<Maybe<Scalars['String']>>;
+  relationship_type: Scalars['String'];
+  reports?: Maybe<ReportConnection>;
+  spec_version: Scalars['String'];
+  standard_id: Scalars['String'];
+  start_time?: Maybe<Scalars['DateTime']>;
+  stop_time?: Maybe<Scalars['DateTime']>;
+  to: StixObjectOrStixRelationship;
+  toRole?: Maybe<Scalars['String']>;
+  updated_at: Scalars['DateTime'];
+  x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
+};
+
+
+export type StixRefRelationshipCasesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixRefRelationshipGroupingsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixRefRelationshipNotesArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixRefRelationshipOpinionsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+
+export type StixRefRelationshipReportsArgs = {
+  first?: InputMaybe<Scalars['Int']>;
+};
+
+export type StixRefRelationshipAddInput = {
+  clientMutationId?: InputMaybe<Scalars['String']>;
+  confidence?: InputMaybe<Scalars['Int']>;
+  created?: InputMaybe<Scalars['DateTime']>;
+  createdBy?: InputMaybe<Scalars['String']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
+  modified?: InputMaybe<Scalars['DateTime']>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  relationship_type: Scalars['String'];
+  start_time?: InputMaybe<Scalars['DateTime']>;
+  stix_id?: InputMaybe<Scalars['StixId']>;
+  stop_time?: InputMaybe<Scalars['DateTime']>;
+  toId?: InputMaybe<Scalars['StixRef']>;
+  update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
+};
+
+export type StixRefRelationshipConnection = {
+  __typename?: 'StixRefRelationshipConnection';
+  edges?: Maybe<Array<Maybe<StixRefRelationshipEdge>>>;
+  pageInfo: PageInfo;
+};
+
+export type StixRefRelationshipEdge = {
+  __typename?: 'StixRefRelationshipEdge';
+  cursor: Scalars['String'];
+  node: StixRefRelationship;
+};
+
+export type StixRefRelationshipEditMutations = {
+  __typename?: 'StixRefRelationshipEditMutations';
+  contextPatch?: Maybe<StixRefRelationship>;
+  delete?: Maybe<Scalars['ID']>;
+  fieldPatch?: Maybe<StixRefRelationship>;
+};
+
+
+export type StixRefRelationshipEditMutationsContextPatchArgs = {
+  input?: InputMaybe<EditContext>;
+};
+
+
+export type StixRefRelationshipEditMutationsFieldPatchArgs = {
+  input: Array<InputMaybe<EditInput>>;
+};
+
+export type StixRefRelationshipsAddInput = {
+  fromIds?: InputMaybe<Array<InputMaybe<Scalars['StixRef']>>>;
+  relationship_type: Scalars['String'];
+  toIds?: InputMaybe<Array<InputMaybe<Scalars['StixRef']>>>;
+};
+
+export enum StixRefRelationshipsFilter {
+  CreatedAt = 'created_at'
+}
+
+export type StixRefRelationshipsFiltering = {
+  filterMode?: InputMaybe<FilterMode>;
+  key: Array<StixRefRelationshipsFilter>;
+  operator?: InputMaybe<Scalars['String']>;
+  values?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+export enum StixRefRelationshipsOrdering {
+  Confidence = 'confidence',
+  Created = 'created',
+  CreatedAt = 'created_at',
+  EntityType = 'entity_type',
+  Modified = 'modified',
+  RelationshipType = 'relationship_type',
+  StartTime = 'start_time',
+  StopTime = 'stop_time',
+  ToCreatedAt = 'toCreatedAt',
+  ToName = 'toName',
+  ToPatternType = 'toPatternType',
+  ToValidFrom = 'toValidFrom',
+  ToValidUntil = 'toValidUntil',
   UpdatedAt = 'updated_at'
 }
 
@@ -21291,7 +20574,7 @@ export type StixSightingRelationshipEditMutations = {
   contextPatch?: Maybe<StixSightingRelationship>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<StixSightingRelationship>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<StixSightingRelationship>;
   restrictionOrganizationAdd?: Maybe<StixSightingRelationship>;
   restrictionOrganizationDelete?: Maybe<StixSightingRelationship>;
@@ -21311,7 +20594,7 @@ export type StixSightingRelationshipEditMutationsFieldPatchArgs = {
 
 
 export type StixSightingRelationshipEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -21517,8 +20800,8 @@ export type Subscription = {
   stixCoreObject?: Maybe<StixCoreObject>;
   stixCoreRelationship?: Maybe<StixCoreRelationship>;
   stixCyberObservable?: Maybe<StixCyberObservable>;
-  stixCyberObservableRelationship?: Maybe<StixCyberObservableRelationship>;
   stixDomainObject?: Maybe<StixDomainObject>;
+  stixRefRelationship?: Maybe<StixRefRelationship>;
   stixSightingRelationship?: Maybe<StixSightingRelationship>;
   user?: Maybe<User>;
   workspace?: Maybe<Workspace>;
@@ -21580,12 +20863,12 @@ export type SubscriptionStixCyberObservableArgs = {
 };
 
 
-export type SubscriptionStixCyberObservableRelationshipArgs = {
+export type SubscriptionStixDomainObjectArgs = {
   id: Scalars['ID'];
 };
 
 
-export type SubscriptionStixDomainObjectArgs = {
+export type SubscriptionStixRefRelationshipArgs = {
   id: Scalars['ID'];
 };
 
@@ -21891,7 +21174,7 @@ export type SystemEditMutations = {
   contextPatch?: Maybe<System>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<System>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<System>;
 };
 
@@ -21909,7 +21192,7 @@ export type SystemEditMutationsFieldPatchArgs = {
 
 
 export type SystemEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -22126,7 +21409,6 @@ export type Text = BasicObject & StixCoreObject & StixCyberObservable & StixObje
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -22264,31 +21546,6 @@ export type TextStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type TextStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -22531,7 +21788,7 @@ export type ThreatActorEditMutations = {
   contextPatch?: Maybe<ThreatActor>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<ThreatActor>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<ThreatActor>;
 };
 
@@ -22549,7 +21806,7 @@ export type ThreatActorEditMutationsFieldPatchArgs = {
 
 
 export type ThreatActorEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -22815,7 +22072,7 @@ export type ToolEditMutations = {
   contextPatch?: Maybe<Tool>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Tool>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Tool>;
 };
 
@@ -22833,7 +22090,7 @@ export type ToolEditMutationsFieldPatchArgs = {
 
 
 export type ToolEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -22996,7 +22253,6 @@ export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObjec
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -23137,31 +22393,6 @@ export type UrlStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type UrlStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type UrlAddInput = {
   value?: InputMaybe<Scalars['String']>;
 };
@@ -23244,7 +22475,6 @@ export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & S
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   user_id?: Maybe<Scalars['String']>;
@@ -23385,31 +22615,6 @@ export type UserAccountStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type UserAccountStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type UserAccountAddInput = {
   account_created?: InputMaybe<Scalars['DateTime']>;
   account_expires?: InputMaybe<Scalars['DateTime']>;
@@ -23472,7 +22677,6 @@ export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & Sti
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   value?: Maybe<Scalars['String']>;
@@ -23610,31 +22814,6 @@ export type UserAgentStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type UserAgentStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -24123,7 +23302,7 @@ export type VulnerabilityEditMutations = {
   contextPatch?: Maybe<Vulnerability>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Vulnerability>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Vulnerability>;
 };
 
@@ -24141,7 +23320,7 @@ export type VulnerabilityEditMutationsFieldPatchArgs = {
 
 
 export type VulnerabilityEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -24185,7 +23364,6 @@ export type WindowsRegistryKey = BasicObject & StixCoreObject & StixCyberObserva
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -24325,31 +23503,6 @@ export type WindowsRegistryKeyStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type WindowsRegistryKeyStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type WindowsRegistryKeyAddInput = {
   attribute_key?: InputMaybe<Scalars['String']>;
   modified_time?: InputMaybe<Scalars['DateTime']>;
@@ -24391,7 +23544,6 @@ export type WindowsRegistryValueType = BasicObject & StixCoreObject & StixCyberO
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   x_opencti_description?: Maybe<Scalars['String']>;
@@ -24528,31 +23680,6 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs = {
   startDate?: InputMaybe<Scalars['DateTime']>;
   toId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   toRole?: InputMaybe<Scalars['String']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type WindowsRegistryValueTypeStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
@@ -24718,7 +23845,7 @@ export type WorkspaceEditMutations = {
   contextPatch?: Maybe<Workspace>;
   delete?: Maybe<Scalars['ID']>;
   fieldPatch?: Maybe<Workspace>;
-  relationAdd?: Maybe<StixMetaRelationship>;
+  relationAdd?: Maybe<StixRefRelationship>;
   relationDelete?: Maybe<Workspace>;
   relationsAdd?: Maybe<Workspace>;
   relationsDelete?: Maybe<Workspace>;
@@ -24736,7 +23863,7 @@ export type WorkspaceEditMutationsFieldPatchArgs = {
 
 
 export type WorkspaceEditMutationsRelationAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipAddInput>;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -24747,7 +23874,7 @@ export type WorkspaceEditMutationsRelationDeleteArgs = {
 
 
 export type WorkspaceEditMutationsRelationsAddArgs = {
-  input?: InputMaybe<StixMetaRelationshipsAddInput>;
+  input: StixRefRelationshipsAddInput;
 };
 
 
@@ -24827,7 +23954,6 @@ export type X509Certificate = BasicObject & HashedObservable & StixCoreObject & 
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
-  stixCyberObservableRelationships?: Maybe<StixCyberObservableRelationshipConnection>;
   subject?: Maybe<Scalars['String']>;
   subject_alternative_name?: Maybe<Scalars['String']>;
   subject_directory_attributes?: Maybe<Scalars['String']>;
@@ -24977,31 +24103,6 @@ export type X509CertificateStixCoreRelationshipsDistributionArgs = {
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
-
-export type X509CertificateStixCyberObservableRelationshipsArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<InputMaybe<StixCyberObservableRelationshipsFiltering>>>;
-  first?: InputMaybe<Scalars['Int']>;
-  firstSeenStart?: InputMaybe<Scalars['DateTime']>;
-  firstSeenStop?: InputMaybe<Scalars['DateTime']>;
-  fromId?: InputMaybe<Scalars['StixRef']>;
-  fromTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  lastSeenStart?: InputMaybe<Scalars['DateTime']>;
-  lastSeenStop?: InputMaybe<Scalars['DateTime']>;
-  orderBy?: InputMaybe<StixCyberObservableRelationshipsOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  relationship_type?: InputMaybe<Scalars['String']>;
-  search?: InputMaybe<Scalars['String']>;
-  startTimeStart?: InputMaybe<Scalars['DateTime']>;
-  startTimeStop?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStart?: InputMaybe<Scalars['DateTime']>;
-  stopTimeStop?: InputMaybe<Scalars['DateTime']>;
-  toId?: InputMaybe<Scalars['StixRef']>;
-  toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
 export type X509CertificateAddInput = {
   authority_key_identifier?: InputMaybe<Scalars['String']>;
   basic_constraints?: InputMaybe<Scalars['String']>;
@@ -25115,7 +24216,7 @@ export type ResolversTypes = ResolversObject<{
   AppDebugStatistics: ResolverTypeWrapper<AppDebugStatistics>;
   AppInfo: ResolverTypeWrapper<AppInfo>;
   AppMemory: ResolverTypeWrapper<AppMemory>;
-  Artifact: ResolverTypeWrapper<Omit<Artifact, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Artifact: ResolverTypeWrapper<Omit<Artifact, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ArtifactAddInput: ArtifactAddInput;
   Assignee: ResolverTypeWrapper<Assignee>;
   AssigneeConnection: ResolverTypeWrapper<AssigneeConnection>;
@@ -25124,7 +24225,7 @@ export type ResolversTypes = ResolversObject<{
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: ResolverTypeWrapper<Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversTypes['AttackPatternEdge']> }>;
   AttackPatternEdge: ResolverTypeWrapper<Omit<AttackPatternEdge, 'node'> & { node: ResolversTypes['AttackPattern'] }>;
-  AttackPatternEditMutations: ResolverTypeWrapper<Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['AttackPattern']>, contextPatch?: Maybe<ResolversTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversTypes['AttackPattern']>, relationDelete?: Maybe<ResolversTypes['AttackPattern']> }>;
+  AttackPatternEditMutations: ResolverTypeWrapper<Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['AttackPattern']>, contextPatch?: Maybe<ResolversTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversTypes['AttackPattern']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['AttackPattern']> }>;
   AttackPatternsFilter: AttackPatternsFilter;
   AttackPatternsFiltering: AttackPatternsFiltering;
   AttackPatternsOrdering: AttackPatternsOrdering;
@@ -25133,18 +24234,18 @@ export type ResolversTypes = ResolversObject<{
   AttributeEdge: ResolverTypeWrapper<AttributeEdge>;
   AttributeEditMutations: ResolverTypeWrapper<AttributeEditMutations>;
   AttributesOrdering: AttributesOrdering;
-  AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  AutonomousSystem: ResolverTypeWrapper<Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   AutonomousSystemAddInput: AutonomousSystemAddInput;
-  BankAccount: ResolverTypeWrapper<Omit<BankAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  BankAccount: ResolverTypeWrapper<Omit<BankAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   BankAccountAddInput: BankAccountAddInput;
   BasicObject: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['Capability'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Connector'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Group'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MeUser'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['Notification'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Role'] | ResolversTypes['Sector'] | ResolversTypes['Settings'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Trigger'] | ResolversTypes['Url'] | ResolversTypes['User'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vocabulary'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
-  BasicRelationship: ResolversTypes['InternalRelationship'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
+  BasicRelationship: ResolversTypes['InternalRelationship'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixRefRelationship'] | ResolversTypes['StixSightingRelationship'];
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   Campaign: ResolverTypeWrapper<Omit<Campaign, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CampaignAddInput: CampaignAddInput;
   CampaignConnection: ResolverTypeWrapper<Omit<CampaignConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CampaignEdge']>>> }>;
   CampaignEdge: ResolverTypeWrapper<Omit<CampaignEdge, 'node'> & { node: ResolversTypes['Campaign'] }>;
-  CampaignEditMutations: ResolverTypeWrapper<Omit<CampaignEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Campaign']>, contextPatch?: Maybe<ResolversTypes['Campaign']>, fieldPatch?: Maybe<ResolversTypes['Campaign']>, relationDelete?: Maybe<ResolversTypes['Campaign']> }>;
+  CampaignEditMutations: ResolverTypeWrapper<Omit<CampaignEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Campaign']>, contextPatch?: Maybe<ResolversTypes['Campaign']>, fieldPatch?: Maybe<ResolversTypes['Campaign']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Campaign']> }>;
   CampaignsFilter: CampaignsFilter;
   CampaignsFiltering: CampaignsFiltering;
   CampaignsOrdering: CampaignsOrdering;
@@ -25179,7 +24280,7 @@ export type ResolversTypes = ResolversObject<{
   CityAddInput: CityAddInput;
   CityConnection: ResolverTypeWrapper<Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CityEdge']>>> }>;
   CityEdge: ResolverTypeWrapper<Omit<CityEdge, 'node'> & { node: ResolversTypes['City'] }>;
-  CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
+  CityEditMutations: ResolverTypeWrapper<Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['City']>, contextPatch?: Maybe<ResolversTypes['City']>, fieldPatch?: Maybe<ResolversTypes['City']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['City']> }>;
   Cluster: ResolverTypeWrapper<Cluster>;
   Connector: ResolverTypeWrapper<Connector>;
   ConnectorConfig: ResolverTypeWrapper<ConnectorConfig>;
@@ -25189,7 +24290,7 @@ export type ResolversTypes = ResolversObject<{
   Container: ResolversTypes['CaseIncident'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Report'];
   ContainerConnection: ResolverTypeWrapper<Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ContainerEdge']>>> }>;
   ContainerEdge: ResolverTypeWrapper<Omit<ContainerEdge, 'node'> & { node: ResolversTypes['Container'] }>;
-  ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
+  ContainerEditMutations: ResolverTypeWrapper<Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Container']>, contextPatch?: Maybe<ResolversTypes['Container']>, fieldPatch?: Maybe<ResolversTypes['Container']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Container']> }>;
   ContainersFilter: ContainersFilter;
   ContainersFiltering: ContainersFiltering;
   ContainersOrdering: ContainersOrdering;
@@ -25201,21 +24302,21 @@ export type ResolversTypes = ResolversObject<{
   CountryAddInput: CountryAddInput;
   CountryConnection: ResolverTypeWrapper<Omit<CountryConnection, 'edges'> & { edges: Array<ResolversTypes['CountryEdge']> }>;
   CountryEdge: ResolverTypeWrapper<Omit<CountryEdge, 'node'> & { node: ResolversTypes['Country'] }>;
-  CountryEditMutations: ResolverTypeWrapper<Omit<CountryEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Country']>, contextPatch?: Maybe<ResolversTypes['Country']>, fieldPatch?: Maybe<ResolversTypes['Country']>, relationDelete?: Maybe<ResolversTypes['Country']> }>;
+  CountryEditMutations: ResolverTypeWrapper<Omit<CountryEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Country']>, contextPatch?: Maybe<ResolversTypes['Country']>, fieldPatch?: Maybe<ResolversTypes['Country']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Country']> }>;
   CourseOfAction: ResolverTypeWrapper<Omit<CourseOfAction, 'attackPatterns' | 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { attackPatterns?: Maybe<ResolversTypes['AttackPatternConnection']>, cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CourseOfActionAddInput: CourseOfActionAddInput;
   CourseOfActionConnection: ResolverTypeWrapper<Omit<CourseOfActionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['CourseOfActionEdge']>>> }>;
   CourseOfActionEdge: ResolverTypeWrapper<Omit<CourseOfActionEdge, 'node'> & { node: ResolversTypes['CourseOfAction'] }>;
-  CourseOfActionEditMutations: ResolverTypeWrapper<Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversTypes['CourseOfAction']>, relationDelete?: Maybe<ResolversTypes['CourseOfAction']> }>;
+  CourseOfActionEditMutations: ResolverTypeWrapper<Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['CourseOfAction']> }>;
   CoursesOfActionFilter: CoursesOfActionFilter;
   CoursesOfActionFiltering: CoursesOfActionFiltering;
   CoursesOfActionOrdering: CoursesOfActionOrdering;
   Creator: ResolverTypeWrapper<Creator>;
   CreatorConnection: ResolverTypeWrapper<CreatorConnection>;
   CreatorEdge: ResolverTypeWrapper<CreatorEdge>;
-  CryptocurrencyWallet: ResolverTypeWrapper<Omit<CryptocurrencyWallet, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  CryptocurrencyWallet: ResolverTypeWrapper<Omit<CryptocurrencyWallet, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
-  CryptographicKey: ResolverTypeWrapper<Omit<CryptographicKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  CryptographicKey: ResolverTypeWrapper<Omit<CryptographicKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   DataComponent: ResolverTypeWrapper<BasicStoreEntityDataComponent>;
   DataComponentAddInput: DataComponentAddInput;
@@ -25232,28 +24333,29 @@ export type ResolversTypes = ResolversObject<{
   DataSourcesFiltering: DataSourcesFiltering;
   DataSourcesOrdering: DataSourcesOrdering;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
+  DefinitionRefRelationship: ResolverTypeWrapper<Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversTypes['StixObjectOrStixRelationship'] }>;
   DependencyVersion: ResolverTypeWrapper<DependencyVersion>;
   Dictionary: ResolverTypeWrapper<Dictionary>;
   DictionaryInput: DictionaryInput;
   DigestPeriod: DigestPeriod;
-  Directory: ResolverTypeWrapper<Omit<Directory, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Directory: ResolverTypeWrapper<Omit<Directory, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   DirectoryAddInput: DirectoryAddInput;
   Display: ResolverTypeWrapper<Display>;
   DisplayStep: ResolverTypeWrapper<DisplayStep>;
   Distribution: ResolverTypeWrapper<Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversTypes['StixObjectOrStixRelationshipOrCreator']> }>;
   DocsMetrics: ResolverTypeWrapper<DocsMetrics>;
-  DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  DomainName: ResolverTypeWrapper<Omit<DomainName, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   DomainNameAddInput: DomainNameAddInput;
   EditContext: EditContext;
   EditInput: EditInput;
   EditOperation: EditOperation;
   EditUserContext: ResolverTypeWrapper<EditUserContext>;
   ElasticSearchMetrics: ResolverTypeWrapper<ElasticSearchMetrics>;
-  EmailAddr: ResolverTypeWrapper<Omit<EmailAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  EmailAddr: ResolverTypeWrapper<Omit<EmailAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   EmailAddrAddInput: EmailAddrAddInput;
-  EmailMessage: ResolverTypeWrapper<Omit<EmailMessage, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  EmailMessage: ResolverTypeWrapper<Omit<EmailMessage, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   EmailMessageAddInput: EmailMessageAddInput;
-  EmailMimePartType: ResolverTypeWrapper<Omit<EmailMimePartType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  EmailMimePartType: ResolverTypeWrapper<Omit<EmailMimePartType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   EmailMimePartTypeAddInput: EmailMimePartTypeAddInput;
   EntitySetting: ResolverTypeWrapper<BasicStoreEntityEntitySetting>;
   EntitySettingConnection: ResolverTypeWrapper<Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversTypes['EntitySettingEdge']> }>;
@@ -25272,7 +24374,7 @@ export type ResolversTypes = ResolversObject<{
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: ResolverTypeWrapper<Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversTypes['ExternalReferenceEdge']> }>;
   ExternalReferenceEdge: ResolverTypeWrapper<Omit<ExternalReferenceEdge, 'node'> & { node: ResolversTypes['ExternalReference'] }>;
-  ExternalReferenceEditMutations: ResolverTypeWrapper<Omit<ExternalReferenceEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ExternalReference']>, contextPatch?: Maybe<ResolversTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversTypes['ExternalReference']>, importPush?: Maybe<ResolversTypes['File']>, relationDelete?: Maybe<ResolversTypes['ExternalReference']> }>;
+  ExternalReferenceEditMutations: ResolverTypeWrapper<Omit<ExternalReferenceEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ExternalReference']>, contextPatch?: Maybe<ResolversTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversTypes['ExternalReference']>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['ExternalReference']> }>;
   ExternalReferencesFilter: ExternalReferencesFilter;
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   ExternalReferencesOrdering: ExternalReferencesOrdering;
@@ -25315,12 +24417,12 @@ export type ResolversTypes = ResolversObject<{
   Hash: ResolverTypeWrapper<Hash>;
   HashInput: HashInput;
   HashedObservable: ResolversTypes['Artifact'] | ResolversTypes['StixFile'] | ResolversTypes['X509Certificate'];
-  Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Hostname: ResolverTypeWrapper<Omit<Hostname, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   HostnameAddInput: HostnameAddInput;
   ID: ResolverTypeWrapper<Scalars['ID']>;
-  IPv4Addr: ResolverTypeWrapper<Omit<IPv4Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  IPv4Addr: ResolverTypeWrapper<Omit<IPv4Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   IPv4AddrAddInput: IPv4AddrAddInput;
-  IPv6Addr: ResolverTypeWrapper<Omit<IPv6Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  IPv6Addr: ResolverTypeWrapper<Omit<IPv6Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   IPv6AddrAddInput: IPv6AddrAddInput;
   IdentitiesFilter: IdentitiesFilter;
   IdentitiesFiltering: IdentitiesFiltering;
@@ -25329,13 +24431,13 @@ export type ResolversTypes = ResolversObject<{
   IdentityAddInput: IdentityAddInput;
   IdentityConnection: ResolverTypeWrapper<Omit<IdentityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IdentityEdge']>>> }>;
   IdentityEdge: ResolverTypeWrapper<Omit<IdentityEdge, 'node'> & { node: ResolversTypes['Identity'] }>;
-  IdentityEditMutations: ResolverTypeWrapper<Omit<IdentityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Identity']>, contextPatch?: Maybe<ResolversTypes['Identity']>, fieldPatch?: Maybe<ResolversTypes['Identity']>, relationDelete?: Maybe<ResolversTypes['Identity']> }>;
+  IdentityEditMutations: ResolverTypeWrapper<Omit<IdentityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Identity']>, contextPatch?: Maybe<ResolversTypes['Identity']>, fieldPatch?: Maybe<ResolversTypes['Identity']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Identity']> }>;
   IdentityType: IdentityType;
   Incident: ResolverTypeWrapper<Omit<Incident, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   IncidentAddInput: IncidentAddInput;
   IncidentConnection: ResolverTypeWrapper<Omit<IncidentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IncidentEdge']>>> }>;
   IncidentEdge: ResolverTypeWrapper<Omit<IncidentEdge, 'node'> & { node: ResolversTypes['Incident'] }>;
-  IncidentEditMutations: ResolverTypeWrapper<Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Incident']>, contextPatch?: Maybe<ResolversTypes['Incident']>, fieldPatch?: Maybe<ResolversTypes['Incident']>, relationDelete?: Maybe<ResolversTypes['Incident']> }>;
+  IncidentEditMutations: ResolverTypeWrapper<Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Incident']>, contextPatch?: Maybe<ResolversTypes['Incident']>, fieldPatch?: Maybe<ResolversTypes['Incident']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Incident']> }>;
   IncidentsFilter: IncidentsFilter;
   IncidentsFiltering: IncidentsFiltering;
   IncidentsOrdering: IncidentsOrdering;
@@ -25344,7 +24446,7 @@ export type ResolversTypes = ResolversObject<{
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: ResolverTypeWrapper<Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndicatorEdge']>>> }>;
   IndicatorEdge: ResolverTypeWrapper<Omit<IndicatorEdge, 'node'> & { node: ResolversTypes['Indicator'] }>;
-  IndicatorEditMutations: ResolverTypeWrapper<Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Indicator']>, contextPatch?: Maybe<ResolversTypes['Indicator']>, fieldPatch?: Maybe<ResolversTypes['Indicator']>, relationDelete?: Maybe<ResolversTypes['Indicator']> }>;
+  IndicatorEditMutations: ResolverTypeWrapper<Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Indicator']>, contextPatch?: Maybe<ResolversTypes['Indicator']>, fieldPatch?: Maybe<ResolversTypes['Indicator']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Indicator']> }>;
   IndicatorsFilter: IndicatorsFilter;
   IndicatorsFiltering: IndicatorsFiltering;
   IndicatorsOrdering: IndicatorsOrdering;
@@ -25352,7 +24454,7 @@ export type ResolversTypes = ResolversObject<{
   IndividualAddInput: IndividualAddInput;
   IndividualConnection: ResolverTypeWrapper<Omit<IndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IndividualEdge']>>> }>;
   IndividualEdge: ResolverTypeWrapper<Omit<IndividualEdge, 'node'> & { node: ResolversTypes['Individual'] }>;
-  IndividualEditMutations: ResolverTypeWrapper<Omit<IndividualEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Individual']>, contextPatch?: Maybe<ResolversTypes['Individual']>, fieldPatch?: Maybe<ResolversTypes['Individual']>, relationDelete?: Maybe<ResolversTypes['Individual']> }>;
+  IndividualEditMutations: ResolverTypeWrapper<Omit<IndividualEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Individual']>, contextPatch?: Maybe<ResolversTypes['Individual']>, fieldPatch?: Maybe<ResolversTypes['Individual']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Individual']> }>;
   IndividualsFilter: IndividualsFilter;
   IndividualsFiltering: IndividualsFiltering;
   IndividualsOrdering: IndividualsOrdering;
@@ -25362,7 +24464,7 @@ export type ResolversTypes = ResolversObject<{
   InfrastructureAddInput: InfrastructureAddInput;
   InfrastructureConnection: ResolverTypeWrapper<Omit<InfrastructureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['InfrastructureEdge']>>> }>;
   InfrastructureEdge: ResolverTypeWrapper<Omit<InfrastructureEdge, 'node'> & { node: ResolversTypes['Infrastructure'] }>;
-  InfrastructureEditMutations: ResolverTypeWrapper<Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Infrastructure']>, contextPatch?: Maybe<ResolversTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversTypes['Infrastructure']>, relationDelete?: Maybe<ResolversTypes['Infrastructure']> }>;
+  InfrastructureEditMutations: ResolverTypeWrapper<Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Infrastructure']>, contextPatch?: Maybe<ResolversTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversTypes['Infrastructure']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Infrastructure']> }>;
   InfrastructuresFilter: InfrastructuresFilter;
   InfrastructuresFiltering: InfrastructuresFiltering;
   InfrastructuresOrdering: InfrastructuresOrdering;
@@ -25374,7 +24476,7 @@ export type ResolversTypes = ResolversObject<{
   IntrusionSetAddInput: IntrusionSetAddInput;
   IntrusionSetConnection: ResolverTypeWrapper<Omit<IntrusionSetConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['IntrusionSetEdge']>>> }>;
   IntrusionSetEdge: ResolverTypeWrapper<Omit<IntrusionSetEdge, 'node'> & { node: ResolversTypes['IntrusionSet'] }>;
-  IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
+  IntrusionSetEditMutations: ResolverTypeWrapper<Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['IntrusionSet']> }>;
   IntrusionSetsFilter: IntrusionSetsFilter;
   IntrusionSetsFiltering: IntrusionSetsFiltering;
   IntrusionSetsOrdering: IntrusionSetsOrdering;
@@ -25382,7 +24484,7 @@ export type ResolversTypes = ResolversObject<{
   KillChainPhaseAddInput: KillChainPhaseAddInput;
   KillChainPhaseConnection: ResolverTypeWrapper<KillChainPhaseConnection>;
   KillChainPhaseEdge: ResolverTypeWrapper<KillChainPhaseEdge>;
-  KillChainPhaseEditMutations: ResolverTypeWrapper<KillChainPhaseEditMutations>;
+  KillChainPhaseEditMutations: ResolverTypeWrapper<Omit<KillChainPhaseEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversTypes['StixRefRelationship']> }>;
   KillChainPhasesFilter: KillChainPhasesFilter;
   KillChainPhasesFiltering: KillChainPhasesFiltering;
   KillChainPhasesOrdering: KillChainPhasesOrdering;
@@ -25407,7 +24509,7 @@ export type ResolversTypes = ResolversObject<{
   LocationAddInput: LocationAddInput;
   LocationConnection: ResolverTypeWrapper<Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['LocationEdge']>>> }>;
   LocationEdge: ResolverTypeWrapper<Omit<LocationEdge, 'node'> & { node: ResolversTypes['Location'] }>;
-  LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
+  LocationEditMutations: ResolverTypeWrapper<Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Location']>, contextPatch?: Maybe<ResolversTypes['Location']>, fieldPatch?: Maybe<ResolversTypes['Location']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Location']> }>;
   LocationsFilter: LocationsFilter;
   LocationsFiltering: LocationsFiltering;
   LocationsOrdering: LocationsOrdering;
@@ -25418,13 +24520,13 @@ export type ResolversTypes = ResolversObject<{
   LogsFiltering: LogsFiltering;
   LogsOrdering: LogsOrdering;
   LogsWorkerConfig: ResolverTypeWrapper<LogsWorkerConfig>;
-  MacAddr: ResolverTypeWrapper<Omit<MacAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  MacAddr: ResolverTypeWrapper<Omit<MacAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MacAddrAddInput: MacAddrAddInput;
   Malware: ResolverTypeWrapper<Omit<Malware, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MalwareAddInput: MalwareAddInput;
   MalwareConnection: ResolverTypeWrapper<Omit<MalwareConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['MalwareEdge']>>> }>;
   MalwareEdge: ResolverTypeWrapper<Omit<MalwareEdge, 'node'> & { node: ResolversTypes['Malware'] }>;
-  MalwareEditMutations: ResolverTypeWrapper<Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Malware']>, contextPatch?: Maybe<ResolversTypes['Malware']>, fieldPatch?: Maybe<ResolversTypes['Malware']>, relationDelete?: Maybe<ResolversTypes['Malware']> }>;
+  MalwareEditMutations: ResolverTypeWrapper<Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Malware']>, contextPatch?: Maybe<ResolversTypes['Malware']>, fieldPatch?: Maybe<ResolversTypes['Malware']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Malware']> }>;
   MalwaresFilter: MalwaresFilter;
   MalwaresFiltering: MalwaresFiltering;
   MalwaresOrdering: MalwaresOrdering;
@@ -25440,14 +24542,14 @@ export type ResolversTypes = ResolversObject<{
   MeOrganizationConnection: ResolverTypeWrapper<MeOrganizationConnection>;
   MeOrganizationEdge: ResolverTypeWrapper<MeOrganizationEdge>;
   MeUser: ResolverTypeWrapper<MeUser>;
-  MediaContent: ResolverTypeWrapper<Omit<MediaContent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  MediaContent: ResolverTypeWrapper<Omit<MediaContent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MediaContentAddInput: MediaContentAddInput;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<MultiDistribution>;
   MultiTimeSeries: ResolverTypeWrapper<MultiTimeSeries>;
   Mutation: ResolverTypeWrapper<{}>;
-  Mutex: ResolverTypeWrapper<Omit<Mutex, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Mutex: ResolverTypeWrapper<Omit<Mutex, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   MutexAddInput: MutexAddInput;
   Narrative: ResolverTypeWrapper<BasicStoreEntityNarrative>;
   NarrativeAddInput: NarrativeAddInput;
@@ -25456,13 +24558,13 @@ export type ResolversTypes = ResolversObject<{
   NarrativesFilter: NarrativesFilter;
   NarrativesFiltering: NarrativesFiltering;
   NarrativesOrdering: NarrativesOrdering;
-  NetworkTraffic: ResolverTypeWrapper<Omit<NetworkTraffic, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  NetworkTraffic: ResolverTypeWrapper<Omit<NetworkTraffic, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   NetworkTrafficAddInput: NetworkTrafficAddInput;
   Note: ResolverTypeWrapper<Omit<Note, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, relatedContainers?: Maybe<ResolversTypes['ContainerConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   NoteAddInput: NoteAddInput;
   NoteConnection: ResolverTypeWrapper<Omit<NoteConnection, 'edges'> & { edges: Array<ResolversTypes['NoteEdge']> }>;
   NoteEdge: ResolverTypeWrapper<Omit<NoteEdge, 'node'> & { node: ResolversTypes['Note'] }>;
-  NoteEditMutations: ResolverTypeWrapper<Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Note']>, contextPatch?: Maybe<ResolversTypes['Note']>, fieldPatch?: Maybe<ResolversTypes['Note']>, relationDelete?: Maybe<ResolversTypes['Note']> }>;
+  NoteEditMutations: ResolverTypeWrapper<Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Note']>, contextPatch?: Maybe<ResolversTypes['Note']>, fieldPatch?: Maybe<ResolversTypes['Note']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Note']> }>;
   NoteUserAddInput: NoteUserAddInput;
   NotesFilter: NotesFilter;
   NotesFiltering: NotesFiltering;
@@ -25482,7 +24584,7 @@ export type ResolversTypes = ResolversObject<{
   ObservedDataAddInput: ObservedDataAddInput;
   ObservedDataConnection: ResolverTypeWrapper<Omit<ObservedDataConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ObservedDataEdge']>>> }>;
   ObservedDataEdge: ResolverTypeWrapper<Omit<ObservedDataEdge, 'node'> & { node: ResolversTypes['ObservedData'] }>;
-  ObservedDataEditMutations: ResolverTypeWrapper<Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ObservedData']>, contextPatch?: Maybe<ResolversTypes['ObservedData']>, fieldPatch?: Maybe<ResolversTypes['ObservedData']>, relationDelete?: Maybe<ResolversTypes['ObservedData']> }>;
+  ObservedDataEditMutations: ResolverTypeWrapper<Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ObservedData']>, contextPatch?: Maybe<ResolversTypes['ObservedData']>, fieldPatch?: Maybe<ResolversTypes['ObservedData']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['ObservedData']> }>;
   ObservedDatasFilter: ObservedDatasFilter;
   ObservedDatasFiltering: ObservedDatasFiltering;
   ObservedDatasOrdering: ObservedDatasOrdering;
@@ -25490,7 +24592,7 @@ export type ResolversTypes = ResolversObject<{
   OpinionAddInput: OpinionAddInput;
   OpinionConnection: ResolverTypeWrapper<Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['OpinionEdge']>>> }>;
   OpinionEdge: ResolverTypeWrapper<Omit<OpinionEdge, 'node'> & { node: ResolversTypes['Opinion'] }>;
-  OpinionEditMutations: ResolverTypeWrapper<Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Opinion']>, contextPatch?: Maybe<ResolversTypes['Opinion']>, fieldPatch?: Maybe<ResolversTypes['Opinion']>, relationDelete?: Maybe<ResolversTypes['Opinion']> }>;
+  OpinionEditMutations: ResolverTypeWrapper<Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Opinion']>, contextPatch?: Maybe<ResolversTypes['Opinion']>, fieldPatch?: Maybe<ResolversTypes['Opinion']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Opinion']> }>;
   OpinionUserAddInput: OpinionUserAddInput;
   OpinionsFilter: OpinionsFilter;
   OpinionsFiltering: OpinionsFiltering;
@@ -25500,7 +24602,7 @@ export type ResolversTypes = ResolversObject<{
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: ResolverTypeWrapper<Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversTypes['OrganizationEdge']> }>;
   OrganizationEdge: ResolverTypeWrapper<Omit<OrganizationEdge, 'node'> & { node: ResolversTypes['Organization'] }>;
-  OrganizationEditMutations: ResolverTypeWrapper<Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Organization']>, contextPatch?: Maybe<ResolversTypes['Organization']>, fieldPatch?: Maybe<ResolversTypes['Organization']>, relationDelete?: Maybe<ResolversTypes['Organization']> }>;
+  OrganizationEditMutations: ResolverTypeWrapper<Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Organization']>, contextPatch?: Maybe<ResolversTypes['Organization']>, fieldPatch?: Maybe<ResolversTypes['Organization']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Organization']> }>;
   OrganizationOrIndividual: ResolversTypes['Individual'] | ResolversTypes['Organization'];
   OrganizationReliability: OrganizationReliability;
   OrganizationsFilter: OrganizationsFilter;
@@ -25509,19 +24611,19 @@ export type ResolversTypes = ResolversObject<{
   OtpElement: ResolverTypeWrapper<OtpElement>;
   OverviewMetrics: ResolverTypeWrapper<OverviewMetrics>;
   PageInfo: ResolverTypeWrapper<PageInfo>;
-  PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  PaymentCard: ResolverTypeWrapper<Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PaymentCardAddInput: PaymentCardAddInput;
-  PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  PhoneNumber: ResolverTypeWrapper<Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PhoneNumberAddInput: PhoneNumberAddInput;
   Position: ResolverTypeWrapper<Omit<Position, 'cases' | 'city' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, city?: Maybe<ResolversTypes['City']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   PositionAddInput: PositionAddInput;
   PositionConnection: ResolverTypeWrapper<Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['PositionEdge']>>> }>;
   PositionEdge: ResolverTypeWrapper<Omit<PositionEdge, 'node'> & { node: ResolversTypes['Position'] }>;
-  PositionEditMutations: ResolverTypeWrapper<Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Position']>, contextPatch?: Maybe<ResolversTypes['Position']>, fieldPatch?: Maybe<ResolversTypes['Position']>, relationDelete?: Maybe<ResolversTypes['Position']> }>;
+  PositionEditMutations: ResolverTypeWrapper<Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Position']>, contextPatch?: Maybe<ResolversTypes['Position']>, fieldPatch?: Maybe<ResolversTypes['Position']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Position']> }>;
   PositionsFilter: PositionsFilter;
   PositionsFiltering: PositionsFiltering;
   PositionsOrdering: PositionsOrdering;
-  Process: ResolverTypeWrapper<Omit<Process, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversTypes['StixFileConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Process: ResolverTypeWrapper<Omit<Process, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversTypes['StixFileConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ProcessAddInput: ProcessAddInput;
   Provider: ResolverTypeWrapper<Provider>;
   Query: ResolverTypeWrapper<{}>;
@@ -25536,7 +24638,7 @@ export type ResolversTypes = ResolversObject<{
   RegionAddInput: RegionAddInput;
   RegionConnection: ResolverTypeWrapper<Omit<RegionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['RegionEdge']>>> }>;
   RegionEdge: ResolverTypeWrapper<Omit<RegionEdge, 'node'> & { node: ResolversTypes['Region'] }>;
-  RegionEditMutations: ResolverTypeWrapper<Omit<RegionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Region']>, contextPatch?: Maybe<ResolversTypes['Region']>, fieldPatch?: Maybe<ResolversTypes['Region']>, relationDelete?: Maybe<ResolversTypes['Region']> }>;
+  RegionEditMutations: ResolverTypeWrapper<Omit<RegionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Region']>, contextPatch?: Maybe<ResolversTypes['Region']>, fieldPatch?: Maybe<ResolversTypes['Region']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Region']> }>;
   RegionsFilter: RegionsFilter;
   RegionsFiltering: RegionsFiltering;
   RegionsOrdering: RegionsOrdering;
@@ -25546,7 +24648,7 @@ export type ResolversTypes = ResolversObject<{
   ReportAddInput: ReportAddInput;
   ReportConnection: ResolverTypeWrapper<Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ReportEdge']>>> }>;
   ReportEdge: ResolverTypeWrapper<Omit<ReportEdge, 'node'> & { node: ResolversTypes['Report'] }>;
-  ReportEditMutations: ResolverTypeWrapper<Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Report']>, contextPatch?: Maybe<ResolversTypes['Report']>, fieldPatch?: Maybe<ResolversTypes['Report']>, relationDelete?: Maybe<ResolversTypes['Report']> }>;
+  ReportEditMutations: ResolverTypeWrapper<Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Report']>, contextPatch?: Maybe<ResolversTypes['Report']>, fieldPatch?: Maybe<ResolversTypes['Report']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Report']> }>;
   ReportsFilter: ReportsFilter;
   ReportsFiltering: ReportsFiltering;
   ReportsOrdering: ReportsOrdering;
@@ -25571,14 +24673,14 @@ export type ResolversTypes = ResolversObject<{
   SectorAddInput: SectorAddInput;
   SectorConnection: ResolverTypeWrapper<Omit<SectorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['SectorEdge']>>> }>;
   SectorEdge: ResolverTypeWrapper<Omit<SectorEdge, 'node'> & { node: ResolversTypes['Sector'] }>;
-  SectorEditMutations: ResolverTypeWrapper<Omit<SectorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Sector']>, contextPatch?: Maybe<ResolversTypes['Sector']>, fieldPatch?: Maybe<ResolversTypes['Sector']>, relationDelete?: Maybe<ResolversTypes['Sector']> }>;
+  SectorEditMutations: ResolverTypeWrapper<Omit<SectorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Sector']>, contextPatch?: Maybe<ResolversTypes['Sector']>, fieldPatch?: Maybe<ResolversTypes['Sector']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Sector']> }>;
   SectorsFilter: SectorsFilter;
   SectorsFiltering: SectorsFiltering;
   SectorsOrdering: SectorsOrdering;
   SessionDetail: ResolverTypeWrapper<SessionDetail>;
   Settings: ResolverTypeWrapper<Omit<Settings, 'platform_organization'> & { platform_organization?: Maybe<ResolversTypes['Organization']> }>;
   SettingsEditMutations: ResolverTypeWrapper<Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['Settings']>, contextPatch?: Maybe<ResolversTypes['Settings']>, fieldPatch?: Maybe<ResolversTypes['Settings']> }>;
-  Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']> }>;
+  Software: ResolverTypeWrapper<Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversTypes['VulnerabilityConnection']> }>;
   SoftwareAddInput: SoftwareAddInput;
   State: State;
   StatsOperation: StatsOperation;
@@ -25597,7 +24699,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreObject: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Event'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixCoreObjectConnection: ResolverTypeWrapper<Omit<StixCoreObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixCoreObjectEdge']>>> }>;
   StixCoreObjectEdge: ResolverTypeWrapper<Omit<StixCoreObjectEdge, 'node'> & { node: ResolversTypes['StixCoreObject'] }>;
-  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'exportAsk' | 'importPush' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, importPush?: Maybe<ResolversTypes['File']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
+  StixCoreObjectEditMutations: ResolverTypeWrapper<Omit<StixCoreObjectEditMutations, 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreObject']> }>;
   StixCoreObjectOrStixCoreRelationship: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsFilter: StixCoreObjectsFilter;
@@ -25609,7 +24711,7 @@ export type ResolversTypes = ResolversObject<{
   StixCoreRelationshipAddInput: StixCoreRelationshipAddInput;
   StixCoreRelationshipConnection: ResolverTypeWrapper<Omit<StixCoreRelationshipConnection, 'edges'> & { edges: Array<ResolversTypes['StixCoreRelationshipEdge']> }>;
   StixCoreRelationshipEdge: ResolverTypeWrapper<Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversTypes['StixCoreRelationship'] }>;
-  StixCoreRelationshipEditMutations: ResolverTypeWrapper<Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreRelationship']> }>;
+  StixCoreRelationshipEditMutations: ResolverTypeWrapper<Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixCoreRelationship']> }>;
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
   StixCoreRelationshipsFilter: StixCoreRelationshipsFilter;
   StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
@@ -25618,15 +24720,7 @@ export type ResolversTypes = ResolversObject<{
   StixCyberObservable: ResolversTypes['Artifact'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['MacAddr'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Process'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['Text'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixCyberObservableConnection: ResolverTypeWrapper<Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversTypes['StixCyberObservableEdge']> }>;
   StixCyberObservableEdge: ResolverTypeWrapper<Omit<StixCyberObservableEdge, 'node'> & { node: ResolversTypes['StixCyberObservable'] }>;
-  StixCyberObservableEditMutations: ResolverTypeWrapper<Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'promote' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversTypes['StixCyberObservable']>, exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, fieldPatch?: Maybe<ResolversTypes['StixCyberObservable']>, importPush?: Maybe<ResolversTypes['File']>, promote?: Maybe<ResolversTypes['StixCyberObservable']>, relationDelete?: Maybe<ResolversTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversTypes['StixCyberObservable']> }>;
-  StixCyberObservableRelationship: ResolverTypeWrapper<Omit<StixCyberObservableRelationship, 'cases' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, from: ResolversTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to: ResolversTypes['StixObjectOrStixRelationship'] }>;
-  StixCyberObservableRelationshipAddInput: StixCyberObservableRelationshipAddInput;
-  StixCyberObservableRelationshipConnection: ResolverTypeWrapper<Omit<StixCyberObservableRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixCyberObservableRelationshipEdge']>>> }>;
-  StixCyberObservableRelationshipEdge: ResolverTypeWrapper<Omit<StixCyberObservableRelationshipEdge, 'node'> & { node: ResolversTypes['StixCyberObservableRelationship'] }>;
-  StixCyberObservableRelationshipEditMutations: ResolverTypeWrapper<Omit<StixCyberObservableRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversTypes['StixCyberObservableRelationship']>, contextPatch?: Maybe<ResolversTypes['StixCyberObservableRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixCyberObservableRelationship']> }>;
-  StixCyberObservableRelationshipsFilter: StixCyberObservableRelationshipsFilter;
-  StixCyberObservableRelationshipsFiltering: StixCyberObservableRelationshipsFiltering;
-  StixCyberObservableRelationshipsOrdering: StixCyberObservableRelationshipsOrdering;
+  StixCyberObservableEditMutations: ResolverTypeWrapper<Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'promote' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversTypes['StixCyberObservable']>, exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, fieldPatch?: Maybe<ResolversTypes['StixCyberObservable']>, importPush?: Maybe<ResolversTypes['File']>, promote?: Maybe<ResolversTypes['StixCyberObservable']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversTypes['StixCyberObservable']> }>;
   StixCyberObservablesFilter: StixCyberObservablesFilter;
   StixCyberObservablesFiltering: StixCyberObservablesFiltering;
   StixCyberObservablesOrdering: StixCyberObservablesOrdering;
@@ -25634,37 +24728,38 @@ export type ResolversTypes = ResolversObject<{
   StixDomainObjectAddInput: StixDomainObjectAddInput;
   StixDomainObjectConnection: ResolverTypeWrapper<Omit<StixDomainObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixDomainObjectEdge']>>> }>;
   StixDomainObjectEdge: ResolverTypeWrapper<Omit<StixDomainObjectEdge, 'node'> & { node: ResolversTypes['StixDomainObject'] }>;
-  StixDomainObjectEditMutations: ResolverTypeWrapper<Omit<StixDomainObjectEditMutations, 'changeType' | 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'relationDelete' | 'relationsAdd'> & { changeType?: Maybe<ResolversTypes['StixDomainObject']>, contextClean?: Maybe<ResolversTypes['StixDomainObject']>, contextPatch?: Maybe<ResolversTypes['StixDomainObject']>, exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, fieldPatch?: Maybe<ResolversTypes['StixDomainObject']>, importPush?: Maybe<ResolversTypes['File']>, relationDelete?: Maybe<ResolversTypes['StixDomainObject']>, relationsAdd?: Maybe<ResolversTypes['StixDomainObject']> }>;
+  StixDomainObjectEditMutations: ResolverTypeWrapper<Omit<StixDomainObjectEditMutations, 'changeType' | 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { changeType?: Maybe<ResolversTypes['StixDomainObject']>, contextClean?: Maybe<ResolversTypes['StixDomainObject']>, contextPatch?: Maybe<ResolversTypes['StixDomainObject']>, exportAsk?: Maybe<Array<Maybe<ResolversTypes['File']>>>, fieldPatch?: Maybe<ResolversTypes['StixDomainObject']>, importPush?: Maybe<ResolversTypes['File']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixDomainObject']>, relationsAdd?: Maybe<ResolversTypes['StixDomainObject']> }>;
   StixDomainObjectsFilter: StixDomainObjectsFilter;
   StixDomainObjectsFiltering: StixDomainObjectsFiltering;
   StixDomainObjectsOrdering: StixDomainObjectsOrdering;
   StixEditMutations: ResolverTypeWrapper<StixEditMutations>;
-  StixFile: ResolverTypeWrapper<Omit<StixFile, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, obsContent?: Maybe<ResolversTypes['Artifact']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  StixFile: ResolverTypeWrapper<Omit<StixFile, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, obsContent?: Maybe<ResolversTypes['Artifact']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   StixFileAddInput: StixFileAddInput;
   StixFileConnection: ResolverTypeWrapper<Omit<StixFileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixFileEdge']>>> }>;
   StixFileEdge: ResolverTypeWrapper<Omit<StixFileEdge, 'node'> & { node: ResolversTypes['StixFile'] }>;
   StixId: ResolverTypeWrapper<Scalars['StixId']>;
   StixMetaObject: ResolversTypes['ExternalReference'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['Vocabulary'];
-  StixMetaRelationship: ResolverTypeWrapper<Omit<StixMetaRelationship, 'from' | 'to'> & { from: ResolversTypes['StixObjectOrStixRelationship'], to: ResolversTypes['StixObjectOrStixRelationship'] }>;
-  StixMetaRelationshipAddInput: StixMetaRelationshipAddInput;
-  StixMetaRelationshipConnection: ResolverTypeWrapper<StixMetaRelationshipConnection>;
-  StixMetaRelationshipEdge: ResolverTypeWrapper<StixMetaRelationshipEdge>;
-  StixMetaRelationshipsAddInput: StixMetaRelationshipsAddInput;
-  StixMetaRelationshipsFilter: StixMetaRelationshipsFilter;
-  StixMetaRelationshipsFiltering: StixMetaRelationshipsFiltering;
-  StixMetaRelationshipsOrdering: StixMetaRelationshipsOrdering;
   StixObject: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixFile'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vocabulary'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
-  StixObjectOrStixRelationship: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
+  StixObjectOrStixRelationship: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixRefRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixObjectOrStixRelationshipConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipConnection>;
   StixObjectOrStixRelationshipEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
-  StixObjectOrStixRelationshipOrCreator: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Creator'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
+  StixObjectOrStixRelationshipOrCreator: ResolversTypes['AdministrativeArea'] | ResolversTypes['Artifact'] | ResolversTypes['AttackPattern'] | ResolversTypes['AutonomousSystem'] | ResolversTypes['BankAccount'] | ResolversTypes['Campaign'] | ResolversTypes['CaseIncident'] | ResolversTypes['Channel'] | ResolversTypes['City'] | ResolversTypes['Country'] | ResolversTypes['CourseOfAction'] | ResolversTypes['Creator'] | ResolversTypes['CryptocurrencyWallet'] | ResolversTypes['CryptographicKey'] | ResolversTypes['DataComponent'] | ResolversTypes['DataSource'] | ResolversTypes['Directory'] | ResolversTypes['DomainName'] | ResolversTypes['EmailAddr'] | ResolversTypes['EmailMessage'] | ResolversTypes['EmailMimePartType'] | ResolversTypes['EntitySetting'] | ResolversTypes['Event'] | ResolversTypes['ExternalReference'] | ResolversTypes['Feedback'] | ResolversTypes['Grouping'] | ResolversTypes['Hostname'] | ResolversTypes['IPv4Addr'] | ResolversTypes['IPv6Addr'] | ResolversTypes['Incident'] | ResolversTypes['Indicator'] | ResolversTypes['Individual'] | ResolversTypes['Infrastructure'] | ResolversTypes['IntrusionSet'] | ResolversTypes['KillChainPhase'] | ResolversTypes['Label'] | ResolversTypes['Language'] | ResolversTypes['MacAddr'] | ResolversTypes['Malware'] | ResolversTypes['MarkingDefinition'] | ResolversTypes['MediaContent'] | ResolversTypes['Mutex'] | ResolversTypes['Narrative'] | ResolversTypes['NetworkTraffic'] | ResolversTypes['Note'] | ResolversTypes['ObservedData'] | ResolversTypes['Opinion'] | ResolversTypes['Organization'] | ResolversTypes['PaymentCard'] | ResolversTypes['PhoneNumber'] | ResolversTypes['Position'] | ResolversTypes['Process'] | ResolversTypes['Region'] | ResolversTypes['Report'] | ResolversTypes['Sector'] | ResolversTypes['Software'] | ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixFile'] | ResolversTypes['StixRefRelationship'] | ResolversTypes['StixSightingRelationship'] | ResolversTypes['System'] | ResolversTypes['Text'] | ResolversTypes['ThreatActor'] | ResolversTypes['Tool'] | ResolversTypes['Url'] | ResolversTypes['UserAccount'] | ResolversTypes['UserAgent'] | ResolversTypes['Vulnerability'] | ResolversTypes['WindowsRegistryKey'] | ResolversTypes['WindowsRegistryValueType'] | ResolversTypes['X509Certificate'];
   StixObjectOrStixRelationshipRefConnection: ResolverTypeWrapper<StixObjectOrStixRelationshipRefConnection>;
   StixObjectOrStixRelationshipRefEdge: ResolverTypeWrapper<Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversTypes['StixObjectOrStixRelationship'] }>;
   StixObjectOrStixRelationshipsFilter: StixObjectOrStixRelationshipsFilter;
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
   StixObjectOrStixRelationshipsOrdering: StixObjectOrStixRelationshipsOrdering;
   StixRef: ResolverTypeWrapper<Scalars['StixRef']>;
-  StixRelationship: ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixCyberObservableRelationship'] | ResolversTypes['StixMetaRelationship'] | ResolversTypes['StixSightingRelationship'];
+  StixRefRelationship: ResolverTypeWrapper<Omit<StixRefRelationship, 'cases' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, from: ResolversTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to: ResolversTypes['StixObjectOrStixRelationship'] }>;
+  StixRefRelationshipAddInput: StixRefRelationshipAddInput;
+  StixRefRelationshipConnection: ResolverTypeWrapper<Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>> }>;
+  StixRefRelationshipEdge: ResolverTypeWrapper<Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversTypes['StixRefRelationship'] }>;
+  StixRefRelationshipEditMutations: ResolverTypeWrapper<Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixRefRelationship']> }>;
+  StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
+  StixRefRelationshipsFilter: StixRefRelationshipsFilter;
+  StixRefRelationshipsFiltering: StixRefRelationshipsFiltering;
+  StixRefRelationshipsOrdering: StixRefRelationshipsOrdering;
+  StixRelationship: ResolversTypes['StixCoreRelationship'] | ResolversTypes['StixRefRelationship'] | ResolversTypes['StixSightingRelationship'];
   StixRelationshipConnection: ResolverTypeWrapper<StixRelationshipConnection>;
   StixRelationshipEdge: ResolverTypeWrapper<StixRelationshipEdge>;
   StixRelationshipEditMutations: ResolverTypeWrapper<StixRelationshipEditMutations>;
@@ -25674,7 +24769,7 @@ export type ResolversTypes = ResolversObject<{
   StixSightingRelationship: ResolverTypeWrapper<Omit<StixSightingRelationship, 'cases' | 'createdBy' | 'externalReferences' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, from: ResolversTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversTypes['GroupingConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, to: ResolversTypes['StixObjectOrStixRelationship'] }>;
   StixSightingRelationshipAddInput: StixSightingRelationshipAddInput;
   StixSightingRelationshipConnection: ResolverTypeWrapper<Omit<StixSightingRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['StixSightingRelationshipsEdge']>>> }>;
-  StixSightingRelationshipEditMutations: ResolverTypeWrapper<Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, relationDelete?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixSightingRelationship']> }>;
+  StixSightingRelationshipEditMutations: ResolverTypeWrapper<Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversTypes['StixSightingRelationship']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversTypes['StixSightingRelationship']> }>;
   StixSightingRelationshipsEdge: ResolverTypeWrapper<Omit<StixSightingRelationshipsEdge, 'node'> & { node: ResolversTypes['StixSightingRelationship'] }>;
   StixSightingRelationshipsFilter: StixSightingRelationshipsFilter;
   StixSightingRelationshipsFiltering: StixSightingRelationshipsFiltering;
@@ -25705,7 +24800,7 @@ export type ResolversTypes = ResolversObject<{
   SystemAddInput: SystemAddInput;
   SystemConnection: ResolverTypeWrapper<Omit<SystemConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['SystemEdge']>>> }>;
   SystemEdge: ResolverTypeWrapper<Omit<SystemEdge, 'node'> & { node: ResolversTypes['System'] }>;
-  SystemEditMutations: ResolverTypeWrapper<Omit<SystemEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['System']>, contextPatch?: Maybe<ResolversTypes['System']>, fieldPatch?: Maybe<ResolversTypes['System']>, relationDelete?: Maybe<ResolversTypes['System']> }>;
+  SystemEditMutations: ResolverTypeWrapper<Omit<SystemEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['System']>, contextPatch?: Maybe<ResolversTypes['System']>, fieldPatch?: Maybe<ResolversTypes['System']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['System']> }>;
   SystemsFilter: SystemsFilter;
   SystemsFiltering: SystemsFiltering;
   SystemsOrdering: SystemsOrdering;
@@ -25729,13 +24824,13 @@ export type ResolversTypes = ResolversObject<{
   TaxiiCollectionEdge: ResolverTypeWrapper<TaxiiCollectionEdge>;
   TaxiiCollectionEditMutations: ResolverTypeWrapper<TaxiiCollectionEditMutations>;
   TaxiiCollectionOrdering: TaxiiCollectionOrdering;
-  Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Text: ResolverTypeWrapper<Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   TextAddInput: TextAddInput;
   ThreatActor: ResolverTypeWrapper<Omit<ThreatActor, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'locations' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, countries?: Maybe<ResolversTypes['CountryConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, locations?: Maybe<ResolversTypes['LocationConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   ThreatActorAddInput: ThreatActorAddInput;
   ThreatActorConnection: ResolverTypeWrapper<Omit<ThreatActorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ThreatActorEdge']>>> }>;
   ThreatActorEdge: ResolverTypeWrapper<Omit<ThreatActorEdge, 'node'> & { node: ResolversTypes['ThreatActor'] }>;
-  ThreatActorEditMutations: ResolverTypeWrapper<Omit<ThreatActorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ThreatActor']>, contextPatch?: Maybe<ResolversTypes['ThreatActor']>, fieldPatch?: Maybe<ResolversTypes['ThreatActor']>, relationDelete?: Maybe<ResolversTypes['ThreatActor']> }>;
+  ThreatActorEditMutations: ResolverTypeWrapper<Omit<ThreatActorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['ThreatActor']>, contextPatch?: Maybe<ResolversTypes['ThreatActor']>, fieldPatch?: Maybe<ResolversTypes['ThreatActor']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['ThreatActor']> }>;
   ThreatActorsFilter: ThreatActorsFilter;
   ThreatActorsFiltering: ThreatActorsFiltering;
   ThreatActorsOrdering: ThreatActorsOrdering;
@@ -25744,7 +24839,7 @@ export type ResolversTypes = ResolversObject<{
   ToolAddInput: ToolAddInput;
   ToolConnection: ResolverTypeWrapper<Omit<ToolConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['ToolEdge']>>> }>;
   ToolEdge: ResolverTypeWrapper<Omit<ToolEdge, 'node'> & { node: ResolversTypes['Tool'] }>;
-  ToolEditMutations: ResolverTypeWrapper<Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Tool']>, contextPatch?: Maybe<ResolversTypes['Tool']>, fieldPatch?: Maybe<ResolversTypes['Tool']>, relationDelete?: Maybe<ResolversTypes['Tool']> }>;
+  ToolEditMutations: ResolverTypeWrapper<Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Tool']>, contextPatch?: Maybe<ResolversTypes['Tool']>, fieldPatch?: Maybe<ResolversTypes['Tool']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Tool']> }>;
   ToolsFilter: ToolsFilter;
   ToolsFiltering: ToolsFiltering;
   ToolsOrdering: ToolsOrdering;
@@ -25760,13 +24855,13 @@ export type ResolversTypes = ResolversObject<{
   TriggersOrdering: TriggersOrdering;
   TypeAttribute: ResolverTypeWrapper<TypeAttribute>;
   Upload: ResolverTypeWrapper<Scalars['Upload']>;
-  Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  Url: ResolverTypeWrapper<Omit<Url, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UrlAddInput: UrlAddInput;
   User: ResolverTypeWrapper<Omit<User, 'groups' | 'objectOrganization'> & { groups?: Maybe<ResolversTypes['GroupConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']> }>;
-  UserAccount: ResolverTypeWrapper<Omit<UserAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  UserAccount: ResolverTypeWrapper<Omit<UserAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAccountAddInput: UserAccountAddInput;
   UserAddInput: UserAddInput;
-  UserAgent: ResolverTypeWrapper<Omit<UserAgent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  UserAgent: ResolverTypeWrapper<Omit<UserAgent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAgentAddInput: UserAgentAddInput;
   UserConnection: ResolverTypeWrapper<Omit<UserConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['UserEdge']>>> }>;
   UserEdge: ResolverTypeWrapper<Omit<UserEdge, 'node'> & { node: ResolversTypes['User'] }>;
@@ -25795,10 +24890,10 @@ export type ResolversTypes = ResolversObject<{
   VulnerabilityAddInput: VulnerabilityAddInput;
   VulnerabilityConnection: ResolverTypeWrapper<Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['VulnerabilityEdge']>>> }>;
   VulnerabilityEdge: ResolverTypeWrapper<Omit<VulnerabilityEdge, 'node'> & { node: ResolversTypes['Vulnerability'] }>;
-  VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
-  WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  VulnerabilityEditMutations: ResolverTypeWrapper<Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Vulnerability']>, contextPatch?: Maybe<ResolversTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversTypes['Vulnerability']>, relationAdd?: Maybe<ResolversTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversTypes['Vulnerability']> }>;
+  WindowsRegistryKey: ResolverTypeWrapper<Omit<WindowsRegistryKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
-  WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  WindowsRegistryValueType: ResolverTypeWrapper<Omit<WindowsRegistryValueType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   WindowsRegistryValueTypeAddInput: WindowsRegistryValueTypeAddInput;
   Work: ResolverTypeWrapper<Work>;
   WorkConnection: ResolverTypeWrapper<WorkConnection>;
@@ -25814,11 +24909,11 @@ export type ResolversTypes = ResolversObject<{
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: ResolverTypeWrapper<WorkspaceConnection>;
   WorkspaceEdge: ResolverTypeWrapper<WorkspaceEdge>;
-  WorkspaceEditMutations: ResolverTypeWrapper<WorkspaceEditMutations>;
+  WorkspaceEditMutations: ResolverTypeWrapper<Omit<WorkspaceEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversTypes['StixRefRelationship']> }>;
   WorkspacesFilter: WorkspacesFilter;
   WorkspacesFiltering: WorkspacesFiltering;
   WorkspacesOrdering: WorkspacesOrdering;
-  X509Certificate: ResolverTypeWrapper<Omit<X509Certificate, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']> }>;
+  X509Certificate: ResolverTypeWrapper<Omit<X509Certificate, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   X509CertificateAddInput: X509CertificateAddInput;
 }>;
 
@@ -25834,7 +24929,7 @@ export type ResolversParentTypes = ResolversObject<{
   AppDebugStatistics: AppDebugStatistics;
   AppInfo: AppInfo;
   AppMemory: AppMemory;
-  Artifact: Omit<Artifact, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Artifact: Omit<Artifact, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ArtifactAddInput: ArtifactAddInput;
   Assignee: Assignee;
   AssigneeConnection: AssigneeConnection;
@@ -25843,24 +24938,24 @@ export type ResolversParentTypes = ResolversObject<{
   AttackPatternAddInput: AttackPatternAddInput;
   AttackPatternConnection: Omit<AttackPatternConnection, 'edges'> & { edges: Array<ResolversParentTypes['AttackPatternEdge']> };
   AttackPatternEdge: Omit<AttackPatternEdge, 'node'> & { node: ResolversParentTypes['AttackPattern'] };
-  AttackPatternEditMutations: Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['AttackPattern']>, contextPatch?: Maybe<ResolversParentTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversParentTypes['AttackPattern']>, relationDelete?: Maybe<ResolversParentTypes['AttackPattern']> };
+  AttackPatternEditMutations: Omit<AttackPatternEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['AttackPattern']>, contextPatch?: Maybe<ResolversParentTypes['AttackPattern']>, fieldPatch?: Maybe<ResolversParentTypes['AttackPattern']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['AttackPattern']> };
   AttackPatternsFiltering: AttackPatternsFiltering;
   Attribute: Attribute;
   AttributeConnection: AttributeConnection;
   AttributeEdge: AttributeEdge;
   AttributeEditMutations: AttributeEditMutations;
-  AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  AutonomousSystem: Omit<AutonomousSystem, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   AutonomousSystemAddInput: AutonomousSystemAddInput;
-  BankAccount: Omit<BankAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  BankAccount: Omit<BankAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   BankAccountAddInput: BankAccountAddInput;
   BasicObject: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['Capability'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Connector'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Group'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MeUser'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['Notification'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Role'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Trigger'] | ResolversParentTypes['Url'] | ResolversParentTypes['User'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vocabulary'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
-  BasicRelationship: ResolversParentTypes['InternalRelationship'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
+  BasicRelationship: ResolversParentTypes['InternalRelationship'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixRefRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   Boolean: Scalars['Boolean'];
   Campaign: Omit<Campaign, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CampaignAddInput: CampaignAddInput;
   CampaignConnection: Omit<CampaignConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CampaignEdge']>>> };
   CampaignEdge: Omit<CampaignEdge, 'node'> & { node: ResolversParentTypes['Campaign'] };
-  CampaignEditMutations: Omit<CampaignEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Campaign']>, contextPatch?: Maybe<ResolversParentTypes['Campaign']>, fieldPatch?: Maybe<ResolversParentTypes['Campaign']>, relationDelete?: Maybe<ResolversParentTypes['Campaign']> };
+  CampaignEditMutations: Omit<CampaignEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Campaign']>, contextPatch?: Maybe<ResolversParentTypes['Campaign']>, fieldPatch?: Maybe<ResolversParentTypes['Campaign']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Campaign']> };
   CampaignsFiltering: CampaignsFiltering;
   Capability: Capability;
   CapabilityConnection: CapabilityConnection;
@@ -25884,7 +24979,7 @@ export type ResolversParentTypes = ResolversObject<{
   CityAddInput: CityAddInput;
   CityConnection: Omit<CityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CityEdge']>>> };
   CityEdge: Omit<CityEdge, 'node'> & { node: ResolversParentTypes['City'] };
-  CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
+  CityEditMutations: Omit<CityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['City']>, contextPatch?: Maybe<ResolversParentTypes['City']>, fieldPatch?: Maybe<ResolversParentTypes['City']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['City']> };
   Cluster: Cluster;
   Connector: Connector;
   ConnectorConfig: ConnectorConfig;
@@ -25893,7 +24988,7 @@ export type ResolversParentTypes = ResolversObject<{
   Container: ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Report'];
   ContainerConnection: Omit<ContainerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ContainerEdge']>>> };
   ContainerEdge: Omit<ContainerEdge, 'node'> & { node: ResolversParentTypes['Container'] };
-  ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
+  ContainerEditMutations: Omit<ContainerEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Container']>, contextPatch?: Maybe<ResolversParentTypes['Container']>, fieldPatch?: Maybe<ResolversParentTypes['Container']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Container']> };
   ContainersFiltering: ContainersFiltering;
   ContextData: Omit<ContextData, 'external_references'> & { external_references?: Maybe<Array<ResolversParentTypes['ExternalReference']>> };
   CountriesFiltering: CountriesFiltering;
@@ -25901,19 +24996,19 @@ export type ResolversParentTypes = ResolversObject<{
   CountryAddInput: CountryAddInput;
   CountryConnection: Omit<CountryConnection, 'edges'> & { edges: Array<ResolversParentTypes['CountryEdge']> };
   CountryEdge: Omit<CountryEdge, 'node'> & { node: ResolversParentTypes['Country'] };
-  CountryEditMutations: Omit<CountryEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Country']>, contextPatch?: Maybe<ResolversParentTypes['Country']>, fieldPatch?: Maybe<ResolversParentTypes['Country']>, relationDelete?: Maybe<ResolversParentTypes['Country']> };
+  CountryEditMutations: Omit<CountryEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Country']>, contextPatch?: Maybe<ResolversParentTypes['Country']>, fieldPatch?: Maybe<ResolversParentTypes['Country']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Country']> };
   CourseOfAction: Omit<CourseOfAction, 'attackPatterns' | 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { attackPatterns?: Maybe<ResolversParentTypes['AttackPatternConnection']>, cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CourseOfActionAddInput: CourseOfActionAddInput;
   CourseOfActionConnection: Omit<CourseOfActionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['CourseOfActionEdge']>>> };
   CourseOfActionEdge: Omit<CourseOfActionEdge, 'node'> & { node: ResolversParentTypes['CourseOfAction'] };
-  CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
+  CourseOfActionEditMutations: Omit<CourseOfActionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['CourseOfAction']>, contextPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, fieldPatch?: Maybe<ResolversParentTypes['CourseOfAction']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['CourseOfAction']> };
   CoursesOfActionFiltering: CoursesOfActionFiltering;
   Creator: Creator;
   CreatorConnection: CreatorConnection;
   CreatorEdge: CreatorEdge;
-  CryptocurrencyWallet: Omit<CryptocurrencyWallet, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  CryptocurrencyWallet: Omit<CryptocurrencyWallet, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CryptocurrencyWalletAddInput: CryptocurrencyWalletAddInput;
-  CryptographicKey: Omit<CryptographicKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  CryptographicKey: Omit<CryptographicKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   CryptographicKeyAddInput: CryptographicKeyAddInput;
   DataComponent: BasicStoreEntityDataComponent;
   DataComponentAddInput: DataComponentAddInput;
@@ -25926,26 +25021,27 @@ export type ResolversParentTypes = ResolversObject<{
   DataSourceEdge: Omit<DataSourceEdge, 'node'> & { node: ResolversParentTypes['DataSource'] };
   DataSourcesFiltering: DataSourcesFiltering;
   DateTime: Scalars['DateTime'];
+  DefinitionRefRelationship: Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversParentTypes['StixObjectOrStixRelationship'] };
   DependencyVersion: DependencyVersion;
   Dictionary: Dictionary;
   DictionaryInput: DictionaryInput;
-  Directory: Omit<Directory, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Directory: Omit<Directory, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   DirectoryAddInput: DirectoryAddInput;
   Display: Display;
   DisplayStep: DisplayStep;
   Distribution: Omit<Distribution, 'entity'> & { entity?: Maybe<ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> };
   DocsMetrics: DocsMetrics;
-  DomainName: Omit<DomainName, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  DomainName: Omit<DomainName, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   DomainNameAddInput: DomainNameAddInput;
   EditContext: EditContext;
   EditInput: EditInput;
   EditUserContext: EditUserContext;
   ElasticSearchMetrics: ElasticSearchMetrics;
-  EmailAddr: Omit<EmailAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  EmailAddr: Omit<EmailAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   EmailAddrAddInput: EmailAddrAddInput;
-  EmailMessage: Omit<EmailMessage, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  EmailMessage: Omit<EmailMessage, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   EmailMessageAddInput: EmailMessageAddInput;
-  EmailMimePartType: Omit<EmailMimePartType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  EmailMimePartType: Omit<EmailMimePartType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   EmailMimePartTypeAddInput: EmailMimePartTypeAddInput;
   EntitySetting: BasicStoreEntityEntitySetting;
   EntitySettingConnection: Omit<EntitySettingConnection, 'edges'> & { edges: Array<ResolversParentTypes['EntitySettingEdge']> };
@@ -25960,7 +25056,7 @@ export type ResolversParentTypes = ResolversObject<{
   ExternalReferenceAddInput: ExternalReferenceAddInput;
   ExternalReferenceConnection: Omit<ExternalReferenceConnection, 'edges'> & { edges: Array<ResolversParentTypes['ExternalReferenceEdge']> };
   ExternalReferenceEdge: Omit<ExternalReferenceEdge, 'node'> & { node: ResolversParentTypes['ExternalReference'] };
-  ExternalReferenceEditMutations: Omit<ExternalReferenceEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ExternalReference']>, contextPatch?: Maybe<ResolversParentTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversParentTypes['ExternalReference']>, importPush?: Maybe<ResolversParentTypes['File']>, relationDelete?: Maybe<ResolversParentTypes['ExternalReference']> };
+  ExternalReferenceEditMutations: Omit<ExternalReferenceEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'importPush' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ExternalReference']>, contextPatch?: Maybe<ResolversParentTypes['ExternalReference']>, fieldPatch?: Maybe<ResolversParentTypes['ExternalReference']>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['ExternalReference']> };
   ExternalReferencesFiltering: ExternalReferencesFiltering;
   Feed: Feed;
   FeedAddInput: FeedAddInput;
@@ -25994,37 +25090,37 @@ export type ResolversParentTypes = ResolversObject<{
   Hash: Hash;
   HashInput: HashInput;
   HashedObservable: ResolversParentTypes['Artifact'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['X509Certificate'];
-  Hostname: Omit<Hostname, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Hostname: Omit<Hostname, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   HostnameAddInput: HostnameAddInput;
   ID: Scalars['ID'];
-  IPv4Addr: Omit<IPv4Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  IPv4Addr: Omit<IPv4Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IPv4AddrAddInput: IPv4AddrAddInput;
-  IPv6Addr: Omit<IPv6Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  IPv6Addr: Omit<IPv6Addr, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IPv6AddrAddInput: IPv6AddrAddInput;
   IdentitiesFiltering: IdentitiesFiltering;
   Identity: ResolversParentTypes['Individual'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Sector'] | ResolversParentTypes['System'];
   IdentityAddInput: IdentityAddInput;
   IdentityConnection: Omit<IdentityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IdentityEdge']>>> };
   IdentityEdge: Omit<IdentityEdge, 'node'> & { node: ResolversParentTypes['Identity'] };
-  IdentityEditMutations: Omit<IdentityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Identity']>, contextPatch?: Maybe<ResolversParentTypes['Identity']>, fieldPatch?: Maybe<ResolversParentTypes['Identity']>, relationDelete?: Maybe<ResolversParentTypes['Identity']> };
+  IdentityEditMutations: Omit<IdentityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Identity']>, contextPatch?: Maybe<ResolversParentTypes['Identity']>, fieldPatch?: Maybe<ResolversParentTypes['Identity']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Identity']> };
   Incident: Omit<Incident, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IncidentAddInput: IncidentAddInput;
   IncidentConnection: Omit<IncidentConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IncidentEdge']>>> };
   IncidentEdge: Omit<IncidentEdge, 'node'> & { node: ResolversParentTypes['Incident'] };
-  IncidentEditMutations: Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Incident']>, contextPatch?: Maybe<ResolversParentTypes['Incident']>, fieldPatch?: Maybe<ResolversParentTypes['Incident']>, relationDelete?: Maybe<ResolversParentTypes['Incident']> };
+  IncidentEditMutations: Omit<IncidentEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Incident']>, contextPatch?: Maybe<ResolversParentTypes['Incident']>, fieldPatch?: Maybe<ResolversParentTypes['Incident']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Incident']> };
   IncidentsFiltering: IncidentsFiltering;
   IndexingMetrics: IndexingMetrics;
   Indicator: Omit<Indicator, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observables' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observables?: Maybe<ResolversParentTypes['StixCyberObservableConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IndicatorAddInput: IndicatorAddInput;
   IndicatorConnection: Omit<IndicatorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndicatorEdge']>>> };
   IndicatorEdge: Omit<IndicatorEdge, 'node'> & { node: ResolversParentTypes['Indicator'] };
-  IndicatorEditMutations: Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Indicator']>, contextPatch?: Maybe<ResolversParentTypes['Indicator']>, fieldPatch?: Maybe<ResolversParentTypes['Indicator']>, relationDelete?: Maybe<ResolversParentTypes['Indicator']> };
+  IndicatorEditMutations: Omit<IndicatorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Indicator']>, contextPatch?: Maybe<ResolversParentTypes['Indicator']>, fieldPatch?: Maybe<ResolversParentTypes['Indicator']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Indicator']> };
   IndicatorsFiltering: IndicatorsFiltering;
   Individual: Omit<Individual, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'organizations' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, organizations?: Maybe<ResolversParentTypes['OrganizationConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   IndividualAddInput: IndividualAddInput;
   IndividualConnection: Omit<IndividualConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IndividualEdge']>>> };
   IndividualEdge: Omit<IndividualEdge, 'node'> & { node: ResolversParentTypes['Individual'] };
-  IndividualEditMutations: Omit<IndividualEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Individual']>, contextPatch?: Maybe<ResolversParentTypes['Individual']>, fieldPatch?: Maybe<ResolversParentTypes['Individual']>, relationDelete?: Maybe<ResolversParentTypes['Individual']> };
+  IndividualEditMutations: Omit<IndividualEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Individual']>, contextPatch?: Maybe<ResolversParentTypes['Individual']>, fieldPatch?: Maybe<ResolversParentTypes['Individual']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Individual']> };
   IndividualsFiltering: IndividualsFiltering;
   Inference: Omit<Inference, 'explanation'> & { explanation: Array<Maybe<ResolversParentTypes['StixObjectOrStixRelationship']>> };
   InferenceAttribute: InferenceAttribute;
@@ -26032,7 +25128,7 @@ export type ResolversParentTypes = ResolversObject<{
   InfrastructureAddInput: InfrastructureAddInput;
   InfrastructureConnection: Omit<InfrastructureConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['InfrastructureEdge']>>> };
   InfrastructureEdge: Omit<InfrastructureEdge, 'node'> & { node: ResolversParentTypes['Infrastructure'] };
-  InfrastructureEditMutations: Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Infrastructure']>, contextPatch?: Maybe<ResolversParentTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversParentTypes['Infrastructure']>, relationDelete?: Maybe<ResolversParentTypes['Infrastructure']> };
+  InfrastructureEditMutations: Omit<InfrastructureEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Infrastructure']>, contextPatch?: Maybe<ResolversParentTypes['Infrastructure']>, fieldPatch?: Maybe<ResolversParentTypes['Infrastructure']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Infrastructure']> };
   InfrastructuresFiltering: InfrastructuresFiltering;
   Int: Scalars['Int'];
   InternalObject: ResolversParentTypes['Capability'] | ResolversParentTypes['Connector'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Group'] | ResolversParentTypes['MeUser'] | ResolversParentTypes['Notification'] | ResolversParentTypes['Role'] | ResolversParentTypes['Settings'] | ResolversParentTypes['Trigger'] | ResolversParentTypes['User'];
@@ -26042,13 +25138,13 @@ export type ResolversParentTypes = ResolversObject<{
   IntrusionSetAddInput: IntrusionSetAddInput;
   IntrusionSetConnection: Omit<IntrusionSetConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['IntrusionSetEdge']>>> };
   IntrusionSetEdge: Omit<IntrusionSetEdge, 'node'> & { node: ResolversParentTypes['IntrusionSet'] };
-  IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
+  IntrusionSetEditMutations: Omit<IntrusionSetEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['IntrusionSet']>, contextPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, fieldPatch?: Maybe<ResolversParentTypes['IntrusionSet']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['IntrusionSet']> };
   IntrusionSetsFiltering: IntrusionSetsFiltering;
   KillChainPhase: KillChainPhase;
   KillChainPhaseAddInput: KillChainPhaseAddInput;
   KillChainPhaseConnection: KillChainPhaseConnection;
   KillChainPhaseEdge: KillChainPhaseEdge;
-  KillChainPhaseEditMutations: KillChainPhaseEditMutations;
+  KillChainPhaseEditMutations: Omit<KillChainPhaseEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   KillChainPhasesFiltering: KillChainPhasesFiltering;
   Label: Label;
   LabelAddInput: LabelAddInput;
@@ -26067,20 +25163,20 @@ export type ResolversParentTypes = ResolversObject<{
   LocationAddInput: LocationAddInput;
   LocationConnection: Omit<LocationConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LocationEdge']>>> };
   LocationEdge: Omit<LocationEdge, 'node'> & { node: ResolversParentTypes['Location'] };
-  LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
+  LocationEditMutations: Omit<LocationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Location']>, contextPatch?: Maybe<ResolversParentTypes['Location']>, fieldPatch?: Maybe<ResolversParentTypes['Location']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Location']> };
   LocationsFiltering: LocationsFiltering;
   Log: Omit<Log, 'context_data'> & { context_data?: Maybe<ResolversParentTypes['ContextData']> };
   LogConnection: Omit<LogConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['LogEdge']>>> };
   LogEdge: Omit<LogEdge, 'node'> & { node: ResolversParentTypes['Log'] };
   LogsFiltering: LogsFiltering;
   LogsWorkerConfig: LogsWorkerConfig;
-  MacAddr: Omit<MacAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  MacAddr: Omit<MacAddr, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MacAddrAddInput: MacAddrAddInput;
   Malware: Omit<Malware, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MalwareAddInput: MalwareAddInput;
   MalwareConnection: Omit<MalwareConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['MalwareEdge']>>> };
   MalwareEdge: Omit<MalwareEdge, 'node'> & { node: ResolversParentTypes['Malware'] };
-  MalwareEditMutations: Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Malware']>, contextPatch?: Maybe<ResolversParentTypes['Malware']>, fieldPatch?: Maybe<ResolversParentTypes['Malware']>, relationDelete?: Maybe<ResolversParentTypes['Malware']> };
+  MalwareEditMutations: Omit<MalwareEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Malware']>, contextPatch?: Maybe<ResolversParentTypes['Malware']>, fieldPatch?: Maybe<ResolversParentTypes['Malware']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Malware']> };
   MalwaresFiltering: MalwaresFiltering;
   MarkingDefinition: MarkingDefinition;
   MarkingDefinitionAddInput: MarkingDefinitionAddInput;
@@ -26092,27 +25188,27 @@ export type ResolversParentTypes = ResolversObject<{
   MeOrganizationConnection: MeOrganizationConnection;
   MeOrganizationEdge: MeOrganizationEdge;
   MeUser: MeUser;
-  MediaContent: Omit<MediaContent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  MediaContent: Omit<MediaContent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MediaContentAddInput: MediaContentAddInput;
   MessagesStats: MessagesStats;
   Module: Module;
   MultiDistribution: MultiDistribution;
   MultiTimeSeries: MultiTimeSeries;
   Mutation: {};
-  Mutex: Omit<Mutex, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Mutex: Omit<Mutex, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   MutexAddInput: MutexAddInput;
   Narrative: BasicStoreEntityNarrative;
   NarrativeAddInput: NarrativeAddInput;
   NarrativeConnection: Omit<NarrativeConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['NarrativeEdge']>>> };
   NarrativeEdge: Omit<NarrativeEdge, 'node'> & { node: ResolversParentTypes['Narrative'] };
   NarrativesFiltering: NarrativesFiltering;
-  NetworkTraffic: Omit<NetworkTraffic, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  NetworkTraffic: Omit<NetworkTraffic, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   NetworkTrafficAddInput: NetworkTrafficAddInput;
   Note: Omit<Note, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   NoteAddInput: NoteAddInput;
   NoteConnection: Omit<NoteConnection, 'edges'> & { edges: Array<ResolversParentTypes['NoteEdge']> };
   NoteEdge: Omit<NoteEdge, 'node'> & { node: ResolversParentTypes['Note'] };
-  NoteEditMutations: Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Note']>, contextPatch?: Maybe<ResolversParentTypes['Note']>, fieldPatch?: Maybe<ResolversParentTypes['Note']>, relationDelete?: Maybe<ResolversParentTypes['Note']> };
+  NoteEditMutations: Omit<NoteEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Note']>, contextPatch?: Maybe<ResolversParentTypes['Note']>, fieldPatch?: Maybe<ResolversParentTypes['Note']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Note']> };
   NoteUserAddInput: NoteUserAddInput;
   NotesFiltering: NotesFiltering;
   Notification: BasicStoreEntityNotification;
@@ -26128,36 +25224,36 @@ export type ResolversParentTypes = ResolversObject<{
   ObservedDataAddInput: ObservedDataAddInput;
   ObservedDataConnection: Omit<ObservedDataConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ObservedDataEdge']>>> };
   ObservedDataEdge: Omit<ObservedDataEdge, 'node'> & { node: ResolversParentTypes['ObservedData'] };
-  ObservedDataEditMutations: Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ObservedData']>, contextPatch?: Maybe<ResolversParentTypes['ObservedData']>, fieldPatch?: Maybe<ResolversParentTypes['ObservedData']>, relationDelete?: Maybe<ResolversParentTypes['ObservedData']> };
+  ObservedDataEditMutations: Omit<ObservedDataEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ObservedData']>, contextPatch?: Maybe<ResolversParentTypes['ObservedData']>, fieldPatch?: Maybe<ResolversParentTypes['ObservedData']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['ObservedData']> };
   ObservedDatasFiltering: ObservedDatasFiltering;
   Opinion: Omit<Opinion, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'relatedContainers' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, relatedContainers?: Maybe<ResolversParentTypes['ContainerConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   OpinionAddInput: OpinionAddInput;
   OpinionConnection: Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['OpinionEdge']>>> };
   OpinionEdge: Omit<OpinionEdge, 'node'> & { node: ResolversParentTypes['Opinion'] };
-  OpinionEditMutations: Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Opinion']>, contextPatch?: Maybe<ResolversParentTypes['Opinion']>, fieldPatch?: Maybe<ResolversParentTypes['Opinion']>, relationDelete?: Maybe<ResolversParentTypes['Opinion']> };
+  OpinionEditMutations: Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Opinion']>, contextPatch?: Maybe<ResolversParentTypes['Opinion']>, fieldPatch?: Maybe<ResolversParentTypes['Opinion']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Opinion']> };
   OpinionUserAddInput: OpinionUserAddInput;
   OpinionsFiltering: OpinionsFiltering;
   Organization: Omit<Organization, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'sectors' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, sectors?: Maybe<ResolversParentTypes['SectorConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   OrganizationAddInput: OrganizationAddInput;
   OrganizationConnection: Omit<OrganizationConnection, 'edges'> & { edges: Array<ResolversParentTypes['OrganizationEdge']> };
   OrganizationEdge: Omit<OrganizationEdge, 'node'> & { node: ResolversParentTypes['Organization'] };
-  OrganizationEditMutations: Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Organization']>, contextPatch?: Maybe<ResolversParentTypes['Organization']>, fieldPatch?: Maybe<ResolversParentTypes['Organization']>, relationDelete?: Maybe<ResolversParentTypes['Organization']> };
+  OrganizationEditMutations: Omit<OrganizationEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Organization']>, contextPatch?: Maybe<ResolversParentTypes['Organization']>, fieldPatch?: Maybe<ResolversParentTypes['Organization']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Organization']> };
   OrganizationOrIndividual: ResolversParentTypes['Individual'] | ResolversParentTypes['Organization'];
   OrganizationsFiltering: OrganizationsFiltering;
   OtpElement: OtpElement;
   OverviewMetrics: OverviewMetrics;
   PageInfo: PageInfo;
-  PaymentCard: Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  PaymentCard: Omit<PaymentCard, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PaymentCardAddInput: PaymentCardAddInput;
-  PhoneNumber: Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  PhoneNumber: Omit<PhoneNumber, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PhoneNumberAddInput: PhoneNumberAddInput;
   Position: Omit<Position, 'cases' | 'city' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, city?: Maybe<ResolversParentTypes['City']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   PositionAddInput: PositionAddInput;
   PositionConnection: Omit<PositionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['PositionEdge']>>> };
   PositionEdge: Omit<PositionEdge, 'node'> & { node: ResolversParentTypes['Position'] };
-  PositionEditMutations: Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Position']>, contextPatch?: Maybe<ResolversParentTypes['Position']>, fieldPatch?: Maybe<ResolversParentTypes['Position']>, relationDelete?: Maybe<ResolversParentTypes['Position']> };
+  PositionEditMutations: Omit<PositionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Position']>, contextPatch?: Maybe<ResolversParentTypes['Position']>, fieldPatch?: Maybe<ResolversParentTypes['Position']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Position']> };
   PositionsFiltering: PositionsFiltering;
-  Process: Omit<Process, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Process: Omit<Process, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'serviceDlls' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, serviceDlls?: Maybe<ResolversParentTypes['StixFileConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ProcessAddInput: ProcessAddInput;
   Provider: Provider;
   Query: {};
@@ -26172,7 +25268,7 @@ export type ResolversParentTypes = ResolversObject<{
   RegionAddInput: RegionAddInput;
   RegionConnection: Omit<RegionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['RegionEdge']>>> };
   RegionEdge: Omit<RegionEdge, 'node'> & { node: ResolversParentTypes['Region'] };
-  RegionEditMutations: Omit<RegionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Region']>, contextPatch?: Maybe<ResolversParentTypes['Region']>, fieldPatch?: Maybe<ResolversParentTypes['Region']>, relationDelete?: Maybe<ResolversParentTypes['Region']> };
+  RegionEditMutations: Omit<RegionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Region']>, contextPatch?: Maybe<ResolversParentTypes['Region']>, fieldPatch?: Maybe<ResolversParentTypes['Region']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Region']> };
   RegionsFiltering: RegionsFiltering;
   RegisterConnectorInput: RegisterConnectorInput;
   RemoteStreamCollection: RemoteStreamCollection;
@@ -26180,7 +25276,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportAddInput: ReportAddInput;
   ReportConnection: Omit<ReportConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ReportEdge']>>> };
   ReportEdge: Omit<ReportEdge, 'node'> & { node: ResolversParentTypes['Report'] };
-  ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
+  ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   ReportsFiltering: ReportsFiltering;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
@@ -26202,12 +25298,12 @@ export type ResolversParentTypes = ResolversObject<{
   SectorAddInput: SectorAddInput;
   SectorConnection: Omit<SectorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['SectorEdge']>>> };
   SectorEdge: Omit<SectorEdge, 'node'> & { node: ResolversParentTypes['Sector'] };
-  SectorEditMutations: Omit<SectorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Sector']>, contextPatch?: Maybe<ResolversParentTypes['Sector']>, fieldPatch?: Maybe<ResolversParentTypes['Sector']>, relationDelete?: Maybe<ResolversParentTypes['Sector']> };
+  SectorEditMutations: Omit<SectorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Sector']>, contextPatch?: Maybe<ResolversParentTypes['Sector']>, fieldPatch?: Maybe<ResolversParentTypes['Sector']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Sector']> };
   SectorsFiltering: SectorsFiltering;
   SessionDetail: SessionDetail;
   Settings: Omit<Settings, 'platform_organization'> & { platform_organization?: Maybe<ResolversParentTypes['Organization']> };
   SettingsEditMutations: Omit<SettingsEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['Settings']>, contextPatch?: Maybe<ResolversParentTypes['Settings']>, fieldPatch?: Maybe<ResolversParentTypes['Settings']> };
-  Software: Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']> };
+  Software: Omit<Software, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'vulnerabilities'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, vulnerabilities?: Maybe<ResolversParentTypes['VulnerabilityConnection']> };
   SoftwareAddInput: SoftwareAddInput;
   Status: Status;
   StatusAddInput: StatusAddInput;
@@ -26221,7 +25317,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreObject: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Event'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixCoreObjectConnection: Omit<StixCoreObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixCoreObjectEdge']>>> };
   StixCoreObjectEdge: Omit<StixCoreObjectEdge, 'node'> & { node: ResolversParentTypes['StixCoreObject'] };
-  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'exportAsk' | 'importPush' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, importPush?: Maybe<ResolversParentTypes['File']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
+  StixCoreObjectEditMutations: Omit<StixCoreObjectEditMutations, 'exportAsk' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreObject']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreObject']> };
   StixCoreObjectOrStixCoreRelationship: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixCoreObjectsDistributionParameters: StixCoreObjectsDistributionParameters;
   StixCoreObjectsFiltering: StixCoreObjectsFiltering;
@@ -26231,50 +25327,45 @@ export type ResolversParentTypes = ResolversObject<{
   StixCoreRelationshipAddInput: StixCoreRelationshipAddInput;
   StixCoreRelationshipConnection: Omit<StixCoreRelationshipConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCoreRelationshipEdge']> };
   StixCoreRelationshipEdge: Omit<StixCoreRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixCoreRelationship'] };
-  StixCoreRelationshipEditMutations: Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']> };
+  StixCoreRelationshipEditMutations: Omit<StixCoreRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixCoreRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixCoreRelationship']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixCoreRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixCoreRelationship']> };
   StixCoreRelationshipsDistributionParameters: StixCoreRelationshipsDistributionParameters;
   StixCoreRelationshipsFiltering: StixCoreRelationshipsFiltering;
   StixCoreRelationshipsTimeSeriesParameters: StixCoreRelationshipsTimeSeriesParameters;
   StixCyberObservable: ResolversParentTypes['Artifact'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Process'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['Text'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixCyberObservableConnection: Omit<StixCyberObservableConnection, 'edges'> & { edges: Array<ResolversParentTypes['StixCyberObservableEdge']> };
   StixCyberObservableEdge: Omit<StixCyberObservableEdge, 'node'> & { node: ResolversParentTypes['StixCyberObservable'] };
-  StixCyberObservableEditMutations: Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'promote' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversParentTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, fieldPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, importPush?: Maybe<ResolversParentTypes['File']>, promote?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationDelete?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversParentTypes['StixCyberObservable']> };
-  StixCyberObservableRelationship: Omit<StixCyberObservableRelationship, 'cases' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, from: ResolversParentTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to: ResolversParentTypes['StixObjectOrStixRelationship'] };
-  StixCyberObservableRelationshipAddInput: StixCyberObservableRelationshipAddInput;
-  StixCyberObservableRelationshipConnection: Omit<StixCyberObservableRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixCyberObservableRelationshipEdge']>>> };
-  StixCyberObservableRelationshipEdge: Omit<StixCyberObservableRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixCyberObservableRelationship'] };
-  StixCyberObservableRelationshipEditMutations: Omit<StixCyberObservableRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch'> & { contextClean?: Maybe<ResolversParentTypes['StixCyberObservableRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixCyberObservableRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixCyberObservableRelationship']> };
-  StixCyberObservableRelationshipsFiltering: StixCyberObservableRelationshipsFiltering;
+  StixCyberObservableEditMutations: Omit<StixCyberObservableEditMutations, 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'promote' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { contextClean?: Maybe<ResolversParentTypes['StixCyberObservable']>, contextPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, fieldPatch?: Maybe<ResolversParentTypes['StixCyberObservable']>, importPush?: Maybe<ResolversParentTypes['File']>, promote?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixCyberObservable']>, relationsAdd?: Maybe<ResolversParentTypes['StixCyberObservable']> };
   StixCyberObservablesFiltering: StixCyberObservablesFiltering;
   StixDomainObject: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Event'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['Language'] | ResolversParentTypes['Malware'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['Position'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['System'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Vulnerability'];
   StixDomainObjectAddInput: StixDomainObjectAddInput;
   StixDomainObjectConnection: Omit<StixDomainObjectConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixDomainObjectEdge']>>> };
   StixDomainObjectEdge: Omit<StixDomainObjectEdge, 'node'> & { node: ResolversParentTypes['StixDomainObject'] };
-  StixDomainObjectEditMutations: Omit<StixDomainObjectEditMutations, 'changeType' | 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'relationDelete' | 'relationsAdd'> & { changeType?: Maybe<ResolversParentTypes['StixDomainObject']>, contextClean?: Maybe<ResolversParentTypes['StixDomainObject']>, contextPatch?: Maybe<ResolversParentTypes['StixDomainObject']>, exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, fieldPatch?: Maybe<ResolversParentTypes['StixDomainObject']>, importPush?: Maybe<ResolversParentTypes['File']>, relationDelete?: Maybe<ResolversParentTypes['StixDomainObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixDomainObject']> };
+  StixDomainObjectEditMutations: Omit<StixDomainObjectEditMutations, 'changeType' | 'contextClean' | 'contextPatch' | 'exportAsk' | 'fieldPatch' | 'importPush' | 'relationAdd' | 'relationDelete' | 'relationsAdd'> & { changeType?: Maybe<ResolversParentTypes['StixDomainObject']>, contextClean?: Maybe<ResolversParentTypes['StixDomainObject']>, contextPatch?: Maybe<ResolversParentTypes['StixDomainObject']>, exportAsk?: Maybe<Array<Maybe<ResolversParentTypes['File']>>>, fieldPatch?: Maybe<ResolversParentTypes['StixDomainObject']>, importPush?: Maybe<ResolversParentTypes['File']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixDomainObject']>, relationsAdd?: Maybe<ResolversParentTypes['StixDomainObject']> };
   StixDomainObjectsFiltering: StixDomainObjectsFiltering;
   StixEditMutations: StixEditMutations;
-  StixFile: Omit<StixFile, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, obsContent?: Maybe<ResolversParentTypes['Artifact']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  StixFile: Omit<StixFile, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'obsContent' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, obsContent?: Maybe<ResolversParentTypes['Artifact']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   StixFileAddInput: StixFileAddInput;
   StixFileConnection: Omit<StixFileConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixFileEdge']>>> };
   StixFileEdge: Omit<StixFileEdge, 'node'> & { node: ResolversParentTypes['StixFile'] };
   StixId: Scalars['StixId'];
   StixMetaObject: ResolversParentTypes['ExternalReference'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['Vocabulary'];
-  StixMetaRelationship: Omit<StixMetaRelationship, 'from' | 'to'> & { from: ResolversParentTypes['StixObjectOrStixRelationship'], to: ResolversParentTypes['StixObjectOrStixRelationship'] };
-  StixMetaRelationshipAddInput: StixMetaRelationshipAddInput;
-  StixMetaRelationshipConnection: StixMetaRelationshipConnection;
-  StixMetaRelationshipEdge: StixMetaRelationshipEdge;
-  StixMetaRelationshipsAddInput: StixMetaRelationshipsAddInput;
-  StixMetaRelationshipsFiltering: StixMetaRelationshipsFiltering;
   StixObject: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vocabulary'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
-  StixObjectOrStixRelationship: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
+  StixObjectOrStixRelationship: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixRefRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixObjectOrStixRelationshipConnection: StixObjectOrStixRelationshipConnection;
   StixObjectOrStixRelationshipEdge: Omit<StixObjectOrStixRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
-  StixObjectOrStixRelationshipOrCreator: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Creator'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
+  StixObjectOrStixRelationshipOrCreator: ResolversParentTypes['AdministrativeArea'] | ResolversParentTypes['Artifact'] | ResolversParentTypes['AttackPattern'] | ResolversParentTypes['AutonomousSystem'] | ResolversParentTypes['BankAccount'] | ResolversParentTypes['Campaign'] | ResolversParentTypes['CaseIncident'] | ResolversParentTypes['Channel'] | ResolversParentTypes['City'] | ResolversParentTypes['Country'] | ResolversParentTypes['CourseOfAction'] | ResolversParentTypes['Creator'] | ResolversParentTypes['CryptocurrencyWallet'] | ResolversParentTypes['CryptographicKey'] | ResolversParentTypes['DataComponent'] | ResolversParentTypes['DataSource'] | ResolversParentTypes['Directory'] | ResolversParentTypes['DomainName'] | ResolversParentTypes['EmailAddr'] | ResolversParentTypes['EmailMessage'] | ResolversParentTypes['EmailMimePartType'] | ResolversParentTypes['EntitySetting'] | ResolversParentTypes['Event'] | ResolversParentTypes['ExternalReference'] | ResolversParentTypes['Feedback'] | ResolversParentTypes['Grouping'] | ResolversParentTypes['Hostname'] | ResolversParentTypes['IPv4Addr'] | ResolversParentTypes['IPv6Addr'] | ResolversParentTypes['Incident'] | ResolversParentTypes['Indicator'] | ResolversParentTypes['Individual'] | ResolversParentTypes['Infrastructure'] | ResolversParentTypes['IntrusionSet'] | ResolversParentTypes['KillChainPhase'] | ResolversParentTypes['Label'] | ResolversParentTypes['Language'] | ResolversParentTypes['MacAddr'] | ResolversParentTypes['Malware'] | ResolversParentTypes['MarkingDefinition'] | ResolversParentTypes['MediaContent'] | ResolversParentTypes['Mutex'] | ResolversParentTypes['Narrative'] | ResolversParentTypes['NetworkTraffic'] | ResolversParentTypes['Note'] | ResolversParentTypes['ObservedData'] | ResolversParentTypes['Opinion'] | ResolversParentTypes['Organization'] | ResolversParentTypes['PaymentCard'] | ResolversParentTypes['PhoneNumber'] | ResolversParentTypes['Position'] | ResolversParentTypes['Process'] | ResolversParentTypes['Region'] | ResolversParentTypes['Report'] | ResolversParentTypes['Sector'] | ResolversParentTypes['Software'] | ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixFile'] | ResolversParentTypes['StixRefRelationship'] | ResolversParentTypes['StixSightingRelationship'] | ResolversParentTypes['System'] | ResolversParentTypes['Text'] | ResolversParentTypes['ThreatActor'] | ResolversParentTypes['Tool'] | ResolversParentTypes['Url'] | ResolversParentTypes['UserAccount'] | ResolversParentTypes['UserAgent'] | ResolversParentTypes['Vulnerability'] | ResolversParentTypes['WindowsRegistryKey'] | ResolversParentTypes['WindowsRegistryValueType'] | ResolversParentTypes['X509Certificate'];
   StixObjectOrStixRelationshipRefConnection: StixObjectOrStixRelationshipRefConnection;
   StixObjectOrStixRelationshipRefEdge: Omit<StixObjectOrStixRelationshipRefEdge, 'node'> & { node: ResolversParentTypes['StixObjectOrStixRelationship'] };
   StixObjectOrStixRelationshipsFiltering: StixObjectOrStixRelationshipsFiltering;
   StixRef: Scalars['StixRef'];
-  StixRelationship: ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixCyberObservableRelationship'] | ResolversParentTypes['StixMetaRelationship'] | ResolversParentTypes['StixSightingRelationship'];
+  StixRefRelationship: Omit<StixRefRelationship, 'cases' | 'from' | 'groupings' | 'notes' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, from: ResolversParentTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to: ResolversParentTypes['StixObjectOrStixRelationship'] };
+  StixRefRelationshipAddInput: StixRefRelationshipAddInput;
+  StixRefRelationshipConnection: Omit<StixRefRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixRefRelationshipEdge']>>> };
+  StixRefRelationshipEdge: Omit<StixRefRelationshipEdge, 'node'> & { node: ResolversParentTypes['StixRefRelationship'] };
+  StixRefRelationshipEditMutations: Omit<StixRefRelationshipEditMutations, 'contextPatch' | 'fieldPatch'> & { contextPatch?: Maybe<ResolversParentTypes['StixRefRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixRefRelationship']> };
+  StixRefRelationshipsAddInput: StixRefRelationshipsAddInput;
+  StixRefRelationshipsFiltering: StixRefRelationshipsFiltering;
+  StixRelationship: ResolversParentTypes['StixCoreRelationship'] | ResolversParentTypes['StixRefRelationship'] | ResolversParentTypes['StixSightingRelationship'];
   StixRelationshipConnection: StixRelationshipConnection;
   StixRelationshipEdge: StixRelationshipEdge;
   StixRelationshipEditMutations: StixRelationshipEditMutations;
@@ -26282,7 +25373,7 @@ export type ResolversParentTypes = ResolversObject<{
   StixSightingRelationship: Omit<StixSightingRelationship, 'cases' | 'createdBy' | 'externalReferences' | 'from' | 'groupings' | 'notes' | 'objectOrganization' | 'opinions' | 'reports' | 'to'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, from: ResolversParentTypes['StixObjectOrStixRelationship'], groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, to: ResolversParentTypes['StixObjectOrStixRelationship'] };
   StixSightingRelationshipAddInput: StixSightingRelationshipAddInput;
   StixSightingRelationshipConnection: Omit<StixSightingRelationshipConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['StixSightingRelationshipsEdge']>>> };
-  StixSightingRelationshipEditMutations: Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']> };
+  StixSightingRelationshipEditMutations: Omit<StixSightingRelationshipEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete' | 'restrictionOrganizationAdd' | 'restrictionOrganizationDelete'> & { contextClean?: Maybe<ResolversParentTypes['StixSightingRelationship']>, contextPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, fieldPatch?: Maybe<ResolversParentTypes['StixSightingRelationship']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationAdd?: Maybe<ResolversParentTypes['StixSightingRelationship']>, restrictionOrganizationDelete?: Maybe<ResolversParentTypes['StixSightingRelationship']> };
   StixSightingRelationshipsEdge: Omit<StixSightingRelationshipsEdge, 'node'> & { node: ResolversParentTypes['StixSightingRelationship'] };
   StixSightingRelationshipsFiltering: StixSightingRelationshipsFiltering;
   StreamCollection: Omit<StreamCollection, 'groups'> & { groups?: Maybe<Array<Maybe<ResolversParentTypes['Group']>>> };
@@ -26307,7 +25398,7 @@ export type ResolversParentTypes = ResolversObject<{
   SystemAddInput: SystemAddInput;
   SystemConnection: Omit<SystemConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['SystemEdge']>>> };
   SystemEdge: Omit<SystemEdge, 'node'> & { node: ResolversParentTypes['System'] };
-  SystemEditMutations: Omit<SystemEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['System']>, contextPatch?: Maybe<ResolversParentTypes['System']>, fieldPatch?: Maybe<ResolversParentTypes['System']>, relationDelete?: Maybe<ResolversParentTypes['System']> };
+  SystemEditMutations: Omit<SystemEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['System']>, contextPatch?: Maybe<ResolversParentTypes['System']>, fieldPatch?: Maybe<ResolversParentTypes['System']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['System']> };
   SystemsFiltering: SystemsFiltering;
   Task: ResolversParentTypes['ListTask'] | ResolversParentTypes['QueryTask'] | ResolversParentTypes['RuleTask'];
   TaskAction: TaskAction;
@@ -26323,20 +25414,20 @@ export type ResolversParentTypes = ResolversObject<{
   TaxiiCollectionConnection: TaxiiCollectionConnection;
   TaxiiCollectionEdge: TaxiiCollectionEdge;
   TaxiiCollectionEditMutations: TaxiiCollectionEditMutations;
-  Text: Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Text: Omit<Text, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   TextAddInput: TextAddInput;
   ThreatActor: Omit<ThreatActor, 'cases' | 'countries' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'locations' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, countries?: Maybe<ResolversParentTypes['CountryConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, locations?: Maybe<ResolversParentTypes['LocationConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ThreatActorAddInput: ThreatActorAddInput;
   ThreatActorConnection: Omit<ThreatActorConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ThreatActorEdge']>>> };
   ThreatActorEdge: Omit<ThreatActorEdge, 'node'> & { node: ResolversParentTypes['ThreatActor'] };
-  ThreatActorEditMutations: Omit<ThreatActorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ThreatActor']>, contextPatch?: Maybe<ResolversParentTypes['ThreatActor']>, fieldPatch?: Maybe<ResolversParentTypes['ThreatActor']>, relationDelete?: Maybe<ResolversParentTypes['ThreatActor']> };
+  ThreatActorEditMutations: Omit<ThreatActorEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['ThreatActor']>, contextPatch?: Maybe<ResolversParentTypes['ThreatActor']>, fieldPatch?: Maybe<ResolversParentTypes['ThreatActor']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['ThreatActor']> };
   ThreatActorsFiltering: ThreatActorsFiltering;
   TimeSeries: TimeSeries;
   Tool: Omit<Tool, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   ToolAddInput: ToolAddInput;
   ToolConnection: Omit<ToolConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['ToolEdge']>>> };
   ToolEdge: Omit<ToolEdge, 'node'> & { node: ResolversParentTypes['Tool'] };
-  ToolEditMutations: Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Tool']>, contextPatch?: Maybe<ResolversParentTypes['Tool']>, fieldPatch?: Maybe<ResolversParentTypes['Tool']>, relationDelete?: Maybe<ResolversParentTypes['Tool']> };
+  ToolEditMutations: Omit<ToolEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Tool']>, contextPatch?: Maybe<ResolversParentTypes['Tool']>, fieldPatch?: Maybe<ResolversParentTypes['Tool']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Tool']> };
   ToolsFiltering: ToolsFiltering;
   Trigger: BasicStoreEntityTrigger;
   TriggerConnection: Omit<TriggerConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['TriggerEdge']>>> };
@@ -26346,13 +25437,13 @@ export type ResolversParentTypes = ResolversObject<{
   TriggersFiltering: TriggersFiltering;
   TypeAttribute: TypeAttribute;
   Upload: Scalars['Upload'];
-  Url: Omit<Url, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  Url: Omit<Url, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   UrlAddInput: UrlAddInput;
   User: Omit<User, 'groups' | 'objectOrganization'> & { groups?: Maybe<ResolversParentTypes['GroupConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']> };
-  UserAccount: Omit<UserAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  UserAccount: Omit<UserAccount, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   UserAccountAddInput: UserAccountAddInput;
   UserAddInput: UserAddInput;
-  UserAgent: Omit<UserAgent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  UserAgent: Omit<UserAgent, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   UserAgentAddInput: UserAgentAddInput;
   UserConnection: Omit<UserConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['UserEdge']>>> };
   UserEdge: Omit<UserEdge, 'node'> & { node: ResolversParentTypes['User'] };
@@ -26374,10 +25465,10 @@ export type ResolversParentTypes = ResolversObject<{
   VulnerabilityAddInput: VulnerabilityAddInput;
   VulnerabilityConnection: Omit<VulnerabilityConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['VulnerabilityEdge']>>> };
   VulnerabilityEdge: Omit<VulnerabilityEdge, 'node'> & { node: ResolversParentTypes['Vulnerability'] };
-  VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
-  WindowsRegistryKey: Omit<WindowsRegistryKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  VulnerabilityEditMutations: Omit<VulnerabilityEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Vulnerability']>, contextPatch?: Maybe<ResolversParentTypes['Vulnerability']>, fieldPatch?: Maybe<ResolversParentTypes['Vulnerability']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Vulnerability']> };
+  WindowsRegistryKey: Omit<WindowsRegistryKey, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   WindowsRegistryKeyAddInput: WindowsRegistryKeyAddInput;
-  WindowsRegistryValueType: Omit<WindowsRegistryValueType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  WindowsRegistryValueType: Omit<WindowsRegistryValueType, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   WindowsRegistryValueTypeAddInput: WindowsRegistryValueTypeAddInput;
   Work: Work;
   WorkConnection: WorkConnection;
@@ -26391,9 +25482,9 @@ export type ResolversParentTypes = ResolversObject<{
   WorkspaceAddInput: WorkspaceAddInput;
   WorkspaceConnection: WorkspaceConnection;
   WorkspaceEdge: WorkspaceEdge;
-  WorkspaceEditMutations: WorkspaceEditMutations;
+  WorkspaceEditMutations: Omit<WorkspaceEditMutations, 'relationAdd'> & { relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']> };
   WorkspacesFiltering: WorkspacesFiltering;
-  X509Certificate: Omit<X509Certificate, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'stixCyberObservableRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, stixCyberObservableRelationships?: Maybe<ResolversParentTypes['StixCyberObservableRelationshipConnection']> };
+  X509Certificate: Omit<X509Certificate, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, indicators?: Maybe<ResolversParentTypes['IndicatorConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   X509CertificateAddInput: X509CertificateAddInput;
 }>;
 
@@ -26564,7 +25655,6 @@ export type ArtifactResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ArtifactStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ArtifactStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<ArtifactStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   url?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26671,7 +25761,7 @@ export type AttackPatternEditMutationsResolvers<ContextType = any, ParentType ex
   contextPatch?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<AttackPatternEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<AttackPatternEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<AttackPatternEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -26735,7 +25825,6 @@ export type AutonomousSystemResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<AutonomousSystemStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<AutonomousSystemStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<AutonomousSystemStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26779,7 +25868,6 @@ export type BankAccountResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<BankAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<BankAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<BankAccountStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26798,7 +25886,7 @@ export type BasicObjectResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type BasicRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['BasicRelationship'] = ResolversParentTypes['BasicRelationship']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'InternalRelationship' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixMetaRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'InternalRelationship' | 'StixCoreRelationship' | 'StixRefRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26878,7 +25966,7 @@ export type CampaignEditMutationsResolvers<ContextType = any, ParentType extends
   contextPatch?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<CampaignEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<CampaignEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CampaignEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CampaignEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<CampaignEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27166,7 +26254,7 @@ export type CityEditMutationsResolvers<ContextType = any, ParentType extends Res
   contextPatch?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<CityEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CityEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<CityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27272,7 +26360,7 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
   contextPatch?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, Partial<ContainerEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ContainerEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Container']>, ParentType, ContextType, RequireFields<ContainerEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27357,7 +26445,7 @@ export type CountryEditMutationsResolvers<ContextType = any, ParentType extends 
   contextPatch?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<CountryEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<CountryEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CountryEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CountryEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<CountryEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27431,7 +26519,7 @@ export type CourseOfActionEditMutationsResolvers<ContextType = any, ParentType e
   contextPatch?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<CourseOfActionEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<CourseOfActionEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<CourseOfActionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -27486,7 +26574,6 @@ export type CryptocurrencyWalletResolvers<ContextType = any, ParentType extends 
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptocurrencyWalletStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptocurrencyWalletStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27528,7 +26615,6 @@ export type CryptographicKeyResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CryptographicKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<CryptographicKeyStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27668,6 +26754,13 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
+export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefinitionRefRelationship'] = ResolversParentTypes['DefinitionRefRelationship']> = ResolversObject<{
+  entity?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
+  from?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  to?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type DependencyVersionResolvers<ContextType = any, ParentType extends ResolversParentTypes['DependencyVersion'] = ResolversParentTypes['DependencyVersion']> = ResolversObject<{
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27716,7 +26809,6 @@ export type DirectoryResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DirectoryStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DirectoryStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<DirectoryStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27787,7 +26879,6 @@ export type DomainNameResolvers<ContextType = any, ParentType extends ResolversP
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<DomainNameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<DomainNameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<DomainNameStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27844,7 +26935,6 @@ export type EmailAddrResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailAddrStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27892,7 +26982,6 @@ export type EmailMessageResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMessageStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMessageStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailMessageStixCyberObservableRelationshipsArgs>>;
   subject?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -27937,7 +27026,6 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<EmailMimePartTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<EmailMimePartTypeStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28090,7 +27178,7 @@ export type ExternalReferenceEditMutationsResolvers<ContextType = any, ParentTyp
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsImportPushArgs, 'file'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ExternalReferenceEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<ExternalReferenceEditMutationsRelationDeleteArgs, 'fromId' | 'relationship_type'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28382,7 +27470,6 @@ export type HashedObservableResolvers<ContextType = any, ParentType extends Reso
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HashedObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HashedObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<HashedObservableStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28421,7 +27508,6 @@ export type HostnameResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<HostnameStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<HostnameStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28464,7 +27550,6 @@ export type IPv4AddrResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv4AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv4AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<IPv4AddrStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28507,7 +27592,6 @@ export type IPv6AddrResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<IPv6AddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<IPv6AddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<IPv6AddrStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -28585,7 +27669,7 @@ export type IdentityEditMutationsResolvers<ContextType = any, ParentType extends
   contextPatch?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, Partial<IdentityEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<IdentityEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<IdentityEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IdentityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<IdentityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28661,7 +27745,7 @@ export type IncidentEditMutationsResolvers<ContextType = any, ParentType extends
   contextPatch?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, Partial<IncidentEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<IncidentEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<IncidentEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28748,7 +27832,7 @@ export type IndicatorEditMutationsResolvers<ContextType = any, ParentType extend
   contextPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, Partial<IndicatorEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<IndicatorEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<IndicatorEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28825,7 +27909,7 @@ export type IndividualEditMutationsResolvers<ContextType = any, ParentType exten
   contextPatch?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, Partial<IndividualEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<IndividualEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<IndividualEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IndividualEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<IndividualEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28912,7 +27996,7 @@ export type InfrastructureEditMutationsResolvers<ContextType = any, ParentType e
   contextPatch?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, Partial<InfrastructureEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<InfrastructureEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<InfrastructureEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -29010,7 +28094,7 @@ export type IntrusionSetEditMutationsResolvers<ContextType = any, ParentType ext
   contextPatch?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<IntrusionSetEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<IntrusionSetEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<IntrusionSetEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -29053,7 +28137,7 @@ export type KillChainPhaseEditMutationsResolvers<ContextType = any, ParentType e
   contextPatch?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, Partial<KillChainPhaseEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<KillChainPhaseEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<KillChainPhaseEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -29240,7 +28324,7 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
   contextPatch?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, Partial<LocationEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<LocationEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<LocationEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<LocationEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<LocationEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -29309,7 +28393,6 @@ export type MacAddrResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MacAddrStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MacAddrStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MacAddrStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29393,7 +28476,7 @@ export type MalwareEditMutationsResolvers<ContextType = any, ParentType extends 
   contextPatch?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, Partial<MalwareEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MalwareEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<MalwareEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MalwareEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MalwareEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -29519,7 +28602,6 @@ export type MediaContentResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MediaContentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MediaContentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MediaContentStixCyberObservableRelationshipsArgs>>;
   title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -29560,7 +28642,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaContextPatch?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaContextPatchArgs, 'id' | 'input'>>;
   administrativeAreaDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaDeleteArgs, 'id'>>;
   administrativeAreaFieldPatch?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaFieldPatchArgs, 'id' | 'input'>>;
-  administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
+  administrativeAreaRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationAddArgs, 'id' | 'input'>>;
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
@@ -29581,14 +28663,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseIncidentFieldPatch?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentFieldPatchArgs, 'id' | 'input'>>;
   caseIncidentRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationAddArgs, 'id' | 'input'>>;
   caseIncidentRelationDelete?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  caseRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRelationAddArgs, 'id' | 'input'>>;
+  caseRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRelationAddArgs, 'id' | 'input'>>;
   caseRelationDelete?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   channelAdd?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelAddArgs, 'input'>>;
   channelContextClean?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelContextCleanArgs, 'id'>>;
   channelContextPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelContextPatchArgs, 'id' | 'input'>>;
   channelDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationChannelDeleteArgs, 'id'>>;
   channelFieldPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelFieldPatchArgs, 'id' | 'input'>>;
-  channelRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationChannelRelationAddArgs, 'id' | 'input'>>;
+  channelRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationChannelRelationAddArgs, 'id' | 'input'>>;
   channelRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<MutationCityAddArgs>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
@@ -29602,7 +28684,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataComponentContextPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextPatchArgs, 'id' | 'input'>>;
   dataComponentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataComponentDeleteArgs, 'id'>>;
   dataComponentFieldPatch?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentFieldPatchArgs, 'id' | 'input'>>;
-  dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
+  dataComponentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationAddArgs, 'id' | 'input'>>;
   dataComponentRelationDelete?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   dataSourceAdd?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceAddArgs, 'input'>>;
   dataSourceContextClean?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceContextCleanArgs, 'id'>>;
@@ -29611,7 +28693,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   dataSourceDataComponentDelete?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceDataComponentDeleteArgs, 'dataComponentId' | 'id'>>;
   dataSourceDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationDataSourceDeleteArgs, 'id'>>;
   dataSourceFieldPatch?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceFieldPatchArgs, 'id' | 'input'>>;
-  dataSourceRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationAddArgs, 'id' | 'input'>>;
+  dataSourceRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationAddArgs, 'id' | 'input'>>;
   dataSourceRelationDelete?: Resolver<Maybe<ResolversTypes['DataSource']>, ParentType, ContextType, RequireFields<MutationDataSourceRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   deleteConnector?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationDeleteConnectorArgs, 'id'>>;
   deleteImport?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, Partial<MutationDeleteImportArgs>>;
@@ -29622,7 +28704,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventContextPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventContextPatchArgs, 'id' | 'input'>>;
   eventDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationEventDeleteArgs, 'id'>>;
   eventFieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventFieldPatchArgs, 'id' | 'input'>>;
-  eventRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationEventRelationAddArgs, 'id' | 'input'>>;
+  eventRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationEventRelationAddArgs, 'id' | 'input'>>;
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, Partial<MutationExternalReferenceAddArgs>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
@@ -29643,7 +28725,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingContextPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingContextPatchArgs, 'id'>>;
   groupingDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationGroupingDeleteArgs, 'id'>>;
   groupingFieldPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingFieldPatchArgs, 'id' | 'input'>>;
-  groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
+  groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, Partial<MutationIdentityAddArgs>>;
   identityEdit?: Resolver<Maybe<ResolversTypes['IdentityEditMutations']>, ParentType, ContextType, RequireFields<MutationIdentityEditArgs, 'id'>>;
@@ -29666,7 +28748,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   languageContextPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageContextPatchArgs, 'id' | 'input'>>;
   languageDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationLanguageDeleteArgs, 'id'>>;
   languageFieldPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageFieldPatchArgs, 'id' | 'input'>>;
-  languageRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationLanguageRelationAddArgs, 'id' | 'input'>>;
+  languageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationLanguageRelationAddArgs, 'id' | 'input'>>;
   languageRelationDelete?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   listTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, Partial<MutationListTaskAddArgs>>;
   locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, Partial<MutationLocationAddArgs>>;
@@ -29683,7 +28765,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   narrativeContextPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeContextPatchArgs, 'id' | 'input'>>;
   narrativeDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNarrativeDeleteArgs, 'id'>>;
   narrativeFieldPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeFieldPatchArgs, 'id' | 'input'>>;
-  narrativeRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationNarrativeRelationAddArgs, 'id' | 'input'>>;
+  narrativeRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationNarrativeRelationAddArgs, 'id' | 'input'>>;
   narrativeRelationDelete?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   noteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<MutationNoteAddArgs>>;
   noteEdit?: Resolver<Maybe<ResolversTypes['NoteEditMutations']>, ParentType, ContextType, RequireFields<MutationNoteEditArgs, 'id'>>;
@@ -29737,8 +28819,6 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreRelationshipsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCoreRelationshipsExportPushArgs, 'file' | 'type'>>;
   stixCyberObservableAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableAddArgs, 'type'>>;
   stixCyberObservableEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableEditArgs, 'id'>>;
-  stixCyberObservableRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType, Partial<MutationStixCyberObservableRelationshipAddArgs>>;
-  stixCyberObservableRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableRelationshipEditArgs, 'id'>>;
   stixCyberObservablesExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'format'>>;
   stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'file'>>;
   stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<MutationStixDomainObjectAddArgs>>;
@@ -29747,6 +28827,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixDomainObjectsExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
   stixDomainObjectsExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportPushArgs, 'file' | 'type'>>;
   stixEdit?: Resolver<Maybe<ResolversTypes['StixEditMutations']>, ParentType, ContextType, RequireFields<MutationStixEditArgs, 'id'>>;
+  stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
+  stixRefRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRefRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipEditArgs, 'id'>>;
   stixRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRelationshipEditArgs, 'id'>>;
   stixSightingRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<MutationStixSightingRelationshipAddArgs>>;
   stixSightingRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixSightingRelationshipEditArgs, 'id'>>;
@@ -29822,7 +28904,6 @@ export type MutexResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<MutexStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<MutexStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<MutexStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -29938,7 +29019,6 @@ export type NetworkTrafficResolvers<ContextType = any, ParentType extends Resolv
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<NetworkTrafficStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<NetworkTrafficStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<NetworkTrafficStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30017,7 +29097,7 @@ export type NoteEditMutationsResolvers<ContextType = any, ParentType extends Res
   contextPatch?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<NoteEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<NoteEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<NoteEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<NoteEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<NoteEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30150,7 +29230,7 @@ export type ObservedDataEditMutationsResolvers<ContextType = any, ParentType ext
   contextPatch?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, Partial<ObservedDataEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ObservedDataEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<ObservedDataEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30222,7 +29302,7 @@ export type OpinionEditMutationsResolvers<ContextType = any, ParentType extends 
   contextPatch?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, Partial<OpinionEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<OpinionEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<OpinionEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<OpinionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<OpinionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30298,7 +29378,7 @@ export type OrganizationEditMutationsResolvers<ContextType = any, ParentType ext
   contextPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<OrganizationEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<OrganizationEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<OrganizationEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30365,7 +29445,6 @@ export type PaymentCardResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PaymentCardStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PaymentCardStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<PaymentCardStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30406,7 +29485,6 @@ export type PhoneNumberResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<PhoneNumberStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<PhoneNumberStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<PhoneNumberStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30488,7 +29566,7 @@ export type PositionEditMutationsResolvers<ContextType = any, ParentType extends
   contextPatch?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<PositionEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<PositionEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<PositionEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<PositionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<PositionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30545,7 +29623,6 @@ export type ProcessResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<ProcessStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<ProcessStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   window_title?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30737,11 +29814,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixCoreRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCoreRelationshipsNumberArgs>>;
   stixCoreRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCoreRelationshipsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCyberObservable?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<QueryStixCyberObservableArgs, 'id'>>;
-  stixCyberObservableRelationship?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType, Partial<QueryStixCyberObservableRelationshipArgs>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservableRelationshipsArgs>>;
-  stixCyberObservableRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCyberObservableRelationshipsDistributionArgs, 'field' | 'fromId' | 'operation'>>;
-  stixCyberObservableRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixCyberObservableRelationshipsNumberArgs>>;
-  stixCyberObservableRelationshipsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixCyberObservableRelationshipsTimeSeriesArgs, 'endDate' | 'field' | 'interval' | 'operation' | 'startDate'>>;
   stixCyberObservables?: Resolver<Maybe<ResolversTypes['StixCyberObservableConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservablesArgs>>;
   stixCyberObservablesDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixCyberObservablesDistributionArgs, 'field' | 'operation'>>;
   stixCyberObservablesExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<QueryStixCyberObservablesExportFilesArgs>>;
@@ -30753,13 +29825,14 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixDomainObjectsExportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsExportFilesArgs, 'type'>>;
   stixDomainObjectsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixDomainObjectsNumberArgs>>;
   stixDomainObjectsTimeSeries?: Resolver<Maybe<Array<Maybe<ResolversTypes['TimeSeries']>>>, ParentType, ContextType, RequireFields<QueryStixDomainObjectsTimeSeriesArgs, 'field' | 'interval' | 'operation' | 'startDate'>>;
-  stixMetaRelationship?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<QueryStixMetaRelationshipArgs>>;
-  stixMetaRelationships?: Resolver<Maybe<ResolversTypes['StixMetaRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixMetaRelationshipsArgs>>;
-  stixMetaRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixMetaRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixMetaRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixMetaRelationshipsNumberArgs>>;
+  stixNestedRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixNestedRefRelationshipsArgs>>;
   stixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType, RequireFields<QueryStixObjectOrStixRelationshipArgs, 'id'>>;
+  stixRefRelationship?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<QueryStixRefRelationshipArgs>>;
+  stixRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRefRelationshipsArgs>>;
+  stixRefRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixRefRelationshipsDistributionArgs, 'field' | 'operation'>>;
   stixRelationship?: Resolver<Maybe<ResolversTypes['StixRelationship']>, ParentType, ContextType, Partial<QueryStixRelationshipArgs>>;
   stixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRelationshipsArgs>>;
+  stixSchemaRefRelationships?: Resolver<Maybe<ResolversTypes['DefinitionRefRelationship']>, ParentType, ContextType, Partial<QueryStixSchemaRefRelationshipsArgs>>;
   stixSightingRelationship?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipArgs>>;
   stixSightingRelationships?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixSightingRelationshipsArgs>>;
   stixSightingRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixSightingRelationshipsDistributionArgs, 'field' | 'operation'>>;
@@ -30927,7 +30000,7 @@ export type RegionEditMutationsResolvers<ContextType = any, ParentType extends R
   contextPatch?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, Partial<RegionEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<RegionEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<RegionEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<RegionEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -31009,7 +30082,7 @@ export type ReportEditMutationsResolvers<ContextType = any, ParentType extends R
   contextPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<ReportEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, Partial<ReportEditMutationsDeleteArgs>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ReportEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ReportEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<ReportEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -31206,7 +30279,7 @@ export type SectorEditMutationsResolvers<ContextType = any, ParentType extends R
   contextPatch?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<SectorEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<SectorEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<SectorEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<SectorEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<SectorEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -31305,7 +30378,6 @@ export type SoftwareResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<SoftwareStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<SoftwareStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<SoftwareStixCyberObservableRelationshipsArgs>>;
   swid?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -31415,9 +30487,9 @@ export type StixCoreObjectEditMutationsResolvers<ContextType = any, ParentType e
   exportAsk?: Resolver<Maybe<Array<Maybe<ResolversTypes['File']>>>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportAskArgs, 'exportType' | 'format'>>;
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsExportPushArgs, 'file'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsImportPushArgs, 'file'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<StixCoreObjectEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  relationsAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, Partial<StixCoreObjectEditMutationsRelationsAddArgs>>;
+  relationsAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRelationsAddArgs, 'input'>>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreObject']>, ParentType, ContextType, RequireFields<StixCoreObjectEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -31488,7 +30560,7 @@ export type StixCoreRelationshipEditMutationsResolvers<ContextType = any, Parent
   contextPatch?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, Partial<StixCoreRelationshipEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<StixCoreRelationshipEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixCoreRelationship']>, ParentType, ContextType, RequireFields<StixCoreRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
@@ -31527,7 +30599,6 @@ export type StixCyberObservableResolvers<ContextType = any, ParentType extends R
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCyberObservableStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixCyberObservableStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<StixCyberObservableStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31556,59 +30627,9 @@ export type StixCyberObservableEditMutationsResolvers<ContextType = any, ParentT
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsImportPushArgs, 'file'>>;
   promote?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<StixCyberObservableEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  relationsAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, Partial<StixCyberObservableEditMutationsRelationsAddArgs>>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixCyberObservableRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableRelationship'] = ResolversParentTypes['StixCyberObservableRelationship']> = ResolversObject<{
-  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipCasesArgs>>;
-  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
-  editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
-  fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipGroupingsArgs>>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipNotesArgs>>;
-  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
-  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipOpinionsArgs>>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipReportsArgs>>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  to?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
-  toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixCyberObservableRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableRelationshipConnection'] = ResolversParentTypes['StixCyberObservableRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixCyberObservableRelationshipEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixCyberObservableRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableRelationshipEdge'] = ResolversParentTypes['StixCyberObservableRelationshipEdge']> = ResolversObject<{
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['StixCyberObservableRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixCyberObservableRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixCyberObservableRelationshipEditMutations'] = ResolversParentTypes['StixCyberObservableRelationshipEditMutations']> = ResolversObject<{
-  contextClean?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType>;
-  contextPatch?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType, Partial<StixCyberObservableRelationshipEditMutationsContextPatchArgs>>;
-  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  fieldPatch?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, ParentType, ContextType, RequireFields<StixCyberObservableRelationshipEditMutationsFieldPatchArgs, 'input'>>;
+  relationsAdd?: Resolver<Maybe<ResolversTypes['StixCyberObservable']>, ParentType, ContextType, RequireFields<StixCyberObservableEditMutationsRelationsAddArgs, 'input'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -31677,9 +30698,9 @@ export type StixDomainObjectEditMutationsResolvers<ContextType = any, ParentType
   exportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsExportPushArgs, 'file'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsFieldPatchArgs, 'input'>>;
   importPush?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsImportPushArgs, 'file'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationDeleteArgs, 'toId'>>;
-  relationsAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<StixDomainObjectEditMutationsRelationsAddArgs>>;
+  relationsAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<StixDomainObjectEditMutationsRelationsAddArgs, 'input'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -31731,7 +30752,6 @@ export type StixFileResolvers<ContextType = any, ParentType extends ResolversPar
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixFileStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<StixFileStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<StixFileStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_additional_names?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
@@ -31773,37 +30793,6 @@ export type StixMetaObjectResolvers<ContextType = any, ParentType extends Resolv
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
 }>;
 
-export type StixMetaRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaRelationship'] = ResolversParentTypes['StixMetaRelationship']> = ResolversObject<{
-  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
-  fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
-  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  to?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
-  toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
-  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixMetaRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaRelationshipConnection'] = ResolversParentTypes['StixMetaRelationshipConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixMetaRelationshipEdge']>>>, ParentType, ContextType>;
-  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
-export type StixMetaRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixMetaRelationshipEdge'] = ResolversParentTypes['StixMetaRelationshipEdge']> = ResolversObject<{
-  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  node?: Resolver<ResolversTypes['StixMetaRelationship'], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
-
 export type StixObjectResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObject'] = ResolversParentTypes['StixObject']> = ResolversObject<{
   __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixFile' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vocabulary' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -31820,7 +30809,7 @@ export type StixObjectResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type StixObjectOrStixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationship'] = ResolversParentTypes['StixObjectOrStixRelationship']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixFile' | 'StixMetaRelationship' | 'StixSightingRelationship' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipConnection']> = ResolversObject<{
@@ -31836,7 +30825,7 @@ export type StixObjectOrStixRelationshipEdgeResolvers<ContextType = any, ParentT
 }>;
 
 export type StixObjectOrStixRelationshipOrCreatorResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipOrCreator'] = ResolversParentTypes['StixObjectOrStixRelationshipOrCreator']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixFile' | 'StixMetaRelationship' | 'StixSightingRelationship' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'AdministrativeArea' | 'Artifact' | 'AttackPattern' | 'AutonomousSystem' | 'BankAccount' | 'Campaign' | 'CaseIncident' | 'Channel' | 'City' | 'Country' | 'CourseOfAction' | 'Creator' | 'CryptocurrencyWallet' | 'CryptographicKey' | 'DataComponent' | 'DataSource' | 'Directory' | 'DomainName' | 'EmailAddr' | 'EmailMessage' | 'EmailMimePartType' | 'EntitySetting' | 'Event' | 'ExternalReference' | 'Feedback' | 'Grouping' | 'Hostname' | 'IPv4Addr' | 'IPv6Addr' | 'Incident' | 'Indicator' | 'Individual' | 'Infrastructure' | 'IntrusionSet' | 'KillChainPhase' | 'Label' | 'Language' | 'MacAddr' | 'Malware' | 'MarkingDefinition' | 'MediaContent' | 'Mutex' | 'Narrative' | 'NetworkTraffic' | 'Note' | 'ObservedData' | 'Opinion' | 'Organization' | 'PaymentCard' | 'PhoneNumber' | 'Position' | 'Process' | 'Region' | 'Report' | 'Sector' | 'Software' | 'StixCoreRelationship' | 'StixFile' | 'StixRefRelationship' | 'StixSightingRelationship' | 'System' | 'Text' | 'ThreatActor' | 'Tool' | 'Url' | 'UserAccount' | 'UserAgent' | 'Vulnerability' | 'WindowsRegistryKey' | 'WindowsRegistryValueType' | 'X509Certificate', ParentType, ContextType>;
 }>;
 
 export type StixObjectOrStixRelationshipRefConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixObjectOrStixRelationshipRefConnection'] = ResolversParentTypes['StixObjectOrStixRelationshipRefConnection']> = ResolversObject<{
@@ -31856,8 +30845,60 @@ export interface StixRefScalarConfig extends GraphQLScalarTypeConfig<ResolversTy
   name: 'StixRef';
 }
 
+export type StixRefRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationship'] = ResolversParentTypes['StixRefRelationship']> = ResolversObject<{
+  cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<StixRefRelationshipCasesArgs>>;
+  confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
+  datable?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
+  fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixRefRelationshipGroupingsArgs>>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  notes?: Resolver<Maybe<ResolversTypes['NoteConnection']>, ParentType, ContextType, Partial<StixRefRelationshipNotesArgs>>;
+  objectMarking?: Resolver<Maybe<ResolversTypes['MarkingDefinitionConnection']>, ParentType, ContextType>;
+  opinions?: Resolver<Maybe<ResolversTypes['OpinionConnection']>, ParentType, ContextType, Partial<StixRefRelationshipOpinionsArgs>>;
+  parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  relationship_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<StixRefRelationshipReportsArgs>>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  start_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  to?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
+  toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixRefRelationshipConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipConnection'] = ResolversParentTypes['StixRefRelationshipConnection']> = ResolversObject<{
+  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRefRelationshipEdge']>>>, ParentType, ContextType>;
+  pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixRefRelationshipEdgeResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipEdge'] = ResolversParentTypes['StixRefRelationshipEdge']> = ResolversObject<{
+  cursor?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  node?: Resolver<ResolversTypes['StixRefRelationship'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type StixRefRelationshipEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRefRelationshipEditMutations'] = ResolversParentTypes['StixRefRelationshipEditMutations']> = ResolversObject<{
+  contextPatch?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<StixRefRelationshipEditMutationsContextPatchArgs>>;
+  delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  fieldPatch?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixRefRelationshipEditMutationsFieldPatchArgs, 'input'>>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type StixRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['StixRelationship'] = ResolversParentTypes['StixRelationship']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'StixCoreRelationship' | 'StixCyberObservableRelationship' | 'StixMetaRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'StixCoreRelationship' | 'StixRefRelationship' | 'StixSightingRelationship', ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   from?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
@@ -31942,7 +30983,7 @@ export type StixSightingRelationshipEditMutationsResolvers<ContextType = any, Pa
   contextPatch?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<StixSightingRelationshipEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<StixSightingRelationshipEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   restrictionOrganizationAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationAddArgs, 'organizationId'>>;
   restrictionOrganizationDelete?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<StixSightingRelationshipEditMutationsRestrictionOrganizationDeleteArgs, 'organizationId'>>;
@@ -32028,8 +31069,8 @@ export type SubscriptionResolvers<ContextType = any, ParentType extends Resolver
   stixCoreObject?: SubscriptionResolver<Maybe<ResolversTypes['StixCoreObject']>, "stixCoreObject", ParentType, ContextType, RequireFields<SubscriptionStixCoreObjectArgs, 'id'>>;
   stixCoreRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixCoreRelationship']>, "stixCoreRelationship", ParentType, ContextType, RequireFields<SubscriptionStixCoreRelationshipArgs, 'id'>>;
   stixCyberObservable?: SubscriptionResolver<Maybe<ResolversTypes['StixCyberObservable']>, "stixCyberObservable", ParentType, ContextType, RequireFields<SubscriptionStixCyberObservableArgs, 'id'>>;
-  stixCyberObservableRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixCyberObservableRelationship']>, "stixCyberObservableRelationship", ParentType, ContextType, RequireFields<SubscriptionStixCyberObservableRelationshipArgs, 'id'>>;
   stixDomainObject?: SubscriptionResolver<Maybe<ResolversTypes['StixDomainObject']>, "stixDomainObject", ParentType, ContextType, RequireFields<SubscriptionStixDomainObjectArgs, 'id'>>;
+  stixRefRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixRefRelationship']>, "stixRefRelationship", ParentType, ContextType, RequireFields<SubscriptionStixRefRelationshipArgs, 'id'>>;
   stixSightingRelationship?: SubscriptionResolver<Maybe<ResolversTypes['StixSightingRelationship']>, "stixSightingRelationship", ParentType, ContextType, RequireFields<SubscriptionStixSightingRelationshipArgs, 'id'>>;
   user?: SubscriptionResolver<Maybe<ResolversTypes['User']>, "user", ParentType, ContextType, RequireFields<SubscriptionUserArgs, 'id'>>;
   workspace?: SubscriptionResolver<Maybe<ResolversTypes['Workspace']>, "workspace", ParentType, ContextType, RequireFields<SubscriptionWorkspaceArgs, 'id'>>;
@@ -32139,7 +31180,7 @@ export type SystemEditMutationsResolvers<ContextType = any, ParentType extends R
   contextPatch?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<SystemEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, RequireFields<SystemEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<SystemEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<SystemEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, RequireFields<SystemEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -32247,7 +31288,6 @@ export type TextResolvers<ContextType = any, ParentType extends ResolversParentT
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<TextStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<TextStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32335,7 +31375,7 @@ export type ThreatActorEditMutationsResolvers<ContextType = any, ParentType exte
   contextPatch?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<ThreatActorEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, RequireFields<ThreatActorEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ThreatActorEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ThreatActorEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, RequireFields<ThreatActorEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -32414,7 +31454,7 @@ export type ToolEditMutationsResolvers<ContextType = any, ParentType extends Res
   contextPatch?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<ToolEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<ToolEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<ToolEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<ToolEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<ToolEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -32496,7 +31536,6 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UrlStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UrlStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UrlStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32584,7 +31623,6 @@ export type UserAccountResolvers<ContextType = any, ParentType extends Resolvers
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAccountStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAccountStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UserAccountStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32626,7 +31664,6 @@ export type UserAgentResolvers<ContextType = any, ParentType extends ResolversPa
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<UserAgentStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<UserAgentStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32790,7 +31827,7 @@ export type VulnerabilityEditMutationsResolvers<ContextType = any, ParentType ex
   contextPatch?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<VulnerabilityEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<VulnerabilityEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<VulnerabilityEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -32829,7 +31866,6 @@ export type WindowsRegistryKeyResolvers<ContextType = any, ParentType extends Re
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryKeyStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryKeyStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32873,7 +31909,6 @@ export type WindowsRegistryValueTypeResolvers<ContextType = any, ParentType exte
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<WindowsRegistryValueTypeStixCyberObservableRelationshipsArgs>>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   x_opencti_description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32971,9 +32006,9 @@ export type WorkspaceEditMutationsResolvers<ContextType = any, ParentType extend
   contextPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, Partial<WorkspaceEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<WorkspaceEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, Partial<WorkspaceEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<WorkspaceEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<WorkspaceEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
-  relationsAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, Partial<WorkspaceEditMutationsRelationsAddArgs>>;
+  relationsAdd?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<WorkspaceEditMutationsRelationsAddArgs, 'input'>>;
   relationsDelete?: Resolver<Maybe<ResolversTypes['Workspace']>, ParentType, ContextType, RequireFields<WorkspaceEditMutationsRelationsDeleteArgs, 'relationship_type' | 'toIds'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -33027,7 +32062,6 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<X509CertificateStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<X509CertificateStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<X509CertificateStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
-  stixCyberObservableRelationships?: Resolver<Maybe<ResolversTypes['StixCyberObservableRelationshipConnection']>, ParentType, ContextType, Partial<X509CertificateStixCyberObservableRelationshipsArgs>>;
   subject?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subject_alternative_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   subject_directory_attributes?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -33122,6 +32156,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;
   DataSourceEdge?: DataSourceEdgeResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
+  DefinitionRefRelationship?: DefinitionRefRelationshipResolvers<ContextType>;
   DependencyVersion?: DependencyVersionResolvers<ContextType>;
   Dictionary?: DictionaryResolvers<ContextType>;
   Directory?: DirectoryResolvers<ContextType>;
@@ -33336,10 +32371,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixCyberObservableConnection?: StixCyberObservableConnectionResolvers<ContextType>;
   StixCyberObservableEdge?: StixCyberObservableEdgeResolvers<ContextType>;
   StixCyberObservableEditMutations?: StixCyberObservableEditMutationsResolvers<ContextType>;
-  StixCyberObservableRelationship?: StixCyberObservableRelationshipResolvers<ContextType>;
-  StixCyberObservableRelationshipConnection?: StixCyberObservableRelationshipConnectionResolvers<ContextType>;
-  StixCyberObservableRelationshipEdge?: StixCyberObservableRelationshipEdgeResolvers<ContextType>;
-  StixCyberObservableRelationshipEditMutations?: StixCyberObservableRelationshipEditMutationsResolvers<ContextType>;
   StixDomainObject?: StixDomainObjectResolvers<ContextType>;
   StixDomainObjectConnection?: StixDomainObjectConnectionResolvers<ContextType>;
   StixDomainObjectEdge?: StixDomainObjectEdgeResolvers<ContextType>;
@@ -33350,9 +32381,6 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixFileEdge?: StixFileEdgeResolvers<ContextType>;
   StixId?: GraphQLScalarType;
   StixMetaObject?: StixMetaObjectResolvers<ContextType>;
-  StixMetaRelationship?: StixMetaRelationshipResolvers<ContextType>;
-  StixMetaRelationshipConnection?: StixMetaRelationshipConnectionResolvers<ContextType>;
-  StixMetaRelationshipEdge?: StixMetaRelationshipEdgeResolvers<ContextType>;
   StixObject?: StixObjectResolvers<ContextType>;
   StixObjectOrStixRelationship?: StixObjectOrStixRelationshipResolvers<ContextType>;
   StixObjectOrStixRelationshipConnection?: StixObjectOrStixRelationshipConnectionResolvers<ContextType>;
@@ -33361,6 +32389,10 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   StixObjectOrStixRelationshipRefConnection?: StixObjectOrStixRelationshipRefConnectionResolvers<ContextType>;
   StixObjectOrStixRelationshipRefEdge?: StixObjectOrStixRelationshipRefEdgeResolvers<ContextType>;
   StixRef?: GraphQLScalarType;
+  StixRefRelationship?: StixRefRelationshipResolvers<ContextType>;
+  StixRefRelationshipConnection?: StixRefRelationshipConnectionResolvers<ContextType>;
+  StixRefRelationshipEdge?: StixRefRelationshipEdgeResolvers<ContextType>;
+  StixRefRelationshipEditMutations?: StixRefRelationshipEditMutationsResolvers<ContextType>;
   StixRelationship?: StixRelationshipResolvers<ContextType>;
   StixRelationshipConnection?: StixRelationshipConnectionResolvers<ContextType>;
   StixRelationshipEdge?: StixRelationshipEdgeResolvers<ContextType>;

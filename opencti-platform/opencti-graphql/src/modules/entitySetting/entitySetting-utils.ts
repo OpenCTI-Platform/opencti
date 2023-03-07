@@ -159,7 +159,7 @@ const customizableAttributesValidation = (targetType: string, input: BasicStoreE
 
   if (attributesConfiguration) {
     const attributesDefinition = schemaAttributesDefinition.getAttributes(targetType);
-    const customizableMandatoryAttributeNames = attributesDefinition
+    const customizableMandatoryAttributeNames = Array.from((attributesDefinition).values())
       .filter((attr) => attr.mandatoryType === 'customizable')
       .map((attr) => attr.name);
 
@@ -175,7 +175,7 @@ const customizableAttributesValidation = (targetType: string, input: BasicStoreE
         });
       }
       if (attr.scale) {
-        const attributeDefinition = attributesDefinition.find((attrDef) => attrDef.name === attr.name);
+        const attributeDefinition = attributesDefinition.get(attr.name);
         if (!attributeDefinition?.scalable) {
           throw ValidationError(attr.name, {
             message: 'This attribute is not scalable for this entity',
