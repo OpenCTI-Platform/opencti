@@ -5,6 +5,8 @@ import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'node:path';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { HttpProxyAgent } from 'http-proxy-agent';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -354,6 +356,49 @@ export const configureCA = (certificates) => {
 
 // App
 export const PORT = nconf.get('app:port');
+class SecuredProxyAgent extends HttpsProxyAgent {
+  constructor(opts) {
+    super(opts);
+    this.extraOpts = opts;
+  }
+
+  callback(req, opts, fn) {
+    return super.callback(req, { ...this.extraOpts, ...opts }, fn);
+  }
+}
+export const getPlatformProxy = () => {
+  const isProxyEnable = nconf.get('app:proxy:enabled') ?? false;
+  if (isProxyEnable) {
+    const proxyCA = nconf.get('app:proxy:ca').map((caPath) => readFileSync(caPath));
+    return {
+      host: nconf.get('app:proxy:host'),
+      isSecured: nconf.get('app:proxy:secured') ?? false,
+      isAcceptUnauthorized: nconf.get('app:proxy:reject_unauthorized') ?? false,
+      exclusions: nconf.get('app:proxy:exclusions') ?? [],
+      ...configureCA(proxyCA),
+      isExcluded: (host) => this.exclusions.includes(host)
+    };
+  }
+  return undefined;
+};
+export const getPlatformHttpProxyAgent = (uri) => {
+  const platformProxy = getPlatformProxy();
+  if (platformProxy) {
+    const targetUrl = new URL(uri);
+    // Check for target exclusion first
+    if (platformProxy.isExcluded(targetUrl.host)) {
+      return undefined;
+    }
+    // Then build the according agent
+    const proxyUri = new URL(platformProxy.host);
+    const options = { ...proxyUri, rejectUnauthorized: platformProxy.isAcceptUnauthorized };
+    if (platformProxy.isSecured) {
+      return new SecuredProxyAgent(options);
+    }
+    return new HttpProxyAgent(proxyUri);
+  }
+  return undefined;
+};
 
 // Playground
 export const PLAYGROUND_INTROSPECTION_DISABLED = booleanConf('app:graphql:playground:force_disabled_introspection', false);

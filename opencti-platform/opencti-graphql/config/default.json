@@ -4,6 +4,14 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
+    "proxy": {
+      "enabled": false,
+      "host": "proxy.opencti.io:2000",
+      "secured": true,
+      "reject_unauthorized": false,
+      "ca": [],
+      "exclusions": ["localhost", "127.0.0.1", "internal.opencti.io"]
+    },
     "https_cert": {
       "ca": [],
       "key": null,

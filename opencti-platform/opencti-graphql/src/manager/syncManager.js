@@ -4,7 +4,7 @@ import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
 import https from 'node:https';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import Queue from '../utils/queue';
@@ -47,6 +47,7 @@ const syncManagerInstance = (syncId) => {
     eventSource = new EventSource(sseUri, {
       rejectUnauthorized: ssl,
       headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
+      agent: getPlatformHttpProxyAgent(sseUri)
     });
     eventSource.on('heartbeat', ({ lastEventId, type }) => {
       eventsQueue.enqueue({ id: lastEventId, type });
