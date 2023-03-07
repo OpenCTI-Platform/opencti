@@ -25,7 +25,7 @@
       "logs_directory": "./logs"
     },
     "graphql": {
-      "armor_enabled": true,
+      "armor_enabled": false,
       "playground": {
         "enabled": true,
         "force_disabled_introspection": false
