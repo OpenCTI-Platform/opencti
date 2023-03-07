@@ -6,37 +6,37 @@ import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Select, { SelectChangeEvent } from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
+import { useTheme } from '@mui/styles';
 import EntityDetails from './EntityDetails';
 import RelationshipDetails from './RelationshipDetails';
+import { useFormatter } from '../../components/i18n';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   drawerPaper: {
-    width: 'auto',
-    maxWidth: '400px',
+    position: 'fixed',
+    top: '50%',
+    right: 20,
+    transform: 'translateY(-50%)',
+    width: 400,
+    maxWidth: 400,
+    height: '60%',
+    maxHeight: '60%',
     padding: '20px 20px 20px 20px',
-    position: 'absolute',
     zIndex: 900,
-  },
-  formControl: {
-    width: '100%',
-    marginTop: '10px',
-  },
-  label: {
-    backgroundColor: theme.palette.background.paper,
   },
 }));
 
 export interface SelectedEntity {
-  id: string
-  label: string
-  relationship_type?: string
-  entity_type: string
-  source? : SelectedEntity
-  target?: SelectedEntity
-  fromId?: string
-  fromType?: string
-  toId?: string
-  toType?: string
+  id: string;
+  label: string;
+  relationship_type?: string;
+  entity_type: string;
+  source?: SelectedEntity;
+  target?: SelectedEntity;
+  fromId?: string;
+  fromType?: string;
+  toId?: string;
+  toType?: string;
 }
 
 interface EntityDetailsRightsBarProps {
@@ -46,14 +46,25 @@ const EntitiesDetailsRightsBar: FunctionComponent<
 EntityDetailsRightsBarProps
 > = ({ selectedEntities }) => {
   const classes = useStyles();
-
-  const uniqSelectedEntities: SelectedEntity[] = selectedEntities.filter(
-    (item, index) => {
-      return (
-        selectedEntities.findIndex((entity) => entity.id === item.id) === index
-      );
-    },
-  );
+  const theme = useTheme<Theme>();
+  const { t } = useFormatter();
+  const uniqSelectedEntities: SelectedEntity[] = selectedEntities
+    .filter(
+      (item, index) => selectedEntities.findIndex((entity) => entity.id === item.id) === index,
+    )
+    .map((n) => {
+      if (n.source && n.target) {
+        const source = n.source.label;
+        const target = n.target.label;
+        return { ...n, label: `${source} ➡️ ${target}` };
+      }
+      if (n.fromType && n.toType) {
+        const source = n.fromType;
+        const target = n.toType;
+        return { ...n, label: `${source} ➡️ ${target}` };
+      }
+      return n;
+    });
   const [selectedEntity, setSelectedEntity] = useState<SelectedEntity>(
     uniqSelectedEntities[0],
   );
@@ -62,7 +73,7 @@ EntityDetailsRightsBarProps
       setSelectedEntity(uniqSelectedEntities[0]);
     }
   }, [selectedEntities]);
-  const handleSelectEntity = (event: SelectChangeEvent<SelectedEntity>) => {
+  const handleSelectEntity = (event: SelectChangeEvent) => {
     const { value } = event.target;
     const entity = selectedEntities.find((el) => el.id === value);
     if (!entity) {
@@ -71,43 +82,27 @@ EntityDetailsRightsBarProps
       setSelectedEntity(entity);
     }
   };
-  const selectInputLabel = () => {
-    if (!selectedEntity.relationship_type) {
-      return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
-    }
-    if (selectedEntity.source && selectedEntity.target) {
-      const source = selectedEntity.source.label;
-      const target = selectedEntity.target.label;
-      return (`${source} to ${target}`);
-    }
-    if (selectedEntity.fromType && selectedEntity.toType) {
-      const source = selectedEntity.fromType;
-      const target = selectedEntity.toType;
-      return (`${source} to ${target}`);
-    }
-    return (selectedEntity.label.length > 1 ? selectedEntity.label : selectedEntity.entity_type);
-  };
-
   return (
     <Drawer
       open={true}
       variant="permanent"
       anchor="right"
       classes={{ paper: classes.drawerPaper }}
+      PaperProps={{ variant: 'outlined' }}
+      transitionDuration={theme.transitions.duration.enteringScreen}
     >
-      <div className={classes.toolbar} />
-      <FormControl className={classes.formControl} fullWidth={true}>
-        <InputLabel id="entityField" className={classes.label}>
-          {selectInputLabel()}
-        </InputLabel>
+      <FormControl fullWidth={true} size="small">
+        <InputLabel id="label">{t('Object')}</InputLabel>
         <Select
-          labelId="entityField"
+          labelId="label"
+          label={t('Object')}
           fullWidth={true}
           onChange={handleSelectEntity}
+          value={selectedEntity.id}
         >
           {uniqSelectedEntities.map((entity) => (
             <MenuItem key={entity.id} value={entity.id}>
-              {entity.label.length > 1 ? entity.label : entity.entity_type}
+              {entity.label}
             </MenuItem>
           ))}
         </Select>

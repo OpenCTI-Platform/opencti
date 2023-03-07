@@ -2,11 +2,13 @@ import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../components/i18n';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { RelationShipFromAndToQuery } from './__generated__/RelationShipFromAndToQuery.graphql';
 import { truncate } from '../String';
+import { defaultValue } from '../Graph';
 
 const useStyles = makeStyles(() => ({
   label: {
@@ -135,23 +137,23 @@ RelationShipFromAndToComponentProps
 > = ({ queryRef, direction }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   const entity = usePreloadedQuery<RelationShipFromAndToQuery>(
     relationShipFromAndToQuery,
     queryRef,
   );
   const { stixCoreObject } = entity;
-
   if (!stixCoreObject) {
     return <div />;
   }
   return (
-    <div>
-      <Typography variant="h3" gutterBottom={false} className={classes.label}>
-        {t(direction)}
+    <React.Fragment>
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t(direction === 'From' ? 'Source' : 'Target')}
       </Typography>
-      {truncate(stixCoreObject.name, 20)}
-    </div>
+      <Tooltip title={defaultValue(stixCoreObject, true)}>
+        <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
+      </Tooltip>
+    </React.Fragment>
   );
 };
 

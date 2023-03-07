@@ -1,9 +1,8 @@
 import React, { FunctionComponent, useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Tooltip from '@mui/material/Tooltip';
-import IconButton from '@mui/material/IconButton';
 import { Link } from 'react-router-dom';
-import { ExpandLessOutlined, ExpandMoreOutlined, InfoOutlined } from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
 import Typography from '@mui/material/Typography';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import List from '@mui/material/List';
@@ -13,29 +12,24 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import { useFormatter } from '../../components/i18n';
-import { resolveLink } from '../Entity';
 import ItemAuthor from '../../components/ItemAuthor';
 import useQueryLoading from '../hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../components/Loader';
 import { EntityDetailsQuery } from './__generated__/EntityDetailsQuery.graphql';
 import ExpandableMarkdown from '../../components/ExpandableMarkdown';
 import ItemMarkings from '../../components/ItemMarkings';
-import { truncate } from '../String';
 import type { SelectedEntity } from './EntitiesDetailsRightBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import ItemIcon from '../../components/ItemIcon';
 import { Theme } from '../../components/Theme';
+import { defaultValue } from '../Graph';
+import { hexToRGB, itemColor } from '../Colors';
+import { truncate } from '../String';
+import ItemCreator from '../../components/ItemCreator';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  entity: {
-    marginTop: '20px',
-  },
   label: {
     marginTop: '20px',
-  },
-  nameLabel: {
-    marginTop: '15px',
-    marginBottom: -1,
   },
   buttonExpand: {
     position: 'relative',
@@ -57,9 +51,22 @@ const useStyles = makeStyles<Theme>((theme) => ({
           : 'rgba(0, 0, 0, .2)',
     },
   },
-  report: {
-    display: 'flex',
-    alignItems: 'flex-end',
+  bodyItem: {
+    width: '100%',
+    height: 20,
+    fontSize: 13,
+    float: 'left',
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    paddingRight: 5,
+  },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: '0',
   },
 }));
 
@@ -77,6 +84,10 @@ const entityDetailsQuery = graphql`
           entity_type
         }
       }
+      creators {
+        id
+        name
+      }
       objectMarking {
         edges {
           node {
@@ -88,169 +99,172 @@ const entityDetailsQuery = graphql`
           }
         }
       }
-      externalReferences  {
-                edges {
-                    node {
-                        id
-                        source_name
-                        url
-                        external_id
-                        description
-                    }
-                }
-            }
-            reports {
-                edges {
-                    node {
-                        id
-                        entity_type
-                        name
-                        description
-                        published
-                        report_types
-                        createdBy {
-                            ... on Identity {
-                                id
-                                name
-                                entity_type
-                            }
-                        }
-                    }
-                }
-            }
-            ... on StixDomainObject {
-                created
-            }
-            ... on AttackPattern {
-                name
-                x_mitre_id
-            }
-            ... on Campaign {
-                name
-                first_seen
-                last_seen
-            }
-            ... on CourseOfAction {
-                name
-            }
-            ... on Note {
-                attribute_abstract
-                content
-            }
-            ... on ObservedData {
-                name
-            }
-            ... on Opinion {
-                opinion
-            }
-            ... on Report {
-                name
-                published
-            }
-            ... on Grouping {
-                name
-                description
-            }
-            ... on Individual {
-                name
-                description
-            }
-            ... on Organization {
-                name
-                description
-            }
-            ... on Sector {
-                name
-                description
-            }
-            ... on System {
-                name
-                description
-            }
-            ... on Indicator {
-                name
-                description
-            }
-            ... on Infrastructure {
-                name
-                description
-            }
-            ... on IntrusionSet {
-                name
-                first_seen
-                last_seen
-                description
-            }
-            ... on Position {
-                name
-                description
-            }
-            ... on City {
-                name
-                description
-            }
-            ... on AdministrativeArea {
-                name
-                description
-            }
-            ... on Country {
-                name
-                description
-            }
-            ... on Region {
-                name
-                description
-            }
-            ... on Malware {
-                name
-                first_seen
-                last_seen
-                description
-            }
-            ... on ThreatActor {
-                name
-                first_seen
-                last_seen
-                description
-            }
-            ... on Tool {
-                name
-            }
-            ... on Vulnerability {
-                name
-            }
-            ... on Incident {
-                name
-                first_seen
-                last_seen
-                description
-            }
-            ... on StixCyberObservable {
-                observable_value
-            }
-            ... on StixFile {
-                observableName: name
-            }
-            ... on Event {
-                name
-            }
-            ... on Case {
-                name
-            }
-            ... on Narrative {
-                name
-            }
-            ... on DataComponent {
-                name
-            }
-            ... on DataSource {
-                name
-            }
-            ... on Language {
-                name
-            }
+      externalReferences {
+        edges {
+          node {
+            id
+            source_name
+            url
+            external_id
+            description
+          }
         }
+      }
+      reports(first: 10) {
+        edges {
+          node {
+            id
+            entity_type
+            name
+            description
+            published
+            report_types
+            createdBy {
+              ... on Identity {
+                id
+                name
+                entity_type
+              }
+            }
+          }
+        }
+        pageInfo {
+          globalCount
+        }
+      }
+      ... on StixDomainObject {
+        created
+      }
+      ... on AttackPattern {
+        name
+        x_mitre_id
+      }
+      ... on Campaign {
+        name
+        first_seen
+        last_seen
+      }
+      ... on CourseOfAction {
+        name
+      }
+      ... on Note {
+        attribute_abstract
+        content
+      }
+      ... on ObservedData {
+        name
+      }
+      ... on Opinion {
+        opinion
+      }
+      ... on Report {
+        name
+        published
+      }
+      ... on Grouping {
+        name
+        description
+      }
+      ... on Individual {
+        name
+        description
+      }
+      ... on Organization {
+        name
+        description
+      }
+      ... on Sector {
+        name
+        description
+      }
+      ... on System {
+        name
+        description
+      }
+      ... on Indicator {
+        name
+        description
+      }
+      ... on Infrastructure {
+        name
+        description
+      }
+      ... on IntrusionSet {
+        name
+        first_seen
+        last_seen
+        description
+      }
+      ... on Position {
+        name
+        description
+      }
+      ... on City {
+        name
+        description
+      }
+      ... on AdministrativeArea {
+        name
+        description
+      }
+      ... on Country {
+        name
+        description
+      }
+      ... on Region {
+        name
+        description
+      }
+      ... on Malware {
+        name
+        first_seen
+        last_seen
+        description
+      }
+      ... on ThreatActor {
+        name
+        first_seen
+        last_seen
+        description
+      }
+      ... on Tool {
+        name
+      }
+      ... on Vulnerability {
+        name
+      }
+      ... on Incident {
+        name
+        first_seen
+        last_seen
+        description
+      }
+      ... on StixCyberObservable {
+        observable_value
+      }
+      ... on StixFile {
+        observableName: name
+      }
+      ... on Event {
+        name
+      }
+      ... on Case {
+        name
+      }
+      ... on Narrative {
+        name
+      }
+      ... on DataComponent {
+        name
+      }
+      ... on DataSource {
+        name
+      }
+      ... on Language {
+        name
+      }
     }
+  }
 `;
 
 interface EntityDetailsComponentProps {
@@ -262,15 +276,12 @@ EntityDetailsComponentProps
 > = ({ queryRef }) => {
   const classes = useStyles();
   const { t, fldt } = useFormatter();
-
   const entity = usePreloadedQuery<EntityDetailsQuery>(
     entityDetailsQuery,
     queryRef,
   );
   const { stixCoreObject } = entity;
-
   const [expanded, setExpanded] = useState(false);
-
   const externalReferencesEdges = stixCoreObject?.externalReferences?.edges;
   const reportsEdges = stixCoreObject?.reports?.edges;
   const expandable = externalReferencesEdges
@@ -280,98 +291,129 @@ EntityDetailsComponentProps
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
-
   if (!stixCoreObject) {
     return <ErrorNotFound />;
   }
   return (
-    <div className={classes.entity}>
-      <Typography
-        variant="h3"
-        gutterBottom={false}
-        className={classes.nameLabel}
-      >
-        {t('Name')}
+    <div>
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Value')}
       </Typography>
-      {stixCoreObject.name ? truncate(stixCoreObject.name, 30) : '-'}
-      <Tooltip title={t('View the item')}>
-          <span>
-            <IconButton
-              color="primary"
-              component={Link}
-              to={`${resolveLink(stixCoreObject.entity_type)}/${
-                stixCoreObject.id
-              }`}
-              size="small"
-            >
-                <InfoOutlined/>
-            </IconButton>
-          </span>
+      <Tooltip title={defaultValue(stixCoreObject, true)}>
+        <span>{truncate(defaultValue(stixCoreObject), 40)}</span>
       </Tooltip>
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Type')}
       </Typography>
-      {stixCoreObject.entity_type}
-      <Typography variant="h3"
-                  gutterBottom={true}
-                  className={classes.label}
-      >
+      <Chip
+        classes={{ root: classes.chipInList }}
+        style={{
+          backgroundColor: hexToRGB(
+            itemColor(stixCoreObject.entity_type),
+            0.08,
+          ),
+          color: itemColor(stixCoreObject.entity_type),
+          border: `1px solid ${itemColor(stixCoreObject.entity_type)}`,
+        }}
+        label={t(`entity_${stixCoreObject.entity_type}`)}
+      />
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creation date')}
       </Typography>
       {fldt(stixCoreObject.created_at)}
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Description')}
       </Typography>
-      {stixCoreObject.description ? (
-        <ExpandableMarkdown
-          source={stixCoreObject.description}
-          limit={400}
-        />
+      {stixCoreObject.description && stixCoreObject.description.length > 0 ? (
+        <ExpandableMarkdown source={stixCoreObject.description} limit={400} />
       ) : (
         '-'
-      )
-      }
-      <Typography variant="h3"
-                  gutterBottom={true}
-                  className={classes.label}
-      >
+      )}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Marking')}
       </Typography>
-      {(stixCoreObject.objectMarking?.edges && stixCoreObject.objectMarking?.edges.length > 0) ? (
+      {stixCoreObject.objectMarking?.edges
+      && stixCoreObject.objectMarking?.edges.length > 0 ? (
         <ItemMarkings
           markingDefinitionsEdges={stixCoreObject.objectMarking.edges}
           limit={2}
-        />) : (
-        '-'
-      )
-      }
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
+        />
+        ) : (
+          '-'
+        )}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Author')}
       </Typography>
-      <ItemAuthor
-        createdBy={stixCoreObject.createdBy}
-      />
-      <Typography
-        variant="h3"
-        gutterBottom={true}
-        className={classes.label}
-      >
-        {t('External References')}
+      <ItemAuthor createdBy={stixCoreObject.createdBy} />
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('Creators')}
       </Typography>
-      {(externalReferencesEdges && externalReferencesEdges.length > 0)
-        ? (<List style={{ marginBottom: 0 }}>
+      <div>
+        {(stixCoreObject.creators ?? []).map((c) => {
+          return (
+            <div
+              key={`creator-${c.id}`}
+              style={{ float: 'left', marginRight: '10px' }}
+            >
+              <ItemCreator creator={c} />
+            </div>
+          );
+        })}
+        <div style={{ clear: 'both' }} />
+      </div>
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {`${t('Last')} ${
+          (stixCoreObject?.reports?.pageInfo.globalCount ?? 0) >= 10
+            ? 10
+            : stixCoreObject?.reports?.pageInfo.globalCount
+        } ${t('reports')} ${t('of')} ${
+          stixCoreObject?.reports?.pageInfo.globalCount
+        }`}
+      </Typography>
+      {reportsEdges && reportsEdges.length > 0 ? (
+        <List style={{ marginBottom: 0 }}>
+          {reportsEdges.map((reportEdge) => {
+            const report = reportEdge?.node;
+            if (report) {
+              return (
+                <ListItem
+                  key={report.id}
+                  dense={true}
+                  button={true}
+                  classes={{ root: classes.item }}
+                  divider={true}
+                  component={Link}
+                  to={`/dashboard/analysis/reports/${report.id}`}
+                >
+                  <ListItemIcon>
+                    <ItemIcon type={report.entity_type} />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={
+                      <Tooltip title={report.name}>
+                        <div className={classes.bodyItem}>{report.name}</div>
+                      </Tooltip>
+                    }
+                    secondary={
+                      <div className={classes.bodyItem}>
+                        {report.createdBy?.name ?? '-'}
+                      </div>
+                    }
+                  />
+                </ListItem>
+              );
+            }
+            return '';
+          })}
+        </List>
+      ) : (
+        '-'
+      )}
+      <Typography variant="h3" gutterBottom={true} className={classes.label}>
+        {t('External references')}
+      </Typography>
+      {externalReferencesEdges && externalReferencesEdges.length > 0 ? (
+        <List style={{ marginBottom: 0 }}>
           {externalReferencesEdges
             .slice(0, expanded ? 200 : 3)
             .map((externalReference) => {
@@ -379,7 +421,10 @@ EntityDetailsComponentProps
                 ? `(${externalReference.node.external_id})`
                 : '';
               let externalReferenceSecondary = '';
-              if (externalReference.node.url && externalReference.node.url.length > 0) {
+              if (
+                externalReference.node.url
+                && externalReference.node.url.length > 0
+              ) {
                 externalReferenceSecondary = externalReference.node.url;
               } else if (
                 externalReference.node.description
@@ -399,23 +444,28 @@ EntityDetailsComponentProps
                     button={true}
                   >
                     <ListItemIcon>
-                      <ItemIcon type="External-Reference"/>
+                      <ItemIcon type="External-Reference" />
                     </ListItemIcon>
                     <ListItemText
-                      primary={truncate(
-                        `${externalReference.node.source_name} ${externalReferenceId}`,
-                        70,
-                      )}
-                      secondary={truncate(externalReferenceSecondary, 70)}
+                      primary={
+                        <div className={classes.bodyItem}>
+                          {`${externalReference.node.source_name} ${externalReferenceId}`}
+                        </div>
+                      }
+                      secondary={
+                        <div className={classes.bodyItem}>
+                          {externalReferenceSecondary}
+                        </div>
+                      }
                     />
                   </ListItem>
                 </div>
               );
             })}
-        </List>)
-        : (
-          '-'
-        )}
+        </List>
+      ) : (
+        '-'
+      )}
       {expandable && (
         <Button
           variant="contained"
@@ -424,71 +474,12 @@ EntityDetailsComponentProps
           className={classes.buttonExpand}
         >
           {expanded ? (
-            <ExpandLessOutlined fontSize="small"/>
+            <ExpandLessOutlined fontSize="small" />
           ) : (
-            <ExpandMoreOutlined fontSize="small"/>
+            <ExpandMoreOutlined fontSize="small" />
           )}
         </Button>
       )}
-      <div
-        className={classes.report}
-      >
-        <Typography
-          variant="h3"
-          gutterBottom={true}
-          className={classes.label}
-        >
-          {t('Reports')}
-        </Typography>
-        {(reportsEdges && reportsEdges.length > 0)
-          ? (<Chip
-            color="primary"
-            variant="outlined"
-            label={reportsEdges.length}
-            style={{ marginLeft: 10 }}
-          />) : (
-            ''
-          )
-        }
-      </div>
-      {(reportsEdges && reportsEdges.length > 0)
-        ? (<List style={{ marginBottom: 0 }}>
-          {reportsEdges.map((reportEdge) => {
-            const report = reportEdge?.node;
-            if (report) {
-              return (
-                <ListItem
-                  key={report.id}
-                  dense={true}
-                  button={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/analysis/reports/${report.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={report.entity_type}/>
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <Tooltip title={report.name}>
-                        <div className={classes.itemText}>
-                          {report.name}
-                        </div>
-                      </Tooltip>
-                    }
-                  />
-                </ListItem>
-              );
-            }
-            return ('');
-          })
-          }
-        </List>)
-        : (
-          '-'
-        )
-      }
     </div>
   );
 };
@@ -505,11 +496,11 @@ Omit<EntityDetailsProps, 'queryRef'>
     id: entity.id,
   });
   return queryRef ? (
-    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-      <EntityDetailsComponent queryRef={queryRef}/>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <EntityDetailsComponent queryRef={queryRef} />
     </React.Suspense>
   ) : (
-    <Loader variant={LoaderVariant.inElement}/>
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

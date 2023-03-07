@@ -199,9 +199,9 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
   return (
     <EnrichedTooltip
       title={
-        <Grid container spacing={3}>
+        <Grid container={true} spacing={3}>
           {markings.map((markingDefinition) => (
-            <Grid key={markingDefinition.id} xs={6}>
+            <Grid key={markingDefinition.id} item={true} xs={6}>
               {renderChip(markingDefinition, true)}
             </Grid>
           ))}

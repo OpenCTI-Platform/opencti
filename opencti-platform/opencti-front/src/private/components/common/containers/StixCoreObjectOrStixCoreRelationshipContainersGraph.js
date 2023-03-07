@@ -27,11 +27,10 @@ import {
   nodePaint,
   nodeThreePaint,
 } from '../../../../utils/Graph';
-import { commitMutation } from '../../../../relay/environment';
+import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { stixDomainObjectMutationFieldPatch } from '../stix_domain_objects/StixDomainObjectEditionOverview';
-import StixCoreObjectOrStixCoreRelationshipContainersGraphBar
-  from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
+import StixCoreObjectOrStixCoreRelationshipContainersGraphBar from './StixCoreObjectOrStixCoreRelationshipContainersGraphBar';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -135,6 +134,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       height: null,
       zoomed: false,
       keyword: '',
+      navOpen: localStorage.getItem('navOpen') === 'true',
     };
   }
 
@@ -165,17 +165,22 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
   }
 
   componentDidMount() {
-    this.subscription = PARAMETERS$.subscribe({
+    this.subscription1 = PARAMETERS$.subscribe({
       next: () => this.saveParameters(),
     });
-    this.subscription = POSITIONS$.subscribe({
+    this.subscription2 = POSITIONS$.subscribe({
       next: () => this.savePositions(),
+    });
+    this.subscription3 = MESSAGING$.toggleNav.subscribe({
+      next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
     this.initialize();
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
+    this.subscription1.unsubscribe();
+    this.subscription2.unsubscribe();
+    this.subscription3.unsubscribe();
   }
 
   saveParameters(refreshGraphData = false) {
@@ -487,9 +492,10 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
       numberOfSelectedLinks,
       displayTimeRange,
       selectedTimeRangeInterval,
+      navOpen,
     } = this.state;
-    const width = window.innerWidth - 210;
-    const height = window.innerHeight - 210;
+    const width = window.innerWidth - (navOpen ? 210 : 70);
+    const height = window.innerHeight - 180;
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     const timeRangeValues = computeTimeRangeValues(
       timeRangeInterval,
@@ -524,12 +530,12 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
               >
                 <ToggleButton value="lines" aria-label="lines">
                   <Tooltip title={t('Lines view')}>
-                    <ViewListOutlined fontSize="small" color="primary"/>
+                    <ViewListOutlined fontSize="small" color="primary" />
                   </Tooltip>
                 </ToggleButton>
                 <ToggleButton value="graph" aria-label="graph">
                   <Tooltip title={t('Graph view')}>
-                    <GraphOutline fontSize="small"/>
+                    <GraphOutline fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
                 <ToggleButton
@@ -538,14 +544,14 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
                   disabled={true}
                 >
                   <Tooltip title={t('Open export panel')}>
-                    <FileDownloadOutlined fontSize="small"/>
+                    <FileDownloadOutlined fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
               </ToggleButtonGroup>
             )}
           </div>
         </div>
-        <div className="clearfix"/>
+        <div className="clearfix" />
         <StixCoreObjectOrStixCoreRelationshipContainersGraphBar
           handleToggle3DMode={this.handleToggle3DMode.bind(this)}
           currentMode3D={mode3D}
@@ -582,201 +588,194 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphComponent extends Compo
           timeRangeValues={timeRangeValues}
           handleChangeView={handleChangeView.bind(this)}
           handleSearch={this.handleSearch.bind(this)}
+          navOpen={navOpen}
         />
+        {selectedEntities.length > 0 && (
+          <EntitiesDetailsRightsBar
+            selectedEntities={selectedEntities}
+            navOpen={navOpen}
+          />
+        )}
         {mode3D ? (
-          <div style={{ position: 'absolute' }}>
-            <ForceGraph3D
-              ref={this.graph}
-              width={width}
-              height={height}
-              backgroundColor={theme.palette.background.default}
-              graphData={graphData}
-              nodeThreeObjectExtend={true}
-              nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
+          <ForceGraph3D
+            ref={this.graph}
+            width={width}
+            height={height}
+            backgroundColor={theme.palette.background.default}
+            graphData={graphData}
+            nodeThreeObjectExtend={true}
+            nodeThreeObject={(node) => nodeThreePaint(node, theme.palette.text.primary)
+            }
+            linkColor={(link) => (this.selectedLinks.has(link)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
+            }
+            linkWidth={0.2}
+            linkDirectionalArrowLength={3}
+            linkDirectionalArrowRelPos={0.99}
+            linkThreeObjectExtend={true}
+            linkThreeObject={(link) => {
+              const sprite = new SpriteText(link.label);
+              sprite.color = 'lightgrey';
+              sprite.textHeight = 1.5;
+              return sprite;
+            }}
+            linkPositionUpdate={(sprite, { start, end }) => {
+              const middlePos = Object.assign(
+                ...['x', 'y', 'z'].map((c) => ({
+                  [c]: start[c] + (end[c] - start[c]) / 2,
+                })),
+              );
+              Object.assign(sprite.position, middlePos);
+            }}
+            onNodeClick={this.handleNodeClick.bind(this)}
+            onNodeRightClick={(node) => {
+              // eslint-disable-next-line no-param-reassign
+              node.fx = undefined;
+              // eslint-disable-next-line no-param-reassign
+              node.fy = undefined;
+              // eslint-disable-next-line no-param-reassign
+              node.fz = undefined;
+              this.handleDragEnd();
+              this.forceUpdate();
+            }}
+            onNodeDrag={(node, translate) => {
+              if (this.selectedNodes.has(node)) {
+                [...this.selectedNodes]
+                  .filter((selNode) => selNode !== node)
+                  // eslint-disable-next-line no-shadow
+                  .forEach((selNode) => ['x', 'y', 'z'].forEach(
+                    // eslint-disable-next-line no-param-reassign,no-return-assign
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                  ));
               }
-              linkColor={(link) => (this.selectedLinks.has(link)
-                ? theme.palette.secondary.main
-                : theme.palette.primary.main)
-              }
-              linkWidth={0.2}
-              linkDirectionalArrowLength={3}
-              linkDirectionalArrowRelPos={0.99}
-              linkThreeObjectExtend={true}
-              linkThreeObject={(link) => {
-                const sprite = new SpriteText(link.label);
-                sprite.color = 'lightgrey';
-                sprite.textHeight = 1.5;
-                return sprite;
-              }}
-              linkPositionUpdate={(sprite, { start, end }) => {
-                const middlePos = Object.assign(
-                  ...['x', 'y', 'z'].map((c) => ({
-                    [c]: start[c] + (end[c] - start[c]) / 2,
-                  })),
-                );
-                Object.assign(sprite.position, middlePos);
-              }}
-              onNodeClick={this.handleNodeClick.bind(this)}
-              onNodeRightClick={(node) => {
-                // eslint-disable-next-line no-param-reassign
-                node.fx = undefined;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = undefined;
-                // eslint-disable-next-line no-param-reassign
-                node.fz = undefined;
-                this.handleDragEnd();
-                this.forceUpdate();
-              }}
-              onNodeDrag={(node, translate) => {
-                if (this.selectedNodes.has(node)) {
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node)
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => ['x', 'y', 'z'].forEach(
+            }}
+            onNodeDragEnd={(node) => {
+              if (this.selectedNodes.has(node)) {
+                // finished moving a selected node
+                [...this.selectedNodes]
+                  .filter((selNode) => selNode !== node) // don't touch node being dragged
+                  // eslint-disable-next-line no-shadow
+                  .forEach((selNode) => {
+                    ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                    ));
-                }
-              }}
-              onNodeDragEnd={(node) => {
-                if (this.selectedNodes.has(node)) {
-                  // finished moving a selected node
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node) // don't touch node being dragged
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => {
-                      ['x', 'y'].forEach(
-                        // eslint-disable-next-line no-param-reassign,no-return-assign
-                        (coord) => (selNode[`f${coord}`] = undefined),
-                      );
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fx = selNode.x;
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fy = selNode.y;
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fz = selNode.z;
-                    });
-                }
-                // eslint-disable-next-line no-param-reassign
-                node.fx = node.x;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = node.y;
-                // eslint-disable-next-line no-param-reassign
-                node.fz = node.z;
-              }}
-              onLinkClick={this.handleLinkClick.bind(this)}
-              onBackgroundClick={this.handleBackgroundClick.bind(this)}
-              cooldownTicks={modeFixed ? 0 : undefined}
-              dagMode={
-                // eslint-disable-next-line no-nested-ternary
-                modeTree === 'horizontal'
-                  ? 'lr'
-                  : modeTree === 'vertical'
-                    ? 'td'
-                    : undefined
+                      (coord) => (selNode[`f${coord}`] = undefined),
+                    );
+                    // eslint-disable-next-line no-param-reassign
+                    selNode.fx = selNode.x;
+                    // eslint-disable-next-line no-param-reassign
+                    selNode.fy = selNode.y;
+                    // eslint-disable-next-line no-param-reassign
+                    selNode.fz = selNode.z;
+                  });
               }
-            />
-            {(selectedEntities.length > 0) && (
-              <EntitiesDetailsRightsBar
-                selectedEntities={selectedEntities}
-              />
-            )}
-          </div>
+              // eslint-disable-next-line no-param-reassign
+              node.fx = node.x;
+              // eslint-disable-next-line no-param-reassign
+              node.fy = node.y;
+              // eslint-disable-next-line no-param-reassign
+              node.fz = node.z;
+            }}
+            onLinkClick={this.handleLinkClick.bind(this)}
+            onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
+          />
         ) : (
-          <div style={{ position: 'absolute' }}>
-            <ForceGraph2D
-              ref={this.graph}
-              width={width}
-              height={height}
-              graphData={graphData}
-              onZoom={this.onZoom.bind(this)}
-              onZoomEnd={this.handleZoomEnd.bind(this)}
-              nodeRelSize={4}
-              nodeCanvasObject={(node, ctx) => nodePaint(
-                {
-                  selected: theme.palette.secondary.main,
-                  inferred: theme.palette.warning.main,
-                },
-                node,
-                node.color,
-                ctx,
-                this.selectedNodes.has(node),
-              )
+          <ForceGraph2D
+            ref={this.graph}
+            width={width}
+            height={height}
+            graphData={graphData}
+            onZoom={this.onZoom.bind(this)}
+            onZoomEnd={this.handleZoomEnd.bind(this)}
+            nodeRelSize={4}
+            nodeCanvasObject={(node, ctx) => nodePaint(
+              {
+                selected: theme.palette.secondary.main,
+                inferred: theme.palette.warning.main,
+              },
+              node,
+              node.color,
+              ctx,
+              this.selectedNodes.has(node),
+            )
+            }
+            nodePointerAreaPaint={nodeAreaPaint}
+            // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+            // linkDirectionalParticleWidth={1}
+            // linkDirectionalParticleSpeed={() => 0.004}
+            linkCanvasObjectMode={() => 'after'}
+            linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+            }
+            linkColor={(link) => (this.selectedLinks.has(link)
+              ? theme.palette.secondary.main
+              : theme.palette.primary.main)
+            }
+            linkDirectionalArrowLength={3}
+            linkDirectionalArrowRelPos={0.99}
+            onNodeClick={this.handleNodeClick.bind(this)}
+            onNodeRightClick={(node) => {
+              // eslint-disable-next-line no-param-reassign
+              node.fx = undefined;
+              // eslint-disable-next-line no-param-reassign
+              node.fy = undefined;
+              this.handleDragEnd();
+              this.forceUpdate();
+            }}
+            onNodeDrag={(node, translate) => {
+              if (this.selectedNodes.has(node)) {
+                [...this.selectedNodes]
+                  .filter((selNode) => selNode !== node)
+                  // eslint-disable-next-line no-shadow
+                  .forEach((selNode) => ['x', 'y'].forEach(
+                    // eslint-disable-next-line no-param-reassign,no-return-assign
+                    (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                  ));
               }
-              nodePointerAreaPaint={nodeAreaPaint}
-              // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-              // linkDirectionalParticleWidth={1}
-              // linkDirectionalParticleSpeed={() => 0.004}
-              linkCanvasObjectMode={() => 'after'}
-              linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
-              }
-              linkColor={(link) => (this.selectedLinks.has(link)
-                ? theme.palette.secondary.main
-                : theme.palette.primary.main)
-              }
-              linkDirectionalArrowLength={3}
-              linkDirectionalArrowRelPos={0.99}
-              onNodeClick={this.handleNodeClick.bind(this)}
-              onNodeRightClick={(node) => {
-                // eslint-disable-next-line no-param-reassign
-                node.fx = undefined;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = undefined;
-                this.handleDragEnd();
-                this.forceUpdate();
-              }}
-              onNodeDrag={(node, translate) => {
-                if (this.selectedNodes.has(node)) {
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node)
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => ['x', 'y'].forEach(
+            }}
+            onNodeDragEnd={(node) => {
+              if (this.selectedNodes.has(node)) {
+                // finished moving a selected node
+                [...this.selectedNodes]
+                  .filter((selNode) => selNode !== node) // don't touch node being dragged
+                  // eslint-disable-next-line no-shadow
+                  .forEach((selNode) => {
+                    ['x', 'y'].forEach(
                       // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                    ));
-                }
-              }}
-              onNodeDragEnd={(node) => {
-                if (this.selectedNodes.has(node)) {
-                  // finished moving a selected node
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node) // don't touch node being dragged
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => {
-                      ['x', 'y'].forEach(
-                        // eslint-disable-next-line no-param-reassign,no-return-assign
-                        (coord) => (selNode[`f${coord}`] = undefined),
-                      );
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fx = selNode.x;
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fy = selNode.y;
-                    });
-                }
-                // eslint-disable-next-line no-param-reassign
-                node.fx = node.x;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = node.y;
-                this.handleDragEnd();
-              }}
-              onLinkClick={this.handleLinkClick.bind(this)}
-              onBackgroundClick={this.handleBackgroundClick.bind(this)}
-              cooldownTicks={modeFixed ? 0 : undefined}
-              dagMode={
-                // eslint-disable-next-line no-nested-ternary
-                modeTree === 'horizontal'
-                  ? 'lr'
-                  : modeTree === 'vertical'
-                    ? 'td'
-                    : undefined
+                      (coord) => (selNode[`f${coord}`] = undefined),
+                    );
+                    // eslint-disable-next-line no-param-reassign
+                    selNode.fx = selNode.x;
+                    // eslint-disable-next-line no-param-reassign
+                    selNode.fy = selNode.y;
+                  });
               }
-            />
-            {(selectedEntities.length > 0) && (
-              <EntitiesDetailsRightsBar
-                selectedEntities={selectedEntities}
-              />
-            )}
-          </div>
+              // eslint-disable-next-line no-param-reassign
+              node.fx = node.x;
+              // eslint-disable-next-line no-param-reassign
+              node.fy = node.y;
+              this.handleDragEnd();
+            }}
+            onLinkClick={this.handleLinkClick.bind(this)}
+            onBackgroundClick={this.handleBackgroundClick.bind(this)}
+            cooldownTicks={modeFixed ? 0 : undefined}
+            dagMode={
+              // eslint-disable-next-line no-nested-ternary
+              modeTree === 'horizontal'
+                ? 'lr'
+                : modeTree === 'vertical'
+                  ? 'td'
+                  : undefined
+            }
+          />
         )}
       </div>
     );
@@ -798,14 +797,14 @@ StixCoreObjectOrStixCoreRelationshipContainersGraphComponent.propTypes = {
 };
 
 export const stixCoreObjectOrStixCoreRelationshipContainersGraphQuery = graphql`
-    query StixCoreObjectOrStixCoreRelationshipContainersGraphQuery(
-        $id: String!
-        $types: [String]
-        $filters: [ContainersFiltering]
-        $search: String
-    ) {
-        ...StixCoreObjectOrStixCoreRelationshipContainersGraph_data
-    }
+  query StixCoreObjectOrStixCoreRelationshipContainersGraphQuery(
+    $id: String!
+    $types: [String]
+    $filters: [ContainersFiltering]
+    $search: String
+  ) {
+    ...StixCoreObjectOrStixCoreRelationshipContainersGraph_data
+  }
 `;
 
 const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContainer(
@@ -813,228 +812,228 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
   {
     data: graphql`
         fragment StixCoreObjectOrStixCoreRelationshipContainersGraph_data on Query {
-            containersObjectsOfObject(
-                id: $id
-                types: $types
-                filters: $filters
-                search: $search
-            ) {
-                edges {
-                    node {
-                        ... on BasicObject {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on StixCoreObject {
-                            created_at
-                            createdBy {
-                                ... on Identity {
-                                    id
-                                    name
-                                    entity_type
-                                }
-                            }
-                            objectMarking {
-                                edges {
-                                    node {
-                                        id
-                                        definition_type
-                                        definition
-                                        x_opencti_order
-                                        x_opencti_color
-                                    }
-                                }
-                            }
-                        }
-                        ... on StixDomainObject {
-                            created
-                        }
-                        ... on AttackPattern {
-                            name
-                            x_mitre_id
-                        }
-                        ... on Campaign {
-                            name
-                            first_seen
-                            last_seen
-                        }
-                        ... on Report {
-                            name
-                            published
-                        }
-                        ... on Grouping {
-                            name
-                            created
-                        }
-                        ... on CourseOfAction {
-                            name
-                        }
-                        ... on Individual {
-                            name
-                        }
-                        ... on Organization {
-                            name
-                        }
-                        ... on Sector {
-                            name
-                        }
-                        ... on System {
-                            name
-                        }
-                        ... on Indicator {
-                            name
-                            valid_from
-                        }
-                        ... on Infrastructure {
-                            name
-                        }
-                        ... on IntrusionSet {
-                            name
-                            first_seen
-                            last_seen
-                        }
-                        ... on Position {
-                            name
-                        }
-                        ... on City {
-                            name
-                        }
-                        ... on AdministrativeArea {
-                            name
-                        }
-                        ... on Country {
-                            name
-                        }
-                        ... on Region {
-                            name
-                        }
-                        ... on Malware {
-                            name
-                            first_seen
-                            last_seen
-                        }
-                        ... on ThreatActor {
-                            name
-                            first_seen
-                            last_seen
-                        }
-                        ... on Tool {
-                            name
-                        }
-                        ... on Vulnerability {
-                            name
-                        }
-                        ... on Incident {
-                            name
-                            first_seen
-                            last_seen
-                        }
-                        ... on Event {
-                            name
-                            start_time
-                            stop_time
-                        }
-                        ... on Channel {
-                            name
-                        }
-                        ... on Narrative {
-                            name
-                        }
-                        ... on Language {
-                            name
-                        }
-                        ... on DataComponent {
-                            name
-                        }
-                        ... on DataSource {
-                            name
-                        }
-                        ... on Case {
-                            name
-                        }
-                        ... on StixCyberObservable {
-                            observable_value
-                        }
-                        ... on StixFile {
-                            observableName: name
-                        }
-                        ... on BasicRelationship {
-                            id
-                            entity_type
-                            parent_types
-                        }
-                        ... on StixRelationship {
-                            from {
-                                ... on BasicObject {
-                                    id
-                                    entity_type
-                                    parent_types
-                                }
-                                ... on BasicRelationship {
-                                    id
-                                    entity_type
-                                    parent_types
-                                }
-                                ... on StixCoreRelationship {
-                                    relationship_type
-                                }
-                            }
-                            to {
-                                ... on BasicObject {
-                                    id
-                                    entity_type
-                                    parent_types
-                                }
-                                ... on BasicRelationship {
-                                    id
-                                    entity_type
-                                    parent_types
-                                }
-                                ... on StixCoreRelationship {
-                                    relationship_type
-                                }
-                            }
-                        }
-                        ... on StixMetaRelationship {
-                            created_at
-                        }
-                        ... on StixCoreRelationship {
-                            relationship_type
-                            start_time
-                            stop_time
-                            confidence
-                            created
-                            created_at
-                            createdBy {
-                                ... on Identity {
-                                    id
-                                    name
-                                    entity_type
-                                }
-                            }
-                            objectMarking {
-                                edges {
-                                    node {
-                                        id
-                                        definition_type
-                                        definition
-                                        x_opencti_order
-                                        x_opencti_color
-                                    }
-                                }
-                            }
-                        }
+          containersObjectsOfObject(
+            id: $id
+            types: $types
+            filters: $filters
+            search: $search
+          ) {
+            edges {
+              node {
+                ... on BasicObject {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixCoreObject {
+                  created_at
+                  createdBy {
+                    ... on Identity {
+                      id
+                      name
+                      entity_type
                     }
+                  }
+                  objectMarking {
+                    edges {
+                      node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
                 }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
+                ... on StixDomainObject {
+                  created
                 }
+                ... on AttackPattern {
+                  name
+                  x_mitre_id
+                }
+                ... on Campaign {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Report {
+                  name
+                  published
+                }
+                ... on Grouping {
+                  name
+                  created
+                }
+                ... on CourseOfAction {
+                  name
+                }
+                ... on Individual {
+                  name
+                }
+                ... on Organization {
+                  name
+                }
+                ... on Sector {
+                  name
+                }
+                ... on System {
+                  name
+                }
+                ... on Indicator {
+                  name
+                  valid_from
+                }
+                ... on Infrastructure {
+                  name
+                }
+                ... on IntrusionSet {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Position {
+                  name
+                }
+                ... on City {
+                  name
+                }
+                ... on AdministrativeArea {
+                  name
+                }
+                ... on Country {
+                  name
+                }
+                ... on Region {
+                  name
+                }
+                ... on Malware {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on ThreatActor {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Tool {
+                  name
+                }
+                ... on Vulnerability {
+                  name
+                }
+                ... on Incident {
+                  name
+                  first_seen
+                  last_seen
+                }
+                ... on Event {
+                  name
+                  start_time
+                  stop_time
+                }
+                ... on Channel {
+                  name
+                }
+                ... on Narrative {
+                  name
+                }
+                ... on Language {
+                  name
+                }
+                ... on DataComponent {
+                  name
+                }
+                ... on DataSource {
+                  name
+                }
+                ... on Case {
+                  name
+                }
+                ... on StixCyberObservable {
+                  observable_value
+                }
+                ... on StixFile {
+                  observableName: name
+                }
+                ... on BasicRelationship {
+                  id
+                  entity_type
+                  parent_types
+                }
+                ... on StixRelationship {
+                  from {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreRelationship {
+                      relationship_type
+                    }
+                  }
+                  to {
+                    ... on BasicObject {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on BasicRelationship {
+                      id
+                      entity_type
+                      parent_types
+                    }
+                    ... on StixCoreRelationship {
+                      relationship_type
+                    }
+                  }
+                }
+                ... on StixMetaRelationship {
+                  created_at
+                }
+                ... on StixCoreRelationship {
+                  relationship_type
+                  start_time
+                  stop_time
+                  confidence
+                  created
+                  created_at
+                  createdBy {
+                    ... on Identity {
+                      id
+                      name
+                      entity_type
+                    }
+                  }
+                  objectMarking {
+                    edges {
+                      node {
+                        id
+                        definition_type
+                        definition
+                        x_opencti_order
+                        x_opencti_color
+                      }
+                    }
+                  }
+                }
+              }
             }
+            pageInfo {
+              endCursor
+              hasNextPage
+              globalCount
+            }
+          }
         }
-    `,
+      `,
   },
   stixCoreObjectOrStixCoreRelationshipContainersGraphQuery,
 );
