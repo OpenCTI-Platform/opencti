@@ -29,7 +29,7 @@ export interface Filter {
 
 export interface ListFilter<T extends BasicStoreCommon> {
   indices?: Array<string>;
-  search?: string;
+  search?: InputMaybe<string> | string | undefined;
   useWildcardPrefix?: boolean;
   useWildcardSuffix?: boolean;
   first?: number | null;
