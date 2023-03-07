@@ -9,6 +9,7 @@ export interface AttributeDefinition {
   upsert: boolean
   label?: string
   description?: string
+  scalable?: boolean
   schemaDef?: Record<string, any>
 }
 
@@ -188,6 +189,7 @@ export const confidence: AttributeDefinition = {
   type: 'numeric',
   mandatoryType: 'no',
   multiple: false,
+  scalable: true,
   upsert: true,
 };
 

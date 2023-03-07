@@ -107,6 +107,7 @@ const Note = createFragmentContainer(NoteComponent, {
     fragment Note_note on Note {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

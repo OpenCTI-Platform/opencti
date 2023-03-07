@@ -190,7 +190,7 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
 
   const handleSubmitField = (
     name: string,
-    value: string | Option | null,
+    value: string | Option | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -247,11 +247,9 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Data-Component"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

@@ -125,7 +125,7 @@ NoteEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[],
+    value: Option | string | string[] | number | number[],
   ) => {
     let finalValue = value ?? '';
     if (name === 'x_opencti_workflow_id') {
@@ -221,11 +221,9 @@ NoteEditionOverviewProps
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Note"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

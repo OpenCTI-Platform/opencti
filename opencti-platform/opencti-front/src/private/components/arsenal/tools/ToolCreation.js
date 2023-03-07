@@ -168,9 +168,7 @@ export const ToolCreationForm = ({ updater, onReset, onCompleted,
               style={{ marginTop: 20 }}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
+              entityType="Tool"
               containerStyle={fieldSpacingContainerStyle}
           />
           <KillChainPhasesField

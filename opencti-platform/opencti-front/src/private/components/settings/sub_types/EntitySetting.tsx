@@ -1,19 +1,15 @@
-import { graphql, useMutation, useSubscription } from 'react-relay';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import Typography from '@mui/material/Typography';
-import React, { useMemo } from 'react';
 import Switch from '@mui/material/Switch';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import Grid from '@mui/material/Grid';
 import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
-import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../../components/i18n';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
-import { EntitySettingSubscription } from './__generated__/EntitySettingSubscription.graphql';
+import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 export const entitySettingsFragment = graphql`
   fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
@@ -25,11 +21,16 @@ export const entitySettingsFragment = graphql`
         platform_hidden_type
         target_type
         mandatoryAttributes
+        scaleAttributes {
+          name
+          scale
+        }
       }
     }
   }
 `;
 
+// used only for entity settings configuration
 export const entitySettingFragment = graphql`
   fragment EntitySetting_entitySetting on EntitySetting {
     id
@@ -37,12 +38,12 @@ export const entitySettingFragment = graphql`
     platform_entity_files_ref
     platform_hidden_type
     enforce_reference
-    mandatoryAttributes
-    mandatoryDefinitions {
+    attributesDefinitions {
       name
       label
       mandatory
-      builtIn
+      mandatoryType
+      scale
     }
     attributes_configuration
     availableSettings
@@ -57,14 +58,6 @@ export const entitySettingQuery = graphql`
   }
 `;
 
-export const entitySettingSubscription = graphql`
-  subscription EntitySettingSubscription($id: ID!) {
-    entitySetting(id: $id) {
-      ...EntitySetting_entitySetting
-    }
-  }
-`;
-
 export const entitySettingsPatch = graphql`
   mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
@@ -74,28 +67,16 @@ export const entitySettingsPatch = graphql`
 `;
 
 const EntitySetting = ({
-  queryRef,
+  entitySettingsData,
 }: {
-  queryRef: PreloadedQuery<EntitySettingQuery>;
+  entitySettingsData: SubType_subType$data['settings'];
 }) => {
   const { t } = useFormatter();
-  const entitySetting = usePreloadedFragment<
-  EntitySettingQuery,
-  EntitySetting_entitySetting$key
-  >({
-    linesQuery: entitySettingQuery,
-    linesFragment: entitySettingFragment,
-    queryRef,
-    nodePath: 'entitySettingByType',
-  });
-  const config = useMemo<GraphQLSubscriptionConfig<EntitySettingSubscription>>(
-    () => ({
-      subscription: entitySettingSubscription,
-      variables: { id: entitySetting.id },
-    }),
-    [entitySetting],
-  );
-  useSubscription(config);
+  const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
+  if (!entitySetting) {
+    return <ErrorNotFound />;
+  }
+
   const [commit] = useMutation(entitySettingsPatch);
   const handleSubmitField = (name: string, value: boolean) => {
     commit({

@@ -235,7 +235,7 @@ class StixDomainObjectOverview extends Component {
               >
                 {t('Confidence level')}
               </Typography>
-              <ItemConfidence confidence={stixDomainObject.confidence} />
+              <ItemConfidence confidence={stixDomainObject.confidence} entityType={stixDomainObject.entity_type} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

@@ -214,7 +214,7 @@ IncidentEditionOverviewProps
       },
     });
   };
-  const handleSubmitField = (name: string, value: string | string[] | null) => {
+  const handleSubmitField = (name: string, value: string | string[] | number | number[] | Option | null) => {
     if (!enableReferences) {
       let finalValue: string = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -276,12 +276,10 @@ IncidentEditionOverviewProps
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
+            onSubmit={handleSubmitField}
+            entityType="Incident"
             disabled={isInferred}
-            fullWidth={true}
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

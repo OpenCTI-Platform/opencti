@@ -264,9 +264,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             multiple={true}
           />
           <ConfidenceField
-            name="confidence"
-            label={t('Confidence')}
-            fullWidth={true}
+            entityType="Note"
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field

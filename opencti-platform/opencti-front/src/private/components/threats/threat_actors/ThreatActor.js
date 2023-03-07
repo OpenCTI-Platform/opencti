@@ -107,6 +107,7 @@ const ThreatActor = createFragmentContainer(ThreatActorComponent, {
     fragment ThreatActor_threatActor on ThreatActor {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

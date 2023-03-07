@@ -106,6 +106,7 @@ const ObservedData = createFragmentContainer(ObservedDataComponent, {
     fragment ObservedData_observedData on ObservedData {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

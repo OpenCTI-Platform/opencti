@@ -564,9 +564,7 @@ class StixSightingRelationshipCreation extends Component {
                 style={{ marginTop: 20 }}
               />
               <ConfidenceField
-                name="confidence"
-                label={t('Confidence level')}
-                fullWidth={true}
+                entityType="stix-sighting-relationship"
                 containerStyle={fieldSpacingContainerStyle}
               />
               <Field

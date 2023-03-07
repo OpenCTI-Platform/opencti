@@ -208,11 +208,9 @@ const GroupingEditionOverviewComponent = (props) => {
               }
             />
             <ConfidenceField
-              name="confidence"
               onFocus={editor.changeFocus}
-              onChange={handleSubmitField}
-              label={t('Confidence')}
-              fullWidth={true}
+              onSubmit={handleSubmitField}
+              entityType="Grouping"
               containerStyle={fieldSpacingContainerStyle}
               editContext={context}
               variant="edit"

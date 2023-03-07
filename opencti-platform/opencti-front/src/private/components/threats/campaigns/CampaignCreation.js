@@ -160,9 +160,7 @@ export const CampaignCreationForm = ({
             ]}
           />
           <ConfidenceField
-            name="confidence"
-            label={t('Confidence')}
-            fullWidth={true}
+            entityType="Campaign"
             containerStyle={fieldSpacingContainerStyle}
           />
           <Field

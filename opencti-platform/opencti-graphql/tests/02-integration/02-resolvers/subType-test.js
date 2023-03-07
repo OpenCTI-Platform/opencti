@@ -20,7 +20,7 @@ const SUB_TYPE_ATTRIBUTES_QUERY = gql`
   query subType($id: String!) {
     subType(id: $id) {
       settings {
-        mandatoryDefinitions {
+        attributesDefinitions {
           name
         }
         mandatoryAttributes
@@ -42,9 +42,9 @@ describe('SubType resolver standard behavior', () => {
   });
   it('should retrieve mandatory attribute for an entity', async () => {
     const queryResult = await queryAsAdmin({ query: SUB_TYPE_ATTRIBUTES_QUERY, variables: { id: ENTITY_TYPE_DATA_COMPONENT } });
-    const { mandatoryDefinitions } = queryResult.data.subType.settings;
-    expect(mandatoryDefinitions.map((attr) => attr.name).includes('name')).toBeTruthy();
-    expect(mandatoryDefinitions.length).toEqual(4);
+    const { attributesDefinitions } = queryResult.data.subType.settings;
+    expect(attributesDefinitions.map((attr) => attr.name).includes('name')).toBeTruthy();
+    expect(attributesDefinitions.length).toEqual(5);
     const { mandatoryAttributes } = queryResult.data.subType.settings;
     expect(mandatoryAttributes.includes('name')).toBeTruthy();
     expect(mandatoryAttributes.length).toEqual(1);

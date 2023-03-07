@@ -194,9 +194,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               detectDuplicate={['Data-Component']}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
+              entityType="Data-Component"
               containerStyle={fieldSpacingContainerStyle}
           />
           <Field

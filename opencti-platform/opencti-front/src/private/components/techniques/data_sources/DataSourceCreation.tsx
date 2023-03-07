@@ -206,9 +206,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               detectDuplicate={['Data-Source']}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
+              entityType="Data-Source"
               containerStyle={fieldSpacingContainerStyle}
           />
           <Field
