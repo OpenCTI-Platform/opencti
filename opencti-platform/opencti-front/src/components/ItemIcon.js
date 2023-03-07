@@ -30,6 +30,7 @@ import {
   TipsAndUpdatesOutlined,
   BiotechOutlined,
   MapOutlined,
+  RouterOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -43,7 +44,6 @@ import {
   HexagonOutline,
   VectorRadius,
   ShieldSearch,
-  ServerNetwork,
   Launch,
   LaptopAccount,
   ArchiveOutline,
@@ -76,7 +76,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Vocabulary':
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
-      return <CenterFocusStrongOutlined style={style} fontSize={fontSize} role="img" />;
+      return (
+        <CenterFocusStrongOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'External-Reference':
       return (
         <LocalOfferOutlined style={style} fontSize={fontSize} role="img" />
@@ -120,7 +126,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Indicator':
       return <ShieldSearch style={style} fontSize={fontSize} role="img" />;
     case 'Infrastructure':
-      return <ServerNetwork style={style} fontSize={fontSize} role="img" />;
+      return <RouterOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Intrusion-Set':
       return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
     case 'City':

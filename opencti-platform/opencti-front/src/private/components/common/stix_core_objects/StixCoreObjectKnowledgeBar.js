@@ -24,6 +24,7 @@ import {
   PublicOutlined,
   MapOutlined,
   SpeakerNotesOutlined,
+  RouterOutlined,
 } from '@mui/icons-material';
 import {
   Gauge,
@@ -38,7 +39,6 @@ import {
   ShieldSearch,
   SourceFork,
   CityVariantOutline,
-  ServerNetwork,
   FlaskOutline,
   LaptopAccount,
   GlobeModel,
@@ -639,7 +639,12 @@ class StixCoreObjectKnowledgeBar extends Component {
             )}
           </MenuList>
         )}
-        {isInAvailableSection(['observables', 'indicators', 'observables']) && (
+        {isInAvailableSection([
+          'observables',
+          'indicators',
+          'observables',
+          'infrastructures',
+        ]) && (
           <MenuList
             style={{ paddingBottom: 0 }}
             component="nav"
@@ -692,7 +697,7 @@ class StixCoreObjectKnowledgeBar extends Component {
                 classes={{ root: classes.item }}
               >
                 <ListItemIcon style={{ minWidth: 35 }}>
-                  <ServerNetwork />
+                  <RouterOutlined />
                 </ListItemIcon>
                 <ListItemText primary={t('Infrastructures')} />
               </MenuItem>

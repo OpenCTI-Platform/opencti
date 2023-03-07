@@ -6851,8 +6851,6 @@ const i18n = {
       Nonee: 'None',
       Malwares: 'Malware',
       malwares: 'Malware',
-      Infrastructures: 'Infrastructure',
-      infrastructures: 'infrastructure',
       // Types
       entity_Threats: 'Threats',
       entity_Case: 'Case',
