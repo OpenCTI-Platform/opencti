@@ -815,6 +815,11 @@ export const itAssetPredicateMap = {
       return optionalizePredicate(this.binding(iri, value));
     },
   },
+  responsible_parties: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_parties>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "responsible_parties");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
 };
 export const locationPredicateMap = {
   id: {

@@ -380,7 +380,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
   }
 
   # Pagination Types

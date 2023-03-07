@@ -103,6 +103,7 @@
     to_type: String     # from __typename or entity_type
   }
 
+
   ############## CyioExternalReferences
   type CyioExternalReference implements BasicObject & LifecycleObject {
     # BasicObject
@@ -180,7 +181,6 @@
     cursor: String!
     node: CyioExternalReference!
   }
-
 
   type HashInfo {
     "Uniquely identifies this object."
@@ -283,7 +283,7 @@
     node: CyioLabel!
   }
 
-
+############## Notes
   type CyioNote implements BasicObject & LifecycleObject {
     # BasicObject
     "Uniquely identifies this object."
@@ -350,7 +350,7 @@
     node: CyioNote!
   }
 
-  # Cyio Location
+############## Cyio Location
   interface CyioLocation {
     # BasicObject
     "Uniquely identifies this object."
