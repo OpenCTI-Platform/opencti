@@ -175,9 +175,7 @@ export const GroupingCreationForm = ({
             fullWidth={true}
           />
           <ConfidenceField
-            name="confidence"
-            label={t('Confidence')}
-            fullWidth={true}
+            entityType="Grouping"
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField

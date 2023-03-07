@@ -7,6 +7,7 @@ import InputAdornment from '@mui/material/InputAdornment';
 import { useField } from 'formik';
 import { fieldToTextField } from 'formik-mui';
 import { ColorLens } from '@mui/icons-material';
+import { isNil } from 'ramda';
 
 const ColorPickerField = (props) => {
   const [anchorEl, setAnchorEl] = React.useState(null);
@@ -66,6 +67,8 @@ const ColorPickerField = (props) => {
       <MuiTextField
         variant="standard"
         {...fieldToTextField(props)}
+        error={!isNil(meta.error)}
+        helperText={!isNil(meta.error) ? meta.error : props.helperText}
         ref={anchorEl}
         onChange={internalOnChange}
         onFocus={internalOnFocus}

@@ -5364,6 +5364,7 @@ export type EmailMimePartTypeAddInput = {
 
 export type EntitySetting = BasicObject & InternalObject & {
   __typename?: 'EntitySetting';
+  attributesDefinitions: Array<TypeAttribute>;
   attributes_configuration?: Maybe<Scalars['String']>;
   availableSettings: Array<Scalars['String']>;
   created_at: Scalars['DateTime'];
@@ -5371,10 +5372,10 @@ export type EntitySetting = BasicObject & InternalObject & {
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   mandatoryAttributes: Array<Scalars['String']>;
-  mandatoryDefinitions: Array<TypeAttribute>;
   parent_types: Array<Scalars['String']>;
   platform_entity_files_ref?: Maybe<Scalars['Boolean']>;
   platform_hidden_type?: Maybe<Scalars['Boolean']>;
+  scaleAttributes: Array<ScaleAttribute>;
   standard_id: Scalars['String'];
   target_type: Scalars['String'];
   updated_at: Scalars['DateTime'];
@@ -13678,6 +13679,7 @@ export type OpinionEditMutationsRelationDeleteArgs = {
 export enum OpinionsFilter {
   AssigneeTo = 'assigneeTo',
   Authors = 'authors',
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -13701,6 +13703,7 @@ export type OpinionsFiltering = {
 };
 
 export enum OpinionsOrdering {
+  Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -17939,6 +17942,12 @@ export type RuleTask = Task & {
   task_expected_number?: Maybe<Scalars['Int']>;
   task_processed_number?: Maybe<Scalars['Int']>;
   type?: Maybe<TaskType>;
+};
+
+export type ScaleAttribute = {
+  __typename?: 'ScaleAttribute';
+  name: Scalars['String'];
+  scale: Scalars['String'];
 };
 
 export type SearchMetrics = {
@@ -22258,10 +22267,11 @@ export enum TriggersOrdering {
 
 export type TypeAttribute = {
   __typename?: 'TypeAttribute';
-  builtIn: Scalars['Boolean'];
   label?: Maybe<Scalars['String']>;
   mandatory: Scalars['Boolean'];
+  mandatoryType: Scalars['String'];
   name: Scalars['String'];
+  scale?: Maybe<Scalars['String']>;
 };
 
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -24850,6 +24860,7 @@ export type ResolversTypes = ResolversObject<{
   RuleExecutionError: ResolverTypeWrapper<RuleExecutionError>;
   RuleManager: ResolverTypeWrapper<RuleManager>;
   RuleTask: ResolverTypeWrapper<RuleTask>;
+  ScaleAttribute: ResolverTypeWrapper<ScaleAttribute>;
   SearchMetrics: ResolverTypeWrapper<SearchMetrics>;
   Sector: ResolverTypeWrapper<Omit<Sector, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'subSectors' | 'targetedOrganizations'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']>, subSectors?: Maybe<ResolversTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   SectorAddInput: SectorAddInput;
@@ -25470,6 +25481,7 @@ export type ResolversParentTypes = ResolversObject<{
   RuleExecutionError: RuleExecutionError;
   RuleManager: RuleManager;
   RuleTask: RuleTask;
+  ScaleAttribute: ScaleAttribute;
   SearchMetrics: SearchMetrics;
   Sector: Omit<Sector, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'parentSectors' | 'pendingFiles' | 'reports' | 'stixCoreRelationships' | 'subSectors' | 'targetedOrganizations'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, parentSectors?: Maybe<ResolversParentTypes['SectorConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']>, subSectors?: Maybe<ResolversParentTypes['SectorConnection']>, targetedOrganizations?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   SectorAddInput: SectorAddInput;
@@ -27160,6 +27172,7 @@ export type EmailMimePartTypeResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type EntitySettingResolvers<ContextType = any, ParentType extends ResolversParentTypes['EntitySetting'] = ResolversParentTypes['EntitySetting']> = ResolversObject<{
+  attributesDefinitions?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -27167,10 +27180,10 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   mandatoryAttributes?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
-  mandatoryDefinitions?: Resolver<Array<ResolversTypes['TypeAttribute']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   platform_entity_files_ref?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   platform_hidden_type?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  scaleAttributes?: Resolver<Array<ResolversTypes['ScaleAttribute']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   target_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -30249,6 +30262,12 @@ export type RuleTaskResolvers<ContextType = any, ParentType extends ResolversPar
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ScaleAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['ScaleAttribute'] = ResolversParentTypes['ScaleAttribute']> = ResolversObject<{
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scale?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type SearchMetricsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SearchMetrics'] = ResolversParentTypes['SearchMetrics']> = ResolversObject<{
   fetch_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   query_total?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -31574,10 +31593,11 @@ export type TriggerEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type TypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TypeAttribute'] = ResolversParentTypes['TypeAttribute']> = ResolversObject<{
-  builtIn?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  mandatoryType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  scale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -32420,6 +32440,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   RuleExecutionError?: RuleExecutionErrorResolvers<ContextType>;
   RuleManager?: RuleManagerResolvers<ContextType>;
   RuleTask?: RuleTaskResolvers<ContextType>;
+  ScaleAttribute?: ScaleAttributeResolvers<ContextType>;
   SearchMetrics?: SearchMetricsResolvers<ContextType>;
   Sector?: SectorResolvers<ContextType>;
   SectorConnection?: SectorConnectionResolvers<ContextType>;

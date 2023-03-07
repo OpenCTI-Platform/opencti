@@ -295,7 +295,7 @@ RelationshipDetailsComponentProps
         {t('Confidence level')}
       </Typography>
       {stixCoreRelationship.confidence ? (
-        <ItemConfidence confidence={stixCoreRelationship.confidence} />
+        <ItemConfidence confidence={stixCoreRelationship.confidence} entityType="stix-core-relationship" />
       ) : (
         '-'
       )}

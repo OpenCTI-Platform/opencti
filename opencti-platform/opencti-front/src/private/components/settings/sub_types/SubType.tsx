@@ -1,18 +1,18 @@
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import React from 'react';
+import React, { useMemo } from 'react';
 import Paper from '@mui/material/Paper';
 import makeStyles from '@mui/styles/makeStyles';
-import { graphql, useFragment } from 'react-relay';
+import { graphql, useFragment, useSubscription } from 'react-relay';
+import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
-import EntitySetting, { entitySettingQuery } from './EntitySetting';
+import EntitySetting from './EntitySetting';
 import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
+import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
+import EntitySettingAttributesConfigurationScale from './EntitySettingAttributesConfigurationScale';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -25,6 +25,14 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+export const entitySettingSubscription = graphql`
+  subscription SubTypeEntitySettingSubscription($id: ID!) {
+    entitySetting(id: $id) {
+      ...EntitySetting_entitySetting
+    }
+  }
+`;
+
 // -- GRAPHQL - ENTITY --
 
 export const subTypeFragment = graphql`
@@ -34,11 +42,7 @@ export const subTypeFragment = graphql`
     workflowEnabled
     settings {
       id
-      enforce_reference
-      platform_entity_files_ref
-      platform_hidden_type
-      target_type
-      availableSettings
+      ...EntitySetting_entitySetting
     }
     statuses {
       edges {
@@ -60,43 +64,50 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
-  const queryRef = useQueryLoading<EntitySettingQuery>(entitySettingQuery, {
-    targetType: subType.id,
-  });
+
+  const subTypeSettingsId = subType.settings?.id;
+  if (subTypeSettingsId) {
+    const config = useMemo<GraphQLSubscriptionConfig<SubTypeEntitySettingSubscription>>(
+      () => ({
+        subscription: entitySettingSubscription,
+        variables: { id: subTypeSettingsId },
+      }),
+      [subType.settings],
+    );
+    useSubscription(config);
+  }
+
   return (
     <>
-      {queryRef && (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-          <div style={{ marginBottom: 23 }}>
-            <Typography variant="h1" gutterBottom={true}>
-              {t(`entity_${subType.label}`)}
+      <div style={{ marginBottom: 23 }}>
+        <Typography variant="h1" gutterBottom={true}>
+          {t(`entity_${subType.label}`)}
+        </Typography>
+      </div>
+      <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
+        <Grid item={true} xs={6}>
+          <div style={{ height: '100%' }}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Configuration')}
             </Typography>
-          </div>
-          <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-            <Grid item={true} xs={6}>
-              <div style={{ height: '100%' }}>
-                <Typography variant="h4" gutterBottom={true}>
-                  {t('Configuration')}
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <EntitySetting entitySettingsData={subType.settings} />
+              <div style={{ marginTop: 10 }}>
+                <Typography variant="h3" gutterBottom={true}>
+                  {t('Workflow')}
+                  <SubTypeStatusPopover subTypeId={subType.id} />
                 </Typography>
-                <Paper classes={{ root: classes.paper }} variant="outlined">
-                  <EntitySetting queryRef={queryRef} />
-                  <div style={{ marginTop: 10 }}>
-                    <Typography variant="h3" gutterBottom={true}>
-                      {t('Workflow')}
-                      <SubTypeStatusPopover subTypeId={subType.id} />
-                    </Typography>
-                  </div>
-                  <ItemStatusTemplate
-                    statuses={statuses}
-                    disabled={!subType.workflowEnabled}
-                  />
-                </Paper>
               </div>
-            </Grid>
-            <EntitySettingAttributesConfiguration queryRef={queryRef} />
-          </Grid>
-        </React.Suspense>
-      )}
+              <ItemStatusTemplate
+                statuses={statuses}
+                disabled={!subType.workflowEnabled}
+              />
+            </Paper>
+          </div>
+        </Grid>
+        <EntitySettingAttributesConfiguration entitySettingsData={subType.settings} />
+      </Grid>
+      <EntitySettingAttributesConfigurationScale entitySettingsData={subType.settings} />
     </>
   );
 };

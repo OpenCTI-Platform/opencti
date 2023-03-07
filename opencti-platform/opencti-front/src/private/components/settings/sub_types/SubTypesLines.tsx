@@ -20,29 +20,8 @@ const subTypesLinesFragment = graphql`
     subTypes {
       edges {
         node {
-          id
           label
-          workflowEnabled
-          settings {
-            id
-            enforce_reference
-            platform_entity_files_ref
-            platform_hidden_type
-            target_type
-            availableSettings
-          }
-          statuses {
-            edges {
-              node {
-                id
-                order
-                template {
-                  name
-                  color
-                }
-              }
-            }
-          }
+          ...SubTypesLine_node
         }
       }
     }

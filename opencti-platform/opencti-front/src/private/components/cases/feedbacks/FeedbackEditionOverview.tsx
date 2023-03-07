@@ -209,7 +209,7 @@ FeedbackEditionOverviewProps
 
   const handleSubmitField = (
     name: string,
-    value: Option | string | string[] | number | null,
+    value: Option | string | string[] | number | number[] | null,
   ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
@@ -308,11 +308,9 @@ FeedbackEditionOverviewProps
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Case"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

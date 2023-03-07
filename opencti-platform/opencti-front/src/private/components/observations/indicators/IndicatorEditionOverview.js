@@ -271,11 +271,9 @@ const IndicatorEditionOverviewComponent = ({
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Indicator"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

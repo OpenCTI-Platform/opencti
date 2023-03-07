@@ -1,4 +1,5 @@
 import React, { FunctionComponent } from 'react';
+import { graphql, useFragment } from 'react-relay';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText/ListItemText';
 import {
@@ -15,8 +16,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import ItemIcon from '../../../../components/ItemIcon';
 import { DataColumns } from '../../../../components/list_lines';
 import { useFormatter } from '../../../../components/i18n';
-import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import { Theme } from '../../../../components/Theme';
+import { SubTypesLine_node$key } from './__generated__/SubTypesLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -49,8 +50,36 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+const subTypesLinesFragment = graphql`
+  fragment SubTypesLine_node on SubType {
+    id
+    label
+    workflowEnabled
+    settings {
+      id
+      enforce_reference
+      platform_entity_files_ref
+      platform_hidden_type
+      target_type
+      availableSettings
+    }
+    statuses {
+      edges {
+        node {
+          id
+          order
+          template {
+            name
+            color
+          }
+        }
+      }
+    }
+  }
+`;
+
 interface SubTypeLineProps {
-  node: SubType_subType$data;
+  node: SubTypesLine_node$key;
   dataColumns: DataColumns;
   selectedElements: Record<string, { id: string }>;
   deSelectedElements: Record<string, { id: string }>;
@@ -76,27 +105,29 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const nodeSubType = useFragment(subTypesLinesFragment, node);
+
   const renderOptionIcon = (option: string) => {
-    if (!node.settings?.availableSettings?.includes(option)) {
+    if (!nodeSubType.settings?.availableSettings?.includes(option)) {
       return <DoNotDisturbOnOutlined fontSize="small" color={'disabled'} />;
     }
-    if ((node.settings as never)?.[option] === true) {
+    if ((nodeSubType.settings as never)?.[option] === true) {
       return <CheckCircleOutlined fontSize="small" color="success" />;
     }
     return <DoNotDisturbOnOutlined fontSize="small" color="primary" />;
   };
   return (
     <ListItemButton
-      key={node.id}
+      key={nodeSubType.id}
       divider={true}
       classes={{ root: classes.item }}
       component={Link}
-      to={`/dashboard/settings/entity_types/${node.id}`}
+      to={`/dashboard/settings/entity_types/${nodeSubType.id}`}
     >
       <ListItemIcon
         onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, { id: node.id }, event)
-          : onToggleEntity({ id: node.id }, event))
+          ? onToggleShiftEntity(index, { id: nodeSubType.id }, event)
+          : onToggleEntity({ id: nodeSubType.id }, event))
         }
         classes={{ root: classes.itemIcon }}
         style={{ minWidth: 40 }}
@@ -104,14 +135,14 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
         <Checkbox
           edge="start"
           checked={
-            (selectAll && !(node.id in (deSelectedElements || {})))
-            || node.id in (selectedElements || {})
+            (selectAll && !(nodeSubType.id in (deSelectedElements || {})))
+            || nodeSubType.id in (selectedElements || {})
           }
           disableRipple={true}
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={node.id} />
+        <ItemIcon type={nodeSubType.id} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -120,13 +151,13 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.entity_type.width }}
             >
-              {t(`entity_${node.label}`)}
+              {t(`entity_${nodeSubType.label}`)}
             </div>
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.workflow_status.width }}
             >
-              {node.workflowEnabled ? (
+              {nodeSubType.workflowEnabled ? (
                 <CheckCircleOutlined fontSize="small" color="success" />
               ) : (
                 <DoNotDisturbOnOutlined fontSize="small" color="primary" />

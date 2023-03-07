@@ -816,9 +816,7 @@ class StixCoreRelationshipCreationFromEntity extends Component {
                 )}
               </Field>
               <ConfidenceField
-                name="confidence"
-                label={t('Confidence level')}
-                fullWidth={true}
+                entityType="stix-core-relationship"
                 containerStyle={fieldSpacingContainerStyle}
               />
               <Field

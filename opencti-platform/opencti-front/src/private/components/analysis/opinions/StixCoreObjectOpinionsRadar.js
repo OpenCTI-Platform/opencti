@@ -334,9 +334,6 @@ class StixCoreObjectOpinionsRadarComponent extends Component {
                               style={{ marginTop: 20 }}
                             />
                             <ConfidenceField
-                              name="confidence"
-                              label={t('Confidence')}
-                              fullWidth={true}
                               containerStyle={fieldSpacingContainerStyle}
                             />
                           </DialogContent>
