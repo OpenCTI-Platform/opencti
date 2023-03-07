@@ -13,7 +13,7 @@ import type {
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 
-export const MAX_SEARCH_SIZE = 5000;
+const MAX_SEARCH_SIZE = 5000;
 
 export interface Filter {
   key: any ;
@@ -29,6 +29,9 @@ export interface Filter {
 
 export interface ListFilter<T extends BasicStoreCommon> {
   indices?: Array<string>;
+  search?: string;
+  useWildcardPrefix?: boolean;
+  useWildcardSuffix?: boolean;
   first?: number | null;
   infinite?: boolean;
   after?: string | undefined | null;

@@ -7610,7 +7610,7 @@ type Query {
   synchronizers(first: Int, after: ID, orderBy: SynchronizersOrdering, orderMode: OrderingMode, search: String): SynchronizerConnection
   synchronizerFetch(input: SynchronizerFetchInput): [RemoteStreamCollection]
   markingDefinition(id: String!): MarkingDefinition
-  markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, filters: [MarkingDefinitionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean, allowPrefixWildcardSearch: Boolean): MarkingDefinitionConnection
+  markingDefinitions(first: Int, after: ID, orderBy: MarkingDefinitionsOrdering, orderMode: OrderingMode, filters: [MarkingDefinitionsFiltering], filterMode: FilterMode, search: String, toStix: Boolean): MarkingDefinitionConnection
   label(id: String!): Label
   labels(first: Int, after: ID, orderBy: LabelsOrdering, orderMode: OrderingMode, filters: [LabelsFiltering], filterMode: FilterMode, search: String): LabelConnection
   externalReference(id: String!): ExternalReference

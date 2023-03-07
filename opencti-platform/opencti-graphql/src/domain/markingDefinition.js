@@ -13,8 +13,9 @@ export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
 };
 
-export const findAll = (context, user, { allowPrefixWildcardSearch = true, ...args }) => {
-  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, allowPrefixWildcardSearch });
+export const findAll = (context, user, args) => {
+  // Force looking with prefix wildcard for markings
+  return listEntities(context, user, [ENTITY_TYPE_MARKING_DEFINITION], { ...args, useWildcardPrefix: true });
 };
 
 export const addMarkingDefinition = async (context, user, markingDefinition) => {

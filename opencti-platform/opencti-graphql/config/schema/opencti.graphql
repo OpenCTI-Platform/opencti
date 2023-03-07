@@ -12119,7 +12119,6 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-    allowPrefixWildcardSearch: Boolean
   ): MarkingDefinitionConnection @auth(for: [KNOWLEDGE])
   label(id: String!): Label @auth(for: [KNOWLEDGE])
   labels(
