@@ -1,4 +1,5 @@
 import * as C from '@mui/material/colors';
+import { resolveLink } from './Entity';
 
 const colors = (temp) => [
   C.red[temp],
@@ -306,6 +307,7 @@ export const horizontalBarsChartOptions = (
   total = false,
   categories = null,
   legend = false,
+  navigate = undefined,
 ) => ({
   chart: {
     type: 'bar',
@@ -315,6 +317,15 @@ export const horizontalBarsChartOptions = (
     },
     foreColor: theme.palette.text.secondary,
     stacked,
+    events: {
+      click: (event, chartContext, config) => {
+        if (categories) {
+          const link = resolveLink(categories[config.dataPointIndex].entity_type);
+          const entityId = categories[config.dataPointIndex].id;
+          navigate(`${link}/${entityId}`);
+        }
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
@@ -351,7 +362,7 @@ export const horizontalBarsChartOptions = (
     theme: theme.palette.mode,
   },
   xaxis: {
-    categories: categories ?? [],
+    categories: categories ? categories.map((category) => category.value) : [],
     labels: {
       formatter: (value) => (xFormatter ? xFormatter(value) : value),
       style: {

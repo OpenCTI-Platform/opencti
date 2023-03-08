@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -713,6 +714,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
@@ -864,7 +866,11 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const categories = props.stixCoreRelationshipsDistribution.map(
-              (n) => defaultValue(n.entity),
+              (n) => ({
+                value: defaultValue(n.entity),
+                id: n.label,
+                entity_type: n.entity.entity_type,
+              }),
             );
             const entitiesMapping = {};
             for (const distrib of props.stixCoreRelationshipsDistribution) {
@@ -936,6 +942,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   true,
                   categories,
                   true,
+                  navigate,
                 )}
                 series={chartData}
                 type="bar"
