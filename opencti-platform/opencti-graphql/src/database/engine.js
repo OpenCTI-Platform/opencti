@@ -79,7 +79,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateNumericOrBooleanAttribute, isMultipleAttribute, isRuntimeAttribute } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateNumericOrBooleanAttribute, isMultipleAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
@@ -1228,6 +1228,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
     mustFilters.push(bool);
   }
   // Handle orders
+  const runtimeMappings = {};
   if (isNotEmptyField(orderBy)) {
     const orderCriterion = Array.isArray(orderBy) ? orderBy : [orderBy];
     for (let index = 0; index < orderCriterion.length; index += 1) {
@@ -1244,24 +1245,20 @@ const elQueryBodyBuilder = async (context, user, options) => {
     if (!orderCriterion.includes('standard_id')) {
       ordering.push({ 'standard_id.keyword': 'asc' });
     }
+    // Build runtime mappings
+    const runtime = RUNTIME_ATTRIBUTES[orderBy];
+    if (isNotEmptyField(runtime)) {
+      const source = await runtime.getSource();
+      const params = await runtime.getParams(context, user);
+      runtimeMappings[runtime.field] = {
+        type: runtime.type,
+        script: { source, params },
+      };
+    }
   } else if (search !== null && search.length > 0) {
     ordering.push({ _score: 'desc' });
   } else { // If not ordering criteria, order by standard_id
     ordering.push({ 'standard_id.keyword': 'asc' });
-  }
-  // Build runtime mappings
-  const runtimeMappings = {};
-  if (isRuntimeAttribute(orderBy)) {
-    const runtime = RUNTIME_ATTRIBUTES[orderBy];
-    if (isEmptyField(runtime)) {
-      throw UnsupportedError(`[SEARCH] Unsupported runtime field ${orderBy}`);
-    }
-    const source = await runtime.getSource();
-    const params = await runtime.getParams(context, user);
-    runtimeMappings[runtime.field] = {
-      type: runtime.type,
-      script: { source, params },
-    };
   }
   // Build query
   const querySize = first || 10;

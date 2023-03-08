@@ -338,7 +338,6 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     modified,
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'creator', type: 'runtime', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'report_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Report types' },
     { name: 'published', type: 'date', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'i_published_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
