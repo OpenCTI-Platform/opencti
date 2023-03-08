@@ -9694,6 +9694,7 @@ enum CasesOrdering {
   confidence
   priority
   severity
+  objectMarking
 }
 
 enum CasesFilter {

@@ -1931,6 +1931,7 @@ export enum CasesOrdering {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  ObjectMarking = 'objectMarking',
   Priority = 'priority',
   Rating = 'rating',
   Severity = 'severity',

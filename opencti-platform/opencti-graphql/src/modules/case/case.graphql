@@ -145,12 +145,12 @@ enum CasesOrdering {
   updated_at
   creator
   createdBy
-  markedBy
   x_opencti_workflow_id
   case_type
   confidence
   priority
   severity
+  objectMarking
 }
 
 # Filtering
