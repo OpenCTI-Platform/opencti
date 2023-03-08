@@ -4,7 +4,8 @@ import { getPlatformHttpProxyAgent, isUriProxyExcluded } from '../../../src/conf
 describe('configuration testing', () => {
   it('should proxy uri correctly excluded simple', () => {
     expect(isUriProxyExcluded('www.test.example.com', ['www.test.example.com'])).toBe(true);
-    expect(isUriProxyExcluded('www.test2.example.com', ['*.test.ex*le.com'])).toBe(false);
+    expect(isUriProxyExcluded('example.com', ['example.com'])).toBe(true);
+    expect(isUriProxyExcluded('example.com', ['example.co'])).toBe(false);
   });
   it('should proxy uri correctly excluded for regexp', () => {
     expect(isUriProxyExcluded('www.test.example.com', ['*.test.example.com'])).toBe(true);
