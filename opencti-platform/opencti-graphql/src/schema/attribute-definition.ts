@@ -1,4 +1,4 @@
-export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json' | 'runtime';
+export type AttrType = 'string' | 'date' | 'numeric' | 'boolean' | 'dictionary' | 'json';
 export type MandatoryType = 'internal' | 'external' | 'customizable' | 'no';
 
 export interface AttributeDefinition {
@@ -25,7 +25,7 @@ export const internalId: AttributeDefinition = {
 export const creators: AttributeDefinition = {
   name: 'creator_id',
   label: 'Creators',
-  type: 'runtime',
+  type: 'string',
   mandatoryType: 'no',
   multiple: true,
   upsert: false
