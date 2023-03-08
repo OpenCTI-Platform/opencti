@@ -63,7 +63,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
       isSortable: isRuntimeSort,
     },
     created: {
-      label: 'Creation date',
+      label: 'Date',
       width: '15%',
       isSortable: true,
     },

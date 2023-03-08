@@ -2128,6 +2128,7 @@ enum AttackPatternsFilter {
   mitigatedBy
   revoked
   x_opencti_workflow_id
+  creator
 }
 input AttackPatternsFiltering {
   key: [AttackPatternsFilter!]!
@@ -2497,6 +2498,7 @@ enum ContainersFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  creator
 }
 input ContainersFiltering {
   key: [ContainersFilter!]!
@@ -3477,6 +3479,7 @@ enum CoursesOfActionFilter {
   mitigatedBy
   x_opencti_workflow_id
   x_mitre_id
+  creator
 }
 input CoursesOfActionFiltering {
   key: [CoursesOfActionFilter!]!
@@ -3832,6 +3835,7 @@ enum IndividualsFilter {
   contact_information
   x_opencti_firstname
   x_opencti_lastname
+  creator
 }
 input IndividualsFiltering {
   key: [IndividualsFilter!]!
@@ -4772,6 +4776,9 @@ enum InfrastructuresOrdering {
   updated_at
   x_opencti_workflow_id
   confidence
+  createdBy
+  objectMarking
+  creator
 }
 enum InfrastructuresFilter {
   name
@@ -4790,6 +4797,7 @@ enum InfrastructuresFilter {
   x_opencti_workflow_id
   revoked
   confidence
+  creator
 }
 input InfrastructuresFiltering {
   key: [InfrastructuresFilter!]!
@@ -5505,6 +5513,7 @@ enum CitiesFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  creator
 }
 input CitiesFiltering {
   key: [CitiesFilter!]!
@@ -5680,6 +5689,7 @@ enum CountriesFilter {
   labelledBy
   x_opencti_workflow_id
   revoked
+  creator
 }
 input CountriesFiltering {
   key: [CountriesFilter!]!

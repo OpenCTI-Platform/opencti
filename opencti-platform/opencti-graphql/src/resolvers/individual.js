@@ -26,6 +26,7 @@ const individualResolvers = {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
+    creator: 'creator_id',
   },
   Mutation: {
     individualEdit: (_, { id }, context) => ({

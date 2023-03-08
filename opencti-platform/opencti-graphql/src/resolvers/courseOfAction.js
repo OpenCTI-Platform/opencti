@@ -27,6 +27,7 @@ const courseOfActionResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
+    creator: 'creator_id',
   },
   Mutation: {
     courseOfActionEdit: (_, { id }, context) => ({

@@ -220,14 +220,14 @@ const Reports: FunctionComponent<ReportsProps> = ({
     );
   };
   return (
-      <ExportContextProvider>
-          <div>
-            {renderLines()}
-            <Security needs={[KNOWLEDGE_KNUPDATE]}>
-              <ReportCreation paginationOptions={paginationOptions} />
-            </Security>
-          </div>
-      </ExportContextProvider>
+    <ExportContextProvider>
+      <div>
+        {renderLines()}
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ReportCreation paginationOptions={paginationOptions} />
+        </Security>
+      </div>
+    </ExportContextProvider>
   );
 };
 

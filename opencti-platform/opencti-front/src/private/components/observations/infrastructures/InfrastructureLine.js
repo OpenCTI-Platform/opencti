@@ -9,9 +9,11 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { KeyboardArrowRight } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemIcon from '../../../../components/ItemIcon';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -42,11 +44,17 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    width: 120,
+  },
 });
 
 class InfrastructureLineComponent extends Component {
   render() {
-    const { fd, classes, node, dataColumns, onLabelClick } = this.props;
+    const { fd, t, classes, node, dataColumns, onLabelClick } = this.props;
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -69,6 +77,29 @@ class InfrastructureLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.infrastructure_types.width }}
+              >
+                <Chip
+                  classes={{ root: classes.chipInList }}
+                  color="primary"
+                  variant="outlined"
+                  label={node.infrastructure_types?.at(0) ?? t('Unknown')}
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {node.createdBy?.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
@@ -85,9 +116,13 @@ class InfrastructureLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
-                {fd(node.modified)}
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={node.objectMarking?.edges ?? []}
+                  limit={1}
+                />
               </div>
             </div>
           }
@@ -119,6 +154,14 @@ const InfrastructureLineFragment = createFragmentContainer(
         created
         modified
         confidence
+        infrastructure_types
+        createdBy {
+          ... on Identity {
+            id
+            name
+            entity_type
+          }
+        }
         objectMarking {
           edges {
             node {
@@ -138,6 +181,10 @@ const InfrastructureLineFragment = createFragmentContainer(
               color
             }
           }
+        }
+        creators {
+          id
+          name
         }
       }
     `,
@@ -178,6 +225,39 @@ class InfrastructureLineDummyComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.infrastructure_types.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <Skeleton
@@ -194,18 +274,18 @@ class InfrastructureLineDummyComponent extends Component {
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={140}
+                  width="90%"
                   height="100%"
                 />
               </div>
               <div
                 className={classes.bodyItem}
-                style={{ width: dataColumns.modified.width }}
+                style={{ width: dataColumns.objectMarking.width }}
               >
                 <Skeleton
                   animation="wave"
                   variant="rectangular"
-                  width={140}
+                  width={100}
                   height="100%"
                 />
               </div>

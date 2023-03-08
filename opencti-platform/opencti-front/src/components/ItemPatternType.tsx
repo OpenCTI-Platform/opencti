@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import Chip from '@mui/material/Chip';
 import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from './i18n';
 
 const styles = makeStyles(() => ({
   chip: {
@@ -93,7 +92,6 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
   variant,
   label,
 }) => {
-  const { t } = useFormatter();
   const classes = styles();
   const style = variant === 'inList' ? classes.chipInList : classes.chip;
   const hasPredefinedStyle = Object.keys(inlineStyles).includes(label);
@@ -101,7 +99,7 @@ const ItemPatternType: FunctionComponent<ItemPatternTypeProps> = ({
     <Chip
       className={style}
       style={hasPredefinedStyle ? inlineStyles[label] : inlineStyles.stix}
-      label={t(label)}
+      label={label}
     />
   );
 };

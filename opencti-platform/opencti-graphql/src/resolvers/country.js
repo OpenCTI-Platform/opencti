@@ -23,6 +23,7 @@ const countryResolvers = {
   },
   CountriesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    creator: 'creator_id',
   },
   Mutation: {
     countryEdit: (_, { id }, context) => ({

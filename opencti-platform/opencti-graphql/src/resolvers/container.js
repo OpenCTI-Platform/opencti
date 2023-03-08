@@ -36,6 +36,7 @@ const containerResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objectContains: buildRefRelationKey(RELATION_OBJECT, '*'),
+    creator: 'creator_id',
   },
   Mutation: {
     containerEdit: (_, { id }, context) => ({

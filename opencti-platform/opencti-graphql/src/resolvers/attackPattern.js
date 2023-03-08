@@ -47,6 +47,7 @@ const attackPatternResolvers = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     mitigatedBy: buildRefRelationKey(RELATION_MITIGATES),
+    creator: 'creator_id',
   },
   Mutation: {
     attackPatternEdit: (_, { id }, context) => ({

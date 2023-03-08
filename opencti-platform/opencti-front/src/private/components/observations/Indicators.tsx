@@ -128,36 +128,42 @@ const Indicators = () => {
     const dataColumns = {
       pattern_type: {
         label: 'Pattern type',
-        width: '10%',
+        width: '8%',
         isSortable: true,
       },
       name: {
         label: 'Name',
-        width: '25%',
+        width: '22%',
         isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort ?? false,
+      },
+      creator: {
+        label: 'Creators',
+        width: '12%',
+        isSortable: isRuntimeSort ?? false,
       },
       objectLabel: {
         label: 'Labels',
-        width: '10%',
+        width: '15%',
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
-        width: '15%',
-        isSortable: true,
-      },
-      creator: {
-        label: 'Creator',
+        label: 'Date',
         width: '10%',
         isSortable: true,
       },
       valid_until: {
         label: 'Valid until',
-        width: '13%',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
+        width: '10%',
         isSortable: isRuntimeSort ?? false,
       },
     };

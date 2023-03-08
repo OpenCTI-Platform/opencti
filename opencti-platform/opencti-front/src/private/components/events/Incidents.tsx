@@ -110,7 +110,7 @@ const Incidents: FunctionComponent = () => {
       isSortable: false,
     },
     created: {
-      label: 'Creation date',
+      label: 'Date',
       width: '10%',
       isSortable: true,
     },

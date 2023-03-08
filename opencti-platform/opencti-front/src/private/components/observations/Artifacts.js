@@ -184,23 +184,33 @@ class StixCyberObservables extends Component {
     return {
       observable_value: {
         label: 'Value',
-        width: '15%',
+        width: '12%',
         isSortable: isRuntimeSort,
       },
       file_name: {
         label: 'File name',
-        width: '20%',
+        width: '12%',
         isSortable: false,
       },
       file_mime_type: {
         label: 'Mime/Type',
-        width: '15%',
+        width: '8%',
         isSortable: false,
       },
       file_size: {
         label: 'File size',
-        width: '10%',
+        width: '8%',
         isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creators',
+        width: '12%',
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
@@ -208,12 +218,13 @@ class StixCyberObservables extends Component {
         isSortable: false,
       },
       created_at: {
-        label: 'Creation date',
-        width: '15%',
+        label: 'Date',
+        width: '10%',
         isSortable: true,
       },
       objectMarking: {
         label: 'Marking',
+        width: '10%',
         isSortable: isRuntimeSort,
       },
     };

@@ -8,6 +8,7 @@ import {
   convertFilters,
   saveViewParameters,
 } from '../../../utils/ListParameters';
+import { UserContext } from '../../../utils/hooks/useAuth';
 import inject18n from '../../../components/i18n';
 import ListLines from '../../../components/list_lines/ListLines';
 import InfrastructuresLines, {
@@ -97,7 +98,7 @@ class Infrastructures extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions) {
+  renderLines(paginationOptions, helper) {
     const {
       sortBy,
       orderAsc,
@@ -106,26 +107,42 @@ class Infrastructures extends Component {
       openExports,
       numberOfElements,
     } = this.state;
+    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',
-        width: '35%',
+        width: '25%',
         isSortable: true,
+      },
+      infrastructure_types: {
+        label: 'Type',
+        width: '8%',
+        isSortable: true,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '12%',
+        isSortable: isRuntimeSort,
+      },
+      creator: {
+        label: 'Creators',
+        width: '12%',
+        isSortable: isRuntimeSort,
       },
       objectLabel: {
         label: 'Labels',
-        width: '25%',
+        width: '15%',
         isSortable: false,
       },
       created: {
-        label: 'Creation date',
-        width: '15%',
+        label: 'Date',
+        width: '10%',
         isSortable: true,
       },
-      modified: {
-        label: 'Modification date',
-        width: '15%',
-        isSortable: true,
+      objectMarking: {
+        label: 'Marking',
+        isSortable: isRuntimeSort,
+        width: '8%',
       },
     };
     return (
@@ -181,12 +198,18 @@ class Infrastructures extends Component {
       filters: finalFilters,
     };
     return (
-      <div>
-        {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <InfrastructureCreation paginationOptions={paginationOptions} />
-        </Security>
-      </div>
+      <UserContext.Consumer>
+        {({ helper }) => (
+          <div>
+            {view === 'lines'
+              ? this.renderLines(paginationOptions, helper)
+              : ''}
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <InfrastructureCreation paginationOptions={paginationOptions} />
+            </Security>
+          </div>
+        )}
+      </UserContext.Consumer>
     );
   }
 }

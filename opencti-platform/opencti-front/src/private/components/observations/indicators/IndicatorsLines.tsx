@@ -3,7 +3,10 @@ import { graphql, PreloadedQuery } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { IndicatorLine, IndicatorLineDummyComponent } from './IndicatorLine';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { HandleAddFilter, UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
+import {
+  HandleAddFilter,
+  UseLocalStorageHelpers,
+} from '../../../../utils/hooks/useLocalStorage';
 import { DataColumns } from '../../../../components/list_lines';
 import {
   IndicatorsLinesPaginationQuery,
@@ -15,59 +18,59 @@ import { IndicatorsLines_data$key } from './__generated__/IndicatorsLines_data.g
 const nbOfRowsToLoad = 50;
 
 export const indicatorsLinesQuery = graphql`
-    query IndicatorsLinesPaginationQuery(
-        $search: String
-        $count: Int!
-        $cursor: ID
-        $filters: [IndicatorsFiltering]
-        $orderBy: IndicatorsOrdering
-        $orderMode: OrderingMode
-    ) {
-        ...IndicatorsLines_data
-        @arguments(
-            search: $search
-            count: $count
-            cursor: $cursor
-            filters: $filters
-            orderBy: $orderBy
-            orderMode: $orderMode
-        )
-    }
+  query IndicatorsLinesPaginationQuery(
+    $search: String
+    $count: Int!
+    $cursor: ID
+    $filters: [IndicatorsFiltering]
+    $orderBy: IndicatorsOrdering
+    $orderMode: OrderingMode
+  ) {
+    ...IndicatorsLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        filters: $filters
+        orderBy: $orderBy
+        orderMode: $orderMode
+      )
+  }
 `;
 
 const indicatorsLinesFragment = graphql`
-        fragment IndicatorsLines_data on Query
-        @argumentDefinitions(
-            search: { type: "String" }
-            count: { type: "Int", defaultValue: 25 }
-            cursor: { type: "ID" }
-            filters: { type: "[IndicatorsFiltering]" }
-            orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
-            orderMode: { type: "OrderingMode", defaultValue: desc }
-        )
-        @refetchable(queryName: "IndicatorsLinesRefetchQuery") {
-            indicators(
-                search: $search
-                first: $count
-                after: $cursor
-                filters: $filters
-                orderBy: $orderBy
-                orderMode: $orderMode
-            ) @connection(key: "Pagination_indicators") {
-                edges {
-                    node {
-                        id
-                        ...IndicatorLine_node
-                    }
-                }
-                pageInfo {
-                    endCursor
-                    hasNextPage
-                    globalCount
-                }
-            }
+  fragment IndicatorsLines_data on Query
+  @argumentDefinitions(
+    search: { type: "String" }
+    count: { type: "Int", defaultValue: 25 }
+    cursor: { type: "ID" }
+    filters: { type: "[IndicatorsFiltering]" }
+    orderBy: { type: "IndicatorsOrdering", defaultValue: valid_from }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
+  )
+  @refetchable(queryName: "IndicatorsLinesRefetchQuery") {
+    indicators(
+      search: $search
+      first: $count
+      after: $cursor
+      filters: $filters
+      orderBy: $orderBy
+      orderMode: $orderMode
+    ) @connection(key: "Pagination_indicators") {
+      edges {
+        node {
+          id
+          ...IndicatorLine_node
         }
-    `;
+      }
+      pageInfo {
+        endCursor
+        hasNextPage
+        globalCount
+      }
+    }
+  }
+`;
 
 interface IndicatorsLinesProps {
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
@@ -81,33 +84,30 @@ interface IndicatorsLinesProps {
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
-  onLabelClick?: HandleAddFilter,
+  onLabelClick?: HandleAddFilter;
 }
 
-const IndicatorsLines: FunctionComponent<IndicatorsLinesProps> = (
-  {
-    paginationOptions,
-    queryRef,
-    dataColumns,
-    onLabelClick,
-    setNumberOfElements,
-    onToggleEntity,
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-  },
-) => {
+const IndicatorsLines: FunctionComponent<IndicatorsLinesProps> = ({
+  paginationOptions,
+  queryRef,
+  dataColumns,
+  onLabelClick,
+  setNumberOfElements,
+  onToggleEntity,
+  selectedElements,
+  deSelectedElements,
+  selectAll,
+}) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   IndicatorsLinesPaginationQuery,
-  IndicatorsLines_data$key>(
-    {
-      linesQuery: indicatorsLinesQuery,
-      linesFragment: indicatorsLinesFragment,
-      queryRef,
-      nodePath: ['indicators', 'pageInfo', 'globalCount'],
-      setNumberOfElements,
-    },
-  );
+  IndicatorsLines_data$key
+  >({
+    linesQuery: indicatorsLinesQuery,
+    linesFragment: indicatorsLinesFragment,
+    queryRef,
+    nodePath: ['indicators', 'pageInfo', 'globalCount'],
+    setNumberOfElements,
+  });
   return (
     <ListLinesContent
       initialLoading={!data}

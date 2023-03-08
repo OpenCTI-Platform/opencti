@@ -122,6 +122,18 @@ class ArtifactLineComponent extends Component {
               </div>
               <div
                 className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                {node.createdBy?.name}
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
+              >
+                {(node.creators ?? []).map((c) => c?.name).join(', ')}
+              </div>
+              <div
+                className={classes.bodyItem}
                 style={{ width: dataColumns.objectLabel.width }}
               >
                 <StixCoreObjectLabels
@@ -178,6 +190,13 @@ const ArtifactLineFragment = createFragmentContainer(ArtifactLineComponent, {
       parent_types
       observable_value
       created_at
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
       objectMarking {
         edges {
           node {
@@ -197,6 +216,10 @@ const ArtifactLineFragment = createFragmentContainer(ArtifactLineComponent, {
             color
           }
         }
+      }
+      creators {
+        id
+        name
       }
       importFiles {
         edges {
@@ -277,6 +300,28 @@ class ArtifactLineDummyComponent extends Component {
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.file_size.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.createdBy.width }}
+              >
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
+                />
+              </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.creator.width }}
               >
                 <Skeleton
                   animation="wave"

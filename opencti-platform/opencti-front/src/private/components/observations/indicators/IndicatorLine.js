@@ -104,6 +104,18 @@ const IndicatorLineComponent = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              {node.createdBy?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {(node.creators ?? []).map((c) => c?.name).join(', ')}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
             >
               <StixCoreObjectLabels
@@ -117,12 +129,6 @@ const IndicatorLineComponent = (props) => {
               style={{ width: dataColumns.created.width }}
             >
               {nsdt(node.created)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -163,6 +169,13 @@ export const IndicatorLine = createFragmentContainer(IndicatorLineComponent, {
       x_opencti_main_observable_type
       created
       confidence
+      createdBy {
+        ... on Identity {
+          id
+          name
+          entity_type
+        }
+      }
       objectMarking {
         edges {
           node {
@@ -232,6 +245,28 @@ export const IndicatorLineDummyComponent = (props) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.createdBy.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.objectLabel.width }}
             >
               <Skeleton
@@ -244,17 +279,6 @@ export const IndicatorLineDummyComponent = (props) => {
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.created.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
                 animation="wave"
