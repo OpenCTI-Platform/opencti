@@ -4,14 +4,6 @@
     "base_path": "",
     "base_url": "http://localhost:4000/",
     "enabled": true,
-    "proxy": {
-      "enabled": false,
-      "host": "proxy.opencti.io:2000",
-      "secured": true,
-      "reject_unauthorized": false,
-      "ca": [],
-      "exclusions": ["localhost", "127.0.0.1", "internal.opencti.io"]
-    },
     "https_cert": {
       "ca": [],
       "key": null,
@@ -80,6 +72,11 @@
       "token": "ChangeMe"
     }
   },
+  "http_proxy": "",
+  "https_proxy": "",
+  "no_proxy": "",
+  "https_proxy_ca": [],
+  "https_proxy_reject_unauthorized": false,
   "rule_engine": {
     "enabled": true,
     "lock_key": "rule_engine_lock"

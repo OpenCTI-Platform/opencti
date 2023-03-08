@@ -3,10 +3,12 @@ import nconf from 'nconf';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
+import ipaddr from 'ipaddr.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'node:path';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
+import * as url from 'url';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -356,27 +358,61 @@ export const configureCA = (certificates) => {
 
 // App
 export const PORT = nconf.get('app:port');
-class SecuredProxyAgent extends HttpsProxyAgent {
-  constructor(opts) {
-    super(opts);
-    this.extraOpts = opts;
+class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
+  constructor(params, extraOpts) {
+    super(params);
+    this.extraOpts = extraOpts;
   }
 
   callback(req, opts, fn) {
-    return super.callback(req, { ...this.extraOpts, ...opts }, fn);
+    return super.callback(req, { ...opts, ...this.extraOpts }, fn);
   }
 }
-export const getPlatformProxy = () => {
-  const isProxyEnable = nconf.get('app:proxy:enabled') ?? false;
+const escapeRegex = (string) => {
+  return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+export const isUriProxyExcluded = (hostname, exclusions) => {
+  for (let index = 0; index < exclusions.length; index += 1) {
+    const exclusion = exclusions[index];
+    if (exclusion.includes('*')) { // Test regexp
+      const pattern = escapeRegex(exclusion).replaceAll('\\*', '.*');
+      const regexp = new RegExp(pattern, 'g');
+      const isRegexpMatch = regexp.test(hostname);
+      if (isRegexpMatch) {
+        return true;
+      }
+    }
+    // Test simple match
+    if (exclusion === hostname) {
+      return true;
+    }
+    // Test ip pattern
+    if (ipaddr.isValid(hostname)) {
+      try {
+        const addr = ipaddr.parse(hostname);
+        const cidr = ipaddr.parseCIDR(exclusion);
+        if (addr.match(cidr)) {
+          return true;
+        }
+      } catch {
+        // Exclusion is not a CIDR, not important
+      }
+    }
+  }
+  return false;
+};
+const getPlatformProxy = () => {
+  const proxy = nconf.get('https_proxy') || nconf.get('http_proxy');
+  const isProxyEnable = !R.isEmpty(proxy);
   if (isProxyEnable) {
-    const proxyCA = nconf.get('app:proxy:ca').map((caPath) => readFileSync(caPath));
+    const proxyCA = nconf.get('https_proxy_ca').map((caPath) => readFileSync(caPath));
+    const exclusions = (nconf.get('no_proxy') ?? '').split(',');
     return {
-      host: nconf.get('app:proxy:host'),
-      isSecured: nconf.get('app:proxy:secured') ?? false,
-      isAcceptUnauthorized: nconf.get('app:proxy:reject_unauthorized') ?? false,
-      exclusions: nconf.get('app:proxy:exclusions') ?? [],
-      ...configureCA(proxyCA),
-      isExcluded: (host) => this.exclusions.includes(host)
+      host: proxy,
+      isSecured: url.parse(proxy).protocol === 'https',
+      isAcceptUnauthorized: nconf.get('https_proxy_reject_unauthorized') ?? false,
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+      ...configureCA(proxyCA)
     };
   }
   return undefined;
@@ -386,16 +422,15 @@ export const getPlatformHttpProxyAgent = (uri) => {
   if (platformProxy) {
     const targetUrl = new URL(uri);
     // Check for target exclusion first
-    if (platformProxy.isExcluded(targetUrl.host)) {
+    if (platformProxy.isExcluded(targetUrl.hostname)) {
       return undefined;
     }
     // Then build the according agent
-    const proxyUri = new URL(platformProxy.host);
-    const options = { ...proxyUri, rejectUnauthorized: platformProxy.isAcceptUnauthorized };
     if (platformProxy.isSecured) {
-      return new SecuredProxyAgent(options);
+      const options = { rejectUnauthorized: platformProxy.isAcceptUnauthorized };
+      return new ExtendedHttpsProxyAgent(platformProxy.host, options);
     }
-    return new HttpProxyAgent(proxyUri);
+    return new HttpProxyAgent(platformProxy.host);
   }
   return undefined;
 };

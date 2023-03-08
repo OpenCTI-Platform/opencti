@@ -8395,6 +8395,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"ipaddr.js@npm:2.0.1":
+  version: 2.0.1
+  resolution: "ipaddr.js@npm:2.0.1"
+  checksum: dd194a394a843d470f88d17191b0948f383ed1c8e320813f850c336a0fcb5e9215d97ec26ca35ab4fbbd31392c8b3467f3e8344628029ed3710b2ff6b5d1034e
+  languageName: node
+  linkType: hard
+
 "is-absolute@npm:^1.0.0":
   version: 1.0.0
   resolution: "is-absolute@npm:1.0.0"
@@ -10183,6 +10190,7 @@ __metadata:
     http-proxy-agent: 5.0.0
     https-proxy-agent: 5.0.1
     ioredis: 5.3.1
+    ipaddr.js: 2.0.1
     iterall: 1.3.0
     jsondiffpatch: 0.4.1
     jwt-decode: 3.1.2
@@ -10207,6 +10215,7 @@ __metadata:
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
     passport-saml: 3.2.4
+    path-to-regexp: ^6.2.1
     prom-client: 14.1.1
     python-shell: 5.0.0
     ramda: 0.28.0
@@ -10625,6 +10634,13 @@ __metadata:
   version: 0.1.7
   resolution: "path-to-regexp@npm:0.1.7"
   checksum: 69a14ea24db543e8b0f4353305c5eac6907917031340e5a8b37df688e52accd09e3cebfe1660b70d76b6bd89152f52183f28c74813dbf454ba1a01c82a38abce
+  languageName: node
+  linkType: hard
+
+"path-to-regexp@npm:^6.2.1":
+  version: 6.2.1
+  resolution: "path-to-regexp@npm:6.2.1"
+  checksum: f0227af8284ea13300f4293ba111e3635142f976d4197f14d5ad1f124aebd9118783dd2e5f1fe16f7273743cc3dbeddfb7493f237bb27c10fdae07020cc9b698
   languageName: node
   linkType: hard
 
