@@ -2008,22 +2008,20 @@ export const elUpdateRelationConnections = async (elements) => {
 export const elUpdateEntityConnections = async (elements) => {
   if (elements.length > 0) {
     const source = `if (ctx._source[params.key] == null) {
-      ctx._source[params.key] = [params.to];
+      ctx._source[params.key] = params.to;
     } else if (params.from == null) {
       ctx._source[params.key].addAll(params.to);
     } else {
-      def values = [params.to];
+      def values = params.to;
       for (current in ctx._source[params.key]) {
-        if (current != params.from) { values.add(current); }
+        if (current != params.from && !values.contains(current)) { values.add(current); }
       }
       ctx._source[params.key] = values;
     }
   `;
+    // doc.toReplace === null => from = null
     const addMultipleFormat = (doc) => {
-      if (doc.toReplace === null && !Array.isArray(doc.data.internal_id)) {
-        return [doc.data.internal_id];
-      }
-      return doc.data.internal_id;
+      return Array.isArray(doc.data.internal_id) ? doc.data.internal_id : [doc.data.internal_id];
     };
     const bodyUpdate = elements.flatMap((doc) => {
       const refField = isStixMetaRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
