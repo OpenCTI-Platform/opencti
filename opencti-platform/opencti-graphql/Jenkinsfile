@@ -18,13 +18,17 @@ node {
  
         // Set the version - update:DD-685
         def    json       = readJSON(file: 'package.json')
-        def    mmp        = json['version'].split('\\.')
-        String properties = [major:mmp[0], minor:mmp[1], patch:mmp[2]].collect{entry->entry.key+"="+entry.value}.join('\n')
-        writeFile(file: "version.properties", text: properties)
-        utils.getAndSetBuildVersion()                 //reads version.properties
-        version    = env.COMMON_BUILD_VERSION         //from utils.getAndSetBuildVersion
-        json['version'] = version
-        writeJSON(file: "package.json", json: json)   //update package.json with semver
+        if ('prod' == env.BRANCH_NAME) {      //TODO: DD-696; do this cleaner, put in Jenkins utils lib.
+          version = json['version']
+        } else {
+          def    mmp        = json['version'].split('\\.')
+          String properties = [major:mmp[0], minor:mmp[1], patch:mmp[2]].collect{entry->entry.key+"="+entry.value}.join('\n')
+          writeFile(file: "version.properties", text: properties)
+          utils.getAndSetBuildVersion()                 //reads version.properties
+          version    = env.COMMON_BUILD_VERSION         //from utils.getAndSetBuildVersion
+          json['version'] = version
+          writeJSON(file: "package.json", json: json)   //update package.json with semver
+        }
         echo "Version: ${version}"
        
         // Install app dependencies
