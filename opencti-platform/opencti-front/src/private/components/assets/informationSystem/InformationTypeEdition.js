@@ -5,6 +5,7 @@ import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { compose } from 'ramda';
 import * as Yup from 'yup';
+import { createFragmentContainer } from 'react-relay';
 import { withStyles } from '@material-ui/core/styles';
 import AddIcon from '@material-ui/icons/Add';
 import { Formik, Form, Field } from 'formik';
@@ -88,8 +89,8 @@ const styles = (theme) => ({
   },
 });
 
-const informationTypesPopoverMutation = graphql`
-  mutation InformationTypesPopoverMutation(
+const informationTypeEditionMutation = graphql`
+  mutation InformationTypeEditionMutation(
     $input: InformationTypeInput!
   ) {
     createInformationType(input: $input) {
@@ -110,7 +111,7 @@ const Transition = React.forwardRef((props, ref) => (
 ));
 Transition.displayName = 'TransitionSlide';
 
-class InformationTypesPopover extends Component {
+class InformationTypeEditionComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -159,7 +160,7 @@ class InformationTypesPopover extends Component {
       R.assoc('confidentiality_impact', confidentialityImpact),
     )(values);
     commitMutation({
-      mutation: informationTypesPopoverMutation,
+      mutation: informationTypeEditionMutation,
       variables: {
         input: finalValues,
       },
@@ -177,7 +178,8 @@ class InformationTypesPopover extends Component {
   }
 
   onReset() {
-    this.setState({ open: false, selectedProduct: {} });
+    this.setState({ selectedProduct: {} });
+    this.props.handleEditInfoType();
   }
 
   handleSetFieldValues(selectedInfoType, setFieldValue, type) {
@@ -214,63 +216,66 @@ class InformationTypesPopover extends Component {
   }
 
   render() {
-    const { t, classes } = this.props;
     const {
-      open,
+      t,
+      classes,
+      openEdit,
+      informationType,
+    } = this.props;
+    const {
       selectedProduct,
     } = this.state;
     const integrityImpact = R.pathOr({}, ['integrity_impact'], selectedProduct);
     const availabilityImpact = R.pathOr({}, ['availability_impact'], selectedProduct);
     const confidentialityImpact = R.pathOr({}, ['confidentiality_impact'], selectedProduct);
+    const characterizations = R.pipe(
+      R.pathOr([], ['characterizations']),
+      R.mergeAll,
+    )(informationType);
+    const initialValues = R.pipe(
+      R.assoc('id', informationType?.id || ''),
+      R.assoc('title', informationType?.title || ''),
+      R.assoc('system', characterizations?.id || ''),
+      R.assoc('catalog', characterizations?.system || ''),
+      R.assoc('description', informationType?.description || ''),
+      R.assoc('information_type', characterizations?.imformation_type?.id || ''),
+      R.assoc('integrity_impact_base', informationType.integrity_impact?.base_impact || ''),
+      R.assoc('availability_impact_base', informationType?.availability_impact?.base_impact || ''),
+      R.assoc('integrity_impact_selected', informationType?.integrity_impact?.selected_impact || ''),
+      R.assoc('confidentiality_impact_base', informationType?.confidentiality_impact?.base_impact || ''),
+      R.assoc('availability_impact_selected', informationType?.availability_impact?.selected_impact || ''),
+      R.assoc('integrity_impact_justification', informationType?.integrity_impact?.adjustment_justification || ''),
+      R.assoc('confidentiality_impact_selected', informationType?.confidentiality_impact?.selected_impact || ''),
+      R.assoc('availability_impact_justification', informationType?.availability_impact?.adjustment_justification || ''),
+      R.assoc('confidentiality_impact_justification', informationType?.confidentiality_impact?.adjustment_justification || ''),
+      R.pick([
+        'title',
+        'system',
+        'catalog',
+        'description',
+        'information_type',
+        'integrity_impact_base',
+        'availability_impact_base',
+        'integrity_impact_selected',
+        'confidentiality_impact_base',
+        'availability_impact_selected',
+        'integrity_impact_justification',
+        'confidentiality_impact_selected',
+        'availability_impact_justification',
+        'confidentiality_impact_justification',
+      ]),
+    )(informationType);
     return (
-      <div>
-        <div style={{ display: 'flex', alignItems: 'center' }}>
-          <Typography variant='h3' color='textSecondary' gutterBottom={true}>
-            {t('Information Type(s)')}
-          </Typography>
-          <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
-            <Tooltip title={t('Identifies the details about all information types that are stored, processed, or transmitted by the system, such as privacy information, and those defined in NIST SP 800-60.')}>
-              <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
-            </Tooltip>
-          </div>
-          <IconButton
-            size='small'
-            onClick={() => this.setState({ open: true })}
-          >
-            <AddIcon />
-          </IconButton>
-        </div>
-        <div className={classes.scrollBg}>
-          <div className={classes.scrollDiv}>
-            <div className={classes.scrollObj}>
-            </div>
-          </div>
-        </div>
+      <>
         <Dialog
-          open={open}
+          open={openEdit}
           maxWidth='md'
           keepMounted={false}
           className={classes.dialogMain}
         >
           <Formik
             enableReinitialize
-            initialValues={{
-              title: '',
-              system: '',
-              catalog: '',
-              description: '',
-              information_type: '',
-              integrity_impact_base: '',
-              availability_impact_base: '',
-              integrity_impact_selected: '',
-              confidentiality_impact_base: '',
-              availability_impact_selected: '',
-              integrity_impact_justification: '',
-              confidentiality_impact_selected: '',
-              availability_impact_justification: '',
-              confidentiality_impact_justification: '',
-
-            }}
+            initialValues={initialValues}
             validationSchema={InformationTypeValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
@@ -658,17 +663,71 @@ class InformationTypesPopover extends Component {
             )}
           </Formik>
         </Dialog>
-      </div>
+      </>
     );
   }
 }
 
-InformationTypesPopover.propTypes = {
+InformationTypeEditionComponent.propTypes = {
   t: PropTypes.func,
   name: PropTypes.string,
-  device: PropTypes.object,
+  openEdit: PropTypes.bool,
   classes: PropTypes.object,
+  handleEditInfoType: PropTypes.func,
   renderSecurityImpact: PropTypes.func,
+  informationType: PropTypes.object,
 };
 
-export default compose(inject18n, withStyles(styles))(InformationTypesPopover);
+export const InformationTypeEditionQuery = graphql`
+  query InformationTypeEditionQuery($id: ID!) {
+    ...InformationTypeEdition_information
+      @arguments(id: $id)
+  }
+`;
+
+const InformationTypeEdition = createFragmentContainer(InformationTypeEditionComponent, {
+  informationType: graphql`
+    fragment InformationTypeEdition_information on Query
+    @argumentDefinitions(
+      id: { type: "ID!" }
+    ) {
+      informationType(id: $id) {
+        id
+        entity_type
+        title
+        description
+        categorizations {
+          id
+          entity_type
+          system
+          information_type {
+            id
+            entity_type
+            identifier
+            category
+          }
+        }
+        confidentiality_impact {
+          id
+          base_impact
+          selected_impact
+          adjustment_justification
+        }
+        integrity_impact {
+          id
+          base_impact
+          selected_impact
+          adjustment_justification
+        }
+        availability_impact {
+          id
+          base_impact
+          selected_impact
+          adjustment_justification
+        }
+      }
+    }
+  `,
+});
+
+export default compose(inject18n, withStyles(styles))(InformationTypeEdition);

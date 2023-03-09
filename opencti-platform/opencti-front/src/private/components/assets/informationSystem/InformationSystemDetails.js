@@ -14,20 +14,19 @@ import {
   Divider,
 } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
-import InformationTypeCreation from './InformationTypeCreation';
-import InformationTypesPopover from './InformationTypesPopover';
 import RiskLevel from '../../common/form/RiskLevel';
 import SystemDocumentation from './SystemDocumentation';
 import SystemImplementation from './SystemImplementation';
+import InformationTypesCreation from './InformationTypesCreation';
 
 const styles = () => ({
   paper: {
     height: '100%',
-    minHeight: '824px',
+    minHeight: '850px',
     margin: '10px 0 0 0',
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
-    maxHeight: '824px',
+    maxHeight: '850px',
   },
   textBase: {
     display: 'flex',
@@ -97,7 +96,8 @@ class InformationSystemDetailsComponent extends Component {
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
-                    <InformationTypesPopover
+                    <InformationTypesCreation
+                      informationSystem={informationSystem}
                       renderSecurityImpact={this.renderSecurityImpact.bind(this)}
                     />
                   </Grid>
@@ -195,6 +195,7 @@ const InformationSystemDetails = createFragmentContainer(InformationSystemDetail
       security_objective_confidentiality
       ...SystemDocumentation_information
       ...SystemImplementation_information
+      ...InformationTypesCreation_information
     }
   `,
 });

@@ -21,7 +21,7 @@ import ResponsiblePartiesField from '../../common/form/ResponsiblePartiesField';
 const styles = (theme) => ({
   paper: {
     height: '100%',
-    maxHeight: '824px',
+    maxHeight: '850px',
     margin: '10px 0 0 0',
     padding: '24px 24px 32px 24px',
     borderRadius: 6,
