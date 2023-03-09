@@ -1,0 +1,385 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix common: <http://darklight.ai/ns/common#> .
+@prefix connection: <http://darklight.ai/ns/cyio/connection#> .
+@prefix cyio: <http://darklight.ai/ns/cyio#> .
+@prefix dataSource: <http://darklight.ai/ns/cyio/datasource#> .
+@prefix marking: <http://docs.oasis-open.org/ns/cti/data-marking#> .
+
+
+# ---------------------------------------------------
+#  Data Source: Common Vulnerabilities and Exposures
+# ----------------------------------------------------
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"data_source_type":"external-import","name":"Common Vulnerabilities and Exposures"}
+GRAPH <http://cyio.darklight.ai/data-source--ee724f26-5f24-5600-b375-17abc3bec9e6> {
+    <http://cyio.darklight.ai/data-source--ee724f26-5f24-5600-b375-17abc3bec9e6> 
+        a dataSource:DataSource ;
+        a common:Object ;
+        common:id "ee724f26-5f24-5600-b375-17abc3bec9e6" ;
+        common:object_type "data-source" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        dataSource:name "Common Vulnerabilities and Exposures"@en-US ;
+        dataSource:description "This data source ingests vulnerability data from the NIST National Vulnerability Database (NVD)."@en-US ;
+        dataSource:data_source_type "external-import" ;
+        dataSource:status "active" ;
+        dataSource:contextual "false"^^xsd:boolean ;
+        dataSource:auto "true"^^xsd:boolean ;
+        dataSource:scope "vulnerability" ;
+        dataSource:scope "exploit" ;
+        dataSource:scope "product" ;
+        dataSource:last_ingest_artifact: "" ;
+        dataSource:last_success "2023-01-18T16:30:00Z"^^xsd:dateTime ;
+        dataSource:update_frequency <http://cyio.darklight.ai/frequency-timing--75ef863d-e682-4633-a581-aec5af6e810f> ;
+        dataSource:connection_information <http://cyio.darklight.ai/connection-information--70393df6-41c7-4209-9a44-f9e5468751eb> ;
+        dataSource:iep <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> ;
+        dataSource:external_references <http://cyio.darklight.ai/external-reference--f7439b0c-aa98-54b6-af4a-3cef9b4ad0cd> ;
+        # dateSource:notes <http://cyio.darklight.ai/note--??> ;
+    .
+}
+
+GRAPH <http://cyio.darklight.ai/frequence-timing--75ef863d-e682-4633-a581-aec5af6e810f> {
+    <http://cyio.darklight.ai/frequency-timing--75ef863d-e682-4633-a581-aec5af6e810f> 
+        a dataSource:FrequencyTiming ;
+        a common:ComplexDatatype ;
+        common:id "75ef863d-e682-4633-a581-aec5af6e810f" ;
+        common:object_type "frequency-timing" ;
+        dataSource:period "4"^^xsd:positiveInteger ;
+        dataSource:unit "hours" ;
+    .
+}
+
+GRAPH <http://cyio.darklight.ai/connection-information--70393df6-41c7-4209-9a44-f9e5468751eb> {
+    <http://cyio.darklight.ai/connection-information--70393df6-41c7-4209-9a44-f9e5468751eb> 
+        a connection:ConnectionInformation ;
+        a common:Object ;
+        common:id "70393df6-41c7-4209-9a44-f9e5468751eb" ;
+        common:object_type "connection-information" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        connection:name "NVD Vulnerabilities API 2.0"@en-US;
+        connection:description "Identifies connection information about ingesting from the NIST NVD Vulnerability API 2.0"@en-US ;
+        connection:connector_type "restful-api" ;
+        connection:secure "true"^^xsd:boolean ;
+        connection:host "services.nvd.nist.gov" ;
+        # connection:port "80"^^xsd:positiveInteger ;
+        connection:query "/rest/json/cves/2.0?lastModStartDate=${query_index_field}&lastModEndDate=${currentTime}" ;
+        connection:query_initial "/rest/json/cves/2.0?startIndex=${index}" ;
+        connection:query_index_field "resultsPerPage" ;
+        connection:query_sleep_interval "6"^^xsd:positiveInteger ;
+        connection:http_request_method "GET" ;
+        connection:headers "apiKey:ed0b1994-b64c-4bec-9e90-11905aa13e89" ;
+        connection:api_key "ed0b1994-b64c-4bec-9e90-11905aa13e89" ;
+        # connection:ca "";
+        # connection:username "" ;
+        # connection:passphrase "" ;
+        # connection:listen "" ;
+        # connection:listen_exchange "" ;
+        # connection:push "" ;
+        # connection:push_exchange "" ;
+    .
+}
+
+
+# ---------------------------------------------------
+#  Data Source: Common Product Enumeration
+# ----------------------------------------------------
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"data_source_type":"external-import","name":"Common Product Enumeration"}
+GRAPH <http://cyio.darklight.ai/data-source--a0096da1-d06b-5352-8223-9024ed3e584c> {
+    <http://cyio.darklight.ai/data-source--a0096da1-d06b-5352-8223-9024ed3e584c> 
+        a dataSource:DataSource ;
+        a common:Object ;
+        common:id "a0096da1-d06b-5352-8223-9024ed3e584c" ;
+        common:object_type "data-source" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        dataSource:name "Common Product Enumeration"@en-US ;
+        dataSource:description "This data source ingests product data from the NIST National Vulnerability Database (NVD)."@en-US ;
+        dataSource:data_source_type "external-import" ;
+        dataSource:status "active" ;
+        dataSource:contextual "false"^^xsd:boolean ;
+        dataSource:auto "true"^^xsd:boolean ;
+        dataSource:scope "product" ;
+        dataSource:scope "vulnerability" ;
+        dataSource:last_ingest_artifact: "" ;
+        dataSource:last_success "2023-01-18T00:00:00Z"^^xsd:dateTime ;
+        dataSource:update_frequency <http://cyio.darklight.ai/frequence-timing--0b554449-9fb0-4397-a88f-78977763edd2> ;
+        dataSource:connection_information <http://cyio.darklight.ai/connection-information--618ea19b-bdb7-4b84-aefc-7832cd3eb584> ;
+        dataSource:iep <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> ;
+        dataSource:external_references <http://cyio.darklight.ai/external-reference--c64f6b84-f4de-5aed-8b09-e8e7858e635b> ;
+        # dateSource:notes <http://cyio.darklight.ai/note--??> ;
+    .
+}
+
+GRAPH <http://cyio.darklight.ai/frequence-timing--0b554449-9fb0-4397-a88f-78977763edd2> {
+    <http://cyio.darklight.ai/frequency-timing--0b554449-9fb0-4397-a88f-78977763edd2> 
+        a dataSource:FrequencyTiming ;
+        a common:ComplexDatatype ;
+        common:id "0b554449-9fb0-4397-a88f-78977763edd2" ;
+        common:object_type "frequency-timing" ;
+        dataSource:period "1"^^xsd:positiveInteger ;
+        dataSource:unit "days" ;
+    .
+}
+
+GRAPH <http://cyio.darklight.ai/connection-information--618ea19b-bdb7-4b84-aefc-7832cd3eb584> {
+    <http://cyio.darklight.ai/connection-information--618ea19b-bdb7-4b84-aefc-7832cd3eb584> 
+        a connection:ConnectionInformation ;
+        a common:Object ;
+        common:id "618ea19b-bdb7-4b84-aefc-7832cd3eb584" ;
+        common:object_type "connection-information" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        connection:name "NVD Products API 2.0"@en-US;
+        connection:description "Identifies connection information about ingesting product data from the NIST NVD Product API 2.0"@en-US ;
+        connection:connector_type "restful-api" ;
+        connection:secure "true"^^xsd:boolean ;
+        connection:host "services.nvd.nist.gov" ;
+        # connection:port "80"^^xsd:positiveInteger ;
+        connection:query "/rest/json/cpes/2.0?startIndex=${query_index_field}" ;
+        connection:query_initial "/rest/json/cpes/2.0?startIndex=0" ;
+        connection:query_sleep_interval "6"^^xsd:positiveInteger ;
+        connection:query_index_field "resultsPerPage" ;
+        connection:http_request_method "GET" ;
+        connection:headers "apiKey:ed0b1994-b64c-4bec-9e90-11905aa13e89" ;
+        connection:api_key "ed0b1994-b64c-4bec-9e90-11905aa13e89" ;
+        # connection:ca "";
+        # connection:username "" ;
+        # connection:passphrase "" ;
+        # connection:listen "" ;
+        # connection:listen_exchange "" ;
+        # connection:push "" ;
+        # connection:push_exchange "" ;
+    .
+}
+
+
+# ---------------------------------------------------
+#  Data Source: MITRE ATT&CK in STIX 2.1
+# ----------------------------------------------------
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"data_source_type":"external-import","name":"MITRE ATT&CK"}
+GRAPH <http://cyio.darklight.ai/data-source--77331a48-c324-5b98-a561-ce52477595a3> {
+    <http://cyio.darklight.ai/data-source--77331a48-c324-5b98-a561-ce52477595a3>
+        a dataSource:DataSource ;
+        a common:Object ;
+        common:id "77331a48-c324-5b98-a561-ce52477595a3" ;
+        common:object_type "data-source" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        dataSource:name "MITRE ATT&CK"@en-US ;
+        dataSource:description "This data source ingests adversary tactics and techniques based on real-world observations defined in MITRE ATT&CK."@en-US ;
+        dataSource:data_source_type "external-import" ;
+        dataSource:status "not-applicable" ;
+        dataSource:contextual "false"^^xsd:boolean ;
+        dataSource:auto "false"^^xsd:boolean ;
+        dataSource:scope "tatic" ;
+        dataSource:scope "technique" ;
+        dataSource:scope "adversary" ;
+        dataSource:scope "malware" ;
+        dataSource:scope "data-source" ;
+        dataSource:last_ingest_artifact: "" ;
+        dataSource:last_success "2023-01-18T16:30:00Z"^^xsd:dateTime ;
+        dataSource:connection_information <http://cyio.darklight.ai/connection-information--552365e9-b1de-4b5b-b203-025484fcfd07> ;
+        dataSource:iep <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> ;
+        # dataSource:external_references <http://cyio.darklight.ai/external-reference--??> ;
+        # dateSource:notes <http://cyio.darklight.ai/note--??> ;
+   .
+}
+
+GRAPH <http://cyio.darklight.ai/connection-information--552365e9-b1de-4b5b-b203-025484fcfd07> {
+    <http://cyio.darklight.ai/connection-information--552365e9-b1de-4b5b-b203-025484fcfd07>
+        a connection:ConnectionInformation ;
+        a common:Object ;
+        common:id "552365e9-b1de-4b5b-b203-025484fcfd07" ;
+        common:object_type "connection-information" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        connection:name "MITRE ATT&CK (GitHub)"@en-US;
+        connection:description "Identifies connection information about ingesting from GitHub repository where MITRE ATT&CK in STIX format is maintained."@en-US ;
+        connection:connector_type "github" ;
+        connection:secure "true"^^xsd:boolean ;
+        connection:host "raw.githubusercontent.com" ;
+        # connection:port "80"^^xsd:positiveInteger ;
+        connection:query "/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json" ;
+        connection:query_initial "/mitre-attack/attack-stix-data/master/enterprise-attack/enterprise-attack.json" ;
+        connection:query_sleep_interval "10"^^xsd:positiveInteger ;
+        # connection:query_index_field "resultsPerPage" ;
+        # connection:headers "" ;
+        connection:http_request_method "GET" ;
+        # connection:headers "" ;
+        # connection:api_key "" ;
+        # connection:ca "";
+        # connection:username "" ;
+        # connection:passphrase "" ;
+        # connection:listen "" ;
+        # connection:listen_exchange "" ;
+        # connection:push "" ;
+        # connection:push_exchange "" ;
+    .   
+}
+
+# ---------------------------------------------------
+#  Data Source: CTID ATT&CK-CVE Mapping
+# ----------------------------------------------------
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"data_source_type":"external-import-file","name":"CTID ATT&CK-CVE Mapping"}
+GRAPH <http://cyio.darklight.ai/data-source--d8742051-64dc-52ea-b5e6-c3c8c55d8b33> {
+    <http://cyio.darklight.ai/data-source--d8742051-64dc-52ea-b5e6-c3c8c55d8b33>
+        a dataSource:DataSource ;
+        a common:Object ;
+        common:id "d8742051-64dc-52ea-b5e6-c3c8c55d8b33" ;
+        common:object_type "data-source" ;
+        common:created "2023-01-23T15:59:11.383Z"^^xsd:dateTime ;
+        common:modified "2023-01-23T15:59:11.383Z"^^xsd:dateTime ;
+        dataSource:name "CTID ATT&CK-CVE Mapping"@en-US ;
+        dataSource:description "This data source ingests mappings of CVE ID to MITRE ATT&CK tactics and techniques to standardize the way they describe the impacts of vulnerabilities."@en-US ;
+        dataSource:data_source_type "external-import-file" ;
+        dataSource:status "not-applicable" ;
+        dataSource:contextual "true"^^xsd:boolean ;
+        dataSource:auto "false"^^xsd:boolean ;
+        dataSource:scope "cve-id" ;
+        dataSource:scope "attack-techniques" ;
+        dataSource:scope "impact" ;
+        dataSource:connection_information <http://cyio.darklight.ai/connection-information--c97e8c94-6e7f-5abd-a9de-d255610949c3> ;
+        dataSource:iep <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> ;
+        # dataSource:external_references <http://cyio.darklight.ai/external-reference--??> ;
+        # dateSource:notes <http://cyio.darklight.ai/note--??> ;
+   .
+}
+
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"connector_type":"github","name":"CTID Attack_to_CVE (GitHub)"}
+GRAPH <http://cyio.darklight.ai/connection-information--c97e8c94-6e7f-5abd-a9de-d255610949c3> {
+    <http://cyio.darklight.ai/connection-information--c97e8c94-6e7f-5abd-a9de-d255610949c3>
+        a connection:ConnectionInformation ;
+        a common:Object ;
+        common:id "c97e8c94-6e7f-5abd-a9de-d255610949c3" ;
+        common:object_type "connection-information" ;
+        common:created "2023-01-23T15:59:11.409Z"^^xsd:dateTime ;
+        common:modified "2023-01-23T15:59:11.409Z"^^xsd:dateTime ;
+        connection:name "CTID Attack_to_CVE (GitHub)"@en-US;
+        connection:description "Identifies connection information about ingesting from a GitHub repository where the ATT&CK-to-CVE mappings are maintained."@en-US ;
+        connection:connector_type "github" ;
+        connection:secure "true"^^xsd:boolean ;
+        connection:host "raw.githubusercontent.com" ;
+        # connection:port "80"^^xsd:positiveInteger ;
+        connection:query "/center-for-threat-informed-defense/attack_to_cve/master/Att%26ckToCveMappings.csv" ;
+        connection:query_initial "/center-for-threat-informed-defense/attack_to_cve/master/Att%26ckToCveMappings.csv" ;
+        connection:query_sleep_interval "10"^^xsd:positiveInteger ;
+        # connection:query_index_field "resultsPerPage" ;
+        # connection:headers "" ;
+        connection:http_request_method "GET" ;
+        # connection:headers "" ;
+        # connection:api_key "" ;
+        # connection:ca "";
+        # connection:username "" ;
+        # connection:passphrase "" ;
+        # connection:listen "" ;
+        # connection:listen_exchange "" ;
+        # connection:push "" ;
+        # connection:push_exchange "" ;
+    .   
+}
+
+# ---------------------------------------------------
+#  Data Source: NIST 800-60 Information Types
+# ----------------------------------------------------
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"data_source_type":"external-import-file","name":"NIST 800-60 Information Types"}
+GRAPH <http://cyio.darklight.ai/data-source--854f0f67-158d-5154-b92f-1e5209adcbca> {
+    <http://cyio.darklight.ai/data-source--854f0f67-158d-5154-b92f-1e5209adcbca>
+        a dataSource:DataSource ;
+        a common:Object ;
+        common:id "854f0f67-158d-5154-b92f-1e5209adcbca" ;
+        common:object_type "data-source" ;
+        common:created "2023-01-22T19:25:00Z"^^xsd:dateTime ;
+        common:modified "2023-01-22T19:25:00Z"^^xsd:dateTime ;
+        dataSource:name "NIST 800-60 Information Types"@en-US ;
+        dataSource:description "This data source ingests Information Types as defined by NIST 800-60, Volume 2, Release 1.0"@en-US ;
+        dataSource:data_source_type "external-import-file" ;
+        dataSource:status "not-applicable" ;
+        dataSource:contextual "true"^^xsd:boolean ;
+        dataSource:auto "false"^^xsd:boolean ;
+        dataSource:scope "information-type" ;
+        dataSource:scope "information-catagory" ;
+        dataSource:scope "cia-impact" ;
+        dataSource:scope "recommendation" ;
+        dataSource:scope "explanation" ;
+        dataSource:connection_information <http://cyio.darklight.ai/connection-information--55bc8e5e-204d-5782-b72f-17c9637cf6c8> ;
+        dataSource:iep <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> ;
+        # dataSource:external_references <http://cyio.darklight.ai/external-reference--??> ;
+        # dateSource:notes <http://cyio.darklight.ai/note--??> ;
+   .
+}
+
+# DARKLIGHT_NS(d85ba5b6-609e-58bf-a973-ca109f868e86) - {"connector_type":"github","name":"NIST 800-60 Information Type (GitHub)"}
+GRAPH <http://cyio.darklight.ai/connection-information--55bc8e5e-204d-5782-b72f-17c9637cf6c8> {
+    <http://cyio.darklight.ai/connection-information--55bc8e5e-204d-5782-b72f-17c9637cf6c8>
+        a connection:ConnectionInformation ;
+        a common:Object ;
+        common:id "55bc8e5e-204d-5782-b72f-17c9637cf6c8" ;
+        common:object_type "connection-information" ;
+        common:created "2023-01-22T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2023-01-22T19:25:17Z"^^xsd:dateTime ;
+        connection:name "NIST 800-60 Information Type (GitHub)"@en-US;
+        connection:description "Identifies connection information about ingesting from a GitHub repository where the NIST 800-60 Information Types are maintained."@en-US ;
+        connection:connector_type "github" ;
+        connection:secure "true"^^xsd:boolean ;
+        connection:host "raw.githubusercontent.com" ;
+        # connection:port "80"^^xsd:positiveInteger ;
+        connection:query "/GSA/fedramp-automation/master/dist/content/rev4/resources/json/information-types.json" ;
+        connection:query_initial "/GSA/fedramp-automation/master/dist/content/rev4/resources/json/information-types.json" ;
+        connection:query_sleep_interval "10"^^xsd:positiveInteger ;
+        # connection:query_index_field "resultsPerPage" ;
+        # connection:headers "" ;
+        connection:http_request_method "GET" ;
+        # connection:headers "" ;
+        # connection:api_key "" ;
+        # connection:ca "";
+        # connection:username "" ;
+        # connection:passphrase "" ;
+        # connection:listen "" ;
+        # connection:listen_exchange "" ;
+        # connection:push "" ;
+        # connection:push_exchange "" ;
+    .   
+}
+
+
+# --------------------------------------------------------
+# External Reference:  NVD Vulnerabilities API 2.0
+# --------------------------------------------------------
+# OASIS_NS(ba6cce09-c787-5a25-a707-f52be5734460) - {"source_name":"National Vulnerability Database","url":"https://nvd.nist.gov/developers/vulnerabilities"}
+GRAPH <http://cyio.darklight.ai/external-reference--f7439b0c-aa98-54b6-af4a-3cef9b4ad0cd> {
+    <http://cyio.darklight.ai/external-reference--f7439b0c-aa98-54b6-af4a-3cef9b4ad0cd>
+        a <http://docs.oasis-open.org/ns/cti#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "f7439b0c-aa98-54b6-af4a-3cef9b4ad0cd";
+        common:object_type "external-reference" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:source_name "National Vulnerability Database" ;
+        common:description "NVD Vulnerabilities API 2.0 Specification"@en-US ;
+        common:url "https://nvd.nist.gov/developers/vulnerabilities"^^xsd:anyURI ;
+    .
+}
+
+# --------------------------------------------------------
+# External Reference:  NVD Products API 2.0
+# --------------------------------------------------------
+# OASIS_NS(ba6cce09-c787-5a25-a707-f52be5734460) - {"source_name":"National Vulnerability Database","url":"https://nvd.nist.gov/developers/products"}
+GRAPH <http://cyio.darklight.ai/external-reference--c64f6b84-f4de-5aed-8b09-e8e7858e635b> {
+    <http://cyio.darklight.ai/external-reference--c64f6b84-f4de-5aed-8b09-e8e7858e635b>
+        a <http://docs.oasis-open.org/ns/cti#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "c64f6b84-f4de-5aed-8b09-e8e7858e635b";
+        common:object_type "external-reference" ;
+        common:created "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:modified "2022-12-11T19:25:17Z"^^xsd:dateTime ;
+        common:source_name "National Vulnerability Database" ;
+        common:description "NVD Product API 2.0 Specification"@en-US ;
+        common:url "https://nvd.nist.gov/developers/products"^^xsd:anyURI ;
+    .
+}

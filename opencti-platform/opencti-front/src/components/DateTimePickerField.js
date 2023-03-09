@@ -1,7 +1,8 @@
 import React from 'react';
-import { KeyboardDateTimePicker } from '@material-ui/pickers';
+import { KeyboardDateTimePicker, MuiPickersUtilsProvider } from '@material-ui/pickers';
 import { fieldToKeyboardDatePicker } from 'formik-material-ui-pickers';
 import { withStyles } from '@material-ui/core';
+import MomentUtils from '@date-io/moment';
 import { parse } from '../utils/Time';
 
 const styles = {
@@ -55,20 +56,22 @@ const DateTimePickerField = (props) => {
     [setTouched, onSubmit, name],
   );
   return (
-    <KeyboardDateTimePicker
-      {...fieldToKeyboardDatePicker(props)}
-      variant="inline"
-      inputVariant='outlined'
-      disableToolbar={false}
-      autoOk={true}
-      allowKeyboardControl={true}
-      format="YYYY-MM-DD hh:mm"
-      onAccept={internalOnAccept}
-      onChange={internalOnChange}
-      onFocus={internalOnFocus}
-      onBlur={internalOnBlur}
-      className={classes.timeSeprator}
-    />
+    <MuiPickersUtilsProvider utils={MomentUtils}>
+      <KeyboardDateTimePicker
+        {...fieldToKeyboardDatePicker(props)}
+        variant="inline"
+        inputVariant='outlined'
+        disableToolbar={false}
+        autoOk={true}
+        allowKeyboardControl={true}
+        format="YYYY-MM-DD hh:mm"
+        onAccept={internalOnAccept}
+        onChange={internalOnChange}
+        onFocus={internalOnFocus}
+        onBlur={internalOnBlur}
+        className={classes.timeSeprator}
+      />
+    </MuiPickersUtilsProvider>
   );
 };
 

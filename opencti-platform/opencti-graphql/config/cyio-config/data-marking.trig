@@ -1,0 +1,284 @@
+@prefix owl: <http://www.w3.org/2002/07/owl#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd: <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix common: <http://darklight.ai/ns/common#> .
+@prefix cti: <http://docs.oasis-open.org/ns/cti#> .
+@prefix marking: <http://docs.oasis-open.org/ns/cti/data-marking#> .
+
+# ---------------------------------------------------
+#  Data Marking: Traffic Light Protocol (TLP) AMBER
+# ----------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421> {
+    <http://cyio.darklight.ai/marking-definition--55d920b0-5e8b-4f79-9ee9-91f868d9b421>
+        a marking:TLPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "55d920b0-5e8b-4f79-9ee9-91f868d9b421" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FFC000" ;
+        cti:name "TLP:AMBER"@en-US ;
+        cti:description "Limited disclosure, recipients can only spread this on a need-to-know basis within their organization and its clients."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ;
+        marking:definition_type "tlp" ;
+        marking:tlp "amber" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Traffic Light Protocol (TLP) AMBER+STRICT
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003> {
+    <http://cyio.darklight.ai/marking-definition--939a9414-2ddd-4d32-a0cd-375ea402b003>
+        a marking:TLPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "939a9414-2ddd-4d32-a0cd-375ea402b003" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FFC000" ;
+        cti:name "TLP:AMBER+STRICT"@en-US ;
+        cti:description "Limited disclosure, recipients can only spread this on a need-to-know basis within their organization; sharing to the organization only."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ;
+        marking:definition_type "tlp" ;
+        marking:tlp "amber+strict" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Traffic Light Protocol (TLP) CLEAR
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487> {
+    <http://cyio.darklight.ai/marking-definition--94868c89-83c2-464b-929b-a1a8aa3c8487>
+        a marking:TLPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "94868c89-83c2-464b-929b-a1a8aa3c8487" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FFFFFF" ;
+        cti:name "TLP:CLEAR"@en-US ;
+        cti:description "Recipients can spread this to the world, there is no limit on disclosure; subject to standard copyright rules, information may be shared without restriction."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ;
+        marking:definition_type "tlp" ;
+        marking:tlp "clear" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Traffic Light Protocol (TLP) GREEN
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb> {
+    <http://cyio.darklight.ai/marking-definition--bab4a63c-aed9-4cf5-a766-dfca5abac2bb>
+        a marking:TLPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "bab4a63c-aed9-4cf5-a766-dfca5abac2bb" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#33FF00" ;
+        cti:name "TLP:GREEN"@en-US ;
+        cti:description "Limited disclosure, recipients can spread this within their community; recipients may share information with peers and partner organizations within their community, but not via publicly accessible channels."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ;
+        marking:definition_type "tlp" ;
+        marking:tlp "green" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Traffic Light Protocol (TLP) RED
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1> {
+    <http://cyio.darklight.ai/marking-definition--e828b379-4e03-4974-9ac4-e53a884c97c1>
+        a marking:TLPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "e828b379-4e03-4974-9ac4-e53a884c97c1" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-01T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FF2B2B" ;
+        cti:name "TLP:RED"@en-US ;
+        cti:description "For the eyes and ears of individual recipients only, no further disclosure; recipients may therefore not share information with anyone else."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ;
+        marking:definition_type "tlp" ;
+        marking:tlp "red" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Information Exchange Protocol (IEP) RED
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--5e607e88-ab70-4977-8c1b-ee3a16b0f68c> {
+    <http://cyio.darklight.ai/marking-definition--5e607e88-ab70-4977-8c1b-ee3a16b0f68c>
+        a marking:IEPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "5e607e88-ab70-4977-8c1b-ee3a16b0f68c" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-12-21T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FF2B2B" ;
+        cti:name "FIRST IEP-SIG TLP-RED"@en-US ;
+        cti:description "For the eyes and ears of individual recipients only, no further disclosure; recipients may therefore not share information with anyone else."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ,
+                                <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9> ;
+        marking:definition_type "iep" ;
+        marking:iep_version "2.0" ;
+        marking:start_date "2017-01-01T00:00:00Z"^^xsd:dateTime ;
+        marking:encrypt_in_transit "must" ;
+        marking:permitted_actions "internally-visible-actions" ;
+        marking:affected_party_notifications "must-not";
+        marking:tlp "red" ;
+        marking:attribution "must-not" ;
+        marking:unmodified_resale "must-not" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Information Exchange Protocol (IEP) AMBER
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--01bc4353-4829-4d55-8d52-0ab7e0790df9> {
+    <http://cyio.darklight.ai/marking-definition--01bc4353-4829-4d55-8d52-0ab7e0790df9>
+        a marking:IEPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "01bc4353-4829-4d55-8d52-0ab7e0790df9" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-12-21T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FFC000" ;
+        cti:name "FIRST IEP-SIG TLP-AMBER"@en-US ;
+        cti:description "Limited disclosure, recipients can only spread this on a need-to-know basis within their organization and its clients."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ,
+                                <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9> ;
+        marking:definition_type "iep" ;
+        marking:iep_version "2.0" ;
+        marking:start_date "2017-01-01T00:00:00Z"^^xsd:dateTime ;
+        marking:encrypt_in_transit "may" ;
+        marking:permitted_actions "externally-visible-direct-actions" ;
+        marking:affected_party_notifications "may";
+        marking:tlp "amber" ;
+        marking:attribution "must-not" ;
+        marking:unmodified_resale "must-not" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Information Exchange Protocol (IEP) GREEN
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--3903ce63-674c-4b70-9457-8c5527dd9115> {
+    <http://cyio.darklight.ai/marking-definition--3903ce63-674c-4b70-9457-8c5527dd9115>
+        a marking:IEPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "3903ce63-674c-4b70-9457-8c5527dd9115" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-12-21T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#33FF00" ;
+        cti:name "FIRST IEP-SIG TLP-GREEN"@en-US ;
+        cti:description "Limited disclosure, recipients can spread this within their community; recipients may share information with peers and partner organizations within their community, but not via publicly accessible channels."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ,
+                                <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9> ;
+        marking:definition_type "iep" ;
+        marking:iep_version "2.0" ;
+        marking:start_date "2017-01-01T00:00:00Z"^^xsd:dateTime ;
+        marking:encrypt_in_transit "may" ;
+        marking:permitted_actions "externally-visible-direct-actions" ;
+        marking:affected_party_notifications "may";
+        marking:tlp "green" ;
+        marking:attribution "may" ;
+        marking:unmodified_resale "must-not" ;
+    .
+}
+
+# --------------------------------------------------------
+#  Data Marking: Information Exchange Protocol (IEP) WHITE
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1> {
+    <http://cyio.darklight.ai/marking-definition--0d783790-b221-40c1-840a-5787330612c1>
+        a marking:IEPMarking ;
+        a marking:MarkingDefinition ;
+        a cti:Object ;
+        a common:Object ;
+        cti:id "0d783790-b221-40c1-840a-5787330612c1" ;
+        cti:object_type "marking-definition" ;
+        cti:spec_version "2.1" ;
+        cti:created "2022-12-21T00:00:00.000Z"^^xsd:dateTime ;
+        cti:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:color "#FFFFFF" ;
+        cti:name "FIRST IEP-SIG TLP-WHITE"@en-US ;
+        cti:description "Recipients can spread this to the world, there is no limit on disclosure; subject to standard copyright rules, information may be shared without restriction."@en-US ;
+        cti:external_references <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> ,
+                                <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9> ;
+        marking:definition_type "iep" ;
+        marking:iep_version "2.0" ;
+        marking:start_date "2017-01-01T00:00:00Z"^^xsd:dateTime ;
+        marking:encrypt_in_transit "may" ;
+        marking:permitted_actions "externally-visible-direct-actions" ;
+        marking:affected_party_notifications "may";
+        marking:tlp "white" ;
+        marking:attribution "may" ;
+        marking:unmodified_resale "may" ;
+    .
+}
+
+
+# --------------------------------------------------------
+# External Reference:  first.org/tlp
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28> {
+    <http://cyio.darklight.ai/external-reference--370e08db-13e1-5466-a2ca-1243e0c3df28>
+        a <http://docs.oasis-open.org/ns/cti#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "370e08db-13e1-5466-a2ca-1243e0c3df28";
+        common:object_type "external-reference" ;
+        common:created "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:source_name "FIRST" ;
+        common:description "FIRST Traffic Light Protocol (TLP) 2.0 Specification"@en-US ;
+        common:url "https://www.first.org/tlp"^^xsd:anyURI ;
+    .
+}
+
+# --------------------------------------------------------
+# External Reference:  first.org/iep
+# --------------------------------------------------------
+GRAPH <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9> {
+    <http://cyio.darklight.ai/external-reference--2da8a32e-a20b-5a8d-b717-b29d26c76ed9>
+        a <http://docs.oasis-open.org/ns/cti#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ExternalReference> ;
+        a <http://darklight.ai/ns/common#ComplexDatatype> ;
+        common:id "2da8a32e-a20b-5a8d-b717-b29d26c76ed9";
+        common:object_type "external-reference" ;
+        common:created "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:modified "2022-10-21T00:00:00.000Z"^^xsd:dateTime ;
+        common:source_name "FIRST" ;
+        common:description "FIRST Information Exchange Policy (IEP) 2.0 Specification"@en-US ;
+        common:url "https://www.first.org/iep"^^xsd:anyURI ;
+    .
+}

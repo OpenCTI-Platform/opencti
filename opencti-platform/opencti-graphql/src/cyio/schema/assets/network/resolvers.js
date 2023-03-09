@@ -32,6 +32,7 @@ import {
 } from '../../risk-assessments/assessment-common/resolvers/sparql-query.js';
 import { riskSingularizeSchema } from '../../risk-assessments/risk-mappings.js';
 import { calculateRiskLevel, getOverallRisk } from '../../risk-assessments/riskUtils.js';
+import { findResponsiblePartyByIri } from '../../risk-assessments/oscal-common/domain/oscalResponsibleParty.js';
 
 const networkResolvers = {
   Query: {
@@ -871,6 +872,16 @@ const networkResolvers = {
         return results;
       }
       return [];
+    },
+    responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.responsible_party_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.responsible_party_iris) {
+        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
     },
   },
 };

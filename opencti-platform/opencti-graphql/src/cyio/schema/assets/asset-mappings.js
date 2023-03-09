@@ -38,7 +38,7 @@ const objectTypeMapping = {
   "port": "PortInfo",
   "printer": "HardwareAsset",
   "procedure": "ProcedureAsset",
-  "responsible-party": "ResponsibleParty",
+  // "responsible-party": "ResponsibleParty",
   "router": "RouterAsset",
   "server": "ServerAsset",
   "service-account": "ServiceAccountAsset",

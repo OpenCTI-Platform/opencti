@@ -29,7 +29,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -83,7 +83,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -137,7 +137,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -191,7 +191,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -245,7 +245,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -299,7 +299,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -353,7 +353,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -407,7 +407,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String
@@ -461,7 +461,7 @@
     release_date: Timestamp
     implementation_point: ImplementationPoint
     operational_status: OperationalStatus
-    # responsible_parties: [ResponsibleParty]
+    responsible_parties: [OscalResponsibleParty]
     # HardwareAsset
     function: String
     cpe_identifier: String

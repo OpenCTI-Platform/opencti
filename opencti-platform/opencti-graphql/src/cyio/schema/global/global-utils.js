@@ -59,9 +59,8 @@ import {
   locationPredicateMap as oscalLocationPredicateMap, // attachToLocationQuery, detachFromLocationQuery,
   partyPredicateMap, // attachToPartyQuery, detachFromPartyQuery,
   responsiblePartyPredicateMap, // attachToResponsiblePartyQuery, detachFromResponsiblePartyQuery,
-  attachToResponsibleRoleQuery, detachFromResponsibleRoleQuery,
-  attachToRoleQuery, detachFromRoleQuery,
-  rolePredicateMap, 
+  // attachToResponsibleRoleQuery, detachFromResponsibleRoleQuery,
+  rolePredicateMap, // attachToRoleQuery, detachFromRoleQuery,
 } from '../risk-assessments/oscal-common/resolvers/sparql-query.js';
 import {
   poamPredicateMap, // attachToPOAMQuery, detachFromPOAMQuery,

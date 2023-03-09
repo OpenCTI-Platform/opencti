@@ -71,6 +71,7 @@ const softwareAssetReducer = (item) => {
     ...(item.notes && { notes_iri: item.notes }),
     ...(item.os_installed_on && { os_installed_on: item.os_installed_on }),
     ...(item.sw_installed_on && { sw_installed_on: item.sw_installed_on }),
+    ...(item.responsible_parties && { responsible_party_iris: item.responsible_parties }),
     ...(item.related_risks && { related_risks_iri: item.related_risks }),
     ...(item.risk_count !== undefined && { risk_count: item.risk_count }),
     ...(item.risk_score !== undefined && { risk_score: item.risk_score }),
@@ -713,5 +714,10 @@ export const softwarePredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+  },
+  responsible_parties: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#responsible_parties>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "responsible_parties");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
 };
