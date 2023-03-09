@@ -103,7 +103,7 @@ const buildParamsFromHistory = (params: LocalStorage) => removeEmptyFields({
   searchTerm: params.searchTerm,
   sortBy: params.sortBy,
   orderAsc: params.orderAsc,
-  types: params.types?.join(','),
+  types: (params.types && params.types.length > 0) ? params.types.join(',') : undefined,
 });
 
 const searchParamsToStorage = (searchObject: URLSearchParams) => {
@@ -116,7 +116,7 @@ const searchParamsToStorage = (searchObject: URLSearchParams) => {
       ? searchObject.get('searchTerm')
       : undefined,
     sortBy: searchObject.get('sortBy'),
-    types: searchObject.get('types')?.split(','),
+    types: searchObject.get('types') ? searchObject.get('types')?.split(',') : [],
     orderAsc: searchObject.get('orderAsc')
       ? searchObject.get('orderAsc') === 'true'
       : undefined,
