@@ -98,7 +98,6 @@ class InformationSystemDetailsComponent extends Component {
                   <Grid item={true} xs={12}>
                     <InformationTypesCreation
                       informationSystem={informationSystem}
-                      renderSecurityImpact={this.renderSecurityImpact.bind(this)}
                     />
                   </Grid>
                   <Grid item={true} xs={6}>

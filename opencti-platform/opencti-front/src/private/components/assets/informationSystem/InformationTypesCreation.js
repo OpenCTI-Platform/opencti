@@ -35,6 +35,7 @@ import SecurityCategorization from './SecurityCategorization';
 import InformationTypeEdition, {
   InformationTypeEditionQuery,
 } from './InformationTypeEdition';
+import RiskLevel from '../../common/form/RiskLevel';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -307,11 +308,11 @@ class InformationTypesCreationComponent extends Component {
               {informationTypes && informationTypes.map((informationType, key) => (
                 <div key={key}>
                   <div>{informationType.title && t(informationType.title)}</div>
-                  <div>{informationType.confidentiality_impact && informationType.confidentiality_impact.base_impact}</div>
-                  <div>{informationType.integrity_impact && informationType.integrity_impact.base_impact}</div>
+                  <div>{informationType.confidentiality_impact && <RiskLevel risk={informationType.confidentiality_impact.base_impact} />}</div>
+                  <div>{informationType.integrity_impact && <RiskLevel risk={informationType.integrity_impact.base_impact} />}</div>
                   <div>
                     <div style={{ display: 'flex' }}>
-                      {informationType.availability_impact && informationType.availability_impact.base_impact}
+                      {informationType.availability_impact && <RiskLevel risk={informationType.availability_impact.base_impact} />}
                       <IconButton size='small' onClick={this.handleEditInfoType.bind(this, informationType.id)}>
                         <EditIcon fontSize='small' />
                       </IconButton>
@@ -463,7 +464,7 @@ class InformationTypesCreationComponent extends Component {
                       </div>
                       <div className='clearfix' />
                       {selectedProduct.confidentiality_impact
-                        && t(selectedProduct.confidentiality_impact.base_impact)}
+                        && <RiskLevel risk={selectedProduct.confidentiality_impact.base_impact} />}
                     </Grid>
                     <Grid item={true} xs={2}>
                       <div className={classes.textBase}>
@@ -558,7 +559,7 @@ class InformationTypesCreationComponent extends Component {
                       </div>
                       <div className='clearfix' />
                       {selectedProduct.integrity_impact
-                        && t(selectedProduct.integrity_impact.base_impact)}
+                        && <RiskLevel risk={selectedProduct.integrity_impact.base_impact} />}
                     </Grid>
                     <Grid item={true} xs={2}>
                       <div className={classes.textBase}>
@@ -653,7 +654,7 @@ class InformationTypesCreationComponent extends Component {
                       </div>
                       <div className='clearfix' />
                       {selectedProduct.availability_impact
-                        && t(selectedProduct.availability_impact.base_impact)}
+                        && <RiskLevel risk={selectedProduct.availability_impact.base_impact} />}
                     </Grid>
                     <Grid item={true} xs={2}>
                       <div className={classes.textBase}>
@@ -768,7 +769,6 @@ InformationTypesCreationComponent.propTypes = {
   name: PropTypes.string,
   classes: PropTypes.object,
   informationSystem: PropTypes.object,
-  renderSecurityImpact: PropTypes.func,
 };
 
 const InformationTypesCreation = createFragmentContainer(InformationTypesCreationComponent, {
