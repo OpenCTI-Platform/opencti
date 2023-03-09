@@ -1,3 +1,5 @@
+/* eslint-disable */
+/* refactor */
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
@@ -22,10 +24,11 @@ import {
 } from '@material-ui/core';
 import inject18n from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
-import SelectField from '../../../../components/SelectField';
 import { toastGenericError } from '../../../../utils/bakedToast';
 import { commitMutation } from '../../../../relay/environment';
 import SearchTextField from '../../common/form/SearchTextField';
+import TaskType from '../../common/form/TaskType';
+import SecurityCategorization from './SecurityCategorization';
 
 const styles = (theme) => ({
   dialogMain: {
@@ -78,20 +81,29 @@ const styles = (theme) => ({
     lineHeight: '24px',
     color: theme.palette.header.text,
   },
+  textBase: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: 5,
+  },
 });
 
 const informationTypesPopoverMutation = graphql`
   mutation InformationTypesPopoverMutation(
-    $input: OscalResponsiblePartyAddInput
+    $input: InformationTypeInput!
   ) {
-    createOscalResponsibleParty(input: $input) {
+    createInformationType(input: $input) {
       id
     }
   }
 `;
 
-const ResponsiblePartyValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
+const InformationTypeValidation = (t) => Yup.object().shape({
+  title: Yup.string().required(t('This field is required')),
+  system: Yup.string().required(t('This field is required')),
+  catalog: Yup.string().required(t('This field is required')),
+  description: Yup.string().required(t('This field is required')),
+  information_type: Yup.string().required(t('This field is required')),
 });
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction='up' ref={ref} {...props} />
@@ -103,22 +115,48 @@ class InformationTypesPopover extends Component {
     super(props);
     this.state = {
       open: false,
-      openAutocomplete: false,
-      onSubmit: false,
       selectedProduct: {},
-      displayCancel: false,
     };
   }
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
   onSubmit(values, { setSubmitting, resetForm }) {
+    const categorizations = [{
+      catalog: values.catalog,
+      system: values.system,
+      information_type: values.information_type,
+    }];
+    const confidentialityImpact = {
+      base_impact: values.confidentiality_impact_base,
+      selected_impact: values.confidentiality_impact_selected,
+      adjustment_justification: values.confidentiality_impact_justification || '',
+    };
+    const availabilityImpact = {
+      base_impact: values.availability_impact_base,
+      selected_impact: values.availability_impact_selected,
+      adjustment_justification: values.availability_impact_justification || '',
+    };
+    const integrityImpact = {
+      base_impact: values.integrity_impact_base,
+      selected_impact: values.integrity_impact_selected,
+      adjustment_justification: values.integrity_impact_justification || '',
+    };
     const finalValues = R.pipe(
-      R.dissoc('created'),
-      R.dissoc('modified'),
-      R.dissoc('marking'),
+      R.dissoc('system'),
+      R.dissoc('catalog'),
+      R.dissoc('information_type'),
+      R.dissoc('integrity_impact_base'),
+      R.dissoc('availability_impact_base'),
+      R.dissoc('integrity_impact_selected'),
+      R.dissoc('confidentiality_impact_base'),
+      R.dissoc('availability_impact_selected'),
+      R.dissoc('integrity_impact_justification'),
+      R.dissoc('confidentiality_impact_selected'),
+      R.dissoc('availability_impact_justification'),
+      R.dissoc('confidentiality_impact_justification'),
+      R.assoc('categorizations', categorizations),
+      R.assoc('integrity_impact', integrityImpact),
+      R.assoc('availability_impact', availabilityImpact),
+      R.assoc('confidentiality_impact', confidentialityImpact),
     )(values);
     commitMutation({
       mutation: informationTypesPopoverMutation,
@@ -126,33 +164,53 @@ class InformationTypesPopover extends Component {
         input: finalValues,
       },
       setSubmitting,
-      pathname: '/data/entities/responsible_parties',
+      pathname: '/defender_hq/assets/information_systems',
       onCompleted: (data) => {
         setSubmitting(false);
         resetForm();
-        this.props.history.push('/data/entities/responsible_parties');
       },
       onError: (err) => {
         console.error(err);
-        toastGenericError('Failed to create responsible party');
+        toastGenericError('Failed to create Information Type');
       },
     });
   }
 
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  handleAutoCompleteClose() {
-    this.setState({ openAutocomplete: false });
-  }
-
-  handleSubmit() {
-    this.setState({ onSubmit: true });
-  }
-
   onReset() {
-    this.setState({ open: false });
+    this.setState({ open: false, selectedProduct: {} });
+  }
+
+  handleSetFieldValues(selectedInfoType, setFieldValue, type) {
+    const integrityImpact = R.pathOr({}, ['integrity_impact'], selectedInfoType);
+    const availabilityImpact = R.pathOr({}, ['availability_impact'], selectedInfoType);
+    const confidentialityImpact = R.pathOr({}, ['confidentiality_impact'], selectedInfoType);
+    const categorization = R.pipe(
+      R.pathOr([], ['categorizations']),
+      R.mergeAll,
+    )(selectedInfoType);
+    if (type === 'search') {
+      setFieldValue('catalog', categorization?.id);
+      setFieldValue('system', categorization?.system);
+      setFieldValue('information_type', categorization?.information_type?.id);
+      setFieldValue('description', selectedInfoType?.description);
+    }
+    setFieldValue('confidentiality_impact_base', confidentialityImpact?.base_impact);
+    setFieldValue('integrity_impact_base', integrityImpact?.base_impact);
+    setFieldValue('availability_impact_base', availabilityImpact?.base_impact);
+    setFieldValue('integrity_impact_selected', integrityImpact?.selected_impact);
+    setFieldValue('availability_impact_selected', availabilityImpact?.selected_impact);
+    setFieldValue('confidentiality_impact_selected', confidentialityImpact?.selected_impact);
+    setFieldValue('integrity_impact_justification', integrityImpact?.adjustment_justification);
+    setFieldValue('availability_impact_justification', availabilityImpact?.adjustment_justification);
+    setFieldValue('confidentiality_impact_justification', confidentialityImpact?.adjustment_justification);
+  }
+
+  handleSearchTextField(selectedInfoType, setFieldValue) {
+    this.setState({ selectedProduct: selectedInfoType }, () => this.handleSetFieldValues(selectedInfoType, setFieldValue, 'search'));
+  }
+
+  handleInformationType(infoType, setFieldValue) {
+    this.setState({ selectedProduct: infoType }, () => this.handleSetFieldValues(infoType, setFieldValue, 'select'));
   }
 
   render() {
@@ -161,6 +219,9 @@ class InformationTypesPopover extends Component {
       open,
       selectedProduct,
     } = this.state;
+    const integrityImpact = R.pathOr({}, ['integrity_impact'], selectedProduct);
+    const availabilityImpact = R.pathOr({}, ['availability_impact'], selectedProduct);
+    const confidentialityImpact = R.pathOr({}, ['confidentiality_impact'], selectedProduct);
     return (
       <div>
         <div style={{ display: 'flex', alignItems: 'center' }}>
@@ -169,7 +230,7 @@ class InformationTypesPopover extends Component {
           </Typography>
           <div style={{ float: 'left', margin: '5px 0 0 5px' }}>
             <Tooltip title={t('Identifies the details about all information types that are stored, processed, or transmitted by the system, such as privacy information, and those defined in NIST SP 800-60.')}>
-              <Information fontSize='inherit' color='disabled' />
+              <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
             </Tooltip>
           </div>
           <IconButton
@@ -188,25 +249,35 @@ class InformationTypesPopover extends Component {
         <Dialog
           open={open}
           maxWidth='md'
-          keepMounted={true}
+          keepMounted={false}
           className={classes.dialogMain}
         >
           <Formik
-            enableReinitialize={true}
+            enableReinitialize
             initialValues={{
-              name: '',
-              description: selectedProduct?.vendor || '',
-              created: null,
-              modified: null,
-              role: '',
-              parties: [],
-              marking: [],
+              title: '',
+              system: '',
+              catalog: '',
+              description: '',
+              information_type: '',
+              integrity_impact_base: '',
+              availability_impact_base: '',
+              integrity_impact_selected: '',
+              confidentiality_impact_base: '',
+              availability_impact_selected: '',
+              integrity_impact_justification: '',
+              confidentiality_impact_selected: '',
+              availability_impact_justification: '',
+              confidentiality_impact_justification: '',
+
             }}
-            validationSchema={ResponsiblePartyValidation(t)}
+            validationSchema={InformationTypeValidation(t)}
             onSubmit={this.onSubmit.bind(this)}
             onReset={this.onReset.bind(this)}
           >
             {({
+              errors,
+              values,
               submitForm,
               handleReset,
               isSubmitting,
@@ -219,45 +290,47 @@ class InformationTypesPopover extends Component {
                 <DialogContent classes={{ root: classes.dialogContent }}>
                   <Grid container={true} spacing={3}>
                     <Grid item={true} xs={12}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Name')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Name')}
+                        </Typography>
                         <Tooltip
                           title={t(
                             'Identifies the identifier defined by the standard.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
                       <SearchTextField
-                        name='name'
+                        name='title'
+                        errors={errors.title}
                         setFieldValue={setFieldValue}
+                        handleSearchTextField={this.handleSearchTextField.bind(this)}
                       />
                     </Grid>
                     <Grid xs={12} item={true}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Description')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Description')}
+                        </Typography>
                         <Tooltip
                           title={t(
                             'Identifies a summary of the reponsible party purpose and associated responsibilities.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
@@ -271,175 +344,99 @@ class InformationTypesPopover extends Component {
                         containerstyle={{ width: '100px' }}
                       />
                     </Grid>
-                    <Grid item={true} xs={4}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Categorization System')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                    <SecurityCategorization
+                      values={values}
+                      setFieldValue={setFieldValue}
+                      handleInformationType={this.handleInformationType.bind(this)}
+                    />
+                    <Grid item={true} xs={12}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Confidentiality Impact')}
+                        </Typography>
+                        <Tooltip
+                          title={confidentialityImpact.explanation || 'Confidentiality Impact'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Base')}
+                        </Typography>
+                        <Tooltip
+                          title={confidentialityImpact.recommendation || 'Base'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
+                        </Tooltip>
+                      </div>
+                      <div className='clearfix' />
+                      {selectedProduct.confidentiality_impact
+                        && t(selectedProduct.confidentiality_impact.base_impact)}
+                    </Grid>
+                    <Grid item={true} xs={2}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Selected')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies a reference to the role that the party is responsible for.',
+                            'Override The provisional confidentiality impact level recommended for disclosure compensation management information is low.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name='category'
+                      <TaskType
+                        name='confidentiality_impact_selected'
+                        taskType='FIPS199'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={4}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Category')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip title={t('Marking')}>
-                          <Information fontSize='inherit' color='disabled' />
-                        </Tooltip>
-                      </div>
-                      <div className='clearfix' />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name='marking'
-                        fullWidth={true}
+                        required={true}
                         style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={4}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Information Type')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
-                        >
-                          <Information fontSize='inherit' color='disabled' />
-                        </Tooltip>
-                      </div>
-                      <div className='clearfix' />
-                      <Field
-                        component={SelectField}
                         variant='outlined'
-                        name='category'
-                        fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
-                        containerstyle={{ width: '100%' }}
-                      />
-                    </Grid>
-                    <Grid item={true} xs={12}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Confidentiality Impact')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
-                        >
-                          <Information fontSize='inherit' color='disabled' />
-                        </Tooltip>
-                      </div>
-                    </Grid>
-                    <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Base')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
-                        >
-                          <Information fontSize='inherit' color='disabled' />
-                        </Tooltip>
-                      </div>
-                      <div className='clearfix' />
-                    </Grid>
-                    <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Selected')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
-                        >
-                          <Information fontSize='inherit' color='disabled' />
-                        </Tooltip>
-                      </div>
-                      <div className='clearfix' />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name='category'
-                        fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
-                        containerstyle={{ width: '100%' }}
                       />
                     </Grid>
                     <Grid xs={8} item={true}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Justification')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies a summary of the reponsible party purpose and associated responsibilities.',
+                            'Justification Identifies a summary of impact for how the risk affects the system.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
                       <Field
                         component={MarkDownField}
-                        name='description'
+                        name='confidentiality_impact_justification'
                         fullWidth={true}
                         multiline={true}
                         rows='1'
@@ -448,94 +445,93 @@ class InformationTypesPopover extends Component {
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Integrity Impact')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          {t('Integrity Impact')}
+                        </Typography>
+                        <Tooltip
+                          title={integrityImpact.explanation || 'Integrity Impact'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                     </Grid>
                     <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Base')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          {t('Base')}
+                        </Typography>
+                        <Tooltip
+                          title={integrityImpact.recommendation || 'Base'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
+                      {selectedProduct.integrity_impact
+                        && t(selectedProduct.integrity_impact.base_impact)}
                     </Grid>
                     <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Selected')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Selected')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
+                            'Override The provisional Integrity Impact level recommended for disclosure compensation management information is low.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name='category'
+                      <TaskType
+                        name='integrity_impact_selected'
+                        taskType='FIPS199'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        required={true}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid xs={8} item={true}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Justification')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies a summary of the reponsible party purpose and associated responsibilities.',
+                            'Justification Identifies a summary of impact for how the risk affects the system.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
                       <Field
                         component={MarkDownField}
-                        name='description'
+                        name='integrity_impact_justification'
                         fullWidth={true}
                         multiline={true}
                         rows='3'
@@ -544,94 +540,93 @@ class InformationTypesPopover extends Component {
                       />
                     </Grid>
                     <Grid item={true} xs={12}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Availability Impact')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          {t('Availability Impact')}
+                        </Typography>
+                        <Tooltip
+                          title={availabilityImpact.explanation || 'Availability Impact'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                     </Grid>
                     <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Base')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
-                        <Tooltip
-                          title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
-                          )}
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          {t('Base')}
+                        </Typography>
+                        <Tooltip
+                          title={availabilityImpact.recommendation || 'Base'}
+                        >
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
+                      {selectedProduct.availability_impact
+                        && t(selectedProduct.availability_impact.base_impact)}
                     </Grid>
                     <Grid item={true} xs={2}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Selected')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '1px 0 0 5px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Selected')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies one or more references to the parties that are responsible for performing the associated role.',
+                            'Override The provisional Availability Impact level recommended for disclosure compensation management information is low.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
-                      <Field
-                        component={SelectField}
-                        variant='outlined'
-                        name='category'
+                      <TaskType
+                        name='availability_impact_selected'
+                        taskType='FIPS199'
                         fullWidth={true}
-                        style={{ height: '38.09px', maxWidth: '300px' }}
+                        required={true}
+                        style={{ height: '38.09px' }}
                         containerstyle={{ width: '100%' }}
+                        variant='outlined'
                       />
                     </Grid>
                     <Grid xs={8} item={true}>
-                      <Typography
-                        variant='h3'
-                        color='textSecondary'
-                        gutterBottom={true}
-                        style={{ float: 'left' }}
-                      >
-                        {t('Justification')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '-1px 0 0 4px' }}>
+                      <div className={classes.textBase}>
+                        <Typography
+                          variant='h3'
+                          color='textSecondary'
+                          gutterBottom={true}
+                          style={{ margin: 0 }}
+                        >
+                          {t('Justification')}
+                        </Typography>
                         <Tooltip
                           title={t(
-                            'Identifies a summary of the reponsible party purpose and associated responsibilities.',
+                            'Justification Identifies a summary of impact for how the risk affects the system.',
                           )}
                         >
-                          <Information fontSize='inherit' color='disabled' />
+                          <Information style={{ marginLeft: '5px' }} fontSize='inherit' color='disabled' />
                         </Tooltip>
                       </div>
                       <div className='clearfix' />
                       <Field
                         component={MarkDownField}
-                        name='description'
+                        name='availability_impact_justification'
                         fullWidth={true}
                         multiline={true}
                         rows='3'
@@ -669,10 +664,11 @@ class InformationTypesPopover extends Component {
 }
 
 InformationTypesPopover.propTypes = {
+  t: PropTypes.func,
   name: PropTypes.string,
   device: PropTypes.object,
   classes: PropTypes.object,
-  t: PropTypes.func,
+  renderSecurityImpact: PropTypes.func,
 };
 
 export default compose(inject18n, withStyles(styles))(InformationTypesPopover);

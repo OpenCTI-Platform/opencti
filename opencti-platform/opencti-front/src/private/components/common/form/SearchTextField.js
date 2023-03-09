@@ -4,7 +4,7 @@ import React, { Component } from 'react';
 import {
   compose, pathOr, pipe, map, union,
 } from 'ramda';
-import { Field } from 'formik';
+import { Field, useField } from 'formik';
 import { withStyles } from '@material-ui/core/styles';
 import graphql from 'babel-plugin-relay/macro';
 import KeyboardArrowDownIcon from '@material-ui/icons/KeyboardArrowDown';
@@ -13,14 +13,13 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 import { fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 
+
 const searchTextFieldQuery = graphql`
   query SearchTextFieldQuery(
-    $search: String
     $orderedBy: InformationTypeOrdering
     $orderMode: OrderingMode
   ) {
     informationTypes(
-      search: $search
       orderedBy: $orderedBy
       orderMode: $orderMode
     ) {
@@ -38,9 +37,49 @@ const searchTextFieldIdQuery = graphql`
   query SearchTextFieldIdQuery($id: ID!) {
     informationType(id: $id) {
       id
-      title
+      entity_type
       created
       modified
+      title
+      description
+      categorizations {
+        id
+        entity_type
+        system
+        information_type {
+          id
+          entity_type
+          identifier
+          category
+        }
+      }
+      confidentiality_impact {
+        id
+        entity_type
+        base_impact
+        explanation
+        recommendation
+        selected_impact
+        adjustment_justification
+      }
+      integrity_impact {
+        id
+        entity_type
+        base_impact
+        explanation
+        recommendation
+        selected_impact
+        adjustment_justification      
+      }
+      availability_impact {
+        id
+        entity_type
+        base_impact
+        explanation
+        recommendation
+        selected_impact
+        adjustment_justification      
+      }
     }
   }
 `;
@@ -75,8 +114,9 @@ class SearchTextField extends Component {
     };
   }
 
-  searchProducts(event, value) {
+  searchProduct(event, value) {
     this.setState({ productName: value });
+    this.props.setFieldValue(this.props.name, value);
     if (event?.type === 'click' && value) {
       const selectedProductValue = this.state.products.filter(
         (product) => product.label === value,
@@ -85,14 +125,14 @@ class SearchTextField extends Component {
         id: selectedProductValue.value,
       }).toPromise()
         .then((data) => {
-          this.setState({ selectedProduct: data.informationSystem });
+          this.setState({ selectedProduct: data.informationType });
+          this.props.handleSearchTextField(data.informationType, this.props.setFieldValue);
         });
     }
   }
 
-  handleSearchProducts(event, value) {
+  handleSearchProducts() {
     fetchQuery(searchTextFieldQuery, {
-      search: value === "" ? "" : value,
       orderedBy: 'name',
       orderMode: 'asc',
     })
@@ -117,7 +157,7 @@ class SearchTextField extends Component {
 
   render() {
     const {
-      t, name, classes,
+      t, name, classes, errors,
     } = this.props;
     const {
       selectedProduct,
@@ -129,7 +169,8 @@ class SearchTextField extends Component {
           component={Autocomplete}
           name={name}
           size="small"
-          loading={selectedProduct.name || false}
+          loading={Boolean(selectedProduct?.title)}
+          freeSolo
           loadingText="Searching..."
           className={classes.autocomplete}
           inputValue={productName}
@@ -140,7 +181,7 @@ class SearchTextField extends Component {
           popupIcon={<KeyboardArrowDownIcon />}
           options={this.state.products}
           getOptionLabel={(option) => (option.label ? option.label : option)}
-          onInputChange={this.searchProducts.bind(this)}
+          onInputChange={this.searchProduct.bind(this)}
           onFocus={this.handleSearchProducts.bind(this)}
           onChange={this.handleSearchProducts.bind(this)}
           selectOnFocus={true}
@@ -149,6 +190,8 @@ class SearchTextField extends Component {
             <TextField
               variant="outlined"
               {...params}
+              error={Boolean(errors)}
+              helperText={Boolean(errors) ? 'This field is required' : ''}
               inputProps={{
                 ...params.inputProps,
                 onKeyDown: (e) => {

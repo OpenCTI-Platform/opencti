@@ -52,17 +52,6 @@ const styles = () => ({
 });
 
 class InformationSystemDetailsComponent extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      openInfoType: false,
-    };
-  }
-
-  handleInformationType() {
-    this.setState({ openInfoType: !this.state.openInfoType });
-  }
-
   renderSecurityImpact(type, impact) {
     const {
       t, classes,
@@ -108,7 +97,9 @@ class InformationSystemDetailsComponent extends Component {
               <Paper classes={{ root: classes.paper }} elevation={2}>
                 <Grid container={true} spacing={3}>
                   <Grid item={true} xs={12}>
-                    <InformationTypesPopover name={'information_types'} setFieldValue={setFieldValue} />
+                    <InformationTypesPopover
+                      renderSecurityImpact={this.renderSecurityImpact.bind(this)}
+                    />
                   </Grid>
                   <Grid item={true} xs={6}>
                     <div className={classes.textBase}>
@@ -178,10 +169,6 @@ class InformationSystemDetailsComponent extends Component {
                   />
                 </Grid>
               </Paper>
-              <InformationTypeCreation
-                openInformationType={this.state.openInfoType}
-                handleInformationType={this.handleInformationType.bind(this)}
-              />
             </div>
           </Form>
         )}
