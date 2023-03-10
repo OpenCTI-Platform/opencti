@@ -48,7 +48,7 @@ const riskResolvers = {
         throw e;
       }
 
-      if (response === undefined) return null;
+      if (response === undefined || response === null || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const edges = [];
         const reducer = getReducer('RISK');
@@ -263,10 +263,13 @@ const riskResolvers = {
         throw e;
       }
 
-      if (response === undefined) return null;
+      if (response === undefined || response === null || response.length === 0) return null;
       if (Array.isArray(response) && response.length > 0) {
         const reducer = getReducer('RISK');
         const risk = response[0];
+
+        // handle the case where we get only empty availability fields
+        if (risk.id === undefined && risk.entity_type === undefined && risk.object_type === undefined) return null;
 
         // calculate the risk level
         risk.risk_level = 'unknown';
