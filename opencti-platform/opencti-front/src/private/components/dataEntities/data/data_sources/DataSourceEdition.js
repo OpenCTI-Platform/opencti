@@ -59,6 +59,7 @@ const dataSourceEditionQuery = graphql`
       scope
       contextual
       auto
+      data_source_type
       update_frequency {
         unit
         period
