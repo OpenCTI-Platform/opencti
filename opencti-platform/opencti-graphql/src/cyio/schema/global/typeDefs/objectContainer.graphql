@@ -1,0 +1,77 @@
+interface ObjectContainer {
+  graph_data: String
+  objects(
+    "Identifies the max number of entities to retrieve"
+    first: Int
+    "Identifies the offset from 0 where to start the next set of object to retrieve"
+    offset: Int
+    "Identifies to order results and which field to order by"
+    orderedBy: ObjectOrdering
+    "Identifies whether the results will be ordered in ascending or descending order"
+    orderMode: OrderingMode
+    "Identifies the fields and values by which to filter results"
+    filters: [ObjectFiltering]
+    "Identifies whether filters that are to be applied with determining the results to be returned"
+    filterMode: FilterMode
+    types: [String]
+    search: String
+    "Identifies that all objects are to be returned.  This overrides any specified filters."
+    all: Boolean
+  ): ObjectRefConnection 
+}
+
+type ObjectRefConnection {
+  pageInfo: PageInfo!
+  edges: [ObjectRefEdge]
+}
+
+type ObjectRefEdge {
+  cursor: String!
+  node: ObjectRef!
+}
+
+
+enum ObjectOrdering {
+  name
+  entity_type
+  created_at
+  updated_at
+  created_by
+  object_marking_refs
+  label_name
+  observable_value
+  start_time
+  created
+  modified
+  relationship_type
+  creator
+}
+
+input ObjectFiltering {
+  key: [ObjectFilter!]!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+enum ObjectFilter {
+  entity_type
+  relationship_type
+  created
+  modified
+  created_by
+  external_references
+  value
+  name
+  title
+  confidence
+}
+
+union ObjectRef = InformationSystem
+  | InventoryItem
+  | Component
+  | OscalUser
+  | OscalLeveragedAuthorization
+  | CyioLabel
+  | CyioExternalReference
+  | CyioNote
+  | InformationType
