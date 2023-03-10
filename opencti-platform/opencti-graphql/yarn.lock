@@ -10215,7 +10215,6 @@ __metadata:
     passport-ldapauth: 3.0.1
     passport-local: 1.0.0
     passport-saml: 3.2.4
-    path-to-regexp: ^6.2.1
     prom-client: 14.1.1
     python-shell: 5.0.0
     ramda: 0.28.0
@@ -10634,13 +10633,6 @@ __metadata:
   version: 0.1.7
   resolution: "path-to-regexp@npm:0.1.7"
   checksum: 69a14ea24db543e8b0f4353305c5eac6907917031340e5a8b37df688e52accd09e3cebfe1660b70d76b6bd89152f52183f28c74813dbf454ba1a01c82a38abce
-  languageName: node
-  linkType: hard
-
-"path-to-regexp@npm:^6.2.1":
-  version: 6.2.1
-  resolution: "path-to-regexp@npm:6.2.1"
-  checksum: f0227af8284ea13300f4293ba111e3635142f976d4197f14d5ad1f124aebd9118783dd2e5f1fe16f7273743cc3dbeddfb7493f237bb27c10fdae07020cc9b698
   languageName: node
   linkType: hard
 

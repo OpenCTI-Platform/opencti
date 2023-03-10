@@ -8,7 +8,6 @@ import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'node:path';
 import { HttpsProxyAgent } from 'https-proxy-agent';
 import { HttpProxyAgent } from 'http-proxy-agent';
-import * as url from 'url';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -359,13 +358,13 @@ export const configureCA = (certificates) => {
 // App
 export const PORT = nconf.get('app:port');
 class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
-  constructor(params, extraOpts) {
-    super(params);
-    this.extraOpts = extraOpts;
+  constructor(basicOpts, extendedOpts) {
+    super(basicOpts);
+    this.extendedOpts = extendedOpts;
   }
 
-  callback(req, opts, fn) {
-    return super.callback(req, { ...opts, ...this.extraOpts }, fn);
+  callback(req, opts) {
+    return super.callback(req, { ...opts, ...this.extendedOpts });
   }
 }
 const escapeRegex = (string) => {
@@ -401,36 +400,44 @@ export const isUriProxyExcluded = (hostname, exclusions) => {
   }
   return false;
 };
-const getPlatformProxy = () => {
-  const proxy = nconf.get('https_proxy') || nconf.get('http_proxy');
-  const isProxyEnable = !R.isEmpty(proxy);
-  if (isProxyEnable) {
+const getPlatformHttpProxies = () => {
+  const proxies = {};
+  const exclusions = (nconf.get('no_proxy') ?? '').split(',');
+  const https = nconf.get('https_proxy');
+  if (https) {
     const proxyCA = nconf.get('https_proxy_ca').map((caPath) => readFileSync(caPath));
-    const exclusions = (nconf.get('no_proxy') ?? '').split(',');
-    return {
-      host: proxy,
-      isSecured: url.parse(proxy).protocol === 'https',
-      isAcceptUnauthorized: nconf.get('https_proxy_reject_unauthorized') ?? false,
+    proxies['https:'] = {
+      AgentConstructor: ExtendedHttpsProxyAgent,
+      host: https,
+      options: {
+        rejectUnauthorized: nconf.get('https_proxy_reject_unauthorized') ?? false,
+        ...configureCA(proxyCA)
+      },
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
-      ...configureCA(proxyCA)
     };
   }
-  return undefined;
+  const http = nconf.get('http_proxy');
+  if (http) {
+    proxies['http:'] = {
+      AgentConstructor: HttpProxyAgent,
+      host: http,
+      options: {},
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+    };
+  }
+  return proxies;
 };
 export const getPlatformHttpProxyAgent = (uri) => {
-  const platformProxy = getPlatformProxy();
-  if (platformProxy) {
-    const targetUrl = new URL(uri);
-    // Check for target exclusion first
-    if (platformProxy.isExcluded(targetUrl.hostname)) {
+  const platformProxies = getPlatformHttpProxies();
+  const targetUrl = new URL(uri);
+  const targetProxy = platformProxies[targetUrl.protocol]; // Select the proxy according to target protocol
+  if (targetProxy) {
+    // If proxy found, check if hostname is not excluded
+    if (targetProxy.isExcluded(targetUrl.hostname)) {
       return undefined;
     }
-    // Then build the according agent
-    if (platformProxy.isSecured) {
-      const options = { rejectUnauthorized: platformProxy.isAcceptUnauthorized };
-      return new ExtendedHttpsProxyAgent(platformProxy.host, options);
-    }
-    return new HttpProxyAgent(platformProxy.host);
+    // If not generate the agent accordingly
+    return new targetProxy.AgentConstructor(targetProxy.host, targetProxy.options);
   }
   return undefined;
 };
