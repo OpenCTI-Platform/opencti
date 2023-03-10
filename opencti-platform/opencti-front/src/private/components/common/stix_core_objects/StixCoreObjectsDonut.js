@@ -172,6 +172,13 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on Creator {
+          name
+        }
       }
     }
   }

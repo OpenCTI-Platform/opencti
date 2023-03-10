@@ -241,6 +241,10 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
               ... on StixCyberObservable {
                 observable_value
               }
+              ... on MarkingDefinition {
+                definition_type
+                definition
+              }
             }
           }
         }
@@ -350,6 +354,13 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
         }
         ... on StixCyberObservable {
           observable_value
+        }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on Creator {
+          name
         }
       }
     }
@@ -562,6 +573,10 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
               ... on StixCyberObservable {
                 observable_value
               }
+              ... on MarkingDefinition {
+                definition_type
+                definition
+              }
             }
           }
         }
@@ -671,6 +686,10 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
         }
         ... on StixCyberObservable {
           observable_value
+        }
+        ... on MarkingDefinition {
+          definition_type
+          definition
         }
       }
     }

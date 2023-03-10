@@ -1185,7 +1185,6 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                         ...attributes,
                                         { value: 'created-by.internal_id' },
                                         { value: 'object-marking.internal_id' },
-                                        { value: 'object-marking.internal_id' },
                                         {
                                           value: 'kill-chain-phase.internal_id',
                                         },

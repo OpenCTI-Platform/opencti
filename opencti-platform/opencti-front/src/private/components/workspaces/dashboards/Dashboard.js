@@ -292,7 +292,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'horizontal-bar':
         if (
           widget.dataSelection.length > 1
-          && widget.dataSelection[0].attribute.endsWith('internal_id')
+          && widget.dataSelection[0].attribute.endsWith('_id')
         ) {
           return (
             <StixCoreObjectsMultiHorizontalBars

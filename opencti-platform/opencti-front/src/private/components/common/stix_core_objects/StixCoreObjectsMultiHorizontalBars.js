@@ -204,6 +204,10 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
               ... on StixCyberObservable {
                 observable_value
               }
+              ... on MarkingDefinition {
+                definition_type
+                definition
+              }
             }
           }
         }
@@ -310,6 +314,13 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on StixCyberObservable {
           observable_value
         }
+        ... on MarkingDefinition {
+          definition_type
+          definition
+        }
+        ... on Creator {
+          name
+        }
       }
     }
   }
@@ -399,7 +410,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
             const data = props.stixCoreObjectsDistribution.map((n) => ({
               x:
                 // eslint-disable-next-line no-nested-ternary
-                selection.attribute.endsWith('internal_id')
+                selection.attribute.endsWith('_id')
                   ? defaultValue(n.entity)
                   : selection.attribute === 'entity_type'
                     ? t(`entity_${n.label}`)

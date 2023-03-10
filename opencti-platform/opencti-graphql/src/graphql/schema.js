@@ -16,6 +16,7 @@ import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
 import elasticSearchMetricsResolvers from '../resolvers/elasticSearchMetrics';
 import internalObjectResolvers from '../resolvers/internalObject';
+import stixObjectOrStixRelationshipOrCreatorResolvers from '../resolvers/stixObjectOrStixRelationshipOrCreator';
 import stixObjectOrStixRelationshipResolvers from '../resolvers/stixObjectOrStixRelationship';
 import stixCoreObjectResolvers from '../resolvers/stixCoreObject';
 import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
@@ -220,6 +221,7 @@ const schemaResolvers = [
   // ALL
   organizationOrIndividualResolvers,
   stixObjectOrStixRelationshipResolvers,
+  stixObjectOrStixRelationshipOrCreatorResolvers,
 ];
 export const registerGraphqlSchema = ({ schema, resolver }) => {
   schemaTypeDefs.push(schema);
