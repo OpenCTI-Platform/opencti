@@ -1,0 +1,15 @@
+diff --git a/lib/eventsource.js b/lib/eventsource.js
+index 69c5525..76e9621 100644
+--- a/lib/eventsource.js
++++ b/lib/eventsource.js
+@@ -112,6 +112,9 @@ function EventSource (url, eventSourceInitDict) {
+     // If specify http proxy, make the request to sent to the proxy server,
+     // and include the original url in path and Host headers
+     var useProxy = eventSourceInitDict && eventSourceInitDict.proxy
+-    if (useProxy) {
++    var agent = eventSourceInitDict && eventSourceInitDict.agent
++    if (agent) {
++      options.agent = agent
++    } else if (useProxy) {
+       var proxy = parse(eventSourceInitDict.proxy)
+       isSecure = proxy.protocol === 'https:'

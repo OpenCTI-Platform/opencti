@@ -89,7 +89,10 @@
     "graphql-subscriptions": "2.0.0",
     "graphql-upload": "16.0.2",
     "helmet": "6.0.1",
+    "http-proxy-agent": "5.0.0",
+    "https-proxy-agent": "5.0.1",
     "ioredis": "5.3.1",
+    "ipaddr.js": "2.0.1",
     "iterall": "1.3.0",
     "jsondiffpatch": "0.4.1",
     "jwt-decode": "3.1.2",
@@ -174,6 +177,7 @@
     "jose": "4.13.1",
     "lodash": "4.17.21",
     "@xmldom/xmldom": "0.8.6",
+    "eventsource": "patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch",
     "nconf": "patch:nconf@0.12.0#./patch/nconf-0.12.0.patch",
     "ldap-filter": "patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch",
     "node-calls-python": "patch:node-calls-python@1.7.6#./patch/node-calls-python-1.7.6.patch"

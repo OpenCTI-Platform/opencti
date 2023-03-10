@@ -18,7 +18,7 @@ import { INTERNAL_SYNC_QUEUE, isEmptyField, READ_INDEX_HISTORY } from '../databa
 import { ABSTRACT_INTERNAL_OBJECT, CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
 import { SYSTEM_USER } from '../utils/access';
 import { delEditContext, notify, redisGetWork, setEditContext } from '../database/redis';
-import { BUS_TOPICS, logApp } from '../config/conf';
+import { BUS_TOPICS, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 
@@ -149,6 +149,7 @@ export const testSync = async (context, user, sync) => {
       const eventSource = new EventSource(eventSourceUri, {
         rejectUnauthorized: ssl,
         headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
+        agent: getPlatformHttpProxyAgent(eventSourceUri)
       });
       eventSource.on('connected', (d) => {
         const { connectionId } = JSON.parse(d.data);

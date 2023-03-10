@@ -3,8 +3,11 @@ import nconf from 'nconf';
 import * as R from 'ramda';
 import { isEmpty } from 'ramda';
 import winston, { format } from 'winston';
+import ipaddr from 'ipaddr.js';
 import DailyRotateFile from 'winston-daily-rotate-file';
 import path from 'node:path';
+import { HttpsProxyAgent } from 'https-proxy-agent';
+import { HttpProxyAgent } from 'http-proxy-agent';
 import * as O from '../schema/internalObject';
 import * as M from '../schema/stixMetaObject';
 import {
@@ -354,6 +357,90 @@ export const configureCA = (certificates) => {
 
 // App
 export const PORT = nconf.get('app:port');
+class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
+  constructor(basicOpts, extendedOpts) {
+    super(basicOpts);
+    this.extendedOpts = extendedOpts;
+  }
+
+  callback(req, opts) {
+    return super.callback(req, { ...opts, ...this.extendedOpts });
+  }
+}
+const escapeRegex = (string) => {
+  return string.replace(/[/\-\\^$*+?.()|[\]{}]/g, '\\$&');
+};
+export const isUriProxyExcluded = (hostname, exclusions) => {
+  for (let index = 0; index < exclusions.length; index += 1) {
+    const exclusion = exclusions[index];
+    if (exclusion.includes('*')) { // Test regexp
+      const pattern = escapeRegex(exclusion).replaceAll('\\*', '.*');
+      const regexp = new RegExp(pattern, 'g');
+      const isRegexpMatch = regexp.test(hostname);
+      if (isRegexpMatch) {
+        return true;
+      }
+    }
+    // Test simple match
+    if (exclusion === hostname) {
+      return true;
+    }
+    // Test ip pattern
+    if (ipaddr.isValid(hostname)) {
+      try {
+        const addr = ipaddr.parse(hostname);
+        const cidr = ipaddr.parseCIDR(exclusion);
+        if (addr.match(cidr)) {
+          return true;
+        }
+      } catch {
+        // Exclusion is not a CIDR, not important
+      }
+    }
+  }
+  return false;
+};
+const getPlatformHttpProxies = () => {
+  const proxies = {};
+  const exclusions = (nconf.get('no_proxy') ?? '').split(',');
+  const https = nconf.get('https_proxy');
+  if (https) {
+    const proxyCA = nconf.get('https_proxy_ca').map((caPath) => readFileSync(caPath));
+    proxies['https:'] = {
+      AgentConstructor: ExtendedHttpsProxyAgent,
+      host: https,
+      options: {
+        rejectUnauthorized: nconf.get('https_proxy_reject_unauthorized') ?? false,
+        ...configureCA(proxyCA)
+      },
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+    };
+  }
+  const http = nconf.get('http_proxy');
+  if (http) {
+    proxies['http:'] = {
+      AgentConstructor: HttpProxyAgent,
+      host: http,
+      options: {},
+      isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
+    };
+  }
+  return proxies;
+};
+export const getPlatformHttpProxyAgent = (uri) => {
+  const platformProxies = getPlatformHttpProxies();
+  const targetUrl = new URL(uri);
+  const targetProxy = platformProxies[targetUrl.protocol]; // Select the proxy according to target protocol
+  if (targetProxy) {
+    // If proxy found, check if hostname is not excluded
+    if (targetProxy.isExcluded(targetUrl.hostname)) {
+      return undefined;
+    }
+    // If not generate the agent accordingly
+    return new targetProxy.AgentConstructor(targetProxy.host, targetProxy.options);
+  }
+  return undefined;
+};
 
 // Playground
 export const PLAYGROUND_INTROSPECTION_DISABLED = booleanConf('app:graphql:playground:force_disabled_introspection', false);

@@ -72,6 +72,11 @@
       "token": "ChangeMe"
     }
   },
+  "http_proxy": "",
+  "https_proxy": "",
+  "no_proxy": "",
+  "https_proxy_ca": [],
+  "https_proxy_reject_unauthorized": false,
   "rule_engine": {
     "enabled": true,
     "lock_key": "rule_engine_lock"
