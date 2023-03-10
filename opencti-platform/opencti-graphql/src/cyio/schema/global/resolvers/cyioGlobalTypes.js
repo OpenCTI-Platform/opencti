@@ -287,6 +287,9 @@ const cyioGlobalTypeResolvers = {
       if (input.from_type === undefined || input.to_type === undefined)
         throw new UserInputError(`Source and target types must be supplied`);
 
+      if (!checkIfValidUUID(input.from_id)) throw new UserInputError(`Invalid identifier: ${input.from_id}`);
+      if (!checkIfValidUUID(input.to_id)) throw new UserInputError(`Invalid identifier: ${input.to_id}`);
+      
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
         let found = false;
@@ -369,6 +372,9 @@ const cyioGlobalTypeResolvers = {
       // if the types are not supplied, just return false - this will be removed when the field are required
       if (input.from_type === undefined || input.to_type === undefined)
         throw new UserInputError(`Source and target types must be supplied`);
+
+      if (!checkIfValidUUID(input.from_id)) throw new UserInputError(`Invalid identifier: ${input.from_id}`);
+      if (!checkIfValidUUID(input.to_id)) throw new UserInputError(`Invalid identifier: ${input.to_id}`);  
 
       // Validate source (from) and target (to) are valid types
       if (!objectMap.hasOwnProperty(input.from_type)) {
