@@ -88,6 +88,7 @@ import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
 import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -2275,13 +2276,13 @@ class WorkbenchFileContentComponent extends Component {
       (n) => n.type === updatedObservable.type
         && observableDefaultKey
         && n[observableDefaultKey]
-        && n[observableDefaultKey].length > 0,
+        && isNotEmptyField(n[observableDefaultKey]),
     );
     const otherObservables = stixCyberObservables.filter(
       (n) => n.type !== updatedObservable.type
         || !observableDefaultKey
         || !n[observableDefaultKey]
-        || n[observableDefaultKey].length === 0,
+        || isEmptyField(n[observableDefaultKey]),
     );
     this.setState(
       {
