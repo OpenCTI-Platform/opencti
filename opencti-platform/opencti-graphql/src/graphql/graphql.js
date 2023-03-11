@@ -13,7 +13,7 @@ import {
   PLAYGROUND_ENABLED, GRAPHQL_ARMOR_ENABLED
 } from '../config/conf';
 import { authenticateUserFromRequest, userWithOrigin } from '../domain/user';
-import { ValidationError } from '../config/errors';
+import { ForbiddenAccess, ValidationError } from '../config/errors';
 import loggerPlugin from './loggerPlugin';
 import telemetryPlugin from './telemetryPlugin';
 import httpResponsePlugin from './httpResponsePlugin';
@@ -57,13 +57,14 @@ const createApolloServer = () => {
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
   apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
   // Schema introspection must be accessible only for auth users.
+  const introspectionPatterns = ['__schema {', '__schema(', '__type {', '__type('];
   const secureIntrospectionPlugin = {
     requestDidStart: ({ request, context }) => {
       // Is schema introspection request
-      if ((request.query.includes('__schema') || request.query.includes('__type'))) {
+      if (introspectionPatterns.some((pattern) => request.query.includes(pattern))) {
         // If introspection explicitly disabled or user is not authenticated
         if (!PLAYGROUND_ENABLED || PLAYGROUND_INTROSPECTION_DISABLED || !context.user) {
-          throw ValidationError('GraphQL introspection not authorized!');
+          throw ForbiddenAccess({ reason: 'GraphQL introspection not authorized!' });
         }
       }
     },
