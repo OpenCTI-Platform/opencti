@@ -31,7 +31,6 @@ const syncManagerInstance = (syncId) => {
   let connectionId = null;
   let eventsQueue;
   let eventSource;
-  let run = true;
   let lastState;
   let lastStateSaveTime;
   const handleEvent = (event) => {
@@ -41,7 +40,7 @@ const syncManagerInstance = (syncId) => {
       eventsQueue.enqueue({ id: lastEventId, type, data: stixData, context });
     }
   };
-  const startStreamListening = async (sseUri, syncElement) => {
+  const startStreamListening = (sseUri, syncElement) => {
     const { token, ssl_verify: ssl = false } = syncElement;
     eventsQueue = new Queue();
     eventSource = new EventSource(sseUri, {
@@ -63,7 +62,6 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('error', (error) => {
       logApp.error(`[OPENCTI] Sync ${syncId}: error in sync event`, { error });
     });
-    return syncElement;
   };
   const manageBackPressure = async (httpClient, { uri }, currentDelay) => {
     if (connectionId) {
@@ -113,16 +111,16 @@ const syncManagerInstance = (syncId) => {
       lastStateSaveTime = currentTime;
     }
   };
+  const isRunning = () => eventSource !== null && eventSource.readyState !== 2; // CLOSED,
   return {
     id: syncId,
     stop: () => {
       logApp.info(`[OPENCTI] Sync ${syncId}: stopping manager`);
-      run = false;
       eventSource.close();
       eventsQueue = null;
     },
     start: async (context) => {
-      run = true;
+      logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const { token, ssl_verify: ssl = false } = sync;
       const httpClient = axios.create({
@@ -134,7 +132,7 @@ const syncManagerInstance = (syncId) => {
       const sseUri = createSyncHttpUri(sync, lastState, false);
       await startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
-      while (run) {
+      while (isRunning()) {
         const event = eventsQueue.dequeue();
         if (event) {
           try {
@@ -156,8 +154,9 @@ const syncManagerInstance = (syncId) => {
         }
         await wait(10);
       }
+      logApp.info(`[OPENCTI] Sync ${syncId}: manager stopped`);
     },
-    isRunning: () => run,
+    isRunning
   };
 };
 
