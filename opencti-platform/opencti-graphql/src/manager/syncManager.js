@@ -111,7 +111,7 @@ const syncManagerInstance = (syncId) => {
       lastStateSaveTime = currentTime;
     }
   };
-  const isRunning = () => eventSource !== null && eventSource.readyState !== 2; // CLOSED,
+  const isRunning = () => eventSource && eventSource.readyState !== 2; // CLOSED,
   return {
     id: syncId,
     stop: () => {
@@ -130,7 +130,7 @@ const syncManagerInstance = (syncId) => {
       });
       lastState = sync.current_state;
       const sseUri = createSyncHttpUri(sync, lastState, false);
-      await startStreamListening(sseUri, sync);
+      startStreamListening(sseUri, sync);
       let currentDelay = lDelay;
       while (isRunning()) {
         const event = eventsQueue.dequeue();
