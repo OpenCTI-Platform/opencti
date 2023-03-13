@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -7,8 +7,12 @@ import OpinionDetails from './OpinionDetails';
 import OpinionEdition from './OpinionEdition';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../external_references/StixCoreObjectExternalReferences';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { CollaborativeSecurity } from '../../../../utils/Security';
+import {
+  KNOWLEDGE_KNPARTICIPATE,
+  KNOWLEDGE_KNUPDATE,
+  KNOWLEDGE_KNUPDATE_KNDELETE,
+} from '../../../../utils/hooks/useGranted';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import OpinionPopover from './OpinionPopover';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
@@ -25,117 +29,128 @@ const useStyles = makeStyles(() => ({
 const OpinionComponent = ({ opinion }) => {
   const classes = useStyles();
   return (
-      <div className={classes.container}>
+    <div className={classes.container}>
+      <CollaborativeSecurity
+        data={opinion}
+        needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}
+        placeholder={
+          <ContainerHeader
+            container={opinion}
+            PopoverComponent={<OpinionPopover/>}
+          />
+        }
+      >
         <ContainerHeader
           container={opinion}
-          PopoverComponent={<OpinionPopover />}
+          PopoverComponent={<OpinionPopover/>}
+          popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
         />
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-        >
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <OpinionDetails opinion={opinion} />
-          </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-            <StixDomainObjectOverview stixDomainObject={opinion} />
-          </Grid>
+      </CollaborativeSecurity>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <OpinionDetails opinion={opinion}/>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={12}>
-            <ContainerStixObjectsOrStixRelationships
-              container={opinion}
-              isSupportParticipation={true}
-            />
-          </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
+          <StixDomainObjectOverview stixDomainObject={opinion}/>
         </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <StixCoreObjectLatestHistory
-              stixCoreObjectId={opinion.id}
-              isSupportParticipation={true}
-            />
-          </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={12}>
+          <ContainerStixObjectsOrStixRelationships
+            container={opinion}
+            isSupportParticipation={true}
+          />
         </Grid>
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <OpinionEdition opinionId={opinion.id} />
-        </Security>
-      </div>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6}>
+          <StixCoreObjectExternalReferences stixCoreObjectId={opinion.id}/>
+        </Grid>
+        <Grid item={true} xs={6}>
+          <StixCoreObjectLatestHistory
+            stixCoreObjectId={opinion.id}
+            isSupportParticipation={true}
+          />
+        </Grid>
+      </Grid>
+      <CollaborativeSecurity data={opinion} needs={[KNOWLEDGE_KNUPDATE]}>
+        <OpinionEdition opinionId={opinion.id}/>
+      </CollaborativeSecurity>
+    </div>
   );
 };
 
 const Opinion = createFragmentContainer(OpinionComponent, {
   opinion: graphql`
-    fragment Opinion_opinion on Opinion {
-      id
-      standard_id
-      entity_type
-      x_opencti_stix_ids
-      spec_version
-      revoked
-      confidence
-      created
-      modified
-      created_at
-      updated_at
-      createdBy {
-        ... on Identity {
+      fragment Opinion_opinion on Opinion {
           id
-          name
-          entity_type
-        }
-      }
-      creators {
-        id
-        name
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
+          standard_id
+          entity_typex_opencti_stix_ids
+          spec_version
+          revoked
+          confidence
+          created
+          modified
+          created_at
+          updated_at
+          createdBy {
+              ... on Identity {
+                  id
+                  name
+                  entity_type
+              }
           }
-        }
-      }
-      objectLabel {
-        edges {
-          node {
-            id
-            value
-            color
+          creators {
+              id
+              name
           }
-        }
+          objectMarking {
+              edges {
+                  node {
+                      id
+                      definition_type
+                      definition
+                      x_opencti_order
+                      x_opencti_color
+                  }
+              }
+          }
+          objectLabel {
+              edges {
+                  node {
+                      id
+                      value
+                      color
+                  }
+              }
+          }
+          status {
+              id
+              order
+              template {
+                  name
+                  color
+              }
+          }
+          workflowEnabled
+          ...OpinionDetails_opinion
+          ...ContainerHeader_container
+          ...ContainerStixObjectsOrStixRelationships_container
       }
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-      ...OpinionDetails_opinion
-      ...ContainerHeader_container
-      ...ContainerStixObjectsOrStixRelationships_container
-    }
   `,
 });
 
