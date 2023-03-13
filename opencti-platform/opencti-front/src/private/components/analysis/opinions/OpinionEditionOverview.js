@@ -1,7 +1,6 @@
 import React from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import * as R from 'ramda';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionFocus } from '../../../../components/Subscription';
@@ -9,74 +8,71 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import MarkDownField from '../../../../components/MarkDownField';
-import {
-  convertCreatedBy,
-  convertMarkings,
-  convertStatus,
-} from '../../../../utils/edition';
+import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 export const opinionMutationFieldPatch = graphql`
-  mutation OpinionEditionOverviewFieldPatchMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
-    opinionEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...OpinionEditionOverview_opinion
-        ...Opinion_opinion
-      }
+    mutation OpinionEditionOverviewFieldPatchMutation(
+        $id: ID!
+        $input: [EditInput]!
+    ) {
+        opinionEdit(id: $id) {
+            fieldPatch(input: $input) {
+                ...OpinionEditionOverview_opinion
+                ...Opinion_opinion
+            }
+        }
     }
-  }
 `;
 
 export const opinionEditionOverviewFocus = graphql`
-  mutation OpinionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
-    opinionEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    mutation OpinionEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+        opinionEdit(id: $id) {
+            contextPatch(input: $input) {
+                id
+            }
+        }
     }
-  }
 `;
 
 const opinionMutationRelationAdd = graphql`
-  mutation OpinionEditionOverviewRelationAddMutation(
-    $id: ID!
-    $input: StixMetaRelationshipAddInput
-  ) {
-    opinionEdit(id: $id) {
-      relationAdd(input: $input) {
-        from {
-          ...OpinionEditionOverview_opinion
+    mutation OpinionEditionOverviewRelationAddMutation(
+        $id: ID!
+        $input: StixMetaRelationshipAddInput
+    ) {
+        opinionEdit(id: $id) {
+            relationAdd(input: $input) {
+                from {
+                    ...OpinionEditionOverview_opinion
+                }
+            }
         }
-      }
     }
-  }
 `;
 
 const opinionMutationRelationDelete = graphql`
-  mutation OpinionEditionOverviewRelationDeleteMutation(
-    $id: ID!
-    $toId: StixRef!
-    $relationship_type: String!
-  ) {
-    opinionEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        ...OpinionEditionOverview_opinion
-      }
+    mutation OpinionEditionOverviewRelationDeleteMutation(
+        $id: ID!
+        $toId: StixRef!
+        $relationship_type: String!
+    ) {
+        opinionEdit(id: $id) {
+            relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                ...OpinionEditionOverview_opinion
+            }
+        }
     }
-  }
 `;
 
 const OpinionEditionOverviewComponent = (props) => {
   const { opinion, context } = props;
   const { t } = useFormatter();
-
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
     opinion: Yup.string().required(t('This field is required')),
     explanation: Yup.string().nullable(),
@@ -111,25 +107,21 @@ const OpinionEditionOverviewComponent = (props) => {
       .catch(() => false);
   };
 
-  const initialValues = R.pipe(
-    R.assoc('createdBy', convertCreatedBy(opinion)),
-    R.assoc('objectMarking', convertMarkings(opinion)),
-    R.assoc('x_opencti_workflow_id', convertStatus(t, opinion)),
-    R.pick([
-      'opinion',
-      'explanation',
-      'confidence',
-      'createdBy',
-      'objectMarking',
-      'x_opencti_workflow_id',
-    ]),
-  )(opinion);
+  const initialValues = {
+    createdBy: convertCreatedBy(opinion),
+    objectMarking: convertMarkings(opinion),
+    x_opencti_workflow_id: convertStatus(t, opinion),
+    confidence: opinion.confidence,
+    explanation: opinion.explanation,
+  };
+
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={opinionValidator}
-      onSubmit={() => {}}
+      onSubmit={() => {
+      }}
     >
       {({ setFieldValue }) => (
         <div>
@@ -157,7 +149,7 @@ const OpinionEditionOverviewComponent = (props) => {
               onFocus={editor.changeFocus}
               onSubmit={handleSubmitField}
               helperText={
-                <SubscriptionFocus context={context} fieldName="content" />
+                <SubscriptionFocus context={context} fieldName="content"/>
               }
             />
             <ConfidenceField
@@ -184,15 +176,17 @@ const OpinionEditionOverviewComponent = (props) => {
                 }
               />
             )}
-            <CreatedByField
-              name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={editor.changeCreated}
-            />
+            {userIsKnowledgeEditor && (
+              <CreatedByField
+                name="createdBy"
+                style={{ marginTop: 20, width: '100%' }}
+                setFieldValue={setFieldValue}
+                helpertext={
+                  <SubscriptionFocus context={context} fieldName="createdBy"/>
+                }
+                onChange={editor.changeCreated}
+              />
+            )}
             <ObjectMarkingField
               name="objectMarking"
               style={{ marginTop: 20, width: '100%' }}
@@ -213,38 +207,38 @@ const OpinionEditionOverviewComponent = (props) => {
 
 export default createFragmentContainer(OpinionEditionOverviewComponent, {
   opinion: graphql`
-    fragment OpinionEditionOverview_opinion on Opinion {
-      id
-      opinion
-      explanation
-      confidence
-      createdBy {
-        ... on Identity {
+      fragment OpinionEditionOverview_opinion on Opinion {
           id
-          name
-          entity_type
-        }
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
+          opinion
+          explanation
+          confidence
+          createdBy {
+              ... on Identity {
+                  id
+                  name
+                  entity_type
+              }
           }
-        }
+          objectMarking {
+              edges {
+                  node {
+                      id
+                      definition_type
+                      definition
+                      x_opencti_order
+                      x_opencti_color
+                  }
+              }
+          }
+          status {
+              id
+              order
+              template {
+                  name
+                  color
+              }
+          }
+          workflowEnabled
       }
-      status {
-        id
-        order
-        template {
-          name
-          color
-        }
-      }
-      workflowEnabled
-    }
   `,
 });
