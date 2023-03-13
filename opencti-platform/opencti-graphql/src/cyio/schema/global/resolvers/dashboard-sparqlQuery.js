@@ -336,10 +336,11 @@ export const entitiesDistributionQuery = (args) => {
 
   let selectionVariables = '';
   let predicateStatements = '';
+  if (select === undefined || select === null) select = [];
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('entity_type')) select.push('entity_type');
   // if retrieving for risk_level or occurrences
   if (args.field === 'risk_level' || args.field === 'occurrences') {
-    if (select === undefined || select === null) select = [];
-    if (!select.includes('id')) select.push('id');
     if (!select.includes('name')) select.push('name');
     insertSelections.push(`(MIN(?collected) AS ?first_seen) (MAX(?collected) as ?last_seen)`);
 
@@ -450,6 +451,7 @@ export const dashboardSingularizeSchema = {
     id: true,
     iri: true,
     object_type: true,
+    entity_type: true,
     o: true,
     total: true,
     count: true,
