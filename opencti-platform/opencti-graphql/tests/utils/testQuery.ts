@@ -68,8 +68,7 @@ export const executeExternalQuery = async (client: AxiosInstance, uri: string, q
 };
 
 const executeInternalQuery = async (client: AxiosInstance, query: unknown, variables = {}) => {
-  const validateStatus = () => true;
-  const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true, validateStatus });
+  const response = await client.post(`${API_URI}/graphql`, { query, variables }, { withCredentials: true });
   return response.data;
 };
 const adminClient = createHttpClient();
