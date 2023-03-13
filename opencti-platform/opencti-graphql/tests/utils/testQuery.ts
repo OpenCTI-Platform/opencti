@@ -11,7 +11,7 @@ import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/ac
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import { generateStandardId, MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../src/schema/identifier';
+import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../src/schema/identifier';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -83,10 +83,10 @@ export const GREEN_GROUP: Group = {
   name: 'GREEN GROUP',
   markings: [MARKING_TLP_GREEN]
 };
-export const RED_GROUP: Group = {
-  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'RED GROUP' }),
-  name: 'RED GROUP',
-  markings: [MARKING_TLP_RED]
+export const AMBER_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER GROUP' }),
+  name: 'AMBER GROUP',
+  markings: [MARKING_TLP_AMBER]
 };
 // Roles
 interface Role { id: string, name: string, description: string, capabilities: string[] }
@@ -117,7 +117,7 @@ export const USER_EDITOR: User = {
   email: 'editor@opencti.io',
   password: 'editor',
   roles: [ROLE_EDITOR],
-  groups: [RED_GROUP],
+  groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
 

@@ -1,8 +1,8 @@
 import { expect, it, describe } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, testContext, editorQuery } from '../../utils/testQuery';
+import { ADMIN_USER, testContext, editorQuery, participantQuery } from '../../utils/testQuery';
 import { elLoadById } from '../../../src/database/engine';
-import { MARKING_TLP_GREEN } from '../../../src/schema/identifier';
+import { MARKING_TLP_GREEN, MARKING_TLP_RED } from '../../../src/schema/identifier';
 
 const LIST_QUERY = gql`
   query administrativeAreas(
@@ -52,6 +52,59 @@ const READ_QUERY = gql`
 describe('AdministrativeArea resolver standard behavior', () => {
   let administrativeAreaInternalId;
   const administrativeAreaStixId = 'location--5d80df0f-a57a-41e4-8645-db343701f756';
+  it('Participant should fail administrativeArea creation', async () => {
+    const CREATE_QUERY = gql`
+        mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
+            administrativeAreaAdd(input: $input) {
+                id
+                name
+                description
+            }
+        }
+    `;
+    // Create the administrativeArea
+    const ADMINISTRATIVEAREA_TO_CREATE = {
+      input: {
+        name: 'Administrative-Area',
+        stix_id: administrativeAreaStixId,
+        description: 'Administrative-Area description',
+      },
+    };
+    const queryResult = await participantQuery({
+      query: CREATE_QUERY,
+      variables: ADMINISTRATIVEAREA_TO_CREATE,
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+  });
+  it('Eidtor should fail administrativeArea creation', async () => {
+    const CREATE_QUERY = gql`
+        mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
+            administrativeAreaAdd(input: $input) {
+                id
+                name
+                description
+            }
+        }
+    `;
+    // Create the administrativeArea
+    const ADMINISTRATIVEAREA_TO_CREATE = {
+      input: {
+        name: 'Administrative-Area',
+        stix_id: administrativeAreaStixId,
+        description: 'Administrative-Area description',
+        objectMarking: [MARKING_TLP_RED]
+      },
+    };
+    const queryResult = await editorQuery({
+      query: CREATE_QUERY,
+      variables: ADMINISTRATIVEAREA_TO_CREATE,
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+  });
   it('should administrativeArea created', async () => {
     const CREATE_QUERY = gql`
       mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
