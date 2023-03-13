@@ -116,6 +116,9 @@ type InformationSystem implements BasicObject & LifecycleObject & OscalObject & 
   "Identifies the highest risk severity for the information system"
   top_risk_severity: RiskLevel
   # Container
+  "Identifies graph-based data"
+  graph_data: String
+  "Identifies objects contained within this container"
   objects(
     "Identifies the max number of entities to retrieve"
     first: Int
@@ -133,8 +136,7 @@ type InformationSystem implements BasicObject & LifecycleObject & OscalObject & 
     search: String
     "Identifies that all objects are to be returned.  This overrides any specified filters."
     all: Boolean
-  ): ObjectRefConnection
-  graph_data: String
+  ): ObjectRefConnection 
 }
 
 # Information System input

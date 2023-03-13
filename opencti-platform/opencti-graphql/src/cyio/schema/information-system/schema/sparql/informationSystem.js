@@ -98,7 +98,6 @@ export const selectInformationSystemByIriQuery = (iri, select) => {
   if (!select.includes('id')) select.push('id');
   if (!select.includes('object_type')) select.push('object_type');
   if (!select.includes('component_type')) select.push('component_type');
-  if (!select.includes('information_types')) select.push('information_types');
   if (select.includes('system_implementation')) {
     select.push('components');
     select.push('inventory_items');
@@ -506,6 +505,11 @@ export const informationSystemPredicateMap = {
   remarks: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#remarks>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "remarks");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  graph_data: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/info-system#graph_data>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:base64Binary` : null,  this.predicate, "graph_data");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   // related_risks: {
