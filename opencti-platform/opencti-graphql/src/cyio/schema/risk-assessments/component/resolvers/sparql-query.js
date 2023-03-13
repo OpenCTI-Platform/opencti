@@ -706,6 +706,8 @@ export function convertAssetToComponent(asset) {
     id: asset.id,
     entity_type: 'component',
     ...(asset.iri && { iri: asset.iri }),
+    ...(asset.created && { created: asset.created }),
+    ...(asset.modified && { modified: asset.modified }),
     ...(asset.component_type && { component_type: asset.component_type }),
     ...(asset.name && { name: asset.name }),
     ...(asset.description && { description: asset.description }),

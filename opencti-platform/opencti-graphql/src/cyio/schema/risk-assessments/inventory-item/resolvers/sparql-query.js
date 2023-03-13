@@ -128,7 +128,7 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(inventoryItemPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -849,6 +849,8 @@ export function convertAssetToInventoryItem(asset) {
     entity_type: 'inventory-item',
     ...(asset.iri && { iri: asset.iri }),
     ...(asset.id && { id: asset.id }),
+    ...(asset.created && { created: asset.created }),
+    ...(asset.modified && { modified: asset.modified }),
     ...(asset.name && { name: asset.name }),
     ...(asset.description && { description: asset.description }),
     props: propList,
