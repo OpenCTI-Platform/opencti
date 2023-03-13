@@ -7,7 +7,9 @@ import makeStyles from '@mui/styles/makeStyles';
 import OpinionEditionContainer from './OpinionEditionContainer';
 import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionOverviewFocus } from './OpinionEditionOverview';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { CollaborativeSecurity } from '../../../../utils/Security';
 
 const useStyles = makeStyles((theme) => ({
   editButton: {
@@ -29,11 +31,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 export const opinionEditionQuery = graphql`
-  query OpinionEditionContainerQuery($id: String!) {
-    opinion(id: $id) {
-      ...OpinionEditionContainer_opinion
+    query OpinionEditionContainerQuery($id: String!) {
+        opinion(id: $id) {
+            ...OpinionEditionContainer_opinion
+        }
     }
-  }
 `;
 
 const OpinionEdition = ({ opinionId }) => {
@@ -54,38 +56,45 @@ const OpinionEdition = ({ opinionId }) => {
 
   return (
     <div>
-      <Fab
-        onClick={handleOpen}
-        color="secondary"
-        aria-label="Edit"
-        className={classes.editButton}
-      >
-        <Edit />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
-      >
-        <QueryRenderer
-          query={opinionEditionQuery}
-          variables={{ id: opinionId }}
-          render={({ props }) => {
-            if (props) {
-              return (
-                <OpinionEditionContainer
-                  opinion={props.opinion}
-                  handleClose={handleClose}
-                />
-              );
-            }
-            return <Loader variant="inElement" />;
-          }}
-        />
-      </Drawer>
+      <QueryRenderer
+        query={opinionEditionQuery}
+        variables={{ id: opinionId }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <CollaborativeSecurity
+                data={props.opinion}
+                needs={[KNOWLEDGE_KNUPDATE]}
+              >
+                <>
+                  <Fab
+                    onClick={handleOpen}
+                    color="secondary"
+                    aria-label="Edit"
+                    className={classes.editButton}
+                  >
+                    <Edit/>
+                  </Fab>
+                  <Drawer
+                    open={open}
+                    anchor="right"
+                    elevation={1}
+                    sx={{ zIndex: 1202 }}
+                    classes={{ paper: classes.drawerPaper }}
+                    onClose={handleClose}
+                  >
+                    <OpinionEditionContainer
+                      opinion={props.opinion}
+                      handleClose={handleClose}
+                    />
+                  </Drawer>
+                </>
+              </CollaborativeSecurity>
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement}/>;
+        }}
+      />
     </div>
   );
 };
