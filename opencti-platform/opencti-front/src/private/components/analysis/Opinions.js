@@ -13,7 +13,7 @@ import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import inject18n from '../../../components/i18n';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../utils/filters/filtersUtils';
 import ToolBar from '../data/ToolBar';
@@ -334,7 +334,7 @@ class Opinions extends Component {
           <ExportContextProvider>
             <div>
               {view === 'lines' && this.renderLines(paginationOptions, helper)}
-              <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <OpinionCreation paginationOptions={paginationOptions} />
               </Security>
             </div>

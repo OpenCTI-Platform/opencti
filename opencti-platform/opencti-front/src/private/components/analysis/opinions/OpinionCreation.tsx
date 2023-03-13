@@ -26,6 +26,9 @@ import { OpinionsLinesPaginationQuery$variables } from './__generated__/Opinions
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -76,6 +79,18 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
+export const opinionCreationUserMutation = graphql`
+    mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
+        userOpinionAdd(input: $input) {
+            id
+            entity_type
+            opinion
+            explanation
+            ...OpinionLine_node
+        }
+    }
+`;
+
 export const opinionCreationMutation = graphql`
   mutation OpinionCreationMutation($input: OpinionAddInput!) {
     opinionAdd(input: $input) {
@@ -121,12 +136,17 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const basicShape = {
     opinion: Yup.string().required(t('This field is required')),
     explanation: Yup.string().nullable(),
     confidence: Yup.number(),
   };
-  const opinionValidator = useSchemaCreationValidation('Opinion', basicShape);
+  const opinionValidator = useSchemaCreationValidation(
+    'Opinion',
+    basicShape,
+    userIsKnowledgeEditor ? [] : ['createdBy'],
+  );
   const initialValues: OpinionAddInput = {
     opinion: '',
     explanation: '',
@@ -137,7 +157,9 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
     externalReferences: [],
   };
 
-  const [commit] = useMutation(opinionCreationMutation);
+  const [commit] = userIsKnowledgeEditor
+    ? useMutation(opinionCreationMutation)
+    : useMutation(opinionCreationUserMutation);
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
@@ -151,13 +173,16 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
     };
+    if (!userIsKnowledgeEditor) {
+      delete finalValues.createdBy;
+    }
     commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'opinionAdd');
+          updater(store, userIsKnowledgeEditor ? 'opinionAdd' : 'userOpinionAdd');
         }
       },
       onError: (error) => {
@@ -175,7 +200,7 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
   };
 
   return (
-    <Formik<OpinionAddInput>
+    <Formik
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}
@@ -204,14 +229,16 @@ export const OpinionCreationForm: FunctionComponent<OpinionFormProps> = ({
             entityType="Opinion"
             containerStyle={fieldSpacingContainerStyle}
           />
+          {userIsKnowledgeEditor && (
           <CreatedByField
             name="createdBy"
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
+          )}
           <ObjectLabelField
             name="objectLabel"
-            style={fieldSpacingContainerStyle}
+            style={userIsKnowledgeEditor ? fieldSpacingContainerStyle : { marginTop: 10 }}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
@@ -258,7 +285,7 @@ const OpinionCreation: FunctionComponent<OpinionCreationProps> = ({
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_opinions', paginationOptions, 'opinionAdd');
+  const updater = (store: RecordSourceSelectorProxy, key: string) => insertNode(store, 'Pagination_opinions', paginationOptions, key);
 
   return (
     <div>
