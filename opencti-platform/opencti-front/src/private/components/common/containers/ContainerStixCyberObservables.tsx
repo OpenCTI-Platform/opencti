@@ -274,7 +274,7 @@ ContainerStixCyberObservablesComponentProps
         isSortable: false,
       },
       createdBy: {
-        label: 'Creator',
+        label: 'Author',
         width: '15%',
         isSortable: isRuntimeSort,
       },

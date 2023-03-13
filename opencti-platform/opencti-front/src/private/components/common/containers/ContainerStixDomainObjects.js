@@ -193,7 +193,7 @@ class ContainerStixDomainObjectsComponent extends Component {
         isSortable: false,
       },
       createdBy: {
-        label: 'Creator',
+        label: 'Author',
         width: '15%',
         isSortable: isRuntimeSort,
       },
