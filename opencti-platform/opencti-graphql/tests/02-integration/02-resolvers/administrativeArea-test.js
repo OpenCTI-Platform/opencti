@@ -78,7 +78,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
     expect(queryResult.errors.length).toEqual(1);
     expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
   });
-  it('Eidtor should fail administrativeArea creation', async () => {
+  it('Editor should fail administrativeArea creation', async () => {
     const CREATE_QUERY = gql`
         mutation AdministrativeAreaAdd($input: AdministrativeAreaAddInput!) {
             administrativeAreaAdd(input: $input) {
