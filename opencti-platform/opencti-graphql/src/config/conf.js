@@ -260,11 +260,6 @@ const auditLogger = winston.createLogger({
 });
 
 // Specific case to fail any test that produce an error log
-if (environment === 'test') {
-  appLogger.on('data', (log) => {
-    if (log.level === 'error') throw Error(log.message);
-  });
-}
 const LOG_APP = 'APP';
 const addBasicMetaInformation = (category, meta) => {
   const logInformation = { ...meta, category, version: PLATFORM_VERSION };

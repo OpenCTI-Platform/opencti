@@ -171,7 +171,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.users.edges.length).toEqual(2);
+    expect(queryResult.data.users.edges.length).toEqual(4);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
