@@ -137,7 +137,6 @@ class DashboardSettings extends Component {
                             onChange={handleChangeDashboard.bind(this)}
                             fullWidth={true}
                           >
-                            <MenuItem value="default">{t('Default')}</MenuItem>
                             {props.workspaces.edges.map((workspaceEdge) => {
                               const workspace = workspaceEdge.node;
                               return (

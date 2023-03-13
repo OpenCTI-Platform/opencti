@@ -37,8 +37,8 @@ export const inventoryItemReducer = (item) => {
     ...(item.name && { name: item.name }),
     ...(item.description && { description: item.description }),
     // inventory-item
-    ...(item.responsible_parties && { responsible_parties_iri: item.responsible_parties }),
-    ...(item.implemented_components && { implemented_components_iri: item.implemented_components }),
+    ...(item.responsible_parties && { responsible_party_iris: item.responsible_parties }),
+    ...(item.implemented_components && { implemented_component_iris: item.implemented_components }),
     // Asset
     ...(item.asset_id && { asset_id: item.asset_id }),
     // ItAsset
@@ -128,7 +128,7 @@ export const selectInventoryItemByIriQuery = (iri, select) => {
   if (select === undefined || select === null) select = Object.keys(inventoryItemPredicateMap);
   const { selectionClause, predicates } = buildSelectVariables(inventoryItemPredicateMap, select);
   return `
-  SELECT ${selectionClause}
+  SELECT ?iri ${selectionClause}
   FROM <tag:stardog:api:context:local>
   WHERE {
     BIND(${iri} AS ?iri)
@@ -849,13 +849,15 @@ export function convertAssetToInventoryItem(asset) {
     entity_type: 'inventory-item',
     ...(asset.iri && { iri: asset.iri }),
     ...(asset.id && { id: asset.id }),
+    ...(asset.created && { created: asset.created }),
+    ...(asset.modified && { modified: asset.modified }),
     ...(asset.name && { name: asset.name }),
     ...(asset.description && { description: asset.description }),
     props: propList,
     ...(asset.links && { links_iri: asset.links }),
-    ...(asset.responsible_parties && { responsible_parties_iri: asset.responsible_parties }),
+    ...(asset.responsible_parties && { responsible_party_iris: asset.responsible_parties }),
     ...(implementedComponents.length > 0 && { implemented_components: implementedComponents }),
-    ...(asset.implemented_components && { implemented_components_iri: asset.implemented_components }),
+    ...(asset.implemented_components && { implemented_component_iris: asset.implemented_components }),
     ...(asset.remarks && { remarks_iri: asset.remarks }),
   };
 }

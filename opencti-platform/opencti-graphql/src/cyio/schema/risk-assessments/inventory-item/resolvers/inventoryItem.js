@@ -1,4 +1,4 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'apollo-server-errors';
 import { riskSingularizeSchema as singularizeSchema } from '../../risk-mappings.js';
 import { compareValues, updateQuery, filterValues } from '../../../utils.js';
 import {
@@ -13,6 +13,7 @@ import {
   detachFromInventoryItemQuery,
   convertAssetToInventoryItem,
 } from './sparql-query.js';
+import { findResponsiblePartyByIri } from '../../oscal-common/domain/oscalResponsibleParty.js';
 
 const inventoryItemResolvers = {
   Query: {
@@ -273,38 +274,13 @@ const inventoryItemResolvers = {
       return [];
     },
     responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.responsible_parties_iri === undefined) return [];
-      const reducer = getCommonReducer('RESPONSIBLE-PARTY');
-      const results = [];
-      const sparqlQuery = selectAllResponsibleParties(selectMap.getNode('node'), args, parent);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: 'Select Referenced Responsible Parties',
-          singularizeSchema,
-        });
-      } catch (e) {
-        console.log(e);
-        throw e;
+      if (parent.responsible_party_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.responsible_party_iris) {
+        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
+        if (result === undefined || result === null) continue;
+        results.push(result);
       }
-      if (response === undefined || response.length === 0) return null;
-
-      // Handle reporting Stardog Error
-      if (typeof response === 'object' && 'body' in response) {
-        throw new UserInputError(response.statusText, {
-          error_details: response.body.message ? response.body.message : response.body,
-          error_code: response.body.code ? response.body.code : 'N/A',
-        });
-      }
-
-      for (const item of response) {
-        results.push(reducer(item));
-      }
-
-      // check if there is data to be returned
-      if (results.length === 0) return [];
       return results;
     },
     implemented_components: async (parent, _, { dbName, dataSources, selectMap }) => {

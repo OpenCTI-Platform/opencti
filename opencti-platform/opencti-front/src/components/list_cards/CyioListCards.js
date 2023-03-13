@@ -1,16 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { withRouter, Link } from 'react-router-dom';
+import { withRouter } from 'react-router-dom';
 import {
   compose, last, map, toPairs,
 } from 'ramda';
 import { withStyles } from '@material-ui/core/styles';
 import IconButton from '@material-ui/core/IconButton';
 import Button from '@material-ui/core/Button';
-import InputLabel from '@material-ui/core/InputLabel';
-import FormControl from '@material-ui/core/FormControl';
-import Select from '@material-ui/core/Select';
-import MenuItem from '@material-ui/core/MenuItem';
 import {
   Share,
   Edit,
@@ -23,20 +19,12 @@ import Popover from '@material-ui/core/Popover';
 import Tooltip from '@material-ui/core/Tooltip';
 import { ListItemIcon, ListItemText } from '@material-ui/core';
 import ListItem from '@material-ui/core/ListItem';
-import responsiblePartiesIcon from '../../resources/images/entities/responsible_parties.svg';
-import tasksIcon from '../../resources/images/entities/tasks.svg';
-import locations from '../../resources/images/entities/locations.svg';
-import roles from '../../resources/images/entities/roles.svg';
-import notes from '../../resources/images/entities/Notes.svg';
-import parties from '../../resources/images/entities/parties.svg';
-import assessmentPlatform from '../../resources/images/entities/assessment_platform.svg';
-import labels from '../../resources/images/entities/labelsImage.svg';
-import externalReferenceIcon from '../../resources/images/entities/externalReferenceIcon.svg';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
 import ItemIcon from '../ItemIcon';
+import DataEntitiesDropDown from '../../private/components/common/form/DataEntitiesDropDown';
 
 const styles = (theme) => ({
   container: {
@@ -280,148 +268,7 @@ class CyioListCards extends Component {
               </IconButton> */}
             </div>
             {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-              <FormControl
-                size='small'
-                fullWidth={true}
-                variant='outlined'
-                className={classes.dataEntities}
-              >
-                <InputLabel>
-                  Data Types
-                </InputLabel>
-                <Select
-                  variant='outlined'
-                  label='Data Types'
-                  value={selectedDataEntity}
-                >
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/responsibility'
-                    value='responsibility'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={roles} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Responsibility')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/locations'
-                    value='locations'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={locations} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Locations')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/parties'
-                    value='parties'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={parties} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Parties')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/responsible_parties'
-                    value='responsible_parties'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={responsiblePartiesIcon} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Responsible Parties')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/tasks'
-                    value='tasks'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={tasksIcon} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Tasks')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/assessment_platform'
-                    value='assessment_platform'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={assessmentPlatform} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Assessment Platform')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/notes'
-                    value='notes'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={notes} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Notes')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/labels'
-                    value='labels'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={labels} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('Labels')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                  <MenuItem
-                    component={Link}
-                    to='/data/entities/external_references'
-                    value='external_references'
-                  >
-                    <div className={classes.menuItems}>
-                      <div className={classes.iconsContainer}>
-                        <img src={externalReferenceIcon} alt="" />
-                      </div>
-                      <div className={classes.menuItemText}>
-                        {t('External References')}
-                      </div>
-                    </div>
-                  </MenuItem>
-                </Select>
-              </FormControl>
+              <DataEntitiesDropDown selectedDataEntity={selectedDataEntity} />
             )}
             <div className={classes.filters}>
               {map((currentFilter) => {
@@ -550,18 +397,18 @@ class CyioListCards extends Component {
                           onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
                         >
                           <ListItemIcon className={classes.informationSystemIcon}>
-                            <ItemIcon type='InformationSystemGraph'/>
+                            <ItemIcon type='InformationSystemGraph' />
                           </ListItemIcon>
-                          <ListItemText primary="Graph" className={classes.informationSystemText}/>
+                          <ListItemText primary="Graph" className={classes.informationSystemText} />
                         </ListItem>
                         <ListItem
                           button={true}
                           onClick={this.handleInfoSystemListItem.bind(this, 'form')}
                         >
                           <ListItemIcon className={classes.informationSystemIcon}>
-                            <ItemIcon type='InformationSystemForm'/>
+                            <ItemIcon type='InformationSystemForm' />
                           </ListItemIcon>
-                          <ListItemText primary="Form" className={classes.informationSystemText}/>
+                          <ListItemText primary="Form" className={classes.informationSystemText} />
                         </ListItem>
                       </List>
                     </Popover>

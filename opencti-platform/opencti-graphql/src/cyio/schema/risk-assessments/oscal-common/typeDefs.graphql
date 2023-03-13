@@ -576,11 +576,11 @@ input OscalRelationshipAddInput {
   "Identifies a human-readable description about the relationship"
   description: String
   "Identifies the source of the relationship"
-  source: ID
+  source: ID!
   "Identifies the target of the relationship"
-  target: ID
+  target: ID!
   "Indicates the time and date when the relationship was first established"
-  valid_from: Timestamp
+  valid_from: Timestamp!
   "Indicates the time and date when the relationship was terminated."
   valid_until: Timestamp
   "Identifies the level of confidence in the assertion."

@@ -1,0 +1,153 @@
+extend type Query {
+  objectContainer(id: String): ObjectContainer @hasPermission(resources:"Knowledge:view")
+  objectContainers(
+    first: Int
+    offset: Int
+    orderedBy: ObjectContainerOrdering
+    orderMode: OrderingMode
+    filters: [ObjectContainerFiltering]
+    filterMode: FilterMode
+    search: String
+  ): ObjectContainerConnection @hasPermission(resources:"Knowledge:view")
+}
+
+"""
+Defines an interface for containers, typically object that hold or reference
+other objects.  Such as Asset Inventory, InformationSystem, Notes, Opinions
+Reports.
+"""
+interface ObjectContainer {
+  # BasicObject
+  "Uniquely identifies this object."
+  id: ID!
+  "Identifies the identifier defined by the standard."
+  standard_id: String!
+  "Identifies the type of the Object."
+  entity_type: String!
+  "Identifies the parent types of this object."
+  parent_types: [String]!
+  # LifecycleObject
+  "Identities the date and time at which the object was originally created."
+  created: Timestamp
+  "Identifies the date and time at which the object was last modified."
+  modified: Timestamp
+  "Identifies graph-based data"
+  graph_data: String
+  "Identifies objects contained within this container"
+  objects(
+    "Identifies the max number of entities to retrieve"
+    first: Int
+    "Identifies the offset from 0 where to start the next set of object to retrieve"
+    offset: Int
+    "Identifies to order results and which field to order by"
+    orderedBy: ObjectOrdering
+    "Identifies whether the results will be ordered in ascending or descending order"
+    orderMode: OrderingMode
+    "Identifies the fields and values by which to filter results"
+    filters: [ObjectFiltering]
+    "Identifies whether filters that are to be applied with determining the results to be returned"
+    filterMode: FilterMode
+    types: [String]
+    search: String
+    "Identifies that all objects are to be returned.  This overrides any specified filters."
+    all: Boolean
+  ): ObjectRefConnection 
+}
+
+type ObjectRefConnection {
+  pageInfo: PageInfo!
+  edges: [ObjectRefEdge]
+}
+
+type ObjectRefEdge {
+  cursor: String!
+  node: ObjectRef!
+}
+
+enum ObjectOrdering {
+  name
+  entity_type
+  created_at
+  updated_at
+  created_by
+  object_marking_refs
+  label_name
+  observable_value
+  start_time
+  created
+  modified
+  relationship_type
+  creator
+}
+
+input ObjectFiltering {
+  key: [ObjectFilter!]!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+enum ObjectFilter {
+  entity_type
+  relationship_type
+  created
+  modified
+  created_by
+  external_references
+  value
+  name
+  title
+  confidence
+}
+
+type ObjectContainerConnection {
+  pageInfo: PageInfo!
+  edges: [ObjectContainerEdge]
+}
+type ObjectContainerEdge {
+  cursor: String!
+  node: ObjectContainer!
+}
+
+# Container Slices
+enum ObjectContainerOrdering {
+  name
+  published
+  created
+  modified
+  created_by
+  object_marking
+}
+
+# Container Filtering
+enum ObjectContainerFilter {
+  entity_type
+  confidence
+  abstract
+  report_types
+  context
+  content
+  authors
+  created
+  modified
+  created_by
+  objectContains
+  revoked
+}
+
+input ObjectContainerFiltering {
+  key: [ObjectContainerFilter!]!
+  values: [String]!
+  operator: String
+  filterMode: FilterMode
+}
+
+union ObjectRef = InformationSystem
+  | InformationType
+  | Component
+  | InventoryItem
+  | OscalUser
+  | OscalLeveragedAuthorization
+  | OscalRelationship
+  | CyioLabel
+  | CyioExternalReference
+  | CyioNote

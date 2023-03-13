@@ -109,7 +109,8 @@ export const getSubjectIriByIdQuery = (id, subjectType) => {
 const activityReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'oscal-activity';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('oscal-activity')) item.object_type = 'oscal-activity';
   }
 
   return {
@@ -135,7 +136,8 @@ const activityReducer = (item) => {
 const actorReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'actor';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('actor')) item.object_type = 'actor';
   }
 
   return {
@@ -153,7 +155,8 @@ const actorReducer = (item) => {
 const assessmentAssetReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'assessment-asset';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('assessment-asset')) item.object_type = 'assessment-asset';
   }
   return {
     iri: item.iri,
@@ -167,7 +170,8 @@ const assessmentAssetReducer = (item) => {
 const assessmentPlatformReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'assessment-platform';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('assessment-platform')) item.object_type = 'assessment-platform';
   }
 
   return {
@@ -188,7 +192,8 @@ const assessmentPlatformReducer = (item) => {
 const assessmentSubjectReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'assessment-subject';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('assessment-subject')) item.object_type = 'assessment-subject';
   }
 
   return {
@@ -209,7 +214,8 @@ const assessmentSubjectReducer = (item) => {
 const associatedActivityReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'associated-activity';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('associated-activity')) item.object_type = 'associated-activity';
   }
 
   return {
@@ -228,7 +234,8 @@ const associatedActivityReducer = (item) => {
 const characterizationReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'characterization';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('characterization')) item.object_type = 'characterization';
   }
 
   return {
@@ -248,7 +255,8 @@ const characterizationReducer = (item) => {
 const evidenceReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'evidence';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('evidence')) item.object_type = 'evidence';
   }
 
   return {
@@ -268,7 +276,8 @@ const evidenceReducer = (item) => {
 const facetReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'facet';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('facet')) item.object_type = 'facet';
   }
 
   return {
@@ -288,7 +297,8 @@ const facetReducer = (item) => {
 const logEntryAuthorReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'log-entry-author';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('log-entry-author')) item.object_type = 'log-entry-author';
   }
 
   return {
@@ -303,7 +313,8 @@ const logEntryAuthorReducer = (item) => {
 const mitigatingFactorReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'mitigation-factor';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('mitigation-factor')) item.object_type = 'mitigation-factor';
   }
 
   return {
@@ -325,7 +336,8 @@ const mitigatingFactorReducer = (item) => {
 const observationReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'observation';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('observation')) item.object_type = 'observation';
   }
   // work around issue in data
   if (item.methods !== undefined) {
@@ -359,7 +371,8 @@ const observationReducer = (item) => {
 const originReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'origin';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('origin')) item.object_type = 'origin';
   }
 
   return {
@@ -376,7 +389,8 @@ const originReducer = (item) => {
 const requiredAssetReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'required-asset';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('required-asset')) item.object_type = 'required-asset';
   }
 
   return {
@@ -395,7 +409,8 @@ const requiredAssetReducer = (item) => {
 const riskReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'risk';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('risk')) item.object_type = 'risk';
   }
 
   if (!('deadline' in item)) item.deadline = null;
@@ -453,7 +468,8 @@ const riskReducer = (item) => {
 const riskLogReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'risk-log-entry';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('risk-log-entry')) item.object_type = 'risk-log-entry';
   }
 
   return {
@@ -481,7 +497,8 @@ const riskLogReducer = (item) => {
 const riskResponseReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'risk-response';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('risk-response')) item.object_type = 'risk-response';
   }
 
   return {
@@ -508,7 +525,8 @@ const riskResponseReducer = (item) => {
 const subjectReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'subject';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('subject')) item.object_type = 'subject';
   }
 
   // TODO: WORKAROUND - remove bad data
@@ -547,7 +565,8 @@ const subjectReducer = (item) => {
 const taskReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'oscal-task';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('oscal-task')) item.object_type = 'oscal-task';
   }
 
   return {
@@ -581,7 +600,8 @@ const taskReducer = (item) => {
 const vulnerabilityFacetReducer = (item) => {
   // if no object type was returned, compute the type from the IRI
   if (item.object_type === undefined) {
-    item.object_type = 'vulnerability-facet';
+    if (item.entity_type !== undefined) item.object_type = item.entity_type;
+    if (item.iri.includes('vulnerability-fact')) item.object_type = 'vulnerability-facet';
   }
 
   return {
@@ -3031,6 +3051,7 @@ export const selectRiskByIriQuery = (iri, select) => {
   if (!iri.startsWith('<')) iri = `<${iri}>`;
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('entity_type')) select.push('entity_type');
 
   // extension properties
   if (select.includes('props')) {
@@ -3149,6 +3170,7 @@ export const selectAllRisks = (select, args, parent) => {
   let constraintClause = '';
   if (select === undefined || select === null) select = Object.keys(riskPredicateMap);
   if (!select.includes('id')) select.push('id');
+  if (!select.includes('entity_type')) select.push('entity_type');
 
   // extension properties
   if (select.includes('props')) {
@@ -4114,6 +4136,11 @@ export const activityPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   created: {
     predicate: "<http://darklight.ai/ns/common#created>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
@@ -4191,6 +4218,11 @@ export const actorPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   links: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
@@ -4223,6 +4255,11 @@ export const assessmentAssetPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   components: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#components>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "components");},
@@ -4243,6 +4280,11 @@ export const assessmentPlatformPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -4307,6 +4349,11 @@ export const assessmentSubjectPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   links: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
@@ -4355,6 +4402,11 @@ export const associatedActivityPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   links: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
@@ -4390,6 +4442,11 @@ export const characterizationPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -4434,6 +4491,11 @@ export const evidencePredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   created: {
     predicate: "<http://darklight.ai/ns/common#created>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
@@ -4474,6 +4536,11 @@ export const facetPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
@@ -4518,6 +4585,11 @@ export const logEntryAuthorPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   party: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#party>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "party");},
@@ -4548,6 +4620,11 @@ export const mitigatingFactorPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -4607,9 +4684,14 @@ export const observationPredicateMap = {
       binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
       optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
-  entity_type: {
+  object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -4704,6 +4786,11 @@ export const originPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   origin_actors: {
     predicate: "<http://csrc.nist.gov/ns/oscal/assessment/common#origin_actors>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "origin_actors");},
@@ -4724,6 +4811,11 @@ export const oscalTaskPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -4838,6 +4930,11 @@ export const requiredAssetPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   created: {
     predicate: "<http://darklight.ai/ns/common#created>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
@@ -4886,13 +4983,18 @@ export const requiredAssetPredicateMap = {
 }
 export const riskPredicateMap = {
   id: {
-      predicate: "<http://darklight.ai/ns/common#id>",
-      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
-      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -5129,6 +5231,11 @@ export const riskLogPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   created: {
     predicate: "<http://darklight.ai/ns/common#created>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:dateTime` : null,  this.predicate, "created");},
@@ -5207,13 +5314,18 @@ export const riskLogPredicateMap = {
 }
 export const riskResponsePredicateMap = {
   id: {
-      predicate: "<http://darklight.ai/ns/common#id>",
-      binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
-      optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
+    predicate: "<http://darklight.ai/ns/common#id>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "id");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value))}
   },
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   created: {
@@ -5299,6 +5411,11 @@ export const subjectPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   links: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
@@ -5374,6 +5491,11 @@ export const vulnerabilityFacetPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {
@@ -5468,6 +5590,11 @@ export const fedrampFacetPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   links: {
     predicate: "<http://csrc.nist.gov/ns/oscal/common#links>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "links");},
@@ -5538,6 +5665,11 @@ export const oscalFacetPredicateMap = {
   object_type: {
     predicate: "<http://darklight.ai/ns/common#object_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "object_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  entity_type: {
+    predicate: "<http://darklight.ai/ns/common#object_type>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"` : null,  this.predicate, "entity_type");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {

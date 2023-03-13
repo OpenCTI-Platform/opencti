@@ -10,6 +10,7 @@ import {
   addImplementationEntity,
   removeImplementationEntity,
   findSystemImplementation,
+  findObjects,
 } from '../domain/informationSystem.js';
 import { findDescriptionBlockByIri } from '../domain/descriptionBlock.js';
 import { findInformationTypeByIri } from '../domain/informationType.js';
@@ -19,7 +20,7 @@ const cyioInformationSystemResolvers = {
   Query: {
     // Information System
     informationSystems: async (_, args, { user, token, kauth, clientId, dbName, dataSources, selectMap }) => findAllInformationSystems(args, dbName, dataSources, selectMap.getNode('node')),
-    informationSystem: async (_, { id }, { dbName, dataSources, selectMap }) => findInformationSystemById(id, dbName, dataSources, selectMap.getNode('informationSystem')),
+    informationSystem: async (_, { id }, { user, token, kauth, clientId, dbName, dataSources, selectMap }) => findInformationSystemById(id, dbName, dataSources, selectMap.getNode('informationSystem')),
     informationSystemSecurityStatus: async (_, { id }, {dbName, dataSources, selectMap }) => getInformationSystemSecurityStatus( id,dbName, dataSources, selectMap.getNode('node')),
   },
   Mutation: {
@@ -74,12 +75,23 @@ const cyioInformationSystemResolvers = {
       if (systemImplementation === undefined || systemImplementation === null) return null;
       return systemImplementation;
     },
+    objects: async (parent, args, { dbName, dataSources, selectMap }) => {
+      if (parent.information_types === undefined &&
+          parent.component_iris === undefined && 
+          parent.inventory_item_iris === undefined &&
+          parent.leveraged_authorization_iris === undefined && 
+          parent.user_type_iris === undefined ) return null;
+
+      let objects = await findObjects(parent, dbName, dataSources, selectMap);
+      if (objects === undefined || objects === null) return null;
+      return objects;
+    },
     responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.responsible_party_iris === undefined) return [];
       let results = []
       for (let iri of parent.responsible_party_iris) {
         let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
-        if (result === undefined || result === null) return null;
+        if (result === undefined || result === null) continue;
         results.push(result);
       }
       return results;
@@ -114,6 +126,16 @@ const cyioInformationSystemResolvers = {
       }
       return results;
     },
+  },
+  ObjectRef: {
+    __resolveType: (item) => {
+      if (item.entity_type === 'component') return 'Component';
+      if (item.entity_type === 'inventory-item') return 'InventoryItem';
+      if (item.entity_type === 'information-system') return 'InformationSystem';
+      if (item.entity_type === 'oscal-user') return 'OscalUser';
+      if (item.entity_type === 'oscal-leveraged-authorization') return 'OscalLeveragedAuthorization';
+      if (item.entity_type === 'oscal-relationship') return 'OscalRelationship';
+    }
   },
   // Map enum GraphQL values to data model required values
   DeploymentModelType: {

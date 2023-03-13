@@ -910,7 +910,7 @@ const computingDeviceResolvers = {
       let results = []
       for (let iri of parent.responsible_party_iris) {
         let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
-        if (result === undefined || result === null) return null;
+        if (result === undefined || result === null) continue;
         results.push(result);
       }
       return results;

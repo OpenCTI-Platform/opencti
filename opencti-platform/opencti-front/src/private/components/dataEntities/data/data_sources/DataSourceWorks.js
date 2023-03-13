@@ -259,7 +259,7 @@ class DataSourceWorksComponent extends Component {
                                   {t('Total Number of Operations')}
                                 </Typography>
                                 <div className="clearfix" />
-                                {activity.total_operations && t(total_operations)}
+                                {activity.total_operations && t(activity.total_operations)}
                               </div>
                             </Grid>
                             {/* <Grid item xs={12}>

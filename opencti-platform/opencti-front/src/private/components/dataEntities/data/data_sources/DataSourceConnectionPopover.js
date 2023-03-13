@@ -114,6 +114,21 @@ const styles = (theme) => ({
       opacity: 1,
     },
   },
+  queryFieldContainer: {
+      overflowX: 'auto',
+      whiteSpace: 'nowrap',
+      '&::-webkit-scrollbar': {
+        width: '2em',
+        height: '0.5em',
+      },
+      '&::-webkit-scrollbar-track': {
+        '-webkit-box-shadow': 'inset 0 0 6px rgba(0,0,0,0.00)',
+      },
+
+      '&::-webkit-scrollbar-track-piece:end': {
+        marginRight: '350px', 
+      },  
+  }
 });
 
 export class DataSourceConnectionPopoverComponent extends Component {
@@ -273,39 +288,43 @@ export class DataSourceConnectionPopoverComponent extends Component {
                 <div className="clearfix" />
                 {connection_information?.port && t(connection_information.port)}
               </Grid>
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: "left" }}
-                >
-                  {t("Query")}
-                </Typography>
-                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                  <Tooltip title={t("Query")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {connection_information?.query && t(connection_information.query)}
+              <Grid item={true} xs={12}>
+                <div className={classes.queryFieldContainer}>
+                  <Typography
+                      variant="h3"
+                      color="textSecondary"
+                      gutterBottom={true}
+                      style={{ float: "left" }}
+                    >
+                      {t("Query")}
+                    </Typography>
+                    <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                      <Tooltip title={t("Query")}>
+                        <Information fontSize="inherit" color="disabled" />
+                      </Tooltip>
+                    </div>
+                    <div className="clearfix" />
+                    {connection_information?.query && t(connection_information.query)}
+                </div>                
               </Grid>
-              <Grid item={true} xs={6}>
-                <Typography
-                  variant="h3"
-                  color="textSecondary"
-                  gutterBottom={true}
-                  style={{ float: "left" }}
-                >
-                  {t("Initial Query")}
-                </Typography>
-                <div style={{ float: "left", margin: "1px 0 0 5px" }}>
-                  <Tooltip title={t("Initial Query")}>
-                    <Information fontSize="inherit" color="disabled" />
-                  </Tooltip>
-                </div>
-                <div className="clearfix" />
-                {connection_information?.query_initial && t(connection_information.query_initial)}
+              <Grid item={true} xs={12}>
+                <div className={classes.queryFieldContainer}>
+                  <Typography
+                    variant="h3"
+                    color="textSecondary"
+                    gutterBottom={true}
+                    style={{ float: "left" }}
+                  >
+                    {t("Initial Query")}
+                  </Typography>
+                  <div style={{ float: "left", margin: "1px 0 0 5px" }}>
+                    <Tooltip title={t("Initial Query")}>
+                      <Information fontSize="inherit" color="disabled" />
+                    </Tooltip>
+                  </div>
+                  <div className="clearfix" />
+                  {connection_information?.query_initial && t(connection_information.query_initial)}
+                </div>                
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography

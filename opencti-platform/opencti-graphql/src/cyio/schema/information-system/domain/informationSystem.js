@@ -44,6 +44,19 @@ export const findInformationSystemById = async (id, dbName, dataSources, select)
 }
 
 export const findInformationSystemByIri = async (iri, dbName, dataSources, select) => {
+  if (!select.includes('id')) select.push('id');
+  if (!select.includes('entity_type')) select.push('entity_type');
+  if (select.includes('objects') && select.includes('system_implementation')) throw new UserInputError("Can't specify both 'system_implementation' and 'objects' in the same query.");
+  if (select.includes('objects') || select.includes('system_implementation')) {
+    if (!select.includes('components')) select.push('components');
+    if (!select.includes('inventory_items')) select.push('inventory_items');
+    if (!select.includes('leveraged_authorizations')) select.push('leveraged_authorizations');
+    if (!select.includes('users')) select.push('users');
+  }
+  if (select.includes('objects')) {
+    if (!select.includes('information_types')) select.push('information_types');
+  }
+
   const sparqlQuery = selectInformationSystemByIriQuery(iri, select);
   let response;
   try {
@@ -994,6 +1007,256 @@ export const removeImplementationEntity = async( id, implementation_type, entity
   return result;
 }
 
+export const findSystemImplementation = async ( parent, dbName, dataSources, selectMap ) => {
+  let systemImplementation = {};
+  let select = selectMap.getNode('system_implementation')
+
+  if (select.includes('components') && parent.component_iris) {
+    let select = selectMap.getNode('components');
+    let results = [];
+    for (let iri of parent.component_iris) {
+      let result = await findComponentByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+      results.push(result);
+    }
+    if (results.length !== 0) systemImplementation['components'] = results || [];
+  }
+  if (select.includes('inventory_items') && parent.inventory_item_iris) {
+    let select = selectMap.getNode('inventory_items');
+    let results = [];
+    for (let iri of parent.inventory_item_iris) {
+      let result = await findInventoryItemByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+      results.push(result);
+    }
+    if (results.length !== 0) systemImplementation['inventory_items'] = results || [];
+  }
+  if (select.includes('leveraged_authorizations') && parent.leveraged_authorization_iris) {
+    let select = selectMap.getNode('leveraged_authorizations');
+    let results = [];
+    for (let iri of parent.leveraged_authorization_iris) {
+      let result = await findLeveragedAuthorizationByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+      results.push(result);
+    }
+    if (results.length !== 0) systemImplementation['leveraged_authorizations'] = results || [];
+  }
+  if (select.includes('users') && parent.user_iris) {
+    let select = selectMap.getNode('users');
+    let results = [];
+    for (let iri of parent.user_iris) {
+      let result = await findUserTypeByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+      results.push(result);
+    }
+    if (results.length !== 0) systemImplementation['users'] = results || [];
+  }
+
+  return systemImplementation;
+}
+
+export const findObjects = async ( parent, dbName, dataSources, selectMap ) => {
+  let edges = [];
+  let relationships = [];
+
+  // create an information system from the parent and push it into the edges array
+  let informationSystem = {
+    id: parent.id,
+    entity_type: parent.entity_type,
+    created: parent.created,
+    modified: parent.modified,
+    ...(parent.system_ids && { system_ids: parent.system_ids }),
+    ...(parent.system_name && { system_name: parent.system_name }),
+    ...(parent.created_by && { created_by: parent.created_by }),
+  };
+  let edge = {
+    cursor: parent.iri,
+    node: informationSystem,
+  }
+  edges.push(edge);
+
+  // create a relationship object to be used as a template
+  let relationship = {
+    entity_type: 'oscal-relationship',
+    relationship_type: 'consists-of',
+    source: parent.id,
+  };
+
+  if (parent.information_type_iris) {
+    let select = selectMap.getNode('information_types');
+    if (select === undefined || select === null) select = ['id','entity_type','title','created','modified'];
+
+    for (let iri of parent.information_types_iris) {
+      let result = await findInformationTypeByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+
+      // make copy of relationship template
+      let rel = {...relationship};
+
+      // populate the missing fields of the relationship
+      rel.id = generateId();
+      rel.relationship_type = 'uses';
+      rel.target = result.id;
+      rel.created = result.created;
+      rel.modified = result.modified;
+      rel.valid_from = result.created
+
+      // add relationship to array of relationships
+      relationships.push(rel);
+
+      // add the information type to the array of edges
+      let edge = {
+        cursor: result.iri,
+        node: result,
+      }
+      edges.push(edge);
+    }
+  }
+
+  if (parent.component_iris) {
+    let select = selectMap.getNode('components');
+    if (select === undefined || select === null) select = ['id','entity_type','name','created','modified','component_type'];
+
+    for (let iri of parent.component_iris) {
+      let result = await findComponentByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+
+      // make copy of relationship template
+      let rel = {...relationship};
+
+      // populate the missing fields of the relationship
+      rel.id = generateId();
+      rel.target = result.id;
+      rel.created = result.created;
+      rel.modified = result.modified;
+      rel.valid_from = result.created
+
+      // add relationship to array of relationships
+      relationships.push(rel);
+
+      // add the component to the array of edges
+      let edge = {
+        cursor: result.iri,
+        node: result,
+      }
+      edges.push(edge);
+    }
+  }
+
+  if (parent.inventory_item_iris) {
+    let select = selectMap.getNode('inventory_items');
+    if (select === undefined || select === null) select = ['id','entity_type','name','created','modified','asset_type'];
+
+    for (let iri of parent.inventory_item_iris) {
+      let result = await findInventoryItemByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+
+      // make copy of relationship template
+      let rel = { ...relationship };
+
+      // populate the missing fields of the relationship
+      rel.id = generateId();
+      rel.target = result.id;
+      rel.created = result.created;
+      rel.modified = result.modified;
+      rel.valid_from = result.created;
+
+      // add relationship to array of relationships
+      relationships.push(rel);
+
+      // add the component to the array of edges
+      let edge = {
+        cursor: result.iri,
+        node: result,
+      }
+      edges.push(edge);
+    }
+  }
+
+  if (parent.leveraged_authorization_iris) {
+    let select = selectMap.getNode('leveraged_authorizations');
+    if (select === undefined || select === null) select = ['id','entity_type','title','created','modified','date_authorized'];
+
+    for (let iri of parent.leveraged_authorization_iris) {
+      let result = await findLeveragedAuthorizationByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+
+      // make copy of relationship template
+      let rel = { ...relationship };
+
+      // populate the missing fields of the relationship
+      rel.id = generateId();
+      rel.target = result.id;
+      rel.created = result.created;
+      rel.modified = result.modified
+      rel.valid_from = result.created
+
+      // add relationship to array of relationships
+      relationships.push(rel);
+
+      // add the component to the array of edges
+      let edge = {
+        cursor: result.iri,
+        node: result,
+      }
+      edges.push(edge);
+    }
+  }
+
+  if (parent.user_iris) {
+    let select = selectMap.getNode('users');
+    if (select === undefined || select === null) select = ['id','entity_type','name','created','modified','user_type'];
+
+    for (let iri of parent.user_iris) {
+      let result = await findUserTypeByIri(iri, dbName, dataSources, select);
+      if (result === undefined || result === null) continue;
+
+      // make copy of relationship template
+      let rel = { ...relationship };
+
+      // populate the missing fields of the relationship
+      rel.id = generateId();
+      rel.target = result.id;
+      rel.created = result.created;
+      rel.modified = result.modified
+      rel.valid_from = result.created
+
+      // add relationship to array of relationships
+      relationships.push(rel);
+
+      // add the component to the array of edges
+      let edge = {
+        cursor: result.iri,
+        node: result,
+      }
+      edges.push(edge);
+    }
+  }
+
+  // Add each of the relationships to the list of edges
+  for ( relationship of relationships) {
+    let edge = {
+      cursor: `<http://cyio.darklight.ai/relationship--${relationship.id}>`,
+      node: relationship,
+    }
+    edges.push(edge)
+  }
+
+  if (edges.length === 0) return null;
+  return {
+    pageInfo: {
+      startCursor: edges[0].cursor,
+      endCursor: edges[edges.length-1].cursor,
+      hasNextPage: false,
+      hasPreviousPage: false,
+      globalCount: edges.length,
+    },
+    edges: edges,
+  };
+}
+
+
+
 // Helper Routines
 export const computeSensitivityLevel = ( confidentiality, integrity, availability ) => {
   let sensitivityLevel = 'fips-199-low';
@@ -1085,52 +1348,4 @@ export const impactIsGreater = ( current, latest ) => {
   if (current === 'fips-199-moderate' && latest === 'fips-199-high') return true; // latest is high
   return false;
 };
-
-export const findSystemImplementation = async ( parent, dbName, dataSources, selectMap ) => {
-  let systemImplementation = {};
-  let select = selectMap.getNode('system_implementation')
-
-  if (select.includes('components') && parent.component_iris) {
-    let select = selectMap.getNode('components');
-    let results = [];
-    for (let iri of parent.component_iris) {
-      let result = await findComponentByIri(iri, dbName, dataSources, select);
-      if (result === undefined || result === null) continue;
-      results.push(result);
-    }
-    if (results.length !== 0) systemImplementation['components'] = results || [];
-  }
-  if (select.includes('inventory_items') && parent.inventory_item_iris) {
-    let select = selectMap.getNode('inventory_items');
-    let results = [];
-    for (let iri of parent.inventory_item_iris) {
-      let result = await findInventoryItemByIri(iri, dbName, dataSources, select);
-      if (result === undefined || result === null) continue;
-      results.push(result);
-    }
-    if (results.length !== 0) systemImplementation['inventory_items'] = results || [];
-  }
-  if (select.includes('leveraged_authorizations') && parent.leveraged_authorization_iris) {
-    let select = selectMap.getNode('leveraged_authorizations');
-    let results = [];
-    for (let iri of parent.leveraged_authorization_iris) {
-      let result = await findLeveragedAuthorizationByIri(iri, dbName, dataSources, select);
-      if (result === undefined || result === null) continue;
-      results.push(result);
-    }
-    if (results.length !== 0) systemImplementation['leveraged_authorizations'] = results || [];
-  }
-  if (select.includes('users') && parent.user_iris) {
-    let select = selectMap.getNode('users');
-    let results = [];
-    for (let iri of parent.user_iris) {
-      let result = await findUserTypeByIri(iri, dbName, dataSources, select);
-      if (result === undefined || result === null) continue;
-      results.push(result);
-    }
-    if (results.length !== 0) systemImplementation['users'] = results || [];
-  }
-
-  return systemImplementation;
-}
 
