@@ -4,7 +4,7 @@ import '../../src/modules/index';
 import { platformStart, platformStop } from '../../src/boot';
 import { deleteBucket } from '../../src/database/file-storage';
 import { deleteQueues } from '../../src/domain/connector';
-import { ADMIN_USER, testContext } from './testQuery';
+import { ADMIN_USER, createTestUsers, testContext } from './testQuery';
 import { elDeleteIndexes, elPlatformIndices } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
 import { createRedisClient } from '../../src/database/redis';
@@ -29,6 +29,7 @@ export async function setup() {
   // Start the platform
   await platformStart();
   await wait(15000); // Wait 15 secs for complete platform start
+  await createTestUsers();
 }
 
 export async function teardown() {

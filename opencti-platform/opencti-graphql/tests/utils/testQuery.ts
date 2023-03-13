@@ -104,6 +104,24 @@ export const ROLE_EDITOR: Role = {
 };
 // Users
 interface User { id: string, email: string, password: string, roles: Role[], groups: Group[], client: AxiosInstance }
+export const ADMIN_USER: AuthUser = {
+  id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
+  individual_id: undefined,
+  organizations: [],
+  name: 'admin',
+  user_email: 'admin@opencti.io',
+  roles: [{ name: ROLE_ADMINISTRATOR }],
+  groups: [],
+  capabilities: [{ name: BYPASS }],
+  all_marking: [],
+  allowed_organizations: [],
+  inside_platform_organization: true,
+  allowed_marking: [],
+  origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
+  api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+};
+const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'participate@opencti.io' }),
   email: 'participate@opencti.io',
@@ -112,6 +130,7 @@ export const USER_PARTICIPATE: User = {
   groups: [GREEN_GROUP],
   client: createHttpClient('participate@opencti.io', 'participate')
 };
+TESTING_USERS.push(USER_PARTICIPATE);
 export const USER_EDITOR: User = {
   id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'editor@opencti.io' }),
   email: 'editor@opencti.io',
@@ -120,6 +139,7 @@ export const USER_EDITOR: User = {
   groups: [AMBER_GROUP],
   client: createHttpClient('editor@opencti.io', 'editor')
 };
+TESTING_USERS.push(USER_EDITOR);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
@@ -223,7 +243,7 @@ const USER_CREATION_MUTATION = `
     }
   }
 `;
-export const createUser = async (user: User) => {
+const createUser = async (user: User) => {
   // roles
   for (let index = 0; index < user.roles.length; index += 1) {
     const role = user.roles[index];
@@ -239,25 +259,14 @@ export const createUser = async (user: User) => {
     await assignGroupToUser(group, user);
   }
 };
-// endregion
-
-export const ADMIN_USER: AuthUser = {
-  id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  internal_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f',
-  individual_id: undefined,
-  organizations: [],
-  name: 'admin',
-  user_email: 'admin@opencti.io',
-  roles: [{ name: ROLE_ADMINISTRATOR }],
-  groups: [],
-  capabilities: [{ name: BYPASS }],
-  all_marking: [],
-  allowed_organizations: [],
-  inside_platform_organization: true,
-  allowed_marking: [],
-  origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
-  api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+// Create all testing users
+export const createTestUsers = async () => {
+  for (let index = 0; index < TESTING_USERS.length; index += 1) {
+    const user = TESTING_USERS[index];
+    await createUser(user);
+  }
 };
+// endregion
 
 type markingType = { standard_id: string; internal_id: string };
 export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: markingType[]): AuthUser => {
