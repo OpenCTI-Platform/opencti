@@ -167,6 +167,7 @@ const entitiesFilters = [
   'pattern_type',
   'killChainPhase',
   'malware_types',
+  'report_types',
   'relationship_type',
 ];
 
