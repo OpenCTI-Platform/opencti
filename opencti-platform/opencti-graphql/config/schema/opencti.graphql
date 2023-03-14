@@ -13385,7 +13385,7 @@ type ObservedDataEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type OpinionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNPARTICIPATE])
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
