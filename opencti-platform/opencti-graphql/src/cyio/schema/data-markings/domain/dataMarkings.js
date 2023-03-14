@@ -1,11 +1,10 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'apollo-server-errors';
 import {
   validateEnumValue,
   compareValues,
   filterValues,
   updateQuery,
   checkIfValidUUID,
-  CyioError,
 } from '../../utils.js';
 import conf from '../../../../config/conf';
 import {
@@ -193,7 +192,7 @@ export const createDataMarking = async (input, dbName, selectMap, dataSources) =
     throw e;
   }
   if (response !== undefined && response.length > 0)
-    throw new CyioError(`Data Marking already exists with the name "${results[0].name}"`);
+    throw new UserInputError(`Data Marking already exists with the name "${results[0].name}"`);
 
   // create the Data Marking
   let { iri, id, query } = insertDataMarkingQuery(input);
@@ -223,7 +222,7 @@ export const createDataMarking = async (input, dbName, selectMap, dataSources) =
 export const deleteDataMarkingById = async (id, dbName, dataSources) => {
   const select = ['id', 'object_type'];
   if (!Array.isArray(id)) {
-    if (!checkIfValidUUID(id)) throw new CyioError(`Invalid identifier: ${id}`);
+    if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
 
     // check if object with id exists
     let sparqlQuery = selectDataMarkingQuery(id, select);
@@ -239,7 +238,7 @@ export const deleteDataMarkingById = async (id, dbName, dataSources) => {
       console.log(e);
       throw e;
     }
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+    if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
     // delete the object
     sparqlQuery = deleteDataMarkingQuery(id);
@@ -254,14 +253,14 @@ export const deleteDataMarkingById = async (id, dbName, dataSources) => {
       throw e;
     }
 
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+    if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
     return id;
   }
 
   if (Array.isArray(id)) {
     let response;
     for (const item of id) {
-      if (!checkIfValidUUID(item)) throw new CyioError(`Invalid identifier: ${item}`);
+      if (!checkIfValidUUID(item)) throw new UserInputError(`Invalid identifier: ${item}`);
 
       // check if object with id exists
       const sparqlQuery = selectDataMarkingQuery(id, select);
@@ -277,7 +276,7 @@ export const deleteDataMarkingById = async (id, dbName, dataSources) => {
         throw e;
       }
 
-      if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+      if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
     }
 
     const sparqlQuery = deleteMultipleDataMarkingsQuery(id);
@@ -292,14 +291,14 @@ export const deleteDataMarkingById = async (id, dbName, dataSources) => {
       throw e;
     }
 
-    if (response === undefined || response.length === 0) throw new CyioError(`Entity does not exist with ID ${id}`);
+    if (response === undefined || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
     return id;
   }
 };
 
 export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSources, selectMap, schema) => {
   // make sure there is input data containing what is to be edited
-  if (input === undefined || input.length === 0) throw new CyioError(`No input data was supplied`);
+  if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
 
   // WORKAROUND to remove immutable fields
   input = input.filter((element) => element.key !== 'id' && element.key !== 'created' && element.key !== 'modified');
@@ -317,7 +316,7 @@ export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSour
     queryId: 'Select Data Marking',
     singularizeSchema,
   });
-  if (response.length === 0) throw new CyioError(`Entity does not exist with ID ${dataMarkingId}`);
+  if (response.length === 0) throw new UserInputError(`Entity does not exist with ID ${dataMarkingId}`);
 
   // determine operation, if missing
   for (const editItem of input) {
@@ -329,7 +328,7 @@ export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSour
       continue;
     }
     if (Array.isArray(editItem.value) && editItem.value[0] === null)
-      throw new CyioError(`Field "${editItem.key}" has invalid value "null"`);
+      throw new UserInputError(`Field "${editItem.key}" has invalid value "null"`);
 
     if (!response[0].hasOwnProperty(editItem.key)) {
       editItem.operation = 'add';
@@ -365,38 +364,38 @@ export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSour
       switch (editItem.key) {
         case 'definition_type':
           if (!validateEnumValue(value, 'DataMarkingType', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         case 'tlp':
           if (!validateEnumValue(value, 'TLPLevel', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           editItem.value[0] = value.replace(/_/g, '+');
           fieldType = 'simple';
           break;
         case 'encrypt_in_transit':
           if (!validateEnumValue(value, 'EncryptInTransit', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         case 'permitted_actions':
           if (!validateEnumValue(value, 'PermittedActions', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         case 'affected_party_notifications':
           if (!validateEnumValue(value, 'AffectedPartyNotifications', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         case 'attribution':
           if (!validateEnumValue(value, 'ProviderAttribution', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         case 'unmodified_resale':
           if (!validateEnumValue(value, 'UnmodifiedResale', schema))
-            throw new CyioError(`Invalid value "${value}" for field "${editItem.key}".`);
+            throw new UserInputError(`Invalid value "${value}" for field "${editItem.key}".`);
           fieldType = 'simple';
           break;
         default:
@@ -416,7 +415,7 @@ export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSour
           queryId: 'Obtaining IRI for the object with id',
           singularizeSchema,
         });
-        if (result === undefined || result.length === 0) throw new CyioError(`Entity does not exist with ID ${value}`);
+        if (result === undefined || result.length === 0) throw new UserInputError(`Entity does not exist with ID ${value}`);
         iris.push(`<${result[0].iri}>`);
       }
     }
