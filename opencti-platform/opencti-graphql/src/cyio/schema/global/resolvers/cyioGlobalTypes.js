@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-errors';
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
-import { compareValues, filterValues } from '../../utils.js';
+import { compareValues, filterValues, checkIfValidUUID } from '../../utils.js';
 import { objectMap } from '../global-utils.js';
 import {
   getReducer,
