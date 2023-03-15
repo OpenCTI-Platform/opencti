@@ -217,9 +217,10 @@ export const deleteMultipleDescriptionBlocksQuery = (ids) =>{
 }
 
 export const attachToDescriptionBlockQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/description-block--${id}>`;
   if (!descriptionBlockPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/description-block--${id}>`;
   const predicate = descriptionBlockPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -231,13 +232,19 @@ export const attachToDescriptionBlockQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, descriptionBlockPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#DescriptionBlock>');
+  return attachQuery(
+    iri, 
+    statements, 
+    descriptionBlockPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#DescriptionBlock>'
+  );
 }
 
 export const detachFromDescriptionBlockQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/description-block--${id}>`;
   if (!descriptionBlockPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/description-block--${id}>`;
   const predicate = descriptionBlockPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -249,7 +256,12 @@ export const detachFromDescriptionBlockQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, descriptionBlockPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#DescriptionBlock>');
+  return detachQuery(
+    iri, 
+    statements, 
+    descriptionBlockPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#DescriptionBlock>'
+  );
 }
 
 
@@ -386,9 +398,10 @@ export const deleteMultipleDiagramsQuery = (ids) =>{
 }
 
 export const attachToDiagramQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/diagram--${id}>`;
   if (!diagramPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/diagram--${id}>`;
   const predicate = diagramPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -400,13 +413,19 @@ export const attachToDiagramQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, diagramPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Diagram>');
+  return attachQuery(
+    iri, 
+    statements, 
+    diagramPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#Diagram>'
+  );
 }
 
 export const detachFromDiagramQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/diagram--${id}>`;
   if (!diagramPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/diagram--${id}>`;
   const predicate = diagramPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -418,7 +437,12 @@ export const detachFromDiagramQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, diagramPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Diagram>');
+  return detachQuery(
+    iri, 
+    statements, 
+    diagramPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#Diagram>'
+  );
 }
 
 

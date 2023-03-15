@@ -1,9 +1,11 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
-  CyioError,
 } from '../../cyio/schema/utils.js';
 import { selectObjectIriByIdQuery } from '../../cyio/schema/global/global-utils.js';
 
@@ -13,7 +15,7 @@ export function getReducer(type) {
     case 'WORKSPACE':
       return workspaceReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -174,43 +176,45 @@ export const deleteWorkspaceByIriQuery = (iri) => {
 };
 
 export const attachToWorkspaceQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   if (!workspacePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   const { predicate } = workspacePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    workspacePredicateMap, 
+    '<http://darklight.ai/ns/cyio/workspace#Workspace>'
+  );
 };
 
 export const detachFromWorkspaceQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   if (!workspacePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/workspace--${id}>`;
   const { predicate } = workspacePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    workspacePredicateMap, 
+    '<http://darklight.ai/ns/cyio/workspace#Workspace>'
+  );
 };
 
 // Predicate Maps

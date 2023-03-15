@@ -1,7 +1,10 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   buildSelectVariables,
   optionalizePredicate,
   parameterizePredicate,
+  attachQuery,
+  detachQuery,
   generateId,
   OASIS_SCO_NS,
 } from '../../utils.js';
@@ -110,7 +113,7 @@ export function getReducer(type) {
     case 'PORT-INFO':
       return portReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -301,7 +304,7 @@ WHERE {
       sparqlQuery = portInfo.replace(re, id);
       break;
     default:
-      throw new Error(`Unsupported query type ' ${type}'`);
+      throw new UserInputError(`Unsupported query type ' ${type}'`);
   }
 
   return sparqlQuery;
@@ -463,40 +466,41 @@ export const deleteComputingDeviceByIriQuery = (iri) => {
   `;
 };
 export const attachToComputingDeviceQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const { predicate } = computingDevicePredicateMap[field];
+  
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return attachQuery(
+    iri, 
+    statements, 
+    computingDevicePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#ComputingDevice>'
+  );
 };
 export const detachFromComputingDeviceQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!computingDevicePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const { predicate } = computingDevicePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return detachQuery(
+    iri, 
+    statements, 
+    computingDevicePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#ComputingDevice>'
+  );
 };
 
 // Predicate Maps

@@ -305,7 +305,7 @@ export const attachQuery = (iri, statements, predicateMap, classIri) => {
       if (!statement.endsWith('.')) statement = statement + ' .';
     }
   } else {
-    if ( !statements.endsWith('.')) statements = statements + ' .'
+    if ( !statements.endsWith('.')) statements = statements + ' .';
   }
 
   // if entity has a 'modified' field
@@ -354,7 +354,7 @@ export const detachQuery = (iri, statements, predicateMap, classIri) => {
       if (!statement.endsWith('.')) statement = statement + ' .';
     }
   } else {
-    if ( !statements.endsWith('.')) statements = statements + ' .'
+    if ( !statements.endsWith('.')) statements = statements + ' .';
   }
 
   // if entity has a 'modified' field

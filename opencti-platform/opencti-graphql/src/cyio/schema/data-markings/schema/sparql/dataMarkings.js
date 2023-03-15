@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   DARKLIGHT_NS,
-  CyioError,
 } from '../../../utils.js';
 
 // Reducer Selection
@@ -13,7 +15,7 @@ export function getReducer(type) {
     case 'DATA-MARKING':
       return dataMarkingReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -93,7 +95,7 @@ export const insertDataMarkingQuery = (propValues) => {
       iriType = `${propValues.definition_type.toUpperCase()}Marking`;
       break;
     default:
-      throw new CyioError(`Unknown type of Data Marking '${propValues.definition_type}'`);
+      throw new UserInputError(`Unknown type of Data Marking '${propValues.definition_type}'`);
   }
 
   const query = `
@@ -224,45 +226,43 @@ export const deleteMultipleDataMarkingsQuery = (ids) => {
 };
 
 export const attachToDataMarkingQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
-
   if (!dataMarkingPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
   const { predicate } = dataMarkingPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-      GRAPH ${iri} {
-      ${statements}
-      }
-  }
-  `;
+  return attachQuery(
+    iri, 
+    statements, 
+    dataMarkingPredicateMap, 
+    '<http://docs.oasis-open.org/ns/cti/data-marking#MarkingDefinition>'
+  );
 };
 
 export const detachFromDataMarkingQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
-
   if (!dataMarkingPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
   const { predicate } = dataMarkingPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-      GRAPH ${iri} {
-      ${statements}
-      }
-  }
-  `;
+  return detachQuery(
+    iri, 
+    statements, 
+    dataMarkingPredicateMap, 
+    '<http://docs.oasis-open.org/ns/cti/data-marking#MarkingDefinition>'
+  );
 };
 
 // Data Marking Predicate Map

@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   DARKLIGHT_NS,
-  CyioError
 } from '../../../utils.js';
 
 // Reducer Selection
@@ -13,7 +15,7 @@ export function getReducer(type) {
     case 'CONNECTION-INFORMATION':
       return connectionInformationReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`)
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
 }
 
@@ -55,6 +57,13 @@ const connectionInformationReducer = (item) => {
     ...(item.push && { push: item.push }),
     ...(item.push_exchange && { push_exchange: item.push_exchange }),
   }
+}
+
+// Utility
+export const getConnectionInformationIri = (id) => {
+  // ensure the id is a valid UUID
+  if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);
+  return `<http://cyio.darklight.ai/connection-information--${id}>`;
 }
 
 
@@ -191,9 +200,10 @@ export const deleteMultipleConnectionInformationQuery = (ids) =>{
 }
 
 export const attachToConnectionInformationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/connection-information--${id}>`;
   if (!connectionInformationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/connection-information--${id}>`;
   const predicate = connectionInformationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -202,15 +212,15 @@ export const attachToConnectionInformationQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return attachQuery(
+    iri, 
+    statements, 
+    connectionInformationPredicateMap, 
+    '<http://darklight.ai/ns/cyio/connection#ConnectionInformation>'
+  );
 }
 
 export const detachFromConnectionInformationQuery = (id, field, itemIris) => {
@@ -225,15 +235,15 @@ export const detachFromConnectionInformationQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return detachQuery(
+    iri, 
+    statements, 
+    connectionInformationPredicateMap, 
+    '<http://darklight.ai/ns/cyio/connection#ConnectionInformation>'
+  );
 }
 
 

@@ -1,7 +1,10 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   OSCAL_NS,
 } from '../../../utils.js';
@@ -13,7 +16,7 @@ export function getReducer(type) {
     case 'INVENTORY-ITEM':
       return inventoryItemReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -203,42 +206,44 @@ export const deleteInventoryItemByIriQuery = (iri) => {
   `;
 };
 export const attachToInventoryItemQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#InventorItem-${id}>`;
   if (!inventoryItemPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#InventorItem-${id}>`;
   const { predicate } = inventoryItemPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    inventoryItemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#InventoryItem>'
+  );
 };
 export const detachFromInventoryItemQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#InventoryItem-${id}>`;
   if (!inventoryItemPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/assessment/common#InventoryItem-${id}>`;
   const { predicate } = inventoryItemPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    inventoryItemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#InventoryItem>'
+  );
 };
 
 // Predicate Maps

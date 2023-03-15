@@ -184,9 +184,10 @@ export const deleteMultipleOscalLeveragedAuthorizationsQuery = (ids) =>{
 }
 
 export const attachToOscalLeveragedAuthorizationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
   if (!oscalLeveragedAuthorizationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
   const predicate = oscalLeveragedAuthorizationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -198,13 +199,19 @@ export const attachToOscalLeveragedAuthorizationQuery = (id, field, itemIris) =>
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, oscalLeveragedAuthorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/common#LeveragedAuthorization>');
+  return attachQuery(
+    iri, 
+    statements, 
+    oscalLeveragedAuthorizationPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#LeveragedAuthorization>'
+  );
 }
 
 export const detachFromOscalLeveragedAuthorizationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
   if (!oscalLeveragedAuthorizationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
   const predicate = oscalLeveragedAuthorizationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -216,7 +223,12 @@ export const detachFromOscalLeveragedAuthorizationQuery = (id, field, itemIris) 
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, oscalLeveragedAuthorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/common#LeveragedAuthorization>');
+  return detachQuery(
+    iri, 
+    statements, 
+    oscalLeveragedAuthorizationPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#LeveragedAuthorization>'
+  );
 }
 
 //
