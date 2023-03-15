@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-errors';
 import { globalSingularizeSchema as singularizeSchema } from '../global-mappings.js';
-import { compareValues, filterValues, checkIfValidUUID } from '../../utils.js';
+import { compareValues, filterValues, checkIfValidUUID, attachQuery, detachQuery } from '../../utils.js';
 import { objectMap } from '../global-utils.js';
 import {
   getReducer,
@@ -346,13 +346,9 @@ const cyioGlobalTypeResolvers = {
       const sourceIri = `<${objectMap[from_type].iriTemplate}-${input.from_id}>`;
       const targetIri = `<${objectMap[to_type].iriTemplate}-${input.to_id}>`;
 
-      const query = `
-      INSERT DATA {
-        GRAPH ${sourceIri} {
-          ${sourceIri} ${predicate} ${targetIri} .
-        }
-      }
-      `;
+      let statements = `${sourceIri} ${predicate} ${targetIri}`;
+      let classIri = objectMap[from_type].classIri;
+      let query = attachQuery(sourceIri, statements, predicateMap, classIri );
       let response;
       try {
         response = await dataSources.Stardog.create({
@@ -432,13 +428,10 @@ const cyioGlobalTypeResolvers = {
       const sourceIri = `<${objectMap[from_type].iriTemplate}-${input.from_id}>`;
       const targetIri = `<${objectMap[to_type].iriTemplate}-${input.to_id}>`;
 
-      const query = `
-      DELETE DATA {
-        GRAPH ${sourceIri} {
-          ${sourceIri} ${predicate} ${targetIri} .
-        }
-      }
-      `;
+      let statements = `${sourceIri} ${predicate} ${targetIri}`;
+      let classIri = objectMap[from_type].classIri;
+      let query = detachQuery(sourceIri, statements, predicateMap, classIri );
+
       let response;
       try {
         response = await dataSources.Stardog.delete({

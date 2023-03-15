@@ -303,13 +303,19 @@ export const attachToInformationSystemQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, informationSystemPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#InformationSystem>');
+  return attachQuery(
+    iri, 
+    statements, 
+    informationSystemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#InformationSystem>'
+  );
 }
 
 export const detachFromInformationSystemQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/information-system--${id}>`;
   if (!informationSystemPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/information-system--${id}>`;
   const predicate = informationSystemPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -321,7 +327,12 @@ export const detachFromInformationSystemQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, informationSystemPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#InformationSystem>');
+  return detachQuery(
+    iri, 
+    statements, 
+    informationSystemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#InformationSystem>'
+  );
 }
   
   

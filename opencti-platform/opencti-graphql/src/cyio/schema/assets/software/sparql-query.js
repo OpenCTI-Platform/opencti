@@ -1,12 +1,13 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'apollo-server-errors';
 import {
   byIdClause,
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   OASIS_SCO_NS,
-  CyioError,
 } from '../../utils.js';
 
 export function getReducer(type) {
@@ -16,7 +17,7 @@ export function getReducer(type) {
     case 'OS-IRI':
       return softwareAssetReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -115,7 +116,7 @@ export const insertSoftwareQuery = (propValues) => {
       objectType = 'application-software';
       break;
     default:
-      throw new CyioError(`Unsupported software type ' ${propValues.asset_type}'`);
+      throw new UserInputError(`Unsupported software type ' ${propValues.asset_type}'`);
   }
   const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const selectPredicates = Object.entries(propValues)
@@ -284,40 +285,42 @@ export const deleteSoftwareByIriQuery = (iri) => {
   `;
 };
 export const attachToSoftwareQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   if (!softwarePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const { predicate } = softwarePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return attachQuery(
+    iri, 
+    statements, 
+    softwarePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Software>'
+  );
 };
 export const detachFromSoftwareQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   if (!softwarePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Software-${id}>`;
   const { predicate } = softwarePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return detachQuery(
+    iri, 
+    statements, 
+    softwarePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Software>'
+  );
 };
 
 // softwareMap that maps asset_type values to class

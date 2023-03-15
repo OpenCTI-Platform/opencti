@@ -1,8 +1,11 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   byIdClause,
   buildSelectVariables,
   optionalizePredicate,
   parameterizePredicate,
+  attachQuery,
+  detachQuery,
   generateId,
   OASIS_SCO_NS,
 } from '../../utils.js';
@@ -14,7 +17,7 @@ export function getReducer(type) {
     case 'NETADDR-RANGE':
       return ipAddrRangeReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -257,22 +260,23 @@ export const deleteNetworkByIriQuery = (iri) => {
   `;
 };
 export const attachToNetworkQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
   if (!networkPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
   const { predicate } = networkPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return attachQuery(
+    iri, 
+    statements, 
+    networkPredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Network>'
+  );
 };
 export const detachFromNetworkQuery = (id, field, itemIris) => {
   const iri = `<http://scap.nist.gov/ns/asset-identification#Network-${id}>`;
@@ -282,15 +286,15 @@ export const detachFromNetworkQuery = (id, field, itemIris) => {
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return detachQuery(
+    iri, 
+    statements, 
+    networkPredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Network>'
+  );
 };
 
 // networkMap that maps asset_type values to class

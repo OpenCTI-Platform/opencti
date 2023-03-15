@@ -1,8 +1,11 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   byIdClause,
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   OASIS_NS,
 } from '../../utils.js';
@@ -21,7 +24,7 @@ export function getReducer(type) {
     case 'PHONE-NUMBER':
       return phoneReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -640,40 +643,43 @@ export const deleteAddressByIriQuery = (iri) => {
   `;
 };
 export const attachToAddressQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
   if (!addressPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
   const { predicate } = addressPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    addressPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#Address>'
+  );
 };
 export const detachFromAddressQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
   if (!addressPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#Address-${id}>`;
   const { predicate } = addressPredicateMap[field];
   let statements;
+
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return detachQuery(
+    iri, 
+    statements, 
+    addressPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#Address>'
+  );
 };
 
 // Label support functions
@@ -763,40 +769,44 @@ export const deleteLabelQuery = (id) => {
   `;
 };
 export const attachToLabelQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
   if (!labelPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
   const { predicate } = labelPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    labelPredicateMap, 
+    '<http://darklight.ai/ns/common#Label>'
+  );
 };
+
 export const detachFromLabelQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
   if (!labelPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#Label-${id}>`;
   const { predicate } = labelPredicateMap[field];
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  
+  return detachQuery(
+    iri, 
+    statements, 
+    labelPredicateMap, 
+    '<http://darklight.ai/ns/common#Label>'
+  );
 };
 
 // External Reference support functions
@@ -945,41 +955,47 @@ export const deleteExternalReferenceQuery = (id) => {
   }
   `;
 };
+
 export const attachToExternalReferenceQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
   if (!externalReferencePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
   const { predicate } = externalReferencePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    externalReferencePredicateMap, 
+    '<http://darklight.ai/ns/common#ExternalReference>'
+  );
 };
+
 export const detachFromExternalReferenceQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
   if (!externalReferencePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#ExternalReference-${id}>`;
   const { predicate } = externalReferencePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    externalReferencePredicateMap, 
+    '<http://darklight.ai/ns/common#ExternalReference>'
+  );
 };
 
 // Note support functions
@@ -1078,41 +1094,47 @@ export const deleteNoteQuery = (id) => {
   }
   `;
 };
+
 export const attachToNoteQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   if (!notePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   const { predicate } = notePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    notePredicateMap, 
+    '<http://darklight.ai/ns/common#Note>'
+  );
 };
+
 export const detachFromNoteQuery = (id, field, itemIris) => {
-  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   if (!notePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://darklight.ai/ns/common#Note-${id}>`;
   const { predicate } = notePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    notePredicateMap, 
+    '<http://darklight.ai/ns/common#Note>'
+  );
 };
 
 // Telephone Number support functions
@@ -1234,39 +1256,45 @@ export const deletePhoneNumberByIriQuery = (iri) => {
   }
   `;
 };
+
 export const attachToPhoneNumberQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   if (!phoneNumberPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   const { predicate } = phoneNumberPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    phoneNumberPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber>'
+  );
 };
+
 export const detachFromPhoneNumberQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   if (!phoneNumberPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber-${id}>`;
   const { predicate } = phoneNumberPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
-    statements = `${iri} ${predicate} ${itemIris}`;
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    phoneNumberPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#TelephoneNumber>'
+  );
 };

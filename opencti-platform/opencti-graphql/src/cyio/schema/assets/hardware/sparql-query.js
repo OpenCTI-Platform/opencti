@@ -1,6 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
-  buildSelectVariables, optionalizePredicate, parameterizePredicate,
-  generateId, OASIS_SCO_NS, CyioError
+  optionalizePredicate, 
+  parameterizePredicate, 
+  buildSelectVariables, 
+  attachQuery,
+  detachQuery,
+  generateId, 
+  OASIS_SCO_NS, 
 } from "../../utils.js";
 import {
   ipAddressReducer,
@@ -21,7 +27,7 @@ export function getReducer(type) {
     case 'PORT-INFO':
       return portReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -124,7 +130,7 @@ export const insertHardwareQuery = (propValues) => {
   const id = generateId(id_material, OASIS_SCO_NS);
   const timestamp = new Date().toISOString();
 
-  if (!objectMap.hasOwnProperty(propValues.asset_type)) throw new CyioError(`Unsupported hardware type ' ${propValues.asset_type}'`);
+  if (!objectMap.hasOwnProperty(propValues.asset_type)) throw new UserInputError(`Unsupported hardware type ' ${propValues.asset_type}'`);
 
   // escape any special characters (e.g., newline)
   if (propValues.description !== undefined) {
@@ -298,40 +304,42 @@ export const deleteHardwareByIriQuery = (iri) => {
   `;
 };
 export const attachToHardwareQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const { predicate } = hardwarePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  return attachQuery(
+    iri, 
+    statements, 
+    hardwarePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Hardware>'
+  );
 };
 export const detachFromHardwareQuery = (id, field, itemIris) => {
-  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   if (!hardwarePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://scap.nist.gov/ns/asset-identification#Hardware-${id}>`;
   const { predicate } = hardwarePredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
+    if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
     statements = `${iri} ${predicate} ${itemIris}`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+  return detachQuery(
+    iri, 
+    statements, 
+    hardwarePredicateMap, 
+    '<http://scap.nist.gov/ns/asset-identification#Hardware>'
+  );
 }
 
 // Predicate Maps

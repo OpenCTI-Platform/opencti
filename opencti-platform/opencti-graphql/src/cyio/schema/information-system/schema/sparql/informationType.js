@@ -261,9 +261,10 @@ export const deleteMultipleInformationTypesQuery = (ids) =>{
 }
 
 export const attachToInformationTypeQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/information-type--${id}>`;
   if (!informationTypePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/information-type--${id}>`;
   const predicate = informationTypePredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -275,13 +276,19 @@ export const attachToInformationTypeQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, informationTypePredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#InformationType>');
+  return attachQuery(
+    iri, 
+    statements, 
+    informationTypePredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#InformationType>'
+  );
 }
 
 export const detachFromInformationTypeQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/information-type--${id}>`;
   if (!informationTypePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/information-type--${id}>`;
   const predicate = informationTypePredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -293,7 +300,12 @@ export const detachFromInformationTypeQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, informationTypePredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#InformationType>');
+  return detachQuery(
+    iri, 
+    statements, 
+    informationTypePredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#InformationType>'
+  );
 }
 
 // Query Builders - Impact Definition
@@ -428,9 +440,10 @@ export const deleteMultipleImpactDefinitionsQuery = (ids) =>{
 }
 
 export const attachToImpactDefinitionQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
   if (!impactDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
   const predicate = impactDefinitionPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -442,13 +455,19 @@ export const attachToImpactDefinitionQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, impactDefinitionPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>');
+  return attachQuery(
+    iri, 
+    statements, 
+    impactDefinitionPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>'
+  );
 }
 
 export const detachFromImpactDefinitionQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
   if (!impactDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/impact-definition--${id}>`;
   const predicate = impactDefinitionPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -460,7 +479,12 @@ export const detachFromImpactDefinitionQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, impactDefinitionPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>');
+  return detachQuery(
+    iri, 
+    statements, 
+    impactDefinitionPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#ImpactDefinition>'
+  );
 }
 
 
@@ -604,9 +628,10 @@ export const deleteMultipleCategorizationsQuery = (ids) =>{
 }
 
 export const attachToCategorizationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
   if (!categorizationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
   const predicate = categorizationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -618,13 +643,19 @@ export const attachToCategorizationQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, categorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>');
+  return attachQuery(
+    iri, 
+    statements, 
+    categorizationPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>'
+  );
 }
 
 export const detachFromCategorizationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
   if (!categorizationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/categorization--${id}>`;
   const predicate = categorizationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -636,7 +667,12 @@ export const detachFromCategorizationQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, categorizationPredicateMap, '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>');
+  return detachQuery(
+    iri, 
+    statements, 
+    categorizationPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/info-system#Categorization>'
+  );
 }
 
 

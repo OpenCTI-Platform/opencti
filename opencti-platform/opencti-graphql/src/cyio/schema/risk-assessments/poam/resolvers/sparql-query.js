@@ -1,7 +1,10 @@
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   OSCAL_NS,
 } from '../../../utils.js';
@@ -15,7 +18,7 @@ export function getReducer(type) {
     case 'POAM-LOCAL-DEFINITION':
       return poamLocalDefReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -713,42 +716,44 @@ export const removeItemFromPOAM = (poamId, id) => {
   `;
 };
 export const attachToPOAMQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#POAM-${id}>`;
   if (!poamPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#POAM-${id}>`;
   const { predicate } = poamPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    poamPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#POAM>'
+  );
 };
 export const detachFromPOAMQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#POAM-${id}>`;
   if (!poamPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#POAM-${id}>`;
   const { predicate } = poamPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+  
+  return detachQuery(
+    iri, 
+    statements, 
+    poamPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#POAM>'
+  );
 };
 
 // POAM Item support functions
@@ -887,42 +892,44 @@ export const deleteItemQuery = (id) => {
   `;
 };
 export const attachToPOAMItemQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   if (!poamItemPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   const { predicate } = poamItemPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} . `;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    poamItemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/poam#Item>'
+  );
 };
 export const detachFromPOAMItemQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   if (!poamItemPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#Item-${id}>`;
   const { predicate } = poamItemPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    poamItemPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/poam#Item>'
+  );
 };
 
 // POAM LocalDefinitions support functions
@@ -1032,40 +1039,42 @@ export const deletePOAMLocalDefinitionByIirQuery = (iri) => {
   `;
 };
 export const attachToPOAMLocalDefinitionQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
   if (!poamLocalDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
   const { predicate } = poamLocalDefinitionPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    poamLocalDefinitionPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition>'
+  );
 };
 export const detachFromPOAMLocalDefinitionQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
   if (!poamLocalDefinitionPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition-${id}>`;
   const { predicate } = poamLocalDefinitionPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    poamLocalDefinitionPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/poam#LocalDefinition>'
+  );
 };

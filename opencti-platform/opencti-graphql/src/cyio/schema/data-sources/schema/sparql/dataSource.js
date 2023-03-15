@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import { 
   optionalizePredicate, 
   parameterizePredicate, 
   buildSelectVariables, 
+  attachQuery,
+  detachQuery,
   generateId, 
   DARKLIGHT_NS,
-  CyioError 
 } from '../../../utils.js';
 
 
@@ -16,7 +18,7 @@ export function getReducer(type) {
     case 'FREQUENCY-TIMING':
       return frequencyTimingReducer;
     default:
-      throw new CyioError(`Unsupported reducer type ' ${type}'`)
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`)
   }
 }
 
@@ -223,9 +225,10 @@ export const deleteMultipleDataSourcesQuery = (ids) =>{
 }
 
 export const attachToDataSourceQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/data-source--${id}>`;
   if (!dataSourcePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/data-source--${id}>`;
   const predicate = dataSourcePredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -234,21 +237,22 @@ export const attachToDataSourceQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return attachQuery(
+    iri, 
+    statements, 
+    dataSourcePredicateMap, 
+    '<http://darklight.ai/ns/cyio/datasource#DataSource>'
+  );
 }
 
 export const detachFromDataSourceQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/data-source--${id}>`;
   if (!dataSourcePredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/data-source--${id}>`;
   const predicate = dataSourcePredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -257,15 +261,15 @@ export const detachFromDataSourceQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return detachQuery(
+    iri, 
+    statements, 
+    dataSourcePredicateMap, 
+    '<http://darklight.ai/ns/cyio/datasource#DataSource>'
+  );
 }
 
 

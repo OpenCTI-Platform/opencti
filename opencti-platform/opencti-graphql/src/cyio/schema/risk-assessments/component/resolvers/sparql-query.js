@@ -1,8 +1,10 @@
-import { UserInputError } from 'apollo-server-express';
+import { UserInputError } from 'apollo-server-errors';
 import {
   optionalizePredicate,
   parameterizePredicate,
   buildSelectVariables,
+  attachQuery,
+  detachQuery,
   generateId,
   OSCAL_NS,
 } from '../../../utils.js';
@@ -13,7 +15,7 @@ export function getReducer(type) {
     case 'COMPONENT':
       return componentReducer;
     default:
-      throw new Error(`Unsupported reducer type ' ${type}'`);
+      throw new UserInputError(`Unsupported reducer type ' ${type}'`);
   }
 }
 
@@ -240,42 +242,44 @@ export const deleteComponentByIriQuery = (iri) => {
   `;
 };
 export const attachToComponentQuery = (id, field, itemIris) => {
+  if (!componentPredicateMap.hasOwnProperty(field)) return null;
   const iri = `<http://csrc.nist.gov/ns/oscal/common#Component-${id}>`;
-  if (!activityPredicateMap.hasOwnProperty(field)) return null;
-  const { predicate } = activityPredicateMap[field];
+  const { predicate } = componentPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return attachQuery(
+    iri, 
+    statements, 
+    componentPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#Component>'
+  );
 };
 export const detachFromComponentQuery = (id, field, itemIris) => {
-  const iri = `<http://csrc.nist.gov/ns/oscal/common#Component-${id}>`;
   if (!componentPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://csrc.nist.gov/ns/oscal/common#Component-${id}>`;
   const { predicate } = componentPredicateMap[field];
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris.map((itemIri) => `${iri} ${predicate} ${itemIri}`).join('.\n        ');
   } else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `;
+
+  return detachQuery(
+    iri, 
+    statements, 
+    componentPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#Component>'
+  );
 };
 
 // Predicate Maps

@@ -1,10 +1,12 @@
+import { UserInputError } from 'apollo-server-errors';
 import { 
     optionalizePredicate, 
     parameterizePredicate, 
     buildSelectVariables, 
+    attachQuery,
+    detachQuery,
     generateId, 
     DARKLIGHT_NS,
-    CyioError 
   } from '../../../utils.js';
     
     // Reducer Selection
@@ -13,7 +15,7 @@ import {
       case 'SYSTEM-CONFIGURATION':
         return systemConfigurationReducer;
       default:
-        throw new CyioError(`Unsupported reducer type ' ${type}'`)
+        throw new UserInputError(`Unsupported reducer type ' ${type}'`)
     }
   }
     
@@ -51,9 +53,10 @@ const systemConfigurationReducer = (item) => {
 // Query Builders
 
 export const attachToSystemConfigurationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/system-configuration--${id}>`;
   if (!systemConfigurationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/system-configuration--${id}>`;
   const predicate = systemConfigurationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -62,21 +65,22 @@ export const attachToSystemConfigurationQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  INSERT DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return attachQuery(
+    iri, 
+    statements, 
+    systemConfigurationPredicateMap, 
+    '<http://darklight.ai/ns/cyio/system-configuration#SystemConfiguraiton>'
+  );
 }
 
 export const detachFromSystemConfigurationQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/system-configuration--${id}>`;
   if (!systemConfigurationPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/system-configuration--${id}>`;
   const predicate = systemConfigurationPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -85,15 +89,15 @@ export const detachFromSystemConfigurationQuery = (id, field, itemIris) => {
     }
   else {
     if (!itemIris.startsWith('<')) itemIris = `<${itemIris}>`;
-    statements = `${iri} ${predicate} ${itemIris}`;
+    statements = `${iri} ${predicate} ${itemIris} .`;
   }
-  return `
-  DELETE DATA {
-    GRAPH ${iri} {
-      ${statements}
-    }
-  }
-  `
+
+  return detachQuery(
+    iri, 
+    statements, 
+    systemConfigurationPredicateMap, 
+    '<http://darklight.ai/ns/cyio/system-configuration#SystemConfiguraiton>'
+  );
 }
 
 

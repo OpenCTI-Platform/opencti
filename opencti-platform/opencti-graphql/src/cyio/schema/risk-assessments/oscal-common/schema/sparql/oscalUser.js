@@ -207,9 +207,10 @@ export const deleteMultipleOscalUsersQuery = (ids) =>{
 }
 
 export const attachToOscalUserQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   if (!oscalUserPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   const predicate = oscalUserPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -221,13 +222,19 @@ export const attachToOscalUserQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return attachQuery(iri, statements, oscalUserPredicateMap, '<http://csrc.nist.gov/ns/oscal/common#OscalUser>');
+  return attachQuery(
+    iri, 
+    statements, 
+    oscalUserPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#OscalUser>'
+  );
 }
 
 export const detachFromOscalUserQuery = (id, field, itemIris) => {
-  const iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   if (!oscalUserPredicateMap.hasOwnProperty(field)) return null;
+  const iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   const predicate = oscalUserPredicateMap[field].predicate;
+
   let statements;
   if (Array.isArray(itemIris)) {
     statements = itemIris
@@ -239,7 +246,12 @@ export const detachFromOscalUserQuery = (id, field, itemIris) => {
     statements = `${iri} ${predicate} ${itemIris} .`;
   }
 
-  return detachQuery(iri, statements, oscalUserPredicateMap, '<http://csrc.nist.gov/ns/oscal/common#OscalUser>');
+  return detachQuery(
+    iri, 
+    statements, 
+    oscalUserPredicateMap, 
+    '<http://csrc.nist.gov/ns/oscal/common#OscalUser>'
+  );
 }
 
 //
