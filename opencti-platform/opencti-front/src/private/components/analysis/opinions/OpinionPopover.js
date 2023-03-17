@@ -16,7 +16,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionQuery } from './OpinionEdition';
-import Security from '../../../../utils/Security';
+import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OpinionEditionContainer from './OpinionEditionContainer';
 import Loader from '../../../../components/Loader';
@@ -51,8 +51,7 @@ const OpinionPopoverDeletionMutation = graphql`
     }
 `;
 
-const OpinionPopover = (props) => {
-  const { id } = props;
+const OpinionPopover = (data) => {
   const history = useHistory();
   const classes = useStyles();
   const { t } = useFormatter();
@@ -73,7 +72,7 @@ const OpinionPopover = (props) => {
   const submitDelete = () => {
     setDeleting(true);
     commit({
-      variables: { id },
+      variables: { id: data.id },
       onCompleted: () => {
         setDeleting(false);
         handleClose();
@@ -104,11 +103,11 @@ const OpinionPopover = (props) => {
         <MenuItem onClick={handleOpenEdit}>
           {t('Update')}
         </MenuItem>
-        <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+        <CollaborativeSecurity data={data.opinion} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
           <MenuItem onClick={handleOpenDelete}>
             {t('Delete')}
           </MenuItem>
-        </Security>
+        </CollaborativeSecurity>
       </Menu>
       <Dialog
         open={displayDelete}
@@ -147,12 +146,12 @@ const OpinionPopover = (props) => {
       >
         <QueryRenderer
           query={opinionEditionQuery}
-          variables={{ id }}
-          render={({ props: opinionProps }) => {
-            if (opinionProps) {
+          variables={{ id: data.id }}
+          render={({ props }) => {
+            if (props) {
               return (
                 <OpinionEditionContainer
-                  opinion={opinionProps.opinion}
+                  opinion={props.opinion}
                   handleClose={handleCloseEdit}
                 />
               );

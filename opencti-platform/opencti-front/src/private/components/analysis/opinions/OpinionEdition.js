@@ -33,7 +33,10 @@ const useStyles = makeStyles((theme) => ({
 export const opinionEditionQuery = graphql`
     query OpinionEditionContainerQuery($id: String!) {
         opinion(id: $id) {
-            ...OpinionEditionContainer_opinion
+          createdBy {
+              id
+          }
+          ...OpinionEditionContainer_opinion
         }
     }
 `;

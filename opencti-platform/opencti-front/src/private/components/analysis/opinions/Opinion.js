@@ -36,13 +36,13 @@ const OpinionComponent = ({ opinion }) => {
         placeholder={
           <ContainerHeader
             container={opinion}
-            PopoverComponent={<OpinionPopover/>}
+            PopoverComponent={<OpinionPopover opinion={opinion}/>}
           />
         }
       >
         <ContainerHeader
           container={opinion}
-          PopoverComponent={<OpinionPopover/>}
+          PopoverComponent={<OpinionPopover opinion={opinion}/>}
           popoverSecurity={[KNOWLEDGE_KNPARTICIPATE]}
         />
       </CollaborativeSecurity>
@@ -108,11 +108,9 @@ const Opinion = createFragmentContainer(OpinionComponent, {
           created_at
           updated_at
           createdBy {
-              ... on Identity {
-                  id
-                  name
-                  entity_type
-              }
+            id
+            name
+            entity_type
           }
           creators {
               id
