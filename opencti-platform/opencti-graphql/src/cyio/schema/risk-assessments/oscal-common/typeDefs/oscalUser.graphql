@@ -80,6 +80,8 @@ type OscalUser implements BasicObject & LifecycleObject & OscalObject {
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
+  "Identifies a  label or descriptor that is tied to a sensitivity or classification marking system."
+  object_markings: [DataMarking]
   # OSCAL SystemAsset User
   "Identifies type of user, such as internal, external, or general-public."
   user_type: UserType
@@ -99,7 +101,7 @@ type OscalUser implements BasicObject & LifecycleObject & OscalObject {
 input OscalUserInput {
   # OSCAL User
   "Identifies type of user, such as internal, external, or general-public."
-  user_type: UserType
+  user_type: UserType!
   "Identifies a name given to the user, which may be used by a tool for display and navigation."
   name: String!
   "Identifies a short common name, abbreviation, or acronym for the user."

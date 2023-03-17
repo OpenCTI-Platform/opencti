@@ -70,7 +70,7 @@ enum ObjectOrdering {
   created_at
   updated_at
   created_by
-  object_marking_refs
+  object_markings
   label_name
   observable_value
   start_time

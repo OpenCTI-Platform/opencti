@@ -23,9 +23,45 @@ import {
   detachFromDataMarkingQuery,
 } from '../schema/sparql/dataMarkings.js';
 
-export const findAllDataMarkings = async (args, dbName, dataSources, selectMap) => {
-  const sparqlQuery = selectAllDataMarkingsQuery(null, args);
+
+export const findDataMarkingById = async (id, dbName, dataSources, select) => {
+  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
+  return findDataMarkingByIri(iri, dbName, dataSources, select);
+};
+
+export const findDataMarkingByIri = async (iri, dbName, dataSources, select) => {
+  const sparqlQuery = selectDataMarkingByIriQuery(iri, select);
+  let response;
+  try {
+    response = await dataSources.Stardog.queryById({
+      dbName: 'cyio-config',
+      sparqlQuery,
+      queryId: 'Select Data Marking',
+      singularizeSchema,
+    });
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
+
+  if (response === undefined) return null;
+  if (typeof response === 'object' && 'body' in response) {
+    throw new UserInputError(response.statusText, {
+      error_details: response.body.message ? response.body.message : response.body,
+      error_code: response.body.code ? response.body.code : 'N/A',
+    });
+  }
+
+  if (Array.isArray(response) && response.length > 0) {
+    const reducer = getReducer('DATA-MARKING');
+    return reducer(response[0]);
+  }
+};
+
+export const findAllDataMarkings = async (args, dbName, dataSources, select) => {
   const configDB = conf.get('app:config:db_name') || 'cyio-config';
+  // TODO: Update selectMap.getNode() to return fragments
+  const sparqlQuery = selectAllDataMarkingsQuery(null, args);
   let response;
   try {
     response = await dataSources.Stardog.queryAll({
@@ -129,42 +165,8 @@ export const findAllDataMarkings = async (args, dbName, dataSources, selectMap) 
   };
 };
 
-export const findDataMarkingById = async (id, dbName, dataSources, selectMap) => {
-  const iri = `<http://cyio.darklight.ai/marking-definition--${id}>`;
-  return findDataMarkingByIri(iri, dbName, dataSources, selectMap);
-};
-
-export const findDataMarkingByIri = async (iri, dbName, dataSources, selectMap) => {
-  const sparqlQuery = selectDataMarkingByIriQuery(iri, selectMap.getNode('dataMarking'));
-  let response;
-  try {
-    response = await dataSources.Stardog.queryById({
-      dbName: 'cyio-config',
-      sparqlQuery,
-      queryId: 'Select Data Marking',
-      singularizeSchema,
-    });
-  } catch (e) {
-    console.log(e);
-    throw e;
-  }
-
-  if (response === undefined) return null;
-  if (typeof response === 'object' && 'body' in response) {
-    throw new UserInputError(response.statusText, {
-      error_details: response.body.message ? response.body.message : response.body,
-      error_code: response.body.code ? response.body.code : 'N/A',
-    });
-  }
-
-  if (Array.isArray(response) && response.length > 0) {
-    const reducer = getReducer('DATA-MARKING');
-    return reducer(response[0]);
-  }
-};
-
-export const createDataMarking = async (input, dbName, selectMap, dataSources) => {
-  // TODO: WORKAROUND to remove input fields with null or empty values so creation will work
+export const createDataMarking = async (input, dbName, dataSources, select) => {
+  // WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
     if (Array.isArray(input[key]) && input[key].length === 0) {
       delete input[key];
@@ -177,7 +179,7 @@ export const createDataMarking = async (input, dbName, selectMap, dataSources) =
   // END WORKAROUND
 
   // check if object with id exists
-  // TODO: need to generate the iri or id
+  let { iri, id, query } = insertDataMarkingQuery(input);
   const sparqlQuery = selectDataMarkingQuery(id, ['id', 'created', 'modified', 'name']);
   let response;
   try {
@@ -192,10 +194,9 @@ export const createDataMarking = async (input, dbName, selectMap, dataSources) =
     throw e;
   }
   if (response !== undefined && response.length > 0)
-    throw new UserInputError(`Data Marking already exists with the name "${results[0].name}"`);
+    throw new UserInputError(`Data Marking already exists with the name "${response[0].name}"`);
 
   // create the Data Marking
-  let { iri, id, query } = insertDataMarkingQuery(input);
   try {
     response = await dataSources.Stardog.create({
       dbName: 'cyio-config',
@@ -208,10 +209,10 @@ export const createDataMarking = async (input, dbName, selectMap, dataSources) =
   }
 
   // retrieve the newly created Data Marking to be returned
-  const select = selectDataMarkingQuery(id, selectMap.getNode('createDataMarking'));
+  const selectQuery = selectDataMarkingQuery(id, select);
   const result = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: 'Select Data Marking',
     singularizeSchema,
   });
@@ -296,7 +297,7 @@ export const deleteDataMarkingById = async (id, dbName, dataSources) => {
   }
 };
 
-export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSources, selectMap, schema) => {
+export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSources, select, schema) => {
   // make sure there is input data containing what is to be edited
   if (input === undefined || input.length === 0) throw new UserInputError(`No input data was supplied`);
 
@@ -452,10 +453,10 @@ export const editDataMarkingById = async (dataMarkingId, input, dbName, dataSour
     }
   }
 
-  const select = selectDataMarkingQuery(dataMarkingId, selectMap.getNode('editDataMarking'));
+  const selectQuery = selectDataMarkingQuery(dataMarkingId, select);
   const result = await dataSources.Stardog.queryById({
     dbName: 'cyio-config',
-    sparqlQuery: select,
+    sparqlQuery: selectQuery,
     queryId: 'Select Data Marking',
     singularizeSchema,
   });

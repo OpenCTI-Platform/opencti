@@ -13,6 +13,8 @@ import {
   detachFromComponentQuery,
   convertAssetToComponent,
 } from './sparql-query.js';
+import { findDataMarkingByIri } from '../../../data-markings/domain/dataMarkings.js';
+
 
 const componentResolvers = {
   Query: {
@@ -212,6 +214,54 @@ const componentResolvers = {
     editComponent: async (_, { id, input }, { dbName, dataSources, selectMap }) => {},
   },
   Component: {
+    responsible_roles: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.responsible_roles_iri === undefined) return [];
+      const reducer = getCommonReducer('RESPONSIBLE-ROLE');
+      const results = [];
+      const sparqlQuery = selectAllResponsibleRoles(selectMap.getNode('node'), args, parent);
+      let response;
+      try {
+        response = await dataSources.Stardog.queryById({
+          dbName,
+          sparqlQuery,
+          queryId: 'Select Referenced Responsible Roles',
+          singularizeSchema,
+        });
+      } catch (e) {
+        console.log(e);
+        throw e;
+      }
+      if (response === undefined || response.length === 0) return null;
+
+      // Handle reporting Stardog Error
+      if (typeof response === 'object' && 'body' in response) {
+        throw new UserInputError(response.statusText, {
+          error_details: response.body.message ? response.body.message : response.body,
+          error_code: response.body.code ? response.body.code : 'N/A',
+        });
+      }
+
+      for (const item of response) {
+        results.push(reducer(item));
+      }
+
+      // check if there is data to be returned
+      if (results.length === 0) return [];
+      return results;
+    },
+    protocols: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.protocols_iri === undefined) return [];
+    },
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
+    },
     labels: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.labels_iri === undefined) return [];
       const iriArray = parent.labels_iri;
@@ -325,44 +375,6 @@ const componentResolvers = {
         return results;
       }
       return [];
-    },
-    responsible_roles: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.responsible_roles_iri === undefined) return [];
-      const reducer = getCommonReducer('RESPONSIBLE-ROLE');
-      const results = [];
-      const sparqlQuery = selectAllResponsibleRoles(selectMap.getNode('node'), args, parent);
-      let response;
-      try {
-        response = await dataSources.Stardog.queryById({
-          dbName,
-          sparqlQuery,
-          queryId: 'Select Referenced Responsible Roles',
-          singularizeSchema,
-        });
-      } catch (e) {
-        console.log(e);
-        throw e;
-      }
-      if (response === undefined || response.length === 0) return null;
-
-      // Handle reporting Stardog Error
-      if (typeof response === 'object' && 'body' in response) {
-        throw new UserInputError(response.statusText, {
-          error_details: response.body.message ? response.body.message : response.body,
-          error_code: response.body.code ? response.body.code : 'N/A',
-        });
-      }
-
-      for (const item of response) {
-        results.push(reducer(item));
-      }
-
-      // check if there is data to be returned
-      if (results.length === 0) return [];
-      return results;
-    },
-    protocols: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.protocols_iri === undefined) return [];
     },
   },
 };

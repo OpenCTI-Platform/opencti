@@ -13,6 +13,7 @@ import {
   detachFromInventoryItemQuery,
   convertAssetToInventoryItem,
 } from './sparql-query.js';
+import { findDataMarkingByIri } from '../../../data-markings/domain/dataMarkings.js';
 import { findResponsiblePartyByIri } from '../../oscal-common/domain/oscalResponsibleParty.js';
 
 const inventoryItemResolvers = {
@@ -159,6 +160,30 @@ const inventoryItemResolvers = {
     editInventoryItem: async (_, { id, input }, { dbName, dataSources, selectMap }) => {},
   },
   InventoryItem: {
+    responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.responsible_party_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.responsible_party_iris) {
+        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
+        if (result === undefined || result === null) continue;
+        results.push(result);
+      }
+      return results;
+    },
+    implemented_components: async (parent, _, { dbName, dataSources, selectMap }) => {
+      if (parent.implemented_components !== undefined) return parent.implemented_components;
+      if (parent.implemented_components_iri === undefined) return [];
+    },
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
+    },
     labels: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.labels_iri === undefined) return [];
       const iriArray = parent.labels_iri;
@@ -272,20 +297,6 @@ const inventoryItemResolvers = {
         return results;
       }
       return [];
-    },
-    responsible_parties: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.responsible_party_iris === undefined) return [];
-      let results = []
-      for (let iri of parent.responsible_party_iris) {
-        let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
-        if (result === undefined || result === null) continue;
-        results.push(result);
-      }
-      return results;
-    },
-    implemented_components: async (parent, _, { dbName, dataSources, selectMap }) => {
-      if (parent.implemented_components !== undefined) return parent.implemented_components;
-      if (parent.implemented_components_iri === undefined) return [];
     },
   },
 };

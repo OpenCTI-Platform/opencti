@@ -60,13 +60,14 @@ const informationSystemReducer = (item) => {
       ...(item.network_architecture && { network_architecture_iri: item.network_architecture }),
       ...(item.data_flow && { data_flow_iri: item.data_flow }),
       ...(item.system_implementation && { system_implementation_iri: item.system_implementation }),
+      ...(item.responsible_parties && { responsible_party_iris: item.responsible_parties }),
       // Use instead of system_implementation as the elements are base properties on InformationSystem
       ...(item.components && { component_iris: item.components }),
       ...(item.inventory_items && { inventory_item_iris: item.inventory_items }),
       ...(item.leveraged_authorizations && { leveraged_authorization_iris: item.leveraged_authorizations }),
       ...(item.users && { users_iris: item.users }),
       // hints for general lists of items
-      ...(item.responsible_parties && { responsible_party_iris: item.responsible_parties }),
+      ...(item.object_markings && {marking_iris: item.object_markings}),
       ...(item.labels && { label_iris: item.labels }),
       ...(item.links && { link_iris: item.links }),
       ...(item.remarks && { remark_iris: item.remarks }),
@@ -496,6 +497,11 @@ export const informationSystemPredicateMap = {
   data_flow: {
     predicate: "<http://csrc.nist.gov/ns/oscal/info-system#data_flow>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "data_flow");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {

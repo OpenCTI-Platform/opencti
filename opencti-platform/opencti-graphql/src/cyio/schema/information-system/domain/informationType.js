@@ -1,6 +1,6 @@
 import { UserInputError } from 'apollo-server-errors';
-import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../utils.js';
 import conf from '../../../../config/conf';
+import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../utils.js';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 import {
   getReducer,
@@ -643,7 +643,7 @@ export const attachToInformationType = async ( id, field, entityId, dbName, data
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
-    'information_types': 'information-type',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -653,7 +653,7 @@ export const attachToInformationType = async ( id, field, entityId, dbName, data
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeInformationTypeSchema
@@ -713,7 +713,7 @@ export const detachFromInformationType = async ( id, field, entityId, dbName, da
 		'confidentiality_impact': 'impact-definition',
 		'integrity_impact': 'impact-definition',
 		'availability_impact': 'impact-definition',
-    'information_types': 'information-type',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -723,7 +723,7 @@ export const detachFromInformationType = async ( id, field, entityId, dbName, da
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeInformationTypeSchema
@@ -1173,10 +1173,6 @@ export const attachToImpactDefinition = async (id, field, entityId, dbName, data
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'confidentiality_impact': 'impact-definition',
-		'integrity_impact': 'impact-definition',
-		'availability_impact': 'impact-definition',
-    'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -1242,10 +1238,6 @@ export const detachFromImpactDefinition = async (id, field, entityId, dbName, da
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-		'confidentiality_impact': 'impact-definition',
-		'integrity_impact': 'impact-definition',
-		'availability_impact': 'impact-definition',
-    'information_types': 'information-type',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -1709,7 +1701,6 @@ export const attachToCategorization = async (id, field, entityId, dbName, dataSo
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-    'system_catalog': 'information-type-catalog',
     'information_type': 'information-type',
   }
   let objectType = attachableObjects[field];
@@ -1717,7 +1708,7 @@ export const attachToCategorization = async (id, field, entityId, dbName, dataSo
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'information-type' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeCategorizationSchema
@@ -1773,7 +1764,6 @@ export const detachFromCategorization = async (id, field, entityId, dbName, data
   if (response === undefined || response === null || response.length === 0) throw new UserInputError(`Entity does not exist with ID ${id}`);
 
   let attachableObjects = {
-    'system_catalog': 'information-type-catalog',
     'information_type': 'information-type',
   }
   let objectType = attachableObjects[field];
@@ -1781,7 +1771,7 @@ export const detachFromCategorization = async (id, field, entityId, dbName, data
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'information-type' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeCategorizationSchema

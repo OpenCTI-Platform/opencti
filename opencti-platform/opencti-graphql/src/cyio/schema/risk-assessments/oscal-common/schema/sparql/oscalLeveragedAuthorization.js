@@ -36,10 +36,12 @@ const oscalLeveragedAuthorizationReducer = (item) => {
     ...(item.created && { created: item.created }),
     ...(item.modified && { modified: item.modified }),
     ...(item.title && { title: item.title }),
+    ...(item.description && { title: item.description }),
     ...(item.date_authorized && { date_authorized: item.date_authorized }),
     // hints for field-level resolver queries
     ...(item.party && { party_iri: item.party }),
     // hints for general lists of items
+    ...(item.object_markings && {marking_iris: item.object_markings}),
     ...(item.labels && { label_iris: item.labels }),
     ...(item.links && { link_iris: item.links }),
     ...(item.remarks && { remark_iris: item.remarks }),
@@ -265,6 +267,11 @@ export const oscalLeveragedAuthorizationPredicateMap = {
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "title");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
+  description: {
+    predicate: "<http://csrc.nist.gov/ns/oscal/common#description>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"@en-US`: null, this.predicate, "description");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
   party: {
     predicate: "<http://darklight.ai/ns/common#party>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "party");},
@@ -273,6 +280,11 @@ export const oscalLeveragedAuthorizationPredicateMap = {
   date_authorized: {
     predicate: "<http://darklight.ai/ns/common#date_authorized>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"^^xsd:date` : null,  this.predicate, "date_authorized");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {

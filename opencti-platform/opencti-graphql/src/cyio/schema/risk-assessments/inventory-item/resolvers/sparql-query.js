@@ -34,9 +34,6 @@ export const inventoryItemReducer = (item) => {
     ...(item.iri && { parent_iri: item.iri }),
     ...(item.created && { created: item.created }),
     ...(item.modified && { modified: item.modified }),
-    ...(item.labels && { labels_iri: item.labels }),
-    ...(item.links && { links_iri: item.links }),
-    ...(item.remarks && { remarks_iri: item.remarks }),
     ...(item.name && { name: item.name }),
     ...(item.description && { description: item.description }),
     // inventory-item
@@ -83,6 +80,11 @@ export const inventoryItemReducer = (item) => {
     ...(item.installed_software && { installed_sw_iri: item.installed_software }),
     ...(item.ports && { ports_iri: item.ports }),
     ...(item.connected_to_network && { conn_network_iri: item.connected_to_network }),
+      // hints for general lists of items
+      ...(item.object_markings && {marking_iris: item.object_markings}),
+      ...(item.labels && { labels_iri: item.labels }),
+      ...(item.links && { links_iri: item.links }),
+      ...(item.remarks && { remarks_iri: item.remarks }),
   };
 };
 
@@ -283,6 +285,11 @@ export const inventoryItemPredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {
     predicate: '<http://darklight.ai/ns/common#labels>',

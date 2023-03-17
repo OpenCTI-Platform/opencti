@@ -1,4 +1,5 @@
 import { UserInputError } from 'apollo-server-errors';
+import conf from '../../../../config/conf';
 import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../utils.js';
 import { selectObjectIriByIdQuery } from '../../global/global-utils.js';
 import {
@@ -447,58 +448,6 @@ export const editDescriptionBlockById = async (id, input, dbName, dataSources, s
       switch(editItem.key) {
         case 'diagrams':
           throw new UserInputError(`Cannot directly edit field "${editItem.key}".`);
-        // case 'diagrams':
-        //   if (editItem.operation !== 'add') {
-        //     // find the existing update entity in Description Block
-        //     if (editItem.key in response[0]) {
-        //       entityIri = response[0].availability_impact;
-
-        //       // detach the private FrequencyTiming object
-        //       let query = detachFromDescriptionBlockQuery(id, editItem.key, entityIri);
-        //       await dataSources.Stardog.delete({
-        //         dbName: dbName,
-        //         sparqlQuery: query,
-        //         queryId: "Detach Impact from Description Block"
-        //       });
-
-        //       // Delete the Diagram object since its private to the Description Block
-        //       query = deleteDiagramByIriQuery(entityIri);
-        //       await dataSources.Stardog.delete({
-        //         dbName: dbName,
-        //         sparqlQuery: query,
-        //         queryId: "Delete Diagram"
-        //       });  
-        //     }
-        //   }
-        //   if (editItem.operation !== 'delete') {
-        //     let entity;
-        //     objArray = JSON.parse(value);
-        //     if (Array.isArray(objArray)) {
-        //       entity = objArray[0];
-        //     }
-        //     else {
-        //       entity = objArray;
-        //     }
-
-        //     // create the instance of the Diagram
-        //     const { iri, id, query } = insertDiagramQuery(entity);
-        //     await dataSources.Stardog.create({
-        //       dbName: dbName,
-        //       sparqlQuery: query,
-        //       queryId: "Create Diagram Ref of Information Type Entry"
-        //     });
-
-        //     // attach the new Impact Definition to the Information Type Entry
-        //     let attachQuery = attachToDescriptionBlockQuery(id, editItem.key, iri);
-        //     await dataSources.Stardog.create({
-        //       dbName: dbName,
-        //       sparqlQuery: attachQuery,
-        //       queryId: "Attach Diagram Ref object to Information Type Entry"
-        //     });
-        //   }
-        //   fieldType = 'complex';
-        //   editItem.operation  = 'skip';
-        //   break;
         case 'links':
           objectType = 'external-reference';
           fieldType = 'id';
@@ -582,6 +531,7 @@ export const attachToDescriptionBlock = async (id, field, entityId, dbName, data
 
   let attachableObjects = {
     'diagrams': 'diagram',
+    'object_markings': 'marking-definition',
     'links': 'link',
     'remarks': 'remark',
   }
@@ -590,7 +540,7 @@ export const attachToDescriptionBlock = async (id, field, entityId, dbName, data
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeDescriptionBlockSchema
@@ -647,6 +597,7 @@ export const detachFromDescriptionBlock = async (id, field, entityId, dbName, da
 
   let attachableObjects = {
     'diagrams': 'diagram',
+    'object_markings': 'marking-definition',
     'links': 'link',
     'remarks': 'remark',
   }
@@ -655,7 +606,7 @@ export const detachFromDescriptionBlock = async (id, field, entityId, dbName, da
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeDescriptionBlockSchema

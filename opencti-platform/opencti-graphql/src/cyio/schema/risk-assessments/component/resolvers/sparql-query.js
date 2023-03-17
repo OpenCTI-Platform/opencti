@@ -56,9 +56,6 @@ export const componentReducer = (item) => {
     ...(item.object_type && { object_type: item.object_type }),
     ...(item.created && { created: item.created }),
     ...(item.modified && { modified: item.modified }),
-    ...(item.labels && { labels_iri: item.labels }),
-    ...(item.links && { links_iri: item.links }),
-    ...(item.remarks && { remarks_iri: item.remarks }),
     ...(item.name && { name: item.name }),
     ...(item.description && { description: item.description }),
     // component
@@ -100,6 +97,11 @@ export const componentReducer = (item) => {
     ...(item.isa_title && { isa_title: item.isa_title }),
     ...(item.isa_date && { isa_date: item.isa_date }),
     ...(item.isa_remote_system_name && { isa_remote_system_name: item.isa_remote_system_name }),
+    // hints for general lists of items
+    ...(item.object_markings && {marking_iris: item.object_markings}),
+    ...(item.labels && { labels_iri: item.labels }),
+    ...(item.links && { links_iri: item.links }),
+    ...(item.remarks && { remarks_iri: item.remarks }),
   };
 };
 
@@ -400,6 +402,11 @@ export const componentPredicateMap = {
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));
     },
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   inherited_uuid: {
     predicate: '<http://csrc.nist.gov/ns/oscal/common#inherited_uuid>',

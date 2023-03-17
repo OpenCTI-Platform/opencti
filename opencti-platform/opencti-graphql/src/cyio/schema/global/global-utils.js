@@ -164,7 +164,7 @@ export const selectObjectIriByIdQuery = (id, type) => {
   WHERE {
       ?iri a <${objectMap[type].classIri}> .
       ?iri <http://darklight.ai/ns/common#id>|<http://docs.oasis-open.org/ns/cti#id> "${id}" .
-      ?iri <http://darklight.ai/ns/common#object_type> ?object_type .
+      ?iri <http://darklight.ai/ns/common#object_type>|<http://docs.oasis-open.org/ns/cti#object_type> ?object_type .
     }
   `
 }

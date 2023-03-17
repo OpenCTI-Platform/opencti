@@ -15,6 +15,7 @@ import {
   attachToAuthorizedPrivilege,
   detachFromAuthorizedPrivilege,
 } from '../domain/oscalUser';
+import { findDataMarkingByIri } from '../../../data-markings/domain/dataMarkings.js';
 import { findLabelByIri } from '../../../global/domain/label.js';
 import { findRoleByIri } from '../domain/oscalRole.js';
 import { findLinkByIri } from '../domain/oscalLink.js';
@@ -63,6 +64,16 @@ const cyioOscalUserResolvers = {
       let results = []
       for (let iri of parent.authorized_privilege_iris) {
         let result = await findAuthorizedPrivilegeByIri(iri, dbName, dataSources, selectMap.getNode('authorized_privileges'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
+    },
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
         if (result === undefined || result === null) return null;
         results.push(result);
       }

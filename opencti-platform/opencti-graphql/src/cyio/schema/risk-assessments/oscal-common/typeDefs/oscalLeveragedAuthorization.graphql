@@ -64,11 +64,15 @@ type OscalLeveragedAuthorization implements BasicObject & LifecycleObject & Osca
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
+  "Identifies a  label or descriptor that is tied to a sensitivity or classification marking system."
+  object_markings: [DataMarking]
   "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
   props: [Property]
   # LeveragedAuthorization
   "Identifies a human readable name for the leveraged authorization in the context of the system."
   title: String!
+  "Identifies a summary of the authorization leveraged by the system."
+  description: String
   "Identifies the date the system received its authorization."
   date_authorized: Date!
   "Identifies a reference to the party that manages the leveraged system."

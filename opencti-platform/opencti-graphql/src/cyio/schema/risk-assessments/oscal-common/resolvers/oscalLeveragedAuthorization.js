@@ -7,6 +7,7 @@ import {
   attachToLeveragedAuthorization,
   detachFromLeveragedAuthorization,
 } from '../domain/oscalLeveragedAuthorization';
+import { findDataMarkingByIri } from '../../../data-markings/domain/dataMarkings.js';
 import { findLabelByIri } from '../../../global/domain/label.js';
 import { findPartyByIri } from '../domain/oscalParty.js';
 import { findLinkByIri } from '../domain/oscalLink.js';
@@ -33,6 +34,16 @@ const cyioOscalLeveragedAuthorizationResolvers = {
       let result = await findPartyByIri(parent.party_iri, dbName, dataSources, selectMap.getNode('party'));
       if (result === undefined || result === null) return null;
       return result;
+    },
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
     },
     labels: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.label_iris === undefined) return [];

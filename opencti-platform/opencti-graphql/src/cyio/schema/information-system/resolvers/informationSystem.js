@@ -14,6 +14,7 @@ import {
 } from '../domain/informationSystem.js';
 import { findDescriptionBlockByIri } from '../domain/descriptionBlock.js';
 import { findInformationTypeByIri } from '../domain/informationType.js';
+import { findDataMarkingByIri } from '../../data-markings/domain/dataMarkings.js';
 
 
 const cyioInformationSystemResolvers = {
@@ -30,8 +31,8 @@ const cyioInformationSystemResolvers = {
     deleteInformationSystems: async (_, { ids }, { dbName, dataSources }) => deleteInformationSystemById( ids, dbName, dataSources),
     editInformationSystem: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editInformationSystemById(id, input, dbName, dataSources, selectMap.getNode("editInformationSystem"), schema),
     // Attach and Detach
-    attachToInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => attachToInformationSystem(id, field, entryId ,dbName, dataSources),
-    detachFromInformationSystem: async (_, { id, field, entryId }, { dbName, dataSources }) => detachFromInformationSystem(id, field, entryId ,dbName, dataSources),
+    attachToInformationSystem: async (_, { id, field, entityId }, { dbName, dataSources }) => attachToInformationSystem(id, field, entityId ,dbName, dataSources),
+    detachFromInformationSystem: async (_, { id, field, entityId }, { dbName, dataSources }) => detachFromInformationSystem(id, field, entityId ,dbName, dataSources),
     // Implementation items
     addInformationSystemImplementationEntity: async (_, { id, implementation_type, entityId }, { dbName, dataSources }) => addImplementationEntity(id, implementation_type, entityId, dbName, dataSources),
     removeInformationSystemImplementationEntity: async (_, { id, implementation_type, entityId }, { dbName, dataSources }) => removeImplementationEntity(id, implementation_type, entityId, dbName, dataSources),
@@ -92,6 +93,16 @@ const cyioInformationSystemResolvers = {
       for (let iri of parent.responsible_party_iris) {
         let result = await findResponsiblePartyByIri(iri, dbName, dataSources, selectMap.getNode('responsible_parties'));
         if (result === undefined || result === null) continue;
+        results.push(result);
+      }
+      return results;
+    },
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
+        if (result === undefined || result === null) return null;
         results.push(result);
       }
       return results;
