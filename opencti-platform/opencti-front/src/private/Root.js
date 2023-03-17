@@ -61,7 +61,7 @@ function checkToken(history) {
   }
   const jwtToken = JSON.parse(atob(token.split('.')[1]));
   const expiration = ((jwtToken.exp - 60) * 1000) - Date.now();
-  if (expiration < 0) {
+  if (expiration < 90000) {
     commitMutation({
       mutation: rootTokenRenewMutation,
       onCompleted: ({ meTokenRenew }) => {
