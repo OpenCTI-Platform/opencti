@@ -1,4 +1,5 @@
 import { UserInputError } from 'apollo-server-errors';
+import conf from '../../../../../config/conf.js';
 import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../../utils.js';
 import { selectObjectIriByIdQuery } from '../../../global/global-utils.js';
 import {
@@ -576,6 +577,7 @@ export const attachToUserType = async ( id, field, entityId, dbName, dataSources
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the OSCAL User exists
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   sparqlQuery = selectOscalUserByIriQuery(iri, select);
   let response;
@@ -595,6 +597,7 @@ export const attachToUserType = async ( id, field, entityId, dbName, dataSources
   let attachableObjects = {
 		'roles': 'oscal-role',
 		'authorized_privileges': 'authorized-privilege',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -604,7 +607,7 @@ export const attachToUserType = async ( id, field, entityId, dbName, dataSources
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeOscalUserSchema
@@ -643,6 +646,7 @@ export const detachFromUserType = async ( id, field, entityId, dbName, dataSourc
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the OSCAL User exists
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/oscal-user--${id}>`;
   sparqlQuery = selectOscalUserByIriQuery(iri, select);
   let response;
@@ -662,6 +666,7 @@ export const detachFromUserType = async ( id, field, entityId, dbName, dataSourc
   let attachableObjects = {
 		'roles': 'oscal-role',
 		'authorized_privileges': 'authorized-privilege',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -671,7 +676,7 @@ export const detachFromUserType = async ( id, field, entityId, dbName, dataSourc
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeOscalUserSchema
@@ -823,7 +828,7 @@ export const findAllAuthorizedPrivilegeEntries = async (args, dbName, dataSource
   }
 };
 
-export const createAuthorizedPrivilege = async (input, dbName, dataSources, selectMap) => {
+export const createAuthorizedPrivilege = async (input, dbName, dataSources, select) => {
   // WORKAROUND to remove input fields with null or empty values so creation will work
   for (const [key, value] of Object.entries(input)) {
     if (Array.isArray(input[key]) && input[key].length === 0) {
@@ -861,7 +866,7 @@ export const createAuthorizedPrivilege = async (input, dbName, dataSources, sele
   }
 
   // retrieve the newly created Impact Level to be returned
-  const selectQuery = selectAuthorizedPrivilegeQuery(id, selectMap.getNode("createAuthorizedPrivilege"));
+  const selectQuery = selectAuthorizedPrivilegeQuery(id, select);
   let result;
   try {
     result = await dataSources.Stardog.queryById({
@@ -927,7 +932,7 @@ export const deleteAuthorizedPrivilegeById = async ( id, dbName, dataSources, se
   return removedIds;
 };
 
-export const editAuthorizedPrivilegeById = async (id, input, dbName, dataSources, selectMap, schema) => {
+export const editAuthorizedPrivilegeById = async (id, input, dbName, dataSources, select, schema) => {
   if (!checkIfValidUUID(id)) throw new UserInputError(`Invalid identifier: ${id}`);  
 
   // make sure there is input data containing what is to be edited
@@ -1033,7 +1038,7 @@ export const editAuthorizedPrivilegeById = async (id, input, dbName, dataSources
     }
   }
 
-  const selectQuery = selectAuthorizedPrivilegeQuery(id, selectMap.getNode("editAuthorizedPrivilege"));
+  const selectQuery = selectAuthorizedPrivilegeQuery(id, select);
   const result = await dataSources.Stardog.queryById({
     dbName,
     sparqlQuery: selectQuery,

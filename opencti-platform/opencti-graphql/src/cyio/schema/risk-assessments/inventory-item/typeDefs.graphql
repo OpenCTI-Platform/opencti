@@ -54,6 +54,8 @@ type InventoryItem implements BasicObject & LifecycleObject & OscalObject {
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
+  "Identifies a  label or descriptor that is tied to a sensitivity or classification marking system."
+  object_markings: [DataMarking]
   # Inventory Item
   "Indicates the inventory item's function, such as Router, Storage Array, DNS Server."
   asset_type: AssetType

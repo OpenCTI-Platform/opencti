@@ -56,8 +56,8 @@ const dataMarkingReducer = (item) => {
     ...(item.created_by_ref && { created_by_ref_iri: item.created_by_ref }),
     ...(item.external_references && { external_references_iri: item.external_references }),
     ...(item.notes && { notes_iri: item.notes }),
-    ...(item.object_marking_refs && { object_marking_ref_iris: item.object_marking_refs }),
-    ...(item.granular_markings && { granular_markings_iri: item.granular_markings_ref }),
+    ...(item.object_markings && { marking_iris: item.object_markings }),
+    ...(item.granular_markings && { granular_marking_iris: item.granular_markings }),
   };
 };
 
@@ -389,10 +389,10 @@ export const dataMarkingPredicateMap = {
       return optionalizePredicate(this.binding(iri, value));
     },
   },
-  object_marking_refs: {
-    predicate: '<http://docs.oasis-open.org/ns/cti/data-marking#object_marking_refs>',
+  object_markings: {
+    predicate: '<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>',
     binding(iri, value) {
-      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_marking_refs');
+      return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'object_markings');
     },
     optional(iri, value) {
       return optionalizePredicate(this.binding(iri, value));

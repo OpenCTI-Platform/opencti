@@ -13,14 +13,20 @@ extend type Query {
 }
 
 extend type Mutation {
-  deleteDataMarkings(id: [ID!]!): [ID]  @hasPermission(resources: "Marking:delete")
   createStatementMarking(input: StatementMarkingInput): StatementMarking  @hasPermission(resources: "Marking:update")
   createTLPMarking(input: TLPMarkingInput): TLPMarking  @hasPermission(resources: "Marking:update")
   createIEPMarking(input: IEPMarkingInput): IEPMarking  @hasPermission(resources: "Marking:update")
   deleteDataMarking(id: ID!): String! @hasPermission(resources: "Marking:delete")
+  deleteDataMarkings(id: [ID!]!): [ID]  @hasPermission(resources: "Marking:delete")
   editDataMarking(id: ID!, input: [EditInput]!, commitMessage: String): DataMarking @hasPermission(resources:"Marking:update")
 }
 
+"""
+Defines a label or descriptor that is tied to a sensitivity or classification marking system.
+
+When serializing as an OSCAL property, the definition_type can be used to determine the value
+for the class to indicate a specific marking system.
+"""
 interface DataMarkingObject {
   # BasicObject
   "Uniquely identifies this object."

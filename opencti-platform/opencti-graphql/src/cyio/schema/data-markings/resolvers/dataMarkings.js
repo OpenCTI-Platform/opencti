@@ -9,16 +9,16 @@ import {
 
 const cyioDataMarkingResolvers = {
   Query: {
-    dataMarkings: async (_, args, { dbName, dataSources, selectMap }) => findAllDataMarkings(args, dbName, dataSources, selectMap),
-    dataMarking: async (_, { id }, { dbName, dataSources, selectMap }) => findDataMarkingById(id, dbName, dataSources, selectMap),
+    dataMarkings: async (_, args, { dbName, dataSources, selectMap }) => findAllDataMarkings(args, dbName, dataSources, selectMap.getNode('node')),
+    dataMarking: async (_, { id }, { dbName, dataSources, selectMap }) => findDataMarkingById(id, dbName, dataSources, selectMap.getNode('dataMarking')),
   },
   Mutation: {
-    deleteDataMarkings: async (_, { ids }, { dbName, dataSources }) => deleteDataMarkingById( ids, dbName, dataSources),
-    createStatementMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
-    createTLPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
-    createIEPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, selectMap, dataSources),
+    createStatementMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, dataSources, selectMap.getNode('createStatementMarking')),
+    createTLPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, dataSources, selectMap.getNode('createTLPMarking')),
+    createIEPMarking: async (_, { input }, { dbName, selectMap, dataSources }) => createDataMarking( input, dbName, dataSources, selectMap.getNode('createIEPMarking')),
     deleteDataMarking: async (_, { id }, { dbName, dataSources }) => deleteDataMarkingById( id, dbName, dataSources),
-    editDataMarking: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editDataMarkingById(id, input, dbName, dataSources, selectMap, schema),
+    deleteDataMarkings: async (_, { ids }, { dbName, dataSources }) => deleteDataMarkingById( ids, dbName, dataSources),
+    editDataMarking: async (_, { id, input }, { dbName, dataSources, selectMap }, {schema}) => editDataMarkingById(id, input, dbName, dataSources, selectMap.getNode('editDataMarking'), schema),
   },
   // type resolvers
   DataMarking: {

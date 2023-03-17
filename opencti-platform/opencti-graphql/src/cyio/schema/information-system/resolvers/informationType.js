@@ -25,6 +25,7 @@ import {
   attachToCategorization,
   detachFromCategorization,
 } from '../domain/informationType.js';
+import { findDataMarkingByIri } from '../../data-markings/domain/dataMarkings';
 
 const cyioInformationTypeResolvers = {
   Query: {
@@ -106,6 +107,16 @@ const cyioInformationTypeResolvers = {
       if (impact === undefined || impact === null) return null;
       return impact;
 		},
+    object_markings: async (parent, _, { dbName, dataSources, selectMap}) => {
+      if (parent.marking_iris === undefined) return [];
+      let results = []
+      for (let iri of parent.marking_iris) {
+        let result = await findDataMarkingByIri(iri, dbName, dataSources, selectMap.getNode('object_markings'));
+        if (result === undefined || result === null) return null;
+        results.push(result);
+      }
+      return results;
+    },
     links: async (parent, _, { dbName, dataSources, selectMap }) => {
       if (parent.link_iris === undefined) return [];
       let results = []

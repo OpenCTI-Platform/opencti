@@ -805,6 +805,7 @@ export const attachToInformationSystem = async (id, field, entityId, dbName, dat
     'network_architecture': 'description-block',
     'data_flow': 'description-block',
     'responsible_parties': 'oscal-responsible-party',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark',
@@ -819,7 +820,7 @@ export const attachToInformationSystem = async (id, field, entityId, dbName, dat
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeInformationSystemSchema
@@ -883,6 +884,7 @@ export const detachFromInformationSystem = async (id, field, entityId, dbName, d
     'network_architecture': 'description-block',
     'data_flow': 'description-block',
     'responsible_parties': 'oscal-responsible-party',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark',
@@ -897,7 +899,7 @@ export const detachFromInformationSystem = async (id, field, entityId, dbName, d
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeInformationSystemSchema

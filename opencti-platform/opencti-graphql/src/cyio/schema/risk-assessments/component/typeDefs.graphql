@@ -54,6 +54,8 @@ type Component implements BasicObject & LifecycleObject & OscalObject {
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
+  "Identifies a  label or descriptor that is tied to a sensitivity or classification marking system."
+  object_markings: [DataMarking]
   # Component
   "Indicates the type of the component"
   component_type: ComponentType

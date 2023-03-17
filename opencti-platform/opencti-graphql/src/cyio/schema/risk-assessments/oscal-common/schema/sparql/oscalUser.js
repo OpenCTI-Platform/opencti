@@ -46,6 +46,8 @@ const oscalUserReducer = (item) => {
     ...(item.roles && { role_iris: item.roles }),
     ...(item.authorized_privileges && { authorized_privilege_iris: item.authorized_privileges }),
     // hints for general lists of items
+    ...(item.object_markings && {marking_iris: item.object_markings}),
+    ...(item.relationships && { relationships: item.relationships }),
     ...(item.labels && { label_iris: item.labels }),
     ...(item.links && { link_iris: item.links }),
     ...(item.remarks && { remark_iris: item.remarks }),
@@ -482,6 +484,11 @@ export const oscalUserPredicateMap = {
   privilege_level: {
     predicate: "<http://darklight.ai/ns/common#privilege_level>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "privilege_level");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   labels: {

@@ -60,6 +60,8 @@ type InformationSystem implements BasicObject & LifecycleObject & OscalObject & 
     filterMode: FilterMode
     search: String
   ): OscalRelationshipConnection
+  "Identifies a  label or descriptor that is tied to a sensitivity or classification marking system."
+  object_markings: [DataMarking]
   # InformationSystem
   "Identifies one or more attributes, characteristics, or qualities of the containing object expressed as a namespace qualified name/value pair. The value of a property is a simple scalar value, which may be expressed as a list of values."
   props: [Property]

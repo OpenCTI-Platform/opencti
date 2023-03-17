@@ -41,6 +41,9 @@ const descriptionBlockReducer = (item) => {
     ...(item.description && { description: item.description }),
     // hints for field-level resolver queries
     ...(item.diagrams && { diagram_iris: item.diagrams }),
+    // hints for general lists of items
+    ...(item.object_markings && {marking_iris: item.object_markings}),
+    ...(item.relationships && { relationships: item.relationships }),
     ...(item.labels && { labels_iris: item.labels }),
     ...(item.links && { links_iris: item.links }),
     ...(item.remarks && { remarks_iris: item.remarks }),
@@ -539,6 +542,11 @@ export const diagramPredicateMap = {
   diagram_media_type: {
     predicate: "<http://csrc.nist.gov/ns/oscal/info-system#diagram_media_type>",
     binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "diagram_media_type");},
+    optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
+  },
+  object_markings: {
+    predicate: "<http://docs.oasis-open.org/ns/cti/data-marking#object_markings>",
+    binding: function (iri, value) { return parameterizePredicate(iri, value ? `"${value}"`: null, this.predicate, "object_markings");},
     optional: function (iri, value) { return optionalizePredicate(this.binding(iri, value));},
   },
   links: {

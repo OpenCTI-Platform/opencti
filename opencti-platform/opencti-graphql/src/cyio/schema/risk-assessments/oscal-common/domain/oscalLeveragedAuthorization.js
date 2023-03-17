@@ -1,4 +1,5 @@
 import { UserInputError } from 'apollo-server-errors';
+import conf from '../../../../../config/conf.js';
 import { compareValues, filterValues, updateQuery, checkIfValidUUID, validateEnumValue } from '../../../utils.js';
 import { selectObjectIriByIdQuery } from '../../../global/global-utils.js'
 import {
@@ -156,6 +157,14 @@ export const createLeveragedAuthorization = async (input, dbName, dataSources, s
                             .replace(/\'/g, "\\'")
                             .replace(/[\u2019\u2019]/g, "\\'")
                             .replace(/[\u201C\u201D]/g, '\\"');
+  }
+  if (input.description !== undefined) {
+    input.description = input.description.replace(/\s+/g, ' ')
+																				.replace(/\n/g, '\\n')
+																				.replace(/\"/g, '\\"')
+																				.replace(/\'/g, "\\'")
+																				.replace(/[\u2019\u2019]/g, "\\'")
+																				.replace(/[\u201C\u201D]/g, '\\"');
   }
 
   // Collect all the referenced objects and remove them from input array
@@ -417,6 +426,7 @@ export const attachToLeveragedAuthorization = async ( id, field, entityId, dbNam
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization--${id}>`;
   sparqlQuery = selectOscalLeveragedAuthorizationByIriQuery(iri, select);
   let response;
@@ -435,6 +445,7 @@ export const attachToLeveragedAuthorization = async ( id, field, entityId, dbNam
 
   let attachableObjects = {
     'party': 'oscal-party',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -444,7 +455,7 @@ export const attachToLeveragedAuthorization = async ( id, field, entityId, dbNam
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeOscalLeveragedAuthorizationSchema
@@ -483,6 +494,7 @@ export const detachFromLeveragedAuthorization = async ( id, field, entityId, dbN
   if (!checkIfValidUUID(entityId)) throw new UserInputError(`Invalid identifier: ${entityId}`);
 
   // check to see if the information system exists
+  let select = ['id','iri','object_type'];
   let iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization--${id}>`;
   sparqlQuery = selectOscalLeveragedAuthorizationByIriQuery(iri, select);
   let response;
@@ -501,6 +513,7 @@ export const detachFromLeveragedAuthorization = async ( id, field, entityId, dbN
 
   let attachableObjects = {
     'party': 'oscal-party',
+    'object_markings': 'marking-definition',
     'labels': 'label',
     'links': 'link',
     'remarks': 'remark'
@@ -510,7 +523,7 @@ export const detachFromLeveragedAuthorization = async ( id, field, entityId, dbN
     // check to see if the entity exists
     sparqlQuery = selectObjectIriByIdQuery(entityId, objectType);
     response = await dataSources.Stardog.queryById({
-      dbName,
+      dbName: (objectType === 'marking-definition' ? conf.get('app:config:db_name') || 'cyio-config' : dbName),
       sparqlQuery,
       queryId: "Obtaining IRI for the object with id",
       singularizeSchema: singularizeOscalLeveragedAuthorizationSchema
