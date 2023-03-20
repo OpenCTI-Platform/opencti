@@ -13,7 +13,11 @@ import Labels from './Labels';
 import Retention from './Retention';
 import { BoundaryRoute } from '../Error';
 import Security from '../../../utils/Security';
-import { SETTINGS } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS,
+  SETTINGS_SETACCESSES, SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+} from '../../../utils/hooks/useGranted';
 import StatusTemplates from './status_templates/StatusTemplates';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
@@ -27,37 +31,41 @@ const Root = () => (
       <BoundaryRoute
         exact
         path="/dashboard/settings/accesses"
-        render={() => <Redirect to="/dashboard/settings/accesses/roles" />}
+        render={() => <Redirect to="/dashboard/settings/accesses/marking" />}
       />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/users"
-        component={Users}
-      />
-      <BoundaryRoute
-        path="/dashboard/settings/accesses/users/:userId"
-        component={RootUser}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/roles"
-        component={Roles}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/groups"
-        component={Groups}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/sessions"
-        component={Sessions}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/marking"
-        component={MarkingDefinitions}
-      />
+      <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to="/dashboard/settings" />}>
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/users"
+          component={Users}
+        />
+        <BoundaryRoute
+          path="/dashboard/settings/accesses/users/:userId"
+          component={RootUser}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/roles"
+          component={Roles}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/groups"
+          component={Groups}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/sessions"
+          component={Sessions}
+        />
+      </Security>
+      <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to="/dashboard/settings" />}>
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/marking"
+          component={MarkingDefinitions}
+        />
+      </Security>
       <BoundaryRoute
         exact
         path="/dashboard/settings/entity_types"
@@ -78,31 +86,33 @@ const Root = () => (
         component={Retention}
       />
       <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies"
-        render={() => <Redirect to="/dashboard/settings/vocabularies/labels" />}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies/labels"
-        component={Labels}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies/kill_chain_phases"
-        component={KillChainPhases}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies/fields"
-        component={VocabularyCategories}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies/fields/:category"
-        component={Vocabularies}
-      />
+      <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to="/dashboard/settings" />}>
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies"
+          render={() => <Redirect to="/dashboard/settings/vocabularies/labels" />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies/labels"
+          component={Labels}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies/kill_chain_phases"
+          component={KillChainPhases}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies/fields"
+          component={VocabularyCategories}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies/fields/:category"
+          component={Vocabularies}
+        />
+      </Security>
     </Security>
   </Switch>
 );

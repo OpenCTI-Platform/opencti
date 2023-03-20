@@ -4,16 +4,18 @@ import {
   GroupOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
-  Security,
+  Security as SecurityIcon,
 } from '@mui/icons-material';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
+import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
 
 const SettingsMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/roles',
       label: 'Roles',
-      icon: <Security fontSize="medium" />,
+      icon: <SecurityIcon fontSize="medium" />,
     },
     {
       path: '/dashboard/settings/accesses/users',
@@ -37,7 +39,23 @@ const SettingsMenu: FunctionComponent = () => {
     },
   ];
 
-  return <NavToolbarMenu entries={entries} />;
+  const markingEntries: MenuEntry[] = [
+    {
+      path: '/dashboard/settings/accesses/marking',
+      label: 'Marking definitions',
+      icon: <CenterFocusStrongOutlined fontSize="medium" />,
+    },
+  ];
+
+  const setAccess = useGranted([SETTINGS_SETACCESSES]);
+  if (setAccess) {
+    return (
+      <Security needs={[SETTINGS_SETACCESSES]}>
+        <NavToolbarMenu entries={entries} />
+      </Security>
+    );
+  }
+  return <NavToolbarMenu entries={markingEntries} />;
 };
 
 export default SettingsMenu;

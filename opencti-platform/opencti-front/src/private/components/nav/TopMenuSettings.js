@@ -5,7 +5,10 @@ import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import { SETTINGS_SETACCESSES, SETTINGS_SETLABELS } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+} from '../../../utils/hooks/useGranted';
 import { UserContext } from '../../../utils/hooks/useAuth';
 import { RETENTION_MANAGER, RULE_ENGINE } from '../../../utils/platformModulesHelper';
 
@@ -27,6 +30,7 @@ const TopMenuSettings = () => {
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
+
   return (
         <div>
             <Button component={Link} size="small" to="/dashboard/settings"
@@ -35,7 +39,7 @@ const TopMenuSettings = () => {
                 classes={{ root: classes.button }}>
                 {t('Parameters')}
             </Button>
-            <Security needs={[SETTINGS_SETACCESSES]}>
+            <Security needs={[SETTINGS_SETMARKINGS]}>
                 <Button component={Link} size="small" to="/dashboard/settings/accesses"
                     variant={location.pathname.includes('/dashboard/settings/accesses') ? 'contained' : 'text'}
                     color={location.pathname.includes('/dashboard/settings/accesses') ? 'secondary' : 'primary'}
