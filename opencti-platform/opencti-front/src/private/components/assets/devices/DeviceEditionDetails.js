@@ -131,7 +131,7 @@ class DeviceEditionDetailsComponent extends Component {
                   data={device?.installed_hardware}
                   title={'Installed Hardware'}
                   setFieldValue={setFieldValue}
-                  link='/defender HQ/assets/devices'
+                  link='/defender_hq/assets/devices'
                 />
               </Grid>
               <Grid item={true} xs={12}>
@@ -147,7 +147,7 @@ class DeviceEditionDetailsComponent extends Component {
                   data={device?.installed_software}
                   title={'Installed Software'}
                   setFieldValue={setFieldValue}
-                  link='/defender HQ/assets/software'
+                  link='/defender_hq/assets/software'
                 />
               </Grid>
               <Grid item={true} xs={12}>

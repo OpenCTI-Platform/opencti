@@ -27,7 +27,7 @@ const styles = () => ({
 class SoftwareKnowledgeComponent extends Component {
   render() {
     const { classes, software } = this.props;
-    const link = `/defender HQ/assets/software/${software.id}/knowledge`;
+    const link = `/defender_hq/assets/software/${software.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -37,7 +37,7 @@ class SoftwareKnowledgeComponent extends Component {
         <Switch>
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/relations/:relationId"
+            path="/defender_hq/assets/software/:softwareId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
                 entityId={software.id}
@@ -48,7 +48,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/sightings/:sightingId"
+            path="/defender_hq/assets/software/:softwareId/knowledge/sightings/:sightingId"
             render={(routeProps) => (
               <StixSightingRelationship
                 entityId={software.id}
@@ -59,7 +59,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/overview"
+            path="/defender_hq/assets/software/:softwareId/knowledge/overview"
             render={(routeProps) => (
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={software.id}
@@ -70,7 +70,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/related"
+            path="/defender_hq/assets/software/:softwareId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -99,7 +99,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/attribution"
+            path="/defender_hq/assets/software/:softwareId/knowledge/attribution"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -113,7 +113,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/victimology"
+            path="/defender_hq/assets/software/:softwareId/knowledge/victimology"
             render={(routeProps) => (
               <StixDomainObjectVictimology
                 stixDomainObjectId={software.id}
@@ -124,7 +124,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/attack_patterns"
+            path="/defender_hq/assets/software/:softwareId/knowledge/attack_patterns"
             render={(routeProps) => (
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={software.id}
@@ -135,7 +135,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/malwares"
+            path="/defender_hq/assets/software/:softwareId/knowledge/malwares"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -149,7 +149,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/tools"
+            path="/defender_hq/assets/software/:softwareId/knowledge/tools"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -163,7 +163,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/vulnerabilities"
+            path="/defender_hq/assets/software/:softwareId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -177,7 +177,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/incidents"
+            path="/defender_hq/assets/software/:softwareId/knowledge/incidents"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -191,7 +191,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/observables"
+            path="/defender_hq/assets/software/:softwareId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables
                 stixCoreObjectId={software.id}
@@ -203,7 +203,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/infrastructures"
+            path="/defender_hq/assets/software/:softwareId/knowledge/infrastructures"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={software.id}
@@ -217,7 +217,7 @@ class SoftwareKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/software/:softwareId/knowledge/sightings"
+            path="/defender_hq/assets/software/:softwareId/knowledge/sightings"
             render={(routeProps) => (
               <EntityStixSightingRelationships
                 entityId={software.id}

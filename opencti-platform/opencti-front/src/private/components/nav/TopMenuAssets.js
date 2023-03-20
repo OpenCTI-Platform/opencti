@@ -36,19 +36,23 @@ const styles = (theme) => ({
 class TopMenuAssets extends Component {
   handleChangeAssetName() {
     const { location } = this.props;
-    if (location.pathname === '/defender HQ/assets/devices'
-      || location.pathname === '/defender HQ/assets/software'
-      || location.pathname === '/defender HQ/assets/network') {
+    if (location.pathname === '/defender_hq/assets/devices'
+      || location.pathname === '/defender_hq/assets/software'
+      || location.pathname === '/defender_hq/assets/network'
+      || location.pathname === '/defender_hq/assets/information_systems') {
       return this.renderMenuAssets();
     }
-    if (location.pathname.includes('/defender HQ/assets/devices/')) {
+    if (location.pathname.includes('/defender_hq/assets/devices/')) {
       return this.renderMenuDevice();
     }
-    if (location.pathname.includes('/defender HQ/assets/software/')) {
+    if (location.pathname.includes('/defender_hq/assets/software/')) {
       return this.renderMenuSoftware();
     }
-    if (location.pathname.includes('/defender HQ/assets/network/')) {
+    if (location.pathname.includes('/defender_hq/assets/network/')) {
       return this.renderMenuNetwork();
+    }
+    if (location.pathname.includes('/defender_hq/assets/information_systems/')) {
+      return this.renderMenuInformationSystems();
     }
     return 'Default';
   }
@@ -63,7 +67,7 @@ class TopMenuAssets extends Component {
       <div className={classes.root}>
         <Button
           component={Link}
-          to="/defender HQ/assets"
+          to="/defender_hq/assets"
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}
@@ -75,15 +79,15 @@ class TopMenuAssets extends Component {
         />
         <Button
           component={Link}
-          to="/defender HQ/assets/devices"
+          to="/defender_hq/assets/devices"
           variant={
-            location.pathname.includes('/defender HQ/assets/devices')
+            location.pathname.includes('/defender_hq/assets/devices')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/defender HQ/assets/devices')
+            location.pathname.includes('/defender_hq/assets/devices')
               ? 'secondary'
               : 'default'
           }
@@ -94,15 +98,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/defender HQ/assets/network"
+          to="/defender_hq/assets/network"
           variant={
-            location.pathname.includes('/defender HQ/assets/network')
+            location.pathname.includes('/defender_hq/assets/network')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/defender HQ/assets/network')
+            location.pathname.includes('/defender_hq/assets/network')
               ? 'secondary'
               : 'default'
           }
@@ -113,15 +117,15 @@ class TopMenuAssets extends Component {
         </Button>
         <Button
           component={Link}
-          to="/defender HQ/assets/software"
+          to="/defender_hq/assets/software"
           variant={
-            location.pathname.includes('/defender HQ/assets/software')
+            location.pathname.includes('/defender_hq/assets/software')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/defender HQ/assets/software'
+            location.pathname === '/defender_hq/assets/software'
               ? 'secondary'
               : 'default'
           }
@@ -129,6 +133,25 @@ class TopMenuAssets extends Component {
           data-cy='asset software'
         >
           {t('Software')}
+        </Button>
+        <Button
+          component={Link}
+          to="/defender_hq/assets/information_systems"
+          variant={
+            location.pathname.includes('/defender_hq/assets/information_systems')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/defender_hq/assets/information_systems'
+              ? 'secondary'
+              : 'default'
+          }
+          classes={{ root: classes.button }}
+          data-cy='asset information_systems'
+        >
+          {t('Information Systems')}
         </Button>
       </div>
     );
@@ -140,7 +163,7 @@ class TopMenuAssets extends Component {
       <div className={classes.root}>
         <Button
           component={Link}
-          to="/defender HQ/assets/devices"
+          to="/defender_hq/assets/devices"
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}
@@ -169,7 +192,7 @@ class TopMenuAssets extends Component {
       <div className={classes.root}>
         <Button
           component={Link}
-          to="/defender HQ/assets/network"
+          to="/defender_hq/assets/network"
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}
@@ -198,7 +221,7 @@ class TopMenuAssets extends Component {
       <div className={classes.root}>
         <Button
           component={Link}
-          to="/defender HQ/assets/software"
+          to="/defender_hq/assets/software"
           variant="contained"
           color="primary"
           classes={{ root: classes.buttonHome }}
@@ -216,6 +239,75 @@ class TopMenuAssets extends Component {
           data-cy='asset overview'
         >
           {t('Overview')}
+        </Button>
+      </div>
+    );
+  }
+
+  renderMenuInformationSystems() {
+    const {
+      t,
+      classes,
+      location,
+      match: {
+        params: { informationSystemId },
+      },
+    } = this.props;
+    return (
+      <div className={classes.root}>
+        <Button
+          component={Link}
+          to='/defender_hq/assets/information_systems'
+          variant="contained"
+          color="primary"
+          classes={{ root: classes.buttonHome }}
+        >
+          {t('Information Systems')}
+        </Button>
+        <ChevronRightIcon
+          classes={{ root: classes.arrow }}
+        />
+        <Button
+          component={Link}
+          size="small"
+          data-cy='asset overview'
+          classes={{ root: classes.button }}
+          variant={
+            location.pathname
+              === `/defender_hq/assets/information_systems/${informationSystemId}`
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname
+              === `/defender_hq/assets/information_systems/${informationSystemId}`
+              ? 'secondary'
+              : 'inherit'
+          }
+          to={`/defender_hq/assets/information_systems/${informationSystemId}`}
+        >
+          {t('Overview')}
+        </Button>
+        <Button
+          // component={Link}
+          size="small"
+          data-cy='asset analysis'
+          classes={{ root: classes.button }}
+          variant={
+            location.pathname
+              === `/defender_hq/assets/information_systems/${informationSystemId}/analysis`
+              ? 'contained'
+              : 'text'
+          }
+          color={
+            location.pathname
+              === `/defender_hq/assets/information_systems/${informationSystemId}/analysis`
+              ? 'secondary'
+              : 'inherit'
+          }
+          // to={`/defender_hq/assets/information_systems/${informationSystemId}/analysis`}
+        >
+          {t('Analysis')}
         </Button>
       </div>
     );

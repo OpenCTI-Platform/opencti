@@ -53,7 +53,7 @@ const IndexRoutePath = (me) => (
     <BoundaryRoute path="/dashboard/events" component={RootEvents} />
     <Route path="/dashboard/observations" component={RootObservations} />
     <BoundaryRoute path="/dashboard/threats" component={RootThreats} />
-    <BoundaryRoute path="/defender HQ/assets" component={RootAssets} />
+    <BoundaryRoute path="/defender_hq/assets" component={RootAssets} />
     <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
     <BoundaryRoute
       path="/dashboard/workspaces"

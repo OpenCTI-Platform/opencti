@@ -99,7 +99,7 @@ class NetworkPopover extends Component {
       onCompleted: () => {
         this.setState({ deleting: false });
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/network');
+        this.props.history.push('/defender_hq/assets/network');
       },
     });
   }

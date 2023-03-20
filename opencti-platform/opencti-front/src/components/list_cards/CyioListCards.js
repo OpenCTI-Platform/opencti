@@ -14,11 +14,16 @@ import {
   FormatListBulleted,
 } from '@material-ui/icons';
 import Chip from '@material-ui/core/Chip';
+import List from '@material-ui/core/List';
+import Popover from '@material-ui/core/Popover';
 import Tooltip from '@material-ui/core/Tooltip';
+import { ListItemIcon, ListItemText } from '@material-ui/core';
+import ListItem from '@material-ui/core/ListItem';
 import inject18n from '../i18n';
 // import Security, { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../utils/Security';
 import Filters from '../../private/components/common/lists/Filters';
 import { truncate } from '../../utils/String';
+import ItemIcon from '../ItemIcon';
 import DataEntitiesDropDown from '../../private/components/common/form/DataEntitiesDropDown';
 
 const styles = (theme) => ({
@@ -67,12 +72,9 @@ const styles = (theme) => ({
     minWidth: '220px',
   },
   views: {
-    // display: 'flex',
-    width: '295px',
-    minWidth: '280px',
-    float: 'right',
-    marginTop: '5px',
-    padding: '14px 10px 12px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 10px 12px 18px',
   },
   menuItems: {
     display: 'flex',
@@ -88,11 +90,9 @@ const styles = (theme) => ({
     justifyContent: 'center',
   },
   selectedViews: {
-    width: '430px',
-    minWidth: '415px',
-    float: 'right',
-    marginTop: '5px',
-    padding: '14px 10px 12px 18px',
+    display: 'flex',
+    alignItems: 'center',
+    padding: '10px 10px 12px 18px',
   },
   cardsContainer: {
     marginTop: -13,
@@ -136,9 +136,22 @@ const styles = (theme) => ({
     marginRight: 10,
     marginBottom: 10,
   },
+  informationSystemIcon: {
+    minWidth: '26px',
+  },
+  informationSystemText: {
+    marginLeft: '10px',
+  },
 });
 
 class CyioListCards extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      openInfoPopover: false,
+    };
+  }
+
   sortBy(event) {
     this.props.handleSort(event.target.value, this.props.orderAsc);
   }
@@ -147,10 +160,20 @@ class CyioListCards extends Component {
     this.props.handleSort(this.props.sortBy, !this.props.orderAsc);
   }
 
+  handleInfoNewCreation() {
+    this.setState({ openInfoPopover: !this.state.openInfoPopover });
+  }
+
+  handleInfoSystemListItem(type) {
+    this.props.handleNewCreation(type);
+    this.handleInfoNewCreation();
+  }
+
   render() {
     const {
       t,
       classes,
+      location,
       handleChangeView,
       handleAddFilter,
       handleRemoveFilter,
@@ -245,7 +268,7 @@ class CyioListCards extends Component {
               </IconButton> */}
             </div>
             {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-              <DataEntitiesDropDown selectedDataEntity={selectedDataEntity}/>
+              <DataEntitiesDropDown selectedDataEntity={selectedDataEntity} />
             )}
             <div className={classes.filters}>
               {map((currentFilter) => {
@@ -291,57 +314,106 @@ class CyioListCards extends Component {
             </div>
           </div>
           <div className={totalElementsSelected > 0 ? classes.selectedViews : classes.views}>
-            <div style={{ float: 'right' }}>
-              {totalElementsSelected > 0 && (
-                <Chip
-                  className={classes.iconButton}
-                  label={
-                    <>
-                      <strong>{totalElementsSelected}</strong> Selected
-                    </>
-                  }
-                  onDelete={handleClearSelectedElements} />
-              )}
-              {typeof handleChangeView === 'function' && (
-                // <Security needs={[KNOWLEDGE_KNUPDATE]}>
-                <>
-                  <Tooltip title={t('Edit')}>
+            {totalElementsSelected > 0 && (
+              <Chip
+                className={classes.iconButton}
+                label={
+                  <>
+                    <strong>{totalElementsSelected}</strong> Selected
+                  </>
+                }
+                onDelete={handleClearSelectedElements} />
+            )}
+            {typeof handleChangeView === 'function' && (
+              // <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <>
+                <Tooltip title={t('Edit')}>
+                  <Button
+                    variant="contained"
+                    onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
+                    className={classes.iconButton}
+                    disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      || disabled}
+                    color="primary"
+                    size="large"
+                  >
+                    <Edit fontSize="inherit" />
+                  </Button>
+                </Tooltip>
+                {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
+                  <Tooltip title={t('Merge')}>
                     <Button
                       variant="contained"
-                      onClick={handleDisplayEdit && handleDisplayEdit.bind(this, selectedElements)}
+                      // onClick={handleDisplayEdit &&
+                      // handleDisplayEdit.bind(this, selectedElements)}
                       className={classes.iconButton}
-                      disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                        || disabled}
+                      // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
+                      //   || disabled}
+                      disabled={true}
                       color="primary"
                       size="large"
                     >
-                      <Edit fontSize="inherit" />
+                      <Share fontSize="inherit" />
                     </Button>
                   </Tooltip>
-                  {(filterEntityType === 'Entities' || filterEntityType === 'DataSources') && (
-                    <Tooltip title={t('Merge')}>
+                )}
+                <div style={{ display: 'inline-block' }}>
+                  {OperationsComponent && React.cloneElement(OperationsComponent, {
+                    id: Object.entries(selectedElements || {}).length !== 0
+                      && Object.entries(selectedElements),
+                    isAllselected: selectAll,
+                  })}
+                </div>
+                {location.pathname === '/defender_hq/assets/information_systems' ? (
+                  <div>
+                    <Tooltip title={t('Create New')}>
                       <Button
                         variant="contained"
-                        // onClick={handleDisplayEdit &&
-                        // handleDisplayEdit.bind(this, selectedElements)}
-                        className={classes.iconButton}
-                        // disabled={Boolean(Object.entries(selectedElements || {}).length !== 1)
-                        //   || disabled}
-                        disabled={true}
-                        color="primary"
-                        size="large"
+                        size="small"
+                        startIcon={<AddCircleOutline />}
+                        onClick={this.handleInfoNewCreation.bind(this)}
+                        color='primary'
+                        disabled={disabled || false}
                       >
-                        <Share fontSize="inherit" />
+                        {t('New')}
                       </Button>
                     </Tooltip>
-                  )}
-                  <div style={{ display: 'inline-block' }}>
-                    {OperationsComponent && React.cloneElement(OperationsComponent, {
-                      id: Object.entries(selectedElements || {}).length !== 0
-                        && Object.entries(selectedElements),
-                      isAllselected: selectAll,
-                    })}
+                    <Popover
+                      id='simple-popover'
+                      open={this.state.openInfoPopover}
+                      onClose={this.handleInfoNewCreation.bind(this)}
+                      anchorOrigin={{
+                        vertical: 125,
+                        horizontal: 'right',
+                      }}
+                      transformOrigin={{
+                        horizontal: 150,
+                      }}
+                    >
+                      <List>
+                        <ListItem
+                          button={true}
+                          disabled={true}
+                          onClick={this.handleInfoSystemListItem.bind(this, 'graph')}
+                        >
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemGraph' />
+                          </ListItemIcon>
+                          <ListItemText primary="Graph" className={classes.informationSystemText} />
+                        </ListItem>
+                        <ListItem
+                          button={true}
+                          onClick={this.handleInfoSystemListItem.bind(this, 'form')}
+                        >
+                          <ListItemIcon className={classes.informationSystemIcon}>
+                            <ItemIcon type='InformationSystemForm' />
+                          </ListItemIcon>
+                          <ListItemText primary="Form" className={classes.informationSystemText} />
+                        </ListItem>
+                      </List>
+                    </Popover>
                   </div>
+                ) : (
                   <Tooltip title={t('Create New')}>
                     <Button
                       variant="contained"
@@ -349,28 +421,26 @@ class CyioListCards extends Component {
                       startIcon={<AddCircleOutline />}
                       onClick={handleNewCreation && handleNewCreation.bind(this)}
                       color='primary'
-                      style={{ marginTop: '-22px' }}
                       disabled={disabled || false}
                     >
                       {t('New')}
                     </Button>
                   </Tooltip>
-                </>
-                // </Security>
-              )}
-              {typeof handleChangeView === 'function' && (
-                <Tooltip title={t('Lines view')}>
-                  <IconButton
-                    color="primary"
-                    onClick={handleChangeView.bind(this, 'lines')}
-                    style={{ marginTop: '-23px' }}
-                    data-cy='lines view'
-                  >
-                    <FormatListBulleted />
-                  </IconButton>
-                </Tooltip>
-              )}
-            </div>
+                )}
+              </>
+              // </Security>
+            )}
+            {typeof handleChangeView === 'function' && (
+              <Tooltip title={t('Lines view')}>
+                <IconButton
+                  color="primary"
+                  onClick={handleChangeView.bind(this, 'lines')}
+                  data-cy='lines view'
+                >
+                  <FormatListBulleted />
+                </IconButton>
+              </Tooltip>
+            )}
           </div>
         </div>
         <div className="clearfix" />
@@ -382,6 +452,7 @@ class CyioListCards extends Component {
 
 CyioListCards.propTypes = {
   classes: PropTypes.object,
+  location: PropTypes.object,
   t: PropTypes.func,
   children: PropTypes.object,
   selectedDataEntity: PropTypes.string,

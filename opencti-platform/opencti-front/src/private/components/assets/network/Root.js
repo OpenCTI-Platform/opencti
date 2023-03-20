@@ -82,10 +82,10 @@ class RootNetwork extends Component {
         params: { networkId },
       },
     } = this.props;
-    const link = `/defender HQ/assets/network/${networkId}/knowledge`;
+    const link = `/defender_hq/assets/network/${networkId}/knowledge`;
     return (
       <div>
-        <Route path="/defender HQ/assets/network/:networkId/knowledge">
+        <Route path="/defender_hq/assets/network/:networkId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -114,7 +114,7 @@ class RootNetwork extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/defender HQ/assets/network/:networkId"
+                      path="/defender_hq/assets/network/:networkId"
                       render={(routeProps) => (
                         <Network
                           {...routeProps}

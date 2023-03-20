@@ -132,7 +132,7 @@ class TaskEntityEdition extends Component {
 }
 
 TaskEntityEdition.propTypes = {
-  roldId: PropTypes.string,
+  taskId: PropTypes.string,
   displayEdit: PropTypes.bool,
   handleDisplayEdit: PropTypes.func,
   classes: PropTypes.object,

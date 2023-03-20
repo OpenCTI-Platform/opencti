@@ -91,9 +91,9 @@ class TaskType extends Component {
           style={style}
           helperText={helperText}
         >
-        {!required && <MenuItem value={''}>
+          {!required && <MenuItem value={''}>
             <em>None</em>
-          </MenuItem>}          
+          </MenuItem>}
           {TaskTypeList.map(
             (et, key) =>
               et.value && (

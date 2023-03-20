@@ -68,6 +68,21 @@ class RiskLevel extends Component {
         (item, index) => <RiskTooltip
           title={risk && t('Very Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryLow} /></IconButton></RiskTooltip>);
     }
+    if (risk === 'fips_199_high') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={risk && t('High')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.veryHigh} /></IconButton></RiskTooltip>);
+    }
+    if (risk === 'fips_199_moderate') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={risk && t('Moderate')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.high} /></IconButton></RiskTooltip>);
+    }
+    if (risk === 'fips_199_low') {
+      return Array.from({ length: 1 },
+        (item, index) => <RiskTooltip
+          title={risk && t('Low')}><IconButton className={classes.iconButton} key={index}><FiberManualRecordIcon className={classes.low} /></IconButton></RiskTooltip>);
+    }
     return <></>;
   }
 }

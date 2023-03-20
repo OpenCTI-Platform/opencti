@@ -366,7 +366,7 @@ class SoftwareEditionDetailsComponent extends Component {
                   title={'Installed On Assets'}
                   setFieldValue={setFieldValue}
                   history={history}
-                  link='/defender HQ/assets/devices'
+                  link='/defender_hq/assets/devices'
                 />
               </Grid>
               <Grid item={true} xs={12}>

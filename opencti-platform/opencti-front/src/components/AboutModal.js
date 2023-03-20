@@ -51,13 +51,13 @@ class AboutModal extends Component {
     if (location.pathname === '/dashboard') {
       AboutLocationPath = '/static/docs/pages/dashboard/index.md.html';
     }
-    if (location.pathname.includes('/defender HQ/assets/devices')) {
+    if (location.pathname.includes('/defender_hq/assets/devices')) {
       AboutLocationPath = '/static/docs/pages/defender_hq/assets/devices/index.md.html';
     }
-    if (location.pathname.includes('/defender HQ/assets/network')) {
+    if (location.pathname.includes('/defender_hq/assets/network')) {
       AboutLocationPath = '/static/docs/pages/defender_hq/assets/network/index.md.html';
     }
-    if (location.pathname.includes('/defender HQ/assets/software')) {
+    if (location.pathname.includes('/defender_hq/assets/software')) {
       AboutLocationPath = '/static/docs/pages/defender_hq/assets/software/index.md.html';
     }
     if (location.pathname.includes('/activities/vulnerability_assessment')) {

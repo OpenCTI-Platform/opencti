@@ -69,7 +69,7 @@ class SoftwareLineComponent extends Component {
         button={true}
         component={Link}
         selected={selectAll || node.id in (selectedElements || {})}
-        to={`/defender HQ/assets/software/${node.id}`}
+        to={`/defender_hq/assets/software/${node.id}`}
         data-cy='software line'
       >
         <ListItemIcon

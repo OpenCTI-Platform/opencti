@@ -66,7 +66,7 @@ class Network extends Component {
       filters: [],
       openNetworkCreation,
     };
-    if (this.props.history.location.pathname !== '/defender HQ/assets/network'
+    if (this.props.history.location.pathname !== '/defender_hq/assets/network'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -106,13 +106,13 @@ class Network extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/defender HQ/assets/network');
+    this.props.history.push('/defender_hq/assets/network');
   }
 
   handleDisplayEdit(selectedElements) {
     const networkId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/defender HQ/assets/network/${networkId}`,
+      pathname: `/defender_hq/assets/network/${networkId}`,
       openEdit: true,
     });
   }

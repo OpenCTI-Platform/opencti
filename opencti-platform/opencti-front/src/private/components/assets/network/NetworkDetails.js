@@ -234,7 +234,7 @@ class NetworkDetailsComponent extends Component {
                           component="button"
                           variant="body2"
                           className={classes.link}
-                          onClick={() => (history.push(`/defender HQ/assets/devices/${asset.id}`))}
+                          onClick={() => (history.push(`/defender_hq/assets/devices/${asset.id}`))}
                         >
                           <LaunchIcon fontSize='small' className={classes.launchIcon}/> <div className={classes.linkTitle}>{t(asset.name)}</div>
                         </Link>

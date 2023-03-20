@@ -156,9 +156,9 @@ class DeviceCreation extends Component {
         setSubmitting(false);
         resetForm();
         this.handleClose();
-        this.props.history.push('/defender HQ/assets/devices');
+        this.props.history.push('/defender_hq/assets/devices');
       },
-      pathname: '/defender HQ/assets/devices',
+      pathname: '/defender_hq/assets/devices',
       onError: () => {
         toastGenericError("Failed to create Device");
       }
@@ -371,7 +371,7 @@ class DeviceCreation extends Component {
               {t('Go Back')}
             </Button>
             <Button
-              onClick={() => this.props.history.push('/defender HQ/assets/devices')}
+              onClick={() => this.props.history.push('/defender_hq/assets/devices')}
               // onClick={() => this.props.history.goBack()}
               color="secondary"
               classes={{ root: classes.buttonPopover }}

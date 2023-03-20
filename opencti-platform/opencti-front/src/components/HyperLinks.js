@@ -9,6 +9,7 @@ import { IconButton } from '@material-ui/core';
 import Link from '@material-ui/core/Link';
 import LaunchIcon from '@material-ui/icons/Launch';
 import { useHistory } from 'react-router-dom';
+import LinkOff from '@material-ui/icons/LinkOff';
 import StixDomainObjectDetectDuplicate from '../private/components/common/stix_domain_objects/StixDomainObjectDetectDuplicate';
 
 const useStyles = makeStyles((theme) => ({
@@ -73,6 +74,7 @@ const customTextField = (
   link,
   handleDelete,
   index,
+  detach,
 ) => (
   <div style={{ display: 'flex' }}>
     <Link
@@ -85,12 +87,16 @@ const customTextField = (
       <LaunchIcon fontSize="small" className={classes.launchIcon} />
       <div className={classes.linkTitle}>{value}</div>
     </Link>
-    {['installed_hardware', 'installed_software'].includes(fieldName) && (
+    {fieldName && (
       <IconButton
         style={{ padding: '5px' }}
         onClick={() => handleDelete(index)}
       >
-        <Delete />
+        {detach ? (
+          <LinkOff />
+        ) : (
+          <Delete />
+        )}
       </IconButton>
     )}
   </div>
@@ -169,8 +175,8 @@ const HyperLinks = (props) => {
               },
               disableUnderline: true,
               startAdornment:
-              // eslint-disable-next-line max-len
-              props.value.map((n, index) => customTextField(n.name, n.id, props.field.name, classes, history, props.link, props.handleDelete, index)),
+                // eslint-disable-next-line max-len
+                props.value.map((n, index) => customTextField(n.name, n.id, props.field.name, classes, history, props.link, props.handleDelete, index, props.detach)),
             }}
           />
         </div>

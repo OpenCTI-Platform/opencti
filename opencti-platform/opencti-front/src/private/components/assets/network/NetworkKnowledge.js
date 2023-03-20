@@ -27,7 +27,7 @@ const styles = () => ({
 class NetworkKnowledgeComponent extends Component {
   render() {
     const { classes, network } = this.props;
-    const link = `/defender HQ/assets/network/${network.id}/knowledge`;
+    const link = `/defender_hq/assets/network/${network.id}/knowledge`;
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
@@ -37,7 +37,7 @@ class NetworkKnowledgeComponent extends Component {
         <Switch>
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/relations/:relationId"
+            path="/defender_hq/assets/network/:networkId/knowledge/relations/:relationId"
             render={(routeProps) => (
               <StixCoreRelationship
                 entityId={network.id}
@@ -48,7 +48,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/sightings/:sightingId"
+            path="/defender_hq/assets/network/:networkId/knowledge/sightings/:sightingId"
             render={(routeProps) => (
               <StixSightingRelationship
                 entityId={network.id}
@@ -59,7 +59,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/overview"
+            path="/defender_hq/assets/network/:networkId/knowledge/overview"
             render={(routeProps) => (
               <StixDomainObjectThreatKnowledge
                 stixDomainObjectId={network.id}
@@ -70,7 +70,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/related"
+            path="/defender_hq/assets/network/:networkId/knowledge/related"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -99,7 +99,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/attribution"
+            path="/defender_hq/assets/network/:networkId/knowledge/attribution"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -113,7 +113,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/victimology"
+            path="/defender_hq/assets/network/:networkId/knowledge/victimology"
             render={(routeProps) => (
               <StixDomainObjectVictimology
                 stixDomainObjectId={network.id}
@@ -124,7 +124,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/software"
+            path="/defender_hq/assets/network/:networkId/knowledge/software"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -138,7 +138,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/attack_patterns"
+            path="/defender_hq/assets/network/:networkId/knowledge/attack_patterns"
             render={(routeProps) => (
               <StixDomainObjectAttackPatterns
                 stixDomainObjectId={network.id}
@@ -149,7 +149,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/malwares"
+            path="/defender_hq/assets/network/:networkId/knowledge/malwares"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -163,7 +163,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/tools"
+            path="/defender_hq/assets/network/:networkId/knowledge/tools"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -177,7 +177,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/vulnerabilities"
+            path="/defender_hq/assets/network/:networkId/knowledge/vulnerabilities"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -191,7 +191,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/incidents"
+            path="/defender_hq/assets/network/:networkId/knowledge/incidents"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -205,7 +205,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/observables"
+            path="/defender_hq/assets/network/:networkId/knowledge/observables"
             render={(routeProps) => (
               <StixCoreObjectStixCyberObservables
                 stixCoreObjectId={network.id}
@@ -217,7 +217,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/infrastructures"
+            path="/defender_hq/assets/network/:networkId/knowledge/infrastructures"
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={network.id}
@@ -231,7 +231,7 @@ class NetworkKnowledgeComponent extends Component {
           />
           <Route
             exact
-            path="/defender HQ/assets/network/:networkId/knowledge/sightings"
+            path="/defender_hq/assets/network/:networkId/knowledge/sightings"
             render={(routeProps) => (
               <EntityStixSightingRelationships
                 entityId={network.id}

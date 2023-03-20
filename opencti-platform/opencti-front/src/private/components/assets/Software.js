@@ -66,7 +66,7 @@ class Software extends Component {
       filters: [],
       openSoftwareCreation,
     };
-    if (this.props.history.location.pathname !== '/defender HQ/assets/software'
+    if (this.props.history.location.pathname !== '/defender_hq/assets/software'
       && convertFilters(this.state.filters).length) {
       saveViewParameters(
         this.props.history,
@@ -106,13 +106,13 @@ class Software extends Component {
   }
 
   handleRefresh() {
-    this.props.history.push('/defender HQ/assets/software');
+    this.props.history.push('/defender_hq/assets/software');
   }
 
   handleDisplayEdit(selectedElements) {
     const softwareId = Object.entries(selectedElements)[0][1].id;
     this.props.history.push({
-      pathname: `/defender HQ/assets/software/${softwareId}`,
+      pathname: `/defender_hq/assets/software/${softwareId}`,
       openEdit: true,
     });
   }

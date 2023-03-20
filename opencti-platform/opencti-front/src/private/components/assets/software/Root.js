@@ -62,10 +62,10 @@ class RootSoftware extends Component {
         params: { softwareId },
       },
     } = this.props;
-    const link = `/defender HQ/assets/software/${softwareId}/knowledge`;
+    const link = `/defender_hq/assets/software/${softwareId}/knowledge`;
     return (
       <div>
-        <Route path="/defender HQ/assets/software/:softwareId/knowledge">
+        <Route path="/defender_hq/assets/software/:softwareId/knowledge">
           <StixCoreObjectKnowledgeBar
             stixCoreObjectLink={link}
             availableSections={[
@@ -92,7 +92,7 @@ class RootSoftware extends Component {
                   <Switch>
                     <Route
                       exact
-                      path="/defender HQ/assets/software/:softwareId"
+                      path="/defender_hq/assets/software/:softwareId"
                       render={(routeProps) => (
                         <Software {...routeProps} refreshQuery={retry} software={props.softwareAsset} />
                       )}
