@@ -17,7 +17,7 @@ import {
 } from '../config/errors';
 import {
   buildPagination,
-  computeAverage,
+  computeAverage, extractEntityRepresentative,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -101,7 +101,8 @@ import {
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
-  BASE_TYPE_RELATION, buildRefRelationKey,
+  BASE_TYPE_RELATION,
+  buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -518,6 +519,9 @@ export const distributionEntities = async (context, user, types, args) => {
   if (field.includes('.')) {
     finalField = REL_INDEX_PREFIX + field;
   }
+  if (field === 'name') {
+    finalField = 'internal_id';
+  }
   const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
     ...distributionArgs,
     field: finalField
@@ -526,6 +530,23 @@ export const distributionEntities = async (context, user, types, args) => {
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL) || field === 'creator_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
+  }
+  if (field === 'name') {
+    const result = [];
+    await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
+      .then((hits) => {
+        hits.map((hit) => {
+          result.push(
+            {
+              label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+              value: hit.value,
+              entity: hit.entity,
+            }
+          );
+        });
+      });
+    console.log('result', result);
+    return result;
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };

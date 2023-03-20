@@ -1393,7 +1393,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
   return elRawSearch(context, user, types, query)
     .then((data) => {
       const { buckets } = data.aggregations.genres;
-      return R.map((b) => {
+      return buckets.map((b) => {
         let label = b.key;
         if (typeof label === 'number') {
           label = b.key_as_string;
@@ -1401,7 +1401,7 @@ export const elAggregationCount = async (context, user, indexName, options = {})
           label = pascalize(b.key);
         }
         return { label, value: b.weight.value };
-      }, buckets);
+      });
     })
     .catch((err) => {
       throw DatabaseError('[SEARCH] Aggregation fail', { error: err, query });
