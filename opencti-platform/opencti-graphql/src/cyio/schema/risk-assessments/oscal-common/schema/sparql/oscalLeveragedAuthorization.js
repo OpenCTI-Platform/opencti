@@ -36,7 +36,7 @@ const oscalLeveragedAuthorizationReducer = (item) => {
     ...(item.created && { created: item.created }),
     ...(item.modified && { modified: item.modified }),
     ...(item.title && { title: item.title }),
-    ...(item.description && { title: item.description }),
+    ...(item.description && { description: item.description }),
     ...(item.date_authorized && { date_authorized: item.date_authorized }),
     // hints for field-level resolver queries
     ...(item.party && { party_iri: item.party }),
@@ -109,7 +109,7 @@ export const selectAllOscalLeveragedAuthorizationsQuery = (select, args, parent)
 
 export const insertOscalLeveragedAuthorizationQuery = (propValues) => {
   const id_material = {
-    ...(propValues.name && {"name": propValues.name}),
+    ...(propValues.title && {"title": propValues.title}),
   } ;
   const id = generateId( id_material, DARKLIGHT_NS );
   const timestamp = new Date().toISOString();
