@@ -42,6 +42,10 @@ export const findLeveragedAuthorizationByIri = async (iri, dbName, dataSources, 
     throw e
   }
   if (response === undefined || response === null || response.length === 0) return null;
+  if (response[0].date_authorized) {
+    let strTime = response[0].date_authorized.toISOString();
+    response[0].date_authorized = strTime.substring(0, strTime.indexOf('T'));
+  }
   const reducer = getReducer("OSCAL-LEVERAGED-AUTHORIZATION");
   return reducer(response[0]);  
 };
@@ -97,6 +101,11 @@ export const findAllLeveragedAuthorizations = async (args, dbName, dataSources, 
         continue
       }
       filterCount++;
+    }
+
+    if (resultItem.date_authorized) {
+      let strTime = resultItem.date_authorized.toISOString();
+      resultItem.date_authorized = strTime.substring(0, strTime.indexOf('T'));
     }
 
     // if haven't reached limit to be returned

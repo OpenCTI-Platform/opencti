@@ -52,7 +52,7 @@ const oscalLeveragedAuthorizationReducer = (item) => {
 // Query Builders
 //
 export const selectOscalLeveragedAuthorizationQuery = (id, select) => {
-  return selectOscalLeveragedAuthorizationByIriQuery(`http://cyio.darklight.ai/oscal-leveraged-authorization${id}`, select);
+  return selectOscalLeveragedAuthorizationByIriQuery(`http://cyio.darklight.ai/oscal-leveraged-authorization--${id}`, select);
 }
 
 export const selectOscalLeveragedAuthorizationByIriQuery = (iri, select) => {
@@ -115,7 +115,7 @@ export const insertOscalLeveragedAuthorizationQuery = (propValues) => {
   const timestamp = new Date().toISOString();
 
   // determine the appropriate ontology class type
-  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
+  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization--${id}>`;
   const insertPredicates = [];
   Object.entries(propValues).forEach((propPair) => {
     if (oscalLeveragedAuthorizationPredicateMap.hasOwnProperty(propPair[0])) {
@@ -147,7 +147,7 @@ export const insertOscalLeveragedAuthorizationQuery = (propValues) => {
 }
     
 export const deleteOscalLeveragedAuthorizationQuery = (id) => {
-  const iri = `http://cyio.darklight.ai/oscal-leveraged-authorization${id}`;
+  const iri = `http://cyio.darklight.ai/oscal-leveraged-authorization--${id}`;
   return deleteOscalLeveragedAuthorizationByIriQuery(iri);
 }
 
@@ -187,7 +187,7 @@ export const deleteMultipleOscalLeveragedAuthorizationsQuery = (ids) =>{
 
 export const attachToOscalLeveragedAuthorizationQuery = (id, field, itemIris) => {
   if (!oscalLeveragedAuthorizationPredicateMap.hasOwnProperty(field)) return null;
-  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
+  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization--${id}>`;
   const predicate = oscalLeveragedAuthorizationPredicateMap[field].predicate;
 
   let statements;
@@ -211,7 +211,7 @@ export const attachToOscalLeveragedAuthorizationQuery = (id, field, itemIris) =>
 
 export const detachFromOscalLeveragedAuthorizationQuery = (id, field, itemIris) => {
   if (!oscalLeveragedAuthorizationPredicateMap.hasOwnProperty(field)) return null;
-  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization${id}>`;
+  const iri = `<http://cyio.darklight.ai/oscal-leveraged-authorization--${id}>`;
   const predicate = oscalLeveragedAuthorizationPredicateMap[field].predicate;
 
   let statements;
@@ -323,6 +323,7 @@ export const singularizeOscalLeveragedAuthorizationSchema = {
     "modified": true,
     "title": true,
     "party": true,
-    "data_authorized": true,
+    "description": true,
+    "date_authorized": true,
   }
 };

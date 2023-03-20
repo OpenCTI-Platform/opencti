@@ -81,6 +81,8 @@ type OscalLeveragedAuthorization implements BasicObject & LifecycleObject & Osca
 input OscalLeveragedAuthorizationInput {
   "Identifies a human readable name for the leveraged authorization in the context of the system."
   title: String!
+  "Identifies a summary of the authorization leveraged by the system."
+  description: String
   "Identifies the date the system received its authorization."
   date_authorized: Date!
   "Identifies a reference to the party that manages the leveraged system."
