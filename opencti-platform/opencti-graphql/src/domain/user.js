@@ -608,6 +608,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     external: user.external,
     login_provider: provider,
     impersonate: impersonate !== undefined,
+    impersonate_user_id: impersonate !== undefined ? origin.id : null,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     organizations: user.organizations,
     allowed_organizations: user.allowed_organizations,
