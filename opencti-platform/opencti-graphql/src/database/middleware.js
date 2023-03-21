@@ -1989,7 +1989,11 @@ const createRuleDataPatch = (instance) => {
   if (isBasicRelationship(instance.entity_type)) {
     patch.i_inference_weight = weight;
   }
-  const attributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes();
+  let attributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes();
+  if (instance.entity_type) { // keep only supported attributes
+    const entityAttributes = schemaAttributesDefinition.getAttributeNames(instance.entity_type);
+    attributes = attributes.filter((attr) => entityAttributes.includes(attr));
+  }
   for (let index = 0; index < attributes.length; index += 1) {
     const attribute = attributes[index];
     const values = getAllRulesField(instance, attribute);
