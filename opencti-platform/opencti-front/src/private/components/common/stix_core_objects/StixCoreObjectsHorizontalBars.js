@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -62,9 +63,11 @@ const stixCoreObjectsHorizontalBarsDistributionQuery = graphql`
       entity {
         ... on BasicObject {
           entity_type
+          id
         }
         ... on BasicRelationship {
           entity_type
+          id
         }
         ... on AttackPattern {
           name
@@ -196,6 +199,7 @@ const StixCoreObjectsHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
     let finalFilters = convertFilters(selection.filters);
@@ -256,6 +260,13 @@ const StixCoreObjectsHorizontalBars = ({
                 data,
               },
             ];
+            const categoriesForRedirection = (selection.attribute === 'name') ? props.stixCoreObjectsDistribution.map(
+              (n) => ({
+                id: n.entity.id,
+                entity_type: n.entity.entity_type,
+              }),
+            ) : null;
+            console.log('categoriesForRedirection', categoriesForRedirection);
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -263,6 +274,8 @@ const StixCoreObjectsHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  navigate,
+                  categoriesForRedirection,
                   parameters.distributed,
                 )}
                 series={chartData}

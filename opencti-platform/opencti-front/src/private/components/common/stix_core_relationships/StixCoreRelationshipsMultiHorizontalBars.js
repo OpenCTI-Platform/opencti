@@ -939,13 +939,13 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  navigate,
+                  categoriesForRedirection,
                   false,
                   true,
                   true,
                   categories,
                   true,
-                  navigate,
-                  categoriesForRedirection,
                 )}
                 series={chartData}
                 type="bar"

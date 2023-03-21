@@ -14,6 +14,7 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 import { itemColor } from '../../../../utils/Colors';
+import { useNavigate } from "react-router-dom-v5-compat";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -337,6 +338,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
     let finalFilters = convertFilters(selection.filters);
@@ -427,6 +429,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 data,
               },
             ];
+            const categoriesForRedirection = null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -434,6 +437,8 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  navigate,
+                  categoriesForRedirection,
                   parameters.distributed,
                 )}
                 series={chartData}

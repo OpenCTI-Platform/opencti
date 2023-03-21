@@ -302,13 +302,13 @@ export const horizontalBarsChartOptions = (
   adjustTicks = false,
   xFormatter = null,
   yFormatter = null,
+  navigate = undefined,
+  categoriesForRedirection = null,
   distributed = false,
   stacked = false,
   total = false,
   categories = null,
   legend = false,
-  navigate = undefined,
-  categoriesForRedirection = null,
 ) => ({
   chart: {
     type: 'bar',

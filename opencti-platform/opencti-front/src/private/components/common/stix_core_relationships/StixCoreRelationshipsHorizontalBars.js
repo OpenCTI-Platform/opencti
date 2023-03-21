@@ -291,7 +291,6 @@ const StixCoreRelationshipsHorizontalBars = ({
                 entity_type: n.entity.entity_type,
               }),
             ) : null;
-            console.log('categoriesForRedirection', categoriesForRedirection);
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -299,11 +298,6 @@ const StixCoreRelationshipsHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
-                  false,
-                  false,
-                  false,
-                  null,
-                  false,
                   navigate,
                   categoriesForRedirection,
                 )}
