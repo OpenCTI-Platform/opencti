@@ -868,7 +868,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             const categories = props.stixCoreRelationshipsDistribution.map(
               (n) => defaultValue(n.entity),
             );
-            const categoriesForRedirection = props.stixCoreRelationshipsDistribution.map(
+            const redirectionUtils = props.stixCoreRelationshipsDistribution.map(
               (n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,
@@ -940,7 +940,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   simpleNumberFormat,
                   null,
                   navigate,
-                  categoriesForRedirection,
+                  redirectionUtils,
                   false,
                   true,
                   true,

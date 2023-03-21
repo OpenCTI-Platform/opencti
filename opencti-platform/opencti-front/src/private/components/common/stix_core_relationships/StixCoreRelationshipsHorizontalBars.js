@@ -285,7 +285,7 @@ const StixCoreRelationshipsHorizontalBars = ({
               ),
             }));
             const chartData = [{ name: t('Number of relationships'), data }];
-            const categoriesForRedirection = (finalField === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
+            const redirectionUtils = (finalField === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
               (n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,
@@ -299,7 +299,7 @@ const StixCoreRelationshipsHorizontalBars = ({
                   simpleNumberFormat,
                   null,
                   navigate,
-                  categoriesForRedirection,
+                  redirectionUtils,
                 )}
                 series={chartData}
                 type="bar"

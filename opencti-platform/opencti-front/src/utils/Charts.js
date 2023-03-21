@@ -303,7 +303,7 @@ export const horizontalBarsChartOptions = (
   xFormatter = null,
   yFormatter = null,
   navigate = undefined,
-  categoriesForRedirection = null,
+  redirectionUtils = null,
   distributed = false,
   stacked = false,
   total = false,
@@ -320,9 +320,9 @@ export const horizontalBarsChartOptions = (
     stacked,
     events: {
       click: (event, chartContext, config) => {
-        if (categoriesForRedirection) {
-          const link = resolveLink(categoriesForRedirection[config.dataPointIndex].entity_type);
-          const entityId = categoriesForRedirection[config.dataPointIndex].id;
+        if (redirectionUtils) {
+          const link = resolveLink(redirectionUtils[config.dataPointIndex].entity_type);
+          const entityId = redirectionUtils[config.dataPointIndex].id;
           navigate(`${link}/${entityId}`);
         }
       },
