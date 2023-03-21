@@ -3066,6 +3066,7 @@ enum OpinionsOrdering {
   createdBy
   objectMarking
   x_opencti_workflow_id
+  confidence
   creator
 }
 enum OpinionsFilter {
@@ -3083,6 +3084,7 @@ enum OpinionsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  confidence
   creator
 }
 input OpinionsFiltering {

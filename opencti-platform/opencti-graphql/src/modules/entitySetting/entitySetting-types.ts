@@ -7,6 +7,24 @@ export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 export interface AttributeConfiguration {
   name: string;
   mandatory: boolean;
+  scale?: Scale;
+}
+
+export interface Scale {
+  local_config: ScaleConfig;
+}
+
+export interface ScaleConfig {
+  better_side: string;
+  min: Tick;
+  max: Tick;
+  ticks: Array<Tick>
+}
+
+export interface Tick {
+  value: number;
+  color: string;
+  label: string;
 }
 
 export interface BasicStoreEntityEntitySetting extends BasicStoreEntity {

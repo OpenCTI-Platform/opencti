@@ -129,6 +129,7 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
       description: values.description,
       severity: values.severity,
       priority: values.priority,
+      confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
@@ -205,9 +206,7 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
               containerStyle={fieldSpacingContainerStyle}
           />
           <ConfidenceField
-              name="confidence"
-              label={t('Confidence')}
-              fullWidth={true}
+              entityType="Case"
               containerStyle={fieldSpacingContainerStyle}
           />
           <Field

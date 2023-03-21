@@ -2670,6 +2670,7 @@ enum OpinionsOrdering {
   createdBy
   objectMarking
   x_opencti_workflow_id
+  confidence
   creator
 }
 
@@ -2688,6 +2689,7 @@ enum OpinionsFilter {
   objectContains
   x_opencti_workflow_id
   revoked
+  confidence
   creator
 }
 
@@ -9773,9 +9775,15 @@ input CaseAddInput {
 
 type TypeAttribute {
   name: String!
-  builtIn: Boolean!
+  mandatoryType: String!
   mandatory: Boolean!
   label: String
+  scale: String
+}
+
+type ScaleAttribute {
+  name: String!
+  scale: String!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -9788,8 +9796,9 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean
   enforce_reference: Boolean
   attributes_configuration: String
-  mandatoryDefinitions: [TypeAttribute!]!
+  attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
+  scaleAttributes: [ScaleAttribute!]!
   availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!

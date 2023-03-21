@@ -198,11 +198,9 @@ const CampaignEditionOverviewComponent = (props) => {
             }
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Campaign"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

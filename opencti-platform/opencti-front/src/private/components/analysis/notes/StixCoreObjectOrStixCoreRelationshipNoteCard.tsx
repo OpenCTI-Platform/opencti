@@ -89,6 +89,7 @@ const StixCoreObjectOrStixCoreRelationshipNoteCardFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNoteCard_node on Note {
     id
     attribute_abstract
+    entity_type
     content
     created
     modified
@@ -288,7 +289,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
                 >
                   {t('Confidence level')}
                 </Typography>
-                <ItemConfidence confidence={note.confidence} />
+                <ItemConfidence confidence={note.confidence} entityType={note.entity_type} />
               </Grid>
               <Grid item={true} xs={6}>
                 <Typography

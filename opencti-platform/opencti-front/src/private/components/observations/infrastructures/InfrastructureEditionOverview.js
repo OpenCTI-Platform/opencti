@@ -256,11 +256,9 @@ const InfrastructureEditionOverviewComponent = (props) => {
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Infrastructure"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"

@@ -36,7 +36,6 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     { name: 'priority', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'rating', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'confidence', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   representative: (stix: StixCase) => {

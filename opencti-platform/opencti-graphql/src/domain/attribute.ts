@@ -4,62 +4,92 @@ import { schemaAttributesDefinition } from '../schema/schema-attributes';
 import { buildPagination } from '../database/utils';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { QueryRuntimeAttributesArgs } from '../generated/graphql';
-import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
+import { defaultScale, getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../schema/relationRef-definition';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 
-interface MandatoryAttribute {
+interface ScaleAttribute {
   name: string
-  builtIn: boolean
-  mandatory: boolean
-  label?: string
+  scale: string
 }
 
-export const queryMandatoryAttributesDefinition = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting) => {
+interface AttributeConfigMeta {
+  name: string
+  mandatoryType: string
+  mandatory: boolean
+  label?: string
+  scale?: string
+}
+
+// Returns a filtered list of AttributeConfigMeta objects built from schema attributes definition and
+// stored entity settings attributes configuration (only attributes that can be customized in entity settings)
+export const queryAttributesDefinition = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting): Promise<AttributeConfigMeta[]> => {
   if (!entitySetting) {
     return [];
   }
-
+  const attributesConfiguration: any[] = [];
   // From schema attributes
-  const mandatoryAttributes: MandatoryAttribute[] = [];
-  const customizableAttributes: MandatoryAttribute[] = [];
-
-  // From schema attributes
-  const attributes = schemaAttributesDefinition.getAttributes(entitySetting.target_type);
-  attributes.forEach((attr) => {
-    if (attr.mandatoryType === 'external') {
-      mandatoryAttributes.push({ name: attr.name, builtIn: true, mandatory: true, label: attr.label });
-    }
-    if (attr.mandatoryType === 'customizable') {
-      customizableAttributes.push({ name: attr.name, builtIn: false, mandatory: false, label: attr.label });
+  const attributesDefinition = schemaAttributesDefinition.getAttributes(entitySetting.target_type);
+  attributesDefinition.forEach((attr) => {
+    if (attr.mandatoryType === 'external' || attr.mandatoryType === 'customizable' || attr.scalable) {
+      const attributeConfig: AttributeConfigMeta = {
+        name: attr.name,
+        label: attr.label,
+        mandatoryType: attr.mandatoryType,
+        mandatory: false,
+      };
+      if (attr.mandatoryType === 'external') {
+        attributeConfig.mandatory = true;
+      }
+      if (attr.scalable) { // return default scale
+        attributeConfig.scale = defaultScale;
+      }
+      attributesConfiguration.push(attributeConfig);
     }
   });
 
   // From schema relations ref
   const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(entitySetting.target_type);
   relationsRef.forEach((rel) => {
-    if (rel.mandatoryType === 'external') {
-      mandatoryAttributes.push({ name: rel.inputName, builtIn: true, mandatory: true, label: rel.label });
-    }
-    if (rel.mandatoryType === 'customizable') {
-      customizableAttributes.push({ name: rel.inputName, builtIn: false, mandatory: false, label: rel.label });
+    if (rel.mandatoryType === 'external' || rel.mandatoryType === 'customizable') {
+      const attributeConfig: AttributeConfigMeta = {
+        name: rel.inputName,
+        label: rel.label,
+        mandatoryType: rel.mandatoryType,
+        mandatory: false,
+      };
+      if (rel.mandatoryType === 'external') {
+        attributeConfig.mandatory = true;
+      }
+      attributesConfiguration.push(attributeConfig);
     }
   });
 
+  // override with stored attributes configuration in entitySettings
   const userDefinedAttributes = getAttributesConfiguration(entitySetting);
   userDefinedAttributes?.forEach((userDefinedAttr) => {
-    const customizableAttr = customizableAttributes.find((a) => a.name === userDefinedAttr.name);
+    const customizableAttr = attributesConfiguration.find((a) => a.name === userDefinedAttr.name);
     if (customizableAttr) {
-      customizableAttr.mandatory = userDefinedAttr.mandatory;
+      if (customizableAttr.mandatoryType === 'customizable' && !!userDefinedAttr.mandatory) {
+        customizableAttr.mandatory = userDefinedAttr.mandatory;
+      }
+      if (customizableAttr.scale && userDefinedAttr.scale) {
+        // override default scale
+        customizableAttr.scale = JSON.stringify(userDefinedAttr.scale);
+      }
     }
   });
+  return attributesConfiguration;
+};
 
-  return mandatoryAttributes.concat(customizableAttributes);
+export const getScaleAttributesForSetting = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting): Promise<ScaleAttribute[]> => {
+  const attributes = await queryAttributesDefinition(context, entitySetting);
+  return attributes.filter((a) => a.scale).map((a) => ({ name: a.name, scale: a.scale ?? '' }));
 };
 
 export const getMandatoryAttributesForSetting = async (context: AuthContext, entitySetting: BasicStoreEntityEntitySetting): Promise<string[]> => {
-  const attributes = await queryMandatoryAttributesDefinition(context, entitySetting);
+  const attributes = await queryAttributesDefinition(context, entitySetting);
   return attributes.filter((a) => a.mandatory === true).map((a) => a.name);
 };
 

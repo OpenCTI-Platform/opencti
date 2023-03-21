@@ -438,6 +438,7 @@ class StixCoreRelationshipContainer extends Component {
                   </Typography>
                   <ItemConfidence
                     confidence={stixCoreRelationship.confidence}
+                    entityType="stix-core-relationship"
                   />
                   {stixCoreRelationship.x_opencti_inferences === null && (
                     <div>

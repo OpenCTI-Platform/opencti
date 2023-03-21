@@ -26,6 +26,7 @@ const DataComponentFragment = graphql`
   fragment DataComponent_dataComponent on DataComponent {
     id
     standard_id
+    entity_type
     x_opencti_stix_ids
     spec_version
     revoked

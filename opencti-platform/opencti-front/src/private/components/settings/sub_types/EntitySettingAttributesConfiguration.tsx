@@ -1,22 +1,20 @@
-import { useMutation } from 'react-relay';
+import { useFragment, useMutation } from 'react-relay';
 import React from 'react';
 import Checkbox from '@mui/material/Checkbox';
-import { PreloadedQuery } from 'react-relay/relay-hooks/EntryPointTypes';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import FormGroup from '@mui/material/FormGroup';
 import FormControlLabel from '@mui/material/FormControlLabel';
-import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
-import { EntitySettingQuery } from './__generated__/EntitySettingQuery.graphql';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
 import {
   entitySettingFragment,
-  entitySettingQuery,
   entitySettingsPatch,
 } from './EntitySetting';
+import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -38,22 +36,17 @@ export interface AttributeConfiguration {
 }
 
 const EntitySettingAttributesConfiguration = ({
-  queryRef,
+  entitySettingsData,
 }: {
-  queryRef: PreloadedQuery<EntitySettingQuery>;
+  entitySettingsData: SubType_subType$data['settings'];
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const entitySetting = usePreloadedFragment<
-  EntitySettingQuery,
-  EntitySetting_entitySetting$key
-  >({
-    linesQuery: entitySettingQuery,
-    linesFragment: entitySettingFragment,
-    queryRef,
-    nodePath: 'entitySettingByType',
-  });
+  const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
+  if (!entitySetting) {
+    return <ErrorNotFound />;
+  }
   const attributesConfiguration: AttributeConfiguration[] = entitySetting.attributes_configuration
     ? JSON.parse(entitySetting.attributes_configuration)
     : [];
@@ -86,15 +79,15 @@ const EntitySettingAttributesConfiguration = ({
     mandatory: boolean;
     label: string;
   }[] = [];
-  entitySetting.mandatoryDefinitions.forEach((attr) => {
+  entitySetting.attributesDefinitions.forEach((attr) => {
     const el = {
       name: attr.name,
       mandatory: attr.mandatory,
       label: attr.label ?? attr.name,
     };
-    if (attr.builtIn) {
+    if (attr.mandatoryType === 'external') {
       mandatoryAttributesBuiltIn.push(el);
-    } else {
+    } else if (attr.mandatoryType === 'customizable') {
       mandatoryAttributes.push(el);
     }
   });

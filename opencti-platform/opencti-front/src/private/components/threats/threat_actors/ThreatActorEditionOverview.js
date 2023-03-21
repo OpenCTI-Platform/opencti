@@ -221,11 +221,9 @@ const ThreatActorEditionOverviewComponent = (props) => {
             editContext={context}
           />
           <ConfidenceField
-            name="confidence"
             onFocus={editor.changeFocus}
-            onChange={handleSubmitField}
-            label={t('Confidence')}
-            fullWidth={true}
+            onSubmit={handleSubmitField}
+            entityType="Threat-Actor"
             containerStyle={{ width: '100%', marginTop: 20 }}
             editContext={context}
             variant="edit"

@@ -203,9 +203,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             detectDuplicate={['Incident']}
           />
           <ConfidenceField
-            name="confidence"
-            label={t('Confidence')}
-            fullWidth={true}
+            entityType="Incident"
             containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField

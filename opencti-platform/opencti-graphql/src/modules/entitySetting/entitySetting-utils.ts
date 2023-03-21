@@ -12,7 +12,7 @@ import {
   isStixDomainObject
 } from '../../schema/stixDomainObject';
 import { UnsupportedError, ValidationError } from '../../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting } from './entitySetting-types';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting, Scale, ScaleConfig } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getEntitiesFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
@@ -32,6 +32,26 @@ export const defaultEntitySetting: Record<string, typeAvailableSetting> = {
   enforce_reference: false,
   attributes_configuration: JSON.stringify([]),
 };
+
+export const defaultScale = JSON.stringify({
+  local_config: {
+    better_side: 'min',
+    min: {
+      value: 0,
+      color: '#f44336',
+      label: 'Low',
+    },
+    max: {
+      value: 100,
+      color: '#6e44ad',
+      label: 'Out of Range',
+    },
+    ticks: [
+      { value: 30, color: '#ff9800', label: 'Med' },
+      { value: 70, color: '#4caf50', label: 'High' },
+    ],
+  }
+});
 
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
@@ -101,11 +121,45 @@ const optionsValidation = async (targetType: string, input: BasicStoreEntityEnti
   });
 };
 
+const scaleValidation = (scale: Scale) => {
+  if (scale?.local_config) {
+    const minValue = scale.local_config.min.value;
+    const maxValue = scale.local_config.max.value;
+    const valuesOfTick = scale.local_config.ticks.sort().map(({ value }) => value);
+    if (minValue < 0 || minValue > 100) {
+      throw ValidationError(minValue, {
+        message: 'The min value must be between 0 and 100',
+      });
+    } else if (maxValue > 100 || maxValue < 0) {
+      throw ValidationError(maxValue, {
+        message: 'The max value must be between 0 and 100',
+      });
+    }
+    if (minValue > maxValue) {
+      throw ValidationError(minValue, {
+        message: 'The min value cannot be greater than max value'
+      });
+    } else if (maxValue < minValue) {
+      throw ValidationError(maxValue, {
+        message: 'The max value cannot be lower than min value'
+      });
+    }
+    valuesOfTick.forEach((tick) => {
+      if (tick < minValue || tick > maxValue) {
+        throw ValidationError(tick, {
+          message: 'Each tick value must be between min and max value'
+        });
+      }
+    });
+  }
+};
+
 const customizableAttributesValidation = (targetType: string, input: BasicStoreEntityEntitySetting) => {
   const attributesConfiguration = getAttributesConfiguration(input);
 
   if (attributesConfiguration) {
-    const customizableMandatoryAttributeNames = schemaAttributesDefinition.getAttributes(targetType)
+    const attributesDefinition = schemaAttributesDefinition.getAttributes(targetType);
+    const customizableMandatoryAttributeNames = attributesDefinition
       .filter((attr) => attr.mandatoryType === 'customizable')
       .map((attr) => attr.name);
 
@@ -119,6 +173,16 @@ const customizableAttributesValidation = (targetType: string, input: BasicStoreE
           message: 'This attribute is not customizable for this entity',
           data: { attribute: attr.name, entityType: targetType }
         });
+      }
+      if (attr.scale) {
+        const attributeDefinition = attributesDefinition.find((attrDef) => attrDef.name === attr.name);
+        if (!attributeDefinition?.scalable) {
+          throw ValidationError(attr.name, {
+            message: 'This attribute is not scalable for this entity',
+            data: { attribute: attr.name, entityType: targetType }
+          });
+        }
+        scaleValidation(attr.scale);
       }
     });
   }
@@ -145,14 +209,60 @@ export const validateEntitySettingUpdate = async (input: Record<string, unknown>
 
 // -- AJV --
 
+export const scaleConfig: JSONSchemaType<ScaleConfig> = {
+  type: 'object',
+  properties: {
+    better_side: { type: 'string' },
+    min: {
+      type: 'object',
+      properties: {
+        value: { type: 'number' },
+        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+        label: { type: 'string', minLength: 1 },
+      },
+      required: ['value', 'color', 'label'],
+    },
+    max: {
+      type: 'object',
+      properties: {
+        value: { type: 'number' },
+        color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+        label: { type: 'string', minLength: 1 },
+      },
+      required: ['value', 'color', 'label'],
+    },
+    ticks: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          value: { type: 'number' },
+          color: { type: 'string', pattern: '#[a-zA-Z0-9]{6}' },
+          label: { type: 'string', minLength: 1 },
+        },
+        required: ['value', 'color', 'label'],
+      }
+    },
+  },
+  required: ['min', 'max'],
+};
+
 export const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = {
   type: 'array',
   items: {
     type: 'object',
     properties: {
       name: { type: 'string', minLength: 1 },
-      mandatory: { type: 'boolean' }
+      mandatory: { type: 'boolean' },
+      scale: {
+        type: 'object',
+        properties: {
+          local_config: scaleConfig
+        },
+        nullable: true,
+        required: ['local_config'],
+      }
     },
-    required: ['name', 'mandatory']
+    required: ['name']
   },
 };

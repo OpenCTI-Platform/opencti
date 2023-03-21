@@ -263,6 +263,7 @@ class StixCyberObservableEntitiesLinesComponent extends Component {
                       >
                         <ItemConfidence
                           confidence={node.confidence}
+                          entityType={node.entity_type}
                           variant="inList"
                         />
                       </div>

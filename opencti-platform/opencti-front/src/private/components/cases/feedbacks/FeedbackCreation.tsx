@@ -185,9 +185,7 @@ const FeedbackCreation: FunctionComponent<{
                   rows="4"
                 />
                 <ConfidenceField
-                  name="confidence"
-                  label={t('Confidence')}
-                  fullWidth={true}
+                  entityType="Case"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <RatingField

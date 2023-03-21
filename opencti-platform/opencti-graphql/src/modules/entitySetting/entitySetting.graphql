@@ -1,8 +1,14 @@
 type TypeAttribute {
   name: String!
-  builtIn: Boolean!
+  mandatoryType: String!
   mandatory: Boolean!
   label: String
+  scale: String
+}
+
+type ScaleAttribute {
+  name: String!
+  scale: String!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -16,8 +22,9 @@ type EntitySetting implements InternalObject & BasicObject {
   platform_hidden_type: Boolean @auth
   enforce_reference: Boolean @auth
   attributes_configuration: String @auth(for: [SETTINGS])
-  mandatoryDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
+  attributesDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
   mandatoryAttributes: [String!]! @auth
+  scaleAttributes: [ScaleAttribute!]! @auth
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth

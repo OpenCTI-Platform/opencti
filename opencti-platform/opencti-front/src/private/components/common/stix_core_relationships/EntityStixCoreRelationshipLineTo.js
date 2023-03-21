@@ -198,7 +198,7 @@ class EntityStixCoreRelationshipLineToComponent extends Component {
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence confidence={node.confidence} variant="inList" />
+                <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
               </div>
               <div
                 className={classes.bodyItem}

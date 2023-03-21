@@ -28,6 +28,7 @@ const feedbackFragment = graphql`
     id
     name
     standard_id
+    entity_type
     x_opencti_stix_ids
     created
     modified

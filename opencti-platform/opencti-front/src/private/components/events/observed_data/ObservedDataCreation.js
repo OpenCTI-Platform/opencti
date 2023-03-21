@@ -202,9 +202,7 @@ export const ObservedDataCreationForm = ({
             style={{ marginTop: 20 }}
           />
           <ConfidenceField
-            name="confidence"
-            label={t('Confidence')}
-            fullWidth={true}
+            entityType="Observed-Data"
             containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField

@@ -106,6 +106,7 @@ const Infrastructure = createFragmentContainer(InfrastructureComponent, {
     fragment Infrastructure_infrastructure on Infrastructure {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked
