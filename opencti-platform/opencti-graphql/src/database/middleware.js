@@ -532,20 +532,15 @@ export const distributionEntities = async (context, user, types, args) => {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
   }
   if (field === 'name') {
-    const result = [];
+    let result = [];
     await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
       .then((hits) => {
-        hits.map((hit) => {
-          result.push(
-            {
-              label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
-              value: hit.value,
-              entity: hit.entity,
-            }
-          );
-        });
+        result = hits.map((hit) => ({
+          label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+          value: hit.value,
+          entity: hit.entity,
+        }));
       });
-    console.log('result', result);
     return result;
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));

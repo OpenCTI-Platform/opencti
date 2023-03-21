@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -14,7 +15,6 @@ import { simpleNumberFormat } from '../../../../utils/Number';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
 import { itemColor } from '../../../../utils/Colors';
-import { useNavigate } from "react-router-dom-v5-compat";
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -76,6 +76,9 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
       entity {
         ... on BasicObject {
           entity_type
+        }
+        ... on BasicRelationship {
+            entity_type
         }
         ... on StixCoreObject {
           stixCoreObjectsDistribution(
