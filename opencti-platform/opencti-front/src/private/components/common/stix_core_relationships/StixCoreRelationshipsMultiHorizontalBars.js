@@ -866,8 +866,10 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             && props.stixCoreRelationshipsDistribution.length > 0
           ) {
             const categories = props.stixCoreRelationshipsDistribution.map(
+              (n) => defaultValue(n.entity),
+            );
+            const categoriesForRedirection = props.stixCoreRelationshipsDistribution.map(
               (n) => ({
-                value: defaultValue(n.entity),
                 id: n.label,
                 entity_type: n.entity.entity_type,
               }),
@@ -943,6 +945,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   categories,
                   true,
                   navigate,
+                  categoriesForRedirection,
                 )}
                 series={chartData}
                 type="bar"

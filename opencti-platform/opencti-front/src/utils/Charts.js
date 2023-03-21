@@ -308,6 +308,7 @@ export const horizontalBarsChartOptions = (
   categories = null,
   legend = false,
   navigate = undefined,
+  categoriesForRedirection = null,
 ) => ({
   chart: {
     type: 'bar',
@@ -319,9 +320,9 @@ export const horizontalBarsChartOptions = (
     stacked,
     events: {
       click: (event, chartContext, config) => {
-        if (categories) {
-          const link = resolveLink(categories[config.dataPointIndex].entity_type);
-          const entityId = categories[config.dataPointIndex].id;
+        if (categoriesForRedirection) {
+          const link = resolveLink(categoriesForRedirection[config.dataPointIndex].entity_type);
+          const entityId = categoriesForRedirection[config.dataPointIndex].id;
           navigate(`${link}/${entityId}`);
         }
       },
@@ -362,7 +363,7 @@ export const horizontalBarsChartOptions = (
     theme: theme.palette.mode,
   },
   xaxis: {
-    categories: categories ? categories.map((category) => category.value) : [],
+    categories: categories ?? [],
     labels: {
       formatter: (value) => (xFormatter ? xFormatter(value) : value),
       style: {

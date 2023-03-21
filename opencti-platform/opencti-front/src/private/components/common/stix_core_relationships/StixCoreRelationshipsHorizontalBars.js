@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -217,6 +218,7 @@ const StixCoreRelationshipsHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
@@ -283,12 +285,27 @@ const StixCoreRelationshipsHorizontalBars = ({
               ),
             }));
             const chartData = [{ name: t('Number of relationships'), data }];
+            const categoriesForRedirection = (finalField === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
+              (n) => ({
+                id: n.label,
+                entity_type: n.entity.entity_type,
+              }),
+            ) : null;
+            console.log('categoriesForRedirection', categoriesForRedirection);
             return (
               <Chart
                 options={horizontalBarsChartOptions(
                   theme,
                   true,
                   simpleNumberFormat,
+                  null,
+                  false,
+                  false,
+                  false,
+                  null,
+                  false,
+                  navigate,
+                  categoriesForRedirection,
                 )}
                 series={chartData}
                 type="bar"
