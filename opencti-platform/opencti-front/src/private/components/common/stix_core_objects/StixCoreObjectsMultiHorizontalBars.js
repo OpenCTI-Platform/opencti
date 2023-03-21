@@ -429,7 +429,12 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 data,
               },
             ];
-            const categoriesForRedirection = null;
+            const categoriesForRedirection = (selection.attribute === 'name') ? props.stixCoreObjectsDistribution.map(
+              (n) => ({
+                id: n.entity.id,
+                entity_type: n.entity.entity_type,
+              }),
+            ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

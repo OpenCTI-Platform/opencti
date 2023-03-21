@@ -266,7 +266,6 @@ const StixCoreObjectsHorizontalBars = ({
                 entity_type: n.entity.entity_type,
               }),
             ) : null;
-            console.log('categoriesForRedirection', categoriesForRedirection);
             return (
               <Chart
                 options={horizontalBarsChartOptions(
