@@ -368,7 +368,7 @@ export const componentPredicateMap = {
     },
   },
   name: {
-    predicate: '<http://scap.nist.gov/ns/asset-identification#name>',
+    predicate: '<http://scap.nist.gov/ns/asset-identification#name>|<http://csrc.nist.gov/ns/oscal/info-system#system_name>',
     binding(iri, value) {
       return parameterizePredicate(iri, value ? `"${value}"` : null, this.predicate, 'name');
     },

@@ -19,7 +19,7 @@ import { findDataMarkingByIri } from '../../../data-markings/domain/dataMarkings
 const componentResolvers = {
   Query: {
     componentList: async (_, args, { dbName, dataSources, selectMap }) => {
-      const sparqlQuery = selectAllComponents(selectMap.getNode('node'), args);
+      const sparqlQuery = selectAllComponents(null, args);
       let response;
       try {
         response = await dataSources.Stardog.queryAll({
@@ -62,6 +62,10 @@ const componentResolvers = {
           // filter out network assets
           if (component.asset_type === 'network') continue;
           let { name } = component;
+          if (name === undefined || name === null) {
+            console.error(`[CYIO] INVALID-COMPONENT: (${dbName}) Unknown component name is unspecified for object ${component.iri}`);
+            continue;
+          }
           if (component.hasOwnProperty('vendor_name')) {
             if (!component.name.startsWith(component.vendor_name)) name = `${component.vendor_name} ${component.name}`;
           }
