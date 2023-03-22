@@ -452,9 +452,9 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  parameters.distributed,
                   navigate,
                   redirectionUtils,
-                  parameters.distributed,
                 )}
                 series={chartData}
                 type="bar"

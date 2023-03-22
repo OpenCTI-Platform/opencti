@@ -273,9 +273,9 @@ const StixCoreObjectsHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  parameters.distributed,
                   navigate,
                   redirectionUtils,
-                  parameters.distributed,
                 )}
                 series={chartData}
                 type="bar"

@@ -298,6 +298,7 @@ const StixCoreRelationshipsHorizontalBars = ({
                   true,
                   simpleNumberFormat,
                   null,
+                  false,
                   navigate,
                   redirectionUtils,
                 )}
