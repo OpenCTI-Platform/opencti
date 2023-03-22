@@ -1,27 +1,26 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
-import withTheme from '@mui/styles/withTheme';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
+import { useNavigate } from 'react-router-dom-v5-compat';
+import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   paper: {
     height: '100%',
     margin: '10px 0 0 0',
     padding: 0,
     borderRadius: 6,
   },
-});
+}));
 
 const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   query EntityStixCoreRelationshipsHorizontalBarsDistributionQuery(
@@ -139,23 +138,29 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
   }
 `;
 
-class EntityStixCoreRelationshipsHorizontalBars extends Component {
-  renderContent() {
-    const {
-      t,
-      fromId,
-      toId,
-      relationshipType,
-      fromTypes,
-      toTypes,
-      field,
-      isTo,
-      startDate,
-      endDate,
-      theme,
-      dateAttribute,
-      seriesName,
-    } = this.props;
+const EntityStixCoreRelationshipsHorizontalBars = (
+  {
+    fromId,
+    toId,
+    relationshipType,
+    fromTypes,
+    toTypes,
+    field,
+    isTo,
+    startDate,
+    endDate,
+    dateAttribute,
+    seriesName,
+    title,
+    variant,
+  },
+) => {
+  const { t } = useFormatter();
+  const classes = useStyles();
+  const theme = useTheme();
+  const navigate = useNavigate();
+
+  const renderContent = () => {
     const stixCoreRelationshipsDistributionVariables = {
       relationship_type: relationshipType,
       fromId,
@@ -182,7 +187,7 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
           ) {
             const data = props.stixCoreRelationshipsDistribution.map((n) => ({
               x:
-                // eslint-disable-next-line no-nested-ternary
+              // eslint-disable-next-line no-nested-ternary
                 field === 'internal_id'
                   ? n.entity.name
                   : field === 'entity_type'
@@ -200,12 +205,22 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
                 data,
               },
             ];
+            const redirectionUtils = (field === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
+              (n) => ({
+                id: n.label,
+                entity_type: n.entity.entity_type,
+              }),
+            ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
                   theme,
                   true,
                   simpleNumberFormat,
+                  null,
+                  false,
+                  navigate,
+                  redirectionUtils,
                 )}
                 series={chartData}
                 type="bar"
@@ -245,60 +260,34 @@ class EntityStixCoreRelationshipsHorizontalBars extends Component {
         }}
       />
     );
-  }
+  };
 
-  render() {
-    const { t, classes, title, variant } = this.props;
-    return (
-      <div style={{ height: '100%' }}>
-        <Typography
-          variant={variant === 'inEntity' ? 'h3' : 'h4'}
-          gutterBottom={true}
-          style={{
-            margin:
-              // eslint-disable-next-line no-nested-ternary
-              variant === 'inEntity'
-                ? 0
-                : variant !== 'inLine'
-                  ? '0 0 10px 0'
-                  : '-10px 0 10px -7px',
-          }}
-        >
-          {title || t('StixDomainObjects distribution')}
-        </Typography>
-        {variant === 'inLine' || variant === 'inEntity' ? (
-          this.renderContent()
-        ) : (
-          <Paper classes={{ root: classes.paper }} variant="outlined">
-            {this.renderContent()}
-          </Paper>
-        )}
-      </div>
-    );
-  }
-}
-
-EntityStixCoreRelationshipsHorizontalBars.propTypes = {
-  relationshipType: PropTypes.string,
-  fromId: PropTypes.string,
-  toId: PropTypes.string,
-  fromTypes: PropTypes.array,
-  toTypes: PropTypes.array,
-  title: PropTypes.string,
-  field: PropTypes.string,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  isTo: PropTypes.bool,
-  variant: PropTypes.string,
-  startDate: PropTypes.string,
-  endDate: PropTypes.string,
-  dateAttribute: PropTypes.string,
-  seriesName: PropTypes.string,
+  return (
+    <div style={{ height: '100%' }}>
+      <Typography
+        variant={variant === 'inEntity' ? 'h3' : 'h4'}
+        gutterBottom={true}
+        style={{
+          margin:
+          // eslint-disable-next-line no-nested-ternary
+            variant === 'inEntity'
+              ? 0
+              : variant !== 'inLine'
+                ? '0 0 10px 0'
+                : '-10px 0 10px -7px',
+        }}
+      >
+        {title || t('StixDomainObjects distribution')}
+      </Typography>
+      {variant === 'inLine' || variant === 'inEntity' ? (
+        renderContent()
+      ) : (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          {renderContent()}
+        </Paper>
+      )}
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withTheme,
-  withStyles(styles),
-)(EntityStixCoreRelationshipsHorizontalBars);
+export default EntityStixCoreRelationshipsHorizontalBars;
