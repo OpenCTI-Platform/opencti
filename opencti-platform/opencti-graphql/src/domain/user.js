@@ -22,6 +22,7 @@ import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapabi
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
+import { addIndividual } from './individual';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -544,6 +545,14 @@ export const otpUserGeneration = (user) => {
   return { secret, uri };
 };
 
+export const userAddIndividual = async (context, user) => {
+  const individualInput = { name: user.name, contact_information: user.user_email };
+  // We need to bypass validation here has we maybe not setup all require fields
+  const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+  context.req.session.user.individual_id = individual.id;
+  return individual;
+};
+
 export const otpUserActivation = async (context, user, { secret, code }) => {
   const isValidated = authenticator.check(code, secret);
   if (isValidated) {
@@ -702,6 +711,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   req.session.user = sessionUser;
   req.session.session_provider = { provider, token };
   req.session.session_refresh = false;
+  req.session.save();
   return sessionUser;
 };
 

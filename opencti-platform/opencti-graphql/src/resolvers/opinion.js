@@ -4,13 +4,13 @@ import {
   findAll,
   findById,
   findMyOpinion,
+  opinionContainsStixObjectOrStixRelationship,
   opinionsDistributionByEntity,
   opinionsNumber,
   opinionsNumberByEntity,
   opinionsTimeSeries,
   opinionsTimeSeriesByAuthor,
   opinionsTimeSeriesByEntity,
-  opinionContainsStixObjectOrStixRelationship,
 } from '../domain/opinion';
 import {
   stixDomainObjectAddRelation,
@@ -27,8 +27,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
-import { addIndividual } from '../domain/individual';
-import { userSessionRefresh } from '../domain/user';
+import { userAddIndividual } from '../domain/user';
 import { BYPASS, isUserHasCapability } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
 
@@ -115,11 +114,8 @@ const opinionResolvers = {
       const opinionToCreate = { ...input };
       opinionToCreate.createdBy = user.individual_id;
       if (opinionToCreate.createdBy === undefined) {
-        const individualInput = { name: user.name, contact_information: user.user_email };
-        // We need to bypass validation here has we maybe not setup all require fields
-        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+        const individual = await userAddIndividual(context, user);
         opinionToCreate.createdBy = individual.id;
-        await userSessionRefresh(user.internal_id);
       }
       return addOpinion(context, user, opinionToCreate);
     },
