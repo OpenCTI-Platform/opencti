@@ -132,7 +132,7 @@ const GroupingDetailsComponent = (props) => {
             </Typography>
             <Chip classes={{ root: classes.chip }} label={grouping.context} />
           </Grid>
-          <Grid item={true} xs={6} style={{ maxHeight: height }}>
+          <Grid item={true} xs={6} style={{ minHeight: 200, maxHeight: height }}>
             <EntityStixCoreRelationshipsHorizontalBars
               title={t('Entities distribution')}
               variant="inEntity"
