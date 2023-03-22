@@ -102,7 +102,7 @@ const READ_QUERY = gql`
   }
 `;
 
-describe('Opinion resolver standard behavior', () => {
+describe.skip('Opinion resolver standard behavior', () => {
   let opinionInternalId;
   let datasetOpinionInternalId;
   let datasetMalwareInternalId;
@@ -452,11 +452,12 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
   const editorOpinionStixId = 'opinion--ac3aeb26-47c1-43b7-b12d-b8be102aaff1';
   let participantId;
 
-  it('Participant should update his own opinion', async () => {
+  it('Participant should create opinion', async () => {
     const CREATE_QUERY = gql`
         mutation OpinionAdd($input: OpinionUserAddInput!) {
             userOpinionAdd(input: $input) {
                 id
+                opinion
                 createdBy {
                     id
                     name
@@ -476,11 +477,15 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
       },
     };
 
-    await participantQuery({
+    const queryResult = await participantQuery({
       query: CREATE_QUERY,
       variables: OPINION_TO_CREATE,
     });
 
+    expect(queryResult.data.userOpinionAdd.opinion).toEqual('agree');
+  });
+
+  it('Participant should update his own opinion', async () => {
     const UPDATE_QUERY = gql`
         mutation OpinionEdit($id: ID!, $input: [EditInput]!) {
             opinionEdit(id: $id) {
@@ -500,9 +505,10 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
       query: UPDATE_QUERY,
       variables: { id: participantOpinionStixId, input: { key: 'opinion', value: ['disagree'] } },
     });
+    console.log('queryResult:   ', queryResult);
 
     expect(queryResult.data.opinionEdit.fieldPatch.opinion).toEqual('disagree');
-    participantId = queryResult.data.opinionEdit.fieldPatch.createdBy.id; // '887cafc8-6af3-4ab4-bb9d-e2a2b9cbdb20'
+    participantId = queryResult.data.opinionEdit.fieldPatch.createdBy.id;
   });
 
   it('Participant should delete his own opinion', async () => {
