@@ -436,6 +436,10 @@ const stixCoreObjectsMultiHorizontalBars = ({
               (n) => ({
                 id: n.entity.id,
                 entity_type: n.entity.entity_type,
+                series: n.entity.stixCoreObjectsDistribution.map((e) => ({
+                  id: e.label,
+                  entity_type: e.entity.entity_type,
+                })),
               }),
             ) : null;
             return (

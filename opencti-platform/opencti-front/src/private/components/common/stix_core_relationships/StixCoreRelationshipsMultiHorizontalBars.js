@@ -872,6 +872,10 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               (n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,
+                series: n.entity[key].map((e) => ({
+                  id: e.label,
+                  entity_type: e.entity.entity_type,
+                })),
               }),
             );
             const entitiesMapping = {};

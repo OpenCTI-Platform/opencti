@@ -321,9 +321,24 @@ export const horizontalBarsChartOptions = (
     events: {
       click: (event, chartContext, config) => {
         if (redirectionUtils) {
-          const link = resolveLink(redirectionUtils[config.dataPointIndex].entity_type);
-          const entityId = redirectionUtils[config.dataPointIndex].id;
-          navigate(`${link}/${entityId}`);
+          if (config.dataPointIndex >= 0) { // click on a bar
+            const { dataPointIndex } = config;
+            if (config.seriesIndex > 0) { // for multi horizontal bars
+              const seriesIndex = config.seriesIndex - 1;
+              const entityType = redirectionUtils[dataPointIndex].series[seriesIndex]
+                ? redirectionUtils[dataPointIndex].series[seriesIndex].entity_type
+                : null;
+              if (entityType) {
+                const link = resolveLink(entityType);
+                const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
+                navigate(`${link}/${entityId}`);
+              }
+            } else {
+              const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
+              const entityId = redirectionUtils[dataPointIndex].id;
+              navigate(`${link}/${entityId}`);
+            }
+          }
         }
       },
     },
