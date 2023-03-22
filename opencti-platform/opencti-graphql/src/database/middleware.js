@@ -1989,16 +1989,14 @@ const createRuleDataPatch = (instance) => {
   if (isBasicRelationship(instance.entity_type)) {
     patch.i_inference_weight = weight;
   }
-  let attributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes();
-  if (instance.entity_type) { // keep only supported attributes
-    const entityAttributes = schemaAttributesDefinition.getAttributeNames(instance.entity_type);
-    attributes = attributes.filter((attr) => entityAttributes.includes(attr));
-  }
-  for (let index = 0; index < attributes.length; index += 1) {
-    const attribute = attributes[index];
+  // list supported attributes [{name: string, operation: string}] by entity type
+  const supportedAttributes = RULES_ATTRIBUTES_BEHAVIOR.supportedAttributes(instance.entity_type);
+  for (let index = 0; index < supportedAttributes.length; index += 1) {
+    const supportedAttribute = supportedAttributes[index];
+    const attribute = supportedAttribute.name;
     const values = getAllRulesField(instance, attribute);
     if (values.length > 0) {
-      const operation = RULES_ATTRIBUTES_BEHAVIOR.getOperation(attribute);
+      const { operation } = supportedAttribute;
       if (operation === RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.AVG) {
         if (!isNumericAttribute(attribute)) {
           throw UnsupportedError('Can apply avg on non numeric attribute');
@@ -3165,7 +3163,7 @@ export const createInferredEntity = async (context, input, ruleContent, type) =>
   };
   // Inferred entity have a specific standardId generated from dependencies data.
   const standardId = idGenFromData(type, ruleContent.content.dependencies.sort());
-  const instance = { standard_id: standardId, ...input, [ruleContent.field]: [ruleContent.content] };
+  const instance = { standard_id: standardId, entity_type: type, ...input, [ruleContent.field]: [ruleContent.content] };
   const patch = createRuleDataPatch(instance);
   const inputEntity = { ...instance, ...patch };
   logApp.info('Create inferred entity', { entity: inputEntity });

@@ -92,7 +92,7 @@ const sightingIndicatorRuleBuilder = (): RuleRuntime => {
         const input = { fromId: toObservable, toId: toSightingIdentityOrLocation, relationship_type: STIX_SIGHTING_RELATIONSHIP };
         const ruleContent = createRuleContent(def.id, dependencies, explanation, {
           confidence: computedConfidence,
-          start_time: range.start,
+          start_time: range.start, // TODO should be first_seen and last_seen
           stop_time: range.end,
           objectMarking: elementMarkings
         });

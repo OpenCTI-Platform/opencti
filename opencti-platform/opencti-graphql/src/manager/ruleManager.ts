@@ -24,7 +24,6 @@ import {
 import { RULE_PREFIX } from '../schema/general';
 import { ENTITY_TYPE_RULE_MANAGER } from '../schema/internalObject';
 import { ALREADY_DELETED_ERROR, TYPE_LOCK_ERROR } from '../config/errors';
-import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { getParentTypes } from '../schema/schemaUtils';
 import { isBasicRelationship } from '../schema/stixRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
@@ -55,14 +54,6 @@ const MIN_LIVE_STREAM_EVENT_VERSION = 4;
 const RULE_ENGINE_ID = 'rule_engine_settings';
 const RULE_ENGINE_KEY = conf.get('rule_engine:lock_key');
 const SCHEDULE_TIME = 10000;
-
-// region rules registration
-const ruleBehaviors = RULES_DECLARATION.map((d) => d.behaviors ?? []).flat();
-for (let index = 0; index < ruleBehaviors.length; index += 1) {
-  const ruleBehavior = ruleBehaviors[index];
-  RULES_ATTRIBUTES_BEHAVIOR.register(ruleBehavior);
-}
-// endregion
 
 export const getManagerInfo = async (context: AuthContext, user: AuthUser): Promise<RuleManager> => {
   const isRuleEngineActivated = await isModuleActivated('RULE_ENGINE');

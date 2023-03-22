@@ -55,7 +55,7 @@ interface RuleDefinition {
   display: DisplayDefinition;
   scan: RuleFilters;
   scopes: Array<RuleScope>;
-  behaviors: Array<RuleBehavior>;
+  behaviors: Array<RuleBehavior>; // TODO remove ?
 }
 
 interface RuleRuntime extends RuleDefinition {
