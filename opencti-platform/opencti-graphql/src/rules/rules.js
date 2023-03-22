@@ -4,10 +4,9 @@ import { isInternalId, shortHash } from '../schema/schemaUtils';
 import { RULE_PREFIX } from '../schema/general';
 import { RULE_MANAGER_USER_UUID } from '../utils/access';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixCoreObject } from '../schema/stixCoreObject';
-import {isBasicRelationship} from "../schema/stixRelationship";
-import {ENTITY_TYPE_INCIDENT} from "../schema/stixDomainObject";
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 
 // region definition
 export const RULES_ATTRIBUTES_BEHAVIOR = {
