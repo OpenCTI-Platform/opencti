@@ -505,7 +505,6 @@ describe('Opinion resolver behavior with Participant and Editor users', () => {
       query: UPDATE_QUERY,
       variables: { id: participantOpinionStixId, input: { key: 'opinion', value: ['disagree'] } },
     });
-    console.log('queryResult:   ', queryResult);
 
     expect(queryResult.data.opinionEdit.fieldPatch.opinion).toEqual('disagree');
     participantId = queryResult.data.opinionEdit.fieldPatch.createdBy.id;
