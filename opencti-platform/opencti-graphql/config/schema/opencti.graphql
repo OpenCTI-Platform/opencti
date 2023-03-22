@@ -13699,8 +13699,8 @@ type Mutation {
   labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
   externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS])
-  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS])
+  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
+  killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETLABELS])
 
   ######## STIX CORE OBJECT ENTITIES
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
