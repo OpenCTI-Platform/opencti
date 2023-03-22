@@ -435,16 +435,17 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 data,
               },
             ];
-            const redirectionUtils = (selection.attribute === 'name') ? props.stixCoreObjectsDistribution.map(
-              (n) => ({
-                id: n.entity.id,
-                entity_type: n.entity.entity_type,
-                series: n.entity.stixCoreObjectsDistribution.map((e) => ({
-                  id: e.label,
-                  entity_type: e.entity.entity_type,
-                })),
-              }),
-            ) : null;
+            const redirectionUtils = (selection.attribute === 'name')
+              ? props.stixCoreObjectsDistribution.map(
+                (n) => ({
+                  id: n.entity.id,
+                  entity_type: n.entity.entity_type,
+                  series: (subSelection.attribute === 'name') ? n.entity.stixCoreObjectsDistribution.map((e) => ({
+                    id: e.label,
+                    entity_type: e.entity.entity_type,
+                  })) : null,
+                }),
+              ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

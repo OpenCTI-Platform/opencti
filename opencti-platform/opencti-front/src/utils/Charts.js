@@ -323,7 +323,7 @@ export const horizontalBarsChartOptions = (
         if (redirectionUtils) {
           if (config.dataPointIndex >= 0) { // click on a bar
             const { dataPointIndex } = config;
-            if (config.seriesIndex > 0) { // for multi horizontal bars
+            if (config.seriesIndex > 0 && redirectionUtils[dataPointIndex].series) { // for multi horizontal bars representing entities
               const seriesIndex = config.seriesIndex - 1;
               const entityType = redirectionUtils[dataPointIndex].series[seriesIndex]
                 ? redirectionUtils[dataPointIndex].series[seriesIndex].entity_type

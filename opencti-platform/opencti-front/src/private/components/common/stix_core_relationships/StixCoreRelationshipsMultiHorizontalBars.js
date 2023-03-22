@@ -868,16 +868,17 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             const categories = props.stixCoreRelationshipsDistribution.map(
               (n) => defaultValue(n.entity),
             );
-            const redirectionUtils = props.stixCoreRelationshipsDistribution.map(
-              (n) => ({
-                id: n.label,
-                entity_type: n.entity.entity_type,
-                series: n.entity[key].map((e) => ({
-                  id: e.label,
-                  entity_type: e.entity.entity_type,
-                })),
-              }),
-            );
+            const redirectionUtils = (finalField === 'internal_id')
+              ? props.stixCoreRelationshipsDistribution.map(
+                (n) => ({
+                  id: n.label,
+                  entity_type: n.entity.entity_type,
+                  series: (finalSubDistributionField === 'internal_id') ? n.entity[key].map((e) => ({
+                    id: e.label,
+                    entity_type: e.entity.entity_type,
+                  })) : null,
+                }),
+              ) : null;
             const entitiesMapping = {};
             for (const distrib of props.stixCoreRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
