@@ -99,7 +99,7 @@ const Opinion = createFragmentContainer(OpinionComponent, {
       fragment Opinion_opinion on Opinion {
           id
           standard_id
-          entity_typex_opencti_stix_ids
+          x_opencti_stix_ids
           spec_version
           revoked
           confidence
