@@ -6,6 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
 import {
+  SETTINGS_SETACCESSES,
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
 } from '../../../utils/hooks/useGranted';
@@ -39,7 +40,7 @@ const TopMenuSettings = () => {
                 classes={{ root: classes.button }}>
                 {t('Parameters')}
             </Button>
-            <Security needs={[SETTINGS_SETMARKINGS]}>
+            <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]}>
                 <Button component={Link} size="small" to="/dashboard/settings/accesses"
                     variant={location.pathname.includes('/dashboard/settings/accesses') ? 'contained' : 'text'}
                     color={location.pathname.includes('/dashboard/settings/accesses') ? 'secondary' : 'primary'}
