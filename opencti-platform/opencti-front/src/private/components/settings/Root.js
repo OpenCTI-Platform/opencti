@@ -25,96 +25,137 @@ import SubTypes from './sub_types/SubTypes';
 import RootSubType from './sub_types/Root';
 
 const Root = () => (
-  <Switch>
-    <Security needs={[SETTINGS]} placeholder={<Redirect to="/dashboard" />}>
-      <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses"
-        render={() => <Redirect to="/dashboard/settings/accesses/marking" />}
-      />
-      <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to="/dashboard/settings" />}>
+    <Switch>
+      <Security needs={[SETTINGS]} placeholder={<Redirect to="/dashboard" />}>
+        <BoundaryRoute exact path="/dashboard/settings" component={Settings} />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses"
+          render={() => (
+            <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to="/dashboard/settings/accesses/users" />}>
+              <Redirect to="/dashboard/settings/accesses/marking" />
+            </Security>
+          )}
+        />
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses/users"
-          component={Users}
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Users />
+            </Security>
+          )}
         />
         <BoundaryRoute
           path="/dashboard/settings/accesses/users/:userId"
-          component={RootUser}
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <RootUser />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses/roles"
-          component={Roles}
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Roles />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses/groups"
-          component={Groups}
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Groups />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses/sessions"
-          component={Sessions}
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Sessions />
+            </Security>
+          )}
         />
-      </Security>
-      <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to="/dashboard/settings" />}>
         <BoundaryRoute
           exact
           path="/dashboard/settings/accesses/marking"
-          component={MarkingDefinitions}
+          render={() => (
+            <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <MarkingDefinitions />
+            </Security>
+          )}
         />
-      </Security>
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/entity_types"
-        component={SubTypes}
-      />
-      <BoundaryRoute
-        path="/dashboard/settings/entity_types/:subTypeId"
-        render={() => <RootSubType />}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/vocabularies/statusTemplates"
-        component={StatusTemplates}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/retention"
-        component={Retention}
-      />
-      <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
-      <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to="/dashboard/settings" />}>
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/entity_types"
+          component={SubTypes}
+        />
+        <BoundaryRoute
+          path="/dashboard/settings/entity_types/:subTypeId"
+          render={() => <RootSubType />}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/vocabularies/statusTemplates"
+          component={StatusTemplates}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/retention"
+          component={Retention}
+        />
+        <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
         <BoundaryRoute
           exact
           path="/dashboard/settings/vocabularies"
-          render={() => <Redirect to="/dashboard/settings/vocabularies/labels" />}
+          render={() => (
+            <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Redirect to="/dashboard/settings/vocabularies/labels" />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/vocabularies/labels"
-          component={Labels}
+          render={() => (
+            <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Labels />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/vocabularies/kill_chain_phases"
-          component={KillChainPhases}
+          render={() => (
+            <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <KillChainPhases />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/vocabularies/fields"
-          component={VocabularyCategories}
+          render={() => (
+            <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <VocabularyCategories />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact
           path="/dashboard/settings/vocabularies/fields/:category"
-          component={Vocabularies}
+          render={() => (
+            <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Vocabularies />
+            </Security>
+          )}
         />
       </Security>
-    </Security>
-  </Switch>
+    </Switch>
 );
-
 export default Root;
