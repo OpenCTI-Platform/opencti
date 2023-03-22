@@ -76,9 +76,11 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
       entity {
         ... on BasicObject {
           entity_type
+          id
         }
         ... on BasicRelationship {
-            entity_type
+          entity_type
+          id
         }
         ... on StixCoreObject {
           stixCoreObjectsDistribution(
@@ -101,6 +103,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
             entity {
               ... on BasicObject {
                 entity_type
+                id
               }
               ... on AttackPattern {
                 name
