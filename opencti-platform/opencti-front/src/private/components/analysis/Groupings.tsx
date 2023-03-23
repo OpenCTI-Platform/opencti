@@ -32,7 +32,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -104,7 +104,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       ...finalFilters,
       entity_type: [{ id: 'Grouping', value: 'Grouping' }],
     };
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',

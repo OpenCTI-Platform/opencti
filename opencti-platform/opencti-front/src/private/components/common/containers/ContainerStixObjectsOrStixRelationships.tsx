@@ -57,8 +57,8 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
   if (isSupportParticipation && isContainerOwner) {
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     entity_type: {
       label: 'Type',

@@ -15,8 +15,8 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth from '../../../utils/hooks/useAuth';
 
 const Vulnerabilities = () => {
-  const { platformModuleHelpers } = useAuth();
-  const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     'view-vulnerabilities',
     {

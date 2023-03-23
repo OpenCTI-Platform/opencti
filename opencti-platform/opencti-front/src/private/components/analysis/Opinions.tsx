@@ -31,7 +31,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers } = useAuth(); // useContext(UserContext)
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -99,7 +99,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
       ...finalFilters,
       entity_type: [{ id: 'Opinion', value: 'Opinion' }],
     };
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       opinion: {
         label: 'Opinion',

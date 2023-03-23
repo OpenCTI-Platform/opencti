@@ -23,7 +23,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
-  const { platformModuleHelpers } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsAndLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -75,7 +75,7 @@ const Incidents: FunctionComponent = () => {
     paginationOptions,
   );
   // eslint-disable-next-line class-methods-use-this
-  const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const buildColumns = {
     name: {
       label: 'Name',

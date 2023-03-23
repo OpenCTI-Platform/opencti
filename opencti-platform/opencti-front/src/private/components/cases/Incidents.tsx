@@ -34,7 +34,7 @@ export const LOCAL_STORAGE_KEY_CASE = 'view-cases-incidents';
 
 const Incidents: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();
-  const { platformModuleHelpers } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE,
     {
@@ -71,7 +71,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',

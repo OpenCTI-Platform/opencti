@@ -31,7 +31,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers } = useAuth();
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -99,7 +99,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       ...renderFilters,
       entity_type: [{ id: 'Report', value: 'Report' }],
     };
-    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Title',
