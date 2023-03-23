@@ -1,12 +1,10 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Alert from '@mui/material/Alert';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import RetentionLines, {
-  RetentionLinesQuery,
-} from './retention/RetentionLines';
+import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';

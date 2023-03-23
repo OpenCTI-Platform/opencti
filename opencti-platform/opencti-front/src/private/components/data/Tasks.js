@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
@@ -6,7 +6,7 @@ import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import TasksList, { tasksListQuery } from './tasks/TasksList';
 import Loader from '../../../components/Loader';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles(() => ({
