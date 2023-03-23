@@ -60,10 +60,10 @@ const TopMenuData = () => {
         </Button>
       )}
       {isKnowledgeEditor && (
-        <Tooltip title={platformModuleHelpers?.generateDisableMessage(TASK_MANAGER)}>
+        <Tooltip title={platformModuleHelpers.generateDisableMessage(TASK_MANAGER)}>
           <span>
             <Button component={Link} size="small" to="/dashboard/data/tasks"
-              disabled={!platformModuleHelpers?.isTasksManagerEnable()}
+              disabled={!platformModuleHelpers.isTasksManagerEnable()}
               variant={getVariant('/dashboard/data/tasks')}
               color={getColor('/dashboard/data/tasks')}
               classes={{ root: classes.button }}>
@@ -81,10 +81,10 @@ const TopMenuData = () => {
         </Button>
       )}
       {isSettingsManager && (
-        <Tooltip title={platformModuleHelpers?.generateDisableMessage(SYNC_MANAGER)}>
+        <Tooltip title={platformModuleHelpers.generateDisableMessage(SYNC_MANAGER)}>
           <span>
             <Button component={Link} size="small" to="/dashboard/data/sync"
-              disabled={!platformModuleHelpers?.isSyncManagerEnable()}
+              disabled={!platformModuleHelpers.isSyncManagerEnable()}
               variant={getVariant('/dashboard/data/sync')}
               color={getColor('/dashboard/data/sync')}
               classes={{ root: classes.button }}>
