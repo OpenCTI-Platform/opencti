@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -9,11 +9,9 @@ import {
   IncidentsLinesCasesPaginationQuery,
   IncidentsLinesCasesPaginationQuery$variables,
 } from './incidents/__generated__/IncidentsLinesCasesPaginationQuery.graphql';
-import IncidentsLines, {
-  incidentsLinesQuery,
-} from './incidents/IncidentsLines';
+import IncidentsLines, { incidentsLinesQuery } from './incidents/IncidentsLines';
 import { IncidentLineDummy } from './incidents/IncidentLine';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { IncidentLineCase_node$data } from './incidents/__generated__/IncidentLineCase_node.graphql';
 import ToolBar from '../data/ToolBar';
@@ -36,7 +34,7 @@ export const LOCAL_STORAGE_KEY_CASE = 'view-cases-incidents';
 
 const Incidents: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesCasesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE,
     {
@@ -73,7 +71,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',

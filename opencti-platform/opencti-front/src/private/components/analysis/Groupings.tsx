@@ -7,7 +7,7 @@ import GroupingCreation from './groupings/GroupingCreation';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
@@ -32,7 +32,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -104,7 +104,7 @@ const Groupings: FunctionComponent<GroupingsProps> = ({
       ...finalFilters,
       entity_type: [{ id: 'Grouping', value: 'Grouping' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',

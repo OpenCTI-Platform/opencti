@@ -1,16 +1,14 @@
-import React, { FunctionComponent, useContext } from 'react';
-import { QueryRenderer } from '../../../relay/environment';
+import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import OpinionsLines, { opinionsLinesQuery } from './opinions/OpinionsLines';
 import OpinionCreation from './opinions/OpinionCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNPARTICIPATE, KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import {
   OpinionsLinesPaginationQuery,
-  OpinionsLinesPaginationQuery$data,
   OpinionsLinesPaginationQuery$variables,
 } from './opinions/__generated__/OpinionsLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -18,12 +16,13 @@ import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { OpinionLine_node$data } from './opinions/__generated__/OpinionLine_node.graphql';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
+import { OpinionLineDummy } from './opinions/OpinionLine';
 
 const LOCAL_STORAGE_KEY = 'view-opinions';
 
 interface OpinionsProps {
-  objectId: string;
-  authorId: string;
+  objectId?: string;
+  authorId?: string;
   onChangeOpenExports: () => void;
 }
 
@@ -32,7 +31,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth(); // useContext(UserContext)
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -100,7 +99,7 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
       ...finalFilters,
       entity_type: [{ id: 'Opinion', value: 'Opinion' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       opinion: {
         label: 'Opinion',
@@ -172,43 +171,46 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           ]}
         >
           {queryRef && (
-            <QueryRenderer
-              query={opinionsLinesQuery}
-              variables={{ ...paginationOptions }}
-              render={({ props }: { props: OpinionsLinesPaginationQuery$data }) => (
-                <OpinionsLines
-                  data={props}
-                  paginationOptions={paginationOptions}
-                  dataColumns={dataColumns}
-                  initialLoading={props === null}
-                  onLabelClick={storageHelpers.handleAddFilter}
-                  selectedElements={selectedElements}
-                  deSelectedElements={deSelectedElements}
-                  onToggleEntity={onToggleEntity}
-                  selectAll={selectAll}
-                  setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                />
-              )}
-            />
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <OpinionLineDummy key={idx} dataColumns={dataColumns} />
+                    ))}
+                </>
+              }
+            >
+              <OpinionsLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+                onLabelClick={storageHelpers.handleAddFilter}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+                setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+              />
+            </React.Suspense>
           )}
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            selectAll={selectAll}
-            search={searchTerm}
-            filters={finalFilters}
-            handleClearSelectedElements={handleClearSelectedElements}
-            type="Opinion"
-          />
         </ListLines>
+        <ToolBar
+          selectedElements={selectedElements}
+          deSelectedElements={deSelectedElements}
+          numberOfSelectedElements={numberOfSelectedElements}
+          selectAll={selectAll}
+          search={searchTerm}
+          filters={finalFilters}
+          handleClearSelectedElements={handleClearSelectedElements}
+          type="Opinion"
+        />
       </div>
     );
   };
 
   return (
-    <UserContext.Consumer>
-      {() => (
         <ExportContextProvider>
           <div>
             {renderLines()}
@@ -217,8 +219,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
             </Security>
           </div>
         </ExportContextProvider>
-      )}
-    </UserContext.Consumer>
   );
 };
 export default Opinions;

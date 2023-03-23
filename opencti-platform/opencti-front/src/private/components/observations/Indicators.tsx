@@ -113,7 +113,7 @@ const Indicators = () => {
     setObservableTypes([]);
   };
 
-  const renderLines = (helper: ModuleHelper | undefined) => {
+  const renderLines = (platformModuleHelpers: ModuleHelper | undefined) => {
     let numberOfSelectedElements = Object.keys(selectedElements || {}).length;
     if (selectAll) {
       numberOfSelectedElements = (numberOfElements?.original ?? 0)
@@ -124,7 +124,7 @@ const Indicators = () => {
       ...toolBarFilters,
       entity_type: [{ id: 'Indicator', value: 'Indicator' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable();
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable();
     const dataColumns = {
       pattern_type: {
         label: 'Pattern type',
@@ -253,10 +253,10 @@ const Indicators = () => {
 
   return (
     <UserContext.Consumer>
-      {({ helper }) => (
+      {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <div className={classes.container}>
-            {renderLines(helper)}
+            {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <IndicatorCreation
                 paginationOptions={paginationOptions}

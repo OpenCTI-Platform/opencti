@@ -1341,12 +1341,12 @@ class ToolBar extends Component {
               </Tooltip>
             )}
             <UserContext.Consumer>
-              {({ helper }) => {
-                const label = helper.isRuleEngineEnable()
+              {({ platformModuleHelpers }) => {
+                const label = platformModuleHelpers.isRuleEngineEnable()
                   ? 'Rule rescan'
                   : 'Rule rescan (engine is disabled)';
                 const buttonDisable = typesAreNotScannable
-                  || !helper.isRuleEngineEnable()
+                  || !platformModuleHelpers.isRuleEngineEnable()
                   || numberOfSelectedElements === 0
                   || this.state.processing;
                 return typesAreNotScannable ? undefined : (

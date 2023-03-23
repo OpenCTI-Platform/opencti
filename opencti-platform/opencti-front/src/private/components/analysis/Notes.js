@@ -183,7 +183,7 @@ class Notes extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions, helper) {
+  renderLines(paginationOptions, platformModuleHelpers) {
     const {
       sortBy,
       orderAsc,
@@ -213,7 +213,7 @@ class Notes extends Component {
       [{ id: 'Note', value: 'Note' }],
       finalFilters,
     );
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     const dataColumns = {
       attribute_abstract: {
         label: 'Abstract',
@@ -340,10 +340,10 @@ class Notes extends Component {
     };
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <ExportContextProvider>
             <div>
-              {view === 'lines' && this.renderLines(paginationOptions, helper)}
+              {view === 'lines' && this.renderLines(paginationOptions, platformModuleHelpers)}
               <Security needs={[KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE]}>
                 <NoteCreation paginationOptions={paginationOptions} />
               </Security>

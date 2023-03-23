@@ -39,8 +39,8 @@ class IndicatorEntities extends Component {
     this.setState({ searchTerm: value });
   }
 
-  renderLines(helper, paginationOptions) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+  renderLines(platformModuleHelpers, paginationOptions) {
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     const { indicatorId } = this.props;
     const { sortBy, orderAsc } = this.state;
     const link = `/dashboard/observations/indicators/${indicatorId}/knowledge`;
@@ -134,10 +134,10 @@ class IndicatorEntities extends Component {
     return (
       <div className={classes.container}>
         <UserContext.Consumer>
-          {({ helper }) => (
+          {({ platformModuleHelpers }) => (
             <>
               {view === 'lines'
-                ? this.renderLines(helper, paginationOptions)
+                ? this.renderLines(platformModuleHelpers, paginationOptions)
                 : ''}
               <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <StixCoreRelationshipCreationFromEntity

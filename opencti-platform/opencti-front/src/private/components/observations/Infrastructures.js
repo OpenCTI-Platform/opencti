@@ -98,7 +98,7 @@ class Infrastructures extends Component {
     this.setState({ numberOfElements });
   }
 
-  renderLines(paginationOptions, helper) {
+  renderLines(paginationOptions, platformModuleHelpers) {
     const {
       sortBy,
       orderAsc,
@@ -107,7 +107,7 @@ class Infrastructures extends Component {
       openExports,
       numberOfElements,
     } = this.state;
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',
@@ -199,10 +199,10 @@ class Infrastructures extends Component {
     };
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <div>
             {view === 'lines'
-              ? this.renderLines(paginationOptions, helper)
+              ? this.renderLines(paginationOptions, platformModuleHelpers)
               : ''}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <InfrastructureCreation paginationOptions={paginationOptions} />

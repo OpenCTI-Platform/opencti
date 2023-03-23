@@ -179,8 +179,8 @@ class StixCyberObservables extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  buildColumns(helper) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+  buildColumns(platformModuleHelpers) {
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     return {
       observable_value: {
         label: 'Value',
@@ -255,12 +255,12 @@ class StixCyberObservables extends Component {
     );
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={this.buildColumns(helper)}
+              dataColumns={this.buildColumns(platformModuleHelpers)}
               handleSort={this.handleSort.bind(this)}
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
@@ -291,7 +291,7 @@ class StixCyberObservables extends Component {
                   <ArtifactsLines
                     data={props}
                     paginationOptions={paginationOptions}
-                    dataColumns={this.buildColumns(helper)}
+                    dataColumns={this.buildColumns(platformModuleHelpers)}
                     initialLoading={props === null}
                     onLabelClick={this.handleAddFilter.bind(this)}
                     selectedElements={selectedElements}

@@ -255,8 +255,8 @@ ContainerStixCyberObservablesComponentProps
     setDeSelectedElements({});
   };
 
-  const buildColumns = (helper: ModuleHelper | undefined) => {
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const buildColumns = (platformModuleHelpers: ModuleHelper | undefined) => {
+    const isRuntimeSort = platformModuleHelpers?.isRuntimeFieldEnable() ?? false;
     return {
       entity_type: {
         label: 'Type',
@@ -297,13 +297,13 @@ ContainerStixCyberObservablesComponentProps
 
   return (
     <UserContext.Consumer>
-      {({ helper }) => (
+      {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <div className={classes.container}>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={buildColumns(helper)}
+              dataColumns={buildColumns(platformModuleHelpers)}
               handleSort={handleSort}
               handleSearch={handleSearch}
               secondaryAction={true}
@@ -336,7 +336,7 @@ ContainerStixCyberObservablesComponentProps
                   <ContainerStixCyberObservablesLines
                     queryRef={queryRef}
                     paginationOptions={paginationOptions}
-                    dataColumns={buildColumns(helper)}
+                    dataColumns={buildColumns(platformModuleHelpers)}
                     setNumberOfElements={handleSetNumberOfElements}
                     onTypesChange={handleToggle}
                     openExports={openExports}
