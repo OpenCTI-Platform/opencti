@@ -33,7 +33,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IncidentKnowledgeGraphBar from './IncidentKnowledgeGraphBar';
-import { incidentMutationFieldPatch } from './IncidentEditionOverview';
+import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';
 import {
   incidentKnowledgeGraphtMutationRelationAddMutation,
   incidentKnowledgeGraphMutationRelationDeleteMutation,
@@ -41,7 +41,7 @@ import {
   incidentKnowledgeGraphQueryStixObjectDeleteMutation,
 } from './IncidentKnowledgeGraphQuery';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import IncidentPopover from './IncidentPopover';
+import CaseIncidentPopover from './CaseIncidentPopover';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import { hexToRGB } from '../../../../utils/Colors';
 
@@ -622,7 +622,7 @@ class IncidentKnowledgeGraphComponent extends Component {
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
-      mutation: incidentMutationFieldPatch,
+      mutation: caseIncidentMutationFieldPatch,
       variables: {
         id: this.props.caseData.id,
         input: {
@@ -1328,7 +1328,7 @@ class IncidentKnowledgeGraphComponent extends Component {
       <div>
         <ContainerHeader
           container={caseData}
-          PopoverComponent={<IncidentPopover id={caseData.id} />}
+          PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
           link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
           modes={['graph', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}

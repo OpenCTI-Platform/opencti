@@ -4,40 +4,40 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import { DataColumns } from '../../../../components/list_lines';
 import { UseLocalStorageHelpers } from '../../../../utils/hooks/useLocalStorage';
 import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
-import { IncidentLine, IncidentLineDummy } from './IncidentLine';
+import { CaseIncidentLine, CaseIncidentLineDummy } from './CaseIncidentLine';
+import { CaseIncidentsLinesCases_data$key } from './__generated__/CaseIncidentsLinesCases_data.graphql';
 import {
-  IncidentsLinesCasesPaginationQuery,
-  IncidentsLinesCasesPaginationQuery$variables,
-} from './__generated__/IncidentsLinesCasesPaginationQuery.graphql';
-import { IncidentsLinesCases_data$key } from './__generated__/IncidentsLinesCases_data.graphql';
-import { IncidentLineCase_node$data } from './__generated__/IncidentLineCase_node.graphql';
+  CaseIncidentsLinesCasesPaginationQuery,
+  CaseIncidentsLinesCasesPaginationQuery$variables,
+} from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentLineCase_node$data } from './__generated__/CaseIncidentLineCase_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
-interface CasesLinesProps {
-  paginationOptions?: IncidentsLinesCasesPaginationQuery$variables;
+interface CaseIncidentsLinesProps {
+  paginationOptions?: CaseIncidentsLinesCasesPaginationQuery$variables;
   dataColumns: DataColumns;
-  queryRef: PreloadedQuery<IncidentsLinesCasesPaginationQuery>;
+  queryRef: PreloadedQuery<CaseIncidentsLinesCasesPaginationQuery>;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  selectedElements: Record<string, IncidentLineCase_node$data>;
-  deSelectedElements: Record<string, IncidentLineCase_node$data>;
+  selectedElements: Record<string, CaseIncidentLineCase_node$data>;
+  deSelectedElements: Record<string, CaseIncidentLineCase_node$data>;
   onToggleEntity: (
-    entity: IncidentLineCase_node$data,
+    entity: CaseIncidentLineCase_node$data,
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
 }
 
-export const incidentsLinesQuery = graphql`
-  query IncidentsLinesCasesPaginationQuery(
+export const caseIncidentsLinesQuery = graphql`
+  query CaseIncidentsLinesCasesPaginationQuery(
     $search: String
     $count: Int
     $cursor: ID
-    $orderBy: CasesOrdering
+    $orderBy: CaseIncidentsOrdering
     $orderMode: OrderingMode
-    $filters: [CasesFiltering!]
+    $filters: [CaseIncidentsFiltering!]
   ) {
-    ...IncidentsLinesCases_data
+    ...CaseIncidentsLinesCases_data
       @arguments(
         search: $search
         count: $count
@@ -49,29 +49,29 @@ export const incidentsLinesQuery = graphql`
   }
 `;
 
-const incidentsLinesFragment = graphql`
-  fragment IncidentsLinesCases_data on Query
+const caseIncidentsLinesFragment = graphql`
+  fragment CaseIncidentsLinesCases_data on Query
   @argumentDefinitions(
     search: { type: "String" }
     count: { type: "Int" }
     cursor: { type: "ID" }
-    orderBy: { type: "CasesOrdering" }
+    orderBy: { type: "CaseIncidentsOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[CasesFiltering!]" }
+    filters: { type: "[CaseIncidentsFiltering!]" }
   )
-  @refetchable(queryName: "IncidentsCasesLinesRefetchQuery") {
-    cases(
+  @refetchable(queryName: "CaseIncidentsCasesLinesRefetchQuery") {
+    caseIncidents(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_incidents_cases") {
+    ) @connection(key: "Pagination_incidents_caseIncidents") {
       edges {
         node {
           id
-          ...IncidentLineCase_node
+          ...CaseIncidentLineCase_node
         }
       }
       pageInfo {
@@ -83,7 +83,7 @@ const incidentsLinesFragment = graphql`
   }
 `;
 
-const IncidentsLines: FunctionComponent<CasesLinesProps> = ({
+const CaseIncidentsLines: FunctionComponent<CaseIncidentsLinesProps> = ({
   setNumberOfElements,
   dataColumns,
   queryRef,
@@ -94,13 +94,13 @@ const IncidentsLines: FunctionComponent<CasesLinesProps> = ({
   onToggleEntity,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
-  IncidentsLinesCasesPaginationQuery,
-  IncidentsLinesCases_data$key
+  CaseIncidentsLinesCasesPaginationQuery,
+  CaseIncidentsLinesCases_data$key
   >({
-    linesQuery: incidentsLinesQuery,
-    linesFragment: incidentsLinesFragment,
+    linesQuery: caseIncidentsLinesQuery,
+    linesFragment: caseIncidentsLinesFragment,
     queryRef,
-    nodePath: ['cases', 'pageInfo', 'globalCount'],
+    nodePath: ['caseIncidents', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -109,10 +109,10 @@ const IncidentsLines: FunctionComponent<CasesLinesProps> = ({
       hasMore={hasMore}
       loadMore={loadMore}
       isLoading={isLoadingMore}
-      dataList={data?.cases?.edges ?? []}
-      globalCount={data?.cases?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-      LineComponent={IncidentLine}
-      DummyLineComponent={IncidentLineDummy}
+      dataList={data?.caseIncidents?.edges ?? []}
+      globalCount={data?.caseIncidents?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      LineComponent={CaseIncidentLine}
+      DummyLineComponent={CaseIncidentLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
@@ -124,4 +124,4 @@ const IncidentsLines: FunctionComponent<CasesLinesProps> = ({
   );
 };
 
-export default IncidentsLines;
+export default CaseIncidentsLines;

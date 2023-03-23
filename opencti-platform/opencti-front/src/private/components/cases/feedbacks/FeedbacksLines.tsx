@@ -14,7 +14,7 @@ import { FeedbackLine_node$data } from './__generated__/FeedbackLine_node.graphq
 
 const nbOfRowsToLoad = 50;
 
-interface CasesLinesProps {
+interface FeedbacksLinesProps {
   paginationOptions?: FeedbacksLinesPaginationQuery$variables;
   dataColumns: DataColumns;
   queryRef: PreloadedQuery<FeedbacksLinesPaginationQuery>;
@@ -33,9 +33,9 @@ export const feedbacksLinesQuery = graphql`
     $search: String
     $count: Int
     $cursor: ID
-    $orderBy: CasesOrdering
+    $orderBy: FeedbacksOrdering
     $orderMode: OrderingMode
-    $filters: [CasesFiltering!]
+    $filters: [FeedbacksFiltering!]
   ) {
     ...FeedbacksLines_data
       @arguments(
@@ -55,19 +55,19 @@ const feedbacksLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int" }
     cursor: { type: "ID" }
-    orderBy: { type: "CasesOrdering" }
+    orderBy: { type: "FeedbacksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[CasesFiltering!]" }
+    filters: { type: "[FeedbacksFiltering!]" }
   )
   @refetchable(queryName: "FeedbackLinesRefetchQuery") {
-    cases(
+    feedbacks(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_cases") {
+    ) @connection(key: "Pagination_feedbacks") {
       edges {
         node {
           id
@@ -83,7 +83,7 @@ const feedbacksLinesFragment = graphql`
   }
 `;
 
-const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
+const FeedbacksLines: FunctionComponent<FeedbacksLinesProps> = ({
   setNumberOfElements,
   dataColumns,
   queryRef,
@@ -100,7 +100,7 @@ const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
     linesQuery: feedbacksLinesQuery,
     linesFragment: feedbacksLinesFragment,
     queryRef,
-    nodePath: ['cases', 'pageInfo', 'globalCount'],
+    nodePath: ['feedbacks', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -109,8 +109,8 @@ const FeedbacksLines: FunctionComponent<CasesLinesProps> = ({
       hasMore={hasMore}
       loadMore={loadMore}
       isLoading={isLoadingMore}
-      dataList={data?.cases?.edges ?? []}
-      globalCount={data?.cases?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      dataList={data?.feedbacks?.edges ?? []}
+      globalCount={data?.feedbacks?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={FeedbackLine}
       DummyLineComponent={FeedbackLineDummy}
       dataColumns={dataColumns}

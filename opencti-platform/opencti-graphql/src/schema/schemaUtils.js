@@ -1,34 +1,10 @@
 import crypto from 'node:crypto';
 import validator from 'validator';
 import { isStixCyberObservable } from './stixCyberObservable';
-import {
-  isStixDomainObject,
-  isStixDomainObjectContainer,
-  isStixDomainObjectIdentity,
-  isStixDomainObjectLocation,
-} from './stixDomainObject';
+import { isStixDomainObject, isStixDomainObjectCase, isStixDomainObjectContainer, isStixDomainObjectIdentity, isStixDomainObjectLocation, } from './stixDomainObject';
 import { DatabaseError } from '../config/errors';
 import { isStixMetaObject } from './stixMetaObject';
-import {
-  STIX_TYPE_SIGHTING,
-  STIX_TYPE_RELATION,
-  ABSTRACT_BASIC_OBJECT,
-  ABSTRACT_BASIC_RELATIONSHIP,
-  ABSTRACT_INTERNAL_OBJECT,
-  ABSTRACT_INTERNAL_RELATIONSHIP,
-  ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  ABSTRACT_STIX_OBJECT,
-  ABSTRACT_STIX_RELATIONSHIP,
-  ENTITY_TYPE_CONTAINER,
-  ENTITY_TYPE_IDENTITY,
-  ENTITY_TYPE_LOCATION,
-} from './general';
+import { ABSTRACT_BASIC_OBJECT, ABSTRACT_BASIC_RELATIONSHIP, ABSTRACT_INTERNAL_OBJECT, ABSTRACT_INTERNAL_RELATIONSHIP, ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_META_OBJECT, ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, ENTITY_TYPE_CONTAINER, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION, STIX_TYPE_RELATION, STIX_TYPE_SIGHTING, } from './general';
 import { isInternalObject } from './internalObject';
 import { isStixCoreRelationship } from './stixCoreRelationship';
 import { isStixCyberObservableRelationship } from './stixCyberObservableRelationship';
@@ -37,6 +13,7 @@ import { isBasicRelationship, isStixRelationship } from './stixRelationship';
 import { isInternalRelationship } from './internalRelationship';
 import { isBasicObject, isStixCoreObject, isStixObject } from './stixCoreObject';
 import { STIX_SIGHTING_RELATIONSHIP } from './stixSightingRelationship';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const isStixId = (id) => id.match(/[a-z-]+--[\w-]{36}/g);
 export const isInternalId = (id) => validator.isUUID(id);
@@ -112,6 +89,9 @@ export const getParentTypes = (type) => {
           }
           if (isStixDomainObjectLocation(type)) {
             parentTypes.push(ENTITY_TYPE_LOCATION);
+          }
+          if (isStixDomainObjectCase(type)) {
+            parentTypes.push(ENTITY_TYPE_CONTAINER_CASE);
           }
           return parentTypes;
         }

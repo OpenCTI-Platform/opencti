@@ -9,7 +9,6 @@ import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } fr
 import StatusField from '../../common/form/StatusField';
 import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
-import { IncidentEditionOverview_case$key } from './__generated__/IncidentEditionOverview_case.graphql';
 import TextField from '../../../../components/TextField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -22,48 +21,51 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import CommitMessage from '../../common/form/CommitMessage';
 import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 
-export const incidentMutationFieldPatch = graphql`
-  mutation IncidentEditionOverviewCaseFieldPatchMutation(
+export const caseIncidentMutationFieldPatch = graphql`
+  mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
     $references: [String]
   ) {
-    caseFieldPatch(
+    caseIncidentFieldPatch(
       id: $id
       input: $input
       commitMessage: $commitMessage
       references: $references
     ) {
-      ...IncidentEditionOverview_case
-      ...Incident_case
+      ...CaseIncidentEditionOverview_case
+      ...CaseIncident_case
     }
   }
 `;
 
-export const incidentEditionOverviewFocus = graphql`
-  mutation IncidentEditionOverviewCaseFocusMutation(
+export const caseIncidentEditionOverviewFocus = graphql`
+  mutation CaseIncidentEditionOverviewCaseFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
-    caseContextPatch(id: $id, input: $input) {
+    caseIncidentContextPatch(id: $id, input: $input) {
       id
     }
   }
 `;
 
-const incidentEditionOverviewFragment = graphql`
-  fragment IncidentEditionOverview_case on Case {
+const caseIncidentEditionOverviewFragment = graphql`
+  fragment CaseIncidentEditionOverview_case on CaseIncident {
     id
     name
-    case_type
     severity
     priority
     revoked
     description
     rating
     confidence
+    created
+    response_types
     creators {
       id
       name
@@ -108,21 +110,21 @@ const incidentEditionOverviewFragment = graphql`
   }
 `;
 
-const incidentMutationRelationAdd = graphql`
-  mutation IncidentEditionOverviewCaseRelationAddMutation(
+const caseIncidentMutationRelationAdd = graphql`
+  mutation CaseIncidentEditionOverviewCaseRelationAddMutation(
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
     caseRelationAdd(id: $id, input: $input) {
       from {
-        ...IncidentEditionOverview_case
+        ...CaseIncidentEditionOverview_case
       }
     }
   }
 `;
 
-const incidentMutationRelationDelete = graphql`
-  mutation IncidentEditionOverviewCaseRelationDeleteMutation(
+const caseIncidentMutationRelationDelete = graphql`
+  mutation CaseIncidentEditionOverviewCaseRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
@@ -132,13 +134,13 @@ const incidentMutationRelationDelete = graphql`
       toId: $toId
       relationship_type: $relationship_type
     ) {
-      ...IncidentEditionOverview_case
+      ...CaseIncidentEditionOverview_case
     }
   }
 `;
 
-interface IncidentEditionOverviewProps {
-  caseRef: IncidentEditionOverview_case$key;
+interface CaseIncidentEditionOverviewProps {
+  caseRef: CaseIncidentEditionOverview_case$key;
   context:
   | readonly ({
     readonly focusOn: string | null;
@@ -149,7 +151,7 @@ interface IncidentEditionOverviewProps {
   handleClose: () => void;
 }
 
-interface CaseEditionFormValues {
+interface CaseIncidentEditionFormValues {
   message?: string
   createdBy: Option | undefined
   objectMarking?: Option[]
@@ -158,32 +160,33 @@ interface CaseEditionFormValues {
   references: ExternalReferencesValues | undefined
 }
 
-const CaseEditionOverviewComponent: FunctionComponent<
-IncidentEditionOverviewProps
+const CaseIncidentEditionOverviewComponent: FunctionComponent<
+CaseIncidentEditionOverviewProps
 > = ({ caseRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
-  const caseData = useFragment(incidentEditionOverviewFragment, caseRef);
+  const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     severity: Yup.string().nullable(),
     priority: Yup.string().nullable(),
+    response_types: Yup.array(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
     rating: Yup.number().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const caseValidator = useSchemaEditionValidation('Case', basicShape);
+  const caseIncidentValidator = useSchemaEditionValidation('Case-Incident', basicShape);
 
   const queries = {
-    fieldPatch: incidentMutationFieldPatch,
-    relationAdd: incidentMutationRelationAdd,
-    relationDelete: incidentMutationRelationDelete,
-    editionFocus: incidentEditionOverviewFocus,
+    fieldPatch: caseIncidentMutationFieldPatch,
+    relationAdd: caseIncidentMutationRelationAdd,
+    relationDelete: caseIncidentMutationRelationDelete,
+    editionFocus: caseIncidentEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
+  const editor = useFormEditor(caseData, enableReferences, queries, caseIncidentValidator);
 
-  const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -214,7 +217,7 @@ IncidentEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      caseValidator
+      caseIncidentValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
@@ -231,7 +234,9 @@ IncidentEditionOverviewProps
     name: caseData.name,
     description: caseData.description,
     priority: caseData.priority,
+    created: caseData.created,
     severity: caseData.severity,
+    response_types: caseData.response_types ?? [],
     confidence: caseData.confidence,
     createdBy: convertCreatedBy(caseData),
     objectMarking: convertMarkings(caseData),
@@ -241,7 +246,7 @@ IncidentEditionOverviewProps
   };
   return (
     <Formik enableReinitialize={true} initialValues={initialValues as never}
-      validationSchema={caseValidator}
+      validationSchema={caseIncidentValidator}
       onSubmit={onSubmit}>
       {({
         submitForm,
@@ -264,12 +269,26 @@ IncidentEditionOverviewProps
               <SubscriptionFocus context={context} fieldName="name" />
             }
           />
+          <Field
+            component={DateTimePickerField}
+            name="created"
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            TextFieldProps={{
+              label: t('Incident date'),
+              variant: 'standard',
+              fullWidth: true,
+              helperText: (
+                <SubscriptionFocus context={context} fieldName="created" />
+              ),
+            }}
+          />
           <OpenVocabField
             label={t('Case severity')}
             type="case_severity_ov"
             name="severity"
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
@@ -280,16 +299,27 @@ IncidentEditionOverviewProps
             type="case_priority_ov"
             name="priority"
             onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
+            onChange={setFieldValue}
             variant="edit"
             containerStyle={fieldSpacingContainerStyle}
             multiple={false}
             editContext={context}
           />
+          <OpenVocabField
+            label={t('Response type')}
+            type="incident_response_types_ov"
+            name="response_types"
+            onSubmit={handleSubmitField}
+            onChange={setFieldValue}
+            variant="edit"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple
+            editContext={context}
+          />
           <ConfidenceField
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            entityType="Case"
+            entityType="Case-Incident"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
@@ -319,7 +349,7 @@ IncidentEditionOverviewProps
           {caseData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Case"
+              type="Case-Incident"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
@@ -365,4 +395,4 @@ IncidentEditionOverviewProps
   );
 };
 
-export default CaseEditionOverviewComponent;
+export default CaseIncidentEditionOverviewComponent;

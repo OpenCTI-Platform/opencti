@@ -17,7 +17,7 @@ import IncidentKnowledgeCorrelation, {
   incidentKnowledgeCorrelationQuery,
 } from './IncidentKnowledgeCorrelation';
 import Loader from '../../../../components/Loader';
-import IncidentPopover from './IncidentPopover';
+import CaseIncidentPopover from './CaseIncidentPopover';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
 import {
   buildViewParamsFromUrlAndStorage,
@@ -281,7 +281,7 @@ class IncidentKnowledgeComponent extends Component {
         {mode !== 'graph' && (
           <ContainerHeader
             container={caseData}
-            PopoverComponent={<IncidentPopover id={caseData.id} />}
+            PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
             link={`/dashboard/cases/incidents/${caseData.id}/knowledge`}
             modes={['graph', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}

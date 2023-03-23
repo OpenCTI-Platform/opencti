@@ -1,4 +1,4 @@
-interface Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -128,14 +128,17 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Feedback
+  rating: Int
 }
 
 # Ordering
-enum CasesOrdering {
+enum FeedbacksOrdering {
   name
   created
   modified
   context
+  rating
   created_at
   updated_at
   creator
@@ -146,7 +149,7 @@ enum CasesOrdering {
 }
 
 # Filtering
-enum CasesFilter {
+enum FeedbacksFilter {
   name
   created
   modified
@@ -159,47 +162,74 @@ enum CasesFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
+  rating
   confidence
 }
 
-input CasesFiltering {
-  key: [CasesFilter!]!
+input FeedbacksFiltering {
+  key: [FeedbacksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
 # Relay connections
-type CaseConnection {
+type FeedbackConnection {
   pageInfo: PageInfo!
-  edges: [CaseEdge]
+  edges: [FeedbackEdge]
 }
 
-type CaseEdge {
+type FeedbackEdge {
   cursor: String!
-  node: Case!
+  node: Feedback!
 }
 
 # Queries
 type Query {
-  case(id: String!): Case @auth(for: [KNOWLEDGE])
-  cases(
+  feedback(id: String!): Feedback @auth(for: [KNOWLEDGE])
+  feedbacks(
     first: Int
     after: ID
-    orderBy: CasesOrdering
+    orderBy: FeedbacksOrdering
     orderMode: OrderingMode
-    filters: [CasesFiltering!]
+    filters: [FeedbacksFiltering!]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CaseConnection @auth(for: [KNOWLEDGE])
+  ): FeedbackConnection @auth(for: [KNOWLEDGE])
+  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input FeedbackAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2)
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  rating: Int
 }
 
 type Mutation {
-  caseDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextClean(id: ID!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  feedbackAdd(input: FeedbackAddInput!): Feedback @auth
+  feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  feedbackRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  feedbackRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
+  feedbackFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
+  feedbackContextPatch(id: ID!, input: EditContext!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
+  feedbackContextClean(id: ID!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
 }

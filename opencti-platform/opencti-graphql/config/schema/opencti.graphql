@@ -1959,7 +1959,6 @@ enum StixDomainObjectsFilter {
   creator
   x_opencti_workflow_id
   fromId
-  case_type
   severity
   priority
 }
@@ -11423,7 +11422,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | StixCyberObservableRelationship
   | DataComponent
   | DataSource
-  | Case
+  | CaseIncident
+  | Feedback
   | EntitySetting
   | Creator
 union StixObjectOrStixRelationship =
@@ -11495,7 +11495,8 @@ union StixObjectOrStixRelationship =
   | StixCyberObservableRelationship
   | DataComponent
   | DataSource
-  | Case
+  | CaseIncident
+  | Feedback
   | EntitySetting
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
@@ -11560,7 +11561,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | StixCoreRelationship
   | DataComponent
   | DataSource
-  | Case
+  | CaseIncident
+  | Feedback
   | EntitySetting
 
 enum StixRelationshipsOrdering {

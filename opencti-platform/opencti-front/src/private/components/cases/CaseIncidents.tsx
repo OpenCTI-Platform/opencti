@@ -4,21 +4,19 @@ import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
-import {
-  CasesFilter,
-  IncidentsLinesCasesPaginationQuery,
-  IncidentsLinesCasesPaginationQuery$variables,
-} from './incidents/__generated__/IncidentsLinesCasesPaginationQuery.graphql';
-import IncidentsLines, { incidentsLinesQuery } from './incidents/IncidentsLines';
-import { IncidentLineDummy } from './incidents/IncidentLine';
+import CaseIncidentsLines, { caseIncidentsLinesQuery } from './incidents/CaseIncidentsLines';
+import { CaseIncidentLineDummy } from './incidents/CaseIncidentLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { IncidentLineCase_node$data } from './incidents/__generated__/IncidentLineCase_node.graphql';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import IncidentCreation from './incidents/IncidentCreation';
+import CaseIncidentCreation from './incidents/CaseIncidentCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import {
+  CaseIncidentsLinesCasesPaginationQuery, CaseIncidentsLinesCasesPaginationQuery$variables,
+} from './incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentLineCase_node$data } from './incidents/__generated__/CaseIncidentLineCase_node.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -26,17 +24,17 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CasesProps {
+interface CaseIncidentsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE = 'view-cases-incidents';
+export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-cases-incidents';
 
-const Incidents: FunctionComponent<CasesProps> = () => {
+const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const classes = useStyles();
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
-  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsLinesCasesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE,
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseIncidentsLinesCasesPaginationQuery$variables>(
+    LOCAL_STORAGE_KEY_CASE_INCIDENT,
     {
       searchTerm: '',
       sortBy: 'name',
@@ -45,14 +43,6 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       filters: {} as Filters,
     },
   );
-  const key: ReadonlyArray<CasesFilter> = ['case_type'];
-  const finalPaginationOptions = {
-    ...paginationOptions,
-    filters: [
-      ...(paginationOptions.filters ?? []),
-      { key, values: ['incident'] },
-    ],
-  };
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -61,7 +51,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<IncidentLineCase_node$data>(LOCAL_STORAGE_KEY_CASE);
+  } = useEntityToggle<CaseIncidentLineCase_node$data>(LOCAL_STORAGE_KEY_CASE_INCIDENT);
   const renderLines = () => {
     const {
       sortBy,
@@ -119,9 +109,9 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         isSortable: isRuntimeSort,
       },
     };
-    const queryRef = useQueryLoading<IncidentsLinesCasesPaginationQuery>(
-      incidentsLinesQuery,
-      finalPaginationOptions,
+    const queryRef = useQueryLoading<CaseIncidentsLinesCasesPaginationQuery>(
+      caseIncidentsLinesQuery,
+      paginationOptions,
     );
     return (
       <ListLines
@@ -136,10 +126,10 @@ const Incidents: FunctionComponent<CasesProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case"
+        exportEntityType="Case-Incident"
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={finalPaginationOptions}
+        paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -162,14 +152,14 @@ const Incidents: FunctionComponent<CasesProps> = () => {
                 {Array(20)
                   .fill(0)
                   .map((idx) => (
-                    <IncidentLineDummy key={idx} dataColumns={dataColumns} />
+                    <CaseIncidentLineDummy key={idx} dataColumns={dataColumns} />
                   ))}
               </>
             }
           >
-            <IncidentsLines
+            <CaseIncidentsLines
               queryRef={queryRef}
-              paginationOptions={finalPaginationOptions}
+              paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -184,8 +174,7 @@ const Incidents: FunctionComponent<CasesProps> = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               filters={{
-                entity_type: [{ id: 'Case', value: 'Case' }],
-                case_type: [{ id: 'incident', value: 'incident' }],
+                entity_type: [{ id: 'Case-Incident', value: 'Case-Incident' }],
               }}
             />
           </React.Suspense>
@@ -198,11 +187,11 @@ const Incidents: FunctionComponent<CasesProps> = () => {
       <div className={classes.container}>
         {renderLines()}
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <IncidentCreation paginationOptions={finalPaginationOptions} />
+          <CaseIncidentCreation paginationOptions={paginationOptions} />
         </Security>
       </div>
     </ExportContextProvider>
   );
 };
 
-export default Incidents;
+export default CaseIncidents;

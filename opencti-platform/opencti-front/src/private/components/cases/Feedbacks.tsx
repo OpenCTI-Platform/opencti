@@ -1,21 +1,17 @@
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, Suspense } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
-import {
-  CasesFilter,
-  FeedbacksLinesPaginationQuery,
-  FeedbacksLinesPaginationQuery$variables,
-} from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
 import FeedbacksLines, { feedbacksLinesQuery } from './feedbacks/FeedbacksLines';
 import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
+import { FeedbacksLinesPaginationQuery, FeedbacksLinesPaginationQuery$variables } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
+import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -23,17 +19,17 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-interface CasesProps {
+interface FeedbacksProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE = 'view-cases-feedbacks';
+export const LOCAL_STORAGE_KEY_FEEDBACK = 'view-cases-feedbacks';
 
-const Feedbacks: FunctionComponent<CasesProps> = () => {
+const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
   const classes = useStyles();
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_CASE,
+    LOCAL_STORAGE_KEY_FEEDBACK,
     {
       searchTerm: '',
       sortBy: 'name',
@@ -42,14 +38,6 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       filters: {} as Filters,
     },
   );
-  const key: ReadonlyArray<CasesFilter> = ['case_type'];
-  const finalPaginationOptions = {
-    ...paginationOptions,
-    filters: [
-      ...(paginationOptions.filters ?? []),
-      { key, values: ['feedback'] },
-    ],
-  };
   const {
     onToggleEntity,
     numberOfSelectedElements,
@@ -58,7 +46,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     deSelectedElements,
     handleToggleSelectAll,
     selectAll,
-  } = useEntityToggle<FeedbackLine_node$data>(LOCAL_STORAGE_KEY_CASE);
+  } = useEntityToggle<FeedbackLine_node$data>(LOCAL_STORAGE_KEY_FEEDBACK);
   const renderLines = () => {
     const {
       sortBy,
@@ -113,7 +101,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
     };
     const queryRef = useQueryLoading<FeedbacksLinesPaginationQuery>(
       feedbacksLinesQuery,
-      finalPaginationOptions,
+      paginationOptions,
     );
     return (
       <ListLines
@@ -128,10 +116,10 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         handleToggleSelectAll={handleToggleSelectAll}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case"
+        exportEntityType="Feedback"
         keyword={searchTerm}
         filters={filters}
-        paginationOptions={finalPaginationOptions}
+        paginationOptions={paginationOptions}
         numberOfElements={numberOfElements}
         iconExtension={true}
         availableFilterKeys={[
@@ -147,7 +135,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
         ]}
       >
         {queryRef && (
-          <React.Suspense
+          <Suspense
             fallback={
               <>
                 {Array(20)
@@ -160,7 +148,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
           >
             <FeedbacksLines
               queryRef={queryRef}
-              paginationOptions={finalPaginationOptions}
+              paginationOptions={paginationOptions}
               dataColumns={dataColumns}
               setNumberOfElements={helpers.handleSetNumberOfElements}
               selectedElements={selectedElements}
@@ -175,11 +163,10 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               filters={{
-                entity_type: [{ id: 'Case', value: 'Case' }],
-                case_type: [{ id: 'feedback', value: 'feedback' }],
+                entity_type: [{ id: 'Feedback', value: 'Feedback' }],
               }}
             />
-          </React.Suspense>
+          </Suspense>
         )}
       </ListLines>
     );

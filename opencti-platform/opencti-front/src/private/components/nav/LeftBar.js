@@ -38,7 +38,6 @@ import useGranted, {
 import { MESSAGING$ } from '../../../relay/environment';
 import {
   useIsHiddenEntities,
-  useIsHiddenEntity,
 } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles((theme) => ({
@@ -134,6 +133,10 @@ const LeftBar = () => {
     'System',
     'Individual',
   );
+  const hideCases = useIsHiddenEntities(
+    'Case-Incident',
+    'Feedback',
+  );
   const hideArsenal = useIsHiddenEntities(
     'Malware',
     'Channel',
@@ -212,7 +215,7 @@ const LeftBar = () => {
               )}
             </MenuItem>
           </StyledTooltip>
-          {!useIsHiddenEntity('Case') && (
+          {!hideCases && (
             <StyledTooltip title={!navOpen && t('Cases')} placement="right">
               <MenuItem
                 component={Link}

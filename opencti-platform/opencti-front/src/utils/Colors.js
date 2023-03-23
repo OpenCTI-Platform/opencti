@@ -36,9 +36,9 @@ export const itemColor = (type, dark = false, reversed = false) => {
       }
       return '#7f8727';
     case 'Case':
-    case 'Case-incident':
+    case 'Case-Incident':
     case 'Case-rfi':
-    case 'Case-feedback':
+    case 'Feedback':
       if (dark) {
         return '#ad1457';
       }

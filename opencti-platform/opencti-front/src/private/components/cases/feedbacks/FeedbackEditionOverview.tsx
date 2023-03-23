@@ -11,7 +11,6 @@ import { Option } from '../../common/form/ReferenceField';
 import { adaptFieldValue } from '../../../../utils/String';
 import { FeedbackEditionOverview_case$key } from './__generated__/FeedbackEditionOverview_case.graphql';
 import TextField from '../../../../components/TextField';
-import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -30,7 +29,7 @@ const feedbackMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    caseFieldPatch(
+    feedbackFieldPatch(
       id: $id
       input: $input
       commitMessage: $commitMessage
@@ -47,19 +46,16 @@ export const feedbackEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    caseContextPatch(id: $id, input: $input) {
+    feedbackContextPatch(id: $id, input: $input) {
       id
     }
   }
 `;
 
 const feedbackEditionOverviewFragment = graphql`
-  fragment FeedbackEditionOverview_case on Case {
+  fragment FeedbackEditionOverview_case on Feedback {
     id
     name
-    case_type
-    priority
-    severity
     revoked
     description
     rating
@@ -109,7 +105,7 @@ const feedbackMutationRelationAdd = graphql`
     $id: ID!
     $input: StixMetaRelationshipAddInput!
   ) {
-    caseRelationAdd(id: $id, input: $input) {
+    feedbackRelationAdd(id: $id, input: $input) {
       from {
         ...FeedbackEditionOverview_case
       }
@@ -123,7 +119,7 @@ const feedbackMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    caseRelationDelete(
+    feedbackRelationDelete(
       id: $id
       toId: $toId
       relationship_type: $relationship_type
@@ -134,7 +130,7 @@ const feedbackMutationRelationDelete = graphql`
 `;
 
 interface FeedbackEditionOverviewProps {
-  caseRef: FeedbackEditionOverview_case$key;
+  feedbackRef: FeedbackEditionOverview_case$key;
   context:
   | readonly ({
     readonly focusOn: string | null;
@@ -145,7 +141,7 @@ interface FeedbackEditionOverviewProps {
   handleClose: () => void;
 }
 
-interface CaseEditionFormValues {
+interface FeedbackEditionFormValues {
   message?: string
   references?: Option[]
   createdBy: Option | undefined
@@ -153,22 +149,20 @@ interface CaseEditionFormValues {
   objectMarking?: Option[]
 }
 
-const CaseEditionOverviewComponent: FunctionComponent<
+const FeedbackEditionOverviewComponent: FunctionComponent<
 FeedbackEditionOverviewProps
-> = ({ caseRef, context, enableReferences = false, handleClose }) => {
+> = ({ feedbackRef, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
-  const caseData = useFragment(feedbackEditionOverviewFragment, caseRef);
+  const feedbackData = useFragment(feedbackEditionOverviewFragment, feedbackRef);
 
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
-    priority: Yup.string().nullable(),
-    severity: Yup.string().nullable(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object(),
     rating: Yup.number(),
     confidence: Yup.number(),
   };
-  const caseValidator = useSchemaEditionValidation('Case', basicShape);
+  const feedbackValidator = useSchemaEditionValidation('Feedback', basicShape);
 
   const queries = {
     fieldPatch: feedbackMutationFieldPatch,
@@ -176,9 +170,9 @@ FeedbackEditionOverviewProps
     relationDelete: feedbackMutationRelationDelete,
     editionFocus: feedbackEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries, caseValidator);
+  const editor = useFormEditor(feedbackData, enableReferences, queries, feedbackValidator);
 
-  const onSubmit: FormikConfig<CaseEditionFormValues>['onSubmit'] = (
+  const onSubmit: FormikConfig<FeedbackEditionFormValues>['onSubmit'] = (
     values,
     { setSubmitting },
   ) => {
@@ -195,7 +189,7 @@ FeedbackEditionOverviewProps
 
     editor.fieldPatch({
       variables: {
-        id: caseData.id,
+        id: feedbackData.id,
         input: inputValues,
         commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
@@ -216,12 +210,12 @@ FeedbackEditionOverviewProps
       if (name === 'x_opencti_workflow_id') {
         finalValue = (value as Option).value;
       }
-      caseValidator
+      feedbackValidator
         .validateAt(name, { [name]: value })
         .then(() => {
           editor.fieldPatch({
             variables: {
-              id: caseData.id,
+              id: feedbackData.id,
               input: [{ key: name, value: finalValue || '' }],
             },
           });
@@ -231,22 +225,20 @@ FeedbackEditionOverviewProps
   };
 
   const initialValues = {
-    name: caseData.name,
-    description: caseData.description,
-    priority: caseData.priority,
-    severity: caseData.severity,
-    rating: caseData.rating,
-    confidence: caseData.confidence,
-    createdBy: convertCreatedBy(caseData) as Option,
-    objectMarking: convertMarkings(caseData),
-    objectAssignee: convertAssignees(caseData),
-    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
+    name: feedbackData.name,
+    description: feedbackData.description,
+    rating: feedbackData.rating,
+    confidence: feedbackData.confidence,
+    createdBy: convertCreatedBy(feedbackData) as Option,
+    objectMarking: convertMarkings(feedbackData),
+    objectAssignee: convertAssignees(feedbackData),
+    x_opencti_workflow_id: convertStatus(t, feedbackData) as Option,
   };
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues}
-      validationSchema={caseValidator}
+      validationSchema={feedbackValidator}
       onSubmit={onSubmit}
     >
       {({
@@ -258,28 +250,6 @@ FeedbackEditionOverviewProps
         dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          <OpenVocabField
-            label={t('Case severity')}
-            type="case_severity_ov"
-            name="severity"
-            onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
-            variant="edit"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            editContext={context}
-          />
-          <OpenVocabField
-            label={t('Case priority')}
-            type="case_priority_ov"
-            name="priority"
-            onSubmit={handleSubmitField}
-            onChange={(name, value) => setFieldValue(name, value)}
-            variant="edit"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            editContext={context}
-          />
           <Field
             component={TextField}
             variant="standard"
@@ -310,14 +280,14 @@ FeedbackEditionOverviewProps
           <ConfidenceField
             onFocus={editor.changeFocus}
             onSubmit={handleSubmitField}
-            entityType="Case"
+            entityType="Feedback"
             containerStyle={fieldSpacingContainerStyle}
             editContext={context}
             variant="edit"
           />
           <RatingField
             label={t('Rating')}
-            rating={caseData.rating}
+            rating={feedbackData.rating}
             size="small"
             style={fieldSpacingContainerStyle}
             handleOnChange={(newValue) => handleSubmitField('rating', String(newValue))
@@ -331,10 +301,10 @@ FeedbackEditionOverviewProps
             }
             onChange={editor.changeAssignee}
           />
-          {caseData.workflowEnabled && (
+          {feedbackData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Case"
+              type="Feedback"
               onFocus={editor.changeFocus}
               onChange={handleSubmitField}
               setFieldValue={setFieldValue}
@@ -371,7 +341,7 @@ FeedbackEditionOverviewProps
               setFieldValue={setFieldValue}
               open={false}
               values={values.references}
-              id={caseData.id}
+              id={feedbackData.id}
             />
           )}
         </Form>
@@ -380,4 +350,4 @@ FeedbackEditionOverviewProps
   );
 };
 
-export default CaseEditionOverviewComponent;
+export default FeedbackEditionOverviewComponent;

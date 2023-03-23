@@ -17,7 +17,6 @@ export const resolverCaseQuery = graphql`
   query ResolverCaseQuery($id: String!) {
     case(id: $id) {
       id
-      case_type
     }
   }
 `;
@@ -35,11 +34,11 @@ const Resolver = () => {
             if (props.case) {
               let redirectLink;
               const { case: caseEntity } = props;
-              if (caseEntity.case_type === 'feedback') {
+              if (caseEntity.entity_type === 'Feedback') {
                 redirectLink = `/dashboard/cases/feedbacks/${caseEntity.id}`;
-              } else if (caseEntity.case_type === 'incident') {
+              } else if (caseEntity.entity_type === 'Case-Incident') {
                 redirectLink = `/dashboard/cases/incidents/${caseEntity.id}`;
-              } else if (caseEntity.case_type === 'rfi') {
+              } else if (caseEntity.entity_type === 'Case-Rfi') {
                 redirectLink = `/dashboard/cases/rfis/${caseEntity.id}`;
               } else {
                 redirectLink = `/dashboard/cases/others/${caseEntity.id}`;

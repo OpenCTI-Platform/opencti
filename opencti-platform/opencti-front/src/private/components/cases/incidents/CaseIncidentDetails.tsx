@@ -12,16 +12,17 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Button from '@mui/material/Button';
 import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import {
-  IncidentDetails_case$data,
-  IncidentDetails_case$key,
-} from './__generated__/IncidentDetails_case.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { Theme } from '../../../../components/Theme';
+import {
+  CaseIncidentDetails_case$data,
+  CaseIncidentDetails_case$key,
+} from './__generated__/CaseIncidentDetails_case.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -96,18 +97,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const IncidentDetailsFragment = graphql`
-  fragment IncidentDetails_case on Case {
+const CaseIncidentDetailsFragment = graphql`
+  fragment CaseIncidentDetails_case on CaseIncident {
     id
     name
     description
-    case_type
     priority
     severity
-    rating
     created
     modified
     created_at
+    response_types
     objectLabel {
       edges {
         node {
@@ -132,7 +132,7 @@ const IncidentDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case"]
+      types: ["Case-Incident"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
@@ -168,19 +168,19 @@ const IncidentDetailsFragment = graphql`
   }
 `;
 
-interface IncidentDetailsProps {
-  caseData: IncidentDetails_case$key;
+interface CaseIncidentDetailsProps {
+  caseIncidentData: CaseIncidentDetails_case$key;
 }
 
-const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
-  caseData,
+const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
+  caseIncidentData,
 }) => {
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data: IncidentDetails_case$data = useFragment(
-    IncidentDetailsFragment,
-    caseData,
+  const data: CaseIncidentDetails_case$data = useFragment(
+    CaseIncidentDetailsFragment,
+    caseIncidentData,
   );
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
   return (
@@ -212,6 +212,18 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
               value={data.severity}
             />
           </Grid>
+          <Grid item={true} xs={6}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Response type')}
+            </Typography>
+            {(data.response_types ?? []).map((responseType) => (
+                <Chip
+                  key={responseType}
+                  classes={{ root: classes.chip }}
+                  label={responseType}
+                />
+            ))}
+          </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
@@ -235,7 +247,6 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
                 <ListItem
                   key={data.id}
                   dense={true}
-                  button={true}
                   classes={{ root: classes.item }}
                   divider={true}
                   component={Link}
@@ -288,4 +299,4 @@ const IncidentDetails: FunctionComponent<IncidentDetailsProps> = ({
     </div>
   );
 };
-export default IncidentDetails;
+export default CaseIncidentDetails;

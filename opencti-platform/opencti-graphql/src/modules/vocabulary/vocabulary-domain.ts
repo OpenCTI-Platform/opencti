@@ -43,7 +43,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryVocabul
 export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, vocabulary: BasicStoreEntityVocabulary) => {
   const categoryDefinition = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
   if (!categoryDefinition) {
-    throw UnsupportedError(`Cant find category for vocaulary ${vocabulary.name}`);
+    throw UnsupportedError(`Cant find category for vocabulary ${vocabulary.name}`);
   }
   return countAllThings(context, user, {
     filters: [

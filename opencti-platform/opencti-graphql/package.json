@@ -16,6 +16,7 @@
     "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
     "build": "yarn install:python && yarn build:prod",
     "start": "NODE_ENV=dev yarn build:dev && node build/back.js",
+    "start-light": "NODE_ENV=dev node build/back.js",
     "start-cluster": "NODE_ENV=cluster node build/back.js",
     "serv": "node build/back.js",
     "insert:dev": "node build/script-insert-dataset.js",

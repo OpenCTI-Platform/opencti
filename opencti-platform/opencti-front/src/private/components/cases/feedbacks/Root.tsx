@@ -11,7 +11,6 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import Case from './Feedback';
 import { RootFeedbackSubscription } from './__generated__/RootFeedbackSubscription.graphql';
 import { RootFeedbackQuery } from './__generated__/RootFeedbackQuery.graphql';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -19,11 +18,12 @@ import FileManager from '../../common/files/FileManager';
 import FeedbackPopover from './FeedbackPopover';
 import StixCoreObjectHistory from '../../common/stix_core_objects/StixCoreObjectHistory';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import Feedback from './Feedback';
 
 const subscription = graphql`
   subscription RootFeedbackSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Case {
+      ... on Feedback {
         ...Feedback_case
       }
       ...FileImportViewer_entity
@@ -36,9 +36,10 @@ const subscription = graphql`
 
 const feedbackQuery = graphql`
   query RootFeedbackQuery($id: String!) {
-    case(id: $id) {
+    feedback(id: $id) {
       id
       name
+      x_opencti_graph_data
       ...Feedback_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -55,7 +56,7 @@ const feedbackQuery = graphql`
   }
 `;
 
-const RootCaseComponent = ({ queryRef, caseId }) => {
+const RootFeedbackComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
   const subConfig = useMemo<GraphQLSubscriptionConfig<RootFeedbackSubscription>>(
     () => ({
@@ -66,20 +67,20 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
   );
   useSubscription(subConfig);
   const {
-    case: caseData,
+    feedback: feedbackData,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootCaseQuery>(feedbackQuery, queryRef);
+  } = usePreloadedQuery<RootFeedbackQuery>(feedbackQuery, queryRef);
   return (
     <div>
       <TopBar me={me} />
       <>
-        {caseData ? (
+        {feedbackData ? (
           <Switch>
             <Route
               exact
               path="/dashboard/cases/feedbacks/:caseId"
-              render={() => <Case data={caseData} />}
+              render={() => <Feedback data={feedbackData} />}
             />
             <Route
               exact
@@ -87,13 +88,13 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
               render={(routeProps) => (
                 <React.Fragment>
                   <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<FeedbackPopover id={caseData.id} />}
+                    container={feedbackData}
+                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
                     disableSharing={true}
                   />
                   <StixDomainObjectContent
                     {...routeProps}
-                    stixDomainObject={caseData}
+                    stixDomainObject={feedbackData}
                   />
                 </React.Fragment>
               )}
@@ -104,8 +105,8 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
               render={(routeProps: any) => (
                 <React.Fragment>
                   <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<FeedbackPopover id={caseData.id} />}
+                    container={feedbackData}
+                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
                     enableSuggestions={false}
                     disableSharing={true}
                   />
@@ -114,7 +115,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
                     id={caseId}
                     connectorsExport={connectorsForExport}
                     connectorsImport={connectorsForImport}
-                    entity={caseData}
+                    entity={feedbackData}
                   />
                 </React.Fragment>
               )}
@@ -125,8 +126,8 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
               render={(routeProps: any) => (
                 <React.Fragment>
                   <ContainerHeader
-                    container={caseData}
-                    PopoverComponent={<FeedbackPopover id={caseData.id} />}
+                    container={feedbackData}
+                    PopoverComponent={<FeedbackPopover id={feedbackData.id} />}
                     enableSuggestions={false}
                     disableSharing={true}
                   />
@@ -151,7 +152,7 @@ const Root = () => {
   const queryRef = useQueryLoading<RootFeedbackQuery>(feedbackQuery, { id: caseId });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseComponent queryRef={queryRef} caseId={caseId}/>
+      <RootFeedbackComponent queryRef={queryRef} caseId={caseId}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -32,7 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const FeedbackEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
+const FeedbackEdition: FunctionComponent<{ feedbackId: string }> = ({ feedbackId }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
   const [commit] = useMutation(feedbackEditionOverviewFocus);
@@ -40,7 +40,7 @@ const FeedbackEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
   const handleClose = () => {
     commit({
       variables: {
-        id: caseId,
+        id: feedbackId,
         input: { focusOn: '' },
       },
     });
@@ -48,7 +48,7 @@ const FeedbackEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
   };
   const queryRef = useQueryLoading<FeedbackEditionContainerQuery>(
     feedbackEditionQuery,
-    { id: caseId },
+    { id: feedbackId },
   );
   return (
     <div>

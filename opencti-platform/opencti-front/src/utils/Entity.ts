@@ -110,6 +110,8 @@ export const typesContainers = [
   'opinion',
   'observed-data',
   'grouping',
+  'feedback',
+  'case-incident',
 ];
 
 export const pascalize = (str: string): string => str.replace(

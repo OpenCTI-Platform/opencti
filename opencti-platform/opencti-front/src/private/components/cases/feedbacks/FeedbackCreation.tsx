@@ -13,7 +13,6 @@ import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
-import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 import { MESSAGING$ } from '../../../../relay/environment';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -24,6 +23,7 @@ import { Option } from '../../common/form/ReferenceField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -69,14 +69,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const feedbackMutation = graphql`
-  mutation FeedbackCreationMutation($input: CaseAddInput!) {
-    caseAdd(input: $input) {
+  mutation FeedbackCreationMutation($input: FeedbackAddInput!) {
+    feedbackAdd(input: $input) {
       ...FeedbackLine_node
     }
   }
 `;
 
-interface FormikCaseAddInput {
+interface FormikFeedbackAddInput {
   name: string
   description: string
   confidence: number
@@ -101,15 +101,14 @@ const FeedbackCreation: FunctionComponent<{
     confidence: Yup.number(),
     rating: Yup.number(),
   };
-  const caseValidator = useSchemaCreationValidation('Case', basicShape);
+  const feedbackValidator = useSchemaCreationValidation('Feedback', basicShape);
 
-  const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<FormikFeedbackAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
     const finalValues: FeedbackCreationMutation$variables['input'] = {
       name: values.name,
-      case_type: 'feedback',
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
       rating: parseInt(String(values.rating), 6),
@@ -154,7 +153,7 @@ const FeedbackCreation: FunctionComponent<{
           <Typography variant="h6">{t('Submit a feedback')}</Typography>
         </div>
         <div className={classes.container}>
-          <Formik<FormikCaseAddInput>
+          <Formik<FormikFeedbackAddInput>
             initialValues={{
               name: `Feedback from ${me.user_email}`,
               rating: 5,
@@ -164,7 +163,7 @@ const FeedbackCreation: FunctionComponent<{
               file: undefined,
               objectLabel: [],
             }}
-            validationSchema={caseValidator}
+            validationSchema={feedbackValidator}
             onSubmit={onSubmit}
             onReset={handleCloseDrawer}
           >
@@ -185,7 +184,7 @@ const FeedbackCreation: FunctionComponent<{
                   rows="4"
                 />
                 <ConfidenceField
-                  entityType="Case"
+                  entityType="Feedback"
                   containerStyle={fieldSpacingContainerStyle}
                 />
                 <RatingField

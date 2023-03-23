@@ -10,7 +10,6 @@ import {
   FeedbackDetails_case$data,
   FeedbackDetails_case$key,
 } from './__generated__/FeedbackDetails_case.graphql';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import RatingField from '../../../../components/RatingField';
 
 const styles = makeStyles(() => ({
@@ -24,13 +23,10 @@ const styles = makeStyles(() => ({
 }));
 
 const FeedbackDetailsFragment = graphql`
-  fragment FeedbackDetails_case on Case {
+  fragment FeedbackDetails_case on Feedback {
     id
     name
     description
-    case_type
-    priority
-    severity
     rating
     created
     modified
@@ -59,17 +55,17 @@ const FeedbackDetailsFragment = graphql`
 `;
 
 interface FeedbackDetailsProps {
-  caseData: FeedbackDetails_case$key;
+  feedbackData: FeedbackDetails_case$key;
 }
 
 const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
-  caseData,
+  feedbackData,
 }) => {
   const { t } = useFormatter();
   const classes = styles();
   const data: FeedbackDetails_case$data = useFragment(
     FeedbackDetailsFragment,
-    caseData,
+    feedbackData,
   );
   return (
     <div style={{ height: '100%' }}>
@@ -80,42 +76,9 @@ const FeedbackDetails: FunctionComponent<FeedbackDetailsProps> = ({
         <Grid container={true} spacing={3}>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Type')}
-            </Typography>
-            <ItemOpenVocab
-              key="type"
-              small={true}
-              type="case_types_ov"
-              value={data.case_type}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
               {t('Rating')}
             </Typography>
             <RatingField rating={data.rating} size="small" readOnly={true} />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t('Priority')}
-            </Typography>
-            <ItemOpenVocab
-              key="type"
-              small={true}
-              type="case_priority_ov"
-              value={data.priority}
-            />
-          </Grid>
-          <Grid item={true} xs={6}>
-            <Typography variant="h3" gutterBottom={true}>
-              {t('Severity')}
-            </Typography>
-            <ItemOpenVocab
-              key="type"
-              small={true}
-              type="case_severity_ov"
-              value={data.severity}
-            />
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>

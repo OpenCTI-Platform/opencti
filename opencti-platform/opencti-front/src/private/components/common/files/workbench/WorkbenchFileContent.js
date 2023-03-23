@@ -77,12 +77,8 @@ import SelectField from '../../../../../components/SelectField';
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
-import {
-  stixCyberObservablesLinesSearchQuery,
-} from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
-import OpenVocabField from '../../form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -2330,7 +2326,7 @@ class WorkbenchFileContentComponent extends Component {
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => ['report', 'note', 'case', 'grouping'].includes(convertToStixType(n.label))),
+      R.filter((n) => ['report', 'note', 'grouping', 'feedback', 'case-incident'].includes(convertToStixType(n.label))),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
@@ -2454,17 +2450,6 @@ class WorkbenchFileContentComponent extends Component {
                               style={{ marginTop: 20 }}
                             />
                           );
-                        }
-                        if (attribute === 'case_type') {
-                          return <OpenVocabField
-                              key={attribute}
-                              label={t('Case type')}
-                              type="case_types_ov"
-                              name="case_type"
-                              onChange={(name, value) => setFieldValue(name, value)}
-                              containerStyle={fieldSpacingContainerStyle}
-                              multiple={false}
-                          />;
                         }
                         return (
                           <Field

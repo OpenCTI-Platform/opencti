@@ -34,6 +34,7 @@ import {
   xOpenctiStixIds
 } from './attribute-definition';
 import { schemaAttributesDefinition } from './schema-attributes';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export const ATTRIBUTE_NAME = 'name';
 export const ATTRIBUTE_ABSTRACT = 'abstract';
@@ -147,6 +148,9 @@ export const isStixDomainObject = (type: string): boolean => {
     || isStixDomainObjectContainer(type)
     || type === ABSTRACT_STIX_DOMAIN_OBJECT;
 };
+
+export const isStixDomainObjectCase = (type: string): boolean => schemaAttributesDefinition.isTypeIncludedIn(type, ENTITY_TYPE_CONTAINER_CASE)
+  || type === ENTITY_TYPE_CONTAINER_CASE;
 
 const STIX_DOMAIN_OBJECT_ALIASED: Array<string> = [
   ENTITY_TYPE_COURSE_OF_ACTION,

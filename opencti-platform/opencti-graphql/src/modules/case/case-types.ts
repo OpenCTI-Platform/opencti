@@ -14,9 +14,6 @@ export interface BasicStoreEntityCase extends BasicStoreEntity {
 export interface StoreEntityCase extends StoreEntity {
   name: string,
   type: string,
-  severity: string,
-  priority: string,
-  rating: number,
   description: string,
   object_refs: Array<string>,
 }
@@ -24,11 +21,6 @@ export interface StoreEntityCase extends StoreEntity {
 export interface StixCase extends StixDomainObject {
   name: string,
   description: string,
-  case_type: string,
-  severity: string,
-  priority: string,
-  rating: number,
-  confidence: number,
   object_refs: Array<string>,
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO

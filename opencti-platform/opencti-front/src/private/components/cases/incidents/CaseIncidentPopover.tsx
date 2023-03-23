@@ -21,10 +21,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import IncidentEditionContainer, {
-  incidentEditionQuery,
-} from './IncidentEditionContainer';
-import { IncidentEditionContainerCaseQuery } from './__generated__/IncidentEditionContainerCaseQuery.graphql';
+import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
+import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -43,13 +41,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const incidentPopoverDeletionMutation = graphql`
-  mutation IncidentPopoverCaseDeletionMutation($id: ID!) {
-    caseDelete(id: $id)
+const caseIncidentPopoverDeletionMutation = graphql`
+  mutation CaseIncidentPopoverCaseDeletionMutation($id: ID!) {
+    caseIncidentDelete(id: $id)
   }
 `;
 
-const IncidentPopover = ({ id }: { id: string }) => {
+const CaseIncidentPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -58,9 +56,9 @@ const IncidentPopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
-  const [commit] = useMutation(incidentPopoverDeletionMutation);
-  const queryRef = useQueryLoading<IncidentEditionContainerCaseQuery>(
-    incidentEditionQuery,
+  const [commit] = useMutation(caseIncidentPopoverDeletionMutation);
+  const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
+    caseIncidentEditionQuery,
     { id },
   );
 
@@ -128,7 +126,7 @@ const IncidentPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this case?')}
+            {t('Do you want to delete this case incident ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -152,7 +150,7 @@ const IncidentPopover = ({ id }: { id: string }) => {
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <IncidentEditionContainer
+            <CaseIncidentEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}
             />
@@ -163,4 +161,4 @@ const IncidentPopover = ({ id }: { id: string }) => {
   );
 };
 
-export default IncidentPopover;
+export default CaseIncidentPopover;

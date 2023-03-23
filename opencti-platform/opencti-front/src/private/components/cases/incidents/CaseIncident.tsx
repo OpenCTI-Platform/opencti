@@ -2,18 +2,18 @@ import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import IncidentDetails from './IncidentDetails';
-import { Incident_case$key } from './__generated__/Incident_case.graphql';
-import IncidentPopover from './IncidentPopover';
+import CaseIncidentDetails from './CaseIncidentDetails';
+import CaseIncidentPopover from './CaseIncidentPopover';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import Security from '../../../../utils/Security';
 import { SETTINGS } from '../../../../utils/hooks/useGranted';
-import IncidentEdition from './IncidentEdition';
+import CaseIncidentEdition from './CaseIncidentEdition';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
+import { CaseIncident_case$key } from './__generated__/CaseIncident_case.graphql';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -24,8 +24,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const incidentFragment = graphql`
-  fragment Incident_case on Case {
+const caseIncidentFragment = graphql`
+  fragment CaseIncident_case on CaseIncident {
     id
     name
     standard_id
@@ -34,7 +34,6 @@ const incidentFragment = graphql`
     created
     modified
     created_at
-    rating
     revoked
     description
     confidence
@@ -84,25 +83,25 @@ const incidentFragment = graphql`
       }
     }
     workflowEnabled
-    ...IncidentDetails_case
+    ...CaseIncidentDetails_case
     ...ContainerHeader_container
     ...ContainerStixObjectsOrStixRelationships_container
   }
 `;
 
-interface IncidentProps {
-  data: Incident_case$key;
+interface CaseIncidentProps {
+  data: CaseIncident_case$key;
 }
 
-const IncidentComponent: FunctionComponent<IncidentProps> = ({ data }) => {
+const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) => {
   const classes = useStyles();
-  const caseData = useFragment(incidentFragment, data);
+  const caseIncidentData = useFragment(caseIncidentFragment, data);
 
   return (
     <div className={classes.container}>
       <ContainerHeader
-        container={caseData}
-        PopoverComponent={<IncidentPopover id={caseData.id} />}
+        container={caseIncidentData}
+        PopoverComponent={<CaseIncidentPopover id={caseIncidentData.id} />}
         enableSuggestions={false}
         disableSharing={true}
       />
@@ -112,11 +111,11 @@ const IncidentComponent: FunctionComponent<IncidentProps> = ({ data }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
-          <IncidentDetails caseData={caseData} />
+          <CaseIncidentDetails caseIncidentData={caseIncidentData} />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview
-            stixDomainObject={caseData}
+            stixDomainObject={caseIncidentData}
             displayAssignees={true}
           />
         </Grid>
@@ -130,7 +129,7 @@ const IncidentComponent: FunctionComponent<IncidentProps> = ({ data }) => {
         <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
-            container={caseData}
+            container={caseIncidentData}
           />
         </Grid>
       </Grid>
@@ -141,23 +140,23 @@ const IncidentComponent: FunctionComponent<IncidentProps> = ({ data }) => {
         style={{ marginTop: 25 }}
       >
         <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={caseData.id} />
+          <StixCoreObjectExternalReferences stixCoreObjectId={caseIncidentData.id} />
         </Grid>
         <Grid item={true} xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={caseData.id} />
+          <StixCoreObjectLatestHistory stixCoreObjectId={caseIncidentData.id} />
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
-        stixCoreObjectOrStixCoreRelationshipId={caseData.id}
-        defaultMarking={(caseData.objectMarking?.edges ?? []).map(
+        stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
+        defaultMarking={(caseIncidentData.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />
       <Security needs={[SETTINGS]}>
-        <IncidentEdition caseId={caseData.id} />
+        <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>
     </div>
   );
 };
 
-export default IncidentComponent;
+export default CaseIncidentComponent;

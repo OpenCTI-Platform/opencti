@@ -28,7 +28,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import IncidentKnowledgeGraphBar from './IncidentKnowledgeGraphBar';
-import { incidentMutationFieldPatch } from './IncidentEditionOverview';
+import { caseIncidentMutationFieldPatch } from './CaseIncidentEditionOverview';
 import { hexToRGB } from '../../../../utils/Colors';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -382,7 +382,7 @@ class IncidentKnowledgeCorrelationComponent extends Component {
     );
     const positions = R.mergeLeft(newPositions, initialPositions);
     commitMutation({
-      mutation: incidentMutationFieldPatch,
+      mutation: caseIncidentMutationFieldPatch,
       variables: {
         id: this.props.caseData.id,
         input: {

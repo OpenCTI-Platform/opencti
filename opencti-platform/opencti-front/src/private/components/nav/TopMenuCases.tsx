@@ -8,6 +8,7 @@ import {
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -28,25 +29,27 @@ const TopMenuCases = () => {
   const classes = useStyles();
   return (
     <div>
-      <Button
-        component={Link}
-        to="/dashboard/cases/incidents"
-        variant={
-          location.pathname === '/dashboard/cases/incidents'
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/incidents'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <BiotechOutlined className={classes.icon} fontSize="small" />
-        {t('Incident response')}
-      </Button>
+      {!useIsHiddenEntity('Case-Incident') && (
+        <Button
+          component={Link}
+          to="/dashboard/cases/incidents"
+          variant={
+            location.pathname === '/dashboard/cases/incidents'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/incidents'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <BiotechOutlined className={classes.icon} fontSize="small" />
+          {t('Cases - Incidents')}
+        </Button>
+      )}
       {/*      <Button
         component={Link}
         to="/dashboard/cases/feedbacks"
@@ -65,25 +68,27 @@ const TopMenuCases = () => {
         <Brain className={classes.icon} fontSize="small" />
         {t('RFIs')}
       </Button> */}
-      <Button
-        component={Link}
-        to="/dashboard/cases/feedbacks"
-        variant={
-          location.pathname === '/dashboard/cases/feedbacks'
-            ? 'contained'
-            : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/feedbacks'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-      >
-        <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
-        {t('Feedbacks')}
-      </Button>
+      {!useIsHiddenEntity('Feedback') && (
+        <Button
+          component={Link}
+          to="/dashboard/cases/feedbacks"
+          variant={
+            location.pathname === '/dashboard/cases/feedbacks'
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/feedbacks'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
+          {t('Cases - Feedbacks')}
+        </Button>
+      )}
       {/* <Button
         component={Link}
         to="/dashboard/cases/others"

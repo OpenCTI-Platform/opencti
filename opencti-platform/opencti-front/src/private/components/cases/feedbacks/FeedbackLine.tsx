@@ -12,15 +12,12 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  FeedbackLine_node$data,
-  FeedbackLine_node$key,
-} from './__generated__/FeedbackLine_node.graphql';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
 import RatingField from '../../../../components/RatingField';
+import { FeedbackLine_node$data, FeedbackLine_node$key } from './__generated__/FeedbackLine_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -77,11 +74,10 @@ interface FeedbackLineComponentProps {
   index: number;
 }
 
-const caseFragment = graphql`
-  fragment FeedbackLine_node on Case {
+const feedbackFragment = graphql`
+  fragment FeedbackLine_node on Feedback {
     id
     name
-    case_type
     description
     rating
     created
@@ -141,7 +137,7 @@ export const FeedbackLine: FunctionComponent<FeedbackLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-  const data = useFragment(caseFragment, node);
+  const data = useFragment(feedbackFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -168,7 +164,7 @@ export const FeedbackLine: FunctionComponent<FeedbackLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={`Case-${data.case_type}`} />
+        <ItemIcon type={'Feedback'} />
       </ListItemIcon>
       <ListItemText
         primary={

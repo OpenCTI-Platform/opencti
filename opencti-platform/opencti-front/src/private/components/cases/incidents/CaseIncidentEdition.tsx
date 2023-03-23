@@ -5,13 +5,13 @@ import { Edit } from '@mui/icons-material';
 import { useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { incidentEditionOverviewFocus } from './IncidentEditionOverview';
+import { caseIncidentEditionOverviewFocus } from './CaseIncidentEditionOverview';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import IncidentEditionContainer, {
-  incidentEditionQuery,
-} from './IncidentEditionContainer';
-import { IncidentEditionContainerCaseQuery } from './__generated__/IncidentEditionContainerCaseQuery.graphql';
+import CaseIncidentEditionContainer, {
+  caseIncidentEditionQuery,
+} from './CaseIncidentEditionContainer';
+import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {
@@ -32,10 +32,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const IncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
+const CaseIncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
   const classes = useStyles();
   const [open, setOpen] = useState(false);
-  const [commit] = useMutation(incidentEditionOverviewFocus);
+  const [commit] = useMutation(caseIncidentEditionOverviewFocus);
   const handleOpen = () => setOpen(true);
   const handleClose = () => {
     commit({
@@ -46,8 +46,8 @@ const IncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
     });
     setOpen(false);
   };
-  const queryRef = useQueryLoading<IncidentEditionContainerCaseQuery>(
-    incidentEditionQuery,
+  const queryRef = useQueryLoading<CaseIncidentEditionContainerCaseQuery>(
+    caseIncidentEditionQuery,
     { id: caseId },
   );
   return (
@@ -72,7 +72,7 @@ const IncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <IncidentEditionContainer
+            <CaseIncidentEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}
             />
@@ -83,4 +83,4 @@ const IncidentEdition: FunctionComponent<{ caseId: string }> = ({ caseId }) => {
   );
 };
 
-export default IncidentEdition;
+export default CaseIncidentEdition;

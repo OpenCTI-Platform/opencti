@@ -12,14 +12,14 @@ import Tooltip from '@mui/material/Tooltip';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { DataColumns } from '../../../../components/list_lines';
-import {
-  IncidentLineCase_node$data,
-  IncidentLineCase_node$key,
-} from './__generated__/IncidentLineCase_node.graphql';
 import ItemStatus from '../../../../components/ItemStatus';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import ItemIcon from '../../../../components/ItemIcon';
+import {
+  CaseIncidentLineCase_node$data,
+  CaseIncidentLineCase_node$key,
+} from './__generated__/CaseIncidentLineCase_node.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -52,7 +52,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface IncidentLineComponentProps {
+interface CaseIncidentLineComponentProps {
   dataColumns: DataColumns;
   onLabelClick: (
     k: string,
@@ -60,32 +60,32 @@ interface IncidentLineComponentProps {
     value: Record<string, unknown>,
     event: React.KeyboardEvent
   ) => void;
-  node: IncidentLineCase_node$key;
-  selectedElements: Record<string, IncidentLineCase_node$data>;
-  deSelectedElements: Record<string, IncidentLineCase_node$data>;
+  node: CaseIncidentLineCase_node$key;
+  selectedElements: Record<string, CaseIncidentLineCase_node$data>;
+  deSelectedElements: Record<string, CaseIncidentLineCase_node$data>;
   onToggleEntity: (
-    entity: IncidentLineCase_node$data,
+    entity: CaseIncidentLineCase_node$data,
     event: React.SyntheticEvent
   ) => void;
   selectAll: boolean;
   onToggleShiftEntity: (
     index: number,
-    entity: IncidentLineCase_node$data,
+    entity: CaseIncidentLineCase_node$data,
     event: React.SyntheticEvent
   ) => void;
   index: number;
 }
 
-const caseFragment = graphql`
-  fragment IncidentLineCase_node on Case {
+const caseIncidentFragment = graphql`
+  fragment CaseIncidentLineCase_node on CaseIncident {
     id
     name
-    case_type
     description
     rating
     priority
     severity
     created
+    response_types
     createdBy {
       ... on Identity {
         id
@@ -129,7 +129,7 @@ const caseFragment = graphql`
   }
 `;
 
-export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
+export const CaseIncidentLine: FunctionComponent<CaseIncidentLineComponentProps> = ({
   dataColumns,
   node,
   onLabelClick,
@@ -142,7 +142,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
 }) => {
   const classes = useStyles();
   const { fd } = useFormatter();
-  const data = useFragment(caseFragment, node);
+  const data = useFragment(caseIncidentFragment, node);
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -169,7 +169,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={`Case-${data.case_type}`} />
+        <ItemIcon type={'Case-Incident'} />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -252,7 +252,7 @@ export const IncidentLine: FunctionComponent<IncidentLineComponentProps> = ({
   );
 };
 
-export const IncidentLineDummy = ({
+export const CaseIncidentLineDummy = ({
   dataColumns,
 }: {
   dataColumns: DataColumns;

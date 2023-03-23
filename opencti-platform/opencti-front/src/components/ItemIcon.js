@@ -174,9 +174,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
     case 'Case':
       return <WorkOutline style={style} fontSize={fontSize} role="img" />;
-    case 'Case-incident':
+    case 'Case-Incident':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'Case-feedback':
+    case 'Feedback':
       return (
         <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />
       );

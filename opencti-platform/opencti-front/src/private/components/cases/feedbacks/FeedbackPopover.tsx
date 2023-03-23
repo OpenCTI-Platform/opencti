@@ -45,7 +45,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const feedbackPopoverDeletionMutation = graphql`
   mutation FeedbackPopoverDeletionMutation($id: ID!) {
-    caseDelete(id: $id)
+    feedbackDelete(id: $id)
   }
 `;
 
@@ -128,7 +128,7 @@ const FeedbackPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this case?')}
+            {t('Do you want to delete this feedback ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

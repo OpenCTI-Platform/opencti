@@ -11,22 +11,23 @@ import ErrorNotFound from '../../../../components/ErrorNotFound';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import Case from './Incident';
+import CaseIncident from './CaseIncident';
 import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
 import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import IncidentPopover from './IncidentPopover';
+import CaseIncidentPopover from './CaseIncidentPopover';
 import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
 import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
 import IncidentKnowledge from './IncidentKnowledge';
+import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on Case {
-        ...Incident_case
+      ... on CaseIncident {
+        ...CaseIncident_case
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -36,12 +37,12 @@ const subscription = graphql`
   }
 `;
 
-const incidentQuery = graphql`
+const caseIncidentQuery = graphql`
   query RootIncidentCaseQuery($id: String!) {
-    case(id: $id) {
+    caseIncident(id: $id) {
       id
       name
-      ...Incident_case
+      ...CaseIncident_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
@@ -57,7 +58,7 @@ const incidentQuery = graphql`
   }
 `;
 
-const RootCaseComponent = ({ queryRef, caseId }) => {
+const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
   const { me } = useAuth();
   const subConfig = useMemo<
   GraphQLSubscriptionConfig<RootIncidentSubscription>
@@ -70,10 +71,10 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
   );
   useSubscription(subConfig);
   const {
-    case: caseData,
+    caseIncident: caseData,
     connectorsForExport,
     connectorsForImport,
-  } = usePreloadedQuery<RootCaseQuery>(incidentQuery, queryRef);
+  } = usePreloadedQuery<RootIncidentCaseQuery>(caseIncidentQuery, queryRef);
   return (
     <div>
       <TopBar me={me} />
@@ -83,7 +84,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
             <Route
               exact
               path="/dashboard/cases/incidents/:caseId"
-              render={() => <Case data={caseData} />}
+              render={() => <CaseIncident data={caseData} />}
             />
             <Route
               exact
@@ -92,7 +93,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
                 <React.Fragment>
                   <ContainerHeader
                     container={caseData}
-                    PopoverComponent={<IncidentPopover id={caseData.id} />}
+                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
                     enableSuggestions={false}
                   />
                   <ContainerStixDomainObjects
@@ -109,7 +110,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
                 <React.Fragment>
                   <ContainerHeader
                     container={caseData}
-                    PopoverComponent={<IncidentPopover id={caseData.id} />}
+                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
                     enableSuggestions={false}
                   />
                   <ContainerStixCyberObservables
@@ -135,7 +136,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
                 <React.Fragment>
                   <ContainerHeader
                     container={caseData}
-                    PopoverComponent={<IncidentPopover id={caseData.id} />}
+                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
                     enableSuggestions={false}
                   />
                   <StixDomainObjectContent
@@ -159,7 +160,7 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
                 <React.Fragment>
                   <ContainerHeader
                     container={caseData}
-                    PopoverComponent={<IncidentPopover id={caseData.id} />}
+                    PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
                     enableSuggestions={false}
                   />
                   <StixCoreObjectFilesAndHistory
@@ -185,12 +186,12 @@ const RootCaseComponent = ({ queryRef, caseId }) => {
 
 const Root = () => {
   const { caseId } = useParams() as { caseId: string };
-  const queryRef = useQueryLoading<RootIncidentQuery>(incidentQuery, {
+  const queryRef = useQueryLoading<RootIncidentQuery>(caseIncidentQuery, {
     id: caseId,
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootCaseComponent queryRef={queryRef} caseId={caseId}/>
+      <RootCaseIncidentComponent queryRef={queryRef} caseId={caseId}/>
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

@@ -1,5 +1,5 @@
 import type { Resolvers } from '../../generated/graphql';
-import { addCase, findAll, findById } from './case-domain';
+import { findAll, findById } from './case-domain';
 import { buildRefRelationKey } from '../../schema/general';
 import {
   RELATION_CREATED_BY,
@@ -20,6 +20,16 @@ const caseResolvers: Resolvers = {
     case: (_, { id }, context) => findById(context, context.user, id),
     cases: (_, args, context) => findAll(context, context.user, args),
   },
+  Case: {
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    __resolveType(obj) {
+      if (obj.entity_type) {
+        return obj.entity_type.replace(/(?:^|-)(\w)/g, (matches, letter) => letter.toUpperCase());
+      }
+      return 'Unknown';
+    },
+  },
   CasesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
@@ -31,9 +41,6 @@ const caseResolvers: Resolvers = {
     creator: 'creator_id',
   },
   Mutation: {
-    caseAdd: (_, { input }, context) => {
-      return addCase(context, context.user, input);
-    },
     caseDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
     },
