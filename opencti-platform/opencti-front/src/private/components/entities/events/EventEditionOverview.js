@@ -82,8 +82,9 @@ const EventEditionOverviewComponent = (props) => {
     event_types: Yup.array().nullable(),
     start_time: Yup.date().typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
     stop_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .min(Yup.ref('start_time'), "The end date can't be before start date")
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')).nullable(),
+      .nullable(),
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
@@ -134,17 +135,12 @@ const EventEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      eventValidator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: event.id,
-              input: { key: name, value: finalValue ?? '' },
-            },
-          });
-        })
-        .catch(() => false);
+      editor.fieldPatch({
+        variables: {
+          id: event.id,
+          input: { key: name, value: finalValue ?? '' },
+        },
+      });
     }
   };
 
