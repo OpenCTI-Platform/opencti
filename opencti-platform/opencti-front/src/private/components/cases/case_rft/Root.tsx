@@ -24,8 +24,8 @@ import ContainerStixDomainObjects from '../../common/containers/ContainerStixDom
 const subscription = graphql`
   subscription RootCaseRftCaseSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on CaseRft {
-        ...CaseRft_case
+      ... on Case {
+        ...CaseUtils_case
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -42,7 +42,7 @@ const caseRftQuery = graphql`
       standard_id
       name
       x_opencti_graph_data
-      ...CaseRft_case
+      ...CaseUtils_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

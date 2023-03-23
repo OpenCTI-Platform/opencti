@@ -1,5 +1,6 @@
 import React, { FunctionComponent, ReactElement, ReactNode } from 'react';
 import { Option } from '../../private/components/common/form/ReferenceField';
+import { BackendFilters } from '../../utils/filters/filtersUtils';
 
 export interface DataColumn {
   isSortable: boolean;
@@ -24,7 +25,7 @@ export interface PaginationOptions {
   search?: string;
   orderBy?: string;
   orderMode?: OrderMode;
-  filters?: Filters;
+  filters?: BackendFilters;
 }
 
 export type ListLines = FunctionComponent<unknown>;

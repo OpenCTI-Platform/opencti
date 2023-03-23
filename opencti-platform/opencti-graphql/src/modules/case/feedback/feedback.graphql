@@ -114,9 +114,6 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  # Cases
-  name: String!
-  description: String
   # Technical
   creators: [Creator!]
   toStix: String
@@ -128,6 +125,10 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Cases
+  name: String!
+  description: String
+  tasks: CaseTaskConnection!
   # Feedback
   rating: Int
 }

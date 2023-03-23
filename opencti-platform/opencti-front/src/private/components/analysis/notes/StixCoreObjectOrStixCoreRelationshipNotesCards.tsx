@@ -165,8 +165,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCards_data$key
   >({
-    linesQuery: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
-    linesFragment: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
+    queryDef: stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+    fragmentDef: stixCoreObjectOrStixCoreRelationshipNotesCardsFragment,
     queryRef,
   });
   const notes = data?.notes?.edges ?? [];

@@ -341,6 +341,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               name
               description
             }
+            ... on CaseTask {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -519,6 +522,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   name
                   description
                 }
+                ... on CaseTask {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -688,6 +694,9 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                 ... on CaseRft {
                   name
                   description
+                }
+                ... on CaseTask {
+                  name
                 }
                 ... on StixCyberObservable {
                   observable_value

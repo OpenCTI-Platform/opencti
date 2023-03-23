@@ -185,6 +185,9 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on Case {
             name
           }
+          ... on CaseTask {
+            name
+          }
           ... on Language {
             name
           }

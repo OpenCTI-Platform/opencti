@@ -15,8 +15,20 @@ const useStyles = makeStyles(() => ({
 
 export const resolverCaseQuery = graphql`
   query ResolverCaseQuery($id: String!) {
-    case(id: $id) {
+    container(id: $id) {
       id
+      entity_type
+      ... on CaseTask {
+        objects {
+          edges {
+            node {
+              ... on Case {
+                id
+              }
+            }
+          }
+        }
+      }
     }
   }
 `;
@@ -31,10 +43,12 @@ const Resolver = () => {
         variables={{ id: caseId }}
         render={({ props }) => {
           if (props) {
-            if (props.case) {
+            if (props.container) {
               let redirectLink;
-              const { case: caseEntity } = props;
-              if (caseEntity.entity_type === 'Feedback') {
+              const { container: caseEntity } = props;
+              if (caseEntity.entity_type === 'Case-Task' && caseEntity.objects?.edges?.at(0)?.node?.id) {
+                redirectLink = `/dashboard/cases/${caseEntity.objects.edges.at(0).node.id}`;
+              } else if (caseEntity.entity_type === 'Feedback') {
                 redirectLink = `/dashboard/cases/feedbacks/${caseEntity.id}`;
               } else if (caseEntity.entity_type === 'Case-Incident') {
                 redirectLink = `/dashboard/cases/incidents/${caseEntity.id}`;
@@ -43,7 +57,7 @@ const Resolver = () => {
               } else if (caseEntity.entity_type === 'Case-Rft') {
                 redirectLink = `/dashboard/cases/rfts/${caseEntity.id}`;
               } else {
-                redirectLink = `/dashboard/cases/others/${caseEntity.id}`;
+                return <ErrorNotFound />;
               }
               return (
                 <Redirect

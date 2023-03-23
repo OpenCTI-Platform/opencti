@@ -10,7 +10,7 @@ import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql'
 const MAX_SEARCH_SIZE = 5000;
 
 export interface Filter {
-  key: any ;
+  key: any;
   operator?: string | null;
   filterMode?: InputMaybe<FilterMode>;
   values?: any;
@@ -37,8 +37,6 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 type InternalListEntities = <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
-type InternalFindByIds = (context: AuthContext, user: AuthUser, ids: string[], args?: { type?: string, baseData?: boolean }
-& Record<string, string | boolean>) => Promise<BasicStoreObject[]>;
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
@@ -401,13 +399,18 @@ export const listEntitiesPaginated = async <T extends BasicStoreEntity>(context:
   return elPaginate(context, user, indices, paginateArgs);
 };
 
-export const countAllThings = async <T extends BasicStoreCommon> (context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
+export const countAllThings = async <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, args: ListFilter<T> = {}) => {
   const { indices = READ_DATA_INDICES } = args;
   return elCount(context, user, indices, args);
 };
 
-export const internalFindByIds: InternalFindByIds = async (context, user, ids, args = {}) => {
-  return await elFindByIds(context, user, ids, args) as unknown as BasicStoreObject[];
+export const internalFindByIds = async <T extends BasicStoreObject>(
+  context: AuthContext,
+  user: AuthUser,
+  ids: string[],
+  args?: { type?: string, baseData?: boolean } & Record<string, string | boolean>
+) => {
+  return await elFindByIds(context, user, ids, args) as unknown as T[];
 };
 
 export const internalLoadById = async <T extends BasicStoreObject>(

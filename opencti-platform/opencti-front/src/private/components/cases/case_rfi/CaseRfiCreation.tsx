@@ -1,36 +1,37 @@
-import React, { FunctionComponent, useState } from 'react';
+import { Add, Close } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { SimpleFileUpload } from 'formik-mui';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import Fab from '@mui/material/Fab';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { dayStartDate } from '../../../../utils/Time';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { dayStartDate } from '../../../../utils/Time';
-import { CaseRfiCreationCaseMutation$variables } from './__generated__/CaseRfiCreationCaseMutation.graphql';
-import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { Option } from '../../common/form/ReferenceField';
+import { CaseRfiAddInput } from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -94,14 +95,15 @@ interface FormikCaseRfiAddInput {
   description: string
   file: File | undefined
   createdBy: Option | undefined
-  objectMarking: { value: string }[]
-  objectAssignee: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
   created: Date;
   information_types: string[]
   severity: string
   priority: string
+  caseTemplates?: Option[]
 }
 
 interface CaseRfiFormProps {
@@ -113,8 +115,14 @@ interface CaseRfiFormProps {
   defaultMarkingDefinitions?: { value: string, label: string }[]
 }
 
-export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -128,13 +136,14 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({ updat
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: CaseRfiCreationCaseMutation$variables['input'] = {
+    const finalValues: CaseRfiAddInput = {
       name: values.name,
       description: values.description,
       created: values.created,
       information_types: values.information_types,
       severity: values.severity,
       priority: values.priority,
+      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
@@ -171,9 +180,10 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({ updat
       description: '',
       severity: '',
       priority: '',
+      caseTemplates: [],
       created: dayStartDate(),
       information_types: [],
-      createdBy: defaultCreatedBy ?? '' as unknown as Option,
+      createdBy: defaultCreatedBy ?? undefined,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],
@@ -229,6 +239,10 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({ updat
           type="case_priority_ov"
           name="priority"
           onChange={(name, value) => setFieldValue(name, value)}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <CaseTemplateField
+          onChange={setFieldValue}
           containerStyle={fieldSpacingContainerStyle}
         />
         <ConfidenceField
@@ -318,25 +332,30 @@ const CaseRfiCreation = ({ paginationOptions }: { paginationOptions: CaseRfiLine
 
   return (
     <div>
-      <Fab onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
-           className={classes.createButton}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={handleClose}>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a request for information')}</Typography>

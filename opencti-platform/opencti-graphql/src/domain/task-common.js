@@ -1,4 +1,5 @@
 import * as R from 'ramda';
+import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
@@ -58,5 +59,5 @@ export const createListTask = async (user, input) => {
 };
 
 export const isTaskEnabledEntity = (entityType) => {
-  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || entityType === ENTITY_TYPE_NOTIFICATION;
+  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || [ENTITY_TYPE_NOTIFICATION, ENTITY_TYPE_CASE_TEMPLATE].includes(entityType);
 };

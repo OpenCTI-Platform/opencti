@@ -37,6 +37,11 @@ const Root = () => {
     />
     <BoundaryRoute
       exact
+      path="/dashboard/cases/:caseId"
+      component={Resolver}
+    />
+    <BoundaryRoute
+      exact
       path="/dashboard/cases/incidents"
       component={CaseIncidents}
     />

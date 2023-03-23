@@ -585,6 +585,9 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
               ... on Case {
                 name
               }
+              ... on CaseTask {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
                 x_opencti_description

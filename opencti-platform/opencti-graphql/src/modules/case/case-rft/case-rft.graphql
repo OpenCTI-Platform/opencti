@@ -114,9 +114,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  # Cases
-  name: String!
-  description: String
   # Technical
   creators: [Creator!]
   toStix: String
@@ -128,6 +125,10 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Cases
+  name: String!
+  description: String
+  tasks: CaseTaskConnection!
   # Request For Information
   takedown_types: [String!]
   severity: String
@@ -228,6 +229,7 @@ input CaseRftAddInput {
   clientMutationId: String
   update: Boolean
   takedown_types: [String!]
+  caseTemplates: [String!]
 }
 
 type Mutation {

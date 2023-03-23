@@ -26,8 +26,8 @@ import CaseRfiKnowledge from './CaseRfiKnowledge';
 const subscription = graphql`
   subscription RootCaseRfiCaseSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on CaseRfi {
-        ...CaseRfi_case
+      ... on Case {
+        ...CaseUtils_case
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -44,7 +44,7 @@ const caseRfiQuery = graphql`
       standard_id
       name
       x_opencti_graph_data
-      ...CaseRfi_case
+      ...CaseUtils_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

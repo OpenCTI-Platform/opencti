@@ -53,8 +53,8 @@ const SubTypesLines: FunctionComponent<SubTypesLinesProps> = ({
   SubTypesLinesQuery,
   SubTypesLines_subTypes$key
   >({
-    linesQuery: subTypesLinesQuery,
-    linesFragment: subTypesLinesFragment,
+    queryDef: subTypesLinesQuery,
+    fragmentDef: subTypesLinesFragment,
     queryRef,
   });
   const { t } = useFormatter();

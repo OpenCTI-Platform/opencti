@@ -1,17 +1,17 @@
+import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
 
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
+import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseIncidentEditionContainerProps {
-  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
-  handleClose: () => void;
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
+  handleClose: () => void
 }
 
 export const caseIncidentEditionQuery = graphql`

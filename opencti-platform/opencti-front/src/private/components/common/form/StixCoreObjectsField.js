@@ -152,6 +152,9 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
           ... on Case {
             name
           }
+          ... on CaseTask {
+            name
+          }
           ... on Channel {
             name
           }
@@ -168,6 +171,9 @@ export const stixCoreObjectsFieldSearchQuery = graphql`
             name
           }
           ... on Case {
+            name
+          }
+          ... on CaseTask {
             name
           }
           ... on StixCyberObservable {

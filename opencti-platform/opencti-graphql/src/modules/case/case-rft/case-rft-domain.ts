@@ -11,6 +11,7 @@ import { isEmptyField } from '../../../database/utils';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
+import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseRft } from './case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import type { CaseRftAddInput } from '../../../generated/graphql';
@@ -35,6 +36,9 @@ export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAd
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFT);
+  if (caseToCreate.caseTemplates) {
+    await Promise.all(caseToCreate.caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

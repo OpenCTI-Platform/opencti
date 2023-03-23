@@ -1,25 +1,25 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
-import ItemIcon from '../../../../components/ItemIcon';
-import { useFormatter } from '../../../../components/i18n';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import * as R from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { Theme } from '../../../../components/Theme';
-import { CaseRfiDetails_case$data, CaseRfiDetails_case$key } from './__generated__/CaseRfiDetails_case.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import { Theme } from '../../../../components/Theme';
+import { CaseRfiDetails_case$key } from './__generated__/CaseRfiDetails_case.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -175,7 +175,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data: CaseRfiDetails_case$data = useFragment(
+  const data = useFragment(
     CaseRfiDetailsFragment,
     caseRfiData,
   );

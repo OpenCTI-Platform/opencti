@@ -1,32 +1,29 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
-import Settings from './Settings';
-import Users from './Users';
-import RootUser from './users/Root';
+import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import Security from '../../../utils/Security';
+import { BoundaryRoute } from '../Error';
+import CaseTemplates from './case_templates/CaseTemplates';
+import CaseTemplateTasks from './case_templates/CaseTemplateTasks';
 import Groups from './Groups';
-import Roles from './Roles';
-import Sessions from './Sessions';
-import MarkingDefinitions from './MarkingDefinitions';
-import Rules from './Rules';
+import RootGroup from './groups/Root';
 import KillChainPhases from './KillChainPhases';
 import Labels from './Labels';
+import MarkingDefinitions from './MarkingDefinitions';
+import Policies from './Policies';
 import Retention from './Retention';
-import { BoundaryRoute } from '../Error';
-import Security from '../../../utils/Security';
-import {
-  SETTINGS,
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
+import Roles from './Roles';
+import RootRole from './roles/Root';
+import Rules from './Rules';
+import Sessions from './Sessions';
+import Settings from './Settings';
 import StatusTemplates from './status_templates/StatusTemplates';
+import RootSubType from './sub_types/Root';
+import SubTypes from './sub_types/SubTypes';
+import Users from './Users';
+import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
-import SubTypes from './sub_types/SubTypes';
-import RootSubType from './sub_types/Root';
-import RootGroup from './groups/Root';
-import RootRole from './roles/Root';
-import Policies from './Policies';
 
 const Root = () => (
   <Switch>
@@ -194,11 +191,27 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
+        path="/dashboard/settings/vocabularies/caseTemplates"
+        render={() => (
+          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+            <CaseTemplates />
+          </Security>
+        )}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/vocabularies/caseTemplates/:caseTemplateId"
+        render={() => (
+          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+            <CaseTemplateTasks />
+          </Security>
+        )}
+      />
+      <BoundaryRoute
+        exact
         path="/dashboard/settings/vocabularies/kill_chain_phases"
         render={() => (
-          <Security
-            needs={[SETTINGS_SETLABELS]}
-            placeholder={<Redirect to={'/dashboard/settings'} />}
+          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <KillChainPhases />
           </Security>

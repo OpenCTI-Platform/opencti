@@ -219,9 +219,9 @@ const FeedbackCreation: FunctionComponent<{
                 />
                 <div className={classes.buttons}>
                   <Button
-                    variant="contained"
                     onClick={handleReset}
                     disabled={isSubmitting}
+                    variant="contained"
                     classes={{ root: classes.button }}
                   >
                     {t('Cancel')}

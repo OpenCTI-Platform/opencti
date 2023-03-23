@@ -5,28 +5,25 @@ import { KeyType } from 'react-relay/relay-hooks/helpers';
 
 interface UsePreloadedPaginationFragment<QueryType extends OperationType> {
   queryRef: PreloadedQuery<QueryType>;
-  linesQuery: GraphQLTaggedNode;
-  linesFragment: GraphQLTaggedNode;
+  queryDef: GraphQLTaggedNode;
+  fragmentDef: GraphQLTaggedNode;
   nodePath?: string;
 }
 
-const usePreloadedFragment = <
-  QueryType extends OperationType,
-  FragmentKey extends KeyType,
->({
-    queryRef,
-    linesQuery,
-    linesFragment,
-    nodePath,
-  }: UsePreloadedPaginationFragment<QueryType>) => {
-  const queryData = usePreloadedQuery(linesQuery, queryRef);
+const usePreloadedFragment = <QueryType extends OperationType, FragmentKey extends KeyType>({
+  queryRef,
+  queryDef,
+  fragmentDef,
+  nodePath,
+}: UsePreloadedPaginationFragment<QueryType>) => {
+  const queryData = usePreloadedQuery(queryDef, queryRef);
   if (nodePath) {
     return useFragment(
-      linesFragment,
+      fragmentDef,
       queryData[nodePath as keyof typeof queryData] as FragmentKey,
     );
   }
-  return useFragment(linesFragment, queryData as FragmentKey);
+  return useFragment(fragmentDef, queryData as FragmentKey);
 };
 
 export default usePreloadedFragment;

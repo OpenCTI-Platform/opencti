@@ -6,8 +6,8 @@ export const FiltersVariant = {
 export type BackendFilters = {
   key: string;
   values: string[];
-  operator: string;
-  filterMode: string;
+  operator?: string;
+  filterMode?: string;
 }[];
 
 export const onlyGroupOrganization = ['x_opencti_workflow_id'];

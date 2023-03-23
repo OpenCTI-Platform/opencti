@@ -73,12 +73,8 @@ const localStorageToPaginationOptions = (
     basePagination.orderMode = orderAsc ? OrderMode.asc : OrderMode.desc;
     basePagination.orderBy = sortBy;
   }
-  if (filters) {
-    const paginationFilters = convertFilters(filters).concat(
-      additionalFilters ?? [],
-    );
-    basePagination.filters = paginationFilters as unknown as Filters;
-  }
+  const paginationFilters: BackendFilters = [...(convertFilters(filters ?? {}) as unknown as BackendFilters), ...(additionalFilters ?? [])];
+  basePagination.filters = paginationFilters.length > 0 ? paginationFilters : undefined;
   return basePagination;
 };
 

@@ -9,7 +9,7 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
     },
     {
       path: '/dashboard/settings/vocabularies/kill_chain_phases',
-      label: 'Kill chain phases',
+      label: 'Kill Chain Phases',
     },
     {
       path: '/dashboard/settings/vocabularies/fields',
@@ -17,7 +17,11 @@ const LabelsVocabulariesMenu: FunctionComponent = () => {
     },
     {
       path: '/dashboard/settings/vocabularies/statusTemplates',
-      label: 'Status templates',
+      label: 'Status Templates',
+    },
+    {
+      path: '/dashboard/settings/vocabularies/caseTemplates',
+      label: 'Case templates',
     },
   ];
 

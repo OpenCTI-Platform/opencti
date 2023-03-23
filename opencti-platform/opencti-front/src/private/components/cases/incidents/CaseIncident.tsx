@@ -1,20 +1,26 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import CaseIncidentDetails from './CaseIncidentDetails';
-import CaseIncidentPopover from './CaseIncidentPopover';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
-import CaseIncidentEdition from './CaseIncidentEdition';
-import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
-import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
-import { CaseIncident_case$key } from './__generated__/CaseIncident_case.graphql';
+import React, { FunctionComponent } from 'react';
+import { useFragment } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { convertMarkings } from '../../../../utils/edition';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Security from '../../../../utils/Security';
+import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
+import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ContainerHeader from '../../common/containers/ContainerHeader';
+import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import { CaseTasksFilter, CaseTasksLinesQuery } from '../__generated__/CaseTasksLinesQuery.graphql';
+import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
+import CaseTasksLines, { caseTasksLinesQuery } from '../CaseTasksLines';
+import { caseFragment } from '../CaseUtils';
+import CaseIncidentDetails from './CaseIncidentDetails';
+import CaseIncidentEdition from './CaseIncidentEdition';
+import CaseIncidentPopover from './CaseIncidentPopover';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -25,77 +31,8 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const caseIncidentFragment = graphql`
-  fragment CaseIncident_case on CaseIncident {
-    id
-    name
-    standard_id
-    entity_type
-    x_opencti_stix_ids
-    created
-    modified
-    created_at
-    revoked
-    description
-    confidence
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
-      }
-    }
-    creators {
-      id
-      name
-    }
-    objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-    }
-    objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
-    }
-    objectAssignee {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-    }
-    x_opencti_stix_ids
-    status {
-      id
-      order
-      template {
-        name
-        color
-      }
-    }
-    workflowEnabled
-    ...CaseIncidentDetails_case
-    ...ContainerHeader_container
-    ...ContainerStixObjectsOrStixRelationships_container
-  }
-`;
-
 interface CaseIncidentProps {
-  data: CaseIncident_case$key;
+  data: CaseUtils_case$key;
 }
 
 const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
@@ -103,7 +40,20 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const caseIncidentData = useFragment(caseIncidentFragment, data);
+  const caseIncidentData = useFragment(caseFragment, data);
+
+  const tasksFilters = {
+    filters: [{
+      key: ['objectContains' as CaseTasksFilter],
+      values: [caseIncidentData.id],
+    }],
+  };
+  const paginationOptions = {
+    count: 25,
+    filters: tasksFilters.filters,
+  };
+  const queryRef = useQueryLoading<CaseTasksLinesQuery>(caseTasksLinesQuery, paginationOptions);
+
   return (
     <div className={classes.container}>
       <ContainerHeader
@@ -150,6 +100,28 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
           />
         </Grid>
       </Grid>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 25 }}
+          >
+            <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+              <CaseTasksLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                caseId={caseIncidentData.id}
+                tasksFilters={tasksFilters}
+                defaultMarkings={convertMarkings(caseIncidentData)}
+              />
+            </Grid>
+          </Grid>
+        </React.Suspense>
+      )}
       <Grid
         container={true}
         spacing={3}
@@ -203,7 +175,9 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentEdition caseId={caseIncidentData.id} />
+        <CaseIncidentEdition
+          caseId={caseIncidentData.id}
+        />
       </Security>
     </div>
   );

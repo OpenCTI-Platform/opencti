@@ -114,10 +114,6 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  # Cases
-  name: String!
-  description: String
-  rating: Int
   # Technical
   creators: [Creator!]
   toStix: String
@@ -129,7 +125,12 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Cases
+  name: String!
+  description: String
+  tasks: CaseTaskConnection!
   # Incident Response
+  rating: Int
   response_types: [String!]
   severity: String
   priority: String
@@ -229,6 +230,7 @@ input CaseIncidentAddInput {
   clientMutationId: String
   update: Boolean
   response_types: [String!]
+  caseTemplates: [String!]
 }
 
 type Mutation {

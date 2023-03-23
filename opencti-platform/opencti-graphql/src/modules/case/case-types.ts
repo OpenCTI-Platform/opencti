@@ -1,6 +1,6 @@
-import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
 export const ENTITY_TYPE_CONTAINER_CASE = 'Case';
 

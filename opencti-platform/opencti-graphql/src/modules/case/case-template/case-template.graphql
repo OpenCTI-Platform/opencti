@@ -1,0 +1,53 @@
+type CaseTemplate implements InternalObject & BasicObject {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created: DateTime
+  modified: DateTime
+  name: String!
+  description: String
+  tasks: CaseTaskConnection!
+}
+
+# Ordering
+enum CaseTemplatesOrdering {
+  name
+  description
+  created
+}
+
+type CaseTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [CaseTemplateEdge!]!
+}
+type CaseTemplateEdge {
+  cursor: String!
+  node: CaseTemplate!
+}
+
+# Queries
+type Query {
+  caseTemplate(id: String!): CaseTemplate @auth
+  caseTemplates(
+    first: Int
+    after: ID
+    orderBy: CaseTemplatesOrdering
+    orderMode: OrderingMode
+    search: String
+  ): CaseTemplateConnection @auth
+}
+
+# Mutations
+input CaseTemplateAddInput {
+  name: String! @constraint(minLength: 2)
+  description: String
+  created: DateTime
+  tasks: [StixRef!]!
+}
+
+type Mutation {
+  caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate @auth
+  caseTemplateDelete(id: ID!): ID @auth(for: [SETTINGS])
+  caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate @auth(for: [SETTINGS])
+}
