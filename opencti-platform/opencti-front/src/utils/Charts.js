@@ -323,10 +323,9 @@ export const horizontalBarsChartOptions = (
         if (redirectionUtils
           && config.dataPointIndex >= 0
           && ((config.seriesIndex > 0
-            && redirectionUtils[config.dataPointIndex].series
-            && redirectionUtils[config.dataPointIndex].series[config.seriesIndex - 1]
+            && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex - 1]
           )
-            || !config.seriesIndex > 0
+            || !(config.seriesIndex > 0)
           )
         ) { // for clickable parts of the graphs
           // eslint-disable-next-line no-param-reassign
@@ -343,8 +342,7 @@ export const horizontalBarsChartOptions = (
             if (config.seriesIndex > 0 && redirectionUtils[dataPointIndex].series) { // for multi horizontal bars representing entities
               const seriesIndex = config.seriesIndex - 1;
               if (redirectionUtils[dataPointIndex].series[seriesIndex]) { // for series representing a single entity
-                const entityType = redirectionUtils[dataPointIndex].series[seriesIndex].entity_type;
-                const link = resolveLink(entityType);
+                const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
                 const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
                 navigate(`${link}/${entityId}`);
               }
