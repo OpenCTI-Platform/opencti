@@ -1,16 +1,12 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import Security from '../../../utils/Security';
-import {
-  SETTINGS_SETACCESSES,
-  SETTINGS_SETLABELS,
-  SETTINGS_SETMARKINGS,
-} from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import { SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import useAuth from '../../../utils/hooks/useAuth';
 import { RETENTION_MANAGER, RULE_ENGINE } from '../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles((theme) => ({
@@ -27,7 +23,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TopMenuSettings = () => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();
@@ -54,10 +50,10 @@ const TopMenuSettings = () => {
                     classes={{ root: classes.button }}>
                 {t('Entity types')}
             </Button>
-            <Tooltip title={helper.generateDisableMessage(RETENTION_MANAGER)}>
+            <Tooltip title={platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER)}>
                     <span>
                         <Button component={Link} size="small" to="/dashboard/settings/retention"
-                                disabled={!helper.isRetentionManagerEnable()}
+                                disabled={!platformModuleHelpers.isRetentionManagerEnable()}
                                 variant={location.pathname.includes('/dashboard/settings/retention') ? 'contained' : 'text'}
                                 color={location.pathname.includes('/dashboard/settings/retention') ? 'secondary' : 'primary'}
                                 classes={{ root: classes.button }}>
@@ -65,10 +61,10 @@ const TopMenuSettings = () => {
                         </Button>
                     </span>
             </Tooltip>
-            <Tooltip title={helper.generateDisableMessage(RULE_ENGINE)}>
+            <Tooltip title={platformModuleHelpers.generateDisableMessage(RULE_ENGINE)}>
                     <span>
                         <Button component={Link} size="small" to="/dashboard/settings/rules"
-                                disabled={!helper.isRuleEngineEnable()}
+                                disabled={!platformModuleHelpers.isRuleEngineEnable()}
                                 variant={location.pathname.includes('/dashboard/settings/rules') ? 'contained' : 'text'}
                                 color={location.pathname.includes('/dashboard/settings/rules') ? 'secondary' : 'primary'}
                                 classes={{ root: classes.button }}>
