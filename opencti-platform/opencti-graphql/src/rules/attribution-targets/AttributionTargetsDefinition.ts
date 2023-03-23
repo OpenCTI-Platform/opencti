@@ -1,5 +1,5 @@
 import { RELATION_ATTRIBUTED_TO, RELATION_TARGETS } from '../../schema/stixCoreRelationship';
-import type { RuleBehavior, RuleDefinition } from '../../types/rules';
+import type { RuleDefinition } from '../../types/rules';
 
 const id = 'attribution_targets';
 const name = 'Targeting propagation via attribution';
@@ -45,8 +45,7 @@ const attributes = [
   { name: 'confidence' },
   { name: 'object_marking_refs' },
 ];
-const behaviors: Array<RuleBehavior> = [];
 const scopes = [{ filters, attributes }];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

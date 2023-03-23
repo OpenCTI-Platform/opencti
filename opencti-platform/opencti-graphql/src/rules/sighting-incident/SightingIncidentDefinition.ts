@@ -1,7 +1,7 @@
 import { ENTITY_TYPE_IDENTITY } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import type { RuleDefinition, RuleBehavior } from '../../types/rules';
+import type { RuleDefinition } from '../../types/rules';
 
 const id = 'sighting_incident';
 const name = 'Raise incident based on sighting';
@@ -53,7 +53,6 @@ const display = {
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] };
 
 // For live
-const behaviors: Array<RuleBehavior> = [];
 const scopes = [
   {
     filters: { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ENTITY_TYPE_INDICATOR], toTypes: [ENTITY_TYPE_IDENTITY] },
@@ -70,5 +69,5 @@ const scopes = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

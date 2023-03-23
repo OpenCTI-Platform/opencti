@@ -1,7 +1,7 @@
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import type { RuleBehavior, RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
+import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
 const id = 'report_ref_indicator_based_on';
 const name = 'Observables propagation in reports';
@@ -61,6 +61,5 @@ const scopes: Array<RuleScope> = [
   },
 ];
 
-const behaviors: Array<RuleBehavior> = [];
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

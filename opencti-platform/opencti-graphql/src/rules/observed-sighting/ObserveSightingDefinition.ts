@@ -1,13 +1,11 @@
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_OBSERVED_DATA, ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
-import { RULES_ATTRIBUTES_BEHAVIOR } from '../rules';
 import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
 const id = 'observe_sighting';
 const name = 'Sightings of observables via observed data';
 const description = 'Infer sightings based on observed data and indicators.';
-const behaviors = [{ ruleId: id, attribute: 'attribute_count', operation: RULES_ATTRIBUTES_BEHAVIOR.OPERATIONS.SUM }];
 const category = 'Alerting';
 const display = {
   if: [
@@ -75,5 +73,5 @@ const scopes: Array<RuleScope> = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;
