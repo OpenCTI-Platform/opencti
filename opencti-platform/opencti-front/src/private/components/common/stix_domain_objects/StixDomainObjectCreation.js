@@ -37,12 +37,16 @@ import { SystemCreationForm } from '../../entities/systems/SystemCreation';
 import { ThreatActorCreationForm } from '../../threats/threat_actors/ThreatActorCreation';
 import { ToolCreationForm } from '../../arsenal/tools/ToolCreation';
 import { VulnerabilityCreationForm } from '../../arsenal/vulnerabilities/VulnerabilityCreation';
-import { OpinionCreationForm } from '../../analysis/opinions/OpinionCreation';
+import {
+  OpinionCreationFormKnowledgeEditor,
+  OpinionCreationFormKnowledgeParticipant,
+} from '../../analysis/opinions/OpinionCreation';
 import { NarrativeCreationForm } from '../../techniques/narratives/NarrativeCreation';
 import { DataSourceCreationForm } from '../../techniques/data_sources/DataSourceCreation';
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -435,14 +439,22 @@ const StixDomainPanel = ({
     }
     if (type === 'Opinion') {
       // Opinion
-      return (
-        <OpinionCreationForm
+      const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
+      return (userIsKnowledgeEditor
+        ? <OpinionCreationFormKnowledgeEditor
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
           updater={creationUpdater}
         />
+        : <OpinionCreationFormKnowledgeParticipant
+            defaultConfidence={confidence}
+            defaultCreatedBy={baseCreatedBy}
+            defaultMarkingDefinitions={baseMarkingDefinitions}
+            onReset={onClose}
+            updater={creationUpdater}
+          />
       );
     }
     if (type === 'Organization') {
