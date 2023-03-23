@@ -6,7 +6,7 @@ import RetentionLines, {
   RetentionLinesQuery,
 } from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
@@ -15,7 +15,7 @@ const LOCAL_STORAGE_KEY = 'retention-view';
 
 const Retention = () => {
   const { t } = useFormatter();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
     paginationOptions,
@@ -45,10 +45,10 @@ const Retention = () => {
       width: '10%',
     },
   };
-  if (!helper.isRetentionManagerEnable()) {
+  if (!platformModuleHelpers.isRetentionManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(helper.generateDisableMessage(RETENTION_MANAGER))}
+        {t(platformModuleHelpers.generateDisableMessage(RETENTION_MANAGER))}
       </Alert>
     );
   }

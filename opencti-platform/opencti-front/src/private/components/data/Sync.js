@@ -5,7 +5,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
 import SyncCreation from './sync/SyncCreation';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
 
@@ -13,7 +13,7 @@ const LOCAL_STORAGE_KEY = 'sync-view';
 
 const Sync = () => {
   const { t } = useFormatter();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const {
     viewStorage,
     paginationOptions,
@@ -51,10 +51,10 @@ const Sync = () => {
     },
   };
 
-  if (!helper.isSyncManagerEnable()) {
+  if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(helper.generateDisableMessage(SYNC_MANAGER))}
+        {t(platformModuleHelpers.generateDisableMessage(SYNC_MANAGER))}
       </Alert>
     );
   }
