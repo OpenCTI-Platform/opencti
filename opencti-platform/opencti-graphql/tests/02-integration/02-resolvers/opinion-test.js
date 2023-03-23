@@ -102,7 +102,7 @@ const READ_QUERY = gql`
   }
 `;
 
-describe.skip('Opinion resolver standard behavior', () => {
+describe('Opinion resolver standard behavior', () => {
   let opinionInternalId;
   let datasetOpinionInternalId;
   let datasetMalwareInternalId;
