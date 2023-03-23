@@ -5,7 +5,7 @@ export const incidentKnowledgeGraphtMutationRelationAddMutation = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    caseRelationAdd(id: $id, input: $input) {
+    caseIncidentRelationAdd(id: $id, input: $input) {
       id
       entity_type
       parent_types
@@ -31,7 +31,7 @@ export const incidentKnowledgeGraphMutationRelationDeleteMutation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    caseRelationDelete(
+    caseIncidentRelationDelete(
       id: $id
       toId: $toId
       relationship_type: $relationship_type

@@ -68,6 +68,10 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/cases/incidents';
     case 'Feedback':
       return '/dashboard/cases/feedbacks';
+    case 'Case-Rfi':
+      return '/dashboard/cases/rfis';
+    case 'Case-Rft':
+      return '/dashboard/cases/rfts';
     case 'User':
     case 'Creator':
     case 'Assignee':
@@ -118,6 +122,8 @@ export const typesContainers = [
   'grouping',
   'feedback',
   'case-incident',
+  'case-rfi',
+  'case-rft',
 ];
 
 export const pascalize = (str: string): string => str.replace(

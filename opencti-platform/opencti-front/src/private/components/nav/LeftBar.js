@@ -136,6 +136,8 @@ const LeftBar = () => {
   const hideCases = useIsHiddenEntities(
     'Case-Incident',
     'Feedback',
+    'Case-Rfi',
+    'Case-Rft',
   );
   const hideArsenal = useIsHiddenEntities(
     'Malware',

@@ -36,7 +36,10 @@ import Language from '../static/images/entities/language.svg';
 import Event from '../static/images/entities/event.svg';
 import DataComponent from '../static/images/entities/data-component.svg';
 import DataSource from '../static/images/entities/data-source.svg';
-import Case from '../static/images/entities/case.svg';
+import CaseIncident from '../static/images/entities/case-incident.svg';
+import Feedback from '../static/images/entities/feedback.svg';
+import CaseRfi from '../static/images/entities/case-rfi.svg';
+import CaseRft from '../static/images/entities/case-rft.svg';
 import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
@@ -66,6 +69,10 @@ export const graphImages = {
   'External-Reference': genImage(ExternalReference),
   Label: genImage(Label),
   'Attack-Pattern': genImage(AttackPattern),
+  Feedback: genImage(Feedback),
+  'Case-Incident': genImage(CaseIncident),
+  'Case-Rfi': genImage(CaseRfi),
+  'Case-Rft': genImage(CaseRft),
   Campaign: genImage(Campaign),
   Note: genImage(Note),
   'Observed-Data': genImage(ObservedData),
@@ -96,8 +103,6 @@ export const graphImages = {
   Event: genImage(Event),
   'Data-Component': genImage(DataComponent),
   'Data-Source': genImage(DataSource),
-  Feedback: genImage(Case),
-  'Case-Incident': genImage(Case),
   'Autonomous-System': genImage(StixCyberObservable),
   Directory: genImage(StixCyberObservable),
   'Domain-Name': genImage(StixCyberObservable),
@@ -164,6 +169,10 @@ export const graphLevel = {
   'Data-Component': 1,
   'Data-Source': 1,
   'Autonomous-System': 1,
+  'Case-Incident': 1,
+  'Case-Rft': 1,
+  'Case-Rfi': 1,
+  Feedback: 1,
   Directory: 1,
   'Domain-Name': 1,
   'Email-Addr': 1,
@@ -232,6 +241,10 @@ export const graphRawImages = {
   'Data-Component': DataComponent,
   'Data-Source': DataSource,
   'Autonomous-System': StixCyberObservable,
+  'Case-Incident': CaseIncident,
+  Feedback,
+  'Case-Rfi': CaseRfi,
+  'Case-Rft': CaseRft,
   Directory: StixCyberObservable,
   'Domain-Name': StixCyberObservable,
   'Email-Addr': StixCyberObservable,
@@ -650,7 +663,7 @@ export const buildCorrelationData = (
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
-        parent_types: ['basic-relationship'],
+        parent_types: ['basic-relationship', 'stix-meta-relationship'],
         entity_type: 'basic-relationship',
         relationship_type: 'reported-in',
         source: n.id,
@@ -666,7 +679,6 @@ export const buildCorrelationData = (
         defaultDate: jsDate(defaultDate(n)),
         markedBy: n.markedBy,
         createdBy: n.createdBy,
-        datable: true,
       }),
       R.filter(
         (m) => m
@@ -801,7 +813,7 @@ export const buildCaseCorrelationData = (
     R.map((n) => R.map(
       (e) => ({
         id: R.concat(n.id, '-', e.id),
-        parent_types: ['basic-relationship'],
+        parent_types: ['basic-relationship', 'stix-meta-relationship'],
         entity_type: 'basic-relationship',
         relationship_type: 'caseed-in',
         source: n.id,
@@ -817,7 +829,6 @@ export const buildCaseCorrelationData = (
         defaultDate: jsDate(defaultDate(n)),
         markedBy: n.markedBy,
         createdBy: n.createdBy,
-        datable: true,
       }),
       R.filter(
         (m) => m
@@ -997,7 +1008,6 @@ export const buildGraphData = (objects, graphData, t) => {
         !R.isNil(n.createdBy) && !R.isEmpty(n.createdBy)
           ? n.createdBy
           : { id: '0533fcc9-b9e8-4010-877c-174343cb24cd', name: t('None') },
-      datable: n.datable,
     })),
   )(objects);
   const nestedLinks = R.pipe(

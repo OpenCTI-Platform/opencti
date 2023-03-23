@@ -16,6 +16,8 @@ import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-common';
 import type { VocabularyCategory } from '../../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
@@ -265,6 +267,24 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     entity_types: [ENTITY_TYPE_CONTAINER_REPORT],
     fields: [{
       key: 'report_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  request_for_information_types_ov: {
+    description: '',
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE_RFI],
+    fields: [{
+      key: 'information_types',
+      required: false,
+      multiple: true,
+    }]
+  },
+  request_for_takedown_types_ov: {
+    description: '',
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE_RFT],
+    fields: [{
+      key: 'takedown_types',
       required: false,
       multiple: true,
     }]

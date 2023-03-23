@@ -153,7 +153,7 @@ interface CaseIncidentEditionOverviewProps {
 
 interface CaseIncidentEditionFormValues {
   message?: string
-  createdBy: Option | undefined
+  createdBy?: Option
   objectMarking?: Option[]
   objectAssignee?: Option[]
   x_opencti_workflow_id: Option

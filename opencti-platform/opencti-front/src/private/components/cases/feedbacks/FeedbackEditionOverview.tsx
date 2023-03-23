@@ -144,7 +144,7 @@ interface FeedbackEditionOverviewProps {
 interface FeedbackEditionFormValues {
   message?: string
   references?: Option[]
-  createdBy: Option | undefined
+  createdBy?: Option
   x_opencti_workflow_id: Option
   objectMarking?: Option[]
 }

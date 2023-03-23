@@ -1,12 +1,13 @@
 import caseRfiTypeDefs from './case-rfi.graphql';
-import { ENTITY_TYPE_CONTAINER_CASE_RFI, StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case-types';
 import { NAME_FIELD, normalizeName } from '../../../schema/identifier';
 import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
-import caseRfiResolvers from './case-rfi-resolvers';
-import convertCaseRfiToStix from './case-rfi-converter';
 import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
+import type { StixCaseRfi, StoreEntityCaseRfi } from './case-rfi-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
+import convertCaseRfiToStix from './case-rfi-converter';
+import caseRfiResolvers from './case-rfi-resolvers';
 
 const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
   type: {
@@ -30,10 +31,11 @@ const CASE_RFI_DEFINITION: ModuleDefinition<StoreEntityCaseRfi, StixCaseRfi> = {
     },
   },
   attributes: [
+    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'created', type: 'date', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'severity', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'priority', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'response_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Rfi type' },
+    { name: 'information_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'information_types' },
+    { name: 'severity', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'priority', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [createdBy, objectMarking, objectAssignee],

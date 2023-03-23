@@ -43,7 +43,7 @@ const styles = () => ({
 
 export const incidentKnowledgeAttackPatternsGraphQuery = graphql`
   query IncidentKnowledgeAttackPatternsGraphQuery($id: String!) {
-    case(id: $id) {
+    caseIncident(id: $id) {
       id
       name
       x_opencti_graph_data
@@ -296,10 +296,10 @@ class IncidentKnowledgeComponent extends Component {
               query={incidentKnowledgeGraphQuery}
               variables={{ id: caseData.id }}
               render={({ props }) => {
-                if (props && props.case) {
+                if (props && props.caseIncident) {
                   return (
                     <IncidentKnowledgeGraph
-                      caseData={props.case}
+                      caseData={props.caseIncident}
                       mode={mode}
                     />
                   );
@@ -368,10 +368,10 @@ class IncidentKnowledgeComponent extends Component {
                 query={incidentKnowledgeTimeLineQuery}
                 variables={{ id: caseData.id, ...timeLinePaginationOptions }}
                 render={({ props }) => {
-                  if (props && props.case) {
+                  if (props && props.caseIncident) {
                     return (
                       <IncidentKnowledgeTimeLine
-                        caseData={props.case}
+                        caseData={props.caseIncident}
                         dateAttribute={orderBy}
                         displayRelationships={timeLineDisplayRelationships}
                       />
@@ -391,9 +391,9 @@ class IncidentKnowledgeComponent extends Component {
               query={incidentKnowledgeCorrelationQuery}
               variables={{ id: caseData.id }}
               render={({ props }) => {
-                if (props && props.case) {
+                if (props && props.caseIncident) {
                   return (
-                    <IncidentKnowledgeCorrelation caseData={props.case} />
+                    <IncidentKnowledgeCorrelation caseData={props.caseIncident} />
                   );
                 }
                 return <Loader />;
@@ -409,11 +409,11 @@ class IncidentKnowledgeComponent extends Component {
               query={incidentKnowledgeAttackPatternsGraphQuery}
               variables={{ id: caseData.id }}
               render={({ props }) => {
-                if (props && props.case) {
+                if (props && props.caseIncident) {
                   const attackPatterns = R.pipe(
                     R.map((n) => n.node),
                     R.filter((n) => n.entity_type === 'Attack-Pattern'),
-                  )(props.case.objects.edges);
+                  )(props.caseIncident.objects.edges);
                   return (
                     <AttackPatternsMatrix
                       entity={caseData}
@@ -454,7 +454,7 @@ IncidentKnowledgeComponent.propTypes = {
 
 const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
   caseData: graphql`
-    fragment IncidentKnowledge_case on Case {
+    fragment IncidentKnowledge_case on CaseIncident {
       id
       editContext {
         name

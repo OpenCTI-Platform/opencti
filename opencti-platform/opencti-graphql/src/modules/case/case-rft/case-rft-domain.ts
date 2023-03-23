@@ -6,17 +6,17 @@ import { BUS_TOPICS } from '../../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../../../schema/general';
 import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
-import { userAddIndividual } from '../../../domain/user';
+import { userAddIndividual, userSessionRefresh } from '../../../domain/user';
 import { isEmptyField } from '../../../database/utils';
-import type { BasicStoreEntityCaseRft } from './case-rft-types';
-import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
-import type { CaseRftAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
 import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
+import type { BasicStoreEntityCaseRft } from './case-rft-types';
+import { ENTITY_TYPE_CONTAINER_CASE_RFT } from './case-rft-types';
+import type { CaseRftAddInput } from '../../../generated/graphql';
 
-export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthContext, user: AuthUser, caseRftId: string) => {
-  return storeLoadById(context, user, caseRftId, ENTITY_TYPE_CONTAINER_CASE_RFT);
+export const findById: DomainFindById<BasicStoreEntityCaseRft> = (context: AuthContext, user: AuthUser, caseId: string) => {
+  return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_CASE_RFT);
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOptions<BasicStoreEntityCaseRft>) => {
@@ -30,6 +30,7 @@ export const addCaseRft = async (context: AuthContext, user: AuthUser, caseRftAd
     if (individualId === undefined) {
       const individual = await userAddIndividual(context, user);
       individualId = individual.id;
+      await userSessionRefresh(user.internal_id);
     }
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }

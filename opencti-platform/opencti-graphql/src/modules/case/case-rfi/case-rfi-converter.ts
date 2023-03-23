@@ -9,9 +9,9 @@ const convertCaseRfiToStix = (instance: StoreEntityCaseRfi): StixCaseRfi => {
     ...caseRfi,
     name: instance.name,
     description: instance.description,
+    information_types: instance.information_types,
     severity: instance.severity,
     priority: instance.priority,
-    information_types: instance.information_types,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

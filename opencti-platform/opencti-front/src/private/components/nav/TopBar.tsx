@@ -91,6 +91,8 @@ import {
   TopBarNotificationNumberSubscription,
   TopBarNotificationNumberSubscription$data,
 } from './__generated__/TopBarNotificationNumberSubscription.graphql';
+import TopMenuCaseRfi from './TopMenuCaseRfi';
+import TopMenuCaseRft from './TopMenuCaseRft';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -292,6 +294,22 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             && location.pathname.includes('/dashboard/profile/') && (
               <TopMenuNotifications />
           )}
+          {(location.pathname === '/dashboard/cases'
+            || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
+            <TopMenuCases />
+          )}
+          {location.pathname.includes('/dashboard/cases/incidents/') && (
+            <TopMenuCaseIncident />
+          )}
+          {location.pathname.includes('/dashboard/cases/rfis/') && (
+            <TopMenuCaseRfi />
+          )}
+          {location.pathname.includes('/dashboard/cases/rfts/') && (
+            <TopMenuCaseRft />
+          )}
+          {location.pathname.includes('/dashboard/cases/feedbacks/') && (
+            <TopMenuCaseFeedback />
+          )}
           {location.pathname.includes('/dashboard/analysis/reports/') && (
             <TopMenuReport />
           )}
@@ -307,16 +325,6 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           {location.pathname.includes(
             '/dashboard/analysis/external_references/',
           ) && <TopMenuExternalReference />}
-          {(location.pathname === '/dashboard/cases'
-            || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
-            <TopMenuCases />
-          )}
-          {location.pathname.includes('/dashboard/cases/incidents/') && (
-            <TopMenuCaseIncident />
-          )}
-          {location.pathname.includes('/dashboard/cases/feedbacks/') && (
-            <TopMenuCaseFeedback />
-          )}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
             <TopMenuEvents />

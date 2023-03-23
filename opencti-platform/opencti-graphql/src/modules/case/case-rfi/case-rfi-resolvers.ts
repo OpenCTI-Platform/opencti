@@ -2,12 +2,7 @@ import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDelete, stixDomainObjectDeleteRelation, stixDomainObjectEditContext, stixDomainObjectEditField } from '../../../domain/stixDomainObject';
-import {
-  addCaseRfi,
-  caseRfiContainsStixObjectOrStixRelationship,
-  findAll,
-  findById
-} from './case-rfi-domain';
+import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
 
 const caseRfiResolvers: Resolvers = {
   Query: {
@@ -17,14 +12,14 @@ const caseRfiResolvers: Resolvers = {
       return caseRfiContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
-  CasesFilter: {
+  CaseRfisFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     creator: 'creator_id',
   },
-  CasesOrdering: {
+  CaseRfisOrdering: {
     creator: 'creator_id',
   },
   Mutation: {

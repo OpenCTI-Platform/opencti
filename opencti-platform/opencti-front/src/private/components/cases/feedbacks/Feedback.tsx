@@ -8,7 +8,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import Security from '../../../../utils/Security';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import FeedbackEdition from './FeedbackEdition';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -150,7 +150,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
           <StixCoreObjectLatestHistory stixCoreObjectId={feedbackData.id} />
         </Grid>
       </Grid>
-      <Security needs={[SETTINGS]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <FeedbackEdition feedbackId={feedbackData.id} />
       </Security>
     </div>

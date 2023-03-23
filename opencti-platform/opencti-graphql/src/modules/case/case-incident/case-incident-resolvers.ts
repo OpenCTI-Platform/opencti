@@ -17,14 +17,14 @@ const caseIncidentResolvers: Resolvers = {
       return caseIncidentContainsStixObjectOrStixRelationship(context, context.user, args.id, args.stixObjectOrStixRelationshipId);
     },
   },
-  CasesFilter: {
+  CaseIncidentsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
     assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     creator: 'creator_id',
   },
-  CasesOrdering: {
+  CaseIncidentsOrdering: {
     creator: 'creator_id',
   },
   Mutation: {

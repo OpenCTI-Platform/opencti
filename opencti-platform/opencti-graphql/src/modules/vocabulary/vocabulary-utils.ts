@@ -826,6 +826,13 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'threat-report' },
     { key: 'internal-report' },
   ],
+  request_for_information_types_ov: [
+    { key: 'none' },
+  ],
+  request_for_takedown_types_ov: [
+    { key: 'pishing' },
+    { key: 'brand-abuse' },
+  ],
   // S
   service_status_ov: [
     {

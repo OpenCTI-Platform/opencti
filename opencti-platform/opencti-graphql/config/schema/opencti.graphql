@@ -10706,6 +10706,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | DataComponent
   | DataSource
   | CaseIncident
+  | CaseRfi
+  | CaseRft
   | Feedback
   | EntitySetting
   | Creator
@@ -10778,6 +10780,8 @@ union StixObjectOrStixRelationship =
   | DataComponent
   | DataSource
   | CaseIncident
+  | CaseRfi
+  | CaseRft
   | Feedback
   | EntitySetting
 union StixCoreObjectOrStixCoreRelationship =
@@ -10844,6 +10848,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | DataComponent
   | DataSource
   | CaseIncident
+  | CaseRfi
+  | CaseRft
   | Feedback
   | EntitySetting
 
