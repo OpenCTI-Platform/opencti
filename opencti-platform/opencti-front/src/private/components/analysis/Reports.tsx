@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import useAuth, { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import {
   ReportsLinesPaginationQuery,

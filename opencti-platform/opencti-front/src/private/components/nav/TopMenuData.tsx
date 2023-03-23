@@ -1,13 +1,19 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import { Theme } from '@mui/material/styles/createTheme';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../components/i18n';
-import useGranted, { KNOWLEDGE, KNOWLEDGE_KNUPDATE, MODULES, SETTINGS, TAXIIAPI_SETCOLLECTIONS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE,
+  KNOWLEDGE_KNUPDATE,
+  MODULES,
+  SETTINGS,
+  TAXIIAPI_SETCOLLECTIONS,
+} from '../../../utils/hooks/useGranted';
 import { SYNC_MANAGER, TASK_MANAGER } from '../../../utils/platformModulesHelper';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   button: {
@@ -26,7 +32,7 @@ const TopMenuData = () => {
   const { t } = useFormatter();
   const classes = useStyles();
   const location = useLocation();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const isKnowledgeReader = useGranted([KNOWLEDGE]);
   const isKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
   const isConnectorReader = useGranted([MODULES]);
@@ -54,10 +60,10 @@ const TopMenuData = () => {
         </Button>
       )}
       {isKnowledgeEditor && (
-        <Tooltip title={helper?.generateDisableMessage(TASK_MANAGER)}>
+        <Tooltip title={platformModuleHelpers?.generateDisableMessage(TASK_MANAGER)}>
           <span>
             <Button component={Link} size="small" to="/dashboard/data/tasks"
-              disabled={!helper?.isTasksManagerEnable()}
+              disabled={!platformModuleHelpers?.isTasksManagerEnable()}
               variant={getVariant('/dashboard/data/tasks')}
               color={getColor('/dashboard/data/tasks')}
               classes={{ root: classes.button }}>
@@ -75,10 +81,10 @@ const TopMenuData = () => {
         </Button>
       )}
       {isSettingsManager && (
-        <Tooltip title={helper?.generateDisableMessage(SYNC_MANAGER)}>
+        <Tooltip title={platformModuleHelpers?.generateDisableMessage(SYNC_MANAGER)}>
           <span>
             <Button component={Link} size="small" to="/dashboard/data/sync"
-              disabled={!helper?.isSyncManagerEnable()}
+              disabled={!platformModuleHelpers?.isSyncManagerEnable()}
               variant={getVariant('/dashboard/data/sync')}
               color={getColor('/dashboard/data/sync')}
               classes={{ root: classes.button }}>
