@@ -13,8 +13,7 @@ export const stixObjectOrStixRelationshipOptions = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     relatedTo: buildRefRelationKey(RELATION_RELATED_TO),
-    objectContained: buildRefRelationKey(RELATION_OBJECT),
-    containedBy: buildRefRelationKey(RELATION_OBJECT), // ASK SAM
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     sightedBy: buildRefRelationKey(STIX_SIGHTING_RELATIONSHIP),
     hashes_MD5: 'hashes.MD5',

@@ -46,7 +46,7 @@ export const GlobalFilters = {
   markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
   labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
   indicates: buildRefRelationKey(RELATION_INDICATES),
-  containedBy: buildRefRelationKey(RELATION_OBJECT),
+  objectContains: buildRefRelationKey(RELATION_OBJECT),
   creator: 'creator_id',
 };
 

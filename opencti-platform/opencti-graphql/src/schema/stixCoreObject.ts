@@ -30,7 +30,6 @@ export const stixCoreObjectOptions = {
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objectContains: buildRefRelationKey(RELATION_OBJECT),
-    containedBy: buildRefRelationKey(RELATION_OBJECT),
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),

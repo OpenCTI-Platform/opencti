@@ -237,7 +237,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       orderMode: orderAsc ? 'asc' : 'desc',
     };
     const exportFilters = {
-      containedBy: [{ id: container.id, value: defaultValue(container) }],
+      objectContains: [{ id: container.id, value: defaultValue(container) }],
       entity_type:
         types.length > 0 ? R.map((n) => ({ id: n, value: n }), types) : [],
       ...filters,
@@ -250,7 +250,7 @@ class ContainerStixDomainObjectsComponent extends Component {
       search: searchTerm,
     };
     const backgroundTaskFilters = {
-      containedBy: [{ id: container.id, value: defaultValue(container) }],
+      objectContains: [{ id: container.id, value: defaultValue(container) }],
       entity_type:
         types.length > 0
           ? R.map((n) => ({ id: n, value: n }), types)
