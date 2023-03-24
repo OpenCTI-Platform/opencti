@@ -358,6 +358,22 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                 ... on Case {
                   name
                 }
+                ... on Report {
+                    name
+                    description
+                }
+                ... on Grouping {
+                    name
+                    description
+                }
+                ... on Note {
+                    attribute_abstract
+                    content
+                }
+                ... on Opinion {
+                    opinion
+                    explanation
+                }
                 ... on ObservedData {
                   objects(first: 1) {
                     edges {
