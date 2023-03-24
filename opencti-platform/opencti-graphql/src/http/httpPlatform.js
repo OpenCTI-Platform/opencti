@@ -22,6 +22,7 @@ import initHttpRollingFeeds from './httpRollingFeed';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
+import { isNotEmptyField } from '../database/utils';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -33,9 +34,17 @@ const setCookieError = (res, message) => {
 };
 
 const extractRefererPathFromReq = (req) => {
-  const refererUrl = new URL(req.headers.referer);
-  // Keep only the pathname to prevent OPEN REDIRECT CWE-601
-  return refererUrl.pathname;
+  if (isNotEmptyField(req.headers.referer)) {
+    try {
+      const refererUrl = new URL(req.headers.referer);
+      // Keep only the pathname to prevent OPEN REDIRECT CWE-601
+      return refererUrl.pathname;
+    } catch {
+      // prevent any invalid referer
+      logApp.warn('Invalid referer for redirect extraction', { referer: req.headers.referer });
+    }
+  }
+  return undefined;
 };
 
 const createApp = async (app) => {
@@ -188,7 +197,7 @@ const createApp = async (app) => {
   app.get(`${basePath}/auth/cert`, (req, res, next) => {
     try {
       const context = executionContext('cert_strategy');
-      const redirect = extractRefererPathFromReq(req);
+      const redirect = extractRefererPathFromReq(req) ?? '/';
       const isActivated = isStrategyActivated(STRATEGY_CERT);
       if (!isActivated) {
         setCookieError(res, 'Cert authentication is not available');

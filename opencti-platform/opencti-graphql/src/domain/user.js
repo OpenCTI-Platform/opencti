@@ -779,7 +779,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
         return await authenticateUser(context, req, user, loginProvider, tokenUUID);
       }
     } catch (err) {
-      logApp.error(`[OPENCTI] Authentication error ${tokenUUID}`, { error: err });
+      logApp.error('[OPENCTI] Authentication error', { error: err });
     }
   }
   // No auth, return undefined
