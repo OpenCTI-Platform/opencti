@@ -282,7 +282,7 @@ export const extractEntityRepresentative = (entityData) => {
   if (isEmptyField(mainValue) || mainValue === 'Unknown') {
     return entityData.standard_id;
   }
-  return mainValue;
+  return String(mainValue);
 };
 
 export const generateMergeMessage = (instance, sources) => {
