@@ -55,12 +55,7 @@ import {
   typesContainers,
   workbenchAttributes,
 } from '../../../../../utils/Entity';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-  QueryRenderer,
-} from '../../../../../relay/environment';
+import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
 import TextField from '../../../../../components/TextField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import SwitchField from '../../../../../components/SwitchField';
@@ -69,12 +64,7 @@ import ObjectLabelField from '../../form/ObjectLabelField';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import { ExternalReferencesField } from '../../form/ExternalReferencesField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import {
-  convertFromStixType,
-  convertToStixType,
-  truncate,
-  uniqWithByFields,
-} from '../../../../../utils/String';
+import { convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
 import ItemIcon from '../../../../../components/ItemIcon';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import StixItemLabels from '../../../../../components/StixItemLabels';
@@ -87,7 +77,9 @@ import SelectField from '../../../../../components/SelectField';
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
-import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
+import {
+  stixCyberObservablesLinesSearchQuery,
+} from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 
 const Transition = React.forwardRef((props, ref) => (
@@ -1920,34 +1912,20 @@ class WorkbenchFileContentComponent extends Component {
             };
             const attributes = R.pipe(
               R.map((n) => n.node.value),
-              R.filter(
-                (n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_'),
-              ),
+              R.filter((n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_')),
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = observable[attribute]
-                  ? buildDate(observable[attribute])
-                  : null;
+                initialValues[attribute] = observable[attribute] ? buildDate(observable[attribute]) : null;
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = observable[attribute] ?? false;
               } else if (R.includes(attribute, multipleAttributes)) {
-                initialValues[attribute] = observable[attribute]
-                  ? observable[attribute].join(',')
-                  : null;
+                initialValues[attribute] = Array.isArray(observable[attribute]) ? observable[attribute].join(',') : observable[attribute];
               } else if (attribute === 'hashes') {
-                initialValues.hashes_MD5 = observable[attribute]
-                  ? observable[attribute].MD5 ?? ''
-                  : '';
-                initialValues['hashes_SHA-1'] = observable[attribute]
-                  ? observable[attribute]['SHA-1'] ?? ''
-                  : '';
-                initialValues['hashes_SHA-256'] = observable[attribute]
-                  ? observable[attribute]['SHA-256'] ?? ''
-                  : '';
-                initialValues['hashes_SHA-512'] = observable[attribute]
-                  ? observable[attribute]['SGA-512'] ?? ''
-                  : '';
+                initialValues.hashes_MD5 = observable[attribute] ? observable[attribute].MD5 ?? '' : '';
+                initialValues['hashes_SHA-1'] = observable[attribute] ? observable[attribute]['SHA-1'] ?? '' : '';
+                initialValues['hashes_SHA-256'] = observable[attribute] ? observable[attribute]['SHA-256'] ?? '' : '';
+                initialValues['hashes_SHA-512'] = observable[attribute] ? observable[attribute]['SGA-512'] ?? '' : '';
               } else {
                 initialValues[attribute] = observable[attribute] ?? '';
               }
@@ -2254,13 +2232,19 @@ class WorkbenchFileContentComponent extends Component {
         values,
       ),
       labels: R.pluck('label', values.objectLabel),
-      object_marking_refs: R.pluck('entity', values.objectMarking).map(
-        (n) => n.standard_id || n.id,
-      ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      object_marking_refs: R.pluck('entity', values.objectMarking).map((n) => n.standard_id || n.id),
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
+    // numberAttributes must be rewritten to actual number
+    const availableKeys = Object.keys(finalValues);
+    for (let i = 0; i < numberAttributes.length; i += 1) {
+      const numberAttribute = numberAttributes[i];
+      if (availableKeys.includes(numberAttribute)) {
+        const numericAttr = finalValues[numberAttribute];
+        finalValues[numberAttribute] = isEmptyField(numericAttr) ? null : parseInt(numericAttr, 10);
+      }
+    }
     if (!R.isEmpty(hashes)) {
       finalValues = { ...finalValues, hashes };
     }
