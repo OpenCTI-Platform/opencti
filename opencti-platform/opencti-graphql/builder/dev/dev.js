@@ -21,6 +21,4 @@ esbuild.build({
     keepNames: true,
     sourcemap: 'inline',
     outdir: 'build',
-    incremental: false,
-    watch: false,
 });

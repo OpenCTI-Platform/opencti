@@ -32,7 +32,6 @@ esbuild
     sourceRoot: "src",
     sourcesContent: false,
     outdir: "builder/prod/build",
-    incremental: false,
   })
   .then(() => {
     // region Copy public files to build

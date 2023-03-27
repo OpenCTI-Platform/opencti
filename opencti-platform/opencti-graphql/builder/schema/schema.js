@@ -17,5 +17,4 @@ esbuild.build({
     sourceRoot: 'src',
     sourcesContent: false,
     outdir: 'build',
-    incremental: false,
 });

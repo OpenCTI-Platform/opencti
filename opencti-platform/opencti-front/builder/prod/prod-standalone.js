@@ -28,7 +28,6 @@ esbuild
     sourceRoot: "src",
     sourcesContent: false,
     outdir: "builder/prod/build",
-    incremental: false,
   })
   .then(() => {
     // Copy file
