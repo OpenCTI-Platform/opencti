@@ -576,9 +576,7 @@ class Opinion:
                 )
                 if "explanation" in stix_object
                 else None,
-                authors=self.opencti.stix2.convert_markdown(stix_object["authors"])
-                if "authors" in stix_object
-                else None,
+                authors=stix_object["authors"] if "authors" in stix_object else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,
