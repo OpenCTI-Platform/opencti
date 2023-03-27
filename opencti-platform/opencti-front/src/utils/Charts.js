@@ -310,6 +310,7 @@ export const horizontalBarsChartOptions = (
   categories = null,
   legend = false,
 ) => ({
+  events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
     background: 'transparent',
@@ -319,13 +320,25 @@ export const horizontalBarsChartOptions = (
     foreColor: theme.palette.text.secondary,
     stacked,
     events: {
+      xAxisLabelClick: (event, chartContext, config) => {
+        if (redirectionUtils) {
+          const { labelIndex } = config;
+          const link = resolveLink(redirectionUtils[labelIndex].entity_type);
+          const entityId = redirectionUtils[labelIndex].id;
+          navigate(`${link}/${entityId}`);
+        }
+      },
       mouseMove: (event, chartContext, config) => {
         if (redirectionUtils
-          && config.dataPointIndex >= 0
-          && ((config.seriesIndex > 0
-            && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex - 1]
-          )
-            || !(config.seriesIndex > 0)
+          && (
+            (config.dataPointIndex >= 0
+              && (
+                (config.seriesIndex > 0
+                  && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex - 1])
+                || !(config.seriesIndex > 0)
+              )
+            )
+            || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label '
           )
         ) { // for clickable parts of the graphs
           // eslint-disable-next-line no-param-reassign
