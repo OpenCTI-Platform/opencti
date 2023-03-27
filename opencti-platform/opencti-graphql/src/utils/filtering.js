@@ -247,7 +247,7 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
         // Get only required labels
         const labels = values.map((v) => (v.id ? v.value : null)).filter((v) => v !== null);
         if (labels.length > 0) {
-          const dataLabels = [...(stix.labels ?? []), ...(stix.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+          const dataLabels = [...(stix.labels ?? []), ...(stix.extensions?.[STIX_EXT_OCTI_SCO]?.labels ?? [])];
           const isLabelAvailable = labels.some((r) => dataLabels.includes(r));
           // If label is available but must not be
           if (operator === 'not_eq' && isLabelAvailable) {
