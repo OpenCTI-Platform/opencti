@@ -7,7 +7,7 @@ import {
 } from '../schema/stixMetaRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
+import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
@@ -247,7 +247,8 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
         // Get only required labels
         const labels = values.map((v) => (v.id ? v.value : null)).filter((v) => v !== null);
         if (labels.length > 0) {
-          const isLabelAvailable = labels.some((r) => (stix.labels ?? []).includes(r));
+          const dataLabels = [...(stix.labels ?? []), ...(stix.extensions[STIX_EXT_OCTI_SCO]?.labels ?? [])];
+          const isLabelAvailable = labels.some((r) => dataLabels.includes(r));
           // If label is available but must not be
           if (operator === 'not_eq' && isLabelAvailable) {
             return false;
