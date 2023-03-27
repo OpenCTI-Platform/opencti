@@ -52,16 +52,16 @@ class StixCoreObjectLabels extends Component {
     if (variant === 'inSearch') {
       style = classes.labelInSearch;
     }
-    const labelsNodes = pipe(
+    const labelsNodes = labels ? pipe(
       map((n) => n.node),
       sortWith([ascend(prop('value'))]),
-    )(labels.edges);
+    )(labels.edges) : null;
 
     return (
       <div className={classes.objectLabel}>
         {
           /* eslint-disable-next-line no-nested-ternary */
-          !revoked && labelsNodes.length > 0 ? (
+          !revoked && labelsNodes && labelsNodes.length > 0 ? (
             map(
               (label) => (
                 <Tooltip key={label.id} title={label.value}>
