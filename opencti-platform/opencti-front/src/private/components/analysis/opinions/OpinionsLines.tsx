@@ -21,7 +21,7 @@ export const opinionsLinesQuery = graphql`
         $cursor: ID
         $orderBy: OpinionsOrdering
         $orderMode: OrderingMode
-        $filters: [OpinionsFiltering]
+        $filters: [OpinionsFiltering!]
     ) {
         ...OpinionsLines_data
         @arguments(
@@ -95,8 +95,8 @@ interface OpinionsLinesProps {
   dataColumns: DataColumns; //
   paginationOptions: OpinionsLinesPaginationQuery$variables;
   queryRef: PreloadedQuery<OpinionsLinesPaginationQuery>;
-  selectedElements: Record<string, OpinionLine_node$data>; //
-  deSelectedElements: Record<string, OpinionLine_node$data>; //
+  selectedElements: Record<string, OpinionLine_node$data>;
+  deSelectedElements: Record<string, OpinionLine_node$data>;
   onToggleEntity: (
     entity: OpinionLine_node$data,
     event: React.SyntheticEvent
