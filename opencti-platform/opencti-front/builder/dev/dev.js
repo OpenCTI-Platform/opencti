@@ -27,7 +27,7 @@ const middleware = (target, ws = false) => createProxyMiddleware(basePath + targ
 })
 
 // Start with an initial build
-esbuild.build({
+esbuild.context({
   logLevel: "info",
   plugins: [RelayPlugin],
   entryPoints: ["src/front.tsx"],
@@ -52,8 +52,8 @@ esbuild.build({
   sourcemap: "inline",
   sourceRoot: "src",
   outdir: "builder/dev/build",
-  incremental: true,
-}).then((builder) => {
+}).then(async (builder) => {
+  await builder.rebuild();
   // region Copy public files to build
   fsExtra.copySync("./src/static/ext", buildPath + "/static/ext", {
     recursive: true,
