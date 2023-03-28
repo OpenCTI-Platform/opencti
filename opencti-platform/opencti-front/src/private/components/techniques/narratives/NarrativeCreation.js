@@ -80,6 +80,7 @@ const narrativeMutation = graphql`
       name
       description
       entity_type
+      parent_types
       isSubNarrative
       subNarratives {
         edges {

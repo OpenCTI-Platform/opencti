@@ -72,6 +72,7 @@ const sectorMutation = graphql`
       name
       description
       entity_type
+      parent_types
       isSubSector
       subSectors {
         edges {

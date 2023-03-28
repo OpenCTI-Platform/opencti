@@ -81,6 +81,7 @@ export const opinionCreationMutation = graphql`
     opinionAdd(input: $input) {
       id
       entity_type
+      parent_types
       opinion
       explanation
       ...OpinionLine_node

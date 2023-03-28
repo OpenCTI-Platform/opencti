@@ -80,6 +80,7 @@ const administrativeAreaMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...AdministrativeAreaLine_node
     }
   }

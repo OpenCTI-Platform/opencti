@@ -72,6 +72,7 @@ const positionMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...PositionLine_node
     }
   }

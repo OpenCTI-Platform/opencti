@@ -77,6 +77,7 @@ const observedDataCreationMutation = graphql`
       id
       name
       entity_type
+      parent_types
       ...ObservedDataLine_node
     }
   }

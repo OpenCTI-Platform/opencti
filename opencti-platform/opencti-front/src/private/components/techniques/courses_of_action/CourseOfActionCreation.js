@@ -84,6 +84,7 @@ const courseOfActionMutation = graphql`
         name
         description
         entity_type
+        parent_types
         ...CourseOfActionLine_node
     }
   }

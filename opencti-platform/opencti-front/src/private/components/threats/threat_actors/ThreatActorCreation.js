@@ -76,6 +76,7 @@ const threatActorMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...ThreatActorCard_node
     }
   }

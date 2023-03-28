@@ -87,6 +87,7 @@ const dataComponentMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...DataComponentLine_node
     }
   }

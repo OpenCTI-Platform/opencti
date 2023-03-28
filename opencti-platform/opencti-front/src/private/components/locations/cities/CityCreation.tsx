@@ -75,6 +75,7 @@ const cityMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...CityLine_node
     }
   }

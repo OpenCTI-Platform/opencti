@@ -85,6 +85,7 @@ const countryMutation = graphql`
     name
     description
     entity_type
+    parent_types
       ...CountryLine_node
     }
   }

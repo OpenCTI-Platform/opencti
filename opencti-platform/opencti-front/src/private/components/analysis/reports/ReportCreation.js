@@ -94,6 +94,7 @@ const reportMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...ReportLine_node
     }
   }

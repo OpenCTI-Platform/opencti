@@ -75,6 +75,7 @@ const attackPatternMutation = graphql`
       id
       name
       entity_type
+      parent_types
       description
       isSubAttackPattern
       x_mitre_id
