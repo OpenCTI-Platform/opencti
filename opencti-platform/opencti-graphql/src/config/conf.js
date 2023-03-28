@@ -402,21 +402,17 @@ export const getPlatformHttpProxies = () => {
   if (https) {
     const proxyCA = nconf.get('https_proxy_ca').map((caPath) => readFileSync(caPath));
     proxies['https:'] = {
-      AgentConstructor: ExtendedHttpsProxyAgent,
-      host: https,
-      options: {
-        rejectUnauthorized: nconf.get('https_proxy_reject_unauthorized') ?? false,
+      build: () => new ExtendedHttpsProxyAgent(https, {
+        rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),
         ...configureCA(proxyCA)
-      },
+      }),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
   const http = nconf.get('http_proxy');
   if (http) {
     proxies['http:'] = {
-      AgentConstructor: HttpProxyAgent,
-      host: http,
-      options: {},
+      build: () => new HttpProxyAgent(http),
       isExcluded: (hostname) => isUriProxyExcluded(hostname, exclusions),
     };
   }
@@ -432,7 +428,7 @@ export const getPlatformHttpProxyAgent = (uri) => {
       return undefined;
     }
     // If not generate the agent accordingly
-    return new targetProxy.AgentConstructor(targetProxy.host, targetProxy.options);
+    return targetProxy.build();
   }
   return undefined;
 };
