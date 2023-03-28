@@ -3249,6 +3249,7 @@ input OpinionAddInput {
   created: DateTime
   modified: DateTime
   update: Boolean
+  clientMutationId: String
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -3267,6 +3268,7 @@ input OpinionUserAddInput {
   created: DateTime
   modified: DateTime
   update: Boolean
+  clientMutationId: String
 }
 
 ################ Reports
