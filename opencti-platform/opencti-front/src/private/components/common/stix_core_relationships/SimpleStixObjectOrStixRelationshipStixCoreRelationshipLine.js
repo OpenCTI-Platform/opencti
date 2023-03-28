@@ -358,17 +358,17 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
             }
             ... on Report {
-              name
+                name
             }
             ... on Grouping {
-              name
+                name
             }
             ... on Note {
-              attribute_abstract
-              content
+                attribute_abstract
+                content
             }
             ... on Opinion {
-              opinion
+                opinion
             }
             ... on StixCyberObservable {
               id
@@ -589,17 +589,17 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
             }
             ... on Report {
-              name
+                name
             }
             ... on Grouping {
-              name
+                name
             }
             ... on Note {
-              attribute_abstract
-              content
+                attribute_abstract
+                content
             }
             ... on Opinion {
-              opinion
+                opinion
             }
             ... on StixCyberObservable {
               id

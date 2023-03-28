@@ -133,6 +133,53 @@ const entityStixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
           description
         }
+        ... on Event {
+            name
+            description
+        }
+        ... on Channel {
+            name
+            description
+        }
+        ... on Narrative {
+            name
+            description
+        }
+        ... on Language {
+            name
+        }
+        ... on DataComponent {
+            name
+        }
+        ... on DataSource {
+            name
+        }
+        ... on Case {
+            name
+        }
+        ... on StixCyberObservable {
+            observable_value
+        }
+        ... on MarkingDefinition {
+            definition_type
+            definition
+        }
+        ... on Creator {
+            name
+        }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
       }
     }
   }

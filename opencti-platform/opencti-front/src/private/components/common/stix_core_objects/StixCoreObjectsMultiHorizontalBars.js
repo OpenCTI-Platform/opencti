@@ -215,6 +215,19 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -265,6 +278,10 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on City {
           name
           description
+        }
+        ... on AdministrativeArea {
+            name
+            description
         }
         ... on Country {
           name
@@ -327,6 +344,19 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         }
         ... on Creator {
           name
+        }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
         }
       }
     }
@@ -440,10 +470,6 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 (n) => ({
                   id: n.entity.id,
                   entity_type: n.entity.entity_type,
-                  series: (subSelection.attribute === 'name') ? n.entity.stixCoreObjectsDistribution.map((e) => ({
-                    id: e.label,
-                    entity_type: e.entity.entity_type,
-                  })) : null,
                 }),
               ) : null;
             return (

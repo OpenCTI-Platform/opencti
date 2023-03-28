@@ -196,6 +196,19 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on Creator {
           name
         }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
       }
     }
   }

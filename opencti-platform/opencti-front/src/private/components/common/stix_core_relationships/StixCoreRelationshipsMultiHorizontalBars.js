@@ -246,6 +246,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -362,6 +375,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
         }
         ... on Creator {
           name
+        }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
         }
       }
     }
@@ -578,6 +604,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -691,6 +730,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
         ... on MarkingDefinition {
           definition_type
           definition
+        }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
         }
       }
     }
