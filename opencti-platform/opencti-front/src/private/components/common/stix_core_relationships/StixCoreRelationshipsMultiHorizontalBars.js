@@ -868,17 +868,6 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
             const categories = props.stixCoreRelationshipsDistribution.map(
               (n) => defaultValue(n.entity),
             );
-            const redirectionUtils = (finalField === 'internal_id')
-              ? props.stixCoreRelationshipsDistribution.map(
-                (n) => ({
-                  id: n.label,
-                  entity_type: n.entity.entity_type,
-                  series: (finalSubDistributionField === 'internal_id') ? n.entity[key].map((e) => ({
-                    id: e.label,
-                    entity_type: e.entity.entity_type,
-                  })) : null,
-                }),
-              ) : null;
             const entitiesMapping = {};
             for (const distrib of props.stixCoreRelationshipsDistribution) {
               for (const subDistrib of distrib.entity[key]) {
@@ -937,6 +926,31 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 data: Object.entries(categoriesValues).map((o) => o[1][k]),
               };
             });
+            let subSectionIdsOrder = {};
+            if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') { // find subbars orders for entity subbars redirection
+              for (const distrib of props.stixCoreRelationshipsDistribution) {
+                for (const subDistrib of distrib.entity[key]) {
+                  subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
+                }
+              }
+              subSectionIdsOrder = Object.entries(subSectionIdsOrder).sort(([, a], [, b]) => b - a).map((k) => k[0]);
+            }
+            const redirectionUtils = (finalField === 'internal_id')
+              ? props.stixCoreRelationshipsDistribution.map(
+                (n) => ({
+                  id: n.label,
+                  entity_type: n.entity.entity_type,
+                  series: (finalSubDistributionField === 'internal_id') // if the bar is divided in subbars representing entities
+                    ? subSectionIdsOrder.map((subSectionId) => {
+                      const [entity] = n.entity[key].filter((e) => e.label === subSectionId);
+                      return {
+                        id: subSectionId,
+                        entity_type: entity ? entity.entity.entity_type : null,
+                      };
+                    })
+                    : null,
+                }),
+              ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

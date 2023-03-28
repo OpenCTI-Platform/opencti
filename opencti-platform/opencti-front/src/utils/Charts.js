@@ -333,9 +333,9 @@ export const horizontalBarsChartOptions = (
           && (
             (config.dataPointIndex >= 0
               && (
-                (config.seriesIndex > 0
-                  && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex - 1])
-                || !(config.seriesIndex > 0)
+                (config.seriesIndex >= 0
+                  && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex])
+                || !(config.seriesIndex >= 0)
               )
             )
             || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label '
@@ -352,9 +352,9 @@ export const horizontalBarsChartOptions = (
         if (redirectionUtils) {
           if (config.dataPointIndex >= 0) { // click on a bar
             const { dataPointIndex } = config;
-            if (config.seriesIndex > 0 && redirectionUtils[dataPointIndex].series) { // for multi horizontal bars representing entities
-              const seriesIndex = config.seriesIndex - 1;
-              if (redirectionUtils[dataPointIndex].series[seriesIndex]) { // for series representing a single entity
+            if (config.seriesIndex >= 0) { // for multi horizontal bars representing entities
+              const { seriesIndex } = config;
+              if (redirectionUtils[dataPointIndex].series?.[seriesIndex]) { // for series representing a single entity
                 const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
                 const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
                 navigate(`${link}/${entityId}`);
