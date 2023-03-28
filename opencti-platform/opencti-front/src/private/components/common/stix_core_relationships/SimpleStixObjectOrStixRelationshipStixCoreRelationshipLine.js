@@ -357,6 +357,19 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on Case {
               name
             }
+            ... on Report {
+              name
+            }
+            ... on Grouping {
+              name
+            }
+            ... on Note {
+              attribute_abstract
+              content
+            }
+            ... on Opinion {
+              opinion
+            }
             ... on StixCyberObservable {
               id
               entity_type
@@ -574,6 +587,19 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
             ... on Case {
               name
+            }
+            ... on Report {
+              name
+            }
+            ... on Grouping {
+              name
+            }
+            ... on Note {
+              attribute_abstract
+              content
+            }
+            ... on Opinion {
+              opinion
             }
             ... on StixCyberObservable {
               id
