@@ -13619,7 +13619,6 @@ export type OpinionStixCoreRelationshipsDistributionArgs = {
 
 export type OpinionAddInput = {
   authors?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
@@ -13685,7 +13684,6 @@ export type OpinionEditMutationsRelationDeleteArgs = {
 
 export type OpinionUserAddInput = {
   authors?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   explanation?: InputMaybe<Scalars['String']>;
@@ -13697,7 +13695,6 @@ export type OpinionUserAddInput = {
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   opinion: Scalars['String'];
-  opinion_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   stix_id?: InputMaybe<Scalars['String']>;
   update?: InputMaybe<Scalars['Boolean']>;

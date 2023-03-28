@@ -2776,7 +2776,6 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  clientMutationId: String
   update: Boolean
 }
 
@@ -2784,7 +2783,6 @@ input OpinionUserAddInput {
   stix_id: String
   x_opencti_stix_ids: [String]
   opinion: String!
-  opinion_types: [String]
   explanation: String
   authors: [String]
   revoked: Boolean
@@ -2797,7 +2795,6 @@ input OpinionUserAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  clientMutationId: String
   update: Boolean
 }
 
