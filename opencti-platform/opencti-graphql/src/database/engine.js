@@ -1140,7 +1140,15 @@ const elQueryBodyBuilder = async (context, user, options) => {
               throw UnsupportedError('[SEARCH] Must have only one field', validKeys);
             }
             if (operator === 'eq') {
-              noValuesFiltering.push({ exists: { field: R.head(validKeys) } });
+              valuesFiltering.push({
+                bool: {
+                  must_not: {
+                    exists: {
+                      field: R.head(validKeys)
+                    }
+                  }
+                }
+              });
             } else if (operator === 'not_eq') {
               valuesFiltering.push({ exists: { field: R.head(validKeys) } });
             }
