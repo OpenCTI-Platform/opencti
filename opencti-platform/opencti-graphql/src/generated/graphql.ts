@@ -7956,6 +7956,7 @@ export enum IndicatorsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
+  ObjectContains = 'objectContains',
   Pattern = 'pattern',
   PatternType = 'pattern_type',
   PatternVersion = 'pattern_version',

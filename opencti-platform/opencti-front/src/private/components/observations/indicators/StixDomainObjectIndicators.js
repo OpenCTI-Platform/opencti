@@ -324,10 +324,14 @@ class StixDomainObjectIndicators extends Component {
                 'valid_until_end_date',
                 'x_opencti_score',
                 'createdBy',
-                'x_opencti_detection',
+                'objectContains',
                 'sightedBy',
+                'x_opencti_detection',
                 'basedOn',
                 'revoked',
+                'creator',
+                'confidence',
+                'indicator_types',
               ]}
             >
               <QueryRenderer
@@ -357,9 +361,7 @@ class StixDomainObjectIndicators extends Component {
               selectAll={selectAll}
               filters={finalFilters}
               search={searchTerm}
-              handleClearSelectedElements={this.handleClearSelectedElements.bind(
-                this,
-              )}
+              handleClearSelectedElements={this.handleClearSelectedElements.bind(this)}
               variant="large"
             />
           </div>

@@ -197,6 +197,7 @@ const Indicators = () => {
                 'valid_until_end_date',
                 'x_opencti_score',
                 'createdBy',
+                'objectContains',
                 'sightedBy',
                 'x_opencti_detection',
                 'basedOn',

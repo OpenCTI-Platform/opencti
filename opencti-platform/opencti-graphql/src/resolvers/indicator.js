@@ -17,7 +17,12 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
 } from '../domain/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixMetaRelationship';
 import { RELATION_BASED_ON, RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { distributionEntities, batchLoader } from '../database/middleware';
@@ -53,6 +58,7 @@ const indicatorResolvers = {
   },
   IndicatorsFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    objectContains: buildRefRelationKey(RELATION_OBJECT),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     basedOn: buildRefRelationKey(RELATION_BASED_ON),
