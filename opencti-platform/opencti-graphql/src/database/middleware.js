@@ -692,7 +692,7 @@ const inputResolveRefs = async (context, user, input, type) => {
       const inputMarkingIds = inputResolved[INPUT_MARKINGS].map((marking) => marking.internal_id);
       const userMarkingIds = user.allowed_marking.map((marking) => marking.internal_id);
       if (!inputMarkingIds.every((v) => userMarkingIds.includes(v))) {
-        throw ForbiddenAccess({ input });
+        throw MissingReferenceError({ message: 'Missing markings', input });
       }
     }
     return inputResolved;

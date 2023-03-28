@@ -101,7 +101,9 @@ export const markSessionForRefresh = async (id) => {
 
 export const findSessionsForUsers = async (userIds) => {
   const sessions = await findSessions();
-  return sessions.filter((s) => userIds.includes(s.user_id)).map((s) => s.sessions).flat();
+  // Looking for sessions inside direct user or impersonate
+  return sessions.filter((s) => userIds.includes(s.user_id) || userIds.includes(s.impersonate_user_id))
+    .map((s) => s.sessions).flat();
 };
 
 export const applicationSession = createSessionMiddleware();
