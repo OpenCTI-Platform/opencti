@@ -11,6 +11,9 @@ const buildTestConfig = (include: string[]) => defineConfig({
     testTimeout: 300000,
     teardownTimeout: 20000,
     setupFiles: ['./tests/utils/testSetup.js'],
+    deps: {
+      experimentalOptimizer: { enabled: true }
+    }
   },
 });
 
