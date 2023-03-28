@@ -469,7 +469,7 @@ const createSseMiddleware = () => {
     }
   };
   const convertParameterToDate = (param) => {
-    if (!param) {
+    if (!param || typeof param !== 'string') {
       return undefined;
     }
     if (param === '0' || param === '0-0') {
@@ -487,7 +487,7 @@ const createSseMiddleware = () => {
     return undefined;
   };
   const convertParameterToStreamId = (param) => {
-    if (!param) {
+    if (!param || typeof param !== 'string') {
       return undefined;
     }
     if (param === '0' || param === '0-0') {
