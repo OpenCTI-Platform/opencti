@@ -7350,8 +7350,8 @@ __metadata:
 
 "eventsource@patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch::locator=opencti-graphql%40workspace%3A.":
   version: 2.0.2
-  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=0bdd1d&locator=opencti-graphql%40workspace%3A."
-  checksum: ad75a7ef17110b18b5e4fff9a26bb55b47578ad70346f784b48c2d77aca4e46dc5d0b8a67eb07cf5148f906e848240b6824175aa9a587993320a30e5e6ba26bf
+  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=3e3291&locator=opencti-graphql%40workspace%3A."
+  checksum: c7ab06fe2364ff95220e3c3e82d74e6fda8e512c12cbb3ad3c1d068470731197cda759780dd7af6b7ffb155f1d4c383e6755a0a91729dc2b7b7579cfd74dc39c
   languageName: node
   linkType: hard
 

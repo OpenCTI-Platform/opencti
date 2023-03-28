@@ -395,7 +395,7 @@ export const isUriProxyExcluded = (hostname, exclusions) => {
   }
   return false;
 };
-const getPlatformHttpProxies = () => {
+export const getPlatformHttpProxies = () => {
   const proxies = {};
   const exclusions = (nconf.get('no_proxy') ?? '').split(',');
   const https = nconf.get('https_proxy');
