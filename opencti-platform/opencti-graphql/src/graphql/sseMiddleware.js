@@ -44,6 +44,7 @@ import { listAllRelations, listEntities } from '../database/middleware-loader';
 import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
+import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 
 const broadcastClients = {};
 const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
@@ -550,7 +551,9 @@ const createSseMiddleware = () => {
             const isCompatibleVersion = parseInt(eventVersion ?? '0', 10) >= 4;
             if (isCompatibleVersion) {
               // Check for inferences
+              const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
               const isInferredData = stix.extensions[STIX_EXT_OCTI].is_inferred;
+              const elementType = stix.extensions[STIX_EXT_OCTI].type;
               if (!isInferredData || (isInferredData && withInferences)) {
                 const isCurrentlyVisible = await isStixMatchFilters(context, user, stix, streamFilters);
                 if (type === EVENT_TYPE_UPDATE) {
@@ -568,10 +571,9 @@ const createSseMiddleware = () => {
                     // In case of relationship publication, from or to can be related to something that
                     // is part of the filtering. We can consider this as dependencies
                     await publishRelationDependencies(context, noDependencies, cache, channel, req, streamFilters, element);
-                  } else { // Update but not visible - entity type
-                    // Entity can be part of a container that is authorized by the filters
+                  } else if (!isStixDomainObjectContainer(elementType)) { // Update but not visible - entity type
+                    // If entity is not a container, it can be part of a container that is authorized by the filters
                     // If it's the case, the element must be published
-                    const elementInternalId = stix.extensions[STIX_EXT_OCTI].id;
                     const filters = [{ key: [buildRefRelationKey(RELATION_OBJECT)], values: [elementInternalId] }];
                     const args = { connectionFormat: false, filters };
                     const containers = await listEntities(context, user, [ENTITY_TYPE_CONTAINER], args);

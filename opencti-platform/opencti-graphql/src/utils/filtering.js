@@ -20,6 +20,7 @@ export const ASSIGNEE_FILTER = 'assigneeTo';
 export const OBJECT_CONTAINS_FILTER = 'objectContains';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
+export const NEGATION_FILTER_SUFFIX = '_not_eq';
 export const RESOLUTION_FILTERS = [
   MARKING_FILTER,
   CREATED_BY_FILTER,
@@ -52,7 +53,7 @@ export const GlobalFilters = {
 
 export const extractFilterIdsToResolve = (filters) => {
   const filterEntries = Object.entries(filters);
-  return filterEntries.filter(([key]) => RESOLUTION_FILTERS.includes(key))
+  return filterEntries.filter(([key]) => RESOLUTION_FILTERS.map((r) => [r, r + NEGATION_FILTER_SUFFIX]).flat().includes(key))
     .map(([, values]) => values.map((v) => v.id)).flat();
 };
 
