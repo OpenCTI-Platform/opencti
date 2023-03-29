@@ -1241,7 +1241,7 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
         data[INTERNAL_TO_FIELD].push({
-          __index: relSources[rel.toId]._index,
+          _index: relSources[rel.fromId]._index,
           internal_id: rel.fromId,
           entity_type: rel.fromType,
           name: rel.fromName,
