@@ -1218,11 +1218,13 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
   for (let entityIndex = 0; entityIndex < entityIds.length; entityIndex += 1) {
     const entityId = entityIds[entityIndex];
     // Internal From
-    const listFromCallback = (elements) => {
+    const listFromCallback = async (elements) => {
+      const findArgs = { toMap: true, baseData: true };
+      const relTargets = await internalFindByIds(context, user, elements.map((rel) => rel.toId), findArgs);
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
         data[INTERNAL_FROM_FIELD].push({
-          _index: inferIndexFromConceptType(rel.toType),
+          _index: relTargets[rel.toId]._index,
           internal_id: rel.toId,
           entity_type: rel.toType,
           name: rel.toName,
@@ -1233,11 +1235,13 @@ const loadMergeEntitiesDependencies = async (context, user, entityIds) => {
     const fromArgs = { baseData: true, fromId: entityId, callback: listFromCallback };
     await listAllRelations(context, user, ABSTRACT_STIX_RELATIONSHIP, fromArgs);
     // Internal to
-    const listToCallback = (elements) => {
+    const listToCallback = async (elements) => {
+      const findArgs = { toMap: true, baseData: true };
+      const relSources = await internalFindByIds(context, user, elements.map((rel) => rel.fromId), findArgs);
       for (let index = 0; index < elements.length; index += 1) {
         const rel = elements[index];
         data[INTERNAL_TO_FIELD].push({
-          _index: inferIndexFromConceptType(rel.fromType),
+          __index: relSources[rel.toId]._index,
           internal_id: rel.fromId,
           entity_type: rel.fromType,
           name: rel.fromName,
