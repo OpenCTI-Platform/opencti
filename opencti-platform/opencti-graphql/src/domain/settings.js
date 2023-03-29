@@ -1,4 +1,4 @@
-import { getHeapStatistics } from 'v8';
+import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, updateAttribute } from '../database/middleware';
@@ -85,7 +85,7 @@ export const settingsEditContext = (context, user, settingsId, input) => {
 
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  const data = hasSetAccessCapability ? input : input.filter((i) => i.key !== 'platform_organization' || 'otp_mandatory');
+  const data = hasSetAccessCapability ? input : input.filter((i) => i.key !== 'platform_organization' && i.key !== 'otp_mandatory');
   const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };
