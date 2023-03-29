@@ -1,18 +1,17 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
 import { Edit } from '@mui/icons-material';
-import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
+import { graphql, useMutation } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import OpinionEditionContainer from './OpinionEditionContainer';
-import { commitMutation, QueryRenderer } from '../../../../relay/environment';
+import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionOverviewFocus } from './OpinionEditionOverview';
-import Loader from '../../../../components/Loader';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import { CollaborativeSecurity } from '../../../../utils/Security';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   editButton: {
     position: 'fixed',
     bottom: 30,
@@ -29,87 +28,78 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
+}));
 
 export const opinionEditionQuery = graphql`
-  query OpinionEditionContainerQuery($id: String!) {
-    opinion(id: $id) {
-      ...OpinionEditionContainer_opinion
+    query OpinionEditionContainerQuery($id: String!) {
+        opinion(id: $id) {
+          createdBy {
+              id
+          }
+          ...OpinionEditionContainer_opinion
+        }
     }
-  }
 `;
 
-class OpinionEdition extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { open: false };
-  }
+const OpinionEdition = ({ opinionId }) => {
+  const classes = useStyles();
+  const [open, setOpen] = useState(false);
+  const handleOpen = () => setOpen(true);
 
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    commitMutation({
-      mutation: opinionEditionOverviewFocus,
+  const [commit] = useMutation(opinionEditionOverviewFocus);
+  const handleClose = () => {
+    commit({
       variables: {
-        id: this.props.opinionId,
+        id: opinionId,
         input: { focusOn: '' },
       },
     });
-    this.setState({ open: false });
-  }
+    setOpen(false);
+  };
 
-  render() {
-    const { classes, opinionId } = this.props;
-    return (
-      <div>
-        <Fab
-          onClick={this.handleOpen.bind(this)}
-          color="secondary"
-          aria-label="Edit"
-          className={classes.editButton}
-        >
-          <Edit />
-        </Fab>
-        <Drawer
-          open={this.state.open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
-        >
-          <QueryRenderer
-            query={opinionEditionQuery}
-            variables={{ id: opinionId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <OpinionEditionContainer
-                    opinion={props.opinion}
-                    handleClose={this.handleClose.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
-      </div>
-    );
-  }
-}
-
-OpinionEdition.propTypes = {
-  opinionId: PropTypes.string,
-  me: PropTypes.object,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
+  return (
+    <div>
+      <QueryRenderer
+        query={opinionEditionQuery}
+        variables={{ id: opinionId }}
+        render={({ props }) => {
+          if (props) {
+            return (
+              <CollaborativeSecurity
+                data={props.opinion}
+                needs={[KNOWLEDGE_KNUPDATE]}
+              >
+                <>
+                  <Fab
+                    onClick={handleOpen}
+                    color="secondary"
+                    aria-label="Edit"
+                    className={classes.editButton}
+                  >
+                    <Edit/>
+                  </Fab>
+                  <Drawer
+                    open={open}
+                    anchor="right"
+                    elevation={1}
+                    sx={{ zIndex: 1202 }}
+                    classes={{ paper: classes.drawerPaper }}
+                    onClose={handleClose}
+                  >
+                    <OpinionEditionContainer
+                      opinion={props.opinion}
+                      handleClose={handleClose}
+                    />
+                  </Drawer>
+                </>
+              </CollaborativeSecurity>
+            );
+          }
+          return <Loader variant={LoaderVariant.inElement}/>;
+        }}
+      />
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles, { withTheme: true }),
-)(OpinionEdition);
+export default OpinionEdition;

@@ -16,7 +16,7 @@ import {
   ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
 } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { ContainerStixObjectsOrStixRelationships_container$data } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
-import { UserContext } from '../../../../utils/hooks/useAuth';
+import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import useGranted, {
   KNOWLEDGE_KNPARTICIPATE,
   KNOWLEDGE_KNUPDATE,
@@ -57,8 +57,8 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
   if (isSupportParticipation && isContainerOwner) {
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
-  const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     entity_type: {
       label: 'Type',

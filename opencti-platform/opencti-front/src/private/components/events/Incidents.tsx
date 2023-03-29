@@ -1,14 +1,12 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import ListCards from '../../../components/list_cards/ListCards';
 import ListLines from '../../../components/list_lines/ListLines';
-import IncidentsCards, {
-  incidentsCardsAndLinesPaginationQuery,
-} from './incidents/IncidentsCards';
+import IncidentsCards, { incidentsCardsAndLinesPaginationQuery } from './incidents/IncidentsCards';
 import IncidentsLines from './incidents/IncidentsLines';
 import IncidentCreation from './incidents/IncidentCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { Filters } from '../../../components/list_lines';
@@ -25,7 +23,7 @@ import ExportContextProvider from '../../../utils/ExportContextProvider';
 
 export const LOCAL_STORAGE_KEY = 'view-incidents';
 const Incidents: FunctionComponent = () => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsAndLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -77,7 +75,7 @@ const Incidents: FunctionComponent = () => {
     paginationOptions,
   );
   // eslint-disable-next-line class-methods-use-this
-  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const buildColumns = {
     name: {
       label: 'Name',

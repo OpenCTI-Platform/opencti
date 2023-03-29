@@ -1,9 +1,7 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import ListLines from '../../../components/list_lines/ListLines';
-import ExternalReferencesLines, {
-  externalReferencesLinesQuery,
-} from './external_references/ExternalReferencesLines';
+import ExternalReferencesLines, { externalReferencesLinesQuery } from './external_references/ExternalReferencesLines';
 import ExternalReferenceCreation from './external_references/ExternalReferenceCreation';
 import Security from '../../../utils/Security';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -12,7 +10,7 @@ import {
   ExternalReferencesLinesPaginationQuery$variables,
 } from './external_references/__generated__/ExternalReferencesLinesPaginationQuery.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { ExternalReferenceLine_node$data } from './external_references/__generated__/ExternalReferenceLine_node.graphql';
 import ToolBar from '../data/ToolBar';
@@ -28,7 +26,7 @@ interface ExternalReferencesProps {
 }
 
 const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<ExternalReferencesLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
@@ -40,7 +38,7 @@ const ExternalReferences: FunctionComponent<ExternalReferencesProps> = () => {
     },
   );
   const { sortBy, orderAsc, searchTerm, filters, numberOfElements } = viewStorage;
-  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const dataColumns = {
     source_name: {
       label: 'Source name',

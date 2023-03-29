@@ -1,8 +1,6 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
-import VulnerabilitiesLines, {
-  vulnerabilitiesLinesQuery,
-} from './vulnerabilities/VulnerabilitiesLines';
+import VulnerabilitiesLines, { vulnerabilitiesLinesQuery } from './vulnerabilities/VulnerabilitiesLines';
 import VulnerabilityCreation from './vulnerabilities/VulnerabilityCreation';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
@@ -14,11 +12,11 @@ import {
   VulnerabilitiesLinesPaginationQuery$variables,
 } from './vulnerabilities/__generated__/VulnerabilitiesLinesPaginationQuery.graphql';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 
 const Vulnerabilities = () => {
-  const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<VulnerabilitiesLinesPaginationQuery$variables>(
     'view-vulnerabilities',
     {

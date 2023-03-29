@@ -10744,6 +10744,7 @@ export type Mutation = {
   userAdd?: Maybe<User>;
   userEdit?: Maybe<UserEditMutations>;
   userNoteAdd?: Maybe<Note>;
+  userOpinionAdd?: Maybe<Opinion>;
   userSessionsKill?: Maybe<Array<Maybe<Scalars['ID']>>>;
   vocabularyAdd?: Maybe<Vocabulary>;
   vocabularyDelete?: Maybe<Scalars['ID']>;
@@ -11965,6 +11966,11 @@ export type MutationUserEditArgs = {
 
 export type MutationUserNoteAddArgs = {
   input: NoteUserAddInput;
+};
+
+
+export type MutationUserOpinionAddArgs = {
+  input: OpinionUserAddInput;
 };
 
 
@@ -13675,6 +13681,26 @@ export type OpinionEditMutationsRelationAddArgs = {
 export type OpinionEditMutationsRelationDeleteArgs = {
   relationship_type: Scalars['String'];
   toId: Scalars['StixRef'];
+};
+
+export type OpinionUserAddInput = {
+  authors?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  clientMutationId?: InputMaybe<Scalars['String']>;
+  confidence?: InputMaybe<Scalars['Int']>;
+  created?: InputMaybe<Scalars['DateTime']>;
+  explanation?: InputMaybe<Scalars['String']>;
+  externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  lang?: InputMaybe<Scalars['String']>;
+  modified?: InputMaybe<Scalars['DateTime']>;
+  objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  opinion: Scalars['String'];
+  revoked?: InputMaybe<Scalars['Boolean']>;
+  stix_id?: InputMaybe<Scalars['String']>;
+  update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 export enum OpinionsFilter {
@@ -18859,7 +18885,6 @@ export enum StixCoreObjectsFilter {
   Abstract = 'abstract',
   Aliases = 'aliases',
   Confidence = 'confidence',
-  ContainedBy = 'containedBy',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -19616,7 +19641,6 @@ export enum StixCyberObservableRelationshipsOrdering {
 
 export enum StixCyberObservablesFilter {
   Confidence = 'confidence',
-  ContainedBy = 'containedBy',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -19631,7 +19655,7 @@ export enum StixCyberObservablesFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  ObjectContained = 'objectContained',
+  ObjectContains = 'objectContains',
   RelatedTo = 'relatedTo',
   SightedBy = 'sightedBy',
   Subject = 'subject',
@@ -19935,7 +19959,6 @@ export enum StixDomainObjectsFilter {
   AssigneeTo = 'assigneeTo',
   CaseType = 'case_type',
   Confidence = 'confidence',
-  ContainedBy = 'containedBy',
   Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
@@ -20377,7 +20400,6 @@ export type StixObjectOrStixRelationshipRefEdge = {
 
 export enum StixObjectOrStixRelationshipsFilter {
   Confidence = 'confidence',
-  ContainedBy = 'containedBy',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -20391,7 +20413,7 @@ export enum StixObjectOrStixRelationshipsFilter {
   MarkedBy = 'markedBy',
   Modified = 'modified',
   Name = 'name',
-  ObjectContained = 'objectContained',
+  ObjectContains = 'objectContains',
   RelatedTo = 'relatedTo',
   RelationshipType = 'relationship_type',
   SightedBy = 'sightedBy',
@@ -24788,6 +24810,7 @@ export type ResolversTypes = ResolversObject<{
   OpinionConnection: ResolverTypeWrapper<Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['OpinionEdge']>>> }>;
   OpinionEdge: ResolverTypeWrapper<Omit<OpinionEdge, 'node'> & { node: ResolversTypes['Opinion'] }>;
   OpinionEditMutations: ResolverTypeWrapper<Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Opinion']>, contextPatch?: Maybe<ResolversTypes['Opinion']>, fieldPatch?: Maybe<ResolversTypes['Opinion']>, relationDelete?: Maybe<ResolversTypes['Opinion']> }>;
+  OpinionUserAddInput: OpinionUserAddInput;
   OpinionsFilter: OpinionsFilter;
   OpinionsFiltering: OpinionsFiltering;
   OpinionsOrdering: OpinionsOrdering;
@@ -25422,6 +25445,7 @@ export type ResolversParentTypes = ResolversObject<{
   OpinionConnection: Omit<OpinionConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['OpinionEdge']>>> };
   OpinionEdge: Omit<OpinionEdge, 'node'> & { node: ResolversParentTypes['Opinion'] };
   OpinionEditMutations: Omit<OpinionEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Opinion']>, contextPatch?: Maybe<ResolversParentTypes['Opinion']>, fieldPatch?: Maybe<ResolversParentTypes['Opinion']>, relationDelete?: Maybe<ResolversParentTypes['Opinion']> };
+  OpinionUserAddInput: OpinionUserAddInput;
   OpinionsFiltering: OpinionsFiltering;
   Organization: Omit<Organization, 'cases' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'sectors' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversParentTypes['CaseConnection']>, createdBy?: Maybe<ResolversParentTypes['Identity']>, exportFiles?: Maybe<ResolversParentTypes['FileConnection']>, externalReferences?: Maybe<ResolversParentTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversParentTypes['GroupingConnection']>, importFiles?: Maybe<ResolversParentTypes['FileConnection']>, notes?: Maybe<ResolversParentTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversParentTypes['OrganizationConnection']>, observedData?: Maybe<ResolversParentTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversParentTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversParentTypes['FileConnection']>, reports?: Maybe<ResolversParentTypes['ReportConnection']>, sectors?: Maybe<ResolversParentTypes['SectorConnection']>, stixCoreRelationships?: Maybe<ResolversParentTypes['StixCoreRelationshipConnection']> };
   OrganizationAddInput: OrganizationAddInput;
@@ -28924,6 +28948,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUserAddArgs>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
+  userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
   userSessionsKill?: Resolver<Maybe<Array<Maybe<ResolversTypes['ID']>>>, ParentType, ContextType, RequireFields<MutationUserSessionsKillArgs, 'id'>>;
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;

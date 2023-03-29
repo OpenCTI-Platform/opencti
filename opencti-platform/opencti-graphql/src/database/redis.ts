@@ -173,9 +173,9 @@ const setInList = async (listId: string, keyId: string, expirationTime: number) 
   await redisTx(getClientBase(), async (tx) => {
     // add/update the instance with its creation date in the ordered list of instances
     const time = new Date().getTime();
-    tx.zadd(listId, time, keyId);
+    await tx.zadd(listId, time, keyId);
     // remove the too old keys from the list of instances
-    tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
+    await tx.zremrangebyscore(listId, '-inf', time - (expirationTime * 1000));
   });
 };
 const delKeyWithList = async (keyId: string, listIds: string[]) => {
@@ -306,9 +306,9 @@ export const redisAddDeletions = async (internalIds: Array<string>) => {
   await redisTx(getClientLock(), async (tx) => {
     const time = new Date().getTime();
     // remove the too old keys from the list of instances
-    tx.zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
+    await tx.zremrangebyscore('platform-deletions', '-inf', time - (120 * 1000));
     // add/update the instance with its creation date in the ordered list of instances
-    tx.zadd('platform-deletions', time, ...ids);
+    await tx.zadd('platform-deletions', time, ...ids);
   });
 };
 export const redisFetchLatestDeletions = async () => {

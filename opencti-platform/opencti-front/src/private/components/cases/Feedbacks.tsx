@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
@@ -9,11 +9,9 @@ import {
   FeedbacksLinesPaginationQuery,
   FeedbacksLinesPaginationQuery$variables,
 } from './feedbacks/__generated__/FeedbacksLinesPaginationQuery.graphql';
-import FeedbacksLines, {
-  feedbacksLinesQuery,
-} from './feedbacks/FeedbacksLines';
+import FeedbacksLines, { feedbacksLinesQuery } from './feedbacks/FeedbacksLines';
 import { FeedbackLineDummy } from './feedbacks/FeedbackLine';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { FeedbackLine_node$data } from './feedbacks/__generated__/FeedbackLine_node.graphql';
 import ToolBar from '../data/ToolBar';
@@ -33,7 +31,7 @@ export const LOCAL_STORAGE_KEY_CASE = 'view-cases-feedbacks';
 
 const Feedbacks: FunctionComponent<CasesProps> = () => {
   const classes = useStyles();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<FeedbacksLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_CASE,
     {
@@ -70,7 +68,7 @@ const Feedbacks: FunctionComponent<CasesProps> = () => {
       openExports,
       numberOfElements,
     } = viewStorage;
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Name',

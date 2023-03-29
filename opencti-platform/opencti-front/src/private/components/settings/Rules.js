@@ -34,11 +34,11 @@ const Rules = () => {
   );
   return (
     <UserContext.Consumer>
-      {({ helper }) => {
-        if (!helper.isRuleEngineEnable()) {
+      {({ platformModuleHelpers }) => {
+        if (!platformModuleHelpers.isRuleEngineEnable()) {
           return (
             <Alert severity="info">
-              {t(helper.generateDisableMessage(RULE_ENGINE))}
+              {t(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
             </Alert>
           );
         }

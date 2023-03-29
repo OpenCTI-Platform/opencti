@@ -1,8 +1,5 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
-import { withRouter } from 'react-router-dom';
-import withStyles from '@mui/styles/withStyles';
+import React, { useState } from 'react';
+import { useHistory } from 'react-router-dom';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Button from '@mui/material/Button';
@@ -14,16 +11,17 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
-import { QueryRenderer, commitMutation } from '../../../../relay/environment';
+import { graphql, useMutation } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
+import { useFormatter } from '../../../../components/i18n';
+import { QueryRenderer } from '../../../../relay/environment';
 import { opinionEditionQuery } from './OpinionEdition';
+import { CollaborativeSecurity } from '../../../../utils/Security';
+import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import OpinionEditionContainer from './OpinionEditionContainer';
 import Loader from '../../../../components/Loader';
-import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     margin: 0,
   },
@@ -38,7 +36,7 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
+}));
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -46,157 +44,124 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const OpinionPopoverDeletionMutation = graphql`
-  mutation OpinionPopoverDeletionMutation($id: ID!) {
-    opinionEdit(id: $id) {
-      delete
+    mutation OpinionPopoverDeletionMutation($id: ID!) {
+        opinionEdit(id: $id) {
+            delete
+        }
     }
-  }
 `;
 
-class OpinionPopover extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      anchorEl: null,
-      displayExport: false,
-      displayDelete: false,
-      displayEdit: false,
-      deleting: false,
-    };
-  }
+const OpinionPopover = (data) => {
+  const history = useHistory();
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [displayDelete, setDisplayDelete] = useState(false);
+  const [displayEdit, setDisplayEdit] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const handleOpen = (event) => setAnchorEl(event.currentTarget);
+  const handleClose = () => setAnchorEl(null);
+  const handleOpenDelete = () => {
+    setDisplayDelete(true);
+    handleClose();
+  };
+  const handleCloseDelete = () => setDisplayDelete(false);
 
-  handleOpen(event) {
-    this.setState({ anchorEl: event.currentTarget });
-  }
+  const [commit] = useMutation(OpinionPopoverDeletionMutation);
 
-  handleClose() {
-    this.setState({ anchorEl: null });
-  }
-
-  handleOpenDelete() {
-    this.setState({ displayDelete: true });
-    this.handleClose();
-  }
-
-  handleCloseDelete() {
-    this.setState({ displayDelete: false });
-  }
-
-  submitDelete() {
-    this.setState({ deleting: true });
-    commitMutation({
-      mutation: OpinionPopoverDeletionMutation,
-      variables: {
-        id: this.props.id,
-      },
+  const submitDelete = () => {
+    setDeleting(true);
+    commit({
+      variables: { id: data.id },
       onCompleted: () => {
-        this.setState({ deleting: false });
-        this.handleClose();
-        this.props.history.push('/dashboard/analysis/opinions');
+        setDeleting(false);
+        handleClose();
+        history.push('/dashboard/analysis/opinions');
       },
     });
-  }
-
-  handleOpenEdit() {
-    this.setState({ displayEdit: true });
-    this.handleClose();
-  }
-
-  handleCloseEdit() {
-    this.setState({ displayEdit: false });
-  }
-
-  render() {
-    const { classes, t, id } = this.props;
-    return (
-      <div className={classes.container}>
-        <IconButton
-          onClick={this.handleOpen.bind(this)}
-          aria-haspopup="true"
-          style={{ marginTop: 3 }}
-          size="large"
-        >
-          <MoreVert />
-        </IconButton>
-        <Menu
-          anchorEl={this.state.anchorEl}
-          open={Boolean(this.state.anchorEl)}
-          onClose={this.handleClose.bind(this)}
-        >
-          <MenuItem onClick={this.handleOpenEdit.bind(this)}>
-            {t('Update')}
+  };
+  const handleOpenEdit = () => {
+    setDisplayEdit(true);
+    handleClose();
+  };
+  const handleCloseEdit = () => setDisplayEdit(false);
+  return (
+    <div className={classes.container}>
+      <IconButton
+        onClick={handleOpen}
+        aria-haspopup="true"
+        style={{ marginTop: 3 }}
+        size="large"
+      >
+        <MoreVert/>
+      </IconButton>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={handleOpenEdit}>
+          {t('Update')}
+        </MenuItem>
+        <CollaborativeSecurity data={data.opinion} needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
+          <MenuItem onClick={handleOpenDelete}>
+            {t('Delete')}
           </MenuItem>
-          <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-            <MenuItem onClick={this.handleOpenDelete.bind(this)}>
-              {t('Delete')}
-            </MenuItem>
-          </Security>
-        </Menu>
-        <Dialog
-          open={this.state.displayDelete}
-          PaperProps={{ elevation: 1 }}
-          TransitionComponent={Transition}
-          onClose={this.handleCloseDelete.bind(this)}
-        >
-          <DialogContent>
-            <DialogContentText>
-              {t('Do you want to delete this opinions?')}
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions>
-            <Button
-              onClick={this.handleCloseDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              color="secondary"
-              onClick={this.submitDelete.bind(this)}
-              disabled={this.state.deleting}
-            >
-              {t('Delete')}
-            </Button>
-          </DialogActions>
-        </Dialog>
-        <Drawer
-          open={this.state.displayEdit}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleCloseEdit.bind(this)}
-        >
-          <QueryRenderer
-            query={opinionEditionQuery}
-            variables={{ id }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <OpinionEditionContainer
-                    opinion={props.opinion}
-                    handleClose={this.handleCloseEdit.bind(this)}
-                  />
-                );
-              }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        </Drawer>
-      </div>
-    );
-  }
-}
-
-OpinionPopover.propTypes = {
-  id: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  history: PropTypes.object,
+        </CollaborativeSecurity>
+      </Menu>
+      <Dialog
+        open={displayDelete}
+        PaperProps={{ elevation: 1 }}
+        TransitionComponent={Transition}
+        onClose={handleCloseDelete}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to delete this opinions?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            onClick={handleCloseDelete}
+            disabled={deleting}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            color="secondary"
+            onClick={submitDelete}
+            disabled={deleting}
+          >
+            {t('Delete')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Drawer
+        open={displayEdit}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleCloseEdit}
+      >
+        <QueryRenderer
+          query={opinionEditionQuery}
+          variables={{ id: data.id }}
+          render={({ props }) => {
+            if (props) {
+              return (
+                <OpinionEditionContainer
+                  opinion={props.opinion}
+                  handleClose={handleCloseEdit}
+                />
+              );
+            }
+            return <Loader variant="inElement"/>;
+          }}
+        />
+      </Drawer>
+    </div>
+  );
 };
 
-export default compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(OpinionPopover);
+export default OpinionPopover;

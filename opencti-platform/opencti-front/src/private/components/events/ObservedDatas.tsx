@@ -205,10 +205,10 @@ const ObservedDatas: FunctionComponent<ObservedDatasProps> = ({
 
   return (
     <UserContext.Consumer>
-      {({ helper }) => (
+      {({ platformModuleHelpers }) => (
         <ExportContextProvider>
           <div>
-            {renderLines(helper)}
+            {renderLines(platformModuleHelpers)}
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <ObservedDataCreation paginationOptions={paginationOptions} />
             </Security>

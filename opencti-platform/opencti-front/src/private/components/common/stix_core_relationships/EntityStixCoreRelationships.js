@@ -219,12 +219,12 @@ class EntityStixCoreRelationships extends Component {
     });
   }
 
-  buildColumnRelationships(helper) {
+  buildColumnRelationships(platformModuleHelpers) {
     const { stixCoreObjectTypes } = this.props;
     const isObservables = stixCoreObjectTypes?.includes(
       'Stix-Cyber-Observable',
     );
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     return {
       relationship_type: {
         label: 'Relationship type',
@@ -312,12 +312,12 @@ class EntityStixCoreRelationships extends Component {
     const finalView = currentView || view;
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={this.buildColumnRelationships(helper)}
+              dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
               handleSort={this.handleSort.bind(this)}
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
@@ -376,7 +376,7 @@ class EntityStixCoreRelationships extends Component {
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
                       entityId={entityId}
-                      dataColumns={this.buildColumnRelationships(helper)}
+                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -389,7 +389,7 @@ class EntityStixCoreRelationships extends Component {
                       data={props}
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
-                      dataColumns={this.buildColumnRelationships(helper)}
+                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -402,7 +402,7 @@ class EntityStixCoreRelationships extends Component {
                       data={props}
                       paginationOptions={paginationOptions}
                       entityLink={entityLink}
-                      dataColumns={this.buildColumnRelationships(helper)}
+                      dataColumns={this.buildColumnRelationships(platformModuleHelpers)}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onToggleEntity={this.handleToggleSelectEntity.bind(this)}
@@ -432,13 +432,13 @@ class EntityStixCoreRelationships extends Component {
     );
   }
 
-  buildColumnsEntities(helper) {
+  buildColumnsEntities(platformModuleHelpers) {
     const { stixCoreObjectTypes } = this.props;
     const isObservables = stixCoreObjectTypes?.includes(
       'Stix-Cyber-Observable',
     );
     const isStixCoreObjects = !stixCoreObjectTypes || stixCoreObjectTypes.includes('Stix-Core-Object');
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',
@@ -527,12 +527,12 @@ class EntityStixCoreRelationships extends Component {
     }
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <div>
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={this.buildColumnsEntities(helper)}
+              dataColumns={this.buildColumnsEntities(platformModuleHelpers)}
               handleSort={this.handleSort.bind(this)}
               handleSearch={this.handleSearch.bind(this)}
               handleAddFilter={this.handleAddFilter.bind(this)}
@@ -590,7 +590,7 @@ class EntityStixCoreRelationships extends Component {
               <EntityStixCoreRelationshipsEntities
                 paginationOptions={paginationOptions}
                 entityLink={entityLink}
-                dataColumns={this.buildColumnsEntities(helper)}
+                dataColumns={this.buildColumnsEntities(platformModuleHelpers)}
                 onToggleEntity={this.handleToggleSelectEntity.bind(this)}
                 setNumberOfElements={this.setNumberOfElements.bind(this)}
                 isRelationReversed={isRelationReversed}

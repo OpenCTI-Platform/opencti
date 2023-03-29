@@ -1814,7 +1814,6 @@ enum StixCoreObjectsFilter {
   killChainPhase
   hasExternalReference
   objectContains
-  containedBy
   indicates
   confidence
   valid_from
@@ -1952,7 +1951,6 @@ enum StixDomainObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
-  containedBy
   indicates
   confidence
   valid_from
@@ -2776,8 +2774,28 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  clientMutationId: String
   update: Boolean
+  clientMutationId: String
+}
+
+input OpinionUserAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  opinion: String!
+  explanation: String
+  authors: [String]
+  revoked: Boolean
+  lang: String
+  confidence: Int
+  objectMarking: [String]
+  objectLabel: [String]
+  objectOrganization: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  update: Boolean
+  clientMutationId: String
 }
 
 enum ReportsOrdering {
@@ -5312,8 +5330,7 @@ enum StixCyberObservablesFilter {
   markedBy
   labelledBy
   relatedTo
-  objectContained
-  containedBy
+  objectContains
   hasExternalReference
   sightedBy
   value
@@ -7061,8 +7078,7 @@ enum StixObjectOrStixRelationshipsFilter {
   created
   modified
   relatedTo
-  objectContained
-  containedBy
+  objectContains
   hasExternalReference
   sightedBy
   value
@@ -8333,6 +8349,7 @@ type Mutation {
   observedDataAdd(input: ObservedDataAddInput): ObservedData
   observedDataEdit(id: ID!): ObservedDataEditMutations
   opinionAdd(input: OpinionAddInput): Opinion
+  userOpinionAdd(input: OpinionUserAddInput!): Opinion
   opinionEdit(id: ID!): OpinionEditMutations
   reportAdd(input: ReportAddInput): Report
   reportEdit(id: ID!): ReportEditMutations

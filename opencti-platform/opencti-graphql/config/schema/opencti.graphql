@@ -3248,8 +3248,27 @@ input OpinionAddInput {
   objects: [String]
   created: DateTime
   modified: DateTime
-  clientMutationId: String
   update: Boolean
+  clientMutationId: String
+}
+input OpinionUserAddInput {
+  stix_id: String
+  x_opencti_stix_ids: [String]
+  opinion: String!
+  explanation: String
+  authors: [String]
+  revoked: Boolean
+  lang: String
+  confidence: Int
+  objectMarking: [String]
+  objectLabel: [String]
+  objectOrganization: [String]
+  externalReferences: [String]
+  objects: [String]
+  created: DateTime
+  modified: DateTime
+  update: Boolean
+  clientMutationId: String
 }
 
 ################ Reports
@@ -13365,12 +13384,12 @@ type ObservedDataEditMutations {
   relationDelete(toId: StixRef!, relationship_type: String!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
 }
 type OpinionEditMutations {
-  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE, KNOWLEDGE_KNPARTICIPATE])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  contextPatch(input: EditContext): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  contextClean: Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  relationAdd(input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
+  relationDelete(toId: StixRef!, relationship_type: String!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
 }
 type ReportEditMutations {
   delete(purgeElements: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
@@ -13750,6 +13769,7 @@ type Mutation {
   observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations
   opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  userOpinionAdd(input: OpinionUserAddInput!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   opinionEdit(id: ID!): OpinionEditMutations
   reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   reportEdit(id: ID!): ReportEditMutations

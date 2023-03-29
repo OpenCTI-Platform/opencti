@@ -1,11 +1,11 @@
-import React, { FunctionComponent, useContext } from 'react';
+import React, { FunctionComponent } from 'react';
 import ListLines from '../../../components/list_lines/ListLines';
 import ReportsLines, { reportsLinesQuery } from './reports/ReportsLines';
 import ReportCreation from './reports/ReportCreation';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import {
   ReportsLinesPaginationQuery,
@@ -31,7 +31,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -99,7 +99,7 @@ const Reports: FunctionComponent<ReportsProps> = ({
       ...renderFilters,
       entity_type: [{ id: 'Report', value: 'Report' }],
     };
-    const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+    const isRuntimeSort = isRuntimeFieldEnable() ?? false;
     const dataColumns = {
       name: {
         label: 'Title',

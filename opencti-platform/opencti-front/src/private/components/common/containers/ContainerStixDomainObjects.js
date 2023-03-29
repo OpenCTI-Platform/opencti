@@ -174,8 +174,8 @@ class ContainerStixDomainObjectsComponent extends Component {
   }
 
   // eslint-disable-next-line class-methods-use-this
-  buildColumns(helper) {
-    const isRuntimeSort = helper.isRuntimeFieldEnable();
+  buildColumns(platformModuleHelpers) {
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
     return {
       entity_type: {
         label: 'Type',
@@ -259,13 +259,13 @@ class ContainerStixDomainObjectsComponent extends Component {
     };
     return (
       <UserContext.Consumer>
-        {({ helper }) => (
+        {({ platformModuleHelpers }) => (
           <ExportContextProvider>
             <div className={classes.container}>
               <ListLines
                 sortBy={sortBy}
                 orderAsc={orderAsc}
-                dataColumns={this.buildColumns(helper)}
+                dataColumns={this.buildColumns(platformModuleHelpers)}
                 handleSort={this.handleSort.bind(this)}
                 handleSearch={this.handleSearch.bind(this)}
                 handleAddFilter={this.handleAddFilter.bind(this)}
@@ -301,7 +301,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                     <ContainerStixDomainObjectsLines
                       container={props ? props.container : null}
                       paginationOptions={paginationOptions}
-                      dataColumns={this.buildColumns(helper)}
+                      dataColumns={this.buildColumns(platformModuleHelpers)}
                       initialLoading={props === null}
                       setNumberOfElements={this.setNumberOfElements.bind(this)}
                       onTypesChange={this.handleToggle.bind(this)}

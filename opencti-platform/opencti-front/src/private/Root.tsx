@@ -51,9 +51,9 @@ const Root = () => {
   const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
   const { me, settings, entitySettings } = data;
   // TODO : Use the hook useHelper when all project is pure function //
-  const helper = platformModuleHelper(settings);
+  const platformModuleHelpers = platformModuleHelper(settings);
   return (
-    <UserContext.Provider value={{ me, settings, entitySettings, helper }}>
+    <UserContext.Provider value={{ me, settings, entitySettings, platformModuleHelpers }}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>

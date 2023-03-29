@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React from 'react';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import Alert from '@mui/material/Alert';
@@ -6,7 +6,7 @@ import { useFormatter } from '../../../components/i18n';
 import { QueryRenderer } from '../../../relay/environment';
 import TasksList, { tasksListQuery } from './tasks/TasksList';
 import Loader from '../../../components/Loader';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import useAuth from '../../../utils/hooks/useAuth';
 import { TASK_MANAGER } from '../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles(() => ({
@@ -18,7 +18,7 @@ const useStyles = makeStyles(() => ({
 const Tasks = () => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const { helper } = useContext(UserContext);
+  const { platformModuleHelpers } = useAuth();
   const optionsInProgress = {
     count: 50,
     orderBy: 'created_at',
@@ -31,10 +31,10 @@ const Tasks = () => {
     orderMode: 'desc',
     filters: [{ key: 'completed', values: ['true'] }],
   };
-  if (!helper.isTasksManagerEnable()) {
+  if (!platformModuleHelpers.isTasksManagerEnable()) {
     return (
       <Alert severity="info">
-        {t(helper.generateDisableMessage(TASK_MANAGER))}
+        {t(platformModuleHelpers.generateDisableMessage(TASK_MANAGER))}
       </Alert>
     );
   }

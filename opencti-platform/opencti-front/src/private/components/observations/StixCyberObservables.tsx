@@ -1,4 +1,4 @@
-import { FunctionComponent, useContext } from 'react';
+import { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { React } from 'mdi-material-ui';
 import StixCyberObservableCreation from './stix_cyber_observables/StixCyberObservableCreation';
@@ -13,15 +13,21 @@ import StixCyberObservablesLines, {
 import ToolBar from '../data/ToolBar';
 import { Theme } from '../../../components/Theme';
 import { Filters } from '../../../components/list_lines';
-import { StixCyberObservablesLinesPaginationQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
+import {
+  StixCyberObservablesLinesPaginationQuery$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesPaginationQuery.graphql';
 import { QueryRenderer } from '../../../relay/environment';
 import useCopy from '../../../utils/hooks/useCopy';
-import { StixCyberObservablesLinesSearchQuery$data } from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
-import { UserContext } from '../../../utils/hooks/useAuth';
+import {
+  StixCyberObservablesLinesSearchQuery$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservablesLinesSearchQuery.graphql';
+import useAuth from '../../../utils/hooks/useAuth';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
-import { StixCyberObservableLine_node$data } from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
+import {
+  StixCyberObservableLine_node$data,
+} from './stix_cyber_observables/__generated__/StixCyberObservableLine_node.graphql';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -33,8 +39,8 @@ const LOCAL_STORAGE_KEY = 'view-stix-cyber-observables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();
-  const { helper } = useContext(UserContext);
-  const isRuntimeSort = helper?.isRuntimeFieldEnable() ?? false;
+  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
 
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,

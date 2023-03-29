@@ -28,8 +28,7 @@ import {
 import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';
-import { addIndividual } from '../domain/individual';
-import { userSessionRefresh } from '../domain/user';
+import { userAddIndividual } from '../domain/user';
 
 // Needs to have edit rights or needs to be creator of the note
 const checkUserAccess = async (context, user, id) => {
@@ -112,11 +111,8 @@ const noteResolvers = {
       const noteToCreate = { ...input };
       noteToCreate.createdBy = user.individual_id;
       if (noteToCreate.createdBy === undefined) {
-        const individualInput = { name: user.name, contact_information: user.user_email };
-        // We need to bypass validation here has we maybe not setup all require fields
-        const individual = await addIndividual(context, user, individualInput, { bypassValidation: true });
+        const individual = await userAddIndividual(context, user);
         noteToCreate.createdBy = individual.id;
-        await userSessionRefresh(user.internal_id);
       }
       return addNote(context, user, noteToCreate);
     },
