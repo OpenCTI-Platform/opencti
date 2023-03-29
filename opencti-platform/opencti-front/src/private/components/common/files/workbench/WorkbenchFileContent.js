@@ -2457,6 +2457,7 @@ class WorkbenchFileContentComponent extends Component {
                         }
                         if (attribute === 'case_type') {
                           return <OpenVocabField
+                              key={attribute}
                               label={t('Case type')}
                               type="case_types_ov"
                               name="case_type"
