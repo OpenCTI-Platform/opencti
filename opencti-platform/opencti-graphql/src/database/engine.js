@@ -936,9 +936,7 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
   }
   const querySearch = [];
 
-  const partialSearch = remainingSearch.replace(/"/g, '')
-    .replace(/"|http?:/g, '')
-    .trim().split(' ');
+  const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
 
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];

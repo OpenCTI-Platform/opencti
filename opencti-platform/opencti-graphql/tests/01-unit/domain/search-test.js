@@ -50,7 +50,7 @@ it('should search parsing correctly generated', () => {
   expect(parsed.matchesString).toBe('');
 
   parsed = parse('test test search "please my" "bad');
-  expect(parsed.queriesString).toBe('test* test* search* bad*');
+  expect(parsed.queriesString).toBe('test* search* bad*');
   expect(parsed.matchesString).toBe('please my');
 
   parsed = parse('cool test-with');
