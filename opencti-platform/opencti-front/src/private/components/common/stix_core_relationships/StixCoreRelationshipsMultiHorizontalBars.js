@@ -978,7 +978,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 data: Object.entries(categoriesValues).map((o) => o[1][k]),
               };
             });
-            let subSectionIdsOrder = {};
+            let subSectionIdsOrder = [];
             if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') { // find subbars orders for entity subbars redirection
               for (const distrib of props.stixCoreRelationshipsDistribution) {
                 for (const subDistrib of distrib.entity[key]) {
@@ -992,15 +992,13 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 (n) => ({
                   id: n.label,
                   entity_type: n.entity.entity_type,
-                  series: (finalSubDistributionField === 'internal_id') // if the bar is divided in subbars representing entities
-                    ? subSectionIdsOrder.map((subSectionId) => {
-                      const [entity] = n.entity[key].filter((e) => e.label === subSectionId);
-                      return {
-                        id: subSectionId,
-                        entity_type: entity ? entity.entity.entity_type : null,
-                      };
-                    })
-                    : null,
+                  series: subSectionIdsOrder.map((subSectionId) => {
+                    const [entity] = n.entity[key].filter((e) => e.label === subSectionId);
+                    return {
+                      id: subSectionId,
+                      entity_type: entity ? entity.entity.entity_type : null,
+                    };
+                  }),
                 }),
               ) : null;
             return (
