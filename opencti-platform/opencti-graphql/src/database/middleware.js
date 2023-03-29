@@ -1266,6 +1266,10 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
   if (mergedIds.length !== mergedInstances.length) {
     throw FunctionalError('Cannot access all entities for merging');
   }
+
+  if (mergedInstances.some(({ entity_type, builtIn }) => entity_type === ENTITY_TYPE_VOCABULARY && Boolean(builtIn))) {
+    throw FunctionalError('Cannot merge builtin vocabularies');
+  }
   // We need to lock all elements not locked yet.
   const { locks = [] } = opts;
   const participantIds = mergedIds.filter((e) => !locks.includes(e));
