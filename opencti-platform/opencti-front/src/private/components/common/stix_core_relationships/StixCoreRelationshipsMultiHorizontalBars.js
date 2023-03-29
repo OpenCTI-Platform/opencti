@@ -985,7 +985,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
                 }
               }
-              subSectionIdsOrder = Object.entries(subSectionIdsOrder).sort(([, a], [, b]) => b - a).map((k) => k[0]);
+              subSectionIdsOrder = R.take(15, Object.entries(subSectionIdsOrder).sort(([, a], [, b]) => b - a).map((k) => k[0]));
             }
             const redirectionUtils = (finalField === 'internal_id')
               ? props.stixCoreRelationshipsDistribution.map(
