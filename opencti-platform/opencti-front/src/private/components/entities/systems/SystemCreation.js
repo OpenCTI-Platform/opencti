@@ -71,6 +71,7 @@ const systemMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...SystemLine_node
     }
   }

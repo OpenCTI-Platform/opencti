@@ -75,6 +75,7 @@ const intrusionSetMutation = graphql`
       id
       name
       entity_type
+      parent_types
       description
       ...IntrusionSetCard_node
     }

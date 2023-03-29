@@ -90,6 +90,7 @@ const dataSourceMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...DataSourceLine_node
     }
   }

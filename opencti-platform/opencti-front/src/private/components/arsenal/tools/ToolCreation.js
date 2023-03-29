@@ -75,6 +75,7 @@ const toolMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...ToolLine_node
     }
   }

@@ -85,6 +85,7 @@ const regionMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...RegionLine_node
     }
   }

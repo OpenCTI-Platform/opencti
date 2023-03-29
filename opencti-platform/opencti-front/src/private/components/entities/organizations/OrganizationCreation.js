@@ -73,6 +73,7 @@ const organizationMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...OrganizationLine_node
     }
   }

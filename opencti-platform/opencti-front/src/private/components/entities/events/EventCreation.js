@@ -75,6 +75,7 @@ const eventMutation = graphql`
       name
       entity_type
       description
+      parent_types
       ...EventLine_node
     }
   }

@@ -78,6 +78,7 @@ const IncidentMutation = graphql`
   mutation IncidentCreationMutation($input: IncidentAddInput!) {
     incidentAdd(input: $input) {
       id
+      parent_types
       name
       description
       entity_type

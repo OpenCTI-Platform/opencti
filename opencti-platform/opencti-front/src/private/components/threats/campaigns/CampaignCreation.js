@@ -76,6 +76,7 @@ const campaignMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...CampaignCard_node
     }
   }

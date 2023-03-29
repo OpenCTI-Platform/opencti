@@ -89,6 +89,7 @@ const channelMutation = graphql`
       name
       description
       entity_type
+      parent_types
       ...ChannelLine_node
     }
   }
