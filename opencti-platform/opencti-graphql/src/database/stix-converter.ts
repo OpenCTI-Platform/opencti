@@ -98,6 +98,7 @@ import {
   ENTITY_TEXT,
   ENTITY_URL,
   ENTITY_USER_ACCOUNT,
+  ENTITY_USER_AGENT,
   ENTITY_WINDOWS_REGISTRY_KEY,
   ENTITY_WINDOWS_REGISTRY_VALUE_TYPE,
   isStixCyberObservable
@@ -679,7 +680,7 @@ const convertArtifactToStix = (instance: StoreCyberObservable, type: string): SC
     encryption_algorithm: instance.encryption_algorithm,
     decryption_key: instance.decryption_key,
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: cleanObject({
         ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
         additional_names: instance.x_opencti_additional_names,
@@ -708,7 +709,7 @@ const convertCryptocurrencyWalletToStix = (instance: StoreCyberObservable, type:
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -725,7 +726,7 @@ const convertCryptographicKeyToStix = (instance: StoreCyberObservable, type: str
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -756,7 +757,7 @@ const convertEmailAddressToStix = (instance: StoreCyberObservable, type: string)
     ...buildStixCyberObservable(instance),
     value: instance.value,
     display_name: instance.display_name,
-    belongs_to_ref: (instance[INPUT_BELONGS_TO] ?? [])[0]?.standard_id // TODO WHAT???
+    belongs_to_ref: (instance[INPUT_BELONGS_TO] ?? [])[0]?.standard_id
   };
 };
 const convertEmailMessageToStix = (instance: StoreCyberObservable, type: string): SCO.StixEmailMessage => {
@@ -798,12 +799,11 @@ const convertFileToStix = (instance: StoreCyberObservable, type: string): SCO.St
     contains_refs: (instance[INPUT_CONTAINS] ?? []).map((m) => m.standard_id),
     content_ref: instance[INPUT_CONTENT]?.standard_id,
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: cleanObject({
         ...stixCyberObject.extensions[STIX_EXT_OCTI_SCO],
         additional_names: instance.x_opencti_additional_names ?? []
       })
-      // TODO implements stix extensions
     }
   };
 };
@@ -819,7 +819,7 @@ const convertHostnameToStix = (instance: StoreCyberObservable, type: string): SC
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -943,7 +943,7 @@ const convertTextToStix = (instance: StoreCyberObservable, type: string): SCO.St
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -962,7 +962,7 @@ const convertBankAccountToStix = (instance: StoreCyberObservable, type: string):
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -979,7 +979,7 @@ const convertPhoneNumberToStix = (instance: StoreCyberObservable, type: string):
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -1000,7 +1000,7 @@ const convertMediaContentToStix = (instance: StoreCyberObservable, type: string)
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -1020,7 +1020,7 @@ const convertPaymentCardToStix = (instance: StoreCyberObservable, type: string):
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
     external_references: buildExternalReferences(instance),
     extensions: {
-      ...stixCyberObject.extensions,
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
       [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
     }
   };
@@ -1031,6 +1031,23 @@ const convertURLToStix = (instance: StoreCyberObservable, type: string): SCO.Sti
     ...buildStixCyberObservable(instance),
     value: instance.value,
     score: instance.x_opencti_score,
+  };
+};
+const convertUserAgentToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAgent => {
+  assertType(ENTITY_USER_AGENT, type);
+  const stixCyberObject = buildStixCyberObservable(instance);
+  return {
+    ...stixCyberObject,
+    value: instance.value,
+    labels: (instance[INPUT_LABELS] ?? []).map((m) => m.value),
+    description: instance.x_opencti_description,
+    score: instance.x_opencti_score,
+    created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
+    external_references: buildExternalReferences(instance),
+    extensions: {
+      [STIX_EXT_OCTI]: stixCyberObject.extensions[STIX_EXT_OCTI],
+      [STIX_EXT_OCTI_SCO]: { extension_type: 'new-sco' }
+    }
   };
 };
 const convertUserAccountToStix = (instance: StoreCyberObservable, type: string): SCO.StixUserAccount => {
@@ -1488,6 +1505,9 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (ENTITY_USER_ACCOUNT === type) {
       return convertUserAccountToStix(cyber, type);
     }
+    if (ENTITY_USER_AGENT === type) {
+      return convertUserAgentToStix(cyber, type);
+    }
     if (ENTITY_WINDOWS_REGISTRY_KEY === type) {
       return convertWindowsRegistryKeyToStix(cyber, type);
     }
@@ -1495,7 +1515,7 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
       return convertX509CertificateToStix(cyber, type);
     }
     // No converter found
-    throw UnsupportedError(`No meta cyber observable available for ${type}`);
+    throw UnsupportedError(`No observable converter available for ${type}`);
   }
   throw UnsupportedError(`No entity converter available for ${type}`);
 };
