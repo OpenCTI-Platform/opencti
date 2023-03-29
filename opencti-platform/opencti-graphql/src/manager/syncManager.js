@@ -56,7 +56,7 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('merge', (d) => handleEvent(d));
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
-      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.uri ?? sseUri} with id ${connectionId}`);
+      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
     });
     eventSource.on('error', (error) => {
       logApp.error(`[OPENCTI] Sync ${syncId}: error in sync event`, { error });
