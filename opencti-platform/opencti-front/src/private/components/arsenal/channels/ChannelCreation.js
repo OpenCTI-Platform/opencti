@@ -8,7 +8,7 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql, useLazyLoadQuery } from 'react-relay';
+import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
@@ -18,13 +18,11 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import AutocompleteField from '../../../../components/AutocompleteField';
-import ItemIcon from '../../../../components/ItemIcon';
-import { vocabulariesQuery } from '../../settings/attributes/VocabulariesLines';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import OpenVocabField from '../../common/form/OpenVocabField';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -95,8 +93,10 @@ const channelMutation = graphql`
   }
 `;
 
-export const ChannelCreationForm = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const ChannelCreationForm = ({
+  updater, onReset, onCompleted,
+  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -106,8 +106,6 @@ export const ChannelCreationForm = ({ updater, onReset, onCompleted,
     confidence: Yup.number().nullable(),
   };
   const channelValidator = useSchemaCreationValidation('Channel', basicShape);
-  const data = useLazyLoadQuery(vocabulariesQuery, { category: 'channel_types_ov' });
-  const channelEdges = (data.vocabularies?.edges ?? []).map((e) => e.node.name);
 
   const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
     const finalValues = R.pipe(
@@ -143,19 +141,19 @@ export const ChannelCreationForm = ({ updater, onReset, onCompleted,
   };
 
   return <Formik
-      initialValues={{
-        name: '',
-        channel_types: [],
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        confidence: defaultConfidence ?? 75,
-      }}
-      validationSchema={channelValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={{
+      name: '',
+      channel_types: [],
+      description: '',
+      createdBy: defaultCreatedBy ?? '',
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      confidence: defaultConfidence ?? 75,
+    }}
+    validationSchema={channelValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -163,107 +161,89 @@ export const ChannelCreationForm = ({ updater, onReset, onCompleted,
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Channel', 'Malware']}
-          />
-          <Field
-              component={AutocompleteField}
-              style={{ marginTop: 20 }}
-              name="channel_types"
-              multiple={true}
-              createLabel={t('Add')}
-              textfieldprops={{
-                variant: 'standard',
-                label: t('Channel types'),
-              }}
-              options={channelEdges.map((n) => ({ id: n, value: n, label: n }))}
-              renderOption={(optionProps, option) => (
-                  <li {...optionProps}>
-                    <div className={classes.icon}>
-                      <ItemIcon type="attribute" />
-                    </div>
-                    <div className={classes.text}>
-                      {option.label}
-                    </div>
-                  </li>
-              )}
-              classes={{
-                clearIndicator:
-                classes.autoCompleteIndicator,
-              }}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-          />
-          <ConfidenceField
-              entityType="Channel"
-              containerStyle={fieldSpacingContainerStyle}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Channel', 'Malware']}
+        />
+        <OpenVocabField
+          type='channel_types_ov'
+          name="channel_types"
+          label={t('Channel type')}
+          multiple
+          containerStyle={fieldSpacingContainerStyle}
+          onChange={setFieldValue}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <ConfidenceField
+          entityType="Channel"
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
@@ -286,25 +266,25 @@ const ChannelCreation = ({ paginationOptions }) => {
   return (
     <div>
       <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
         <div>
           <div className={classes.header}>
             <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={handleClose}
-                size="large"
-                color="primary">
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose}
+              size="large"
+              color="primary">
               <Close fontSize="small" color="primary" />
             </IconButton>
             <Typography variant="h6">
@@ -313,9 +293,9 @@ const ChannelCreation = ({ paginationOptions }) => {
           </div>
           <div className={classes.container}>
             <ChannelCreationForm
-                updater={updater}
-                onCompleted={() => handleClose()}
-                onReset={onReset}
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={onReset}
             />
           </div>
         </div>
