@@ -1814,7 +1814,6 @@ enum StixCoreObjectsFilter {
   killChainPhase
   hasExternalReference
   objectContains
-  containedBy
   indicates
   confidence
   valid_from
@@ -1952,7 +1951,6 @@ enum StixDomainObjectsFilter {
   labelledBy
   hasExternalReference
   objectContains
-  containedBy
   indicates
   confidence
   valid_from
@@ -2777,6 +2775,7 @@ input OpinionAddInput {
   created: DateTime
   modified: DateTime
   update: Boolean
+  clientMutationId: String
 }
 
 input OpinionUserAddInput {
@@ -2796,6 +2795,7 @@ input OpinionUserAddInput {
   created: DateTime
   modified: DateTime
   update: Boolean
+  clientMutationId: String
 }
 
 enum ReportsOrdering {
@@ -5330,8 +5330,7 @@ enum StixCyberObservablesFilter {
   markedBy
   labelledBy
   relatedTo
-  objectContained
-  containedBy
+  objectContains
   hasExternalReference
   sightedBy
   value
@@ -7079,8 +7078,7 @@ enum StixObjectOrStixRelationshipsFilter {
   created
   modified
   relatedTo
-  objectContained
-  containedBy
+  objectContains
   hasExternalReference
   sightedBy
   value

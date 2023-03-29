@@ -27,28 +27,9 @@ interface OpinionsProps {
 }
 
 const Opinions: FunctionComponent<OpinionsProps> = ({
-  objectId,
-  authorId,
   onChangeOpenExports,
 }) => {
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
-  const additionnalFilters = [];
-  if (authorId) {
-    additionnalFilters.push({
-      key: 'createdBy',
-      values: [authorId],
-      operator: 'eq',
-      filterMode: 'or',
-    });
-  }
-  if (objectId) {
-    additionnalFilters.push({
-      key: 'objectContains',
-      values: [objectId],
-      operator: 'eq',
-      filterMode: 'or',
-    });
-  }
   const {
     viewStorage,
     paginationOptions,
@@ -63,7 +44,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
       openExports: false,
       count: 25,
     },
-    additionnalFilters,
   );
   const {
     numberOfElements,
@@ -88,12 +68,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
     paginationOptions,
   );
   const renderLines = () => {
-    let exportContext = null;
-    if (objectId) {
-      exportContext = `of-entity-${objectId}`;
-    } else if (authorId) {
-      exportContext = `of-entity-${authorId}`;
-    }
     let finalFilters = filters;
     finalFilters = {
       ...finalFilters,
@@ -153,7 +127,6 @@ const Opinions: FunctionComponent<OpinionsProps> = ({
           openExports={openExports}
           noPadding={typeof onChangeOpenExports === 'function'}
           exportEntityType="Opinion"
-          exportContext={exportContext}
           keyword={searchTerm}
           filters={filters}
           paginationOptions={paginationOptions}
