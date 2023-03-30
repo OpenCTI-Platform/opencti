@@ -28,6 +28,7 @@ import {
   isNotEmptyField,
   READ_DATA_INDICES,
   READ_DATA_INDICES_INFERRED,
+  READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
@@ -101,7 +102,8 @@ import {
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
-  BASE_TYPE_RELATION, buildRefRelationKey,
+  BASE_TYPE_RELATION,
+  buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
   IDS_STIX,
@@ -125,6 +127,7 @@ import {
   RELATION_OBJECT_MARKING,
 } from '../schema/stixMetaRelationship';
 import {
+  ENTITY_TYPE_HISTORY,
   ENTITY_TYPE_STATUS,
   ENTITY_TYPE_USER,
   isDatedInternalObject,
@@ -498,7 +501,9 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
 export const timeSeriesEntities = async (context, user, types, args) => {
   const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const { startDate, endDate, interval } = args;
-  const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
+  const dataIndices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
+  const indexName = types.includes(ENTITY_TYPE_HISTORY) ? READ_INDEX_HISTORY : dataIndices;
+  const histogramData = await elHistogramCount(context, user, indexName, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (context, user, args) => {
