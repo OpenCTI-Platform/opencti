@@ -38,14 +38,15 @@ const styles = (theme) => ({
 export const workspaceMutationFieldPatch = graphql`
   mutation WorkspaceEditionOverviewFieldPatchMutation(
     $id: ID!
-    $input: [EditInput]!
+    $input: [EditInput!]!
   ) {
-    workspaceEdit(id: $id) {
-      fieldPatch(input: $input) {
-        ...WorkspaceEditionOverview_workspace
-        ...Dashboard_workspace
-        ...Investigation_workspace
-      }
+    workspaceFieldPatch(
+      id: $id
+      input: $input
+    ) {
+      ...WorkspaceEditionOverview_workspace
+      ...Dashboard_workspace
+      ...Investigation_workspace
     }
   }
 `;
@@ -55,10 +56,8 @@ export const workspaceEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    workspaceEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
-      }
+    workspaceContextPatch(id: $id, input: $input) {
+      id
     }
   }
 `;

@@ -3,6 +3,8 @@ import * as PropTypes from 'prop-types';
 import {
   FlagOutlined,
   PersonOutlined,
+  GroupOutlined,
+  GroupsOutlined,
   AccountBalanceOutlined,
   DomainOutlined,
   PublicOutlined,
@@ -117,6 +119,10 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Individual':
     case 'User':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Group':
+      return <GroupOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'all-users':
+      return <GroupsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Organization':
     case 'Identity':
       return (

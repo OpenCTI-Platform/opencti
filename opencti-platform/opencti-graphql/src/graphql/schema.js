@@ -10,7 +10,6 @@ import GraphQLUpload from 'graphql-upload/GraphQLUpload.mjs';
 import settingsResolvers from '../resolvers/settings';
 import logResolvers from '../resolvers/log';
 import attributeResolvers from '../resolvers/attribute';
-import workspaceResolvers from '../resolvers/workspace';
 import subTypeResolvers from '../resolvers/subType';
 import labelResolvers from '../resolvers/label';
 import rabbitmqMetricsResolvers from '../resolvers/rabbitmqMetrics';
@@ -148,7 +147,6 @@ const schemaResolvers = [
   rabbitmqMetricsResolvers,
   elasticSearchMetricsResolvers,
   attributeResolvers,
-  workspaceResolvers,
   subTypeResolvers,
   fileResolvers,
   taskResolvers,

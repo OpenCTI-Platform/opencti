@@ -83,6 +83,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : { widgets: {}, config: {} },
   );
   const [deleting, setDeleting] = useState(false);
+  const userCanEdit = workspace.currentUserAccessRight === 'admin' || workspace.currentUserAccessRight === 'edit';
   const saveManifest = (newManifest) => {
     setManifest(newManifest);
     const newManifestEncoded = toB64(JSON.stringify(newManifest));
@@ -533,6 +534,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       )}
       <Security
         needs={[EXPLORE_EXUPDATE]}
+        hasAccess={userCanEdit}
         placeholder={
           <ResponsiveGridLayout
             className="layout"
@@ -620,7 +622,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             </Paper>
           ))}
         </ResponsiveGridLayout>
-        {!noToolbar && <WidgetConfig onComplete={handleAddWidget} />}
+        {!noToolbar ? (<WidgetConfig onComplete={handleAddWidget} />) : (<></>)}
       </Security>
     </div>
   );
@@ -638,7 +640,10 @@ export default createFragmentContainer(DashboardComponent, {
       owner {
         id
         name
+        entity_type
       }
+      currentUserAccessRight
+      ...WorkspaceManageAccessDialog_authorizedMembers
     }
   `,
 });

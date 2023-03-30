@@ -54,7 +54,7 @@ const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 const DBL_CLICK_TIMEOUT = 500; // ms
 
 export const investigationGraphQuery = graphql`
-  query InvestigationGraphQuery($id: String) {
+  query InvestigationGraphQuery($id: String!) {
     workspace(id: $id) {
       ...InvestigationGraph_workspace
     }
@@ -798,10 +798,8 @@ const investigationGraphRelationsAddMutation = graphql`
     $id: ID!
     $input: StixRefRelationshipsAddInput!
   ) {
-    workspaceEdit(id: $id) {
-      relationsAdd(input: $input) {
-        id
-      }
+    workspaceRelationsAdd(id: $id, input: $input) {
+      id
     }
   }
 `;
@@ -2154,7 +2152,10 @@ const InvestigationGraph = createFragmentContainer(
         owner {
           id
           name
+          entity_type
         }
+        currentUserAccessRight
+        ...WorkspaceManageAccessDialog_authorizedMembers
         objects(all: true) {
           edges {
             node {

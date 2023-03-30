@@ -30,7 +30,7 @@ export const dashboardSettingsDashboardsQuery = graphql`
     $count: Int!
     $orderBy: WorkspacesOrdering
     $orderMode: OrderingMode
-    $filters: [WorkspacesFiltering]
+    $filters: [WorkspacesFiltering!]
   ) {
     workspaces(
       first: $count

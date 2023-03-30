@@ -1,5 +1,6 @@
 import { ABSTRACT_INTERNAL_OBJECT } from './general';
 import { schemaTypesDefinition } from './schema-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 export const ENTITY_TYPE_SETTINGS = 'Settings';
 export const ENTITY_TYPE_MIGRATION_STATUS = 'MigrationStatus';
@@ -11,7 +12,6 @@ export const ENTITY_TYPE_RULE = 'Rule';
 export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
-export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';

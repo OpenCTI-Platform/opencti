@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import * as R from 'ramda';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
@@ -13,9 +13,11 @@ import Select from '@mui/material/Select';
 import FormControl from '@mui/material/FormControl';
 import InputLabel from '@mui/material/InputLabel';
 import Slide from '@mui/material/Slide';
-import { Add, Close } from '@mui/icons-material';
+import { Add, Close, LockPersonOutlined } from '@mui/icons-material';
 import { DotsHorizontalCircleOutline } from 'mdi-material-ui';
 import Button from '@mui/material/Button';
+import Tooltip from '@mui/material/Tooltip';
+import PropTypes from 'prop-types';
 import { commitMutation, MESSAGING$ } from '../../../relay/environment';
 import TextField from '../../../components/TextField';
 import Security from '../../../utils/Security';
@@ -23,6 +25,7 @@ import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 import WorkspacePopover from './WorkspacePopover';
 import ExportButtons from '../../../components/ExportButtons';
 import { useFormatter } from '../../../components/i18n';
+import WorkspaceManageAccessDialog from './WorkspaceManageAccessDialog';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -37,6 +40,10 @@ const useStyles = makeStyles(() => ({
   popover: {
     float: 'left',
     marginTop: '-13px',
+  },
+  manageAccess: {
+    float: 'right',
+    margin: '-10px 0 0 -8px',
   },
   export: {
     float: 'right',
@@ -65,11 +72,9 @@ const useStyles = makeStyles(() => ({
 }));
 
 const workspaceMutation = graphql`
-  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput]!) {
-    workspaceEdit(id: $id) {
-      fieldPatch(input: $input) {
-        tags
-      }
+  mutation WorkspaceHeaderFieldMutation($id: ID!, $input: [EditInput!]!) {
+    workspaceFieldPatch(id: $id, input: $input) {
+      tags
     }
   }
 `;
@@ -85,6 +90,8 @@ const WorkspaceHeader = ({
   const { t } = useFormatter();
   const [openTag, setOpenTag] = useState(false);
   const [openTags, setOpenTags] = useState(false);
+  const userCanManage = workspace.currentUserAccessRight === 'admin';
+  const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
   const getCurrentTags = () => workspace.tags;
   const onSubmitCreateTag = (data, { resetForm }) => {
     const currentTags = getCurrentTags();
@@ -125,6 +132,11 @@ const WorkspaceHeader = ({
 
   const tags = R.propOr([], 'tags', workspace);
   const { relativeDate } = config ?? {};
+
+  const [displayManageAccess, setDisplayManageAccess] = useState(false);
+  const handleOpenManageAccess = () => setDisplayManageAccess(true);
+  const handleCloseManageAccess = () => setDisplayManageAccess(false);
+
   return (
     <div style={{ margin: variant === 'dashboard' ? '0 20px 0 20px' : 0 }}>
       <Typography
@@ -134,14 +146,18 @@ const WorkspaceHeader = ({
       >
         {workspace.name}
       </Typography>
-      <Security needs={[EXPLORE_EXUPDATE]}>
+      <Security
+        needs={[EXPLORE_EXUPDATE]}
+        hasAccess={userCanEdit}
+      >
         <div className={classes.popover}>
-          <WorkspacePopover id={workspace.id} type={workspace.type} />
+          <WorkspacePopover workspace={workspace} />
         </div>
       </Security>
       {variant === 'dashboard' && (
         <Security
           needs={[EXPLORE_EXUPDATE]}
+          hasAccess={userCanEdit}
           placeholder={
             <div
               style={{ display: 'flex', margin: '-3px 0 0 5px', float: 'left' }}
@@ -266,6 +282,30 @@ const WorkspaceHeader = ({
           adjust={adjust}
         />
       </div>
+      <Security
+        needs={[EXPLORE_EXUPDATE]}
+        hasAccess={userCanManage}
+      >
+        <div className={classes.manageAccess}>
+          <Tooltip title={t('Manage access')}>
+            <IconButton
+              color="secondary"
+              aria-label="Label"
+              onClick={handleOpenManageAccess}
+              size="large"
+            >
+              <LockPersonOutlined fontSize="small" color="warning"/>
+            </IconButton>
+          </Tooltip>
+          <WorkspaceManageAccessDialog
+            workspaceId={workspace.id}
+            open={displayManageAccess}
+            authorizedMembersData={workspace}
+            owner={workspace.owner}
+            handleClose={handleCloseManageAccess}
+          />
+        </div>
+      </Security>
       <div className={classes.tags}>
         {R.take(5, tags).map(
           (tag) => tag.length > 0 && (
@@ -277,7 +317,10 @@ const WorkspaceHeader = ({
               />
           ),
         )}
-        <Security needs={[EXPLORE_EXUPDATE]}>
+        <Security
+          needs={[EXPLORE_EXUPDATE]}
+          hasAccess={userCanEdit}
+        >
           {tags.length > 5 ? (
             <Button
               color="primary"
@@ -299,35 +342,42 @@ const WorkspaceHeader = ({
               {openTag ? <Close fontSize="small" /> : <Add fontSize="small" />}
             </IconButton>
           )}
+          <Slide
+              direction="left"
+              in={openTag}
+              mountOnEnter={true}
+              unmountOnExit={true}
+          >
+            <div style={{ float: 'left', marginTop: -5 }}>
+              <Formik
+                  initialValues={{ new_tag: '' }}
+                  onSubmit={onSubmitCreateTag}
+              >
+                <Form style={{ float: 'right' }}>
+                  <Field
+                      component={TextField}
+                      variant="standard"
+                      name="new_tag"
+                      autoFocus={true}
+                      placeholder={t('New tag')}
+                      className={classes.tagsInput}
+                  />
+                </Form>
+              </Formik>
+            </div>
+          </Slide>
         </Security>
-        <Slide
-          direction="left"
-          in={openTag}
-          mountOnEnter={true}
-          unmountOnExit={true}
-        >
-          <div style={{ float: 'left', marginTop: -5 }}>
-            <Formik
-              initialValues={{ new_tag: '' }}
-              onSubmit={onSubmitCreateTag}
-            >
-              <Form style={{ float: 'right' }}>
-                <Field
-                  component={TextField}
-                  variant="standard"
-                  name="new_tag"
-                  autoFocus={true}
-                  placeholder={t('New tag')}
-                  className={classes.tagsInput}
-                />
-              </Form>
-            </Formik>
-          </div>
-        </Slide>
       </div>
       <div className="clearfix" />
     </div>
   );
 };
 
+WorkspaceHeader.propTypes = {
+  workspace: PropTypes.object,
+  config: PropTypes.object,
+  adjust: PropTypes.func,
+  handleDateChange: PropTypes.func,
+  variant: PropTypes.string,
+};
 export default WorkspaceHeader;

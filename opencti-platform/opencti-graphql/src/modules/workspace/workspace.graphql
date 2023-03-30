@@ -1,0 +1,104 @@
+type Workspace implements InternalObject & BasicObject {
+    id: ID!
+    entity_type: String!
+    standard_id: String!
+    parent_types: [String!]!
+    # Workspace
+    type: String
+    name: String!
+    description: String
+    owner: Creator
+    tags: [String]
+    manifest: String
+    created_at: DateTime
+    updated_at: DateTime
+    editContext: [EditUserContext!]
+    objects(
+        first: Int
+        after: ID
+        orderBy: StixObjectOrStixRelationshipsOrdering
+        orderMode: OrderingMode
+        filters: [StixObjectOrStixRelationshipsFiltering]
+        filterMode: FilterMode
+        search: String
+        types: [String]
+        all: Boolean
+    ): StixObjectOrStixRelationshipRefConnection
+    graph_data: String
+    authorizedMembers: [MemberAccess!]
+    currentUserAccessRight: String
+}
+
+# Ordering
+enum WorkspacesOrdering {
+    name
+    created_at
+    updated_at
+    creator
+}
+# Filtering
+enum WorkspacesFilter {
+    name
+    creator
+    tag
+    type
+}
+input WorkspacesFiltering {
+    key: [WorkspacesFilter!]!
+    values: [String]
+    operator: String
+    filterMode: FilterMode
+}
+
+# Relay connections
+type WorkspaceConnection {
+    pageInfo: PageInfo!
+    edges: [WorkspaceEdge]
+}
+
+# Queries
+type Query {
+    workspace(id: String!): Workspace @auth(for: [EXPLORE])
+    workspaces(
+        first: Int
+        after: ID
+        orderBy: WorkspacesOrdering
+        orderMode: OrderingMode
+        filters: [WorkspacesFiltering!]
+        filterMode: FilterMode
+        adminBypassUserAccess: Boolean
+        search: String
+    ): WorkspaceConnection @auth(for: [EXPLORE])
+}
+
+type WorkspaceEdge {
+    cursor: String!
+    node: Workspace!
+}
+
+# Mutations
+input WorkspaceAddInput {
+    type: String!
+    name: String!
+    description: String
+    tags: [String]
+    authorized_members: [MemberAccessInput!]
+}
+
+type Mutation {
+    workspaceAdd(input: WorkspaceAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceDelete(id: ID!): ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
+    workspaceFieldPatch(id: ID!, input: [EditInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceEditAuthorizedMembers(id: ID!, input:[MemberAccessInput!]!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceContextPatch(id: ID!, input: EditContext!): Workspace
+    workspaceContextClean(id: ID!): Workspace
+    workspaceRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [EXPLORE_EXUPDATE])
+    workspaceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceRelationsAdd(id: ID!, input: StixRefRelationshipsAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+    workspaceRelationsDelete(id: ID!, toIds: [String!]!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
+}
+
+# Subscriptions
+type Subscription {
+    workspace(id: ID!): Workspace @auth(for: [EXPLORE])
+}

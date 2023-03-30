@@ -96,6 +96,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#006064';
       }
       return '#00BCD4';
+    case 'Group':
+      if (dark) {
+        return '#006064';
+      }
+      return '#00BCD4';
     case 'Organization':
       if (dark) {
         return '#01579b';

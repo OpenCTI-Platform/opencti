@@ -139,6 +139,10 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 
+export const findAllMembers = (context, user, args) => {
+  return listEntities(context, user, [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP], args);
+};
+
 export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
@@ -774,6 +778,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     external: user.external,
     login_provider: provider,
     impersonate: impersonate !== undefined,
+    groups: user.groups,
     roles: user.roles,
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),

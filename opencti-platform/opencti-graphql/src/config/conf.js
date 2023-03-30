@@ -28,6 +28,7 @@ import {
 } from '../modules/notification/notification-types';
 import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../modules/entitySetting/entitySetting-types';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
 
 // https://golang.org/src/crypto/x509/root_linux.go
 const LINUX_CERTFILES = [
@@ -67,7 +68,7 @@ export const BUS_TOPICS = {
     EDIT_TOPIC: `${TOPIC_PREFIX}USER_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}USER_ADDED_TOPIC`,
   },
-  [O.ENTITY_TYPE_WORKSPACE]: {
+  [ENTITY_TYPE_WORKSPACE]: {
     EDIT_TOPIC: `${TOPIC_PREFIX}WORKSPACE_EDIT_TOPIC`,
     ADDED_TOPIC: `${TOPIC_PREFIX}WORKSPACE_ADDED_TOPIC`,
   },

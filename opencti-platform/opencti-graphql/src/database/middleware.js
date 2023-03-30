@@ -190,7 +190,8 @@ import {
   KNOWLEDGE_ORGANIZATION_RESTRICT,
   RULE_MANAGER_USER,
   SYSTEM_USER,
-  userFilterStoreElements
+  userFilterStoreElements,
+  validateUserAccessOperation
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
 import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
@@ -1748,6 +1749,11 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (updates.length === 0) {
     return { element: initial };
   }
+  // Check user access update
+  const manageAccessUpdate = updates.some((e) => e.key === 'authorized_members');
+  if (!validateUserAccessOperation(user, initial, manageAccessUpdate ? 'manage-access' : 'edit')) {
+    throw ForbiddenAccess();
+  }
 
   // Split attributes and meta
   // Supports inputs meta or stix meta
@@ -2706,7 +2712,10 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
-
+  // check if user has "edit" access on from and to
+  if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
+    throw ForbiddenAccess();
+  }
   // Check consistency
   await checkRelationConsistency(context, user, relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
@@ -3209,6 +3218,9 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       throw FunctionalError('Cannot delete an individual corresponding to a user');
     }
   }
+  if (!validateUserAccessOperation(user, element, 'delete')) {
+    throw ForbiddenAccess();
+  }
   // Check inference operation
   checkIfInferenceOperationIsValid(user, element);
   // Apply deletion
@@ -3360,7 +3372,10 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
       throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
     }
   }
-  const toThing = await internalLoadById(context, user, toId, opts);
+  const toThing = await internalLoadById(context, user, toId, opts);// check if user has "edit" access on from and to
+  if (!validateUserAccessOperation(user, fromThing, 'edit') || !validateUserAccessOperation(user, toThing, 'edit')) {
+    throw ForbiddenAccess();
+  }
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {

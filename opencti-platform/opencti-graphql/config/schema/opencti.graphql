@@ -387,63 +387,6 @@ input WorkErrorInput {
   source: String
 }
 
-############## Workspaces
-enum WorkspacesOrdering {
-  name
-  created_at
-  updated_at
-  ownedBy
-}
-enum WorkspacesFilter {
-  name
-  owner
-  tag
-  type
-}
-input WorkspacesFiltering {
-  key: [WorkspacesFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-type WorkspaceConnection {
-  pageInfo: PageInfo!
-  edges: [WorkspaceEdge]
-}
-type WorkspaceEdge {
-  cursor: String!
-  node: Workspace!
-}
-type Workspace {
-  id: ID!
-  type: String
-  name: String!
-  description: String
-  owner: Creator
-  tags: [String]
-  manifest: String
-  created_at: DateTime
-  updated_at: DateTime
-  editContext: [EditUserContext!]
-  objects(
-    first: Int
-    after: ID
-    orderBy: StixObjectOrStixRelationshipsOrdering
-    orderMode: OrderingMode
-    filters: [StixObjectOrStixRelationshipsFiltering]
-    filterMode: FilterMode
-    search: String
-    types: [String]
-    all: Boolean
-  ): StixObjectOrStixRelationshipRefConnection
-  graph_data: String
-}
-input WorkspaceAddInput {
-  type: String!
-  name: String!
-  description: String
-  tags: [String]
-}
 
 ############## Taxii
 type TaxiiCollection {
@@ -1127,6 +1070,10 @@ type AssigneeConnection {
   pageInfo: PageInfo!
   edges: [AssigneeEdge!]!
 }
+type MemberConnection {
+  pageInfo: PageInfo!
+  edges: [MemberEdge!]!
+}
 type UserEdge {
   cursor: String!
   node: User!
@@ -1139,10 +1086,29 @@ type AssigneeEdge {
   cursor: String!
   node: Assignee!
 }
+type MemberEdge {
+  cursor: String!
+  node: Member!
+}
 type Assignee {
   id: ID! # internal_id
   name: String!
   entity_type: String!
+}
+type Member {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
+}
+type MemberAccess {
+  id: ID! # internal_id
+  name: String!
+  entity_type: String!
+  access_right: String!
+}
+input MemberAccessInput {
+  id: ID! # internal_id
+  access_right: String!
 }
 type OtpElement {
   secret: String!
@@ -10723,6 +10689,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | CaseTask
   | EntitySetting
   | Creator
+  | Workspace
 union StixObjectOrStixRelationship =
   MarkingDefinition
   | Label
@@ -10798,6 +10765,7 @@ union StixObjectOrStixRelationship =
   | CaseTemplate
   | CaseTask
   | EntitySetting
+  | Workspace
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
   ## Stix Domain Objects
@@ -10868,6 +10836,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | CaseTemplate
   | CaseTask
   | EntitySetting
+  | Workspace
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -11382,6 +11351,7 @@ type Query {
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
   creators(first: Int, search: String): CreatorConnection @auth(for: [KNOWLEDGE])
   assignees(first: Int, search: String): AssigneeConnection @auth(for: [KNOWLEDGE])
+  members(first: Int, search: String): MemberConnection @auth(for: [KNOWLEDGE])
   users(
     first: Int
     after: ID
@@ -11417,16 +11387,6 @@ type Query {
     attributeName: String!
   ): AttributeConnection @auth(for: [KNOWLEDGE])
   schemaAttributes(elementType: [String]!) : AttributeConnection @auth(for: [KNOWLEDGE])
-  workspace(id: String): Workspace @auth(for: [EXPLORE])
-  workspaces(
-    first: Int
-    after: ID
-    orderBy: WorkspacesOrdering
-    orderMode: OrderingMode
-    filters: [WorkspacesFiltering]
-    filterMode: FilterMode
-    search: String
-  ): WorkspaceConnection @auth(for: [EXPLORE])
   retentionRule(id: String!): RetentionRule @auth(for: [SETTINGS])
   retentionRules(first: Int, after: ID, search: String): RetentionRuleConnection @auth(for: [SETTINGS])
   taxiiCollection(id: String!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
@@ -12426,7 +12386,6 @@ type Subscription {
   settings(id: ID!): Settings @auth(for: [SETTINGS])
   group(id: ID!): Group @auth(for: [SETTINGS_SETACCESSES])
   user(id: ID!): User @auth(for: [SETTINGS_SETACCESSES])
-  workspace(id: ID!): Workspace @auth(for: [EXPLORE])
   label(id: ID!): Label @auth(for: [SETTINGS])
   statusTemplate(id: ID!): StatusTemplate @auth(for: [SETTINGS])
   markingDefinition(id: ID!): MarkingDefinition @auth(for: [SETTINGS])
@@ -12495,16 +12454,6 @@ type RoleEditMutations {
 type AttributeEditMutations {
   delete: ID
   fieldPatch(input: [EditInput]!): Attribute
-}
-type WorkspaceEditMutations {
-  delete: ID @auth(for: [EXPLORE_EXUPDATE_EXDELETE])
-  fieldPatch(input: [EditInput]!): Workspace
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [EXPLORE_EXUPDATE])
-  relationsAdd(input: StixRefRelationshipsAddInput!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  relationDelete(toId: StixRef!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  relationsDelete(toIds: [String]!, relationship_type: String!): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  contextPatch(input: EditContext): Workspace
-  contextClean: Workspace
 }
 
 type TaxiiCollectionEditMutations {
@@ -12954,8 +12903,6 @@ type Mutation {
   resetStateConnector(id: ID!): Connector @auth(for: [MODULES_MODMANAGE])
   deleteConnector(id: ID!): ID! @auth(for: [MODULES_MODMANAGE])
   runtimeAttributeEdit(id: String!, previous: String!, current: String!): ID! @auth(for: [SETTINGS])
-  workspaceAdd(input: WorkspaceAddInput): Workspace @auth(for: [EXPLORE_EXUPDATE])
-  workspaceEdit(id: ID!): WorkspaceEditMutations @auth(for: [EXPLORE_EXUPDATE])
   feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])

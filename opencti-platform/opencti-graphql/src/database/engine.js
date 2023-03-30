@@ -71,7 +71,7 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { BYPASS } from '../utils/access';
+import { computeUserMemberAccessIds, isBypassUser, MEMBER_ACCESS_ALL } from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -267,14 +267,14 @@ export const elUpdateByQueryForMigration = async (message, index, body) => {
   logApp.info(`${message} > done in ${timeSec} seconds`);
 };
 
-const buildDataRestrictions = async (context, user) => {
+const buildDataRestrictions = async (context, user, opts = {}) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
+  // check user access
+  must.push(...buildUserMemberAccessFilter(user, opts?.adminBypassUserAccess));
   // If user have bypass, no need to check restrictions
-  const capabilities = user.capabilities || [];
-  const isBypass = R.find((s) => s.name === BYPASS, capabilities) !== undefined;
-  if (!isBypass) {
+  if (!isBypassUser(user)) {
     // region Handle marking restrictions
     if (user.allowed_marking.length === 0) {
       // If user have no marking, he can only access to data with no markings.
@@ -374,6 +374,29 @@ const buildDataRestrictions = async (context, user) => {
     // endregion
   }
   return { must, must_not };
+};
+
+export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = true) => {
+  if (adminBypassUserAccess && isBypassUser(user)) {
+    return [];
+  }
+  const userAccessIds = computeUserMemberAccessIds(user);
+  // if access_users exists, it should have the user access ids
+  const memberAccessFilter = [{
+    bool: {
+      should: [
+        {
+          bool: {
+            must_not: {
+              exists: { field: 'authorized_members' }
+            }
+          }
+        },
+        { terms: { 'authorized_members.id.keyword': [MEMBER_ACCESS_ALL, ...userAccessIds] } },
+      ]
+    }
+  }];
+  return memberAccessFilter;
 };
 
 export const elIndexExists = async (indexName) => {
@@ -1027,7 +1050,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
-  const markingRestrictions = await buildDataRestrictions(context, user);
+  const { adminBypassUserAccess = true } = options;
+  const markingRestrictions = await buildDataRestrictions(context, user, { adminBypassUserAccess });
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
   const mustFilters = [];

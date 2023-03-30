@@ -58,20 +58,21 @@ export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    workspaceEdit(id: $id) {
-      relationAdd(input: $input) {
-        id
-        to {
-          ... on BasicObject {
-            id
-            entity_type
-            parent_types
-          }
-          ... on BasicRelationship {
-            id
-            entity_type
-            parent_types
-          }
+    workspaceRelationAdd(
+      id: $id
+      input: $input
+    ) {
+      id
+      to {
+        ... on BasicObject {
+          id
+          entity_type
+          parent_types
+        }
+        ... on BasicRelationship {
+          id
+          entity_type
+          parent_types
         }
       }
     }
@@ -84,10 +85,8 @@ export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphq
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    workspaceEdit(id: $id) {
-      relationDelete(toId: $toId, relationship_type: $relationship_type) {
-        id
-      }
+    workspaceRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+      id
     }
   }
 `;
@@ -95,13 +94,15 @@ export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphq
 export const investigationAddStixCoreObjectsLinesRelationsDeleteMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationsDeleteMutation(
     $id: ID!
-    $toIds: [String]!
+    $toIds: [String!]!
     $relationship_type: String!
   ) {
-    workspaceEdit(id: $id) {
-      relationsDelete(toIds: $toIds, relationship_type: $relationship_type) {
-        id
-      }
+    workspaceRelationsDelete(
+      id: $id
+      toIds: $toIds
+      relationship_type: $relationship_type
+    ) {
+      id
     }
   }
 `;
