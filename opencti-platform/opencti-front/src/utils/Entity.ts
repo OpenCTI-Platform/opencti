@@ -106,6 +106,7 @@ export const typesWithoutName = ['Observed-Data'];
 export const typesContainers = [
   'report',
   'note',
+  'case',
   'opinion',
   'observed-data',
   'grouping',
@@ -181,6 +182,7 @@ export const ignoredAttributes = [
 export const workbenchAttributes = [
   'name',
   'description',
+  'case_type',
   'pattern',
   'x_opencti_description',
   'first_seen',

@@ -81,6 +81,8 @@ import {
   stixCyberObservablesLinesSearchQuery,
 } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
+import OpenVocabField from '../../form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -2328,7 +2330,7 @@ class WorkbenchFileContentComponent extends Component {
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => ['report', 'note', 'grouping'].includes(convertToStixType(n.label))),
+      R.filter((n) => ['report', 'note', 'case', 'grouping'].includes(convertToStixType(n.label))),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
@@ -2374,9 +2376,7 @@ class WorkbenchFileContentComponent extends Component {
             );
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = container[attribute]
-                  ? buildDate(container[attribute])
-                  : now();
+                initialValues[attribute] = container[attribute] ? buildDate(container[attribute]) : now();
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = container[attribute] || false;
               } else {
@@ -2384,11 +2384,9 @@ class WorkbenchFileContentComponent extends Component {
               }
             }
             return (
-              <Formik
-                initialValues={initialValues}
+              <Formik initialValues={initialValues}
                 onSubmit={this.onSubmitContainer.bind(this)}
-                onReset={this.onResetContainer.bind(this)}
-              >
+                onReset={this.onResetContainer.bind(this)}>
                 {({
                   submitForm,
                   handleReset,
@@ -2456,6 +2454,17 @@ class WorkbenchFileContentComponent extends Component {
                               style={{ marginTop: 20 }}
                             />
                           );
+                        }
+                        if (attribute === 'case_type') {
+                          return <OpenVocabField
+                              key={attribute}
+                              label={t('Case type')}
+                              type="case_types_ov"
+                              name="case_type"
+                              onChange={(name, value) => setFieldValue(name, value)}
+                              containerStyle={fieldSpacingContainerStyle}
+                              multiple={false}
+                          />;
                         }
                         return (
                           <Field
@@ -2835,16 +2844,10 @@ class WorkbenchFileContentComponent extends Component {
       }
       : null;
     const finalValues = {
-      ...R.omit(
-        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
-        values,
-      ),
+      ...R.omit(['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'], values),
       labels: R.pluck('label', values.objectLabel),
-      object_marking_refs: R.pluck('entity', values.objectMarking).map(
-        (n) => n.standard_id || n.id,
-      ),
-      created_by_ref:
-        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      object_marking_refs: R.pluck('entity', values.objectMarking).map((n) => n.standard_id || n.id),
+      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     const stixType = convertToStixType(containerType);
