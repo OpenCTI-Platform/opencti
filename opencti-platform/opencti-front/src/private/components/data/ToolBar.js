@@ -1194,6 +1194,7 @@ class ToolBar extends Component {
       R.map((o) => o.entity_type, R.values(selectedElements || {})),
     );
     const typesAreDifferent = selectedTypes.length > 1;
+    const preventMerge = selectedTypes.at(0) === 'Vocabulary' && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
     const notUpdatableTypes = ['Label', 'Vocabulary'];
     const typesAreNotUpdatable = R.includes(
@@ -1422,6 +1423,7 @@ class ToolBar extends Component {
                       typesAreDifferent
                       || numberOfSelectedElements < 2
                       || numberOfSelectedElements > 4
+                      || preventMerge
                       || selectAll
                       || this.state.processing
                     }
