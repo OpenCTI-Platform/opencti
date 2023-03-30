@@ -813,7 +813,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, toMap = false, type = null, forceAliases = false } = opts;
+  const { indices = READ_DATA_INDICES, baseData = false, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
@@ -863,6 +863,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: ES_IGNORE_THROTTLED,
+      _source: baseData ? BASE_FIELDS : true,
       body: {
         query: {
           bool: {

@@ -43,7 +43,8 @@ export interface ListFilter<T extends BasicStoreCommon> {
 }
 
 type InternalListEntities = <T extends BasicStoreCommon>(context: AuthContext, user: AuthUser, entityTypes: Array<string>, args: EntityOptions<T>) => Promise<Array<T>>;
-type InternalFindByIds = (context: AuthContext, user: AuthUser, ids: string[], args?: { type?: string } & Record<string, string | boolean>) => Promise<BasicStoreObject[]>;
+type InternalFindByIds = (context: AuthContext, user: AuthUser, ids: string[], args?: { type?: string, baseData?: boolean }
+& Record<string, string | boolean>) => Promise<BasicStoreObject[]>;
 
 // entities
 interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
