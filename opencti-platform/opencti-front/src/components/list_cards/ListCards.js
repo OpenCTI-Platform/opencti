@@ -24,6 +24,7 @@ import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
 import FilterIconButton from '../FilterIconButton';
+import { export_max_size } from '../../utils/utils';
 
 const styles = () => ({
   container: {
@@ -87,6 +88,7 @@ class ListCards extends Component {
       numberOfElements,
       availableFilterKeys,
     } = this.props;
+    const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     return (
       <div className={classes.container}>
         <div className={classes.parameters}>
@@ -176,8 +178,9 @@ class ListCards extends Component {
                     <ViewListOutlined color="primary" fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
-                {typeof handleToggleExports === 'function' && (
-                  <ToggleButton value="export" aria-label="export">
+                {typeof handleToggleExports === 'function'
+                  && !exportDisabled
+                  && <ToggleButton value="export" aria-label="export">
                     <Tooltip title={t('Open export panel')}>
                       <FileDownloadOutlined
                         color={openExports ? 'secondary' : 'primary'}
@@ -185,7 +188,24 @@ class ListCards extends Component {
                       />
                     </Tooltip>
                   </ToggleButton>
-                )}
+                }
+                {typeof handleToggleExports === 'function'
+                  && exportDisabled
+                  && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
+                    <span>
+                    <ToggleButton
+                      size="small"
+                      value="export"
+                      aria-label="export"
+                      disabled={true}
+                    >
+                      <FileDownloadOutlined
+                        fontSize="small"
+                      />
+                    </ToggleButton>
+                    </span>
+                  </Tooltip>
+                }
               </ToggleButtonGroup>
             )}
           </div>

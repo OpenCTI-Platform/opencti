@@ -43,6 +43,7 @@ import {
 } from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { export_max_size } from '../../../../utils/utils';
 
 const styles = (theme) => ({
   container: {
@@ -308,6 +309,7 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
       R.sortWith([R.ascend(R.prop('name'))]),
       R.filter(filterByKeyword),
     )(finalSectors);
+    const exportDisabled = orderedFinalSectors.length > export_max_size;
     return (
       <div>
         <div className={classes.parameters}>
@@ -349,14 +351,31 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                     <FormatListGroup fontSize="small" />
                   </Tooltip>
                 </ToggleButton>
-                <ToggleButton value="export" aria-label="export">
+                {!exportDisabled
+                  && <ToggleButton value="export" aria-label="export">
                   <Tooltip title={t('Open export panel')}>
                     <FileDownloadOutlined
                       fontSize="small"
                       color={openExports ? 'secondary' : 'primary'}
                     />
                   </Tooltip>
-                </ToggleButton>
+                </ToggleButton>}
+                {exportDisabled
+                  && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
+                    <span>
+                    <ToggleButton
+                      size="small"
+                      value="export"
+                      aria-label="export"
+                      disabled={true}
+                    >
+                      <FileDownloadOutlined
+                        fontSize="small"
+                      />
+                    </ToggleButton>
+                    </span>
+                  </Tooltip>
+                }
               </ToggleButtonGroup>
             </div>
           </div>
