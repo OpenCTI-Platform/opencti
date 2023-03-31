@@ -498,12 +498,17 @@ const convertAggregateDistributions = async (context, user, limit, orderingFunct
     .filter((n) => isNotEmptyField(resolveLabels[n.label.toLowerCase()]))
     .map((n) => R.assoc('entity', resolveLabels[n.label.toLowerCase()], n));
 };
+export const timeSeriesHistories = async (context, user, args) => {
+  const types = [ENTITY_TYPE_HISTORY];
+  const timeSeriesArgs = buildEntityFilters({ types, ...args });
+  const { startDate, endDate, interval } = args;
+  const histogramData = await elHistogramCount(context, user, READ_INDEX_HISTORY, timeSeriesArgs);
+  return fillTimeSeries(startDate, endDate, interval, histogramData);
+};
 export const timeSeriesEntities = async (context, user, types, args) => {
   const timeSeriesArgs = buildEntityFilters({ types, ...args });
   const { startDate, endDate, interval } = args;
-  const dataIndices = args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES;
-  const indexName = types.includes(ENTITY_TYPE_HISTORY) ? READ_INDEX_HISTORY : dataIndices;
-  const histogramData = await elHistogramCount(context, user, indexName, timeSeriesArgs);
+  const histogramData = await elHistogramCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, timeSeriesArgs);
   return fillTimeSeries(startDate, endDate, interval, histogramData);
 };
 export const timeSeriesRelations = async (context, user, args) => {

@@ -1,6 +1,6 @@
 import { elPaginate } from '../database/engine';
 import conf, { booleanConf } from '../config/conf';
-import { timeSeriesEntities } from '../database/middleware';
+import { timeSeriesHistories } from '../database/middleware';
 import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
@@ -34,7 +34,7 @@ export const creatorFromHistory: CreateEntity<Log> = async (context, user, entit
 
 export const logsTimeSeries = (context: AuthContext, user: AuthUser, args: any) => {
   const filters: any[] = args.userId ? [{ key: ['*_id'], values: [args.userId] }, ...(args.filters || [])] : args.filters;
-  return timeSeriesEntities(context, user, [ENTITY_TYPE_HISTORY], { ...args, filters });
+  return timeSeriesHistories(context, user, { ...args, filters });
 };
 
 export const logsWorkerConfig = () => {
