@@ -21,8 +21,6 @@ import {
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
-  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
-  READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
@@ -31,7 +29,6 @@ import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_CONTAINER
 } from '../schema/general';
@@ -45,9 +42,10 @@ import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const broadcastClients = {};
-const queryIndices = [...READ_STIX_INDICES, READ_INDEX_STIX_META_OBJECTS];
+const queryIndices = READ_STIX_INDICES;
 const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
@@ -400,10 +398,10 @@ const createSseMiddleware = () => {
       };
       const allRelOptions = {
         elementId: stix.extensions[STIX_EXT_OCTI].id,
-        indices: [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS],
+        indices: [READ_INDEX_STIX_CORE_RELATIONSHIPS, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS],
         callback: allRelCallback
       };
-      const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
+      const relationTypes = [ABSTRACT_STIX_CORE_RELATIONSHIP, STIX_SIGHTING_RELATIONSHIP];
       await listAllRelations(context, req.user, relationTypes, allRelOptions);
     }
   };
