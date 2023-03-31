@@ -18,7 +18,6 @@ import { convertFiltersToQueryOptions } from '../utils/filtering';
 const SCHEDULE_TIME = conf.get('retention_manager:interval') || 60000;
 const RETENTION_MANAGER_KEY = conf.get('retention_manager:lock_key') || 'retention_manager_lock';
 const RETENTION_BATCH_SIZE = conf.get('retention_manager:batch_size') || 100;
-const RETENTION_INDICES = READ_STIX_INDICES;
 let running = false;
 
 const executeProcessing = async (context, retentionRule) => {
@@ -28,7 +27,7 @@ const executeProcessing = async (context, retentionRule) => {
   const before = utcDate().subtract(maxDays, 'days');
   const queryOptions = await convertFiltersToQueryOptions(context, jsonFilters, { before });
   const opts = { ...queryOptions, first: RETENTION_BATCH_SIZE };
-  const result = await elPaginate(context, RETENTION_MANAGER_USER, RETENTION_INDICES, opts);
+  const result = await elPaginate(context, RETENTION_MANAGER_USER, READ_STIX_INDICES, opts);
   const remainingDeletions = result.pageInfo.globalCount;
   const elements = result.edges;
   logApp.debug(`[OPENCTI] Retention manager clearing ${elements.length} elements`);

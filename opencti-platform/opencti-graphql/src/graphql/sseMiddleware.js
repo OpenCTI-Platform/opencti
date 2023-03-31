@@ -21,6 +21,7 @@ import {
   READ_INDEX_INFERRED_ENTITIES,
   READ_INDEX_INFERRED_RELATIONSHIPS,
   READ_INDEX_STIX_CORE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_OBJECTS,
   READ_INDEX_STIX_SIGHTING_RELATIONSHIPS,
   READ_STIX_INDICES,
 } from '../database/utils';
@@ -45,7 +46,7 @@ import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 
 const broadcastClients = {};
-const queryIndices = READ_STIX_INDICES;
+const queryIndices = [...READ_STIX_INDICES];
 const DEFAULT_LIVE_STREAM = 'live';
 const ONE_HOUR = 1000 * 60 * 60;
 const MAX_CACHE_TIME = (conf.get('app:live_stream:cache_max_time') ?? 1) * ONE_HOUR;
@@ -202,7 +203,7 @@ const createSseMiddleware = () => {
       const groupsOfRefsToResolve = R.splitEvery(MAX_SPLIT, refsToResolve);
       const missingRefsResolver = async (refs) => {
         const idsOpts = { ids: refs, connectionFormat: false };
-        const findMissing = await elList(context, req.user, queryIndices, idsOpts);
+        const findMissing = await elList(context, req.user, [...queryIndices, READ_INDEX_STIX_META_OBJECTS], idsOpts);
         missingIds.push(...R.uniq(findMissing.map((f) => f.standard_id)));
       };
       await Promise.map(groupsOfRefsToResolve, missingRefsResolver, { concurrency: ES_MAX_CONCURRENCY });
