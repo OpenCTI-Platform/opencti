@@ -18911,6 +18911,7 @@ export enum StixCoreObjectsFilter {
   RelatedTo = 'relatedTo',
   RelationshipType = 'relationship_type',
   ReportTypes = 'report_types',
+  Revoked = 'revoked',
   Subject = 'subject',
   Targets = 'targets',
   ThreatActorTypes = 'threat_actor_types',
