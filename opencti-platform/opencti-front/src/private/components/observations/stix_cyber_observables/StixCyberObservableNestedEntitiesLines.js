@@ -341,6 +341,22 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                 ... on StixCyberObservable {
                   observable_value
                 }
+                ... on Report {
+                    name
+                }
+                ... on Grouping {
+                    name
+                }
+                ... on Note {
+                    attribute_abstract
+                    content
+                }
+                ... on Opinion {
+                    opinion
+                }
+                ... on ObservedData {
+                    name
+                }
               }
               to {
                 ... on BasicObject {
@@ -456,6 +472,22 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                 }
                 ... on StixCyberObservable {
                   observable_value
+                }
+                ... on Report {
+                    name
+                }
+                ... on Grouping {
+                    name
+                }
+                ... on Note {
+                    attribute_abstract
+                    content
+                }
+                ... on Opinion {
+                    opinion
+                }
+                ... on ObservedData {
+                    name
                 }
               }
             }

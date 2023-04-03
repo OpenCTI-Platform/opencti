@@ -324,6 +324,46 @@ const StixDomainObjectTimeline = createRefetchContainer(
                   x_opencti_description
                   observable_value
                 }
+                ... on Event {
+                    name
+                    description
+                }
+                ... on Channel {
+                    name
+                    description
+                }
+                ... on Narrative {
+                    name
+                    description
+                }
+                ... on Language {
+                    name
+                }
+                ... on DataComponent {
+                    name
+                }
+                ... on DataSource {
+                    name
+                }
+                ... on Case {
+                    name
+                }
+                ... on Report {
+                    name
+                }
+                ... on Grouping {
+                    name
+                }
+                ... on Note {
+                    attribute_abstract
+                    content
+                }
+                ... on Opinion {
+                    opinion
+                }
+                ... on ObservedData {
+                    name
+                }
               }
               to {
                 ... on BasicObject {
@@ -445,6 +485,46 @@ const StixDomainObjectTimeline = createRefetchContainer(
                 ... on StixCyberObservable {
                   x_opencti_description
                   observable_value
+                }
+                ... on Event {
+                    name
+                    description
+                }
+                ... on Channel {
+                    name
+                    description
+                }
+                ... on Narrative {
+                    name
+                    description
+                }
+                ... on Language {
+                    name
+                }
+                ... on DataComponent {
+                    name
+                }
+                ... on DataSource {
+                    name
+                }
+                ... on Case {
+                    name
+                }
+                ... on Report {
+                    name
+                }
+                ... on Grouping {
+                    name
+                }
+                ... on Note {
+                    attribute_abstract
+                    content
+                }
+                ... on Opinion {
+                    opinion
+                }
+                ... on ObservedData {
+                    name
                 }
               }
             }

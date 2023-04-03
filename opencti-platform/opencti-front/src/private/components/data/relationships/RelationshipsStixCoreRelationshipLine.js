@@ -525,6 +525,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -832,6 +833,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -1017,6 +1019,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -1058,6 +1061,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -1246,6 +1250,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -1510,6 +1515,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -1740,6 +1746,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -2043,6 +2050,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2269,6 +2277,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -2498,6 +2507,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2721,6 +2731,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2970,6 +2981,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }
@@ -3353,6 +3365,7 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }

@@ -714,6 +714,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }
@@ -1489,6 +1490,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -1800,6 +1802,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2034,6 +2037,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -2271,6 +2275,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2502,6 +2507,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2705,6 +2711,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }
