@@ -672,6 +672,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               name
             }
             ... on ObservedData {
+              name
               objects(first: 1) {
                 edges {
                   node {
@@ -714,6 +715,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }
@@ -1447,6 +1449,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -1489,6 +1492,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -1758,6 +1762,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -1800,6 +1805,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -1992,6 +1998,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -2034,6 +2041,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                           attribute_abstract
                         }
                         ... on ObservedData {
+                          name
                           first_observed
                           last_observed
                         }
@@ -2229,6 +2237,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -2271,6 +2280,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2460,6 +2470,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -2502,6 +2513,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                               attribute_abstract
                             }
                             ... on ObservedData {
+                              name
                               first_observed
                               last_observed
                             }
@@ -2663,6 +2675,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             name
           }
           ... on ObservedData {
+            name
             objects(first: 1) {
               edges {
                 node {
@@ -2705,6 +2718,7 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                     attribute_abstract
                   }
                   ... on ObservedData {
+                    name
                     first_observed
                     last_observed
                   }

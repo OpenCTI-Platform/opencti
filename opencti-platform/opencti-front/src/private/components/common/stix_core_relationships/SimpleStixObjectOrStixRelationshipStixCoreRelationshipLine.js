@@ -370,6 +370,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on Opinion {
               opinion
             }
+            ... on ObservedData {
+                name
+            }
             ... on StixCyberObservable {
               id
               entity_type
@@ -600,6 +603,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             }
             ... on Opinion {
               opinion
+            }
+            ... on ObservedData {
+                name
             }
             ... on StixCyberObservable {
               id

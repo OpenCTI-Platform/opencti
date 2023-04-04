@@ -293,6 +293,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -334,6 +335,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -600,6 +602,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         name
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -641,6 +644,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -826,6 +830,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -867,6 +872,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -1055,6 +1061,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1096,6 +1103,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -1278,6 +1286,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1319,6 +1328,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -1508,6 +1518,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -1549,6 +1560,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -1808,6 +1820,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         name
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1849,6 +1862,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2034,6 +2048,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -2075,6 +2090,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -2263,6 +2279,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -2304,6 +2321,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2486,6 +2504,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -2527,6 +2546,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2732,6 +2752,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
               observable_value
             }
             ... on ObservedData {
+              name
               objects(first: 1) {
                 edges {
                   node {
@@ -2774,6 +2795,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }
@@ -3116,6 +3138,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
               observable_value
             }
             ... on ObservedData {
+              name
               objects(first: 1) {
                 edges {
                   node {
@@ -3158,6 +3181,7 @@ export const relationshipsStixCoreRelationshipsLinesSearchQuery = graphql`
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }

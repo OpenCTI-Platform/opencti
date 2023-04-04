@@ -369,6 +369,7 @@ const ContainerStixDomainObjects = createFragmentContainer(
           opinion
         }
         ... on ObservedData {
+          name
           first_observed
           last_observed
         }

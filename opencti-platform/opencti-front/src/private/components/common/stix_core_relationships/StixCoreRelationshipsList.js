@@ -347,6 +347,7 @@ const stixCoreRelationshipsListQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -388,6 +389,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -654,6 +656,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         name
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -695,6 +698,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -880,6 +884,7 @@ const stixCoreRelationshipsListQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -921,6 +926,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -1109,6 +1115,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1150,6 +1157,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -1332,6 +1340,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1373,6 +1382,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -1562,6 +1572,7 @@ const stixCoreRelationshipsListQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -1603,6 +1614,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -1862,6 +1874,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         name
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -1903,6 +1916,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2088,6 +2102,7 @@ const stixCoreRelationshipsListQuery = graphql`
                     observable_value
                   }
                   ... on ObservedData {
+                    name
                     objects(first: 1) {
                       edges {
                         node {
@@ -2129,6 +2144,7 @@ const stixCoreRelationshipsListQuery = graphql`
                             attribute_abstract
                           }
                           ... on ObservedData {
+                            name
                             first_observed
                             last_observed
                           }
@@ -2317,6 +2333,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -2358,6 +2375,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2540,6 +2558,7 @@ const stixCoreRelationshipsListQuery = graphql`
                         observable_value
                       }
                       ... on ObservedData {
+                        name
                         objects(first: 1) {
                           edges {
                             node {
@@ -2581,6 +2600,7 @@ const stixCoreRelationshipsListQuery = graphql`
                                 attribute_abstract
                               }
                               ... on ObservedData {
+                                name
                                 first_observed
                                 last_observed
                               }
@@ -2785,6 +2805,7 @@ const stixCoreRelationshipsListQuery = graphql`
               observable_value
             }
             ... on ObservedData {
+              name
               objects(first: 1) {
                 edges {
                   node {
@@ -2826,6 +2847,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }
@@ -3168,6 +3190,7 @@ const stixCoreRelationshipsListQuery = graphql`
               observable_value
             }
             ... on ObservedData {
+              name
               objects(first: 1) {
                 edges {
                   node {
@@ -3209,6 +3232,7 @@ const stixCoreRelationshipsListQuery = graphql`
                       attribute_abstract
                     }
                     ... on ObservedData {
+                      name
                       first_observed
                       last_observed
                     }
