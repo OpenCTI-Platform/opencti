@@ -45,6 +45,7 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import StixCoreObjectQuickSubscription from '../stix_core_objects/StixCoreObjectQuickSubscription';
 import MarkdownDisplay from '../../../../components/MarkdownDisplay';
 
 const useStyles = makeStyles(() => ({
@@ -487,6 +488,7 @@ const ContainerHeader = (props) => {
     adjust,
     enableSuggestions,
     onApplied,
+    enableQuickSubscription,
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -903,6 +905,12 @@ const ContainerHeader = (props) => {
                             </ToggleButton>
                           </Tooltip>
                         </React.Fragment>
+                      )}
+                      {enableQuickSubscription && (
+                        <StixCoreObjectQuickSubscription
+                          instanceId={container.id}
+                          instanceName={defaultValue(container)}
+                        />
                       )}
                       <StixCoreObjectEnrichment
                         stixCoreObjectId={container.id}

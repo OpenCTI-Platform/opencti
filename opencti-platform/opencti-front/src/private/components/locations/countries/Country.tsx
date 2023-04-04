@@ -103,6 +103,7 @@ const CountryComponent = ({
         stixDomainObject={country}
         isOpenctiAlias={true}
         PopoverComponent={CountryPopover}
+        enableQuickSubscription
       />
       <Grid
         container={true}

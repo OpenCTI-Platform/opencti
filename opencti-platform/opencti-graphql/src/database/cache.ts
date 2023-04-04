@@ -1,5 +1,5 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import type { BasicStoreIdentifier } from '../types/store';
+import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/store';
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
@@ -12,6 +12,7 @@ import {
 } from '../schema/internalObject';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
+import { convertStoreToStix } from './stix-converter';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -53,6 +54,19 @@ export const resetCacheForEntity = (entityType: string) => {
       // This entity type is not part of the caching system
     }
   });
+};
+
+export const dynamicCacheUpdater = (
+  context: AuthContext,
+  user: AuthUser,
+  instance: StoreEntity | StoreRelation,
+) => {
+  // Dynamic update of filtering cache
+  const currentFiltersValues = cache[ENTITY_TYPE_RESOLVED_FILTERS]?.values;
+  if (currentFiltersValues?.has(instance.internal_id)) {
+    const convertedInstance = convertStoreToStix(instance);
+    currentFiltersValues.set(instance.internal_id, convertedInstance);
+  }
 };
 
 export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {

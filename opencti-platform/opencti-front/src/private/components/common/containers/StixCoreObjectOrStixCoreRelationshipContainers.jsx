@@ -328,6 +328,7 @@ class StixCoreObjectOrStixCoreRelationshipContainers extends Component {
             filters={filters}
             handleRemoveFilter={this.handleRemoveFilter.bind(this)}
             className={5}
+            redirection
           />
           <div className="clearfix" />
         </div>

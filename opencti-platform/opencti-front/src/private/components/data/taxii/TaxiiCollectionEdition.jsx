@@ -197,6 +197,7 @@ const TaxiiCollectionEditionContainer = (props) => {
                 disabledPossible={true}
                 classNameNumber={2}
                 styleNumber={2}
+                redirection
               />
             </Form>
           )}

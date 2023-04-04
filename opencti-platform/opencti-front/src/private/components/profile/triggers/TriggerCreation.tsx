@@ -11,6 +11,22 @@ import { TriggersLinesPaginationQuery$variables } from './__generated__/Triggers
 import { TriggerLiveCreationMutation$data } from './__generated__/TriggerLiveCreationMutation.graphql';
 import TriggerDigestCreation from './TriggerDigestCreation';
 import TriggerLiveCreation from './TriggerLiveCreation';
+import Filters from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import SelectField from '../../../../components/SelectField';
+import {
+  TriggerCreationLiveMutation,
+  TriggerCreationLiveMutation$data,
+  TriggerEventType,
+} from './__generated__/TriggerCreationLiveMutation.graphql';
+import TriggersField from './TriggersField';
+import TimePickerField from '../../../../components/TimePickerField';
+import { dayStartDate, parse } from '../../../../utils/Time';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import SwitchField from '../../../../components/SwitchField';
+import FilterAutocomplete from '../../common/lists/FilterAutocomplete';
+import AutocompleteField from '../../../../components/AutocompleteField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   createButton: {

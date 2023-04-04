@@ -146,6 +146,7 @@ class ListCards extends Component {
           <FilterIconButton
             filters={filters}
             handleRemoveFilter={handleRemoveFilter}
+            redirection
           />
         </div>
         <div className={classes.views}>

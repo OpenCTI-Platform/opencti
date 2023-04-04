@@ -32,12 +32,12 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
-const buildQueryFilters = async (context, rawFilters, search, taskPosition) => {
+const buildQueryFilters = async (context, user, rawFilters, search, taskPosition) => {
   const types = [];
   const queryFilters = [];
   const filters = rawFilters ? JSON.parse(rawFilters) : undefined;
   if (filters) {
-    const adaptedFilters = await convertFiltersFrontendFormat(context, filters);
+    const adaptedFilters = await convertFiltersFrontendFormat(context, user, filters);
     const nestedFrom = [];
     const nestedTo = [];
     let nestedFromRole = false;
@@ -98,7 +98,7 @@ const buildQueryFilters = async (context, rawFilters, search, taskPosition) => {
   };
 };
 export const executeTaskQuery = async (context, user, filters, search, start = null) => {
-  const options = await buildQueryFilters(context, filters, search, start);
+  const options = await buildQueryFilters(context, user, filters, search, start);
   return elPaginate(context, user, READ_DATA_INDICES_WITHOUT_INFERRED, options);
 };
 

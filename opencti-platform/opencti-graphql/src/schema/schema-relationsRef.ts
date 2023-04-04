@@ -83,6 +83,10 @@ export const schemaRelationsRefDefinition = {
     return this.relationsRefCacheMap.get(entityType)?.get(inputName) ?? null;
   },
 
+  relationsRefMap(entityType: string) {
+    return new Map(schemaRelationsRefDefinition.getRelationsRef(entityType).map((n) => [n.stixName, n.label]));
+  },
+
   getInputNames(entityType: string): string[] {
     this.computeCache(entityType);
     return this.inputNamesCache.get(entityType) ?? [];

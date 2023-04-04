@@ -1,5 +1,6 @@
+import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
+import { batchLoader, createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
@@ -11,12 +12,7 @@ import type {
   TriggerType
 } from '../../generated/graphql';
 import { TriggerFilter } from '../../generated/graphql';
-import {
-  internalFindByIds,
-  internalLoadById,
-  listEntitiesPaginated,
-  storeLoadById,
-} from '../../database/middleware-loader';
+import { internalFindByIds,internalLoadById, listEntitiesPaginated, storeLoadById, } from '../../database/middleware-loader';
 import {
   BasicStoreEntityNotification,
   BasicStoreEntityTrigger,
@@ -26,8 +22,11 @@ import {
   NotificationAddInput
 } from './notification-types';
 import { now } from '../../utils/format';
-import { elCount } from '../../database/engine';
-import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { elCount, elFindByIds } from '../../database/engine';
+import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { ENTITY_FILTERS } from '../../utils/filtering';
+import { defaultValue } from '../../utils/mailData';
+import type { BasicStoreObject } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
   AuthorizedMember,
@@ -82,6 +81,9 @@ export const addTrigger = async (
   }
   const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, created: now(), updated: now() };
   const trigger = { ...triggerInput, ...defaultOpts };
+  if (trigger.event_types.length === 0) {
+    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+  }
   delete trigger.recipients;
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
@@ -103,7 +105,38 @@ export const triggersGet = (context: AuthContext, user: AuthUser, triggerIds: st
   return internalFindByIds(context, user, triggerIds) as unknown as BasicStoreEntityTrigger[];
 };
 
+export const batchResolvedInstanceFilters = async (context: AuthContext, user: AuthUser, instanceFiltersIds: string[]) => {
+  const instanceIds = instanceFiltersIds.map((u) => (Array.isArray(u) ? u : [u]));
+  const allInstanceIds = instanceIds.flat();
+  const instanceToFinds = R.uniq(allInstanceIds.filter((u) => isNotEmptyField(u)));
+  const instances = await elFindByIds(context, user, instanceToFinds, { toMap: true }) as BasicStoreObject[];
+  return instanceIds.map((ids) => ids.map((id) => ((Object.keys(instances).includes(id)) ? [id, true, defaultValue(instances[id])] : [id, false, defaultValue(instances[id])])));
+};
+
+const resolvedInstanceFiltersLoader = batchLoader(batchResolvedInstanceFilters);
+
+export const resolvedInstanceFiltersGet = async (context: AuthContext, user: AuthUser, trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger) => {
+  if (trigger.trigger_type === 'live') {
+    const filters = trigger.trigger_type === 'live' ? JSON.parse((trigger as BasicStoreEntityLiveTrigger).filters) : {};
+    const instanceFilters = ENTITY_FILTERS.map((n) => filters[n]).filter((el) => el);
+    const instanceFiltersIds = instanceFilters.flat().map((instanceFilter) => instanceFilter.id);
+    const resolvedInstanceFilters = await resolvedInstanceFiltersLoader.load(instanceFiltersIds, context, user) as [string, boolean, string | undefined][];
+    return resolvedInstanceFilters.map((n) => {
+      const [id, valid, value] = n;
+      return { id, valid, value };
+    });
+  }
+  return [];
+};
+
 export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerId: string, input: EditInput[]) => {
+  const trigger = await triggerGet(context, user, triggerId);
+  if (trigger.trigger_type === 'live') {
+    const emptyTriggerEvents = input.filter((editEntry) => editEntry.key === 'event_types' && editEntry.value.length === 0);
+    if (emptyTriggerEvents.length > 0) {
+      throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+    }
+  }
   const { element: updatedElem } = await updateAttribute(context, user, triggerId, ENTITY_TYPE_TRIGGER, input);
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
 };

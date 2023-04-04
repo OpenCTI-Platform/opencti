@@ -187,6 +187,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
             handleRemoveFilter={handleRemoveFilter}
             classNameNumber={6}
             styleNumber={2}
+            redirection
           />
           <div style={{ float: 'right', margin: 0 }}>
             <ToggleButtonGroup size="small" color="secondary" exclusive={true}>

@@ -53,3 +53,13 @@ export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy)
     value: element.createdBy.id,
     type: element.createdBy.entity_type,
   });
+
+export const convertOutcomes = (element, outcomesOptionsMap) => (element?.outcomes?.map((outcome) => ({
+  value: outcome,
+  label: outcomesOptionsMap[outcome],
+})));
+
+export const convertEventTypes = (element, eventTypesOptionsMap) => (element?.event_types?.map((event_type) => ({
+  value: event_type,
+  label: eventTypesOptionsMap[event_type],
+})));

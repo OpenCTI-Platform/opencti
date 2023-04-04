@@ -19344,6 +19344,13 @@ export enum ReportsOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type ResolvedInstanceFilter = {
+  __typename?: 'ResolvedInstanceFilter';
+  id: Scalars['String'];
+  valid: Scalars['Boolean'];
+  value?: Maybe<Scalars['String']>;
+};
+
 export type RetentionRule = {
   __typename?: 'RetentionRule';
   filters: Scalars['String'];
@@ -23903,11 +23910,13 @@ export type Trigger = BasicObject & InternalObject & {
   event_types?: Maybe<Array<TriggerEventType>>;
   filters?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
+  instance_trigger: Scalars['Boolean'];
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
-  outcomes: Array<Scalars['StixRef']>;
+  outcomes?: Maybe<Array<Scalars['StixRef']>>;
   parent_types: Array<Maybe<Scalars['String']>>;
   period?: Maybe<DigestPeriod>;
+  resolved_instance_filters?: Maybe<Array<ResolvedInstanceFilter>>;
   standard_id: Scalars['String'];
   trigger_ids?: Maybe<Array<Maybe<Scalars['String']>>>;
   trigger_time?: Maybe<Scalars['String']>;
@@ -23947,6 +23956,8 @@ export enum TriggerFilter {
   Created = 'created',
   EventTypes = 'event_types',
   GroupIds = 'group_ids',
+  Filters = 'filters',
+  InstanceTrigger = 'instance_trigger',
   TriggerType = 'trigger_type',
   UserIds = 'user_ids'
 }
@@ -23955,8 +23966,9 @@ export type TriggerLiveAddInput = {
   description?: InputMaybe<Scalars['String']>;
   event_types: Array<TriggerEventType>;
   filters?: InputMaybe<Scalars['String']>;
+  instance_trigger: Scalars['Boolean'];
   name: Scalars['String'];
-  outcomes: Array<Scalars['StixRef']>;
+  outcomes?: InputMaybe<Array<Scalars['StixRef']>>;
   recipients?: InputMaybe<Array<Scalars['String']>>;
 };
 
@@ -26477,6 +26489,7 @@ export type ResolversTypes = ResolversObject<{
   ReportsFilter: ReportsFilter;
   ReportsFiltering: ReportsFiltering;
   ReportsOrdering: ReportsOrdering;
+  ResolvedInstanceFilter: ResolverTypeWrapper<ResolvedInstanceFilter>;
   RetentionRule: ResolverTypeWrapper<RetentionRule>;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: ResolverTypeWrapper<RetentionRuleConnection>;
@@ -27141,6 +27154,7 @@ export type ResolversParentTypes = ResolversObject<{
   ReportEdge: Omit<ReportEdge, 'node'> & { node: ResolversParentTypes['Report'] };
   ReportEditMutations: Omit<ReportEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationAdd' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Report']>, contextPatch?: Maybe<ResolversParentTypes['Report']>, fieldPatch?: Maybe<ResolversParentTypes['Report']>, relationAdd?: Maybe<ResolversParentTypes['StixRefRelationship']>, relationDelete?: Maybe<ResolversParentTypes['Report']> };
   ReportsFiltering: ReportsFiltering;
+  ResolvedInstanceFilter: ResolvedInstanceFilter;
   RetentionRule: RetentionRule;
   RetentionRuleAddInput: RetentionRuleAddInput;
   RetentionRuleConnection: RetentionRuleConnection;
@@ -32342,6 +32356,13 @@ export type ReportEditMutationsResolvers<ContextType = any, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type ResolvedInstanceFilterResolvers<ContextType = any, ParentType extends ResolversParentTypes['ResolvedInstanceFilter'] = ResolversParentTypes['ResolvedInstanceFilter']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  valid?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  value?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type RetentionRuleResolvers<ContextType = any, ParentType extends ResolversParentTypes['RetentionRule'] = ResolversParentTypes['RetentionRule']> = ResolversObject<{
   filters?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -33811,11 +33832,13 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   event_types?: Resolver<Maybe<Array<ResolversTypes['TriggerEventType']>>, ParentType, ContextType>;
   filters?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  instance_trigger?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  outcomes?: Resolver<Array<ResolversTypes['StixRef']>, ParentType, ContextType>;
+  outcomes?: Resolver<Maybe<Array<ResolversTypes['StixRef']>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
+  resolved_instance_filters?: Resolver<Maybe<Array<ResolversTypes['ResolvedInstanceFilter']>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   trigger_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   trigger_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -34694,6 +34717,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   ReportConnection?: ReportConnectionResolvers<ContextType>;
   ReportEdge?: ReportEdgeResolvers<ContextType>;
   ReportEditMutations?: ReportEditMutationsResolvers<ContextType>;
+  ResolvedInstanceFilter?: ResolvedInstanceFilterResolvers<ContextType>;
   RetentionRule?: RetentionRuleResolvers<ContextType>;
   RetentionRuleConnection?: RetentionRuleConnectionResolvers<ContextType>;
   RetentionRuleEdge?: RetentionRuleEdgeResolvers<ContextType>;

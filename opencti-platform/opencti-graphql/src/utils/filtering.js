@@ -11,6 +11,9 @@ import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
+import { generateStandardId } from '../schema/identifier';
+import { defaultValue } from './mailData';
 
 // Resolutions
 export const MARKING_FILTER = 'markedBy';
@@ -20,6 +23,7 @@ export const ASSIGNEE_FILTER = 'assigneeTo';
 export const OBJECT_CONTAINS_FILTER = 'objectContains';
 export const RELATION_FROM = 'fromId';
 export const RELATION_TO = 'toId';
+export const INSTANCE_FILTER = 'elementId';
 export const NEGATION_FILTER_SUFFIX = '_not_eq';
 export const RESOLUTION_FILTERS = [
   MARKING_FILTER,
@@ -27,7 +31,15 @@ export const RESOLUTION_FILTERS = [
   ASSIGNEE_FILTER,
   OBJECT_CONTAINS_FILTER,
   RELATION_FROM,
-  RELATION_TO
+  RELATION_TO,
+  INSTANCE_FILTER
+];
+export const ENTITY_FILTERS = [
+  INSTANCE_FILTER,
+  RELATION_FROM,
+  RELATION_TO,
+  CREATED_BY_FILTER,
+  OBJECT_CONTAINS_FILTER,
 ];
 // Values
 export const LABEL_FILTER = 'labelledBy';
@@ -57,16 +69,9 @@ export const extractFilterIdsToResolve = (filters) => {
     .map(([, values]) => values.map((v) => v.id)).flat();
 };
 
-const buildResolutionMap = async (context) => {
-  const resolvedMap = new Map();
-  const platformFilters = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
-  platformFilters.forEach((element) => resolvedMap.set(element.internal_id, element.standard_id));
-  return resolvedMap;
-};
-
-export const convertFiltersFrontendFormat = async (context, filters) => {
+export const convertFiltersFrontendFormat = async (context, user, filters) => {
   // Grab all values that are internal_id that needs to be converted to standard_ids
-  const resolvedMap = await buildResolutionMap(context);
+  const resolvedMap = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   // Remap the format of specific keys
   const adaptedFilters = [];
   const filterEntries = Object.entries(filters);
@@ -75,9 +80,11 @@ export const convertFiltersFrontendFormat = async (context, filters) => {
     const values = [];
     for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
       const v = rawValues[vIndex];
-      values.push(v);
       if (resolvedMap.has(v.id)) {
-        values.push({ id: resolvedMap.get(v.id), value: v.value });
+        const instance = resolvedMap.get(v.id);
+        const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, instance);
+        values.push({ id: isUserHasAccessToElement ? v.id : '<invalid access>', value: defaultValue(instance) });
+        values.push({ id: isUserHasAccessToElement ? instance.id : '<invalid access>', value: defaultValue(instance) }); // add standard id if user has access to the element
       }
     }
     if (key.endsWith('start_date') || key.endsWith('_gt')) {
@@ -102,12 +109,12 @@ export const convertFiltersFrontendFormat = async (context, filters) => {
   return adaptedFilters;
 };
 
-export const convertFiltersToQueryOptions = async (context, filters, opts = {}) => {
+export const convertFiltersToQueryOptions = async (context, user, filters, opts = {}) => {
   const { after, before, defaultTypes = [], field = 'updated_at', orderMode = 'asc' } = opts;
   const queryFilters = [];
   const types = [...defaultTypes];
   if (filters) {
-    const adaptedFilters = await convertFiltersFrontendFormat(context, filters);
+    const adaptedFilters = await convertFiltersFrontendFormat(context, user, filters);
     for (let index = 0; index < adaptedFilters.length; index += 1) {
       // eslint-disable-next-line prefer-const
       let { key, operator, values, filterMode } = adaptedFilters[index];
@@ -125,6 +132,88 @@ export const convertFiltersToQueryOptions = async (context, filters, opts = {}) 
     queryFilters.push({ key: field, values: [before], operator: 'lte' });
   }
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: queryFilters };
+};
+
+const testRelationFromFilter = (stix, extractedIds, operator) => {
+  if (stix.type === STIX_TYPE_RELATION) {
+    const idFromFound = extractedIds.includes(stix.source_ref);
+    // If source is available but must not be
+    if (operator === 'not_eq' && idFromFound) {
+      return false;
+    }
+    // If source is not available but must be
+    if (operator === 'eq' && !idFromFound) {
+      return false;
+    }
+  } else if (stix.type === STIX_TYPE_SIGHTING) {
+    const isFromFound = extractedIds.includes(stix.sighting_of_ref);
+    // If source is available but must not be
+    if (operator === 'not_eq' && isFromFound) {
+      return false;
+    }
+    // If source is not available but must be
+    if (operator === 'eq' && !isFromFound) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+  return true;
+};
+
+const testRelationToFilter = (stix, extractedIds, operator) => {
+  if (stix.type === STIX_TYPE_RELATION) {
+    const idToFound = extractedIds.includes(stix.target_ref);
+    // If target is available but must not be
+    if (operator === 'not_eq' && idToFound) {
+      return false;
+    }
+    // If target is not available but must be
+    if (operator === 'eq' && !idToFound) {
+      return false;
+    }
+  } else if (stix.type === STIX_TYPE_SIGHTING) {
+    const idsFromFound = extractedIds.some((r) => stix.where_sighted_refs.includes(r));
+    // If target is available but must not be
+    if (operator === 'not_eq' && idsFromFound) {
+      return false;
+    }
+    // If target is not available but must be
+    if (operator === 'eq' && !idsFromFound) {
+      return false;
+    }
+  } else {
+    return false;
+  }
+  return true;
+};
+
+const testRefsFilter = (stix, extractedIds, operator) => {
+  const refs = stixRefsExtractor(stix, generateStandardId);
+  const isRefFound = extractedIds.some((r) => refs.includes(r));
+  // If ref is available but must not be
+  if (operator === 'not_eq' && isRefFound) {
+    return false;
+  }
+  // If ref is not available but must be
+  if (operator === 'eq' && !isRefFound) {
+    return false;
+  }
+  return true;
+};
+
+const testObjectContainsFilter = (stix, extractedIds, operator) => {
+  const instanceObjects = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
+  const isRefFound = extractedIds.some((r) => instanceObjects.includes(r));
+  // If ref is available but must not be
+  if (operator === 'not_eq' && isRefFound) {
+    return false;
+  }
+  // If ref is not available but must be
+  if (operator === 'eq' && !isRefFound) {
+    return false;
+  }
+  return true;
 };
 
 const isMatchNumeric = (values, operator, instanceValue) => {
@@ -150,14 +239,12 @@ const isMatchNumeric = (values, operator, instanceValue) => {
   return found;
 };
 
-export const isStixMatchFilters = async (context, user, stix, filters) => {
+export const isStixMatchFilters = async (context, user, stix, adaptedFilters, extendedElementId = false) => {
   // We can start checking the user can access the stix (marking + segregation).
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
   if (!isUserHasAccessToElement) {
     return false;
   }
-  // Pre-filter transformation to handle specific frontend format
-  const adaptedFilters = await convertFiltersFrontendFormat(context, filters);
   // User is granted, but we still need to apply filters if needed
   for (let index = 0; index < adaptedFilters.length; index += 1) {
     const { key, operator, values } = adaptedFilters[index];
@@ -188,6 +275,35 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
         // If entity type is not available but must be
         if (operator === 'eq' && !isTypeAvailable) {
           return false;
+        }
+      }
+      // Entity filtering
+      if (key === INSTANCE_FILTER) {
+        const instanceId = stix.extensions?.[STIX_EXT_OCTI]?.id;
+        const extractedIds = values.map((v) => v.id);
+        const isIdAvailable = instanceId && extractedIds.includes(instanceId);
+        if (!extendedElementId) {
+          // If entity is available but must not be
+          if (operator === 'not_eq' && isIdAvailable) {
+            return false;
+          }
+          // If entity is not available but must be
+          if (operator === 'eq' && !isIdAvailable) {
+            return false;
+          }
+        } else { // side events only
+          if (operator === 'not_eq') {
+            return false; // no application
+          }
+          // If entity is not available but must be
+          // test on relationships target/source and on objectContains
+          if (operator === 'eq'
+            && !testRelationFromFilter(stix, extractedIds, operator)
+            && !testRelationToFilter(stix, extractedIds, operator)
+            && !testRefsFilter(stix, extractedIds, operator)
+          ) {
+            return false;
+          }
         }
       }
       // Indicator type filtering
@@ -328,60 +444,18 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
       }
       // object Refs filtering
       if (key === OBJECT_CONTAINS_FILTER) {
-        const instanceObjects = [...(stix.object_refs ?? []), ...(stix.extensions?.[STIX_EXT_OCTI]?.object_refs_inferred ?? [])];
-        const ids = values.map((v) => v.id);
-        const isRefFound = ids.some((r) => instanceObjects.includes(r));
-        // If ref is available but must not be
-        if (operator === 'not_eq' && isRefFound) {
-          return false;
-        }
-        // If ref is not available but must be
-        if (operator === 'eq' && !isRefFound) {
+        if (!testObjectContainsFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
       }
       // region specific for relationships
       if (key === RELATION_FROM) { // 'fromId'
-        if (stix.type === STIX_TYPE_RELATION) {
-          const ids = values.map((v) => v.id);
-          const idFromFound = ids.includes(stix.source_ref);
-          // If source is available but must not be
-          if (operator === 'not_eq' && idFromFound) {
-            return false;
-          }
-          // If source is not available but must be
-          if (operator === 'eq' && !idFromFound) {
-            return false;
-          }
-        } else if (stix.type === STIX_TYPE_SIGHTING) {
-          const ids = values.map((v) => v.id);
-          const isFromFound = ids.includes(stix.sighting_of_ref);
-          if (!isFromFound) {
-            return false;
-          }
-        } else {
+        if (!testRelationFromFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
       }
       if (key === RELATION_TO) { // 'toId'
-        if (stix.type === STIX_TYPE_RELATION) {
-          const ids = values.map((v) => v.id);
-          const idToFound = ids.includes(stix.target_ref);
-          // If target is available but must not be
-          if (operator === 'not_eq' && idToFound) {
-            return false;
-          }
-          // If target is not available but must be
-          if (operator === 'eq' && !idToFound) {
-            return false;
-          }
-        } else if (stix.type === STIX_TYPE_SIGHTING) {
-          const ids = values.map((v) => v.id);
-          const idsFromFound = ids.some((r) => stix.where_sighted_refs.includes(r));
-          if (!idsFromFound) {
-            return false;
-          }
-        } else {
+        if (!testRelationToFilter(stix, values.map((v) => v.id), operator)) {
           return false;
         }
       }

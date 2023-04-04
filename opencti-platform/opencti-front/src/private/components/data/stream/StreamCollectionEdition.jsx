@@ -299,6 +299,7 @@ const StreamCollectionEditionContainer = (props) => {
                 classNameNumber={2}
                 styleNumber={2}
                 handleRemoveFilter={handleRemoveFilter}
+                redirection
               />
             </Form>
           )}

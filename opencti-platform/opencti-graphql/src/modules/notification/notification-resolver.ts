@@ -4,11 +4,13 @@ import { TriggerType } from '../../generated/graphql';
 import {
   addTrigger,
   myNotificationsFind,
+  myTriggersFind,
   myUnreadNotificationsCount,
   notificationDelete,
   notificationEditRead,
   notificationGet,
   notificationsFind,
+  resolvedInstanceFiltersGet,
   triggerDelete,
   triggerEdit,
   triggerGet,
@@ -17,7 +19,12 @@ import {
 } from './notification-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
-import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
+import {
+  BasicStoreEntityLiveTrigger,
+  BasicStoreEntityTrigger,
+  ENTITY_TYPE_NOTIFICATION,
+  NOTIFICATION_NUMBER
+} from './notification-types';
 import { getUserAccessRight } from '../../utils/access';
 
 const notificationResolvers: Resolvers = {
@@ -34,6 +41,7 @@ const notificationResolvers: Resolvers = {
   Trigger: {
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
     currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
+    resolved_instance_filters: (trigger: BasicStoreEntityLiveTrigger | BasicStoreEntityTrigger, _, context) => resolvedInstanceFiltersGet(context, context.user, trigger),
   },
   TriggerFilter: {
     user_ids: 'authorized_members.id',

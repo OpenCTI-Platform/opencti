@@ -19,7 +19,7 @@ const DialogFilters = ({
   open,
   filters,
   handleCloseFilters,
-  handleRemoveFilter,
+  defaultHandleRemoveFilter,
   handleSearch,
   filterElement,
 }) => {
@@ -47,7 +47,7 @@ const DialogFilters = ({
           {!R.isEmpty(filters) && (
             <FilterIconButton
               filters={filters}
-              handleRemoveFilter={handleRemoveFilter}
+              handleRemoveFilter={defaultHandleRemoveFilter}
               classNameNumber={4}
               styleNumber={2}
             />

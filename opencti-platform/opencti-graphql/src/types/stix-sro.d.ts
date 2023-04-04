@@ -9,12 +9,14 @@ export interface RelationExtension extends StixOpenctiExtension {
   extension_type : 'property-extension' | 'new-sro';
   source_value: string;
   source_ref: string;
-  source_ref_object_marking_refs: Array<string>;
   source_type: string;
+  source_ref_object_marking_refs: Array<string>;
+  source_ref_granted_refs: Array<string>;
   target_value: string;
   target_ref: string;
-  target_ref_object_marking_refs: Array<string>;
   target_type: string;
+  target_ref_object_marking_refs: Array<string>;
+  target_ref_granted_refs: Array<string>;
   kill_chain_phases: Array<StixKillChainPhase>;
 }
 export interface StixRelation extends StixRelationshipObject {
@@ -34,12 +36,14 @@ export interface StixRelation extends StixRelationshipObject {
 export interface SightingExtension extends StixOpenctiExtension {
   sighting_of_value: string;
   sighting_of_ref: StixId;
-  sighting_of_ref_object_marking_refs: Array<string>;
   sighting_of_type: string;
+  sighting_of_ref_object_marking_refs: Array<string>;
+  sighting_of_ref_granted_refs: Array<string>;
   where_sighted_values: Array<string>;
   where_sighted_refs: Array<StixId>;
   where_sighted_types: Array<string>;
   where_sighted_refs_object_marking_refs: Array<string>;
+  where_sighted_refs_granted_refs: Array<string>;
   negative: boolean;
 }
 export interface StixSighting extends StixRelationshipObject {

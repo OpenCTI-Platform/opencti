@@ -38,6 +38,7 @@ export interface UseLocalStorageHelpers {
   handleRemoveFilter: (key: string, id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
+  handleSwitchFilter: HandleAddFilter;
   handleToggleExports: () => void;
   handleSetNumberOfElements: (value: {
     number?: number | string;
@@ -284,6 +285,18 @@ export const usePaginationLocalStorage = <U>(
           filters: R.assoc(k, [{ id, value }], c.filters),
         }));
       }
+    },
+    handleSwitchFilter: (
+      k: string,
+      id: string,
+      value: Record<string, unknown> | string,
+      event?: SyntheticEvent,
+    ) => {
+      if (event) {
+        event.stopPropagation();
+        event.preventDefault();
+      }
+      setValue((c) => ({ ...c, filters: R.assoc(k, [{ id, value }], c.filters) }));
     },
     handleChangeView: (value: string) => setValue((c) => ({ ...c, view: value })),
     handleToggleExports: () => setValue((c) => ({ ...c, openExports: !c.openExports })),

@@ -32,9 +32,24 @@ export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: un
     .concat(RELATIONS_STIX_ATTRIBUTES);
   return stixNames.map((key) => {
     if (key === 'granted_refs' && data.extensions[STIX_EXT_OCTI][key]) {
-      // eslint-disable-next-line
       return data.extensions[STIX_EXT_OCTI][key];
     }
     return data[key] || [];
   }).flat();
+};
+
+export const resolvedRefsExtractor = (data: any) => {
+  const { type } = data.extensions[STIX_EXT_OCTI];
+  const stixNames = schemaRelationsRefDefinition.getStixNames(type)
+    .filter((key) => !RELATIONS_EMBEDDED_STIX_ATTRIBUTES.includes(key))
+    .concat(RELATIONS_STIX_ATTRIBUTES);
+  const mapContent = stixNames.map((key) => {
+    if (key === 'granted_refs' && data.extensions[STIX_EXT_OCTI][key]) {
+      return [data.extensions[STIX_EXT_OCTI][key], schemaRelationsRefDefinition.relationsRefMap(type).get(key)];
+    }
+    return data[key] && schemaRelationsRefDefinition.relationsRefMap(type).has(key)
+      ? [data[key], schemaRelationsRefDefinition.relationsRefMap(type).get(key)]
+      : undefined;
+  }).filter((n) => n) as [string, string | undefined][];
+  return new Map(mapContent);
 };

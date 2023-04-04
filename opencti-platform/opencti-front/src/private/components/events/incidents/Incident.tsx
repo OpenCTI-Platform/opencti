@@ -110,6 +110,7 @@ const Incident = ({
         entityType={'Incident'}
         stixDomainObject={incident}
         PopoverComponent={IncidentPopover}
+        enableQuickSubscription
       />
       <Grid
         container={true}

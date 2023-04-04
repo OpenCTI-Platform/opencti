@@ -24,6 +24,13 @@ export const directFilters = [
   'elementId',
   'note_types',
   'context',
+  'trigger_type',
+  'instance_trigger',
+];
+export const inlineFilters = [
+  'is_read',
+  'trigger_type',
+  'instance_trigger',
 ];
 // filters that can have 'eq' or 'not_eq' operator
 export const EqFilters = [
@@ -64,6 +71,19 @@ const uniqFilters = [
   'x_opencti_score_lte',
   'toSightingId',
   'basedOn',
+];
+// filters that targets entities instances
+export const entityFilters = [
+  'elementId',
+  'elementId_not_eq',
+  'fromId',
+  'toId',
+  'createdBy',
+  'createdBy_not_eq',
+  'objectContains',
+  'objectContains_not_eq',
+  'indicates',
+  'indicates_not_eq',
 ];
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key)

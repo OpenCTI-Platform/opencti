@@ -3,13 +3,13 @@ import { FilterListOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import Popover from '@mui/material/Popover';
 import Tooltip from '@mui/material/Tooltip';
-import * as R from 'ramda';
-import { RayStartArrow, RayEndArrow } from 'mdi-material-ui';
+import { RayEndArrow, RayStartArrow } from 'mdi-material-ui';
 import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
-import { directFilters } from '../../../../utils/filters/filtersUtils';
+import { directFilters, inlineFilters } from '../../../../utils/filters/filtersUtils';
 import FilterAutocomplete from './FilterAutocomplete';
+import InlineFilters from './InlineFilters';
 
 const useStyles = makeStyles(() => ({
   filters: {
@@ -24,6 +24,10 @@ const useStyles = makeStyles(() => ({
     float: 'left',
     margin: '5px 10px 0 10px',
     width: 200,
+  },
+  booleanFilter: {
+    float: 'left',
+    margin: '5px 10px 0 10px',
   },
 }));
 
@@ -47,6 +51,8 @@ const ListFilters = ({
   availableRelationFilterTypes,
   allEntityTypes,
   defaultHandleAddFilter,
+  defaultHandleRemoveFilter,
+  handleSwitchFilter,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -108,8 +114,19 @@ const ListFilters = ({
         {filterElement}
       </Popover>
       {!noDirectFilters
-        && R.filter((n) => R.includes(n, directFilters), availableFilterKeys).map(
+        && availableFilterKeys.filter((n) => directFilters.includes(n)).map(
           (filterKey) => {
+            if (inlineFilters.includes(filterKey)) {
+              return (
+                <div className={classes.booleanFilter} key={filterKey}>
+                  <InlineFilters
+                    filterKey={filterKey}
+                    defaultHandleRemoveFilter={defaultHandleRemoveFilter}
+                    handleSwitchFilter={handleSwitchFilter}
+                  />
+                </div>
+              );
+            }
             return (
               <div className={classes.autocomplete} key={filterKey}>
                 <FilterAutocomplete
