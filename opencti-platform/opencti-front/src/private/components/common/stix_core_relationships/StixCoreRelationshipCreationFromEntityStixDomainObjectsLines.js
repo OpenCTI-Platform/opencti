@@ -375,6 +375,7 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                     explanation
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {

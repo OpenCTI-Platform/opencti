@@ -878,6 +878,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -1258,6 +1259,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -1540,6 +1542,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -1824,6 +1827,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -2102,6 +2106,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -2386,6 +2391,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name  
                   objects(first: 1) {
                     edges {
                       node {
@@ -2765,6 +2771,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       name
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -3046,6 +3053,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
+                  name
                   objects(first: 1) {
                     edges {
                       node {
@@ -3330,6 +3338,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -3608,6 +3617,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                       observable_value
                     }
                     ... on ObservedData {
+                      name
                       objects(first: 1) {
                         edges {
                           node {
@@ -3908,6 +3918,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             observable_value
           }
           ... on ObservedData {
+            name
             objects(first: 1) {
               edges {
                 node {
@@ -4393,6 +4404,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             observable_value
           }
           ... on ObservedData {
+            name
             objects(first: 1) {
               edges {
                 node {
