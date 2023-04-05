@@ -737,8 +737,8 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     { name: 'i_last_seen_day', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_last_seen_month', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'i_last_seen_year', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'architecture_execution_envs', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'implementation_languages', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'architecture_execution_envs', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
+    { name: 'implementation_languages', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
     { name: 'capabilities', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false }
