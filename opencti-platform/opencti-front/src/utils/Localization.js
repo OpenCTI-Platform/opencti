@@ -509,6 +509,8 @@ const i18n = {
       'Correlation view': 'Vista de las correlaciones',
       'Matrix view': 'Vista en matriz',
       'Open export panel': 'Abrir panel de exportación',
+      'Export is disabled because too many entities are targeted (maximum number of entities is: ':
+        'La exportación está deshabilitada porque hay demasiadas entidades de destino (el número máximo de entidades es: ',
       'Exports panel': 'Panel de exportación',
       'Exports list': 'Lista de exportaciones',
       'Export as image': 'Exportar como imagen',
@@ -2290,6 +2292,8 @@ const i18n = {
       'Correlation view': 'Vue des corrélations',
       'Matrix view': 'Vue matricielle',
       'Open export panel': "Ouvrir le volet d'export",
+      'Export is disabled because too many entities are targeted (maximum number of entities is: ':
+        'L’exportation est désactivée car trop d’entités sont ciblées (le nombre maximal d’entités est de : ',
       'Exports panel': 'Volet exports',
       'Exports list': 'Liste des exports',
       'Export as image': 'Exporter comme image',
@@ -4025,6 +4029,8 @@ const i18n = {
       'Correlation view': '相関の表示',
       'Matrix view': 'マトリックス表示',
       'Open export panel': '出力画面を開く',
+      'Export is disabled because too many entities are targeted (maximum number of entities is: ':
+        'ターゲットとするエンティティが多すぎるため、エクスポートは無効になっています (エンティティの最大数は次のとおりです)。',
       'Exports panel': '出力画面',
       'Exports list': '出力結果一覧',
       'Export as image': '画像出力',
@@ -5701,6 +5707,8 @@ const i18n = {
       'Correlation view': '关联视图',
       'Matrix view': '矩阵视图',
       'Open export panel': '打开导出面板',
+      'Export is disabled because too many entities are targeted (maximum number of entities is: ':
+        '匯出被禁用，因為目標實體太多（最大實體數為：',
       'Exports panel': '导出面板',
       'Exports list': '导出列表',
       'Export as image': '导出成图像',

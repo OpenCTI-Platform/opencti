@@ -22,6 +22,7 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import ToggleButton from '@mui/material/ToggleButton';
 import Tooltip from '@mui/material/Tooltip';
+import { ToggleButtonGroup } from '@mui/material';
 import ItemIcon from '../../components/ItemIcon';
 import { searchStixCoreObjectsLinesSearchQuery } from './search/SearchStixCoreObjectsLines';
 import { fetchQuery } from '../../relay/environment';
@@ -35,6 +36,7 @@ import useGranted, {
 } from '../../utils/hooks/useGranted';
 import { hexToRGB, itemColor } from '../../utils/Colors';
 import ItemMarkings from '../../components/ItemMarkings';
+import { export_max_size } from '../../utils/utils';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(500)));
 
@@ -232,6 +234,7 @@ const SearchBulk = () => {
   const [orderAsc, setOrderAsc] = useState(true);
   const [loading, setLoading] = useState(false);
   const [paginationOptions, setPaginationOptions] = useState({});
+  const exportDisabled = resolvedEntities.length > export_max_size;
   useEffect(() => {
     const subscription = SEARCH$.subscribe({
       next: () => {
@@ -396,20 +399,45 @@ const SearchBulk = () => {
       >
         {t('Search for multiple entities')}
       </Typography>
-      <ToggleButton
-        value="export"
-        aria-label="export"
+      <ToggleButtonGroup
         size="small"
-        onClick={() => setOpenExports(true)}
+        color="secondary"
         style={{ float: 'right', marginTop: -5 }}
       >
-        <Tooltip title={t('Open export panel')}>
-          <FileDownloadOutlined
-            fontSize="small"
-            color={openExports ? 'secondary' : 'primary'}
-          />
-        </Tooltip>
-      </ToggleButton>
+        {!exportDisabled
+          && <ToggleButton
+            value="export"
+            aria-label="export"
+            size="small"
+            onClick={() => setOpenExports(true)}
+          >
+            <Tooltip title={t('Open export panel')}>
+              <FileDownloadOutlined
+                fontSize="small"
+                color={openExports ? 'secondary' : 'primary'}
+              />
+            </Tooltip>
+          </ToggleButton>
+        }
+        {exportDisabled
+        && <Tooltip
+            title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}
+          >
+            <span>
+            <ToggleButton
+            value="export"
+            aria-label="export"
+            size="small"
+            disabled={true}
+            >
+              <FileDownloadOutlined
+                fontSize="small"
+              />
+            </ToggleButton>
+            </span>
+          </Tooltip>
+        }
+      </ToggleButtonGroup>
       <div className="clearfix" />
       {isGrantedToExports && (
         <StixCoreObjectsExports

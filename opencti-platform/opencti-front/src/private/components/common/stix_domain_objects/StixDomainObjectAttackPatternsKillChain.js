@@ -29,6 +29,7 @@ import ExportButtons from '../../../../components/ExportButtons';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import Filters from '../lists/Filters';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { export_max_size } from '../../../../utils/utils';
 
 const styles = (theme) => ({
   container: {
@@ -124,6 +125,7 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
         R.map((n) => n.node),
       )(data.stixCoreRelationships.edges);
     }
+    const exportDisabled = targetEntities.length > export_max_size;
     return (
       <div>
         <div className={classes.parameters}>
@@ -220,8 +222,9 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                   />
                 </ToggleButton>
               </Tooltip>
-              {typeof handleToggleExports === 'function' && (
-                <Tooltip title={t('Open export panel')}>
+              {typeof handleToggleExports === 'function'
+                && !exportDisabled
+                && <Tooltip title={t('Open export panel')}>
                   <ToggleButton
                     value="export"
                     aria-label="export"
@@ -233,7 +236,24 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
                     />
                   </ToggleButton>
                 </Tooltip>
-              )}
+              }
+              {typeof handleToggleExports === 'function'
+                && exportDisabled
+                && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
+                  <span>
+                  <ToggleButton
+                    size="small"
+                    value="export"
+                    aria-label="export"
+                    disabled={true}
+                  >
+                    <FileDownloadOutlined
+                      fontSize="small"
+                    />
+                  </ToggleButton>
+                  </span>
+                </Tooltip>
+              }
             </ToggleButtonGroup>
             <div className={classes.export}>
               <ExportButtons
