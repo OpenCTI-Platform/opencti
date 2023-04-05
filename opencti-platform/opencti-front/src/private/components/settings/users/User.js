@@ -460,9 +460,9 @@ class UserComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 20 }}
+          style={{ marginTop: 35 }}
         >
-          <Grid item={true} xs={12}>
+          <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Operations')}
             </Typography>
@@ -513,8 +513,10 @@ class UserComponent extends Component {
               />
             </Paper>
           </Grid>
+          <Grid item={true} xs={6} style={{ paddingTop: 8 }}>
+            <UserHistory userId={user.id} />
+          </Grid>
         </Grid>
-        <UserHistory userId={user.id} />
         <Fab
           onClick={this.handleOpenUpdate.bind(this)}
           color="secondary"
