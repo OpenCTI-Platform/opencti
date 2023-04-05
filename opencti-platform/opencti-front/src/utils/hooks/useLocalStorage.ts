@@ -128,9 +128,8 @@ const setStoredValueToHistory = (
   if (!R.equals(urlParams, buildParamsFromHistory(finalParams))) {
     const effectiveParams = new URLSearchParams(urlParams);
     if (
-      Object.entries(urlParams).some(
-        ([k, v]) => initialValue[k as keyof LocalStorage] !== v,
-      )
+      Object.entries(urlParams)
+        .some(([k, v]) => initialValue[k as keyof LocalStorage] !== v)
     ) {
       window.history.replaceState(null, '', `?${effectiveParams.toString()}`);
     } else {
@@ -159,6 +158,12 @@ const useLocalStorage = (
       if (isEmptyField(value)) {
         value = initialValue;
       }
+      // Need to clear the local storage ?
+      if (!R.equals(removeEmptyFields(value), value)) {
+        const initialState = removeEmptyFields(value);
+        window.localStorage.setItem(key, JSON.stringify(initialState));
+        return initialState;
+      }
       // Values from uri must be prioritized on initial loading
       // Localstorage must be rewritten to ensure consistency
       if (isNotEmptyField(finalParams)) {
@@ -179,7 +184,8 @@ const useLocalStorage = (
   ) => {
     try {
       // Allow value to be a function so we have same API as useState
-      const valueToStore = value instanceof Function ? value(storedValue) : value;
+      let valueToStore = value instanceof Function ? value(storedValue) : value;
+      valueToStore = removeEmptyFields(valueToStore);
       // Save state
       setStoredValue(valueToStore);
       // Save to local storage + re-align uri if needed
