@@ -460,7 +460,7 @@ class UserComponent extends Component {
           container={true}
           spacing={3}
           classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 30 }}
+          style={{ marginTop: 35 }}
         >
           <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
             <Typography variant="h4" gutterBottom={true}>
