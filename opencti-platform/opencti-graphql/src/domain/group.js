@@ -1,4 +1,3 @@
-import { assoc } from 'ramda';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
@@ -12,12 +11,19 @@ import {
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
-import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_MEMBER_OF } from '../schema/internalRelationship';
+import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF
+} from '../schema/internalRelationship';
 import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
+
+export const GROUP_DEFAULT = 'Default';
 
 const groupSessionRefresh = async (context, user, groupId) => {
   const members = await listThroughGetFrom(context, user, [groupId], RELATION_MEMBER_OF, ENTITY_TYPE_USER);
@@ -40,6 +46,11 @@ export const batchMembers = async (context, user, groupIds, opts = {}) => {
 export const batchMarkingDefinitions = async (context, user, groupIds) => {
   const opts = { paginate: false };
   return batchListThroughGetTo(context, user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+};
+
+export const batchRoles = async (context, user, groupIds) => {
+  const opts = { paginate: false };
+  return batchListThroughGetTo(context, user, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, opts);
 };
 
 export const addGroup = async (context, user, group) => {
@@ -67,9 +78,15 @@ export const groupAddRelation = async (context, user, groupId, input) => {
   }
   let finalInput;
   if (input.fromId) {
-    finalInput = assoc('toId', groupId, input);
+    finalInput = {
+      ...input,
+      toId: groupId,
+    };
   } else if (input.toId) {
-    finalInput = assoc('fromId', groupId, input);
+    finalInput = {
+      ...input,
+      fromId: groupId,
+    };
   }
   const createdRelation = await createRelation(context, user, finalInput);
   await groupSessionRefresh(context, user, groupId);

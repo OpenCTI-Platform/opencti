@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { RoleLine, RoleLineDummy } from './RoleLine';
 
@@ -9,19 +8,15 @@ const nbOfRowsToLoad = 50;
 
 class RolesLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
+    const { initialLoading, dataColumns, relay, paginationOptions, data } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['roles', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['roles', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={data?.roles?.edges ?? []}
+        globalCount={data?.roles?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<RoleLine />}
         DummyLineComponent={<RoleLineDummy />}
         dataColumns={dataColumns}

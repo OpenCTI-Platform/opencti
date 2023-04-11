@@ -21,6 +21,7 @@ const rootPrivateQuery = graphql`
       capabilities {
         name
       }
+      default_hidden_types
     }
     settings {
       platform_map_tile_server_dark

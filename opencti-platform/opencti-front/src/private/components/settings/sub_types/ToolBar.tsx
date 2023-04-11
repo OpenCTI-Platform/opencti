@@ -157,7 +157,7 @@ const ToolBar: FunctionComponent<{
     setTitle(t('Hidden entity types'));
     setDescription(
       t(
-        'This configuration hidde a specific entity type across the entire platform.',
+        'This configuration hide a specific entity type across the entire platform.',
       ),
     );
     setKey('platform_hidden_type');

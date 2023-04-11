@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createFragmentContainer } from 'react-relay';
-import { compose, map, pathOr, pipe, propOr, propEq, find } from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { compose, find, propEq } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -81,10 +81,7 @@ class UserEditionGroupsComponent extends Component {
 
   render() {
     const { classes, user } = this.props;
-    const userGroups = pipe(
-      pathOr([], ['groups', 'edges']),
-      map((n) => ({ id: n.node.id })),
-    )(user);
+    const userGroups = (user?.groups?.edges ?? []).map((n) => ({ id: n.node.id }));
     return (
       <div>
         <QueryRenderer
@@ -93,10 +90,7 @@ class UserEditionGroupsComponent extends Component {
           render={({ props }) => {
             if (props) {
               // Done
-              const groups = pipe(
-                pathOr([], ['groups', 'edges']),
-                map((n) => n.node),
-              )(props);
+              const groups = (props.groups?.edges ?? []).map((n) => n.node);
               return (
                 <List className={classes.root}>
                   {groups.map((group) => {
@@ -108,7 +102,7 @@ class UserEditionGroupsComponent extends Component {
                         </ListItemIcon>
                         <ListItemText
                           primary={group.name}
-                          secondary={propOr('-', 'description', group)}
+                          secondary={group.description ?? ''}
                         />
                         <ListItemSecondaryAction>
                           <Checkbox

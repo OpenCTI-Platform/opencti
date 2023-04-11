@@ -14,7 +14,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
-import { ConnectionHandler } from 'relay-runtime';
 import inject18n from '../../../../components/i18n';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import Loader from '../../../../components/Loader';
@@ -60,7 +59,7 @@ const rolePopoverDeletionMutation = graphql`
   }
 `;
 
-const roleEditionQuery = graphql`
+export const roleEditionQuery = graphql`
   query RolePopoverEditionQuery($id: String!) {
     role(id: $id) {
       ...RoleEdition_role
@@ -116,20 +115,10 @@ class RolePopover extends Component {
       variables: {
         id: this.props.roleId,
       },
-      updater: (store) => {
-        const container = store.getRoot();
-        const payload = store.getRootField('roleEdit');
-        const userProxy = store.get(container.getDataID());
-        const conn = ConnectionHandler.getConnection(
-          userProxy,
-          'Pagination_roles',
-          this.props.paginationOptions,
-        );
-        ConnectionHandler.deleteNode(conn, payload.getValue('delete'));
-      },
       onCompleted: () => {
         this.setState({ deleting: false });
-        this.handleCloseDelete();
+        this.handleClose();
+        this.props.history.push('/dashboard/settings/accesses/roles');
       },
     });
   }

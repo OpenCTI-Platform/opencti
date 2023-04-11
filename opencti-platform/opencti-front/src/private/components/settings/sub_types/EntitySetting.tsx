@@ -1,4 +1,4 @@
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
@@ -6,8 +6,16 @@ import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import { Link } from 'react-router-dom';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import { SecurityOutlined } from '@mui/icons-material';
+import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
+import { EntitySettingsRolesHiddenTypesQuery } from './__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
+import { isEmptyField } from '../../../../utils/utils';
 import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 
@@ -66,10 +74,26 @@ export const entitySettingsPatch = graphql`
   }
 `;
 
+export const entitySettingsRolesHiddenTypesQuery = graphql`
+    query EntitySettingsRolesHiddenTypesQuery($search: String) {
+        roles(search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                    default_hidden_types
+                }
+            }
+        }
+    }
+`;
+
 const EntitySetting = ({
   entitySettingsData,
+  roleQueryRef,
 }: {
   entitySettingsData: SubType_subType$data['settings'];
+  roleQueryRef: PreloadedQuery<EntitySettingsRolesHiddenTypesQuery>;
 }) => {
   const { t } = useFormatter();
   const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
@@ -78,6 +102,7 @@ const EntitySetting = ({
   }
 
   const [commit] = useMutation(entitySettingsPatch);
+
   const handleSubmitField = (name: string, value: boolean) => {
     commit({
       variables: {
@@ -86,8 +111,97 @@ const EntitySetting = ({
       },
     });
   };
+  const computeHiddenInRoles = () => {
+    const data = usePreloadedQuery<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery, roleQueryRef);
+    const rolesData = data.roles?.edges;
+    const result = [];
+    if (rolesData) {
+      for (const role of rolesData) {
+        if (role && role.node.default_hidden_types) {
+          if (role.node.default_hidden_types.includes(entitySetting.target_type)) {
+            result.push(role.node);
+          }
+        }
+      }
+    }
+    return result;
+  };
+  const hiddenInRoles = computeHiddenInRoles();
   return (
     <Grid container={true} spacing={3}>
+      <Grid item={true} xs={6}>
+        <div>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+            style={{ float: 'left' }}
+          >
+            {t('Hidden entity type')}
+          </Typography>
+          <Tooltip
+            title={
+              !entitySetting.availableSettings.includes('platform_hidden_type')
+                ? t('This configuration is not available for this entity type')
+                : t(
+                  'This configuration hide a specific entity type across the entire platform.',
+                )
+            }
+          >
+            <InformationOutline
+              fontSize="small"
+              color="primary"
+              style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
+            />
+          </Tooltip>
+          <div className="clearfix" />
+          <FormGroup>
+            <FormControlLabel
+              control={
+                <Switch
+                  disabled={
+                    !entitySetting.availableSettings.includes(
+                      'platform_hidden_type',
+                    )
+                  }
+                  checked={entitySetting.platform_hidden_type ?? false}
+                  onChange={() => handleSubmitField(
+                    'platform_hidden_type',
+                    !entitySetting.platform_hidden_type,
+                  )
+                  }
+                />
+              }
+              label={t('Hide in the platform')}
+            />
+          </FormGroup>
+        </div>
+        <div style={{ marginTop: 20 }}>
+          <Typography
+            variant="h3"
+            gutterBottom={true}
+          >
+            {t('Hidden in roles')}
+          </Typography>
+          <List>
+            {hiddenInRoles.map((role) => (
+              <ListItem
+                key={role.id}
+                dense={true}
+                divider={true}
+                button={true}
+                component={Link}
+                to={`/dashboard/settings/accesses/roles/${role.id}`}
+              >
+                <ListItemIcon>
+                  <SecurityOutlined color="primary" />
+                </ListItemIcon>
+                <ListItemText primary={role.name} />
+              </ListItem>
+            ))}
+            {isEmptyField(hiddenInRoles) && <div>{'-'}</div>}
+          </List>
+        </div>
+      </Grid>
       <Grid item={true} xs={6}>
         <div>
           <Typography
@@ -137,53 +251,6 @@ const EntitySetting = ({
           </FormGroup>
         </div>
         <div style={{ marginTop: 20 }}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-            style={{ float: 'left' }}
-          >
-            {t('Hidden entity type')}
-          </Typography>
-          <Tooltip
-            title={
-              !entitySetting.availableSettings.includes('platform_hidden_type')
-                ? t('This configuration is not available for this entity type')
-                : t(
-                  'This configuration hidde a specific entity type across the entire platform.',
-                )
-            }
-          >
-            <InformationOutline
-              fontSize="small"
-              color="primary"
-              style={{ cursor: 'default', margin: '-2px 0 0 10px' }}
-            />
-          </Tooltip>
-          <div className="clearfix" />
-          <FormGroup>
-            <FormControlLabel
-              control={
-                <Switch
-                  disabled={
-                    !entitySetting.availableSettings.includes(
-                      'platform_hidden_type',
-                    )
-                  }
-                  checked={entitySetting.platform_hidden_type ?? false}
-                  onChange={() => handleSubmitField(
-                    'platform_hidden_type',
-                    !entitySetting.platform_hidden_type,
-                  )
-                  }
-                />
-              }
-              label={t('Hide in the platform')}
-            />
-          </FormGroup>
-        </div>
-      </Grid>
-      <Grid item={true} xs={6}>
-        <div>
           <Typography
             variant="h3"
             gutterBottom={true}

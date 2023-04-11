@@ -1,16 +1,37 @@
 import MenuItem from '@mui/material/MenuItem';
 import Checkbox from '@mui/material/Checkbox';
-import React, { ReactElement, useState } from 'react';
+import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
-import { useMutation } from 'react-relay';
+import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { entitySettingsPatch } from '../sub_types/EntitySetting';
+import { entitySettingsPatch, entitySettingsRolesHiddenTypesQuery } from '../sub_types/EntitySetting';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
+import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
+import { Theme } from '../../../../components/Theme';
+import {
+  EntitySettingsRolesHiddenTypesQuery,
+} from '../sub_types/__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
 
-const groups = new Map<string, string[]>([
+export const hiddenTypesListRoleMutationFieldPatch = graphql`
+    mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
+        $id: ID!
+        $input: [EditInput]!
+    ) {
+        roleEdit(id: $id) {
+            fieldPatch(input: $input) {
+                id
+                name
+                default_hidden_types
+            }
+        }
+    }
+`;
+
+export const groups = new Map<string, string[]>([
   ['Analysis', ['Report', 'Grouping', 'Note', 'Opinion']],
   ['Cases', ['Case']],
   ['Events', ['Incident', 'Observed-Data']],
@@ -35,7 +56,7 @@ const groups = new Map<string, string[]>([
 ]);
 const groupKeys = Array.from(groups.keys());
 
-const findGroupKey = (value: string) => Array.from(groups.entries())
+export const findGroupKey = (value: string) => Array.from(groups.entries())
   .filter(({ 1: v }) => v.includes(value))
   .map(([k]) => k)[0];
 
@@ -59,6 +80,13 @@ const itemsFromGroup = (values: string[]) => {
   return values;
 };
 
+const useStyles = makeStyles<Theme>((theme) => ({
+  roleIndication: {
+    fontSize: 12,
+    color: theme.palette.primary.main,
+  },
+}));
+
 interface EntitySettingHidden {
   id: string;
   target_type: string;
@@ -66,10 +94,16 @@ interface EntitySettingHidden {
   group: string;
 }
 
-const HiddenTypesList = () => {
+interface HiddenTypesListProps {
+  role?: RoleEditionOverview_role$data,
+  queryRef?: PreloadedQuery<EntitySettingsRolesHiddenTypesQuery>,
+}
+
+const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role, queryRef }) => {
   const { t } = useFormatter();
-  const entitySettings = useEntitySettings()
-    .filter(({ platform_hidden_type }) => platform_hidden_type !== null)
+  const classes = useStyles();
+
+  const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
       id: node.id,
       target_type: node.target_type,
@@ -78,6 +112,33 @@ const HiddenTypesList = () => {
     }))
     .filter((entitySetting) => entitySetting.group !== undefined)
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
+
+  const hiddenTypesWithRoles = () => {
+    if (queryRef) {
+      const data = usePreloadedQuery<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery, queryRef);
+      const rolesData = data.roles?.edges;
+      let result = {} as Record<string, string[]>;
+      for (const n of entitySettings) {
+        result = {
+          ...result,
+          [n.target_type]: [],
+        };
+      }
+      if (rolesData) {
+        for (const r of rolesData) {
+          if (r && r.node.default_hidden_types) {
+            for (const hidden_type of r.node.default_hidden_types) {
+              if (hidden_type) {
+                result[hidden_type].push(r.node.name);
+              }
+            }
+          }
+        }
+      }
+      return result;
+    }
+    return undefined;
+  };
   const entitySettingsHiddenGrouped = entitySettings.reduce(
     (entryMap, entry) => {
       const values = entryMap.get(entry.group) || [];
@@ -87,15 +148,22 @@ const HiddenTypesList = () => {
     },
     new Map<string, EntitySettingHidden[]>(),
   );
-  const [entitySettingsEntityType, setEntitySettingsEntityType] = useState<
-  string[]
-  >([
-    ...entitySettings
-      .filter((node) => node.hidden)
-      .map((node) => node.target_type),
+
+  let initialEntitySettingsEntityType;
+  if (role) {
+    initialEntitySettingsEntityType = (role.default_hidden_types ?? []) as string[];
+  } else {
+    initialEntitySettingsEntityType = entitySettings.filter((node) => node.hidden).map((node) => node.target_type);
+  }
+
+  const [entitySettingsEntityType, setEntitySettingsEntityType] = useState<string[]>([
+    ...initialEntitySettingsEntityType,
   ]);
-  const [commit] = useMutation(entitySettingsPatch);
-  const handleChange = (values: string[]) => {
+
+  const mutation = role ? hiddenTypesListRoleMutationFieldPatch : entitySettingsPatch;
+  const [commit] = useMutation(mutation);
+
+  const handleChangeGlobal = (values: string[]) => {
     const realValues = itemsFromGroup(values) ?? [];
     const added = realValues.filter(
       (x) => !entitySettingsEntityType.includes(x),
@@ -127,12 +195,41 @@ const HiddenTypesList = () => {
       },
     });
   };
+
+  const handleChangeIfRole = (values: string[]) => {
+    const realValues = itemsFromGroup(values) ?? [];
+    const added = realValues.filter((x) => !entitySettingsEntityType.includes(x));
+    const removed = entitySettingsEntityType.filter((x) => !realValues.includes(x));
+
+    if (added.length > 0) {
+      const newEntitySettingsEntityType = entitySettingsEntityType.concat(added);
+      setEntitySettingsEntityType(newEntitySettingsEntityType);
+      commit({
+        variables: {
+          id: role?.id,
+          input: { key: 'default_hidden_types', value: newEntitySettingsEntityType },
+        },
+      });
+    } else if (removed.length > 0) {
+      const newEntitySettingsEntityType = entitySettingsEntityType.filter((x) => !removed.includes(x));
+      setEntitySettingsEntityType(newEntitySettingsEntityType);
+      commit({
+        variables: {
+          id: role?.id,
+          input: { key: 'default_hidden_types', value: newEntitySettingsEntityType },
+        },
+      });
+    }
+  };
+
   const isSelectedGroup = (group: string) => {
     return groups
       .get(group)
       ?.every((el) => entitySettingsEntityType.includes(el));
   };
+
   const computeItems = () => {
+    const rolesHiddenTypes = hiddenTypesWithRoles();
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
       items.push(
@@ -141,7 +238,9 @@ const HiddenTypesList = () => {
           value={isSelectedGroup(key) ? `not-${key}` : key}
           dense={true}
         >
-          <Checkbox checked={isSelectedGroup(key)} />
+          <Checkbox
+            checked={isSelectedGroup(key)}
+          />
           {t(key)}
         </MenuItem>,
       );
@@ -153,13 +252,16 @@ const HiddenTypesList = () => {
           >
             <Checkbox
               checked={
-                entitySettingsEntityType.indexOf(
-                  platformHiddenType.target_type,
-                ) > -1
-              }
+                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
               style={{ marginLeft: 10 }}
             />
-            {t(`entity_${platformHiddenType.target_type}`)}
+              {t(`entity_${platformHiddenType.target_type}`)}
+              {rolesHiddenTypes && rolesHiddenTypes[platformHiddenType.target_type].length > 0
+                && (<span className={classes.roleIndication}>
+                  &emsp;
+                  {`(${t('Hidden in roles')} : ${rolesHiddenTypes[platformHiddenType.target_type]})`}
+                </span>)
+              }
           </MenuItem>,
       ));
     });
@@ -170,12 +272,12 @@ const HiddenTypesList = () => {
       component={SelectField}
       variant="standard"
       name="platform_hidden_types"
-      label={t('Hidden entity types')}
+      label={role ? t('Default hidden entity types') : t('Hidden entity types')}
       fullWidth={true}
       multiple={true}
       containerstyle={{ marginTop: 20, width: '100%' }}
       value={entitySettingsEntityType}
-      onChange={(_: string, values: string[]) => handleChange(values)}
+      onChange={(_: string, values: string[]) => (role ? handleChangeIfRole(values) : handleChangeGlobal(values))}
       renderValue={(selected: string[]) => (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
           {selected.map((value) => (

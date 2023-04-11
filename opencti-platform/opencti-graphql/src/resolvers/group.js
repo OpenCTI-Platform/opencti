@@ -10,7 +10,7 @@ import {
   groupDeleteRelation,
   groupAddRelation,
   groupCleanContext,
-  groupEditContext,
+  groupEditContext, batchRoles,
 } from '../domain/group';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -20,6 +20,7 @@ import { batchLoader } from '../database/middleware';
 
 const markingsLoader = batchLoader(batchMarkingDefinitions);
 const membersLoader = batchLoader(batchMembers);
+const rolesLoader = batchLoader(batchRoles);
 
 const groupResolvers = {
   Query: {
@@ -28,6 +29,7 @@ const groupResolvers = {
   },
   Group: {
     allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),
+    roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
     members: (group, _, context) => membersLoader.load(group.id, context, context.user),
     editContext: (group) => fetchEditContext(group.id),
   },

@@ -62,10 +62,10 @@ class Roles extends Component {
         width: '45%',
         isSortable: true,
       },
-      default_assignation: {
-        label: 'Granted by default',
+      groups: {
+        label: 'Groups with this role',
         width: '15%',
-        isSortable: true,
+        isSortable: false,
       },
       created_at: {
         label: 'Creation date',
@@ -86,7 +86,7 @@ class Roles extends Component {
         handleSort={this.handleSort.bind(this)}
         handleSearch={this.handleSearch.bind(this)}
         displayImport={false}
-        secondaryAction={true}
+        secondaryAction={false}
         keyword={searchTerm}
       >
         <QueryRenderer

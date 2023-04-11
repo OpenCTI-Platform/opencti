@@ -9,7 +9,7 @@ import { rabbitMQIsAlive, registerConnectorQueues } from './database/rabbitmq';
 import { addMarkingDefinition } from './domain/markingDefinition';
 import { addSettings } from './domain/settings';
 import { ROLE_DEFAULT, STREAMAPI, TAXIIAPI } from './domain/user';
-import { addCapability, addRole } from './domain/grant';
+import { addCapability, addGroup, addRole } from './domain/grant';
 import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
@@ -31,6 +31,7 @@ import { VocabularyCategory } from './generated/graphql';
 import { addVocabulary } from './modules/vocabulary/vocabulary-domain';
 import { builtInOv, openVocabularies } from './modules/vocabulary/vocabulary-utils';
 import { initCreateEntitySettings } from './modules/entitySetting/entitySetting-domain';
+import { GROUP_DEFAULT, groupAddRelation } from './domain/group';
 
 // region Platform constants
 const PLATFORM_LOCK_ID = 'platform_init_lock';
@@ -252,11 +253,10 @@ export const createBasicRolesAndCapabilities = async (context) => {
   // Create capabilities
   await createCapabilities(context, CAPABILITIES);
   // Create roles
-  await addRole(context, SYSTEM_USER, {
+  const defaultRole = await addRole(context, SYSTEM_USER, {
     name: ROLE_DEFAULT,
-    description: 'Default role associated to all users',
+    description: 'Default role associated to the default group',
     capabilities: [KNOWLEDGE_CAPABILITY],
-    default_assignation: true,
   });
   await addRole(context, SYSTEM_USER, {
     name: ROLE_ADMINISTRATOR,
@@ -280,6 +280,17 @@ export const createBasicRolesAndCapabilities = async (context) => {
       'SETTINGS_SETLABELS',
     ],
   });
+  // Create default group with default role
+  const defaultGroup = await addGroup(context, SYSTEM_USER, {
+    name: GROUP_DEFAULT,
+    description: 'Default group associated to all users',
+    default_assignation: true,
+  });
+  const defaultRoleRelationInput = {
+    toId: defaultRole.id,
+    relationship_type: 'has-role',
+  };
+  await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
 };
 
 const createVocabularies = async (context) => {

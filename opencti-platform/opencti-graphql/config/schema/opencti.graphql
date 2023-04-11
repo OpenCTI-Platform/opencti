@@ -1073,6 +1073,7 @@ type Group implements InternalObject & BasicObject {
   members: UserConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime
   updated_at: DateTime
+  roles: [Role]
   allowed_marking: [MarkingDefinition]
   # Technical
   editContext: [EditUserContext!]
@@ -1146,7 +1147,7 @@ type Creator {
   name: String!
   entity_type: String!
 }
-type User implements  BasicObject & InternalObject {
+type User implements BasicObject & InternalObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -1168,6 +1169,7 @@ type User implements  BasicObject & InternalObject {
   dashboard: String
   roles: [Role]!
   capabilities: [Capability]!
+  default_hidden_types: [String]!
   groups: GroupConnection @auth(for: [SETTINGS_SETACCESSES])
   objectOrganization: OrganizationConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime!
@@ -1196,6 +1198,7 @@ type MeUser implements BasicObject & InternalObject {
   api_token: String!
   objectOrganization: MeOrganizationConnection
   capabilities: [Capability!]!
+  default_hidden_types: [String]!
   allowed_marking: [MarkingDefinition!]
   otp_mandatory: Boolean
 }
@@ -1238,7 +1241,6 @@ input UserOTPActivationInput {
 ############## Roles
 enum RolesOrdering {
   name
-  default_assignation
   created_at
   updated_at
 }
@@ -1257,12 +1259,12 @@ type Role implements BasicObject & InternalObject {
   parent_types: [String]!
   # Role
   name: String!
-  default_assignation: Boolean
   description: String
   created_at: DateTime!
   updated_at: DateTime!
   capabilities: [Capability]
   editContext: [EditUserContext!]
+  default_hidden_types: [String]
 }
 input RoleAddInput {
   name: String!

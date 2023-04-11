@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import { UserLine, UserLineDummy } from './UserLine';
 
@@ -23,19 +22,15 @@ export const usersLinesSearchQuery = graphql`
 
 class UsersLines extends Component {
   render() {
-    const { initialLoading, dataColumns, relay, paginationOptions } = this.props;
+    const { initialLoading, dataColumns, relay, paginationOptions, data } = this.props;
     return (
       <ListLinesContent
         initialLoading={initialLoading}
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['users', 'edges'], this.props.data)}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['users', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={data?.users?.edges ?? []}
+        globalCount={data?.users?.pageInfo?.globalCount ?? nbOfRowsToLoad}
         LineComponent={<UserLine />}
         DummyLineComponent={<UserLineDummy />}
         dataColumns={dataColumns}

@@ -5939,6 +5939,7 @@ export type Group = BasicObject & InternalObject & {
   members?: Maybe<UserConnection>;
   name: Scalars['String'];
   parent_types: Array<Maybe<Scalars['String']>>;
+  roles?: Maybe<Array<Maybe<Role>>>;
   standard_id: Scalars['String'];
   updated_at?: Maybe<Scalars['DateTime']>;
 };
@@ -10281,6 +10282,7 @@ export type MeUser = BasicObject & InternalObject & {
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_token: Scalars['String'];
   capabilities: Array<Capability>;
+  default_hidden_types: Array<Maybe<Scalars['String']>>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
   external?: Maybe<Scalars['Boolean']>;
@@ -17863,7 +17865,7 @@ export type Role = BasicObject & InternalObject & {
   __typename?: 'Role';
   capabilities?: Maybe<Array<Maybe<Capability>>>;
   created_at: Scalars['DateTime'];
-  default_assignation?: Maybe<Scalars['Boolean']>;
+  default_hidden_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -17925,7 +17927,6 @@ export type RoleEditMutationsRelationDeleteArgs = {
 
 export enum RolesOrdering {
   CreatedAt = 'created_at',
-  DefaultAssignation = 'default_assignation',
   Name = 'name',
   UpdatedAt = 'updated_at'
 }
@@ -22507,6 +22508,7 @@ export type User = BasicObject & InternalObject & {
   capabilities: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime'];
   dashboard?: Maybe<Scalars['String']>;
+  default_hidden_types: Array<Maybe<Scalars['String']>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -27440,6 +27442,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Role']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -28650,6 +28653,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
+  default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -30214,7 +30218,7 @@ export type RetentionRuleEditMutationsResolvers<ContextType = any, ParentType ex
 export type RoleResolvers<ContextType = any, ParentType extends ResolversParentTypes['Role'] = ResolversParentTypes['Role']> = ResolversObject<{
   capabilities?: Resolver<Maybe<Array<Maybe<ResolversTypes['Capability']>>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  default_assignation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  default_hidden_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31680,6 +31684,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   dashboard?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
