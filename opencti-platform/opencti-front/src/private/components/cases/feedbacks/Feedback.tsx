@@ -132,7 +132,7 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
       >
         <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={true}
+            isSupportParticipation={false}
             container={feedbackData}
           />
         </Grid>

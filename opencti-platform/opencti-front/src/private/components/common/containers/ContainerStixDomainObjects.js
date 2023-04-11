@@ -368,12 +368,6 @@ const ContainerStixDomainObjects = createFragmentContainer(
         ... on Opinion {
           opinion
         }
-        ... on Feedback {
-          name
-        }
-        ... on CaseIncident {
-          name
-        }
         ... on ObservedData {
           name
           first_observed

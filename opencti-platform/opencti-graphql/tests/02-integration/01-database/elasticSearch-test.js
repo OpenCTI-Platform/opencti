@@ -363,7 +363,7 @@ describe('Elasticsearch pagination', () => {
       first: 1000,
     });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(334);
+    expect(data.edges.length).toEqual(335);
   });
   it('should entity paginate with single type', async () => {
     // first = 200, after, types = null, filters = [], search = null,

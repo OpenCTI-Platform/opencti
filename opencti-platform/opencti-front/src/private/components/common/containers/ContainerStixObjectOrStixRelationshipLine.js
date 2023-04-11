@@ -294,12 +294,6 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         ... on Case {
           name
         }
-        ... on Feedback {
-          name
-        }
-        ... on CaseIncident {
-          name
-        }
         ... on StixCyberObservable {
           observable_value
         }
@@ -420,12 +414,6 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on Case {
               name
             }
-            ... on Feedback {
-              name
-            }
-            ... on CaseIncident {
-              name
-            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -515,12 +503,6 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Case {
-              name
-            }
-            ... on Feedback {
-              name
-            }
-            ... on CaseIncident {
               name
             }
             ... on StixCyberObservable {
@@ -641,12 +623,6 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
             ... on Case {
               name
             }
-            ... on Feedback {
-              name
-            }
-            ... on CaseIncident {
-              name
-            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -736,12 +712,6 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
               name
             }
             ... on Case {
-              name
-            }
-            ... on Feedback {
-              name
-            }
-            ... on CaseIncident {
               name
             }
             ... on StixCyberObservable {

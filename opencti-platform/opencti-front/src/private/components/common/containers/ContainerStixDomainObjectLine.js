@@ -292,12 +292,6 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
         ... on Case {
           name
         }
-        ... on Feedback {
-          name
-        }
-        ... on CaseIncident {
-          name
-        }
         objectLabel {
           edges {
             node {
