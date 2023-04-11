@@ -157,18 +157,18 @@ for (let i = 0; i < providerKeys.length; i += 1) {
       const allowSelfSigned = mappedConfig.allow_self_signed || mappedConfig.allow_self_signed === 'true';
       mappedConfig = R.assoc('tlsOptions', { rejectUnauthorized: !allowSelfSigned }, mappedConfig);
       const ldapOptions = { server: mappedConfig };
-      const ldapStrategy = new LdapStrategy(ldapOptions, (user, done) => {
+      const ldapStrategy = new LdapStrategy(ldapOptions, async (user, done) => {
         logApp.debug('[LDAP] Successfully logged', { user });
         const userMail = mappedConfig.mail_attribute ? user[mappedConfig.mail_attribute] : user.mail;
         const userName = mappedConfig.account_attribute ? user[mappedConfig.account_attribute] : user.givenName;
         const firstname = user[mappedConfig.firstname_attribute] || '';
         const lastname = user[mappedConfig.lastname_attribute] || '';
-        // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
-        }
         const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
+        // region roles mapping
+        if (isRoleBaseAccess) {
+          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+        }
         // @deprecated: SSO mapping on roles is deprecated but kept to ensure the correct migration
         const computeRolesMapping = () => {
           const rolesGroupsMapping = mappedConfig.roles_management?.groups_mapping || [];
@@ -208,7 +208,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         } else if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           logApp.debug(`[LDAP] Connecting/creating account with ${userMail} [name=${userName}]`);
           const userInfo = { email: userMail, name: userName, firstname, lastname };
-          const opts = { providerGroups: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+          const opts = {
+            providerGroups: groupsToAssociate,
+            providerOrganizations: organizationsToAssociate,
+            autoCreateGroup: mappedConfig.auto_create_group ?? false,
+          };
           providerLoginHandler(userInfo, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -228,12 +232,12 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const userName = profile[mappedConfig.account_attribute] || '';
         const firstname = profile[mappedConfig.firstname_attribute] || '';
         const lastname = profile[mappedConfig.lastname_attribute] || '';
-        // region roles mapping
         const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
-        if (isRoleBaseAccess) {
-          logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
-        }
         const isGroupBaseAccess = isNotEmptyField(mappedConfig.groups_management) || isRoleBaseAccess;
+        // region roles mapping
+        if (isRoleBaseAccess) {
+          logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
+        }
         const computeRolesMapping = () => {
           const attrRoles = roleAttributes.map((a) => (Array.isArray(profile[a]) ? profile[a] : [profile[a]]));
           const samlRoles = R.flatten(attrRoles).filter((v) => isNotEmptyField(v));
@@ -266,7 +270,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         // endregion
         if (!isGroupBaseAccess || groupsToAssociate.length > 0) {
           const { nameID: email } = profile;
-          const opts = { groupOrganizations: groupsToAssociate, providerOrganizations: organizationsToAssociate };
+          const opts = {
+            groupOrganizations: groupsToAssociate,
+            providerOrganizations: organizationsToAssociate,
+            autoCreateGroup: mappedConfig.auto_create_group ?? false,
+          };
           providerLoginHandler({ email, name: userName, firstname, lastname }, done, opts);
         } else {
           done({ message: 'Restricted access, ask your administrator' });
@@ -299,10 +307,11 @@ for (let i = 0; i < providerKeys.length; i += 1) {
         const options = { client, passReqToCallback: true, params: { scope: openIdScope } };
         const openIDStrategy = new OpenIDStrategy(options, (req, tokenset, userinfo, done) => {
           logApp.debug('[OPENID] Successfully logged', { userinfo });
-          // region roles mapping
           const isRoleBaseAccess = isNotEmptyField(mappedConfig.roles_management);
+          const isGroupMapping = isNotEmptyField(mappedConfig.groups_management);
+          // region roles mapping
           if (isRoleBaseAccess) {
-            logApp.error('Warning: SSO mapping on roles is deprecated and will be removed in 5.8.0+, you should clean roles_management in your config and bind on groups.');
+            logApp.error('Warning: SSO mapping on roles is deprecated, you should clean roles_management in your config and bind on groups.');
           }
           const computeRolesMapping = () => {
             const token = mappedConfig.roles_management?.token_reference || 'access_token';
@@ -317,7 +326,6 @@ for (let i = 0; i < providerKeys.length; i += 1) {
           const mappedRoles = isRoleBaseAccess ? computeRolesMapping() : [];
           // endregion
           // region groups mapping
-          const isGroupMapping = isNotEmptyField(mappedConfig.groups_management);
           const computeGroupsMapping = () => {
             const token = mappedConfig.groups_management?.token_reference || 'access_token';
             const groupsPath = mappedConfig.groups_management?.groups_path || ['groups'];
@@ -356,7 +364,8 @@ for (let i = 0; i < providerKeys.length; i += 1) {
             const lastname = userinfo[lastnameAttribute];
             const opts = {
               providerGroups: groupsToAssociate,
-              providerOrganizations: organizationsToAssociate
+              providerOrganizations: organizationsToAssociate,
+              autoCreateGroup: mappedConfig.auto_create_group ?? false,
             };
             providerLoginHandler({ email, name, firstname, lastname }, done, opts);
           } else {

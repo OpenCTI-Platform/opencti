@@ -1,8 +1,8 @@
 import * as R from 'ramda';
-import { uniq } from 'ramda';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
+import { uniq } from 'ramda';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
@@ -19,47 +19,17 @@ import {
   updateAttribute,
 } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
-import {
-  ENTITY_TYPE_CAPABILITY,
-  ENTITY_TYPE_GROUP,
-  ENTITY_TYPE_ROLE,
-  ENTITY_TYPE_SETTINGS,
-  ENTITY_TYPE_USER,
-} from '../schema/internalObject';
-import {
-  isInternalRelationship,
-  RELATION_ACCESSES_TO,
-  RELATION_HAS_CAPABILITY,
-  RELATION_HAS_ROLE,
-  RELATION_MEMBER_OF,
-  RELATION_PARTICIPATE_TO,
-} from '../schema/internalRelationship';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
+import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { findAll as findGroups } from './group';
+import { addGroup, findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import {
-  convertRelationToAction,
-  IMPERSONATE_ACTION,
-  LOGIN_ACTION,
-  LOGOUT_ACTION,
-  ROLE_DELETION,
-  USER_CREATION,
-  USER_DELETION,
-} from '../config/audit';
+import { convertRelationToAction, IMPERSONATE_ACTION, LOGIN_ACTION, LOGOUT_ACTION, ROLE_DELETION, USER_CREATION, USER_DELETION, } from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import {
-  BYPASS,
-  executionContext,
-  INTERNAL_USERS,
-  isBypassUser,
-  isUserHasCapability,
-  KNOWLEDGE_ORGANIZATION_RESTRICT,
-  SETTINGS_SET_ACCESSES,
-  SYSTEM_USER
-} from '../utils/access';
+import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
@@ -284,7 +254,7 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
   return assignOrganizationToUser(context, user, userId, generateToId);
 };
 
-const assignGroupToUser = async (context, user, userId, groupName) => {
+export const assignGroupToUser = async (context, user, userId, groupName) => {
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
   const assignInput = {
     fromId: userId,
@@ -502,8 +472,26 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
 };
 
 export const loginFromProvider = async (userInfo, opts = {}) => {
-  const { providerGroups = [], providerOrganizations = [] } = opts;
+  const { providerGroups = [], providerOrganizations = [], autoCreateGroup = false } = opts;
   const context = executionContext('login_provider');
+  // region test the groups existence and eventually auto create groups
+  if (providerGroups.length > 0) {
+    const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
+    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: [{ key: 'internal_id', values: providerGroupsIds }] });
+    const foundGroupsNames = foundGroups.edges.map((group) => group.node.name);
+    const newGroupsToCreate = [];
+    providerGroups.forEach((groupName) => {
+      if (!foundGroupsNames.includes(groupName)) {
+        if (!autoCreateGroup) {
+          throw Error('[SSO] Can\'t login. The user has groups that don\'t exist and auto_create_group = false.');
+        } else {
+          newGroupsToCreate.push(addGroup(context, SYSTEM_USER, { name: groupName }));
+        }
+      }
+    });
+    await Promise.all(newGroupsToCreate);
+  }
+  // endregion
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const listOpts = { paginate: false };
   const { email, name: providedName, firstname, lastname } = userInfo;
@@ -526,7 +514,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region Update the groups
   // If groups are specified here, that overwrite the default assignation
   if (providerGroups.length > 0) {
-    // 01 - Delete all groups from the user
+    // 01 - Delete all groups relation from the user
     const userGroups = await listThroughGetTo(context, SYSTEM_USER, user.id, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, listOpts);
     const deleteGroups = userGroups.filter((o) => !providerGroups.includes(o.name));
     for (let index = 0; index < deleteGroups.length; index += 1) {
