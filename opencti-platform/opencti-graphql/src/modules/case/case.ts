@@ -20,7 +20,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }, { src: 'case_type' }, { src: 'created' }]
+      [ENTITY_TYPE_CONTAINER_CASE]: [{ src: NAME_FIELD }, { src: 'created' }]
     },
     resolvers: {
       name(data: object) {
@@ -31,11 +31,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'case_type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: true },
-    { name: 'severity', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'priority', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'rating', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   representative: (stix: StixCase) => {

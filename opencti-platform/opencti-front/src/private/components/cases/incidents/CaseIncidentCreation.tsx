@@ -15,9 +15,7 @@ import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
-import { IncidentCreationCaseMutation$variables } from './__generated__/IncidentCreationCaseMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { IncidentsLinesCasesPaginationQuery$variables } from './__generated__/IncidentsLinesCasesPaginationQuery.graphql';
 import { insertNode } from '../../../../utils/store';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -29,6 +27,10 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { dayStartDate } from '../../../../utils/Time';
+import { CaseIncidentCreationCaseMutation$variables } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -73,20 +75,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const incidentMutation = graphql`
-  mutation IncidentCreationCaseMutation($input: CaseAddInput!) {
-    caseAdd(input: $input) {
+const caseIncidentMutation = graphql`
+  mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
+    caseIncidentAdd(input: $input) {
       id
       parent_types
       name
       description
       entity_type
-      ...IncidentLineCase_node
+      response_types
+      ...CaseIncidentLineCase_node
     }
   }
 `;
 
-interface FormikCaseAddInput {
+interface FormikCaseIncidentAddInput {
   name: string
   confidence: number
   severity: string
@@ -98,6 +101,8 @@ interface FormikCaseAddInput {
   objectAssignee: { value: string }[]
   objectLabel: { value: string }[]
   externalReferences: { value: string }[]
+  created: Date;
+  response_types: string[]
 }
 
 interface IncidentFormProps {
@@ -109,7 +114,7 @@ interface IncidentFormProps {
   defaultMarkingDefinitions?: { value: string, label: string }[]
 }
 
-export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater, onReset, onCompleted,
+export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({ updater, onReset, onCompleted,
   defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -117,19 +122,20 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const caseValidator = useSchemaCreationValidation('Case', basicShape);
-  const [commit] = useMutation(incidentMutation);
+  const caseIncidentValidator = useSchemaCreationValidation('Case-Incident', basicShape);
+  const [commit] = useMutation(caseIncidentMutation);
 
-  const onSubmit: FormikConfig<FormikCaseAddInput>['onSubmit'] = (
+  const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: IncidentCreationCaseMutation$variables['input'] = {
+    const finalValues: CaseIncidentCreationCaseMutation$variables['input'] = {
       name: values.name,
-      case_type: 'incident',
       description: values.description,
+      created: values.created,
       severity: values.severity,
       priority: values.priority,
+      response_types: values.response_types,
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
@@ -146,7 +152,7 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'caseAdd');
+          updater(store, 'caseIncidentAdd');
         }
       },
       onCompleted: () => {
@@ -159,12 +165,14 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
     });
   };
 
-  return <Formik<FormikCaseAddInput>
+  return <Formik<FormikCaseIncidentAddInput>
       initialValues={{
         name: '',
         confidence: defaultConfidence ?? 75,
         description: '',
         severity: '',
+        response_types: [],
+        created: dayStartDate(),
         priority: '',
         createdBy: defaultCreatedBy ?? undefined,
         objectMarking: defaultMarkingDefinitions ?? [],
@@ -173,7 +181,7 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
         externalReferences: [],
         file: undefined,
       }}
-      validationSchema={caseValidator}
+      validationSchema={caseIncidentValidator}
       onSubmit={onSubmit}
       onReset={onReset}>
     {({
@@ -190,24 +198,42 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={['Case']}
+              detectDuplicate={['CaseIncident']}
+              style={{ marginBottom: '20px' }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="created"
+            TextFieldProps={{
+              label: t('Incident date'),
+              variant: 'standard',
+              fullWidth: true,
+            }}
           />
           <OpenVocabField
               label={t('Severity')}
               type="case_severity_ov"
               name="severity"
-              onChange={(name, value) => setFieldValue(name, value)}
+              onChange={setFieldValue}
               containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
               label={t('Priority')}
               type="case_priority_ov"
               name="priority"
-              onChange={(name, value) => setFieldValue(name, value)}
+              onChange={setFieldValue}
+              containerStyle={fieldSpacingContainerStyle}
+          />
+          <OpenVocabField
+              label={t('Incident type')}
+              type="incident_response_types_ov"
+              name="response_types"
+              multiple
+              onChange={setFieldValue}
               containerStyle={fieldSpacingContainerStyle}
           />
           <ConfidenceField
-              entityType="Case"
+              entityType="Case-Incident"
               containerStyle={fieldSpacingContainerStyle}
           />
           <Field
@@ -277,7 +303,7 @@ export const CaseCreationForm: FunctionComponent<IncidentFormProps> = ({ updater
   </Formik>;
 };
 
-const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsLinesCasesPaginationQuery$variables }) => {
+const CaseIncidentCreation = ({ paginationOptions }: { paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState<boolean>(false);
@@ -286,9 +312,9 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsL
   const onReset = () => handleClose();
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_incidents_cases',
+    'Pagination_incidents_caseIncidents',
     paginationOptions,
-    'caseAdd',
+    'caseIncidentAdd',
   );
 
   return (
@@ -314,10 +340,10 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsL
             color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a case (incident)')}</Typography>
+          <Typography variant="h6">{t('Create a case incident')}</Typography>
         </div>
         <div className={classes.container}>
-          <CaseCreationForm
+          <CaseIncidentCreationForm
               updater={updater}
               onCompleted={() => handleClose()}
               onReset={onReset}
@@ -328,4 +354,4 @@ const IncidentCreation = ({ paginationOptions }: { paginationOptions: IncidentsL
   );
 };
 
-export default IncidentCreation;
+export default CaseIncidentCreation;

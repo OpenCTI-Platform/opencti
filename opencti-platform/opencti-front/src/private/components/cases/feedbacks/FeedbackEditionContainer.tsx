@@ -8,7 +8,7 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import CaseEditionOverview from './FeedbackEditionOverview';
+import FeedbackEditionOverview from './FeedbackEditionOverview';
 import { FeedbackEditionContainerQuery } from './__generated__/FeedbackEditionContainerQuery.graphql';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
@@ -41,14 +41,14 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface CaseEditionContainerProps {
+interface FeedbackEditionContainerProps {
   queryRef: PreloadedQuery<FeedbackEditionContainerQuery>;
   handleClose: () => void;
 }
 
 export const feedbackEditionQuery = graphql`
   query FeedbackEditionContainerQuery($id: String!) {
-    case(id: $id) {
+    feedback(id: $id) {
       ...FeedbackEditionOverview_case
       editContext {
         name
@@ -59,12 +59,12 @@ export const feedbackEditionQuery = graphql`
 `;
 
 const FeedbackEditionContainer: FunctionComponent<
-CaseEditionContainerProps
+FeedbackEditionContainerProps
 > = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const queryData = usePreloadedQuery(feedbackEditionQuery, queryRef);
-  if (queryData.case === null) {
+  if (queryData.feedback === null) {
     return <ErrorNotFound />;
   }
   return (
@@ -82,15 +82,15 @@ CaseEditionContainerProps
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a feedback')}
         </Typography>
-        <SubscriptionAvatars context={queryData.case.editContext} />
+        <SubscriptionAvatars context={queryData.feedback.editContext} />
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <CaseEditionOverview
-          caseRef={queryData.case}
-          context={queryData.case.editContext}
+        <FeedbackEditionOverview
+          feedbackRef={queryData.feedback}
+          context={queryData.feedback.editContext}
           handleClose={handleClose}
-          enableReferences={useIsEnforceReference('Case')}
+          enableReferences={useIsEnforceReference('Feedback')}
         />
       </div>
     </div>

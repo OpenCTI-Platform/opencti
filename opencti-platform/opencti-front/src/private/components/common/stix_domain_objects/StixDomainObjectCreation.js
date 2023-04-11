@@ -16,7 +16,6 @@ import { AdministrativeAreaCreationForm } from '../../locations/administrative_a
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { AttackPatternCreationForm } from '../../techniques/attack_patterns/AttackPatternCreation';
 import { CampaignCreationForm } from '../../threats/campaigns/CampaignCreation';
-import { CaseCreationForm } from '../../cases/incidents/IncidentCreation';
 import { ChannelCreationForm } from '../../arsenal/channels/ChannelCreation';
 import { CityCreationForm } from '../../locations/cities/CityCreation';
 import { CountryCreationForm } from '../../locations/countries/CountryCreation';
@@ -46,6 +45,7 @@ import { DataSourceCreationForm } from '../../techniques/data_sources/DataSource
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
+import { CaseIncidentCreationForm } from '../../cases/incidents/CaseIncidentCreation';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
@@ -230,10 +230,10 @@ const StixDomainPanel = ({
         />
       );
     }
-    if (type === 'Case') {
+    if (type === 'Case-Incident') {
       // Default to Incident case type
       return (
-        <CaseCreationForm
+        <CaseIncidentCreationForm
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}

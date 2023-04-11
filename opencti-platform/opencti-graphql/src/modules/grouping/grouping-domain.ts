@@ -21,7 +21,6 @@ import { isStixId } from '../../schema/schemaUtils';
 import { RELATION_CREATED_BY, RELATION_OBJECT } from '../../schema/stixMetaRelationship';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../../database/utils';
-import type { BasicStoreCommon } from '../../types/store';
 import type { DomainFindById } from '../../domain/domainTypes';
 
 export const findById: DomainFindById<BasicStoreEntityGrouping> = (context: AuthContext, user: AuthUser, channelId: string) => {
@@ -39,7 +38,7 @@ export const addGrouping = async (context: AuthContext, user: AuthUser, grouping
 
 // Entities tab
 export const groupingContainsStixObjectOrStixRelationship = async (context: AuthContext, user: AuthUser, groupingId: string, thingId: string) => {
-  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId) as unknown as BasicStoreCommon).internal_id : thingId;
+  const resolvedThingId = isStixId(thingId) ? (await internalLoadById(context, user, thingId)).internal_id : thingId;
   const opts: EntityOptions<BasicStoreEntityGrouping> = {
     filters: [
       { key: ['internal_id'], values: [groupingId] },

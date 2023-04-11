@@ -15,5 +15,7 @@ import './dataSource/dataSource';
 import './vocabulary/vocabulary';
 import './administrativeArea/administrativeArea';
 import './case/case';
+import './case/feedback/feedback';
+import './case/case-incident/case-incident';
 import './entitySetting/entitySetting';
 // endregion

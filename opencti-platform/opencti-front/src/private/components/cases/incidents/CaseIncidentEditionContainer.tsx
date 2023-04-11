@@ -8,9 +8,10 @@ import { SubscriptionAvatars } from '../../../../components/Subscription';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
-import CaseEditionOverview from './IncidentEditionOverview';
-import { IncidentEditionContainerCaseQuery } from './__generated__/IncidentEditionContainerCaseQuery.graphql';
+
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import CaseIncidentEditionOverview from './CaseIncidentEditionOverview';
+import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -41,15 +42,15 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface CaseEditionContainerProps {
-  queryRef: PreloadedQuery<IncidentEditionContainerCaseQuery>;
+interface CaseIncidentEditionContainerProps {
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
   handleClose: () => void;
 }
 
-export const incidentEditionQuery = graphql`
-  query IncidentEditionContainerCaseQuery($id: String!) {
-    case(id: $id) {
-      ...IncidentEditionOverview_case
+export const caseIncidentEditionQuery = graphql`
+  query CaseIncidentEditionContainerCaseQuery($id: String!) {
+    caseIncident(id: $id) {
+      ...CaseIncidentEditionOverview_case
       editContext {
         name
         focusOn
@@ -58,13 +59,13 @@ export const incidentEditionQuery = graphql`
   }
 `;
 
-const IncidentEditionContainer: FunctionComponent<
-CaseEditionContainerProps
+const CaseIncidentEditionContainer: FunctionComponent<
+CaseIncidentEditionContainerProps
 > = ({ queryRef, handleClose }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const queryData = usePreloadedQuery(incidentEditionQuery, queryRef);
-  if (queryData.case === null) {
+  const queryData = usePreloadedQuery(caseIncidentEditionQuery, queryRef);
+  if (queryData.caseIncident === null) {
     return <ErrorNotFound />;
   }
   return (
@@ -80,16 +81,16 @@ CaseEditionContainerProps
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a incident')}
+          {t('Update a case incident')}
         </Typography>
-        <SubscriptionAvatars context={queryData.case.editContext} />
+        <SubscriptionAvatars context={queryData.caseIncident.editContext} />
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
-        <CaseEditionOverview
-          caseRef={queryData.case}
-          context={queryData.case.editContext}
-          enableReferences={useIsEnforceReference('Case')}
+        <CaseIncidentEditionOverview
+          caseRef={queryData.caseIncident}
+          context={queryData.caseIncident.editContext}
+          enableReferences={useIsEnforceReference('Case-Incident')}
           handleClose={handleClose}
         />
       </div>
@@ -97,4 +98,4 @@ CaseEditionContainerProps
   );
 };
 
-export default IncidentEditionContainer;
+export default CaseIncidentEditionContainer;

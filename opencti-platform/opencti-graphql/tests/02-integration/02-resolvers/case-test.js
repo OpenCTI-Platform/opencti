@@ -47,11 +47,11 @@ const READ_QUERY = gql`
 
 describe('Case resolver standard behavior', () => {
   let caseInternalId;
-  const caseStixId = 'case--f505027c-997d-4243-b67c-471f994e20d5';
+  const caseStixId = 'feedback--f505027c-997d-4243-b67c-471f994e20d5';
   it('should case created', async () => {
     const CREATE_QUERY = gql`
-      mutation CaseAdd($input: CaseAddInput!) {
-        caseAdd(input: $input) {
+      mutation FeedbackAdd($input: FeedbackAddInput!) {
+        feedbackAdd(input: $input) {
           id
           standard_id
           name
@@ -62,10 +62,9 @@ describe('Case resolver standard behavior', () => {
     // Create the case
     const DATA_COMPONENT_TO_CREATE = {
       input: {
-        name: 'Case',
-        case_type: 'feedback',
+        name: 'Feedback',
         stix_id: caseStixId,
-        description: 'Case description',
+        description: 'Feedback description',
       },
     };
     const caseData = await queryAsAdmin({
@@ -73,9 +72,9 @@ describe('Case resolver standard behavior', () => {
       variables: DATA_COMPONENT_TO_CREATE,
     });
     expect(caseData).not.toBeNull();
-    expect(caseData.data.caseAdd).not.toBeNull();
-    expect(caseData.data.caseAdd.name).toEqual('Case');
-    caseInternalId = caseData.data.caseAdd.id;
+    expect(caseData.data.feedbackAdd).not.toBeNull();
+    expect(caseData.data.feedbackAdd.name).toEqual('Feedback');
+    caseInternalId = caseData.data.feedbackAdd.id;
   });
   it('should case loaded by internal id', async () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: caseInternalId } });

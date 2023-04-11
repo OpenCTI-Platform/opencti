@@ -7,7 +7,6 @@ import { STIX_PATTERN_TYPE } from '../../utils/syntax';
 
 export const builtInOv = [
   'pattern_type_ov',
-  'case_types_ov',
 ];
 
 export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, description?: string, aliases?: string[] }>> = {
@@ -110,11 +109,6 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     },
   ],
   // C
-  case_types_ov: [
-    { key: 'feedback', description: 'Give your feedback.' },
-    { key: 'incident', description: 'Open an incident' },
-    { key: 'rfi', description: 'Request for information' },
-  ],
   case_severity_ov: [
     { key: '01 - low', description: 'Low impact', aliases: ['low'] },
     { key: '02 - medium', description: 'Medium impact', aliases: ['medium'] },
@@ -271,6 +265,10 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
       key: 'x86-64',
       description: 'Specifies the x86 64-bit Assembly programming language.',
     },
+  ],
+  incident_response_types_ov: [
+    { key: 'ransomware', description: 'A ransomware' },
+    { key: 'data-leak', description: 'A data-leak' },
   ],
   incident_type_ov: [
     {

@@ -29,13 +29,16 @@ steps:
       - ln -sf python3 /usr/bin/python
       - python3 -m ensurepip
       - pip3 install --no-cache --upgrade pip setuptools
-      - git clone https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - CONNECTOR_BRANCH=$([[ $(git ls-remote --heads https://github.com/OpenCTI-Platform/connectors.git opencti/$BRANCH) ]] && echo opencti/$BRANCH || echo 'master')
+      - git clone -b $CONNECTOR_BRANCH https://github.com/OpenCTI-Platform/connectors.git opencti-connectors
       - cd opencti-platform/opencti-graphql
       - yarn install
       - yarn build
       - yarn check-ts
       - yarn lint
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - sleep 60
       - NODE_OPTIONS=--max_old_space_size=8192 yarn test
 
@@ -135,7 +138,9 @@ services:
       - cd /tmp/raw-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-live-start
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
@@ -159,7 +164,9 @@ services:
       - cd /tmp/live-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-start
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
@@ -183,7 +190,9 @@ services:
       - cd /tmp/direct-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start
   - name: opencti-direct-worker
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
@@ -197,7 +206,9 @@ services:
       - cp -a opencti-worker /tmp/direct-start-worker
       - cd /tmp/direct-start-worker
       - pip3 install -r src/requirements.txt
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - python3 src/worker.py
   - name: opencti-restore-start
     image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
@@ -221,5 +232,7 @@ services:
       - cd /tmp/restore-start-platform/opencti-graphql
       - yarn install
       - yarn install:python
-      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@master
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH | cut -d "/" -f 2)
+      - CLIENT_PYTHON_BRANCH=$([[ "$(echo "$(git ls-remote --heads https://github.com/OpenCTI-Platform/client-python.git opencti/$BRANCH)")" != '' ]] && echo opencti/$BRANCH || echo 'master')
+      - pip3 install --upgrade --force --no-cache-dir git+https://github.com/OpenCTI-Platform/client-python@$CLIENT_PYTHON_BRANCH
       - NODE_OPTIONS=--max_old_space_size=8192 yarn start

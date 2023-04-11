@@ -1969,7 +1969,6 @@ enum StixDomainObjectsFilter {
   creator
   x_opencti_workflow_id
   fromId
-  case_type
   severity
   priority
 }
@@ -7121,11 +7120,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case | EntitySetting | Creator
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting | Creator
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | Case | EntitySetting
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixMetaRelationship | StixSightingRelationship | StixCyberObservableRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | Case | EntitySetting
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7806,6 +7805,12 @@ type Query {
   administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: [AdministrativeAreasFiltering!], filterMode: FilterMode, search: String): AdministrativeAreaConnection
   case(id: String!): Case
   cases(first: Int, after: ID, orderBy: CasesOrdering, orderMode: OrderingMode, filters: [CasesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseConnection
+  feedback(id: String!): Feedback
+  feedbacks(first: Int, after: ID, orderBy: FeedbacksOrdering, orderMode: OrderingMode, filters: [FeedbacksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): FeedbackConnection
+  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  caseIncident(id: String!): CaseIncident
+  caseIncidents(first: Int, after: ID, orderBy: CaseIncidentsOrdering, orderMode: OrderingMode, filters: [CaseIncidentsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseIncidentConnection
+  caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   entitySetting(id: String!): EntitySetting
   entitySettingByType(targetType: String!): EntitySetting
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
@@ -8476,13 +8481,26 @@ type Mutation {
   administrativeAreaContextClean(id: ID!): AdministrativeArea
   administrativeAreaRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
-  caseAdd(input: CaseAddInput!): Case
   caseDelete(id: ID!): ID
   caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
   caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case
   caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case
   caseContextPatch(id: ID!, input: EditContext!): Case
   caseContextClean(id: ID!): Case
+  feedbackAdd(input: FeedbackAddInput!): Feedback
+  feedbackDelete(id: ID!): ID
+  feedbackRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  feedbackRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Feedback
+  feedbackFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Feedback
+  feedbackContextPatch(id: ID!, input: EditContext!): Feedback
+  feedbackContextClean(id: ID!): Feedback
+  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
+  caseIncidentDelete(id: ID!): ID
+  caseIncidentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  caseIncidentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseIncident
+  caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident
+  caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident
+  caseIncidentContextClean(id: ID!): CaseIncident
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
 }
 
@@ -9438,7 +9456,6 @@ enum VocabularyCategory {
   account_type_ov
   attack_motivation_ov
   attack_resource_level_ov
-  case_types_ov
   case_severity_ov
   case_priority_ov
   channel_types_ov
@@ -9446,6 +9463,7 @@ enum VocabularyCategory {
   event_type_ov
   grouping_context_ov
   implementation_language_ov
+  incident_response_types_ov
   incident_type_ov
   incident_severity_ov
   indicator_type_ov
@@ -9661,7 +9679,7 @@ input AdministrativeAreaAddInput {
   update: Boolean
 }
 
-type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+interface Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -9696,11 +9714,7 @@ type Case implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
-  case_type: String!
-  severity: String
-  priority: String
   description: String
-  rating: Int
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -9718,16 +9732,12 @@ enum CasesOrdering {
   created
   modified
   context
-  rating
   created_at
   updated_at
   creator
   createdBy
   x_opencti_workflow_id
-  case_type
   confidence
-  priority
-  severity
   objectMarking
 }
 
@@ -9744,11 +9754,7 @@ enum CasesFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
-  rating
-  case_type
   confidence
-  priority
-  severity
 }
 
 input CasesFiltering {
@@ -9768,14 +9774,108 @@ type CaseEdge {
   node: Case!
 }
 
-input CaseAddInput {
+type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  rating: Int
+}
+
+enum FeedbacksOrdering {
+  name
+  created
+  modified
+  context
+  rating
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  objectMarking
+}
+
+enum FeedbacksFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  x_opencti_workflow_id
+  rating
+  confidence
+}
+
+input FeedbacksFiltering {
+  key: [FeedbacksFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type FeedbackConnection {
+  pageInfo: PageInfo!
+  edges: [FeedbackEdge]
+}
+
+type FeedbackEdge {
+  cursor: String!
+  node: Feedback!
+}
+
+input FeedbackAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
-  case_type: String!
-  severity: String
-  priority: String
-  rating: Int
   description: String
   confidence: Int
   revoked: Boolean
@@ -9792,6 +9892,135 @@ input CaseAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
+  rating: Int
+}
+
+type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  rating: Int
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  response_types: [String!]
+  severity: String
+  priority: String
+}
+
+enum CaseIncidentsOrdering {
+  name
+  created
+  modified
+  context
+  severity
+  priority
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  objectMarking
+}
+
+enum CaseIncidentsFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  x_opencti_workflow_id
+  severity
+  priority
+  confidence
+}
+
+input CaseIncidentsFiltering {
+  key: [CaseIncidentsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type CaseIncidentConnection {
+  pageInfo: PageInfo!
+  edges: [CaseIncidentEdge]
+}
+
+type CaseIncidentEdge {
+  cursor: String!
+  node: CaseIncident!
+}
+
+input CaseIncidentAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  severity: String
+  priority: String
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  response_types: [String!]
 }
 
 type TypeAttribute {

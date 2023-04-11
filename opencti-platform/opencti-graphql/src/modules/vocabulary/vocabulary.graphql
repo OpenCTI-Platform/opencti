@@ -2,7 +2,6 @@ enum VocabularyCategory {
   account_type_ov
   attack_motivation_ov
   attack_resource_level_ov
-  case_types_ov
   case_severity_ov
   case_priority_ov
   channel_types_ov
@@ -10,6 +9,7 @@ enum VocabularyCategory {
   event_type_ov
   grouping_context_ov
   implementation_language_ov
+  incident_response_types_ov
   incident_type_ov
   incident_severity_ov
   indicator_type_ov

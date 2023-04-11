@@ -41,13 +41,14 @@ import { registerInternalObject } from './internalObject';
 import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-common';
 import type { RelationRefDefinition } from './relationRef-definition';
+import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 
 export interface ModuleDefinition<T extends StoreEntity, Z extends StixObject> {
   type: {
     id: string
     name: string
     aliased?: boolean
-    category: 'Container' | 'Location' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object'
+    category: 'Case' | 'Container' | 'Location' | 'Stix-Domain-Object' | 'Stix-Meta-Object' | 'Internal-Object'
   };
   graphql: {
     schema: any
@@ -86,6 +87,15 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         registerStixDomainConverter(definition.type.name, definition.converter);
         break;
       case ENTITY_TYPE_CONTAINER:
+        schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
+        // Hack to handle Case, a feature has been created to fix it :)
+        if (definition.type.name !== ENTITY_TYPE_CONTAINER_CASE) {
+          schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
+          registerStixDomainConverter(definition.type.name, definition.converter);
+        }
+        break;
+      case ENTITY_TYPE_CONTAINER_CASE:
+        schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER_CASE, definition.type.name);
         schemaAttributesDefinition.add(ENTITY_TYPE_CONTAINER, definition.type.name);
         schemaAttributesDefinition.add(ABSTRACT_STIX_DOMAIN_OBJECT, definition.type.name);
         registerStixDomainConverter(definition.type.name, definition.converter);

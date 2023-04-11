@@ -16,6 +16,7 @@ import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-common';
 import type { VocabularyCategory } from '../../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
 
@@ -68,14 +69,6 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   // C
-  case_types_ov: {
-    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
-    fields: [{
-      key: 'case_type',
-      required: true,
-      multiple: false,
-    }]
-  },
   case_severity_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE],
     fields: [{
@@ -138,6 +131,14 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     entity_types: [ENTITY_TYPE_MALWARE],
     fields: [{
       key: 'implementation_languages',
+      required: false,
+      multiple: true,
+    }]
+  },
+  incident_response_types_ov: {
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT],
+    fields: [{
+      key: 'incident_response_types',
       required: false,
       multiple: true,
     }]

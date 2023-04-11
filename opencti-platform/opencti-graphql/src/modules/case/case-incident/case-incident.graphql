@@ -1,4 +1,4 @@
-interface Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
+type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -117,6 +117,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   # Cases
   name: String!
   description: String
+  rating: Int
   # Technical
   creators: [Creator!]
   toStix: String
@@ -128,14 +129,20 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Incident Response
+  response_types: [String!]
+  severity: String
+  priority: String
 }
 
 # Ordering
-enum CasesOrdering {
+enum CaseIncidentsOrdering {
   name
   created
   modified
   context
+  severity
+  priority
   created_at
   updated_at
   creator
@@ -146,7 +153,7 @@ enum CasesOrdering {
 }
 
 # Filtering
-enum CasesFilter {
+enum CaseIncidentsFilter {
   name
   created
   modified
@@ -159,47 +166,77 @@ enum CasesFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
+  severity
+  priority
   confidence
 }
 
-input CasesFiltering {
-  key: [CasesFilter!]!
+input CaseIncidentsFiltering {
+  key: [CaseIncidentsFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
 # Relay connections
-type CaseConnection {
+type CaseIncidentConnection {
   pageInfo: PageInfo!
-  edges: [CaseEdge]
+  edges: [CaseIncidentEdge]
 }
 
-type CaseEdge {
+type CaseIncidentEdge {
   cursor: String!
-  node: Case!
+  node: CaseIncident!
 }
 
 # Queries
 type Query {
-  case(id: String!): Case @auth(for: [KNOWLEDGE])
-  cases(
+  caseIncident(id: String!): CaseIncident @auth(for: [KNOWLEDGE])
+  caseIncidents(
     first: Int
     after: ID
-    orderBy: CasesOrdering
+    orderBy: CaseIncidentsOrdering
     orderMode: OrderingMode
-    filters: [CasesFiltering!]
+    filters: [CaseIncidentsFiltering!]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CaseConnection @auth(for: [KNOWLEDGE])
+  ): CaseIncidentConnection @auth(for: [KNOWLEDGE])
+  caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input CaseIncidentAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2)
+  severity: String
+  priority: String
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  response_types: [String!]
 }
 
 type Mutation {
-  caseDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextClean(id: ID!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
+  caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseIncidentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseIncidentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseIncidentContextClean(id: ID!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
 }

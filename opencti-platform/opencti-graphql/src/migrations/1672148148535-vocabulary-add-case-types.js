@@ -5,7 +5,7 @@ import { builtInOv, openVocabularies } from '../modules/vocabulary/vocabulary-ut
 
 export const up = async (next) => {
   const context = executionContext('migration');
-  const categories = [VocabularyCategory.CaseTypesOv, VocabularyCategory.CaseSeverityOv, VocabularyCategory.CasePriorityOv];
+  const categories = ['case_types_ov', VocabularyCategory.CaseSeverityOv, VocabularyCategory.CasePriorityOv];
   for (let indexCategory = 0; indexCategory < categories.length; indexCategory += 1) {
     const category = categories[indexCategory];
     const vocabularies = openVocabularies[category] ?? [];
