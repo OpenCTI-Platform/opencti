@@ -59,7 +59,7 @@ To help you get you familiar with our contribution process, we have a list of [b
 
 ### Development
 
-If you want to actively help OpenCTI, we created a [dedicated documentation](https://filigran.notion.site/Environment-setup-606996f36d904fcf8d434c6d0eae4a00) about the deployment of a development environement and how to start the source code modification.
+If you want to actively help OpenCTI, we created a [dedicated documentation](https://filigran.notion.site/Environment-setup-606996f36d904fcf8d434c6d0eae4a00) about the deployment of a development environment and how to start the source code modification.
 
 ## Community
 
