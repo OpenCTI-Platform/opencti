@@ -9975,6 +9975,7 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!
+  defaultHiddenInRoles: [Role!]
 }
 
 enum EntitySettingsOrdering {

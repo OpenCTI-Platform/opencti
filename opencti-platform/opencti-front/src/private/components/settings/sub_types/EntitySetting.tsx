@@ -1,4 +1,4 @@
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
@@ -14,7 +14,6 @@ import { SecurityOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
-import { EntitySettingsRolesHiddenTypesQuery } from './__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
 import { isEmptyField } from '../../../../utils/utils';
 import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
@@ -32,6 +31,10 @@ export const entitySettingsFragment = graphql`
         scaleAttributes {
           name
           scale
+        }
+        defaultHiddenInRoles {
+          id
+          name
         }
       }
     }
@@ -55,6 +58,10 @@ export const entitySettingFragment = graphql`
     }
     attributes_configuration
     availableSettings
+    defaultHiddenInRoles {
+      id
+      name
+    }
   }
 `;
 
@@ -74,26 +81,10 @@ export const entitySettingsPatch = graphql`
   }
 `;
 
-export const entitySettingsRolesHiddenTypesQuery = graphql`
-    query EntitySettingsRolesHiddenTypesQuery($search: String) {
-        roles(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    default_hidden_types
-                }
-            }
-        }
-    }
-`;
-
 const EntitySetting = ({
   entitySettingsData,
-  roleQueryRef,
 }: {
   entitySettingsData: SubType_subType$data['settings'];
-  roleQueryRef: PreloadedQuery<EntitySettingsRolesHiddenTypesQuery>;
 }) => {
   const { t } = useFormatter();
   const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
@@ -111,22 +102,6 @@ const EntitySetting = ({
       },
     });
   };
-  const computeHiddenInRoles = () => {
-    const data = usePreloadedQuery<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery, roleQueryRef);
-    const rolesData = data.roles?.edges;
-    const result = [];
-    if (rolesData) {
-      for (const role of rolesData) {
-        if (role && role.node.default_hidden_types) {
-          if (role.node.default_hidden_types.includes(entitySetting.target_type)) {
-            result.push(role.node);
-          }
-        }
-      }
-    }
-    return result;
-  };
-  const hiddenInRoles = computeHiddenInRoles();
   return (
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={6}>
@@ -183,22 +158,25 @@ const EntitySetting = ({
             {t('Hidden in roles')}
           </Typography>
           <List>
-            {hiddenInRoles.map((role) => (
-              <ListItem
-                key={role.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/settings/accesses/roles/${role.id}`}
-              >
-                <ListItemIcon>
-                  <SecurityOutlined color="primary" />
-                </ListItemIcon>
-                <ListItemText primary={role.name} />
-              </ListItem>
-            ))}
-            {isEmptyField(hiddenInRoles) && <div>{'-'}</div>}
+            {isEmptyField(entitySetting.defaultHiddenInRoles) ? <div>{'-'}</div> : (
+              <>
+                {entitySetting.defaultHiddenInRoles.map((role) => (
+                  <ListItem
+                    key={role.id}
+                    dense={true}
+                    divider={true}
+                    button={true}
+                    component={Link}
+                    to={`/dashboard/settings/accesses/roles/${role.id}`}
+                  >
+                    <ListItemIcon>
+                      <SecurityOutlined color="primary" />
+                    </ListItemIcon>
+                    <ListItemText primary={role.name} />
+                  </ListItem>
+                ))}
+              </>
+            )}
           </List>
         </div>
       </Grid>

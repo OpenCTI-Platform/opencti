@@ -9,6 +9,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, getAvailableSettings, typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
+import { findRoles } from '../../domain/user';
 
 // -- LOADING --
 
@@ -33,6 +34,13 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {
   return Promise.all(entitySettingIds.map((entitySettingId) => entitySettingEditField(context, user, entitySettingId, input)));
+};
+
+export const getDefaultHiddenInRoles = async (context: AuthContext, user: AuthUser, entitySetting: BasicStoreEntityEntitySetting) => {
+  const roles = await findRoles(context, user);
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+  // @ts-ignore
+  return (roles?.edges ?? []).map(({ node }) => node.default_hidden_types?.includes(entitySetting.target_type)).filter((r) => Boolean(r));
 };
 
 // -- INITIALIZATION --
