@@ -94,3 +94,28 @@ def test_filter(entity_class):
     )
 
     entity_class.base_class().delete(id=test_indicator["id"])
+
+
+def test_relation(entity_class):
+    if not entity_class.relation_test():
+        return
+    class_data = entity_class.data()
+    class_data2 = entity_class.relation_test()
+    test_indicator = entity_class.own_class().create(**class_data)
+    test_indicator2 = entity_class.own_class().create(**class_data2)
+    assert test_indicator is not None, "Response is NoneType"
+    assert "id" in test_indicator, "No ID on object"
+    entity_class.own_class().add_stix_object_or_stix_relationship(
+        id=test_indicator["id"],
+        stixObjectOrStixRelationshipId=test_indicator2["id"],
+    )
+    result = entity_class.own_class().read(id=test_indicator["id"])
+    assert result["objectsIds"][0] == test_indicator2["id"]
+    entity_class.own_class().remove_stix_object_or_stix_relationship(
+        id=test_indicator["id"],
+        stixObjectOrStixRelationshipId=test_indicator2["id"],
+    )
+    result = entity_class.own_class().read(id=test_indicator["id"])
+    assert len(result["objectsIds"]) == 0
+    entity_class.base_class().delete(id=test_indicator["id"])
+    entity_class.base_class().delete(id=test_indicator2["id"])

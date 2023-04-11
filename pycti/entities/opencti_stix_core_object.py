@@ -423,7 +423,27 @@ class StixCoreObject:
                         }
                     }
                 }
-            }            
+            }
+            ... on Feedback {
+                name
+                description
+                objects {
+                    edges {
+                        node {
+                            ... on BasicObject {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                            ... on BasicRelationship {
+                                id
+                                entity_type
+                                standard_id
+                            }
+                        }
+                    }
+                }
+            }      
             ... on StixCyberObservable {
                 observable_value
             }
