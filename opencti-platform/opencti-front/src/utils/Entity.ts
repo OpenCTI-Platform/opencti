@@ -64,8 +64,10 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/techniques/data_components';
     case 'Data-Source':
       return '/dashboard/techniques/data_sources';
-    case 'Case':
-      return '/dashboard/cases/resolver';
+    case 'Case-Incident':
+      return '/dashboard/cases/incidents';
+    case 'Feedback':
+      return '/dashboard/cases/feedbacks';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

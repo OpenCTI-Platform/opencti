@@ -264,6 +264,12 @@ export const containerHeaderObjectsQuery = graphql`
             ... on Case {
               name
             }
+            ... on Feedback {
+              name
+            }
+            ... on CaseIncident {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }
@@ -857,6 +863,12 @@ export default createFragmentContainer(ContainerHeader, {
         name
       }
       ... on Case {
+        name
+      }
+      ... on Feedback {
+        name
+      }
+      ... on CaseIncident {
         name
       }
       ... on Note {

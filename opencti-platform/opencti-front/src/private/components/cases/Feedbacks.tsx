@@ -162,6 +162,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
+              type="Feedback"
               filters={{
                 entity_type: [{ id: 'Feedback', value: 'Feedback' }],
               }}

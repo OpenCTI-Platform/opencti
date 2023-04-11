@@ -128,7 +128,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
       >
         <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
+            isSupportParticipation={true}
             container={caseIncidentData}
           />
         </Grid>
