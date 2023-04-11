@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -245,6 +246,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -361,6 +375,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
         }
         ... on Creator {
           name
+        }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
         }
       }
     }
@@ -577,6 +604,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -691,6 +731,19 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
           definition_type
           definition
         }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
       }
     }
   }
@@ -713,6 +766,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
@@ -924,6 +978,29 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                 data: Object.entries(categoriesValues).map((o) => o[1][k]),
               };
             });
+            let subSectionIdsOrder = [];
+            if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') { // find subbars orders for entity subbars redirection
+              for (const distrib of props.stixCoreRelationshipsDistribution) {
+                for (const subDistrib of distrib.entity[key]) {
+                  subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
+                }
+              }
+              subSectionIdsOrder = R.take(15, Object.entries(subSectionIdsOrder).sort(([, a], [, b]) => b - a).map((k) => k[0]));
+            }
+            const redirectionUtils = (finalField === 'internal_id')
+              ? props.stixCoreRelationshipsDistribution.map(
+                (n) => ({
+                  id: n.label,
+                  entity_type: n.entity.entity_type,
+                  series: subSectionIdsOrder.map((subSectionId) => {
+                    const [entity] = n.entity[key].filter((e) => e.label === subSectionId);
+                    return {
+                      id: subSectionId,
+                      entity_type: entity ? entity.entity.entity_type : null,
+                    };
+                  }),
+                }),
+              ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -932,6 +1009,8 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
                   simpleNumberFormat,
                   null,
                   false,
+                  navigate,
+                  redirectionUtils,
                   true,
                   true,
                   categories,

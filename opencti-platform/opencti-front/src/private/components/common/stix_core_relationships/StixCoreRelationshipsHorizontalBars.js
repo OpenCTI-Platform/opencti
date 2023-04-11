@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
@@ -195,6 +196,19 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
         ... on Creator {
           name
         }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
       }
     }
   }
@@ -217,6 +231,7 @@ const StixCoreRelationshipsHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
@@ -283,12 +298,22 @@ const StixCoreRelationshipsHorizontalBars = ({
               ),
             }));
             const chartData = [{ name: t('Number of relationships'), data }];
+            const redirectionUtils = (finalField === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
+              (n) => ({
+                id: n.label,
+                entity_type: n.entity.entity_type,
+              }),
+            ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
                   theme,
                   true,
                   simpleNumberFormat,
+                  null,
+                  false,
+                  navigate,
+                  redirectionUtils,
                 )}
                 series={chartData}
                 type="bar"

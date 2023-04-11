@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as R from 'ramda';
+import { useNavigate } from 'react-router-dom-v5-compat';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -75,6 +76,11 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
       entity {
         ... on BasicObject {
           entity_type
+          id
+        }
+        ... on BasicRelationship {
+          entity_type
+          id
         }
         ... on StixCoreObject {
           stixCoreObjectsDistribution(
@@ -97,6 +103,7 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
             entity {
               ... on BasicObject {
                 entity_type
+                id
               }
               ... on AttackPattern {
                 name
@@ -208,6 +215,19 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
                 definition_type
                 definition
               }
+              ... on Report {
+                  name
+              }
+              ... on Grouping {
+                  name
+              }
+              ... on Note {
+                  attribute_abstract
+                  content
+              }
+              ... on Opinion {
+                  opinion
+              }
             }
           }
         }
@@ -258,6 +278,10 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on City {
           name
           description
+        }
+        ... on AdministrativeArea {
+            name
+            description
         }
         ... on Country {
           name
@@ -321,6 +345,19 @@ const stixCoreObjectsMultiHorizontalBarsDistributionQuery = graphql`
         ... on Creator {
           name
         }
+        ... on Report {
+            name
+        }
+        ... on Grouping {
+            name
+        }
+        ... on Note {
+            attribute_abstract
+            content
+        }
+        ... on Opinion {
+            opinion
+        }
       }
     }
   }
@@ -337,6 +374,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   const classes = useStyles();
   const theme = useTheme();
   const { t } = useFormatter();
+  const navigate = useNavigate();
   const renderContent = () => {
     const selection = dataSelection[0];
     let finalFilters = convertFilters(selection.filters);
@@ -427,6 +465,13 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 data,
               },
             ];
+            const redirectionUtils = (selection.attribute === 'name')
+              ? props.stixCoreObjectsDistribution.map(
+                (n) => ({
+                  id: n.entity.id,
+                  entity_type: n.entity.entity_type,
+                }),
+              ) : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(
@@ -435,6 +480,8 @@ const stixCoreObjectsMultiHorizontalBars = ({
                   simpleNumberFormat,
                   null,
                   parameters.distributed,
+                  navigate,
+                  redirectionUtils,
                 )}
                 series={chartData}
                 type="bar"

@@ -17,7 +17,7 @@ import {
 } from '../config/errors';
 import {
   buildPagination,
-  computeAverage,
+  computeAverage, extractEntityRepresentative,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -528,6 +528,9 @@ export const distributionEntities = async (context, user, types, args) => {
   if (field.includes('.')) {
     finalField = REL_INDEX_PREFIX + field;
   }
+  if (field === 'name') {
+    finalField = 'internal_id';
+  }
   const distributionData = await elAggregationCount(context, user, args.onlyInferred ? READ_DATA_INDICES_INFERRED : READ_DATA_INDICES, {
     ...distributionArgs,
     field: finalField
@@ -536,6 +539,18 @@ export const distributionEntities = async (context, user, types, args) => {
   const orderingFunction = order === 'asc' ? R.ascend : R.descend;
   if (field.includes(ID_INTERNAL) || field === 'creator_id') {
     return convertAggregateDistributions(context, user, limit, orderingFunction, distributionData);
+  }
+  if (field === 'name') {
+    let result = [];
+    await convertAggregateDistributions(context, user, limit, orderingFunction, distributionData)
+      .then((hits) => {
+        result = hits.map((hit) => ({
+          label: hit.entity.name ?? extractEntityRepresentative(hit.entity),
+          value: hit.value,
+          entity: hit.entity,
+        }));
+      });
+    return result;
   }
   return R.take(limit, R.sortWith([orderingFunction(R.prop('value'))])(distributionData));
 };

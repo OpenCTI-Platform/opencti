@@ -1,4 +1,5 @@
 import * as C from '@mui/material/colors';
+import { resolveLink } from './Entity';
 
 const colors = (temp) => [
   C.red[temp],
@@ -302,11 +303,14 @@ export const horizontalBarsChartOptions = (
   xFormatter = null,
   yFormatter = null,
   distributed = false,
+  navigate = undefined,
+  redirectionUtils = null,
   stacked = false,
   total = false,
   categories = null,
   legend = false,
 ) => ({
+  events: ['xAxisLabelClick'],
   chart: {
     type: 'bar',
     background: 'transparent',
@@ -315,6 +319,55 @@ export const horizontalBarsChartOptions = (
     },
     foreColor: theme.palette.text.secondary,
     stacked,
+    events: {
+      xAxisLabelClick: (event, chartContext, config) => {
+        if (redirectionUtils) {
+          const { labelIndex } = config;
+          const link = resolveLink(redirectionUtils[labelIndex].entity_type);
+          const entityId = redirectionUtils[labelIndex].id;
+          navigate(`${link}/${entityId}`);
+        }
+      },
+      mouseMove: (event, chartContext, config) => {
+        if (redirectionUtils
+          && (
+            (config.dataPointIndex >= 0
+              && (
+                (config.seriesIndex >= 0
+                  && redirectionUtils[config.dataPointIndex].series?.[config.seriesIndex]?.entity_type)
+                || !(config.seriesIndex >= 0 && redirectionUtils[config.dataPointIndex].series)
+              )
+            )
+            || event.target.parentNode.className.baseVal === 'apexcharts-text apexcharts-yaxis-label '
+          )
+        ) { // for clickable parts of the graphs
+          // eslint-disable-next-line no-param-reassign
+          event.target.style.cursor = 'pointer';
+        } else {
+          // eslint-disable-next-line no-param-reassign
+          event.target.style.cursor = 'default';
+        }
+      },
+      click: (event, chartContext, config) => {
+        if (redirectionUtils) {
+          if (config.dataPointIndex >= 0) { // click on a bar
+            const { dataPointIndex } = config;
+            if (config.seriesIndex >= 0 && redirectionUtils[dataPointIndex].series) { // for multi horizontal bars representing entities
+              const { seriesIndex } = config;
+              if (redirectionUtils[dataPointIndex].series[seriesIndex]?.entity_type) { // for series representing a single entity
+                const link = resolveLink(redirectionUtils[dataPointIndex].series[seriesIndex].entity_type);
+                const entityId = redirectionUtils[dataPointIndex].series[seriesIndex].id;
+                navigate(`${link}/${entityId}`);
+              }
+            } else {
+              const link = resolveLink(redirectionUtils[dataPointIndex].entity_type);
+              const entityId = redirectionUtils[dataPointIndex].id;
+              navigate(`${link}/${entityId}`);
+            }
+          }
+        }
+      },
+    },
   },
   theme: {
     mode: theme.palette.mode,
