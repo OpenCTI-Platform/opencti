@@ -773,7 +773,8 @@ class OpenCTIStix2:
             "opinion": self.opencti.opinion.import_from_stix2,
             "report": self.opencti.report.import_from_stix2,
             "grouping": self.opencti.grouping.import_from_stix2,
-            "case": self.opencti.case.import_from_stix2,
+            "case-incident": self.opencti.case_incident.import_from_stix2,
+            "feedback": self.opencti.feedback.import_from_stix2,
             "course-of-action": self.opencti.course_of_action.import_from_stix2,
             "data-component": self.opencti.data_component.import_from_stix2,
             "x-mitre-data-component": self.opencti.data_component.import_from_stix2,
@@ -1484,7 +1485,9 @@ class OpenCTIStix2:
                     entity["object_refs"].append(entity_object["standard_id"])
                 elif entity["type"] == "grouping":
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "case":
+                elif entity["type"] == "case-incident":
+                    entity["object_refs"].append(entity_object["standard_id"])
+                elif entity["type"] == "feedback":
                     entity["object_refs"].append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
@@ -1698,7 +1701,8 @@ class OpenCTIStix2:
                 "Observed-Data": self.opencti.observed_data.read,
                 "Opinion": self.opencti.opinion.read,
                 "Report": self.opencti.report.read,
-                "Case": self.opencti.case.read,
+                "Case-Incident": self.opencti.case_incident.read,
+                "Feedback": self.opencti.feedback.read,
                 "Course-Of-Action": self.opencti.course_of_action.read,
                 "Data-Component": self.opencti.data_component.read,
                 "Data-Source": self.opencti.data_source.read,
@@ -1808,7 +1812,6 @@ class OpenCTIStix2:
                     "opinion",
                     "observed-data",
                     "grouping",
-                    "case",
                 ]:
                     if "object_refs" in entity:
                         entity["object_refs"] = [
@@ -1856,7 +1859,8 @@ class OpenCTIStix2:
             "Opinion": self.opencti.opinion.read,
             "Report": self.opencti.report.read,
             "Grouping": self.opencti.grouping.read,
-            "Case": self.opencti.case.read,
+            "Case-Incident": self.opencti.case_incident.read,
+            "Feedback": self.opencti.feedback.read,
             "Course-Of-Action": self.opencti.course_of_action.read,
             "Data-Component": self.opencti.data_component.read,
             "Data-Source": self.opencti.data_source.read,
@@ -1957,7 +1961,6 @@ class OpenCTIStix2:
                             "Note",
                             "Observed-Data",
                             "Opinion",
-                            "Case",
                         ],
                     }
                 )
@@ -1971,7 +1974,6 @@ class OpenCTIStix2:
                             "Note",
                             "Observed-Data",
                             "Opinion",
-                            "Case",
                         ],
                     }
                 ]
@@ -1990,7 +1992,8 @@ class OpenCTIStix2:
             "Opinion": self.opencti.opinion.list,
             "Report": self.opencti.report.list,
             "Grouping": self.opencti.grouping.list,
-            "Case": self.opencti.case.list,
+            "Case-Incident": self.opencti.case_incident.list,
+            "Feedback": self.opencti.feedback.list,
             "Course-Of-Action": self.opencti.course_of_action.list,
             "Data-Component": self.opencti.data_component.list,
             "Data-Source": self.opencti.data_source.list,

@@ -82,7 +82,9 @@ services:
       SUBSCRIPTION_SCHEDULER__ENABLED: false
     commands:
       - apk add build-base git libffi-dev
-      - git clone https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
+      - BRANCH=$(echo $DRONE_COMMIT_BRANCH)
+      - OPENCTI_BRANCH=$([ $(echo $BRANCH | cut -d "/" -f 1) == opencti ] && echo issue/$(echo $BRANCH | cut -d "/" -f 2) || echo 'master' )
+      - git clone -b $OPENCTI_BRANCH https://github.com/OpenCTI-Platform/opencti.git /tmp/opencti
       - cd /tmp/opencti/opencti-platform/opencti-graphql
       - yarn install
       - yarn install:python
