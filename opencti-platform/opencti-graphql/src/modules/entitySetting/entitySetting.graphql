@@ -28,7 +28,6 @@ type EntitySetting implements InternalObject & BasicObject {
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
-  defaultHiddenInRoles: [Role!] @auth(for: [SETTINGS])
 }
 
 # Ordering

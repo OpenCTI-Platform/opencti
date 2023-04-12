@@ -1,11 +1,15 @@
 import { withFilter } from 'graphql-subscriptions';
-import { entitySettingsEditField, findAll, findById, findByType, getDefaultHiddenInRoles } from './entitySetting-domain';
+import { entitySettingsEditField, findAll, findById, findByType } from './entitySetting-domain';
 import type { Resolvers } from '../../generated/graphql';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
-import { getMandatoryAttributesForSetting, getScaleAttributesForSetting, queryAttributesDefinition } from '../../domain/attribute';
+import {
+  getMandatoryAttributesForSetting,
+  getScaleAttributesForSetting,
+  queryAttributesDefinition
+} from '../../domain/attribute';
 
 const entitySettingResolvers: Resolvers = {
   Query: {
@@ -18,7 +22,6 @@ const entitySettingResolvers: Resolvers = {
     mandatoryAttributes: (entitySetting, _, context) => getMandatoryAttributesForSetting(context, entitySetting),
     scaleAttributes: (entitySetting, _, context) => getScaleAttributesForSetting(context, entitySetting),
     availableSettings: (entitySetting, _, __) => getAvailableSettings(entitySetting.target_type),
-    defaultHiddenInRoles: (entitySetting, _, context) => getDefaultHiddenInRoles(context, context.user, entitySetting),
   },
   Mutation: {
     entitySettingsFieldPatch: (_, { ids, input }, context) => {

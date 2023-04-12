@@ -5361,7 +5361,6 @@ export type EntitySetting = BasicObject & InternalObject & {
   attributes_configuration?: Maybe<Scalars['String']>;
   availableSettings: Array<Scalars['String']>;
   created_at: Scalars['DateTime'];
-  defaultHiddenInRoles?: Maybe<Array<Role>>;
   enforce_reference?: Maybe<Scalars['Boolean']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -27041,7 +27040,6 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
-  defaultHiddenInRoles?: Resolver<Maybe<Array<ResolversTypes['Role']>>, ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
