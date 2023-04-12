@@ -6,17 +6,13 @@ import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { SecurityOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
-import { isEmptyField } from '../../../../utils/utils';
 import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import EntitySettingHiddenInRoles from './EntitySettingHiddenInRoles';
+import Security from '../../../../utils/Security';
 
 export const entitySettingsFragment = graphql`
   fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
@@ -54,10 +50,6 @@ export const entitySettingFragment = graphql`
     }
     attributes_configuration
     availableSettings
-    defaultHiddenInRoles {
-      id
-      name
-    }
   }
 `;
 
@@ -146,35 +138,11 @@ const EntitySetting = ({
             />
           </FormGroup>
         </div>
-        <div style={{ marginTop: 20 }}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-          >
-            {t('Hidden in roles')}
-          </Typography>
-          <List>
-            {isEmptyField(entitySetting.defaultHiddenInRoles) ? <div>{'-'}</div> : (
-              <>
-                {entitySetting.defaultHiddenInRoles.map((role) => (
-                  <ListItem
-                    key={role.id}
-                    dense={true}
-                    divider={true}
-                    button={true}
-                    component={Link}
-                    to={`/dashboard/settings/accesses/roles/${role.id}`}
-                  >
-                    <ListItemIcon>
-                      <SecurityOutlined color="primary" />
-                    </ListItemIcon>
-                    <ListItemText primary={role.name} />
-                  </ListItem>
-                ))}
-              </>
-            )}
-          </List>
-        </div>
+        <Security needs={[SETTINGS_SETACCESSES]}>
+          <EntitySettingHiddenInRoles
+            targetType={entitySetting.target_type}
+          ></EntitySettingHiddenInRoles>
+        </Security>
       </Grid>
       <Grid item={true} xs={6}>
         <div>
