@@ -7,7 +7,10 @@ import BaseSchema from 'yup/lib/schema';
 import IconButton from '@mui/material/IconButton';
 import TextField from '../../../../components/TextField';
 import ColorPickerField from '../../../../components/ColorPickerField';
-import type { Tick, UndefinedTick } from './EntitySettingAttributesConfigurationScale';
+import type {
+  Tick,
+  UndefinedTick,
+} from './EntitySettingAttributesConfigurationScale';
 import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
@@ -20,25 +23,28 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface EntitySettingScaleTickLineProps {
-  tick: Tick | UndefinedTick,
-  tickLabel: string,
-  deleteEnabled?: boolean,
-  validation: (t: (v: string) => string) => BaseSchema,
-  handleUpdate: (name: keyof Tick, value: number | string) => void,
-  handleDelete?: () => void,
+  tick: Tick | UndefinedTick;
+  tickLabel: string;
+  deleteEnabled?: boolean;
+  validation: (t: (v: string) => string) => BaseSchema;
+  handleUpdate: (name: keyof Tick, value: number | string) => void;
+  handleDelete?: () => void;
+  noMargin?: boolean;
 }
 
-const EntitySettingScaleTickLine: FunctionComponent<EntitySettingScaleTickLineProps> = ({
+const EntitySettingScaleTickLine: FunctionComponent<
+EntitySettingScaleTickLineProps
+> = ({
   tick,
   tickLabel,
   deleteEnabled,
   validation,
   handleUpdate,
   handleDelete,
+  noMargin,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   return (
     <Formik
       enableReinitialize={true}
@@ -49,13 +55,13 @@ const EntitySettingScaleTickLine: FunctionComponent<EntitySettingScaleTickLinePr
       {() => {
         const handleTickValueUpdate = (name: keyof Tick, value: string) => {
           if (handleUpdate) {
-            handleUpdate(name, value !== '' ? Number.parseInt((value), 10) : '');
+            handleUpdate(name, value !== '' ? Number.parseInt(value, 10) : '');
           }
         };
         return (
-          <Form style={{ margin: '30px 0' }}>
+          <Form style={{ marginTop: noMargin ? 0 : 15 }}>
             <Grid container spacing={3} columns={13}>
-              <Grid item xs={4}>
+              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={TextField}
                   type="number"
@@ -66,32 +72,39 @@ const EntitySettingScaleTickLine: FunctionComponent<EntitySettingScaleTickLinePr
                   onSubmit={handleTickValueUpdate}
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={ColorPickerField}
                   variant="standard"
                   name="color"
                   label={t('Color')}
                   style={{ width: '100%' }}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)}
+                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)
+                  }
                 />
               </Grid>
-              <Grid item xs={4}>
+              <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
                 <Field
                   component={TextField}
                   variant="standard"
                   name="label"
                   label={t('Label')}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)}
+                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)
+                  }
                 />
               </Grid>
               {deleteEnabled && (
-                <Grid item xs={1}>
+                <Grid item xs={1} style={{ paddingTop: noMargin ? 0 : 24 }}>
                   <div className={classes.button}>
-                    { handleDelete && <IconButton onClick={() => handleDelete()}>
-                      <DeleteOutline fontSize="small" style={{ color: '#00b1ff' }}/>
-                    </IconButton> }
+                    {handleDelete && (
+                      <IconButton onClick={() => handleDelete()}>
+                        <DeleteOutline
+                          fontSize="small"
+                          style={{ color: '#00b1ff' }}
+                        />
+                      </IconButton>
+                    )}
                   </div>
                 </Grid>
               )}

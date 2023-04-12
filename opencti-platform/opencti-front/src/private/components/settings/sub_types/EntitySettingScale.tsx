@@ -7,30 +7,45 @@ import Typography from '@mui/material/Typography';
 import { Button } from '@mui/material';
 import { useFormatter } from '../../../../components/i18n';
 import { MESSAGING$ } from '../../../../relay/environment';
-import type { ScaleConfig, Tick, UndefinedTick } from './EntitySettingAttributesConfigurationScale';
+import type {
+  ScaleConfig,
+  Tick,
+  UndefinedTick,
+} from './EntitySettingAttributesConfigurationScale';
 import EntitySettingScaleTickLine from './EntitySettingScaleTickLine';
-
-const useStyles = makeStyles(() => ({
-  container: {
-    padding: '10px 20px 20px 20px',
-  },
-}));
+import { Theme } from '../../../../components/Theme';
 
 interface EntitySettingScaleProps {
-  scaleConfig: ScaleConfig,
-  submitting: boolean,
-  handleSubmit: (scale: ScaleConfig) => void
+  scaleConfig: ScaleConfig;
+  submitting: boolean;
+  handleSubmit: (scale: ScaleConfig) => void;
 }
+
+const useStyles = makeStyles<Theme>(() => ({
+  createButton: {
+    float: 'left',
+    marginTop: -15,
+    marginBottom: 0,
+  },
+}));
 
 const isTickDefinitionValid = (tickDefinition: ScaleConfig) => {
   let isValid = true;
   if (tickDefinition.min.value > tickDefinition.max.value) {
-    MESSAGING$.notifyError('The min value cannot be greater than max value');
+    MESSAGING$.notifyError(
+      'The minimum value cannot be greater than max value',
+    );
     return false;
   }
   tickDefinition.ticks.forEach((tick) => {
-    if (!!tick.value && (tick.value < tickDefinition.min.value || tick.value > tickDefinition.max.value)) {
-      MESSAGING$.notifyError('Each tick value must be between min and max value');
+    if (
+      !!tick.value
+      && (tick.value < tickDefinition.min.value
+        || tick.value > tickDefinition.max.value)
+    ) {
+      MESSAGING$.notifyError(
+        'Each tick value must be between minimum and maximum value',
+      );
       isValid = false;
     }
   });
@@ -45,39 +60,53 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(scaleConfig);
-
   const { min, max } = tickDefinition;
-
   const tickValidation = () => {
-    return Yup.object()
-      .shape({
-        label: Yup.string().required(t('This field is required')),
-        color: Yup.string()
-          .required(t('This field is required'))
-          .matches(/^#[a-zA-Z0-9]{6}$/, t('The color must be written in hexadecimal. Example: #ff9800')),
-        value: Yup.number()
-          .required(t('This field is required'))
-          .test('SchemaValidation', t('The value must be between min and max value'), (value) => {
-            return !(!!value && (value < tickDefinition.min.value || value > tickDefinition.max.value));
-          }),
-      });
+    return Yup.object().shape({
+      label: Yup.string().required(t('This field is required')),
+      color: Yup.string()
+        .required(t('This field is required'))
+        .matches(
+          /^#[a-zA-Z0-9]{6}$/,
+          t('The color must be written in hexadecimal. Example: #ff9800'),
+        ),
+      value: Yup.number()
+        .required(t('This field is required'))
+        .test(
+          'SchemaValidation',
+          t('The value must be between minimum and maximum value'),
+          (value) => {
+            return !(
+              !!value
+              && (value < tickDefinition.min.value
+                || value > tickDefinition.max.value)
+            );
+          },
+        ),
+    });
   };
 
   const minMaxValidation = () => {
-    return Yup.object()
-      .shape({
-        label: Yup.string().required(t('This field is required')),
-        color: Yup.string()
-          .required(t('This field is required'))
-          .matches(/^#[a-zA-Z0-9]{6}$/, t('The color must be written in hexadecimal. Example: #ff9800')),
-        value: Yup.number()
-          .required(t('This field is required'))
-          .min(0, t('The value must be greater than or equal to 0'))
-          .max(100, t('The value must be less than or equal to 100'))
-          .test('MinMaxValidation', t('The min value cannot be greater than max value'), () => {
+    return Yup.object().shape({
+      label: Yup.string().required(t('This field is required')),
+      color: Yup.string()
+        .required(t('This field is required'))
+        .matches(
+          /^#[a-zA-Z0-9]{6}$/,
+          t('The color must be written in hexadecimal. Example: #ff9800'),
+        ),
+      value: Yup.number()
+        .required(t('This field is required'))
+        .min(0, t('The value must be greater than or equal to 0'))
+        .max(100, t('The value must be less than or equal to 100'))
+        .test(
+          'MinMaxValidation',
+          t('The minimum value cannot be greater than maximum value'),
+          () => {
             return tickDefinition.min.value <= tickDefinition.max.value;
-          }),
-      });
+          },
+        ),
+    });
   };
 
   const addTickRow = () => {
@@ -92,7 +121,9 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
   };
   const handleDeleteTickRow = (tickIndex: number | string) => {
     const newState = { ...tickDefinition };
-    if (typeof tickIndex === 'number') { newState.ticks.splice(tickIndex, 1); }
+    if (typeof tickIndex === 'number') {
+      newState.ticks.splice(tickIndex, 1);
+    }
     setTickDefinition(newState);
   };
 
@@ -108,7 +139,7 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
     }
     const tick = ticks.at(tickIndex);
     const nextTick = tickIndex < ticks.length - 1 ? ticks.at(tickIndex + 1) : maxTick;
-    return (!!nextTick && !!tick) ? nextTick.value - tick.value : 0;
+    return !!nextTick && !!tick ? nextTick.value - tick.value : 0;
   };
 
   const getSortedTickWithMin = () => {
@@ -141,84 +172,107 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
   };
 
   return (
-      <div style={{ height: '100%' }}>
-        <div className={classes.container}>
-          <EntitySettingScaleTickLine
-            tick={tickDefinition.min}
-            tickLabel={t('Min')}
-            validation={minMaxValidation}
-            handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick('min', name, value)}
-          />
-          <EntitySettingScaleTickLine
-            tick={tickDefinition.max}
-            tickLabel={t('Max')}
-            validation={minMaxValidation}
-            handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick('max', name, value)}
-          />
-          <Typography variant="h3" gutterBottom={true} style={{ float: 'left', margin: '10px 0' }}>
-            {t('Ticks')}
-          </Typography>
-          <div style={{ padding: '20px 0' }}>
-            {tickDefinition.ticks.map((tick, index) => (
-              <EntitySettingScaleTickLine
-                key={index}
-                tick={tick}
-                tickLabel={t('Value')}
-                deleteEnabled={true}
-                validation={tickValidation}
-                handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick(index, name, value)}
-                handleDelete={() => handleDeleteTickRow(index)}
-              />
-            ))}
-          </div>
-          <Typography variant="h3" gutterBottom={true} style={{ float: 'right' }}>
-            <IconButton
-              onClick={addTickRow}
-              color="secondary"
-              aria-label="Label"
-              size="large"
-            >
-              <Add fontSize="small" />
-            </IconButton>
-            {t('Add Tick')}
-          </Typography>
-          <div style={{ display: 'flex', width: '100%', padding: '20px 0' }}>
-            {getSortedTickWithMin().map((tick, index) => (
-              <div
-                key={index}
+    <div style={{ height: '100%', position: 'relative', paddingBottom: 50 }}>
+      <div style={{ display: 'flex', width: '100%', padding: '20px 0 20px 0' }}>
+        {getSortedTickWithMin().map((tick, index) => (
+          <div
+            key={index}
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              flexGrow: `${
+                getTickRange(getSortedTickWithMin(), index, max)
+                / (max.value - min.value)
+              }`,
+            }}
+          >
+            <div className="rail">
+              <span
+                className="railSpan"
                 style={{
-                  display: 'flex',
-                  flexDirection: 'column',
-                  flexGrow: `${getTickRange(getSortedTickWithMin(), index, max) / (max.value - min.value)}`,
-                }}>
-                <div className="rail">
-                  <span className="railSpan" style={{
-                    backgroundColor: `${tick.color ? tick.color : '#00b1ff'}`,
-                    height: '5px',
-                    width: '100%',
-                    display: 'block',
-                  }}></span>
-                </div>
-                <div style={{ display: 'flex', padding: '10px 0' }}>
-                  <span style={{ color: `${index === 0 ? '#607d8b' : tick.color}` }}>{tick.value}</span>
-                  <div style={{ flex: 1, textAlign: 'center' }}>{tick.label}</div>
-                  { index === tickDefinition.ticks.length ? <span style={{ color: `${tick.color}` }}>{max.value}</span> : <></>}
-                </div>
-              </div>
-            ))}
+                  backgroundColor: `${tick.color ? tick.color : '#00b1ff'}`,
+                  height: '5px',
+                  width: '100%',
+                  display: 'block',
+                }}
+              ></span>
+            </div>
+            <div style={{ display: 'flex', padding: '10px 0' }}>
+              <span
+                style={{ color: `${index === 0 ? '#607d8b' : tick.color}` }}
+              >
+                {tick.value}
+              </span>
+              <div style={{ flex: 1, textAlign: 'center' }}>{tick.label}</div>
+              {index === tickDefinition.ticks.length ? (
+                <span style={{ color: `${tick.color}` }}>{max.value}</span>
+              ) : (
+                <></>
+              )}
+            </div>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'right' }}>
-            <Button
-              type="submit"
-              variant="contained"
-              color="secondary"
-              disabled={submitting}
-              onClick={handleSubmitTickDefinition}>
-              {t('Save')}
-            </Button>
-          </div>
-        </div>
+        ))}
       </div>
+      <Typography variant="h3" gutterBottom={true}>
+        {t('Limits')}
+      </Typography>
+      <EntitySettingScaleTickLine
+        tick={tickDefinition.min}
+        tickLabel={t('Minimum')}
+        validation={minMaxValidation}
+        handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick('min', name, value)
+        }
+      />
+      <EntitySettingScaleTickLine
+        tick={tickDefinition.max}
+        tickLabel={t('Maximum')}
+        validation={minMaxValidation}
+        handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick('max', name, value)
+        }
+      />
+      <div style={{ marginTop: 30, float: 'left' }}>
+        <Typography
+          variant="h3"
+          gutterBottom={true}
+          style={{ float: 'left', marginBottom: 0 }}
+        >
+          {t('Ticks')}
+        </Typography>
+        <IconButton
+          color="secondary"
+          aria-label="Add"
+          onClick={addTickRow}
+          size="large"
+          classes={{ root: classes.createButton }}
+        >
+          <Add fontSize="small" />
+        </IconButton>
+      </div>
+      {tickDefinition.ticks.map((tick, index) => (
+        <EntitySettingScaleTickLine
+          key={index}
+          tick={tick}
+          tickLabel={t('Value')}
+          deleteEnabled={true}
+          validation={tickValidation}
+          handleUpdate={(name: keyof Tick, value: string | number) => handleUpdateValueOfTick(index, name, value)
+          }
+          handleDelete={() => handleDeleteTickRow(index)}
+          noMargin={index === 0}
+        />
+      ))}
+      <Button
+        type="submit"
+        variant="contained"
+        color="secondary"
+        disabled={submitting}
+        onClick={handleSubmitTickDefinition}
+        style={{ position: 'absolute', bottom: 0, right: 0 }}
+      >
+        {t('Save')}
+      </Button>
+      <div className="clearfix" />
+    </div>
   );
 };
 

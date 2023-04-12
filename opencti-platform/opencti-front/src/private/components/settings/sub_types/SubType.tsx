@@ -8,7 +8,9 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
-import EntitySetting, { entitySettingsRolesHiddenTypesQuery } from './EntitySetting';
+import EntitySetting, {
+  entitySettingsRolesHiddenTypesQuery,
+} from './EntitySetting';
 import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
 import EntitySettingAttributesConfigurationScale from './EntitySettingAttributesConfigurationScale';
@@ -67,11 +69,15 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   const classes = useStyles();
   const subType = useFragment(subTypeFragment, data);
   const statuses = (subType.statuses?.edges ?? []).map((edge) => edge.node);
-  const roleQueryRef = useQueryLoading<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery);
+  const roleQueryRef = useQueryLoading<EntitySettingsRolesHiddenTypesQuery>(
+    entitySettingsRolesHiddenTypesQuery,
+  );
 
   const subTypeSettingsId = subType.settings?.id;
   if (subTypeSettingsId) {
-    const config = useMemo<GraphQLSubscriptionConfig<SubTypeEntitySettingSubscription>>(
+    const config = useMemo<
+    GraphQLSubscriptionConfig<SubTypeEntitySettingSubscription>
+    >(
       () => ({
         subscription: entitySettingSubscription,
         variables: { id: subTypeSettingsId },
@@ -96,11 +102,16 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
               {roleQueryRef ? (
-                <React.Suspense fallback={<Loader variant={LoaderVariant.inElement}/>}>
-                  <EntitySetting entitySettingsData={subType.settings} roleQueryRef={roleQueryRef}/>
+                <React.Suspense
+                  fallback={<Loader variant={LoaderVariant.inElement} />}
+                >
+                  <EntitySetting
+                    entitySettingsData={subType.settings}
+                    roleQueryRef={roleQueryRef}
+                  />
                 </React.Suspense>
               ) : (
-                <Loader variant={LoaderVariant.inElement}/>
+                <Loader variant={LoaderVariant.inElement} />
               )}
               <div style={{ marginTop: 10 }}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -115,9 +126,13 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Paper>
           </div>
         </Grid>
-        <EntitySettingAttributesConfiguration entitySettingsData={subType.settings} />
+        <EntitySettingAttributesConfiguration
+          entitySettingsData={subType.settings}
+        />
+          <EntitySettingAttributesConfigurationScale
+            entitySettingsData={subType.settings}
+          />
       </Grid>
-      <EntitySettingAttributesConfigurationScale entitySettingsData={subType.settings} />
     </>
   );
 };
