@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes, filter, append } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { append, compose, filter, includes } from 'ramda';
+import { createFragmentContainer, graphql } from 'react-relay';
 import { Link } from 'react-router-dom';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
@@ -13,7 +13,6 @@ import Typography from '@mui/material/Typography';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
-import Slide from '@mui/material/Slide';
 import DialogActions from '@mui/material/DialogActions';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
@@ -28,6 +27,7 @@ import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { commitMutation } from '../../../../relay/environment';
 import ItemPatternType from '../../../../components/ItemPatternType';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   itemHead: {
@@ -88,11 +88,6 @@ const inlineStyles = {
     textOverflow: 'ellipsis',
   },
 };
-
-const Transition = React.forwardRef((props, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const stixCyberObservableIndicatorsPromoteMutation = graphql`
   mutation StixCyberObservableIndicatorsPromoteMutation($id: ID!) {
@@ -278,7 +273,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
         <StixCyberObservableAddIndicators
           open={displayCreate}
           handleClose={this.handleCloseCreate.bind(this)}
-          stixCyberObservableId={stixCyberObservable.id}
+          stixCyberObservable={stixCyberObservable}
           stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
         />
       </div>
@@ -300,11 +295,15 @@ const StixCyberObservableIndicators = createFragmentContainer(
     stixCyberObservable: graphql`
       fragment StixCyberObservableIndicators_stixCyberObservable on StixCyberObservable {
         id
-        indicators(first: 200) @connection(key: "Pagination_indicators") {
+        observable_value
+        parent_types
+        entity_type
+        indicators(first: 200) {
           edges {
             node {
               id
               entity_type
+              parent_types
               name
               created_at
               updated_at

@@ -39,6 +39,7 @@ const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = (
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Data-Component'}
         stixDomainObject={dataComponent}
         PopoverComponent={<DataComponentPopover dataComponentId={dataComponent.id} />}
       />

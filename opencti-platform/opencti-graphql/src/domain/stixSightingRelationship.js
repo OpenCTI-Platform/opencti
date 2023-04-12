@@ -34,7 +34,8 @@ import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import {
   stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRelation
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
@@ -116,8 +117,11 @@ export const stixSightingRelationshipEditField = async (context, user, relations
 export const stixSightingRelationshipAddRelation = async (context, user, stixSightingRelationshipId, input) => {
   return stixObjectOrRelationshipAddRefRelation(context, user, stixSightingRelationshipId, input, STIX_SIGHTING_RELATIONSHIP);
 };
-export const stixSightingRelationshipDeleteRelation = async (context, user, stixSightingRelationshipId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRelation(context, user, stixSightingRelationshipId, toId, relationshipType, STIX_SIGHTING_RELATIONSHIP);
+export const stixSightingRelationshipAddRelations = async (context, user, stixSightingRelationshipId, input, opts = {}) => {
+  return stixObjectOrRelationshipAddRefRelations(context, user, stixSightingRelationshipId, input, STIX_SIGHTING_RELATIONSHIP, opts);
+};
+export const stixSightingRelationshipDeleteRelation = async (context, user, stixSightingRelationshipId, toId, relationshipType, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixSightingRelationshipId, toId, relationshipType, STIX_SIGHTING_RELATIONSHIP, opts);
 };
 // endregion
 

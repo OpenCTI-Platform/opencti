@@ -113,10 +113,11 @@ const stixCoreObjectResolvers = {
     stixCoreObjectEdit: (_, { id }, context) => ({
       delete: () => stixCoreObjectDelete(context, context.user, id),
       relationAdd: ({ input }) => stixCoreObjectAddRelation(context, context.user, id, input),
-      relationsAdd: ({ input }) => stixCoreObjectAddRelations(context, context.user, id, input),
+      relationsAdd: ({ input, commitMessage, references }) => stixCoreObjectAddRelations(context, context.user, id, input, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType),
+      // eslint-disable-next-line max-len
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
       exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, { ...args, stixCoreObjectId: id }),

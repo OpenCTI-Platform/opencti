@@ -1,38 +1,28 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import * as Yup from 'yup';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Close, ArrowRightAlt } from '@mui/icons-material';
-import { fetchQuery, commitMutation } from '../../../../relay/environment';
+import { ArrowRightAlt, Close } from '@mui/icons-material';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
-import MarkDownField from '../../../../components/MarkDownField';
 import { truncate } from '../../../../utils/String';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ConfidenceField from '../../common/form/ConfidenceField';
 import { defaultValue } from '../../../../utils/Graph';
-import TextField from '../../../../components/TextField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-
     padding: 0,
   },
   createButton: {
@@ -40,13 +30,6 @@ const styles = (theme) => ({
     bottom: 30,
     right: 30,
     zIndex: 2000,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -57,11 +40,6 @@ const styles = (theme) => ({
     top: 12,
     left: 5,
     color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -121,10 +99,6 @@ const styles = (theme) => ({
       background: 'rgba(0, 0, 0, 0.1)',
     },
     padding: 10,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
   },
   middle: {
     margin: '0 auto',
@@ -278,25 +252,6 @@ const stixSightingRelationshipCreationMutation = graphql`
   }
 `;
 
-const stixSightingRelationshipValidation = (t) => Yup.object().shape({
-  attribute_count: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  confidence: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  description: Yup.string().nullable(),
-  x_opencti_negative: Yup.boolean(),
-});
-
 class StixSightingRelationshipCreation extends Component {
   constructor(props) {
     super(props);
@@ -318,6 +273,10 @@ class StixSightingRelationshipCreation extends Component {
           R.assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+          R.assoc(
+            'externalReferences',
+            R.pluck('value', values.externalReferences),
+          ),
         )(values);
         commitMutation({
           mutation: stixSightingRelationshipCreationMutation,
@@ -403,225 +362,34 @@ class StixSightingRelationshipCreation extends Component {
     const defaultConfidence = confidence || 15;
     const defaultFirstSeen = !isNone(firstSeen) ? firstSeen : null;
     const defaultLastSeen = !isNone(lastSeen) ? lastSeen : null;
-    const initialValues = {
-      attribute_count: 1,
-      confidence: defaultConfidence,
-      first_seen: defaultFirstSeen,
-      last_seen: defaultLastSeen,
-      description: '',
-      createdBy: defaultCreatedBy
-        ? {
-          label: defaultCreatedBy.name,
-          value: defaultCreatedBy.id,
-          type: defaultCreatedBy.entity_type,
-        }
-        : '',
-      objectMarking: defaultMarkingDefinitions
-        ? R.map(
-          (n) => ({
-            label: n.definition,
-            value: n.id,
-            color: n.x_opencti_color,
-          }),
-          defaultMarkingDefinitions,
-        )
-        : [],
-    };
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={stixSightingRelationshipValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, isSubmitting, setFieldValue }) => (
-          <Form>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleClose.bind(this)}
-                size="large"
-              >
-                <Close fontSize="small" color="primary" />
-              </IconButton>
-              <Typography variant="h6">{t('Create a sighting')}</Typography>
-            </div>
-            <div className={classes.container}>
-              <div className={classes.relationCreate}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
-                    top: 10,
-                    left: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        fromObjects[0].entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={fromObjects[0].entity_type}
-                        color={itemColor(fromObjects[0].entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {fromObjects[0].relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${fromObjects[0].entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {fromObjects[0].relationship_type ? (
-                        t(`relationship_${fromObjects[0].relationship_type}`)
-                      ) : fromObjects.length > 1 ? (
-                        <em>{t('Multiple entities selected')}</em>
-                      ) : (
-                        truncate(fromObjects[0].name, 20)
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.middle} style={{ paddingTop: 25 }}>
-                  <ArrowRightAlt fontSize="large" />
-                  <br />
-                  <Button
-                    variant="outlined"
-                    onClick={this.handleReverseSighting.bind(this)}
-                    color="secondary"
-                    size="small"
-                  >
-                    {t('Reverse')}
-                  </Button>
-                </div>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
-                    top: 10,
-                    right: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        toObjects[0].entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={toObjects[0].entity_type}
-                        color={itemColor(toObjects[0].entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {toObjects[0].relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${toObjects[0].entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {toObjects[0].relationship_type ? (
-                        t(`relationship_${toObjects[0].relationship_type}`)
-                      ) : toObjects.length > 1 ? (
-                        <em>{t('Multiple entities selected')}</em>
-                      ) : (
-                        truncate(toObjects[0].name, 20)
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="attribute_count"
-                label={t('Count')}
-                fullWidth={true}
-                type="number"
-                style={{ marginTop: 20 }}
-              />
-              <ConfidenceField
-                entityType="stix-sighting-relationship"
-                containerStyle={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="first_seen"
-                TextFieldProps={{
-                  label: t('First seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="last_seen"
-                TextFieldProps={{
-                  label: t('Last seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={MarkDownField}
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-              />
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
-                setFieldValue={setFieldValue}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={this.handleClose.bind(this)}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Create')}
-                </Button>
-              </div>
-            </div>
-          </Form>
-        )}
-      </Formik>
+      <>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={this.handleClose.bind(this)}
+            size="large"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a sighting')}</Typography>
+        </div>
+        <StixSightingRelationshipCreationForm
+          fromEntity={fromObjects[0]}
+          toEntity={toObjects[0]}
+          isMultipleFrom={fromObjects.length > 1}
+          isMultipleTo={toObjects.length > 1}
+          handleReverseRelation={this.handleReverseSighting.bind(this)}
+          onSubmit={this.onSubmit.bind(this)}
+          handleClose={this.handleClose.bind(this)}
+          defaultConfidence={defaultConfidence}
+          defaultFirstSeen={defaultFirstSeen}
+          defaultLastSeen={defaultLastSeen}
+          defaultCreatedBy={defaultCreatedBy}
+          defaultMarkingDefinitions={defaultMarkingDefinitions}
+        />
+      </>
     );
   }
 

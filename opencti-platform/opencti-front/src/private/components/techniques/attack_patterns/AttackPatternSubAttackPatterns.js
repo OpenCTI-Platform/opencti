@@ -44,7 +44,7 @@ class AttackPatternSubAttackPatternsComponent extends Component {
   render() {
     const { t, attackPattern } = this.props;
     const sortByXMitreIdCaseInsensitive = R.sortBy(
-      R.compose(R.toLower, R.prop('x_mitre_id')),
+      R.compose(R.toLower, R.propOr('', 'x_mitre_id')),
     );
     const subAttackPatterns = R.pipe(
       R.map((n) => n.node),
@@ -57,7 +57,7 @@ class AttackPatternSubAttackPatternsComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddSubAttackPattern
-            attackPatternId={attackPattern.id}
+            attackPattern={attackPattern}
             attackPatternSubAttackPatterns={
               attackPattern.subAttackPatterns.edges
             }
@@ -113,10 +113,14 @@ const AttackPatternSubAttackPatterns = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternSubAttackPatterns_attackPattern on AttackPattern {
         id
+        name
+        parent_types
+        entity_type
         subAttackPatterns {
           edges {
             node {
               id
+              parent_types
               name
               description
               x_mitre_id

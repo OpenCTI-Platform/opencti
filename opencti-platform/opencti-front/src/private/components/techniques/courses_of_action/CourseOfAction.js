@@ -33,6 +33,7 @@ class CourseOfActionComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Course-Of-Action'}
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
           isOpenctiAlias={true}

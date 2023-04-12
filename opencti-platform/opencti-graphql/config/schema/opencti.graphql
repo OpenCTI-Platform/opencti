@@ -1674,7 +1674,7 @@ input KillChainPhasesFiltering {
 }
 type KillChainPhaseConnection {
   pageInfo: PageInfo!
-  edges: [KillChainPhaseEdge]
+  edges: [KillChainPhaseEdge!]!
 }
 type KillChainPhaseEdge {
   cursor: String!
@@ -10911,18 +10911,26 @@ type StixRelationshipEdge {
 interface StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   parent_types: [String]!
   fromRole: String
   toRole: String
+  created_at: DateTime!
+  updated_at: DateTime!
   # StixRelationship
-  standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
   spec_version: String!
+  created: DateTime
+  modified: DateTime
+  confidence: Int
+  relationship_type: String!
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
   # Technical
   creators: [Creator!]
 }
@@ -10993,6 +11001,7 @@ type StixCoreRelationshipEdge {
 type StixCoreRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   parent_types: [String]!
   fromRole: String
@@ -11000,7 +11009,6 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
-  standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   from: StixObjectOrStixRelationship
@@ -11009,20 +11017,20 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   to: StixObjectOrStixRelationship
   toId: String!
   toType: String!
-  spec_version: String!
   x_opencti_inferences: [Inference]
-  # StixCoreRelationship
+  spec_version: String!
+  created: DateTime
+  modified: DateTime
+  confidence: Int
   relationship_type: String!
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  # StixCoreRelationship
   description: String
   start_time: DateTime
   stop_time: DateTime
   revoked: Boolean!
-  confidence: Int
   lang: String
-  created: DateTime
-  modified: DateTime
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
   objectLabel: LabelConnection
   objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
@@ -11139,6 +11147,7 @@ type StixSightingRelationshipsEdge {
 type StixSightingRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   parent_types: [String]!
   fromRole: String
@@ -11146,10 +11155,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
-  standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  spec_version: String!
   from: StixObjectOrStixRelationship
   fromId: String!
   fromType: String!
@@ -11157,20 +11164,21 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   toId: String!
   toType: String!
   x_opencti_inferences: [Inference]
-  # StixSightingRelationship
+  spec_version: String!
+  created: DateTime
+  modified: DateTime
+  confidence: Int
   relationship_type: String!
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  # StixSightingRelationship
   description: String
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean!
-  created: DateTime
-  modified: DateTime
-  confidence: Int
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   objectLabel: LabelConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   externalReferences(first: Int): ExternalReferenceConnection
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
@@ -11243,6 +11251,7 @@ type StixRefRelationshipEdge {
 type StixRefRelationship implements BasicRelationship & StixRelationship {
   # BasicRelationship
   id: ID! # internal_id
+  standard_id: String!
   entity_type: String!
   parent_types: [String]!
   fromRole: String
@@ -11250,27 +11259,27 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   created_at: DateTime!
   updated_at: DateTime!
   # StixRelationship
-  standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  spec_version: String!
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  # StixRefRelationship
-  relationship_type: String!
-  start_time: DateTime
-  stop_time: DateTime
+  spec_version: String!
   created: DateTime
   modified: DateTime
   confidence: Int
+  relationship_type: String!
+  createdBy: Identity
   objectMarking: MarkingDefinitionConnection
+  # StixRefRelationship
+  start_time: DateTime
+  stop_time: DateTime
   datable: Boolean
+  notes(first: Int): NoteConnection
+  reports(first: Int): ReportConnection
+  opinions(first: Int): OpinionConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
   # Technical
   creators: [Creator!]
   editContext: [EditUserContext!]
@@ -12555,8 +12564,8 @@ type KillChainPhaseEditMutations {
 type StixCoreObjectEditMutations {
   delete: ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationsAdd(input: StixRefRelationshipsAddInput!): StixCoreObject
-  relationDelete(toId: StixRef!, relationship_type: String!): StixCoreObject
+  relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreObject
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreObject
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
@@ -12842,7 +12851,8 @@ type StixCoreRelationshipEditMutations {
   contextPatch(input: EditContext): StixCoreRelationship
   contextClean: StixCoreRelationship
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): StixCoreRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixCoreRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixCoreRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }
@@ -12854,8 +12864,9 @@ type StixSightingRelationshipEditMutations {
   fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): StixSightingRelationship
   contextPatch(input: EditContext): StixSightingRelationship
   contextClean: StixSightingRelationship
-  relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
-  relationDelete(toId: StixRef!, relationship_type: String!): StixSightingRelationship
+  relationAdd(input: StixRefRelationshipAddInput!): StixSightingRelationship
+  relationsAdd(input: StixRefRelationshipsAddInput!, commitMessage: String, references: [String]): StixSightingRelationship
+  relationDelete(toId: StixRef!, relationship_type: String!, commitMessage: String, references: [String]): StixSightingRelationship
   restrictionOrganizationAdd(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixSightingRelationship @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
 }

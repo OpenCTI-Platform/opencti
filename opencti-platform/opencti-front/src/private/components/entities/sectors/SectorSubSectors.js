@@ -49,7 +49,7 @@ class SectorSubSectorsComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddSubSector
-            sectorId={sector.id}
+            sector={sector}
             sectorSubSectors={sector.subSectors.edges}
           />
         </Security>
@@ -99,12 +99,16 @@ const SectorSubSectors = createFragmentContainer(SectorSubSectorsComponent, {
   sector: graphql`
     fragment SectorSubSectors_sector on Sector {
       id
+      name
+      parent_types
+      entity_type
       subSectors {
         edges {
           node {
             id
             name
             description
+            parent_types
           }
         }
       }

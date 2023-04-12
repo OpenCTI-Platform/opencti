@@ -195,6 +195,7 @@ class RootSystem extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'System'}
                             disableSharing={true}
                             stixDomainObject={props.system}
                             PopoverComponent={<SystemPopover />}

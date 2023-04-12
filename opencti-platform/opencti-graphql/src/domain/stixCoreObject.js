@@ -56,8 +56,8 @@ import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
 import {
   stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipAddRelations,
-  stixObjectOrRelationshipDeleteRelation
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
@@ -132,11 +132,11 @@ export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => 
 export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId, input) => {
   return stixObjectOrRelationshipAddRefRelation(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT);
 };
-export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input) => {
-  return stixObjectOrRelationshipAddRelations(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT);
+export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input, opts = {}) => {
+  return stixObjectOrRelationshipAddRefRelations(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT, opts);
 };
-export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT);
+export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT, opts);
 };
 // endregion
 

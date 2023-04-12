@@ -91,6 +91,7 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Data-Source'}
         disableSharing={true}
         stixDomainObject={dataSource}
         PopoverComponent={<DataSourcePopover id={dataSource.id} />}

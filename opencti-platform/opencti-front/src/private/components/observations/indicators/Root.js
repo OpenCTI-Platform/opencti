@@ -108,6 +108,7 @@ class RootIndicator extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Indicator'}
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
                             noAliases={true}
@@ -127,6 +128,7 @@ class RootIndicator extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Indicator'}
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
                             noAliases={true}
@@ -154,6 +156,7 @@ class RootIndicator extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Indicator'}
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
                             noAliases={true}
@@ -174,6 +177,7 @@ class RootIndicator extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Indicator'}
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
                             noAliases={true}
@@ -191,6 +195,7 @@ class RootIndicator extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Indicator'}
                             stixDomainObject={props.indicator}
                             PopoverComponent={<IndicatorPopover />}
                             noAliases={true}

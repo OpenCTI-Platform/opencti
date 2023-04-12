@@ -127,6 +127,7 @@ class RootInfrastructure extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Infrastructure'}
                             stixDomainObject={props.infrastructure}
                             PopoverComponent={<InfrastructurePopover />}
                           />

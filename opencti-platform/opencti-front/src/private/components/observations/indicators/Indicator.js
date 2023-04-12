@@ -33,6 +33,7 @@ class IndicatorComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Indicator'}
           stixDomainObject={indicator}
           PopoverComponent={<IndicatorPopover />}
           noAliases={true}

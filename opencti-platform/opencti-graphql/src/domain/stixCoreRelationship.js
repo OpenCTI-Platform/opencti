@@ -52,7 +52,8 @@ import { upload } from '../database/file-storage';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import {
   stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRelation
+  stixObjectOrRelationshipAddRefRelations,
+  stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
@@ -254,8 +255,11 @@ export const stixCoreRelationshipEditField = async (context, user, stixCoreRelat
 export const stixCoreRelationshipAddRelation = async (context, user, stixCoreRelationshipId, input) => {
   return stixObjectOrRelationshipAddRefRelation(context, user, stixCoreRelationshipId, input, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
-export const stixCoreRelationshipDeleteRelation = async (context, user, stixCoreRelationshipId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreRelationshipId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP);
+export const stixCoreRelationshipAddRelations = async (context, user, stixCoreRelationshipId, input, opts = {}) => {
+  return stixObjectOrRelationshipAddRefRelations(context, user, stixCoreRelationshipId, input, ABSTRACT_STIX_CORE_RELATIONSHIP, opts);
+};
+export const stixCoreRelationshipDeleteRelation = async (context, user, stixCoreRelationshipId, toId, relationshipType, opts = {}) => {
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCoreRelationshipId, toId, relationshipType, ABSTRACT_STIX_CORE_RELATIONSHIP, opts);
 };
 // endregion
 

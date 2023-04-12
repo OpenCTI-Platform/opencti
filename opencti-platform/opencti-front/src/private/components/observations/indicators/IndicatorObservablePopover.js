@@ -15,6 +15,7 @@ import Slide from '@mui/material/Slide';
 import MoreVert from '@mui/icons-material/MoreVert';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
+import { deleteNodeFromEdge } from '../../../../utils/store';
 
 const styles = (theme) => ({
   container: {
@@ -89,6 +90,7 @@ class IndicatorObservablePopover extends Component {
         toId: this.props.observableId,
         relationship_type: 'based-on',
       },
+      updater: (store) => deleteNodeFromEdge(store, 'observables', this.props.indicatorId, this.props.observableId, { first: 200 }),
       onCompleted: () => {
         this.handleCloseDelete();
         if (this.props.onDelete) {

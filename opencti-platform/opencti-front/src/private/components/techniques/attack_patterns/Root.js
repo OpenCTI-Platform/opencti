@@ -146,6 +146,7 @@ class RootAttackPattern extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Attack-Pattern'}
                             stixDomainObject={props.attackPattern}
                             PopoverComponent={<AttackPatternPopover />}
                           />
@@ -164,6 +165,7 @@ class RootAttackPattern extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Attack-Pattern'}
                             stixDomainObject={props.attackPattern}
                             PopoverComponent={<AttackPatternPopover />}
                           />
@@ -191,6 +193,7 @@ class RootAttackPattern extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Attack-Pattern'}
                             stixDomainObject={props.attackPattern}
                             PopoverComponent={<AttackPatternPopover />}
                           />

@@ -89,6 +89,7 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
   return (
     <div>
       <StixDomainObjectHeader
+        entityType={'Data-Component'}
         stixDomainObject={dataComponent}
         PopoverComponent={<DataComponentPopover dataComponentId={dataComponent.id}/>}
       />

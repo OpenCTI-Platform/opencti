@@ -85,6 +85,7 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
+      'Do you want to delete this relationship?': '¿Quieres borrar esta relación?',
       'Cascade delete': 'Eliminación en cascada',
       'In this report, ': 'En este informe, ',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -242,7 +243,7 @@ const i18n = {
       'Hidden in interface': 'Oculto en la interfaz',
       'This configuration hide a specific entity type across the entire platform.':
         'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
-      'Enforce reference': 'Hacer cumplir la referencia',
+      'Enforce references': 'Hacer cumplir las referencias',
       'Create external reference at upload':
         'Crear referencia externa al cargar',
       'This configuration enables the requirement of a reference message on an entity update.':
@@ -290,6 +291,7 @@ const i18n = {
       'In all the database': 'En toda la base de datos',
       Create: 'Crear',
       Update: 'Modificar',
+      'Direct Update': 'Actualización directa',
       Replace: 'Reemplazarr',
       'Add an action': 'Añadir una acción',
       Export: 'Exportar',
@@ -1923,6 +1925,7 @@ const i18n = {
         'Souhaitez-vous supprimer cette étape de kill chain ?',
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
+      'Do you want to delete this relationship?': 'Voulez-vous supprimer cette relation ?',
       'Cascade delete': 'Suppression en cascade',
       'In this report, ': 'Dans ce rapport, ',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -2098,7 +2101,8 @@ const i18n = {
       'This configuration hide a specific entity type across the entire platform.':
         "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
       'Enforce references': 'Appliquer les références',
-      'Enforce reference': 'Appliquer les références obligatoires',
+      'Create external reference at upload':
+        'Créer une référence externe lors du téléchargement',
       'Hide in the platform': 'Cacher dans la plateforme',
       'This configuration enables the requirement of a reference message on an entity update.':
         "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
@@ -2135,6 +2139,7 @@ const i18n = {
       'In all the database': 'Dans toute la base',
       Create: 'Créer',
       Update: 'Modifier',
+      'Direct Update': 'Mise à jour directe',
       Replace: 'Remplacer',
       'Add an action': 'Ajouter une action',
       Export: 'Exporter',
@@ -3751,6 +3756,7 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         'このキルチェーンフェーズを削除しますか？',
       'Do you want to delete this report?': 'このレポートを削除しますか？',
+      'Do you want to delete this relationship?': 'この関係を削除しますか？',
       'Cascade delete': 'カスケード削除',
       'In this report, ': 'このレポートでは、',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -3891,8 +3897,8 @@ const i18n = {
       'Hidden in interface': 'インターフェイスに隠されている',
       'This configuration hide a specific entity type across the entire platform.':
         'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
-      'Enforce reference on entity type': 'エンティティ タイプの参照を強制する',
-      'Enforce reference': '参照を強制する',
+      'Enforce references': '参照を強制する',
+      'Create external reference at upload': 'アップロード時に外部参照を作成',
       'This configuration enables the requirement of a reference message on an entity update.':
         'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -3937,6 +3943,7 @@ const i18n = {
       'In all the database': 'すべてのデータベースで',
       Create: '作成',
       Update: '更新',
+      'Direct Update': '直接更新',
       Replace: '置換',
       'Add an action': 'アクションを追加',
       Export: '出力',
@@ -5531,6 +5538,7 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '是否要删除此杀伤链阶段？',
       'Do you want to delete this report?': '是否要删除此报告？',
+      'Do you want to delete this relationship?': '要删除此关系吗？',
       'Cascade delete': '級聯刪除',
       'In this report, ': '在这份报告中，',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -5653,8 +5661,8 @@ const i18n = {
       'Hidden in interface': '隐藏在界面中',
       'This configuration hide a specific entity type across the entire platform.':
         '此配置隐藏了整个平台的特定实体类型。',
-      'Enforce reference on entity type': '对实体类型强制引用',
-      'Enforce reference': '强制引用',
+      'Enforce references': '执行引用',
+      'Create external reference at upload': '上传时创建外部参考',
       'This configuration enables the requirement of a reference message on an entity update.':
         '此配置启用了对实体更新的参考消息的要求。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -5689,6 +5697,7 @@ const i18n = {
       'In all the database': '在所有数据库中',
       Create: '创建',
       Update: '更新',
+      'Direct Update': '直接更新',
       Replace: '替换',
       'Add an action': '增加一个动作',
       Export: '导出',

@@ -92,6 +92,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
   return (
         <div className={classes.container}>
             <StixDomainObjectHeader
+                entityType={'Administrative-Area'}
                 disableSharing={true}
                 stixDomainObject={administrativeArea}
                 isOpenctiAlias={true}

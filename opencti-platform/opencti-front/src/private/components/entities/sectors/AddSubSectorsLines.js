@@ -1,38 +1,10 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle, Domain } from '@mui/icons-material';
-import { truncate } from '../../../../utils/String';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-});
-
-const addSubSectorsLinesMutationRelationAdd = graphql`
-  mutation AddSubSectorsLinesRelationAddMutation(
-    $input: StixCoreRelationshipAddInput
-  ) {
-    stixCoreRelationshipAdd(input: $input) {
-      to {
-        ...SectorSubSectors_sector
-      }
-    }
-  }
-`;
+import StixCoreRelationshipCreationFromEntityList
+  from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addSubSectorsMutationRelationDelete = graphql`
   mutation AddSubSectorsLinesRelationDeleteMutation(
@@ -49,87 +21,25 @@ export const addSubSectorsMutationRelationDelete = graphql`
 `;
 
 class AddSubSectorsLinesContainer extends Component {
-  toggleSubSector(subSector) {
-    const { sectorId, sectorSubSectors } = this.props;
-    const sectorSubSectorsIds = map((n) => n.node.id, sectorSubSectors);
-    const alreadyAdded = sectorSubSectorsIds.includes(subSector.id);
-
-    if (alreadyAdded) {
-      const existingSubSector = head(
-        filter((n) => n.node.id === subSector.id, sectorSubSectors),
-      );
-      commitMutation({
-        mutation: addSubSectorsMutationRelationDelete,
-        variables: {
-          fromId: existingSubSector.node.id,
-          toId: sectorId,
-          relationship_type: 'part-of',
-        },
-        updater: (store) => {
-          const node = store.get(this.props.sectorId);
-          const subSectors = node.getLinkedRecord('subSectors');
-          const edges = subSectors.getLinkedRecords('edges');
-          const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id')
-              !== existingSubSector.node.id,
-            edges,
-          );
-          subSectors.setLinkedRecords(newEdges, 'edges');
-        },
-      });
-    } else {
-      const input = {
-        relationship_type: 'part-of',
-        fromId: subSector.id,
-        toId: sectorId,
-      };
-      commitMutation({
-        mutation: addSubSectorsLinesMutationRelationAdd,
-        variables: { input },
-      });
-    }
-  }
-
   render() {
-    const { classes, data, sectorSubSectors } = this.props;
-    const sectorSubSectorsIds = map((n) => n.node.id, sectorSubSectors);
+    const { data, sectorSubSectors, sector } = this.props;
     return (
-      <List>
-        {data.sectors.edges.map((sectorNode) => {
-          const sector = sectorNode.node;
-          const alreadyAdded = sectorSubSectorsIds.includes(sector.id);
-          return (
-            <ListItem
-              key={sector.id}
-              classes={{ root: classes.menuItem }}
-              divider={true}
-              button={true}
-              onClick={this.toggleSubSector.bind(this, sector)}
-            >
-              <ListItemIcon>
-                {alreadyAdded ? (
-                  <CheckCircle classes={{ root: classes.icon }} />
-                ) : (
-                  <Domain />
-                )}
-              </ListItemIcon>
-              <ListItemText
-                primary={sector.name}
-                secondary={truncate(sector.description, 120)}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+      <StixCoreRelationshipCreationFromEntityList
+        entity={sector}
+        relationshipType={'part-of'}
+        availableDatas={data?.sectors}
+        existingDatas={sectorSubSectors}
+        updaterOptions={ { path: 'subSectors' } }
+        isRelationReversed={true}
+      />
     );
   }
 }
 
 AddSubSectorsLinesContainer.propTypes = {
-  sectorId: PropTypes.string,
+  sector: PropTypes.object,
   sectorSubSectors: PropTypes.array,
   data: PropTypes.object,
-  classes: PropTypes.object,
 };
 
 export const addSubSectorsLinesQuery = graphql`
@@ -154,6 +64,8 @@ const AddSubSectorsLines = createPaginationContainer(
           edges {
             node {
               id
+              entity_type
+              parent_types
               name
               description
             }
@@ -185,4 +97,4 @@ const AddSubSectorsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddSubSectorsLines);
+export default compose(inject18n)(AddSubSectorsLines);

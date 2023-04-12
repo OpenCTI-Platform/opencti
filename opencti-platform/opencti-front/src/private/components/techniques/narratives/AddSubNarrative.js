@@ -4,19 +4,12 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { Add, Close } from '@mui/icons-material';
-import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSubNarrativesLines, {
-  addSubNarrativesLinesQuery,
-} from './AddSubNarrativesLines';
+import AddSubNarrativesLines, { addSubNarrativesLinesQuery } from './AddSubNarrativesLines';
 import NarrativeCreation from './NarrativeCreation';
 
 const styles = (theme) => ({
@@ -83,7 +76,7 @@ class AddSubNarrative extends Component {
   }
 
   render() {
-    const { t, classes, narrativeId, narrativeSubNarratives } = this.props;
+    const { t, classes, narrative, narrativeSubNarratives } = this.props;
     const paginationOptions = {
       search: this.state.search,
     };
@@ -135,49 +128,12 @@ class AddSubNarrative extends Component {
                 count: 20,
               }}
               render={({ props }) => {
-                if (props) {
-                  return (
+                return (
                     <AddSubNarrativesLines
-                      narrativeId={narrativeId}
+                      narrative={narrative}
                       narrativeSubNarratives={narrativeSubNarratives}
                       data={props}
                     />
-                  );
-                }
-                return (
-                  <List>
-                    {Array.from(Array(20), (e, i) => (
-                      <ListItem key={i} divider={true} button={false}>
-                        <ListItemIcon>
-                          <Skeleton
-                            animation="wave"
-                            variant="circular"
-                            width={30}
-                            height={30}
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                              style={{ marginBottom: 10 }}
-                            />
-                          }
-                          secondary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
                 );
               }}
             />
@@ -195,7 +151,7 @@ class AddSubNarrative extends Component {
 }
 
 AddSubNarrative.propTypes = {
-  narrativeId: PropTypes.string,
+  narrative: PropTypes.object,
   narrativeSubNarratives: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,

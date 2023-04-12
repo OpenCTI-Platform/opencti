@@ -19,7 +19,11 @@ const ThemeDark = (
   logo_collapsed: logo_collapsed || fileUri(LogoCollapsed),
   palette: {
     mode: 'dark',
-    error: { main: '#f44336' },
+    common: { white: '#ffffff' },
+    error: {
+      main: '#f44336',
+      dark: '#c62828',
+    },
     success: { main: '#03A847' },
     primary: { main: primary || '#00b1ff' },
     secondary: { main: secondary || '#ec407a' },

@@ -71,7 +71,7 @@ class IntrusionSetLocationsComponent extends Component {
           placeholder={<div style={{ marginTop: 20, height: 29 }} />}
         >
           <AddLocations
-            intrusionSetId={intrusionSet.id}
+            intrusionSet={intrusionSet}
             intrusionSetLocations={intrusionSet.locations.edges}
           />
         </Security>
@@ -128,10 +128,14 @@ const IntrusionSetLocations = createFragmentContainer(
     intrusionSet: graphql`
       fragment IntrusionSetLocations_intrusionSet on IntrusionSet {
         id
+        name
+        parent_types
+        entity_type
         locations {
           edges {
             node {
               id
+              parent_types
               entity_type
               name
               description

@@ -4,17 +4,17 @@ import { compose } from 'ramda';
 import { graphql } from 'react-relay';
 import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrCoreRelationshipLabelsView
-  from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
+  from '../../common/stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 
-const stixCoreObjectMutationRelationsAdd = graphql`
-  mutation StixCoreObjectLabelsViewRelationsAddMutation(
+const stixSightingRelationshipMutationRelationsAdd = graphql`
+  mutation StixSightingRelationshipLabelsViewRelationsAddMutation(
     $id: ID!
     $input: StixRefRelationshipsAddInput!
     $commitMessage: String
     $references: [String]
   ) {
-    stixCoreObjectEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       relationsAdd(
         input: $input
         commitMessage: $commitMessage
@@ -34,22 +34,22 @@ const stixCoreObjectMutationRelationsAdd = graphql`
   }
 `;
 
-const stixCoreObjectMutationRelationDelete = graphql`
-  mutation StixCoreObjectLabelsViewRelationDeleteMutation(
+const stixSightingRelationshipMutationRelationsDelete = graphql`
+  mutation StixSightingRelationshipLabelsViewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
     $commitMessage: String
     $references: [String]
   ) {
-    stixCoreObjectEdit(id: $id) {
+    stixSightingRelationshipEdit(id: $id) {
       relationDelete(
         toId: $toId
         relationship_type: $relationship_type
         commitMessage: $commitMessage
         references: $references
       ) {
-        ... on StixCoreObject {
+        ... on StixSightingRelationship {
           objectLabel {
             edges {
               node {
@@ -65,18 +65,18 @@ const stixCoreObjectMutationRelationDelete = graphql`
   }
 `;
 
-const StixCoreObjectLabelsView = (props) => {
+const StixSightingRelationshipLabelsView = (props) => {
   return <StixCoreObjectOrCoreRelationshipLabelsView {...props}
-                                                     mutationRelationAdd={stixCoreObjectMutationRelationsAdd}
-                                                     mutationRelationDelete={stixCoreObjectMutationRelationDelete}
-                                                     enableReferences={useIsEnforceReference(props.entity_type)}/>;
+                                                     mutationRelationAdd={stixSightingRelationshipMutationRelationsAdd}
+                                                     mutationRelationDelete={stixSightingRelationshipMutationRelationsDelete}
+                                                     enableReferences={useIsEnforceReference('stix-sighting-relationship')}/>;
 };
 
-StixCoreObjectLabelsView.propTypes = {
+StixSightingRelationshipLabelsView.propTypes = {
   classes: PropTypes.object.isRequired,
   t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,
 };
 
-export default compose(inject18n)(StixCoreObjectLabelsView);
+export default compose(inject18n)(StixSightingRelationshipLabelsView);

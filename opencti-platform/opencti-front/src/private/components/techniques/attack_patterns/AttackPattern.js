@@ -33,6 +33,7 @@ class AttackPatternComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Attack-Pattern'}
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />

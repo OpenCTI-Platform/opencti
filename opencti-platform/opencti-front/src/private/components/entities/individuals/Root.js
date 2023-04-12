@@ -195,6 +195,7 @@ class RootIndividual extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Individual'}
                             disableSharing={true}
                             stixDomainObject={props.individual}
                             PopoverComponent={<IndividualPopover />}
