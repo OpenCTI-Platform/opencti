@@ -34,8 +34,20 @@ const Root = () => (
           exact
           path="/dashboard/settings/accesses"
           render={() => (
-            <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to="/dashboard/settings/accesses/users" />}>
-              <Redirect to="/dashboard/settings/accesses/marking" />
+            <Security
+              needs={[SETTINGS_SETACCESSES]}
+              placeholder={
+                <BoundaryRoute
+                  exact
+                  path="/dashboard/settings/accesses"
+                  render={() => (
+                    <Security needs={[SETTINGS_SETMARKINGS]} placeholder={<Redirect to='/dashboard/settings' />}>
+                      <Redirect to="/dashboard/settings/accesses/marking" />
+                    </Security>
+                  )}
+                />
+              }>
+              <Redirect to="/dashboard/settings/accesses/roles" />
             </Security>
           )}
         />
@@ -67,29 +79,29 @@ const Root = () => (
         />
         <BoundaryRoute
           path="/dashboard/settings/accesses/roles/:roleId"
-        component={RootRole}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/groups"
-        render={() => (
-          <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
-            <Groups />
-          </Security>
-        )}
+          component={RootRole}
         />
         <BoundaryRoute
-          path="/dashboard/settings/accesses/groups/:groupId"
-        component={RootGroup}
-      />
-      <BoundaryRoute
-        exact
-        path="/dashboard/settings/accesses/sessions"
-        render={() => (
-          <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
-            <Sessions />
-          </Security>
-        )}
+          exact
+          path="/dashboard/settings/accesses/groups"
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Groups />
+            </Security>
+          )}
+          />
+          <BoundaryRoute
+            path="/dashboard/settings/accesses/groups/:groupId"
+          component={RootGroup}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/sessions"
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <Sessions />
+            </Security>
+          )}
         />
         <BoundaryRoute
           exact

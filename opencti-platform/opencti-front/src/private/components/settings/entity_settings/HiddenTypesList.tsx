@@ -4,31 +4,29 @@ import React, { FunctionComponent, ReactElement, useState } from 'react';
 import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
-import { graphql, PreloadedQuery, useMutation, usePreloadedQuery } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
+import { graphql, useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { entitySettingsPatch, entitySettingsRolesHiddenTypesQuery } from '../sub_types/EntitySetting';
+import { entitySettingsPatch } from '../sub_types/EntitySetting';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
-import { Theme } from '../../../../components/Theme';
-import {
-  EntitySettingsRolesHiddenTypesQuery,
-} from '../sub_types/__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import HiddenInRoles from './HiddenInRoles';
 
 export const hiddenTypesListRoleMutationFieldPatch = graphql`
-    mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
-        $id: ID!
-        $input: [EditInput]!
-    ) {
-        roleEdit(id: $id) {
-            fieldPatch(input: $input) {
-                id
-                name
-                default_hidden_types
-            }
-        }
+  mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput]!
+  ) {
+    roleEdit(id: $id) {
+      fieldPatch(input: $input) {
+        id
+        name
+        default_hidden_types
+      }
     }
+  }
 `;
 
 export const groups = new Map<string, string[]>([
@@ -80,13 +78,6 @@ const itemsFromGroup = (values: string[]) => {
   return values;
 };
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  roleIndication: {
-    fontSize: 12,
-    color: theme.palette.primary.main,
-  },
-}));
-
 interface EntitySettingHidden {
   id: string;
   target_type: string;
@@ -96,49 +87,20 @@ interface EntitySettingHidden {
 
 interface HiddenTypesListProps {
   role?: RoleEditionOverview_role$data,
-  queryRef?: PreloadedQuery<EntitySettingsRolesHiddenTypesQuery>,
 }
 
-const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role, queryRef }) => {
+const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
-      id: node.id,
-      target_type: node.target_type,
+      ...node,
       hidden: node.platform_hidden_type ?? false,
       group: findGroupKey(node.target_type),
     }))
     .filter((entitySetting) => entitySetting.group !== undefined)
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
 
-  const hiddenTypesWithRoles = () => {
-    if (queryRef) {
-      const data = usePreloadedQuery<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery, queryRef);
-      const rolesData = data.roles?.edges;
-      let result = {} as Record<string, string[]>;
-      for (const n of entitySettings) {
-        result = {
-          ...result,
-          [n.target_type]: [],
-        };
-      }
-      if (rolesData) {
-        for (const r of rolesData) {
-          if (r && r.node.default_hidden_types) {
-            for (const hidden_type of r.node.default_hidden_types) {
-              if (hidden_type) {
-                result[hidden_type].push(r.node.name);
-              }
-            }
-          }
-        }
-      }
-      return result;
-    }
-    return undefined;
-  };
   const entitySettingsHiddenGrouped = entitySettings.reduce(
     (entryMap, entry) => {
       const values = entryMap.get(entry.group) || [];
@@ -229,7 +191,6 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role, queryR
   };
 
   const computeItems = () => {
-    const rolesHiddenTypes = hiddenTypesWithRoles();
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
       items.push(
@@ -245,24 +206,24 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role, queryR
         </MenuItem>,
       );
       (values as EntitySettingHidden[]).map((platformHiddenType) => items.push(
-          <MenuItem
-            key={platformHiddenType.target_type}
-            value={platformHiddenType.target_type}
-            dense={true}
-          >
-            <Checkbox
-              checked={
-                entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
-              style={{ marginLeft: 10 }}
-            />
-              {t(`entity_${platformHiddenType.target_type}`)}
-              {rolesHiddenTypes && rolesHiddenTypes[platformHiddenType.target_type].length > 0
-                && (<span className={classes.roleIndication}>
-                  &emsp;
-                  {`(${t('Hidden in roles')} : ${rolesHiddenTypes[platformHiddenType.target_type]})`}
-                </span>)
-              }
-          </MenuItem>,
+        <MenuItem
+          key={platformHiddenType.target_type}
+          value={platformHiddenType.target_type}
+          dense={true}
+        >
+          <Checkbox
+            checked={
+              entitySettingsEntityType.indexOf(platformHiddenType.target_type) > -1}
+            style={{ marginLeft: 10 }}
+          />
+          {t(`entity_${platformHiddenType.target_type}`)}
+          <Security needs={[SETTINGS_SETACCESSES]}>
+            <HiddenInRoles
+              targetTypes={entitySettings.map((n) => n.target_type)}
+              platformHiddenTargetType={platformHiddenType.target_type}
+            ></HiddenInRoles>
+          </Security>
+        </MenuItem>,
       ));
     });
     return items;

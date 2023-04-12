@@ -1,4 +1,4 @@
-import { graphql, PreloadedQuery, useFragment, useMutation, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import Switch from '@mui/material/Switch';
 import Grid from '@mui/material/Grid';
@@ -6,18 +6,13 @@ import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import { SecurityOutlined } from '@mui/icons-material';
-import ListItemText from '@mui/material/ListItemText';
 import { useFormatter } from '../../../../components/i18n';
 import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
-import { EntitySettingsRolesHiddenTypesQuery } from './__generated__/EntitySettingsRolesHiddenTypesQuery.graphql';
-import { isEmptyField } from '../../../../utils/utils';
 import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import EntitySettingHiddenInRoles from './EntitySettingHiddenInRoles';
+import Security from '../../../../utils/Security';
 
 export const entitySettingsFragment = graphql`
   fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
@@ -74,26 +69,10 @@ export const entitySettingsPatch = graphql`
   }
 `;
 
-export const entitySettingsRolesHiddenTypesQuery = graphql`
-    query EntitySettingsRolesHiddenTypesQuery($search: String) {
-        roles(search: $search) {
-            edges {
-                node {
-                    id
-                    name
-                    default_hidden_types
-                }
-            }
-        }
-    }
-`;
-
 const EntitySetting = ({
   entitySettingsData,
-  roleQueryRef,
 }: {
   entitySettingsData: SubType_subType$data['settings'];
-  roleQueryRef: PreloadedQuery<EntitySettingsRolesHiddenTypesQuery>;
 }) => {
   const { t } = useFormatter();
   const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
@@ -111,22 +90,6 @@ const EntitySetting = ({
       },
     });
   };
-  const computeHiddenInRoles = () => {
-    const data = usePreloadedQuery<EntitySettingsRolesHiddenTypesQuery>(entitySettingsRolesHiddenTypesQuery, roleQueryRef);
-    const rolesData = data.roles?.edges;
-    const result = [];
-    if (rolesData) {
-      for (const role of rolesData) {
-        if (role && role.node.default_hidden_types) {
-          if (role.node.default_hidden_types.includes(entitySetting.target_type)) {
-            result.push(role.node);
-          }
-        }
-      }
-    }
-    return result;
-  };
-  const hiddenInRoles = computeHiddenInRoles();
   return (
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={6}>
@@ -175,32 +138,11 @@ const EntitySetting = ({
             />
           </FormGroup>
         </div>
-        <div style={{ marginTop: 20 }}>
-          <Typography
-            variant="h3"
-            gutterBottom={true}
-          >
-            {t('Hidden in roles')}
-          </Typography>
-          <List>
-            {hiddenInRoles.map((role) => (
-              <ListItem
-                key={role.id}
-                dense={true}
-                divider={true}
-                button={true}
-                component={Link}
-                to={`/dashboard/settings/accesses/roles/${role.id}`}
-              >
-                <ListItemIcon>
-                  <SecurityOutlined color="primary" />
-                </ListItemIcon>
-                <ListItemText primary={role.name} />
-              </ListItem>
-            ))}
-            {isEmptyField(hiddenInRoles) && <div>{'-'}</div>}
-          </List>
-        </div>
+        <Security needs={[SETTINGS_SETACCESSES]}>
+          <EntitySettingHiddenInRoles
+            targetType={entitySetting.target_type}
+          ></EntitySettingHiddenInRoles>
+        </Security>
       </Grid>
       <Grid item={true} xs={6}>
         <div>

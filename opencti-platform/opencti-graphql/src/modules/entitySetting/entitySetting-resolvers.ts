@@ -5,7 +5,11 @@ import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getAvailableSettings } from './entitySetting-utils';
-import { getMandatoryAttributesForSetting, getScaleAttributesForSetting, queryAttributesDefinition } from '../../domain/attribute';
+import {
+  getMandatoryAttributesForSetting,
+  getScaleAttributesForSetting,
+  queryAttributesDefinition
+} from '../../domain/attribute';
 
 const entitySettingResolvers: Resolvers = {
   Query: {

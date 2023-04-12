@@ -274,9 +274,9 @@ const RulesListComponent = ({ relay, data, keyword }) => {
     R.compose(R.toLower, R.prop('name')),
   );
   const filterByKeyword = (p) => keyword === ''
-    || p.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-    || p.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-    || p.category.toLowerCase().indexOf(keyword.toLowerCase()) !== -1;
+    || p.name.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1
+    || p.description.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1
+    || p.category.toLowerCase().indexOf(keyword?.toLowerCase()) !== -1;
   const rules = R.pipe(
     R.propOr([], 'rules'),
     R.filter(filterByKeyword),
