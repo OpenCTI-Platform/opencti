@@ -3,7 +3,7 @@ export const schemaTypesDefinition = {
 
   // types
   isTypeIncludedIn(type: string, parent: string) {
-    return this.types[parent].has(type);
+    return this.types[parent]?.has(type) ?? false;
   },
   register(type: string, children: string[]) {
     this.types[type] = new Map(children.map((c) => [c, undefined]));

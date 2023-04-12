@@ -36,6 +36,7 @@ import Language from '../static/images/entities/language.svg';
 import Event from '../static/images/entities/event.svg';
 import DataComponent from '../static/images/entities/data-component.svg';
 import DataSource from '../static/images/entities/data-source.svg';
+import Case from '../static/images/entities/case.svg';
 import Unknown from '../static/images/entities/unknown.svg';
 import StixCyberObservable from '../static/images/entities/stix-cyber-observable.svg';
 import relationship from '../static/images/entities/relationship.svg';
@@ -95,6 +96,8 @@ export const graphImages = {
   Event: genImage(Event),
   'Data-Component': genImage(DataComponent),
   'Data-Source': genImage(DataSource),
+  Feedback: genImage(Case),
+  'Case-Incident': genImage(Case),
   'Autonomous-System': genImage(StixCyberObservable),
   Directory: genImage(StixCyberObservable),
   'Domain-Name': genImage(StixCyberObservable),

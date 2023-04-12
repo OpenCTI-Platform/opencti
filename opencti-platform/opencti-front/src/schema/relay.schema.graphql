@@ -8412,14 +8412,14 @@ type Mutation {
   caseContextClean(id: ID!): Case
   feedbackAdd(input: FeedbackAddInput!): Feedback
   feedbackDelete(id: ID!): ID
-  feedbackRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  feedbackRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   feedbackRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Feedback
   feedbackFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Feedback
   feedbackContextPatch(id: ID!, input: EditContext!): Feedback
   feedbackContextClean(id: ID!): Feedback
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
   caseIncidentDelete(id: ID!): ID
-  caseIncidentRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship
+  caseIncidentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   caseIncidentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseIncident
   caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident
   caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident

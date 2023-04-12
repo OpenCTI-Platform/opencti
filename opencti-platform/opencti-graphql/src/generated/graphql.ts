@@ -10675,7 +10675,7 @@ export type Mutation = {
   caseIncidentContextPatch?: Maybe<CaseIncident>;
   caseIncidentDelete?: Maybe<Scalars['ID']>;
   caseIncidentFieldPatch?: Maybe<CaseIncident>;
-  caseIncidentRelationAdd?: Maybe<StixMetaRelationship>;
+  caseIncidentRelationAdd?: Maybe<StixRefRelationship>;
   caseIncidentRelationDelete?: Maybe<CaseIncident>;
   caseRelationAdd?: Maybe<StixRefRelationship>;
   caseRelationDelete?: Maybe<Case>;
@@ -10730,7 +10730,7 @@ export type Mutation = {
   feedbackContextPatch?: Maybe<Feedback>;
   feedbackDelete?: Maybe<Scalars['ID']>;
   feedbackFieldPatch?: Maybe<Feedback>;
-  feedbackRelationAdd?: Maybe<StixMetaRelationship>;
+  feedbackRelationAdd?: Maybe<StixRefRelationship>;
   feedbackRelationDelete?: Maybe<Feedback>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
@@ -11032,7 +11032,7 @@ export type MutationCaseIncidentFieldPatchArgs = {
 
 export type MutationCaseIncidentRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -11351,7 +11351,7 @@ export type MutationFeedbackFieldPatchArgs = {
 
 export type MutationFeedbackRelationAddArgs = {
   id: Scalars['ID'];
-  input: StixMetaRelationshipAddInput;
+  input: StixRefRelationshipAddInput;
 };
 
 
@@ -28661,7 +28661,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseIncidentContextPatch?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentContextPatchArgs, 'id' | 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
   caseIncidentFieldPatch?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentFieldPatchArgs, 'id' | 'input'>>;
-  caseIncidentRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationAddArgs, 'id' | 'input'>>;
+  caseIncidentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationAddArgs, 'id' | 'input'>>;
   caseIncidentRelationDelete?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRelationAddArgs, 'id' | 'input'>>;
   caseRelationDelete?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
@@ -28716,7 +28716,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedbackContextPatch?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackContextPatchArgs, 'id' | 'input'>>;
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
   feedbackFieldPatch?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackFieldPatchArgs, 'id' | 'input'>>;
-  feedbackRelationAdd?: Resolver<Maybe<ResolversTypes['StixMetaRelationship']>, ParentType, ContextType, RequireFields<MutationFeedbackRelationAddArgs, 'id' | 'input'>>;
+  feedbackRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationFeedbackRelationAddArgs, 'id' | 'input'>>;
   feedbackRelationDelete?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<MutationGroupAddArgs>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
