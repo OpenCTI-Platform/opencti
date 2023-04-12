@@ -147,6 +147,14 @@ class EntityTestCases:
     def case_case_incident(api_client):
         return CaseIncidentTest(api_client)
 
+    @staticmethod
+    def case_case_rfi(api_client):
+        return CaseRfiTest(api_client)
+
+    @staticmethod
+    def case_case_rft(api_client):
+        return CaseRftTest(api_client)
+
 
 class EntityTest:
     def __init__(self, api_client):
@@ -970,3 +978,29 @@ class CaseIncidentTest(EntityTest):
 
     def own_class(self):
         return self.api_client.case_incident
+
+
+class CaseRfiTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "type": "Case-Rfi",
+            "name": "Case Rfi",
+            "description": "Case Rfi Desc",
+            "created": "2023-03-28T08:01:50.924Z",
+        }
+
+    def own_class(self):
+        return self.api_client.case_rfi
+
+
+class CaseRftTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "type": "Case-Rft",
+            "name": "Case Rft",
+            "description": "Case Rft Desc",
+            "created": "2023-03-29T08:01:50.924Z",
+        }
+
+    def own_class(self):
+        return self.api_client.case_rft
