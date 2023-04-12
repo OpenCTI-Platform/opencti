@@ -9,7 +9,7 @@ export interface BasicStoreEntityCaseRfi extends BasicStoreEntity {
   description: string,
   severity: string,
   priority: string,
-  response_types: string,
+  information_types: string,
   object_refs: Array<string>,
 }
 
@@ -19,7 +19,7 @@ export interface StoreEntityCaseRfi extends StoreEntity {
   priority: string,
   description: string,
   object_refs: Array<string>,
-  response_types: string,
+  information_types: string,
 }
 
 export interface StixCaseRfi extends StixDomainObject {
@@ -28,7 +28,7 @@ export interface StixCaseRfi extends StixDomainObject {
   severity: string,
   priority: string,
   object_refs: Array<string>,
-  response_types: string,
+  information_types: string,
   extensions: {
     [STIX_EXT_OCTI] : StixOpenctiExtensionSDO
   }

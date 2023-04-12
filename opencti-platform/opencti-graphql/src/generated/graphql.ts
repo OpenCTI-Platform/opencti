@@ -9,7 +9,9 @@ import type { BasicStoreEntityDataComponent } from '../modules/dataComponent/dat
 import type { BasicStoreEntityVocabulary } from '../modules/vocabulary/vocabulary-types';
 import type { BasicStoreEntityAdministrativeArea } from '../modules/administrativeArea/administrativeArea-types';
 import type { BasicStoreEntityCase } from '../modules/case/case-types';
-import type { BasicStoreEntityCaseIncident, BasicStoreEntityCaseRfi, BasicStoreEntityCaseRft } from '../modules/case/case-incident/case-incident-types';
+import type { BasicStoreEntityCaseIncident } from '../modules/case/case-incident/case-incident-types';
+import type { BasicStoreEntityCaseRfi } from '../modules/case/case-rfi/case-rfi-types';
+import type { BasicStoreEntityCaseRft } from '../modules/case/case-rft/case-rft-types';
 import type { BasicStoreEntityFeedback } from '../modules/case/feedback/feedback-types';
 import type { BasicStoreEntityNotification, BasicStoreEntityTrigger } from '../modules/notification/notification-types';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
