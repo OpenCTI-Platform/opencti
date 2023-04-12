@@ -23,13 +23,13 @@ observable_ip = opencti_api_client.stix_cyber_observable.create(
     }
 )
 
-opencti_api_client.stix_cyber_observable_relationship.create(
+opencti_api_client.stix_nested_ref_relationship.create(
     fromId=observable_domain["id"],
     toId=observable_ip["id"],
     relationship_type="resolves-to",
 )
 
-relationships = opencti_api_client.stix_cyber_observable_relationship.list(
+relationships = opencti_api_client.stix_nested_ref_relationship.list(
     elementId=observable_domain["id"]
 )
 

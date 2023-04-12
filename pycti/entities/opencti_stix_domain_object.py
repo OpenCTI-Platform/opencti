@@ -906,7 +906,7 @@ class StixDomainObject:
             if identity_id is not None:
                 # Add the new relation
                 query = """
-                    mutation StixDomainObjectEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                    mutation StixDomainObjectEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                         stixDomainObjectEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -968,7 +968,7 @@ class StixDomainObject:
                     *(marking_definition_id, id),
                 )
                 query = """
-                   mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   mutation StixDomainObjectAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                        stixDomainObjectEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -1053,7 +1053,7 @@ class StixDomainObject:
         if id is not None and label_id is not None:
             LOGGER.info("Adding label {%s} to Stix-Domain-Object {%s}", label_id, id)
             query = """
-               mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixDomainObjectAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixDomainObjectEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -1137,7 +1137,7 @@ class StixDomainObject:
                 *(external_reference_id, id),
             )
             query = """
-               mutation StixDomainObjectEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixDomainObjectEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixDomainObjectEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -1216,7 +1216,7 @@ class StixDomainObject:
                 id,
             )
             query = """
-               mutation StixDomainObjectAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixDomainObjectAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixDomainObjectEdit(id: $id) {
                         relationAdd(input: $input) {
                             id

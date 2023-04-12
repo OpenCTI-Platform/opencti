@@ -503,7 +503,7 @@ class Grouping:
                 *(stix_object_or_stix_relationship_id, id),
             )
             query = """
-               mutation GroupingEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation GroupingEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                    groupingRelationAdd(id: $id, input: $input) {
                         id
                    }

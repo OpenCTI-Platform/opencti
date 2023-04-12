@@ -93,8 +93,9 @@ class StixMetaTypes(Enum):
         return value.lower() in lower_attr
 
 
-class MultipleStixCyberObservableRelationship(Enum):
+class MultipleRefRelationship(Enum):
     OPERATING_SYSTEM = "operating-system"
+    SAMPLE = "sample"
     CONTAINS = "contains"
     RESOLVES_TO = "obs_resolves-to"
     BELONGS_TO = "obs_belongs-to"
@@ -106,7 +107,8 @@ class MultipleStixCyberObservableRelationship(Enum):
     CHILD = "child"
     BODY_MULTIPART = "body-multipart"
     VALUES = "values"
-    LINKED = "linked-to"
+    LINKED = "x_opencti_linked-to"
+    SERVICE_DDL = "service-dll"
 
     @classmethod
     def has_value(cls, value):

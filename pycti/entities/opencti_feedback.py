@@ -554,7 +554,7 @@ class Feedback:
                 + "}",
             )
             query = """
-               mutation FeedbackEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput!) {
+               mutation FeedbackEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                     feedbackRelationAdd(id: $id, input: $input) {
                         id
                     }

@@ -529,7 +529,7 @@ class Report:
                 *(stix_object_or_stix_relationship_id, id),
             )
             query = """
-               mutation ReportEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation ReportEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                    reportEdit(id: $id) {
                         relationAdd(input: $input) {
                             id

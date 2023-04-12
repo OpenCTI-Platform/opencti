@@ -68,7 +68,7 @@ Classes
 - :py:class:`StixSightingRelationship`:
   Undocumented.
 
-- :py:class:`StixCyberObservableRelation`:
+- :py:class:`StixNestedRefRelationship`:
   Undocumented.
 
 - :py:class:`Identity`:
@@ -246,11 +246,11 @@ Classes
    .. inheritance-diagram:: StixSightingRelationship
       :parts: 1
 
-.. autoclass:: StixCyberObservableRelation
+.. autoclass:: StixNestedRefRelationship
    :members:
 
    .. rubric:: Inheritance
-   .. inheritance-diagram:: StixCyberObservableRelation
+   .. inheritance-diagram:: StixNestedRefRelationship
       :parts: 1
 
 .. autoclass:: Identity

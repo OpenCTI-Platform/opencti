@@ -17,7 +17,7 @@ from pycti.entities.opencti_identity import Identity
 from pycti.utils.constants import (
     IdentityTypes,
     LocationTypes,
-    MultipleStixCyberObservableRelationship,
+    MultipleRefRelationship,
     StixCyberObservableTypes,
 )
 from pycti.utils.opencti_stix2_splitter import OpenCTIStix2Splitter
@@ -972,16 +972,32 @@ class OpenCTIStix2:
                     "x_opencti_created_by_ref",
                 ]:
                     if key.endswith("_ref"):
-                        relationship_type = key.replace("_ref", "").replace("_", "-")
-                        self.opencti.stix_cyber_observable_relationship.create(
+                        relationship_type = key.replace("_ref", "")
+                        if relationship_type.startswith("x_opencti_"):
+                            relationship_type = relationship_type.split(
+                                "x_opencti_", 1
+                            )[1]
+                            relationship_type = relationship_type.replace("_", "-")
+                            relationship_type = "x_opencti_" + relationship_type
+                        else:
+                            relationship_type = relationship_type.replace("_", "-")
+                        self.opencti.stix_nested_ref_relationship.create(
                             fromId=stix_observable_result["id"],
                             toId=stix_object[key],
                             relationship_type=relationship_type,
                         )
                     elif key.endswith("_refs"):
-                        relationship_type = key.replace("_refs", "").replace("_", "-")
+                        relationship_type = key.replace("_refs", "")
+                        if relationship_type.startswith("x_opencti_"):
+                            relationship_type = relationship_type.split(
+                                "x_opencti_", 1
+                            )[1]
+                            relationship_type = relationship_type.replace("_", "-")
+                            relationship_type = "x_opencti_" + relationship_type
+                        else:
+                            relationship_type = relationship_type.replace("_", "-")
                         for value in stix_object[key]:
-                            self.opencti.stix_cyber_observable_relationship.create(
+                            self.opencti.stix_nested_ref_relationship.create(
                                 fromId=stix_observable_result["id"],
                                 toId=value,
                                 relationship_type=relationship_type,
@@ -1555,40 +1571,40 @@ class OpenCTIStix2:
             del entity["importFiles"]
             del entity["importFilesIds"]
 
-        # StixCyberObservable
+        # StixRefRelationship
         if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
-            stix_observable_relationships = (
-                self.opencti.stix_cyber_observable_relationship.list(
+            stix_nested_ref_relationships = (
+                self.opencti.stix_nested_ref_relationship.list(
                     fromId=entity["x_opencti_id"]
                 )
             )
-            for stix_observable_relationship in stix_observable_relationships:
-                if "standard_id" in stix_observable_relationship["to"]:
-                    if MultipleStixCyberObservableRelationship.has_value(
-                        stix_observable_relationship["relationship_type"]
+            for stix_nested_ref_relationship in stix_nested_ref_relationships:
+                if "standard_id" in stix_nested_ref_relationship["to"]:
+                    if MultipleRefRelationship.has_value(
+                        stix_nested_ref_relationship["relationship_type"]
                     ):
                         key = (
-                            stix_observable_relationship["relationship_type"]
+                            stix_nested_ref_relationship["relationship_type"]
                             .replace("obs_", "")
                             .replace("-", "_")
                             + "_refs"
                         )
                         if key in entity:
                             entity[key].append(
-                                stix_observable_relationship["to"]["standard_id"]
+                                stix_nested_ref_relationship["to"]["standard_id"]
                             )
                         else:
                             entity[key] = [
-                                stix_observable_relationship["to"]["standard_id"]
+                                stix_nested_ref_relationship["to"]["standard_id"]
                             ]
                     else:
                         key = (
-                            stix_observable_relationship["relationship_type"]
+                            stix_nested_ref_relationship["relationship_type"]
                             .replace("obs_", "")
                             .replace("-", "_")
                             + "_ref"
                         )
-                        entity[key] = stix_observable_relationship["to"]["standard_id"]
+                        entity[key] = stix_nested_ref_relationship["to"]["standard_id"]
 
         result.append(entity)
 
@@ -1735,11 +1751,8 @@ class OpenCTIStix2:
                     entity_object["entity_type"] = "Stix-Cyber-Observable"
                 elif "stix-core-relationship" in entity_object["parent_types"]:
                     entity_object["entity_type"] = "stix-core-relationship"
-                elif (
-                    "stix-cyber-observable-relationship"
-                    in entity_object["parent_types"]
-                ):
-                    entity_object["entity_type"] = "stix-cyber-observable-relationship"
+                elif "stix-ref-relationship" in entity_object["parent_types"]:
+                    entity_object["entity_type"] = "stix-ref-relationship"
 
                 do_read = reader.get(
                     entity_object["entity_type"],

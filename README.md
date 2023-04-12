@@ -44,6 +44,12 @@ $ git push origin [branch-name]
 # Open a pull request
 ```
 
+### Install the package locally
+
+```bash
+$ pip install -e .
+```
+
 ## Documentation
 
 ### Client usage

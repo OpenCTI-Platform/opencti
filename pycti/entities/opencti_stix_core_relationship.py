@@ -744,7 +744,7 @@ class StixCoreRelationship:
                     *(marking_definition_id, id),
                 )
                 query = """
-                   mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                        stixCoreRelationshipEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -831,7 +831,7 @@ class StixCoreRelationship:
                 "Adding label {%s} to stix-core-relationship {%s}", label_id, id
             )
             query = """
-               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -871,7 +871,7 @@ class StixCoreRelationship:
                 *(external_reference_id, id),
             )
             query = """
-               mutation StixCoreRelationshipEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixCoreRelationshipEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -949,7 +949,7 @@ class StixCoreRelationship:
                 *(kill_chain_phase_id, id),
             )
             query = """
-               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixCoreRelationshipAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixCoreRelationshipEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -1076,7 +1076,7 @@ class StixCoreRelationship:
             if identity_id is not None:
                 # Add the new relation
                 query = """
-                    mutation StixCoreRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                    mutation StixCoreRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                         stixCoreRelationshipEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id

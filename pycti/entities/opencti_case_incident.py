@@ -537,7 +537,7 @@ class CaseIncident:
                 + "}",
             )
             query = """
-               mutation CaseIncidentEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput!) {
+               mutation CaseIncidentEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                     caseIncidentRelationAdd(id: $id, input: $input) {
                         id
                     }

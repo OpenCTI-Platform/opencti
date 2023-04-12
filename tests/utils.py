@@ -64,7 +64,9 @@ def compare_values(original_data: Dict, retrieved_data: Dict, exception_keys: Li
         if key in exception_keys:
             continue
 
-        assert key in retrieved_data, f"Key {key} is not in retrieved_data"
+        assert (
+            key in retrieved_data
+        ), f"Key {key} is not in retrieved_data {retrieved_data}"
 
         compare_data = retrieved_data.get(key, None)
         if isinstance(value, str):

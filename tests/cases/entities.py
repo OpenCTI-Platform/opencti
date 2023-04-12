@@ -674,7 +674,7 @@ class StixCoreRelationshipTest(EntityTest):
         return {}
 
 
-class StixCyberObservableRelationshipTest(EntityTest):
+class StixNestedRefRelationshipTest(EntityTest):
     def setup(self):
         self.ipv4 = self.api_client.stix_cyber_observable.create(
             simple_observable_key="IPv4-Addr.value",
@@ -698,10 +698,10 @@ class StixCyberObservableRelationshipTest(EntityTest):
         }
 
     def own_class(self):
-        return self.api_client.stix_cyber_observable_relationship
+        return self.api_client.stix_nested_ref_relationship
 
     def base_class(self):
-        return self.api_client.stix_cyber_observable_relationship
+        return self.api_client.stix_nested_ref_relationship
 
     def teardown(self):
         self.api_client.stix_domain_object.delete(id=self.domain["id"])

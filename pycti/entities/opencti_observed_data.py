@@ -209,7 +209,7 @@ class ObservedData:
                         }
                         ... on Case {
                             name
-                        }                             
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -471,7 +471,7 @@ class ObservedData:
                 *(stix_object_or_stix_relationship_id, id),
             )
             query = """
-               mutation ObservedDataEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation ObservedDataEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                    observedDataEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
