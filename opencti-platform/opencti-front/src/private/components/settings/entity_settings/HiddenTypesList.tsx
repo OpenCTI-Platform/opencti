@@ -5,13 +5,14 @@ import Box from '@mui/material/Box';
 import Chip from '@mui/material/Chip';
 import { Field } from 'formik';
 import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
 import { entitySettingsPatch } from '../sub_types/EntitySetting';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
-import { Theme } from '../../../../components/Theme';
+import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
+import HiddenInRoles from './HiddenInRoles';
 
 export const hiddenTypesListRoleMutationFieldPatch = graphql`
   mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
@@ -77,13 +78,6 @@ const itemsFromGroup = (values: string[]) => {
   return values;
 };
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  roleIndication: {
-    fontSize: 12,
-    color: theme.palette.primary.main,
-  },
-}));
-
 interface EntitySettingHidden {
   id: string;
   target_type: string;
@@ -97,7 +91,6 @@ interface HiddenTypesListProps {
 
 const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   const { t } = useFormatter();
-  const classes = useStyles();
 
   const entitySettings = useEntitySettings().filter(({ platform_hidden_type }) => platform_hidden_type !== null)
     .map((node) => ({
@@ -108,16 +101,6 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
     .filter((entitySetting) => entitySetting.group !== undefined)
     .sort((a, b) => groupKeys.indexOf(a.group) - groupKeys.indexOf(b.group));
 
-  const hiddenTypesWithRoles = () => {
-    let result = {} as Record<string, string[]>;
-    for (const n of entitySettings) {
-      result = {
-        ...result,
-        [n.target_type]: n.defaultHiddenInRoles?.map(({ name }) => name) ?? [],
-      };
-    }
-    return result;
-  };
   const entitySettingsHiddenGrouped = entitySettings.reduce(
     (entryMap, entry) => {
       const values = entryMap.get(entry.group) || [];
@@ -208,7 +191,6 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
   };
 
   const computeItems = () => {
-    const rolesHiddenTypes = hiddenTypesWithRoles();
     const items: ReactElement[] = [];
     entitySettingsHiddenGrouped.forEach((values, key) => {
       items.push(
@@ -235,12 +217,12 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
             style={{ marginLeft: 10 }}
           />
           {t(`entity_${platformHiddenType.target_type}`)}
-          {rolesHiddenTypes[platformHiddenType.target_type].length > 0
-            && (<span className={classes.roleIndication}>
-                  &emsp;
-              {`(${t('Hidden in roles')} : ${rolesHiddenTypes[platformHiddenType.target_type]})`}
-                </span>)
-          }
+          <Security needs={[SETTINGS_SETACCESSES]}>
+            <HiddenInRoles
+              targetTypes={entitySettings.map((n) => n.target_type)}
+              platformHiddenTargetType={platformHiddenType.target_type}
+            ></HiddenInRoles>
+          </Security>
         </MenuItem>,
       ));
     });

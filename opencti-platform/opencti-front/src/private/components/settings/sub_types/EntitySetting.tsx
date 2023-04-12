@@ -32,10 +32,6 @@ export const entitySettingsFragment = graphql`
           name
           scale
         }
-        defaultHiddenInRoles {
-          id
-          name
-        }
       }
     }
   }
