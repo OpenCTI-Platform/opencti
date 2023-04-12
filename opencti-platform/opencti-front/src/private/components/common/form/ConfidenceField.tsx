@@ -17,16 +17,18 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ConfidenceFieldProps {
-  variant?: string
+  variant?: string;
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
-  editContext?: readonly ({
+  editContext?:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
+  } | null)[]
+  | null;
   containerStyle?: Record<string, string | number>;
-  entityType: string,
-  disabled?: boolean,
+  entityType: string;
+  disabled?: boolean;
 }
 
 const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
@@ -42,20 +44,21 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
   const classes = useStyles();
 
   return (
-    <div style={{ padding: '20px 0' }}>
+    <>
       <Alert
         classes={{ root: classes.alert, message: classes.message }}
         severity="info"
         icon={false}
         variant="outlined"
-        style={{ position: 'relative' }}>
+        style={{ position: 'relative' }}
+      >
         <Field
           component={InputSliderField}
           variant={variant}
           containerstyle={containerStyle}
           fullWidth={true}
           entityType={entityType}
-          attributeName='confidence'
+          attributeName="confidence"
           name={'confidence'}
           label={t('Confidence level')}
           onFocus={onFocus}
@@ -64,7 +67,7 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
           disabled={disabled}
         />
       </Alert>
-    </div>
+    </>
   );
 };
 

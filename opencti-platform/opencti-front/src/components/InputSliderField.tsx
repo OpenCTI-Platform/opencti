@@ -10,17 +10,21 @@ interface InputSliderFieldProps {
   variant?: string;
   onSubmit?: (name: string, value: string | number | number[]) => void;
   onFocus?: (name: string, value: string) => void;
-  editContext?: readonly ({
+  editContext?:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
+  } | null)[]
+  | null;
   containerStyle?: Record<string, string | number>;
   entityType: string;
   attributeName: string;
   disabled?: boolean;
 }
 
-const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = ({
+const InputSliderField: FunctionComponent<
+InputSliderFieldProps & FieldProps
+> = ({
   form: { setFieldValue },
   field: { name, value },
   label,
@@ -33,11 +37,12 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
   attributeName,
   disabled,
 }) => {
-  const { level: { color }, marks } = useLevel(entityType, attributeName, value);
-
+  const {
+    level: { color },
+    marks,
+  } = useLevel(entityType, attributeName, value);
   const min = marks.length > 0 ? marks[0].value : 0;
   const max = marks.length > 0 ? marks[marks.length - 1].value : 0;
-
   const sliderStyle = {
     color,
     '& .MuiSlider-rail': {
@@ -53,7 +58,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
 
   if (variant === 'edit') {
     return (
-      <div style={{ padding: '20px 0' }}>
+      <>
         <Field
           component={TextField}
           variant="standard"
@@ -80,11 +85,11 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
             sx={sliderStyle}
           />
         </div>
-      </div>
+      </>
     );
   }
   return (
-    <div style={{ padding: '20px 0' }}>
+    <>
       <Field
         component={TextField}
         variant="standard"
@@ -105,7 +110,7 @@ const InputSliderField: FunctionComponent<InputSliderFieldProps & FieldProps> = 
           sx={sliderStyle}
         />
       </div>
-    </div>
+    </>
   );
 };
 
