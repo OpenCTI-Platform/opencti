@@ -936,7 +936,9 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
     remainingSearch = remainingSearch.replace(exactSearch[index], '');
   }
   const querySearch = [];
+
   const partialSearch = remainingSearch.replace(/"/g, '').trim().split(' ');
+
   for (let searchIndex = 0; searchIndex < partialSearch.length; searchIndex += 1) {
     const partialElement = partialSearch[searchIndex];
     const cleanElement = specialElasticCharsEscape(partialElement);
@@ -945,72 +947,69 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
     }
   }
   // Return the elastic search engine expected bool should terms
+  // Build the search for all exact match (between double quotes)
   const shouldSearch = [];
-  const cleanExactSearch = exactSearch.map((e) => e.replace(/"|http?:/g, ''));
+  const cleanExactSearch = R.uniq(exactSearch.map((e) => e.replace(/"|http?:/g, '')));
   shouldSearch.push(
-    ...R.flatten(
-      cleanExactSearch.map((ex) => [
-        {
-          multi_match: {
-            type: 'phrase',
-            query: ex,
-            lenient: true,
-            fields: BASE_SEARCH_ATTRIBUTES,
-          },
+    ...cleanExactSearch.map((ex) => [
+      {
+        multi_match: {
+          type: 'phrase',
+          query: ex,
+          lenient: true,
+          fields: BASE_SEARCH_ATTRIBUTES,
         },
-        {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [
-                  {
-                    multi_match: {
-                      type: 'phrase',
-                      query: ex,
-                      lenient: true,
-                      fields: BASE_SEARCH_CONNECTIONS,
-                    },
+      },
+      {
+        nested: {
+          path: 'connections',
+          query: {
+            bool: {
+              must: [
+                {
+                  multi_match: {
+                    type: 'phrase',
+                    query: ex,
+                    lenient: true,
+                    fields: BASE_SEARCH_CONNECTIONS,
                   },
-                ],
-              },
+                },
+              ],
             },
           },
         },
-      ])
-    )
+      },
+    ]).flat()
   );
-  shouldSearch.push(
-    ...R.flatten(
-      querySearch.map((ex) => [
-        {
-          query_string: {
-            query: ex,
-            analyze_wildcard: true,
-            fields: BASE_SEARCH_ATTRIBUTES,
-          },
-        },
-        {
-          nested: {
-            path: 'connections',
-            query: {
-              bool: {
-                must: [
-                  {
-                    query_string: {
-                      query: ex,
-                      analyze_wildcard: true,
-                      fields: BASE_SEARCH_CONNECTIONS,
-                    },
-                  },
-                ],
+  // Build the search for all other fields
+  const searchPhrase = R.uniq(querySearch).join(' ');
+  shouldSearch.push(...[
+    {
+      query_string: {
+        query: searchPhrase,
+        analyze_wildcard: true,
+        fields: BASE_SEARCH_ATTRIBUTES,
+      },
+    },
+    {
+      nested: {
+        path: 'connections',
+        query: {
+          bool: {
+            must: [
+              {
+                query_string: {
+                  query: searchPhrase,
+                  analyze_wildcard: true,
+                  fields: BASE_SEARCH_CONNECTIONS,
+                },
               },
-            },
+            ],
           },
         },
-      ])
-    )
-  );
+      },
+    },
+  ]);
   return shouldSearch;
 };
 
