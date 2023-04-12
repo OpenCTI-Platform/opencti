@@ -1,0 +1,242 @@
+type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+  id: ID! # internal_id
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  # StixObject
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  # inferences
+  x_opencti_inferences: [Inference]
+  # Stix Core Object
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(
+    first: Int
+    after: ID
+    orderBy: StixCoreRelationshipsOrdering
+    orderMode: OrderingMode
+    fromId: StixRef
+    toId: StixRef
+    fromTypes: [String]
+    toTypes: [String]
+    relationship_type: String
+    startTimeStart: DateTime
+    startTimeStop: DateTime
+    stopTimeStart: DateTime
+    stopTimeStop: DateTime
+    firstSeenStart: DateTime
+    firstSeenStop: DateTime
+    lastSeenStart: DateTime
+    lastSeenStop: DateTime
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(
+    relationship_type: [String]
+    toTypes: [String]
+    field: String!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    operation: StatsOperation!
+    limit: Int
+    order: String
+    types: [String]
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+    search: String
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixCoreRelationshipsDistribution(
+    field: String!
+    operation: StatsOperation!
+    startDate: DateTime
+    endDate: DateTime
+    dateAttribute: String
+    isTo: Boolean
+    limit: Int
+    order: String
+    elementWithTargetTypes: [String]
+    fromId: [String]
+    fromRole: String
+    fromTypes: [String]
+    toId: [String]
+    toRole: String
+    toTypes: [String]
+    relationship_type: [String]
+    confidences: [Int]
+    search: String
+    filters: [StixCoreRelationshipsFiltering]
+    filterMode: FilterMode
+  ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  # Stix Domain Object
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  # Container
+  objects(
+    first: Int
+    after: ID
+    orderBy: StixObjectOrStixRelationshipsOrdering
+    orderMode: OrderingMode
+    filters: [StixObjectOrStixRelationshipsFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+    all: Boolean
+  ): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(
+    first: Int
+    after: ID
+    orderBy: ContainersOrdering
+    orderMode: OrderingMode
+    filters: [ContainersFiltering]
+    filterMode: FilterMode
+    search: String
+    types: [String]
+    viaTypes: [String]
+  ): ContainerConnection
+  # Cases
+  name: String!
+  description: String
+  rating: Int
+  # Technical
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  # Rfi
+  response_types: [String!]
+  severity: String
+  priority: String
+}
+
+# Ordering
+enum CaseRfisOrdering {
+  name
+  created
+  modified
+  context
+  severity
+  priority
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  objectMarking
+}
+
+# Filtering
+enum CaseRfisFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  x_opencti_workflow_id
+  severity
+  priority
+  confidence
+}
+
+input CaseRfisFiltering {
+  key: [CaseRfisFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+# Relay connections
+type CaseRfiConnection {
+  pageInfo: PageInfo!
+  edges: [CaseRfiEdge]
+}
+
+type CaseRfiEdge {
+  cursor: String!
+  node: CaseRfi!
+}
+
+# Queries
+type Query {
+  caseRfi(id: String!): CaseRfi @auth(for: [KNOWLEDGE])
+  caseRfis(
+    first: Int
+    after: ID
+    orderBy: CaseRfisOrdering
+    orderMode: OrderingMode
+    filters: [CaseRfisFiltering!]
+    filterMode: FilterMode
+    search: String
+    toStix: Boolean
+  ): CaseRfiConnection @auth(for: [KNOWLEDGE])
+  caseRfiContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+}
+
+# Mutations
+input CaseRfiAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: String! @constraint(minLength: 2)
+  severity: String
+  priority: String
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  response_types: [String!]
+}
+
+type Mutation {
+  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi @auth
+  caseRfiDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  caseRfiRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseRfiRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseRfiFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseRfiContextPatch(id: ID!, input: EditContext!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseRfiContextClean(id: ID!): CaseRfi @auth(for: [KNOWLEDGE_KNUPDATE])
+}

@@ -7735,6 +7735,12 @@ type Query {
   caseIncident(id: String!): CaseIncident
   caseIncidents(first: Int, after: ID, orderBy: CaseIncidentsOrdering, orderMode: OrderingMode, filters: [CaseIncidentsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseIncidentConnection
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  caseRfi(id: String!): CaseRfi
+  caseRfis(first: Int, after: ID, orderBy: CaseRfisOrdering, orderMode: OrderingMode, filters: [CaseRfisFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseRfiConnection
+  caseRfiContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  caseRft(id: String!): CaseRft
+  caseRfts(first: Int, after: ID, orderBy: CaseRftsOrdering, orderMode: OrderingMode, filters: [CaseRftsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseRftConnection
+  caseRftContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   entitySetting(id: String!): EntitySetting
   entitySettingByType(targetType: String!): EntitySetting
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
@@ -8424,6 +8430,20 @@ type Mutation {
   caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident
   caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident
   caseIncidentContextClean(id: ID!): CaseIncident
+  caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
+  caseRfiDelete(id: ID!): ID
+  caseRfiRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  caseRfiRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRfi
+  caseRfiFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRfi
+  caseRfiContextPatch(id: ID!, input: EditContext!): CaseRfi
+  caseRfiContextClean(id: ID!): CaseRfi
+  caseRftAdd(input: CaseRftAddInput!): CaseRft
+  caseRftDelete(id: ID!): ID
+  caseRftRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  caseRftRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRft
+  caseRftFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRft
+  caseRftContextPatch(id: ID!, input: EditContext!): CaseRft
+  caseRftContextClean(id: ID!): CaseRft
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
 }
 
@@ -9922,6 +9942,262 @@ type CaseIncidentEdge {
 }
 
 input CaseIncidentAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  severity: String
+  priority: String
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  response_types: [String!]
+}
+
+type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  rating: Int
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  response_types: [String!]
+  severity: String
+  priority: String
+}
+
+enum CaseRfisOrdering {
+  name
+  created
+  modified
+  context
+  severity
+  priority
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  objectMarking
+}
+
+enum CaseRfisFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  x_opencti_workflow_id
+  severity
+  priority
+  confidence
+}
+
+input CaseRfisFiltering {
+  key: [CaseRfisFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type CaseRfiConnection {
+  pageInfo: PageInfo!
+  edges: [CaseRfiEdge]
+}
+
+type CaseRfiEdge {
+  cursor: String!
+  node: CaseRfi!
+}
+
+input CaseRfiAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  name: name_String_NotNull_minLength_2!
+  severity: String
+  priority: String
+  description: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  objects: [String]
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
+  update: Boolean
+  response_types: [String!]
+}
+
+type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  name: String!
+  description: String
+  rating: Int
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  response_types: [String!]
+  severity: String
+  priority: String
+}
+
+enum CaseRftsOrdering {
+  name
+  created
+  modified
+  context
+  severity
+  priority
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  objectMarking
+}
+
+enum CaseRftsFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  x_opencti_workflow_id
+  severity
+  priority
+  confidence
+}
+
+input CaseRftsFiltering {
+  key: [CaseRftsFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type CaseRftConnection {
+  pageInfo: PageInfo!
+  edges: [CaseRftEdge]
+}
+
+type CaseRftEdge {
+  cursor: String!
+  node: CaseRft!
+}
+
+input CaseRftAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!

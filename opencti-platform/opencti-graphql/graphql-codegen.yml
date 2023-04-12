@@ -24,6 +24,8 @@ generates:
         AdministrativeArea: ../modules/administrativeArea/administrativeArea-types#BasicStoreEntityAdministrativeArea
         Case: ../modules/case/case-types#BasicStoreEntityCase
         CaseIncident: ../modules/case/case-incident/case-incident-types#BasicStoreEntityCaseIncident
+        CaseRfi: ../modules/case/case-incident/case-incident-types#BasicStoreEntityCaseRfi
+        CaseRft: ../modules/case/case-incident/case-incident-types#BasicStoreEntityCaseRft
         Feedback: ../modules/case/feedback/feedback-types#BasicStoreEntityFeedback
         Notification: ../modules/notification/notification-types#BasicStoreEntityNotification
         Trigger: ../modules/notification/notification-types#BasicStoreEntityTrigger

@@ -34,5 +34,7 @@ import './administrativeArea/administrativeArea';
 import './case/case';
 import './case/feedback/feedback';
 import './case/case-incident/case-incident';
+import './case/case-rfi/case-rfi';
+import './case/case-rft/case-rft';
 import './entitySetting/entitySetting';
 // endregion
