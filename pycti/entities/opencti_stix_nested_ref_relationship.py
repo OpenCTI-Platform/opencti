@@ -3,7 +3,7 @@
 from pycti.entities import LOGGER
 
 
-class StixCyberObservableRelationship:
+class StixNestedRefRelationship:
     def __init__(self, opencti):
         self.opencti = opencti
         self.properties = """
@@ -75,13 +75,13 @@ class StixCyberObservableRelationship:
             first = 500
 
         LOGGER.info(
-            "Listing stix_observable_relationships with {type: %s, from_id: %s, to_id: %s}",
+            "Listing stix_nested_ref_relationships with {type: %s, from_id: %s, to_id: %s}",
             *(relationship_type, from_id, to_id),
         )
         query = (
             """
-            query StixCyberObservableRelationships($elementId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixCyberObservableRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixCyberObservableRelationshipsOrdering, $orderMode: OrderingMode) {
-                stixCyberObservableRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
+            query StixNestedRefRelationships($elementId: String, $fromId: StixRef, $fromTypes: [String], $toId: StixRef, $toTypes: [String], $relationship_type: [String], $startTimeStart: DateTime, $startTimeStop: DateTime, $stopTimeStart: DateTime, $stopTimeStop: DateTime, $filters: [StixRefRelationshipsFiltering], $first: Int, $after: ID, $orderBy: StixRefRelationshipsOrdering, $orderMode: OrderingMode) {
+                stixNestedRefRelationships(elementId: $elementId, fromId: $fromId, fromTypes: $fromTypes, toId: $toId, toTypes: $toTypes, relationship_type: $relationship_type, startTimeStart: $startTimeStart, startTimeStop: $startTimeStop, stopTimeStart: $stopTimeStart, stopTimeStop: $stopTimeStop, filters: $filters, first: $first, after: $after, orderBy: $orderBy, orderMode: $orderMode) {
                     edges {
                         node {
                             """
@@ -122,7 +122,7 @@ class StixCyberObservableRelationship:
             },
         )
         return self.opencti.process_multiple(
-            result["data"]["stixCyberObservableRelationships"], with_pagination
+            result["data"]["stixNestedRefRelationships"], with_pagination
         )
 
     """
@@ -155,8 +155,8 @@ class StixCyberObservableRelationship:
             LOGGER.info("Reading stix_observable_relationship {%s}.", id)
             query = (
                 """
-                query StixCyberObservableRelationship($id: String!) {
-                    stixCyberObservableRelationship(id: $id) {
+                query StixRefRelationship($id: String!) {
+                    stixRefRelationship(id: $id) {
                         """
                 + (
                     custom_attributes
@@ -170,7 +170,7 @@ class StixCyberObservableRelationship:
             )
             result = self.opencti.query(query, {"id": id})
             return self.opencti.process_multiple_fields(
-                result["data"]["stixCyberObservableRelationship"]
+                result["data"]["stixRefRelationship"]
             )
         else:
             result = self.list(
@@ -221,8 +221,8 @@ class StixCyberObservableRelationship:
             *(relationship_type, from_id, to_id),
         )
         query = """
-                mutation StixCyberObservableRelationshipAdd($input: StixCyberObservableRelationshipAddInput!) {
-                    stixCyberObservableRelationshipAdd(input: $input) {
+                mutation StixRefRelationshipAdd($input: StixRefRelationshipAddInput!) {
+                    stixRefRelationshipAdd(input: $input) {
                         id
                         standard_id
                         entity_type
@@ -250,7 +250,7 @@ class StixCyberObservableRelationship:
             },
         )
         return self.opencti.process_multiple_fields(
-            result["data"]["stixCyberObservableRelationshipAdd"]
+            result["data"]["stixRefRelationshipAdd"]
         )
 
     """
@@ -268,8 +268,8 @@ class StixCyberObservableRelationship:
             LOGGER.info("Updating stix_observable_relationship {%s}.", id)
             query = (
                 """
-                mutation StixCyberObservableRelationshipEdit($id: ID!, $input: [EditInput]!) {
-                    stixCyberObservableRelationshipEdit(id: $id) {
+                mutation StixRefRelationshipEdit($id: ID!, $input: [EditInput]!) {
+                    stixRefRelationshipEdit(id: $id) {
                         fieldPatch(input: $input) {
                             """
                 + self.properties
@@ -281,7 +281,7 @@ class StixCyberObservableRelationship:
             )
             result = self.opencti.query(query, {"id": id, "input": input})
             return self.opencti.process_multiple_fields(
-                result["data"]["stixCyberObservableRelationshipEdit"]["fieldPatch"]
+                result["data"]["stixRefRelationshipEdit"]["fieldPatch"]
             )
         else:
             LOGGER.error("Missing parameters: id and key and value")

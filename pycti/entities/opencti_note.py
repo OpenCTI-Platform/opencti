@@ -495,7 +495,7 @@ class Note:
                 *(stix_object_or_stix_relationship_id, id),
             )
             query = """
-               mutation NoteEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation NoteEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                    noteEdit(id: $id) {
                         relationAdd(input: $input) {
                             id

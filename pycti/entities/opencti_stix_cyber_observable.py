@@ -1489,7 +1489,7 @@ class StixCyberObservable:
             if identity_id is not None:
                 # Add the new relation
                 query = """
-                    mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                    mutation StixCyberObservableEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                         stixCyberObservableEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -1551,7 +1551,7 @@ class StixCyberObservable:
                     *(marking_definition_id, id),
                 )
                 query = """
-                   mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   mutation StixCyberObservableAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                        stixCyberObservableEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -1636,7 +1636,7 @@ class StixCyberObservable:
         if id is not None and label_id is not None:
             LOGGER.info("Adding label {%s} to Stix-Cyber-Observable {%s}", label_id, id)
             query = """
-               mutation StixCyberObservableAddRelation($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation StixCyberObservableAddRelation($id: ID!, $input: StixRefRelationshipAddInput!) {
                    stixCyberObservableEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
@@ -1746,7 +1746,7 @@ class StixCyberObservable:
                     *(external_reference_id, id),
                 )
                 query = """
-                   mutation StixCyberObservabletEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   mutation StixCyberObservabletEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
                        stixCyberObservableEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id

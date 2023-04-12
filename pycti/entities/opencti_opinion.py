@@ -189,7 +189,7 @@ class Opinion:
                         }
                         ... on Case {
                             name
-                        }                        
+                        }
                         ... on StixCoreRelationship {
                             standard_id
                             spec_version
@@ -462,7 +462,7 @@ class Opinion:
                 *(stix_object_or_stix_relationship_id, id),
             )
             query = """
-               mutation OpinionEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation OpinionEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                    opinionEdit(id: $id) {
                         relationAdd(input: $input) {
                             id

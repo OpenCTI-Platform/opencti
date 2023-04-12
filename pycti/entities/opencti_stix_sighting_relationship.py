@@ -624,7 +624,7 @@ class StixSightingRelationship:
                     *(marking_definition_id, id),
                 )
                 query = """
-                   mutation StixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                   mutation StixSightingRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                        stixSightingRelationshipEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
@@ -747,7 +747,7 @@ class StixSightingRelationship:
             if identity_id is not None:
                 # Add the new relation
                 query = """
-                    mutation StixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput) {
+                    mutation StixSightingRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
                         stixSightingRelationshipEdit(id: $id) {
                             relationAdd(input: $input) {
                                 id
