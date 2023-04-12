@@ -130,7 +130,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   # Rfi
-  response_types: [String!]
+  information_types: [String!]
   severity: String
   priority: String
 }
@@ -228,7 +228,7 @@ input CaseRfiAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
-  response_types: [String!]
+  information_types: [String!]
 }
 
 type Mutation {

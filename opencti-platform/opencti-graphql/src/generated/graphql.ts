@@ -2087,6 +2087,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID'];
   importFiles?: Maybe<FileConnection>;
+  information_types?: Maybe<Array<Scalars['String']>>;
   is_inferred: Scalars['Boolean'];
   jobs?: Maybe<Array<Maybe<Work>>>;
   lang?: Maybe<Scalars['String']>;
@@ -2106,7 +2107,6 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   rating?: Maybe<Scalars['Int']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
-  response_types?: Maybe<Array<Scalars['String']>>;
   revoked: Scalars['Boolean'];
   severity?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
@@ -2283,6 +2283,7 @@ export type CaseRfiAddInput = {
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   file?: InputMaybe<Scalars['Upload']>;
+  information_types?: InputMaybe<Array<Scalars['String']>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -2292,7 +2293,6 @@ export type CaseRfiAddInput = {
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
-  response_types?: InputMaybe<Array<Scalars['String']>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   severity?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
@@ -2389,7 +2389,6 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   rating?: Maybe<Scalars['Int']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
-  response_types?: Maybe<Array<Scalars['String']>>;
   revoked: Scalars['Boolean'];
   severity?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
@@ -2398,6 +2397,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   stixCoreObjectsDistribution?: Maybe<Array<Maybe<Distribution>>>;
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stixCoreRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  takedown_types?: Maybe<Array<Scalars['String']>>;
   toStix?: Maybe<Scalars['String']>;
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
@@ -2575,10 +2575,10 @@ export type CaseRftAddInput = {
   objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   priority?: InputMaybe<Scalars['String']>;
-  response_types?: InputMaybe<Array<Scalars['String']>>;
   revoked?: InputMaybe<Scalars['Boolean']>;
   severity?: InputMaybe<Scalars['String']>;
   stix_id?: InputMaybe<Scalars['StixId']>;
+  takedown_types?: InputMaybe<Array<Scalars['String']>>;
   update?: InputMaybe<Scalars['Boolean']>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
@@ -26879,6 +26879,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<CaseRfiGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   importFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseRfiImportFilesArgs>>;
+  information_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   jobs?: Resolver<Maybe<Array<Maybe<ResolversTypes['Work']>>>, ParentType, ContextType, Partial<CaseRfiJobsArgs>>;
   lang?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -26898,7 +26899,6 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
-  response_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26963,7 +26963,6 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRftRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRftReportsArgs>>;
-  response_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -26972,6 +26971,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   stixCoreObjectsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRftStixCoreObjectsDistributionArgs, 'field' | 'operation'>>;
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<CaseRftStixCoreRelationshipsArgs>>;
   stixCoreRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<CaseRftStixCoreRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  takedown_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

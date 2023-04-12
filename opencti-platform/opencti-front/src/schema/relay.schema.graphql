@@ -10013,7 +10013,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  response_types: [String!]
+  information_types: [String!]
   severity: String
   priority: String
 }
@@ -10091,7 +10091,7 @@ input CaseRfiAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
-  response_types: [String!]
+  information_types: [String!]
 }
 
 type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10141,7 +10141,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  response_types: [String!]
+  takedown_types: [String!]
   severity: String
   priority: String
 }
@@ -10219,7 +10219,7 @@ input CaseRftAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
-  response_types: [String!]
+  takedown_types: [String!]
 }
 
 type TypeAttribute {

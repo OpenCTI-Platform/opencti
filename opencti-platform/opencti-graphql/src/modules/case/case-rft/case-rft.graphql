@@ -130,7 +130,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   status: Status
   workflowEnabled: Boolean
   # Rft
-  response_types: [String!]
+  takedown_types: [String!]
   severity: String
   priority: String
 }
@@ -228,7 +228,7 @@ input CaseRftAddInput {
   file: Upload
   clientMutationId: String
   update: Boolean
-  response_types: [String!]
+  takedown_types: [String!]
 }
 
 type Mutation {
