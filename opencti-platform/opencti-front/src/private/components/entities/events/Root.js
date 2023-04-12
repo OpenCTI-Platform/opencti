@@ -154,6 +154,7 @@ class RootEvent extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Event'}
                             stixDomainObject={props.event}
                             PopoverComponent={<EventPopover />}
                           />

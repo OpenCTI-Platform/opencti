@@ -25,7 +25,7 @@ export const stixObjectOrRelationshipAddRefRelation = async (context, user, stix
     return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relationData, user);
   });
 };
-export const stixObjectOrRelationshipAddRelations = async (context, user, stixObjectOrRelationshipId, input, type) => {
+export const stixObjectOrRelationshipAddRefRelations = async (context, user, stixObjectOrRelationshipId, input, type, opts = {}) => {
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   if (!stixObjectOrRelationship) {
     throw FunctionalError('Cannot add the relation, Stix-Object or Stix-Relationship cannot be found.');
@@ -36,12 +36,12 @@ export const stixObjectOrRelationshipAddRelations = async (context, user, stixOb
   const finalInput = input.toIds.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })
   );
-  await createRelations(context, user, finalInput);
+  await createRelations(context, user, finalInput, opts);
   const entity = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   return notify(BUS_TOPICS[type].EDIT_TOPIC, entity, user);
 };
 
-export const stixObjectOrRelationshipDeleteRelation = async (context, user, stixObjectOrRelationshipId, toId, relationshipType, type) => {
+export const stixObjectOrRelationshipDeleteRefRelation = async (context, user, stixObjectOrRelationshipId, toId, relationshipType, type, opts = {}) => {
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
   if (!stixObjectOrRelationship) {
     throw FunctionalError('Cannot delete the relation, Stix-Object or Stix-Relationship cannot be found.');
@@ -49,6 +49,6 @@ export const stixObjectOrRelationshipDeleteRelation = async (context, user, stix
   if (!isStixRefRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP);
+  await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP, opts);
   return notify(BUS_TOPICS[type].EDIT_TOPIC, stixObjectOrRelationship, user);
 };

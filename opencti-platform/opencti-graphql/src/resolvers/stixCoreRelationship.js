@@ -2,6 +2,7 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixCoreRelationship,
+  batchCases,
   batchCreatedBy,
   batchExternalReferences,
   batchKillChainPhases,
@@ -10,21 +11,21 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
-  batchCases,
   findAll,
   findById,
   stixCoreRelationshipAddRelation,
+  stixCoreRelationshipAddRelations,
   stixCoreRelationshipCleanContext,
   stixCoreRelationshipDelete,
   stixCoreRelationshipDeleteByFromAndTo,
   stixCoreRelationshipDeleteRelation,
   stixCoreRelationshipEditContext,
   stixCoreRelationshipEditField,
+  stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsExportPush,
-  stixCoreRelationshipsNumber,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsDistribution,
+  stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -95,9 +96,9 @@ const stixCoreRelationshipResolvers = {
       contextPatch: ({ input }) => stixCoreRelationshipEditContext(context, context.user, id, input),
       contextClean: () => stixCoreRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixCoreRelationshipAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => {
-        return stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType);
-      },
+      relationsAdd: ({ input, commitMessage, references }) => stixCoreRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
+      // eslint-disable-next-line max-len
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),

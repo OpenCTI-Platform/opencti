@@ -102,7 +102,7 @@ class IndicatorObservablesComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <IndicatorAddObservables
-            indicatorId={indicator.id}
+            indicator={indicator}
             indicatorObservables={indicator.observables.edges}
           />
         </Security>
@@ -193,11 +193,15 @@ const IndicatorObservables = createFragmentContainer(
     indicator: graphql`
       fragment IndicatorObservables_indicator on Indicator {
         id
-        observables(first: 200) @connection(key: "Pagination_observables") {
+        name
+        parent_types
+        entity_type
+        observables(first: 200) {
           edges {
             node {
               id
               entity_type
+              parent_types
               observable_value
               created_at
               updated_at

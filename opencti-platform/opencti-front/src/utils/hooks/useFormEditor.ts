@@ -62,7 +62,7 @@ const useFormEditor = (
 
   const validate = (
     name: string,
-    values: Option[] | Option,
+    values: number | number[] | string | Date | Option | Option[],
     callback: () => void,
   ) => {
     if (schemaFields[name]) {
@@ -162,6 +162,22 @@ const useFormEditor = (
       },
     });
   };
+  const changeField = (name: string, value: number | number[] | string | Date | Option | Option[]) => {
+    if (!enableReferences) {
+      let finalValue = value;
+      if (name === 'x_opencti_workflow_id') {
+        finalValue = (value as Option).value;
+      }
+      validate(name, value, () => {
+        commitFieldPatch({
+          variables: {
+            id: data.id,
+            input: [{ key: name, value: finalValue || '' }],
+          },
+        });
+      });
+    }
+  };
 
   return {
     changeMarking,
@@ -170,6 +186,7 @@ const useFormEditor = (
     changeKillChainPhases,
     changeExternalReferences,
     changeFocus,
+    changeField,
     fieldPatch: commitFieldPatch,
   };
 };

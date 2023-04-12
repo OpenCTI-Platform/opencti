@@ -90,10 +90,14 @@ const DataSourceDataComponents = createFragmentContainer(
     dataSource: graphql`
       fragment DataSourceDataComponents_dataSource on DataSource {
         id
+        name
+        parent_types
+        entity_type
         dataComponents {
           edges {
             node {
               id
+              parent_types
               name
               description
             }

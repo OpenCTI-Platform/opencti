@@ -162,6 +162,7 @@ class RootSector extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Sector'}
                             disableSharing={true}
                             stixDomainObject={props.sector}
                             PopoverComponent={<SectorPopover />}

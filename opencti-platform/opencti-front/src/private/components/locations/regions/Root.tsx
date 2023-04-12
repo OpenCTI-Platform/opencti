@@ -101,6 +101,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             render={(routeProps: any) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Region'}
                   disableSharing={true}
                   stixDomainObject={region}
                   PopoverComponent={<RegionPopover id={region.id} />}
@@ -118,6 +119,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             render={(routeProps: any) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Region'}
                   disableSharing={true}
                   stixDomainObject={region}
                   PopoverComponent={<RegionPopover id={region.id} />}
@@ -138,6 +140,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             render={(routeProps: any) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Region'}
                   disableSharing={true}
                   stixDomainObject={region}
                   PopoverComponent={<RegionPopover id={region.id} />}
@@ -158,6 +161,7 @@ const RootRegionComponent = ({ queryRef, regionId, link }) => {
             render={(routeProps: any) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Region'}
                   disableSharing={true}
                   stixDomainObject={region}
                   PopoverComponent={<RegionPopover id={region.id} />}

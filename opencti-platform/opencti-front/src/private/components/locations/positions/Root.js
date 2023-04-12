@@ -164,6 +164,7 @@ class RootPosition extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Position'}
                             disableSharing={true}
                             stixDomainObject={props.position}
                             PopoverComponent={<PositionPopover />}

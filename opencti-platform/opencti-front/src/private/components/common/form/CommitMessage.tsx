@@ -5,12 +5,22 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
+import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
 import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+
+const useStyles = makeStyles(() => ({
+  flex: {
+    marginTop: 20,
+    display: 'inline-flex',
+    justifyContent: 'space-between',
+    width: '100%',
+  },
+}));
 
 interface CommitMessageProps {
   id: string;
@@ -38,6 +48,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   handleClose,
 }) => {
   const { t } = useFormatter();
+  const classes = useStyles();
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleOpen = () => setControlOpen(true);
   const handleControlClose = () => setControlOpen(false);
@@ -49,28 +60,26 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   return (
     <div>
       {!handleClose && (
-        <>
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleOpen}
-            disabled={disabled}
-            style={{ marginTop: 20, float: 'right' }}
-          >
-            {t('Update')}
-          </Button>
+        <div className={classes.flex}>
           <Security needs={[BYPASSREFERENCE]}>
             <Button
               variant="outlined"
               color="primary"
               onClick={submitForm}
               disabled={disabled}
-              style={{ marginTop: 20, marginRight: 20, float: 'left' }}
             >
               {t('Direct Update')}
             </Button>
           </Security>
-        </>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={handleOpen}
+            disabled={disabled}
+          >
+            {t('Update')}
+          </Button>
+        </div>
       )}
       <Dialog
         PaperProps={{ elevation: 1 }}

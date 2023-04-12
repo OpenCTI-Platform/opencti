@@ -76,10 +76,10 @@ export const deleteNode = (store, key, filters, id) => {
   deleteNodeFromId(store, store.getRoot().getDataID(), key, filters, id);
 };
 
-export const deleteNodeFromEdge = (store, path, rootId, deleteId) => {
+export const deleteNodeFromEdge = (store, path, rootId, deleteId, params) => {
   const node = store.get(rootId);
 
-  const records = node.getLinkedRecord(path);
+  const records = node.getLinkedRecord(path, params);
   const edges = records.getLinkedRecords('edges');
   const newEdges = filter(
     (n) => n.getLinkedRecord('node').getValue('id') !== deleteId,

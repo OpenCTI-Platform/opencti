@@ -2,15 +2,7 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
-  findAll,
-  findById,
-  stixSightingRelationshipAddRelation,
-  stixSightingRelationshipCleanContext,
-  stixSightingRelationshipDelete,
-  stixSightingRelationshipDeleteRelation,
-  stixSightingRelationshipEditContext,
-  stixSightingRelationshipEditField,
-  stixSightingRelationshipsNumber,
+  batchCases,
   batchCreatedBy,
   batchExternalReferences,
   batchLabels,
@@ -18,11 +10,20 @@ import {
   batchNotes,
   batchOpinions,
   batchReports,
-  batchCases,
+  findAll,
+  findById,
+  stixSightingRelationshipAddRelation,
+  stixSightingRelationshipAddRelations,
+  stixSightingRelationshipCleanContext,
+  stixSightingRelationshipDelete,
+  stixSightingRelationshipDeleteRelation,
+  stixSightingRelationshipEditContext,
+  stixSightingRelationshipEditField,
+  stixSightingRelationshipsNumber,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../schema/general';
@@ -85,11 +86,13 @@ const stixSightingRelationshipResolvers = {
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({
       delete: () => stixSightingRelationshipDelete(context, context.user, id),
-      fieldPatch: ({ input }) => stixSightingRelationshipEditField(context, context.user, id, input),
+      fieldPatch: ({ input, commitMessage, references }) => stixSightingRelationshipEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(context, context.user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationsAdd: ({ input, commitMessage, references }) => stixSightingRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
+      // eslint-disable-next-line max-len
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),

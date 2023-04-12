@@ -16,6 +16,10 @@ import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -42,6 +46,8 @@ import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectKillChainPhasesView from '../stix_core_objects/StixCoreObjectKillChainPhasesView';
 import StixCoreObjectOrStixRelationshipLastContainers
   from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   container: {
@@ -156,7 +162,7 @@ const styles = (theme) => ({
 class StixCoreRelationshipContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { openEdit: false, expanded: false };
+    this.state = { openEdit: false, openDelete: false, expanded: false };
   }
 
   handleToggleExpand() {
@@ -183,7 +189,16 @@ class StixCoreRelationshipContainer extends Component {
     this.setState({ openEdit: false });
   }
 
-  handleDelete() {
+  handleOpenDelete() {
+    this.setState({ displayDelete: true });
+  }
+
+  handleCloseDelete() {
+    this.setState({ displayDelete: false });
+  }
+
+  submitDelete() {
+    this.setState({ deleting: true });
     const {
       location,
       match: {
@@ -480,6 +495,11 @@ class StixCoreRelationshipContainer extends Component {
                     status={stixCoreRelationship.status}
                     disabled={!stixCoreRelationship.workflowEnabled}
                   />
+                  <StixCoreRelationshipObjectLabelsView
+                    labels={stixCoreRelationship.objectLabel}
+                    id={stixCoreRelationship.id}
+                    marginTop={20}
+                  />
                   <Typography
                     variant="h3"
                     gutterBottom={true}
@@ -605,10 +625,38 @@ class StixCoreRelationshipContainer extends Component {
               open={this.state.openEdit}
               stixCoreRelationshipId={stixCoreRelationship.id}
               handleClose={this.handleCloseEdition.bind(this)}
-              handleDelete={this.handleDelete.bind(this)}
+              handleDelete={this.handleOpenDelete.bind(this)}
             />
           </Security>
         )}
+        <Dialog
+          open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this relationship?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }
@@ -3816,6 +3864,15 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               definition
               x_opencti_order
               x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

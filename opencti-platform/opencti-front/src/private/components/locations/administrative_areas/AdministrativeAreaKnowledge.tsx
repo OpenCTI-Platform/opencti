@@ -45,6 +45,7 @@ const AdministrativeAreaKnowledge = ({
   return (
     <div className={classes.container}>
       <StixDomainObjectHeader
+        entityType={'Administrative-Area'}
         disableSharing={true}
         stixDomainObject={administrativeArea}
         PopoverComponent={AdministrativeAreaPopover}

@@ -118,6 +118,7 @@ const RootDataSourceComponent = ({ queryRef, dataSourceId }) => {
               render={(routeProps: any) => (
                 <React.Fragment>
                   <StixDomainObjectHeader
+                    entityType={'Data-Source'}
                     disableSharing={true}
                     stixDomainObject={dataSource}
                     PopoverComponent={<DataSourcePopover id={dataSource.id} />}

@@ -1,15 +1,14 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import inject18n from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixCoreRelationshipEditionOverview from './StixCoreRelationshipEditionOverview';
-import Loader from '../../../../components/Loader';
+import makeStyles from '@mui/styles/makeStyles';
+import StixCoreRelationshipEditionOverview, {
+  stixCoreRelationshipEditionOverviewQuery,
+} from './StixCoreRelationshipEditionOverview';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '30%',
@@ -21,15 +20,7 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
-
-const stixCoreRelationshipEditionQuery = graphql`
-  query StixCoreRelationshipEditionQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
-      ...StixCoreRelationshipEditionOverview_stixCoreRelationship
-    }
-  }
-`;
+}));
 
 export const stixCoreRelationshipEditionDeleteMutation = graphql`
   mutation StixCoreRelationshipEditionDeleteMutation($id: ID!) {
@@ -39,70 +30,50 @@ export const stixCoreRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-class StixCoreRelationshipEdition extends Component {
-  render() {
-    const {
-      classes,
-      stixCoreRelationshipId,
-      stixDomainObject,
-      open,
-      handleClose,
-      handleDelete,
-      noStoreUpdate,
-    } = this.props;
-    return (
+const StixCoreRelationshipEdition = (props) => {
+  const {
+    stixCoreRelationshipId,
+    open,
+    handleClose,
+    handleDelete,
+    noStoreUpdate,
+  } = props;
+  if (!stixCoreRelationshipId) {
+    return <></>;
+  }
+
+  const classes = useStyles();
+  const queryRef = useQueryLoading(
+    stixCoreRelationshipEditionOverviewQuery,
+    { id: stixCoreRelationshipId },
+  );
+  return (
       <Drawer
         open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose.bind(this)}
+        onClose={handleClose}
       >
-        {stixCoreRelationshipId ? (
-          <QueryRenderer
-            query={stixCoreRelationshipEditionQuery}
-            variables={{ id: stixCoreRelationshipId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixCoreRelationshipEditionOverview
-                    stixDomainObject={stixDomainObject}
-                    stixCoreRelationship={props.stixCoreRelationship}
-                    handleClose={handleClose.bind(this)}
-                    handleDelete={
-                      typeof handleDelete === 'function'
-                        ? handleDelete.bind(this)
-                        : null
-                    }
-                    noStoreUpdate={noStoreUpdate}
-                  />
-                );
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <StixCoreRelationshipEditionOverview
+              queryRef={queryRef}
+              handleClose={handleClose}
+              handleDelete={
+                typeof handleDelete === 'function'
+                  ? handleDelete
+                  : null
               }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        ) : (
-          <div> &nbsp; </div>
+              noStoreUpdate={noStoreUpdate}
+            />
+          </React.Suspense>
         )}
       </Drawer>
-    );
-  }
-}
-
-StixCoreRelationshipEdition.propTypes = {
-  stixCoreRelationshipId: PropTypes.string,
-  stixDomainObject: PropTypes.object,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
-  handleDelete: PropTypes.func,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  noStoreUpdate: PropTypes.bool,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCoreRelationshipEdition);
+export default StixCoreRelationshipEdition;

@@ -83,7 +83,7 @@ class IndicatorAddObservables extends Component {
   }
 
   render() {
-    const { t, classes, indicatorId, indicatorObservables } = this.props;
+    const { t, classes, indicator, indicatorObservables } = this.props;
     const paginationOptions = {
       search: this.state.search,
       orderBy: 'created_at',
@@ -143,7 +143,7 @@ class IndicatorAddObservables extends Component {
                 if (props) {
                   return (
                     <IndicatorAddObservablesLines
-                      indicatorId={indicatorId}
+                      indicator={indicator}
                       indicatorObservables={indicatorObservables}
                       data={props}
                     />
@@ -201,7 +201,7 @@ class IndicatorAddObservables extends Component {
 }
 
 IndicatorAddObservables.propTypes = {
-  indicatorId: PropTypes.string,
+  indicator: PropTypes.object,
   indicatorObservables: PropTypes.array,
   classes: PropTypes.object,
   t: PropTypes.func,

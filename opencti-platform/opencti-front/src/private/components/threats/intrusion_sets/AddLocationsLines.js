@@ -1,39 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle } from '@mui/icons-material';
-import { truncate } from '../../../../utils/String';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-import ItemIcon from '../../../../components/ItemIcon';
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-});
-
-const addLocationsLinesMutationRelationAdd = graphql`
-  mutation AddLocationsLinesRelationAddMutation(
-    $input: StixCoreRelationshipAddInput
-  ) {
-    stixCoreRelationshipAdd(input: $input) {
-      from {
-        ...IntrusionSetLocations_intrusionSet
-      }
-    }
-  }
-`;
+import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addLocationsMutationRelationDelete = graphql`
   mutation AddLocationsLinesRelationDeleteMutation(
@@ -50,92 +20,24 @@ export const addLocationsMutationRelationDelete = graphql`
 `;
 
 class AddLocationsLinesContainer extends Component {
-  toggleLocation(location) {
-    const { intrusionSetId, intrusionSetLocations } = this.props;
-    const intrusionSetLocationsIds = map(
-      (n) => n.node.id,
-      intrusionSetLocations,
-    );
-    const alreadyAdded = intrusionSetLocationsIds.includes(location.id);
-    if (alreadyAdded) {
-      const existingLocation = head(
-        filter((n) => n.node.id === location.id, intrusionSetLocations),
-      );
-      commitMutation({
-        mutation: addLocationsMutationRelationDelete,
-        variables: {
-          fromId: intrusionSetId,
-          toId: existingLocation.node.id,
-          relationship_type: 'originates-from',
-        },
-        updater: (store) => {
-          const node = store.get(intrusionSetId);
-          const locations = node.getLinkedRecord('locations');
-          const edges = locations.getLinkedRecords('edges');
-          const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id')
-              !== existingLocation.node.id,
-            edges,
-          );
-          locations.setLinkedRecords(newEdges, 'edges');
-        },
-      });
-    } else {
-      const input = {
-        relationship_type: 'originates-from',
-        fromId: intrusionSetId,
-        toId: location.id,
-      };
-      commitMutation({
-        mutation: addLocationsLinesMutationRelationAdd,
-        variables: { input },
-      });
-    }
-  }
-
   render() {
-    const { classes, data, intrusionSetLocations } = this.props;
-    const intrusionSetLocationsIds = map(
-      (n) => n.node.id,
-      intrusionSetLocations,
-    );
+    const { data, intrusionSetLocations, intrusionSet } = this.props;
     return (
-      <List>
-        {data.locations.edges.map((locationNode) => {
-          const location = locationNode.node;
-          const alreadyAdded = intrusionSetLocationsIds.includes(location.id);
-          return (
-            <ListItem
-              key={location.id}
-              classes={{ root: classes.menuItem }}
-              divider={true}
-              button={true}
-              onClick={this.toggleLocation.bind(this, location)}
-            >
-              <ListItemIcon>
-                {alreadyAdded ? (
-                  <CheckCircle classes={{ root: classes.icon }} />
-                ) : (
-                  <ItemIcon type={location.entity_type} />
-                )}
-              </ListItemIcon>
-              <ListItemText
-                primary={location.name}
-                secondary={truncate(location.description, 120)}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+      <StixCoreRelationshipCreationFromEntityList
+        entity={intrusionSet}
+        relationshipType={'originates-from'}
+        availableDatas={data?.locations}
+        existingDatas={intrusionSetLocations}
+        updaterOptions={ { path: 'locations' } }
+      />
     );
   }
 }
 
 AddLocationsLinesContainer.propTypes = {
-  intrusionSetId: PropTypes.string,
+  intrusionSet: PropTypes.object,
   intrusionSetLocations: PropTypes.array,
   data: PropTypes.object,
-  classes: PropTypes.object,
 };
 
 export const addLocationsLinesQuery = graphql`
@@ -161,6 +63,7 @@ const AddLocationsLines = createPaginationContainer(
             node {
               id
               entity_type
+              parent_types
               name
               description
             }
@@ -192,4 +95,4 @@ const AddLocationsLines = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(AddLocationsLines);
+export default compose(inject18n)(AddLocationsLines);

@@ -104,6 +104,7 @@ const RootDataComponent = () => {
                     render={(routeProps: any) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
+                          entityType={'Data-Component'}
                           stixDomainObject={props.dataComponent}
                           PopoverComponent={
                             <DataComponentPopover
@@ -127,6 +128,7 @@ const RootDataComponent = () => {
                     render={(routeProps: any) => (
                       <React.Fragment>
                         <StixDomainObjectHeader
+                          entityType={'Data-Component'}
                           stixDomainObject={props.dataComponent}
                           PopoverComponent={
                             <DataComponentPopover

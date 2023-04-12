@@ -4,19 +4,12 @@ import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { Add, Close } from '@mui/icons-material';
-import Skeleton from '@mui/material/Skeleton';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddAttackPatternsLines, {
-  addAttackPatternsLinesQuery,
-} from './AddAttackPatternsLines';
+import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -81,7 +74,7 @@ class AddAttackPatterns extends Component {
     const {
       t,
       classes,
-      courseOfActionId,
+      courseOfAction,
       courseOfActionAttackPatterns,
       courseOfActionPaginationOptions,
     } = this.props;
@@ -133,54 +126,17 @@ class AddAttackPatterns extends Component {
                 count: 20,
               }}
               render={({ props }) => {
-                if (props) {
-                  return (
-                    <AddAttackPatternsLines
-                      courseOfActionId={courseOfActionId}
-                      courseOfActionAttackPatterns={
-                        courseOfActionAttackPatterns
-                      }
-                      courseOfActionPaginationOptions={
-                        courseOfActionPaginationOptions
-                      }
-                      data={props}
-                    />
-                  );
-                }
                 return (
-                  <List>
-                    {Array.from(Array(20), (e, i) => (
-                      <ListItem key={i} divider={true} button={false}>
-                        <ListItemIcon>
-                          <Skeleton
-                            animation="wave"
-                            variant="circular"
-                            width={30}
-                            height={30}
-                          />
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                              style={{ marginBottom: 10 }}
-                            />
-                          }
-                          secondary={
-                            <Skeleton
-                              animation="wave"
-                              variant="rectangular"
-                              width="90%"
-                              height={15}
-                            />
-                          }
-                        />
-                      </ListItem>
-                    ))}
-                  </List>
+                  <AddAttackPatternsLines
+                    courseOfAction={courseOfAction}
+                    courseOfActionAttackPatterns={
+                      courseOfActionAttackPatterns
+                    }
+                    courseOfActionPaginationOptions={
+                      courseOfActionPaginationOptions
+                    }
+                    data={props}
+                  />
                 );
               }}
             />
@@ -192,7 +148,7 @@ class AddAttackPatterns extends Component {
 }
 
 AddAttackPatterns.propTypes = {
-  courseOfActionId: PropTypes.string,
+  courseOfAction: PropTypes.object,
   courseOfActionAttackPatterns: PropTypes.array,
   courseOfActionPaginationOptions: PropTypes.object,
   classes: PropTypes.object,

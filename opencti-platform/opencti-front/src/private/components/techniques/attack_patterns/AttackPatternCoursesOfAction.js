@@ -66,7 +66,7 @@ class AttackPatternCoursesOfActionComponent extends Component {
           {t('Courses of action')}
         </Typography>
         <AddCoursesOfAction
-          attackPatternId={attackPattern.id}
+          attackPattern={attackPattern}
           attackPatternCoursesOfAction={attackPattern.coursesOfAction.edges}
         />
         <div className="clearfix" />
@@ -122,10 +122,14 @@ const AttackPatternCoursesOfAction = createFragmentContainer(
     attackPattern: graphql`
       fragment AttackPatternCoursesOfAction_attackPattern on AttackPattern {
         id
+        name
+        parent_types
+        entity_type
         coursesOfAction {
           edges {
             node {
               id
+              parent_types
               name
               description
             }

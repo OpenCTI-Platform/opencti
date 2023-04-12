@@ -41,7 +41,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
 import {
   stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRelation
+  stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
@@ -200,7 +200,7 @@ export const stixDomainObjectAddRelation = async (context, user, stixDomainObjec
   return stixObjectOrRelationshipAddRefRelation(context, user, stixDomainObjectId, input, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
 export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT);
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
 // endregion
 

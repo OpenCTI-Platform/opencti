@@ -19,7 +19,7 @@ import {
 import { graphql, createFragmentContainer } from 'react-relay';
 import * as R from 'ramda';
 import { truncate } from '../../../../utils/String';
-import AddCoursesOfAction from './AddAttackPatterns';
+import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsLinesMutationRelationDelete } from './AddAttackPatternsLines';
 import { commitMutation } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
@@ -88,8 +88,8 @@ class CourseOfActionAttackPatternComponent extends Component {
         <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
           {t('Mitigated attack patterns')}
         </Typography>
-        <AddCoursesOfAction
-          courseOfActionId={courseOfAction.id}
+        <AddAttackPatterns
+          courseOfAction={courseOfAction}
           courseOfActionAttackPatterns={courseOfAction.attackPatterns.edges}
         />
         <div style={{ float: 'right', marginRight: 15 }}>
@@ -161,10 +161,14 @@ const CourseOfActionAttackPattern = createFragmentContainer(
     courseOfAction: graphql`
       fragment CourseOfActionAttackPatterns_courseOfAction on CourseOfAction {
         id
+        name
+        parent_types
+        entity_type
         attackPatterns {
           edges {
             node {
               id
+              parent_types
               name
               description
             }
