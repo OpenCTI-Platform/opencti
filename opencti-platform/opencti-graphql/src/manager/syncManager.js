@@ -1,9 +1,7 @@
 import * as R from 'ramda';
 import EventSource from 'eventsource';
-import axios from 'axios';
 import { clearIntervalAsync, setIntervalAsync } from 'set-interval-async/fixed';
 import * as jsonpatch from 'fast-json-patch';
-import https from 'node:https';
 import conf, { booleanConf, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -17,6 +15,7 @@ import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { isEmptyField, wait } from '../database/utils';
 import { pushToSync } from '../database/rabbitmq';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
+import { getHttpClient } from '../utils/http-client';
 
 const SYNC_MANAGER_KEY = conf.get('sync_manager:lock_key') || 'sync_manager_lock';
 const SCHEDULE_TIME = 10000;
@@ -57,7 +56,7 @@ const syncManagerInstance = (syncId) => {
     eventSource.on('merge', (d) => handleEvent(d));
     eventSource.on('connected', (d) => {
       connectionId = JSON.parse(d.data).connectionId;
-      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.uri ?? sseUri} with id ${connectionId}`);
+      logApp.info(`[OPENCTI] Sync ${syncId}: listening ${eventSource.url} with id ${connectionId}`);
     });
     eventSource.on('error', (error) => {
       logApp.error(`[OPENCTI] Sync ${syncId}: error in sync event`, { error });
@@ -106,7 +105,7 @@ const syncManagerInstance = (syncId) => {
     if (lastStateSaveTime === undefined || (dateTime !== lastState && (currentTime - lastStateSaveTime) > 15000)) {
       logApp.info(`[OPENCTI] Sync ${syncId}: saving state from ${type} to ${eventId}/${eventDate}`);
       await patchSync(context, SYSTEM_USER, syncId, { current_state: eventDate });
-      eventSource.uri = createSyncHttpUri(sync, eventDate, false);
+      eventSource.updateUrl(createSyncHttpUri(sync, eventDate, false));
       lastState = dateTime;
       lastStateSaveTime = currentTime;
     }
@@ -123,11 +122,9 @@ const syncManagerInstance = (syncId) => {
       logApp.info(`[OPENCTI] Sync ${syncId}: starting manager`);
       const sync = await storeLoadById(context, SYSTEM_USER, syncId, ENTITY_TYPE_SYNC);
       const { token, ssl_verify: ssl = false } = sync;
-      const httpClient = axios.create({
-        responseType: 'arraybuffer',
-        headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-        httpsAgent: new https.Agent({ rejectUnauthorized: ssl })
-      });
+      const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
+      const httpClientOptions = { headers, rejectUnauthorized: ssl, responseType: 'arraybuffer' };
+      const httpClient = getHttpClient(httpClientOptions);
       lastState = sync.current_state;
       const sseUri = createSyncHttpUri(sync, lastState, false);
       startStreamListening(sseUri, sync);

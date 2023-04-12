@@ -2,6 +2,17 @@ diff --git a/lib/eventsource.js b/lib/eventsource.js
 index 69c5525..76e9621 100644
 --- a/lib/eventsource.js
 +++ b/lib/eventsource.js
+@@ -52,6 +52,10 @@ function EventSource (url, eventSourceInitDict) {
+   self.reconnectInterval = 1000
+   self.connectionInProgress = false
+
++  this._updateUrl = function(newUrl) {
++    reconnectUrl = newUrl
++  }
++
+   function onConnectionClosed (message) {
+     if (readyState === EventSource.CLOSED) return
+     readyState = EventSource.CONNECTING
 @@ -112,6 +112,9 @@ function EventSource (url, eventSourceInitDict) {
      // If specify http proxy, make the request to sent to the proxy server,
      // and include the original url in path and Host headers
@@ -13,3 +24,13 @@ index 69c5525..76e9621 100644
 +    } else if (useProxy) {
        var proxy = parse(eventSourceInitDict.proxy)
        isSecure = proxy.protocol === 'https:'
+@@ -393,6 +400,9 @@ EventSource.prototype.close = function () {
+   this._close()
+ }
+
++EventSource.prototype.updateUrl = function (newUrl) {
++  this._updateUrl(newUrl)
++}
+ /**
+  * Emulates the W3C Browser based WebSocket interface using addEventListener.
+  *

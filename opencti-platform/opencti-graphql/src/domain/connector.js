@@ -1,6 +1,4 @@
 import EventSource from 'eventsource';
-import axios from 'axios';
-import https from 'node:https';
 import {
   createEntity,
   deleteElementById,
@@ -8,6 +6,7 @@ import {
   patchAttribute,
   updateAttribute
 } from '../database/middleware';
+import { getHttpClient } from '../utils/http-client';
 import { completeConnector, connectors, connectorsFor } from '../database/repository';
 import { registerConnectorQueues, unregisterConnector, unregisterExchanges } from '../database/rabbitmq';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_SYNC, ENTITY_TYPE_WORK } from '../schema/internalObject';
@@ -186,16 +185,14 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
       }
     }
   `;
-    const httpClient = axios.create({
-      responseType: 'json',
-      headers: !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined,
-      httpsAgent: new https.Agent({ rejectUnauthorized: ssl_verify ?? false })
-    });
+    const headers = !isEmptyField(token) ? { authorization: `Bearer ${token}` } : undefined;
+    const httpClientOptions = { headers, rejectUnauthorized: ssl_verify ?? false, responseType: 'json' };
+    const httpClient = getHttpClient(httpClientOptions);
     const remoteUri = `${uri.endsWith('/') ? uri.slice(0, -1) : uri}/graphql`;
     const { data } = await httpClient.post(remoteUri, { query }, { withCredentials: true });
     return data.data.streamCollections.edges.map((e) => e.node);
-  } catch {
-    throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI' });
+  } catch (e) {
+    throw ValidationError('uri', { message: 'Error getting the streams from remote OpenCTI', error: e });
   }
 };
 export const registerSync = async (context, user, syncData) => {
