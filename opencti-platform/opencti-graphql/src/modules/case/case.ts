@@ -6,6 +6,7 @@ import { ENTITY_TYPE_CONTAINER_CASE, StixCase, StoreEntityCase } from './case-ty
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
@@ -34,6 +35,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
     { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
+  relationsRefs: [objectOrganization],
   representative: (stix: StixCase) => {
     return stix.name;
   },

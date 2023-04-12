@@ -149,7 +149,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
   });
   it('should add relation in stixSightingRelationship', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation stixSightingRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation stixSightingRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         stixSightingRelationshipEdit(id: $id) {
           relationAdd(input: $input) {
             id

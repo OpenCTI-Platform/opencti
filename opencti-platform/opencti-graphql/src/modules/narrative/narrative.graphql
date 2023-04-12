@@ -198,6 +198,6 @@ type Mutation {
     narrativeFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
     narrativeContextPatch(id: ID!, input: EditContext!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
     narrativeContextClean(id: ID!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
-    narrativeRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    narrativeRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     narrativeRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Narrative @auth(for: [KNOWLEDGE_KNUPDATE])
 }

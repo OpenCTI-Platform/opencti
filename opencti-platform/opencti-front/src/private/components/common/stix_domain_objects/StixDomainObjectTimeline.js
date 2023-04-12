@@ -174,7 +174,7 @@ const StixDomainObjectTimeline = createRefetchContainer(
             node {
               id
               entity_type
-              ... on StixMetaRelationship {
+              ... on StixRefRelationship {
                 created_at
               }
               ... on StixCoreRelationship {

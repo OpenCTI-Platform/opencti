@@ -89,7 +89,7 @@ const reportKnowledgeGraphCheckObjectQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         is_inferred
         parent_types
         reports {
@@ -326,7 +326,7 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         relationship_type
         start_time
         stop_time
@@ -363,6 +363,7 @@ const reportKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         created_at
+        datable
         objectMarking {
           edges {
             node {
@@ -1880,7 +1881,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
               }
-              ... on StixCyberObservableRelationship {
+              ... on StixRefRelationship {
                 relationship_type
                 start_time
                 stop_time
@@ -1917,6 +1918,7 @@ const ReportKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 created_at
+                datable
                 objectMarking {
                   edges {
                     node {

@@ -45,7 +45,7 @@ interface HistoryData extends BasicStoreEntity {
   context_data: HistoryContext;
 }
 
-export const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
+const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<StreamDataEvent>>) => {
   if (isEmptyField(events) || events.length === 0) {
     return;
   }

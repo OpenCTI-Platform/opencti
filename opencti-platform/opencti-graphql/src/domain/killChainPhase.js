@@ -4,7 +4,7 @@ import { createEntity, createRelation, deleteElementById, updateAttribute } from
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_KILL_CHAIN_PHASE } from '../schema/stixMetaObject';
-import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixMetaRelationship';
+import { RELATION_KILL_CHAIN_PHASE } from '../schema/stixRefRelationship';
 
 export const findById = (context, user, killChainPhaseId) => {
   return storeLoadById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);

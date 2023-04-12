@@ -46,7 +46,7 @@ export const up = async (next) => {
 
   // Remove setting property from DB
 
-  const settingsFromEl = await elLoadById(context, SYSTEM_USER, settings.id, ENTITY_TYPE_SETTINGS);
+  const settingsFromEl = await elLoadById(context, SYSTEM_USER, settings.id, { type: ENTITY_TYPE_SETTINGS });
   settingsFromEl.platform_entities_files_ref = null;
   settingsFromEl.platform_hidden_types = null;
 

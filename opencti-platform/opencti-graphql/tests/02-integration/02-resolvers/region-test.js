@@ -190,7 +190,7 @@ describe('Region resolver standard behavior', () => {
   });
   it('should add relation in region', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation RegionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation RegionEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         regionEdit(id: $id) {
           relationAdd(input: $input) {
             id

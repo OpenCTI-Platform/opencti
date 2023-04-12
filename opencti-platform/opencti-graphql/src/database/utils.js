@@ -8,10 +8,6 @@ import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../sc
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import {
-  isStixCyberObservableRelationship,
-} from '../schema/stixCyberObservableRelationship';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
 import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
@@ -25,6 +21,7 @@ import {
 } from '../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { creators } from '../schema/attribute-definition';
+import { isStixRefRelationship } from '../schema/stixRefRelationship';
 
 export const ES_INDEX_PREFIX = conf.get('elasticsearch:index_prefix') || 'opencti';
 const rabbitmqPrefix = conf.get('rabbitmq:queue_prefix');
@@ -85,7 +82,6 @@ export const WRITE_PLATFORM_INDICES = [
   INDEX_INFERRED_ENTITIES,
   INDEX_INFERRED_RELATIONSHIPS,
   INDEX_STIX_SIGHTING_RELATIONSHIPS,
-  INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
   INDEX_STIX_META_RELATIONSHIPS,
 ];
 
@@ -227,7 +223,7 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
     if (isStixDomainObject(conceptType)) return INDEX_INFERRED_ENTITIES;
     if (isStixCoreRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isStixSightingRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
-    if (isStixMetaRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
+    if (isStixRefRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     if (isInternalRelationship(conceptType)) return INDEX_INFERRED_RELATIONSHIPS;
     throw DatabaseError(`Cant find inferred index for type ${conceptType}`);
   }
@@ -241,8 +237,10 @@ export const inferIndexFromConceptType = (conceptType, inferred = false) => {
   if (isInternalRelationship(conceptType)) return INDEX_INTERNAL_RELATIONSHIPS;
   if (isStixCoreRelationship(conceptType)) return INDEX_STIX_CORE_RELATIONSHIPS;
   if (isStixSightingRelationship(conceptType)) return INDEX_STIX_SIGHTING_RELATIONSHIPS;
-  if (isStixCyberObservableRelationship(conceptType)) return INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS;
-  if (isStixMetaRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
+
+  // Use only META Index on new ref relationship
+  if (isStixRefRelationship(conceptType)) return INDEX_STIX_META_RELATIONSHIPS;
+
   throw DatabaseError(`Cant find index for type ${conceptType}`);
 };
 
@@ -322,7 +320,7 @@ export const generateDeleteMessage = (instance) => {
   return generateCreateDeleteMessage(EVENT_TYPE_DELETE, instance);
 };
 
-export const generateUpdateMessage = (inputs) => {
+export const generateUpdateMessage = (entityType, inputs) => {
   const inputsByOperations = R.groupBy((m) => m.operation ?? UPDATE_OPERATION_REPLACE, inputs);
   const patchElements = Object.entries(inputsByOperations);
   if (patchElements.length === 0) {
@@ -333,18 +331,18 @@ export const generateUpdateMessage = (inputs) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey;
-      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationsRefByInputName(key);
+      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationsRefByInputName(entityType, key);
       if (relationsRefDefinition) {
         convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
       } else {
-        const attributeDefinition = schemaAttributesDefinition.getAttribute(key);
+        const attributeDefinition = schemaAttributesDefinition.getAttribute(entityType, key);
         convertedKey = attributeDefinition.label ?? attributeDefinition.name;
       }
       const fromArray = Array.isArray(value) ? value : [value];
       const values = fromArray.slice(0, 3).filter((v) => isNotEmptyField(v));
       if (isNotEmptyField(values)) {
         // If update is based on internal ref, we need to extract the value
-        if (schemaRelationsRefDefinition.convertInputNameToStixName(key)) {
+        if (relationsRefDefinition) {
           message = values.map((val) => truncate(extractEntityRepresentative(val))).join(', ');
         } else if (key === creators.name) {
           message = 'itself'; // Creator special case

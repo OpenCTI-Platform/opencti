@@ -6,7 +6,7 @@ import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
-import StixCyberObservableRelationshipEditionOverview from './StixCyberObservableRelationshipEditionOverview';
+import StixNestedRefRelationshipEditionOverview from './StixNestedRefRelationshipEditionOverview';
 import Loader from '../../../../components/Loader';
 
 const styles = (theme) => ({
@@ -23,27 +23,19 @@ const styles = (theme) => ({
   },
 });
 
-const stixCyberObservableRelationshipEditionQuery = graphql`
-  query StixCyberObservableRelationshipEditionQuery($id: String!) {
-    stixCyberObservableRelationship(id: $id) {
-      ...StixCyberObservableRelationshipEditionOverview_stixCyberObservableRelationship
+const stixNestedRefRelationshipEditionQuery = graphql`
+  query StixNestedRefRelationshipEditionQuery($id: String!) {
+    stixRefRelationship(id: $id) {
+      ...StixNestedRefRelationshipEditionOverview_stixRefRelationship
     }
   }
 `;
 
-export const stixCyberObservableRelationshipEditionDeleteMutation = graphql`
-  mutation StixCyberObservableRelationshipEditionDeleteMutation($id: ID!) {
-    stixCyberObservableRelationshipEdit(id: $id) {
-      delete
-    }
-  }
-`;
-
-class StixCyberObservableRelationshipEdition extends Component {
+class StixNestedRefRelationshipEdition extends Component {
   render() {
     const {
       classes,
-      stixCyberObservableRelationshipId,
+      stixNestedRefRelationshipId,
       stixDomainObject,
       open,
       handleClose,
@@ -58,18 +50,16 @@ class StixCyberObservableRelationshipEdition extends Component {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose.bind(this)}
       >
-        {stixCyberObservableRelationshipId ? (
+        {stixNestedRefRelationshipId ? (
           <QueryRenderer
-            query={stixCyberObservableRelationshipEditionQuery}
-            variables={{ id: stixCyberObservableRelationshipId }}
+            query={stixNestedRefRelationshipEditionQuery}
+            variables={{ id: stixNestedRefRelationshipId }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableRelationshipEditionOverview
+                  <StixNestedRefRelationshipEditionOverview
                     stixDomainObject={stixDomainObject}
-                    stixCyberObservableRelationship={
-                      props.stixCyberObservableRelationship
-                    }
+                    stixRefRelationship={props.stixRefRelationship}
                     handleClose={handleClose.bind(this)}
                     handleDelete={
                       typeof handleDelete === 'function'
@@ -90,8 +80,8 @@ class StixCyberObservableRelationshipEdition extends Component {
   }
 }
 
-StixCyberObservableRelationshipEdition.propTypes = {
-  stixCyberObservableRelationshipId: PropTypes.string,
+StixNestedRefRelationshipEdition.propTypes = {
+  stixNestedRefRelationshipId: PropTypes.string,
   stixDomainObject: PropTypes.object,
   open: PropTypes.bool,
   handleClose: PropTypes.func,
@@ -104,4 +94,4 @@ StixCyberObservableRelationshipEdition.propTypes = {
 export default compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableRelationshipEdition);
+)(StixNestedRefRelationshipEdition);

@@ -1,4 +1,4 @@
-import { assoc, dissoc, filter } from 'ramda';
+import { dissoc, filter } from 'ramda';
 import { createHash } from 'node:crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { delEditContext, notify, setEditContext } from '../database/redis';
@@ -7,8 +7,6 @@ import {
   batchListThroughGetTo,
   batchLoadThroughGetTo,
   createEntity,
-  createRelation,
-  createRelations,
   deleteElementById,
   distributionEntities,
   listThroughGetFrom,
@@ -35,13 +33,12 @@ import {
 } from '../schema/stixCyberObservable';
 import {
   ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
   INPUT_CREATED_BY,
   INPUT_LABELS,
   INPUT_MARKINGS
 } from '../schema/general';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
+import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixRefRelationship';
 import { RELATION_BASED_ON, RELATION_HAS, RELATION_LOCATED_AT } from '../schema/stixCoreRelationship';
 import {
   ENTITY_TYPE_INDICATOR,
@@ -51,8 +48,10 @@ import {
 import { inputHashesToStix } from '../schema/fieldDataAdapter';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { now, observableValue } from '../utils/format';
-import { RELATION_CONTENT, RELATION_SERVICE_DLL } from '../schema/stixCyberObservableRelationship';
-import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipDeleteRelation
+} from './stixObjectOrStixRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
   return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
@@ -222,37 +221,14 @@ export const stixCyberObservableDelete = async (context, user, stixCyberObservab
   return stixCyberObservableId;
 };
 
+// region relation ref
 export const stixCyberObservableAddRelation = async (context, user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  if (!stixCyberObservable) {
-    throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
-  }
-  const finalInput = assoc('fromId', stixCyberObservableId, input);
-  return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixCyberObservableId, input, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
-
-export const stixCyberObservableAddRelations = async (context, user, stixCyberObservableId, input) => {
-  const stixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);
-  if (!stixCyberObservable) {
-    throw FunctionalError('Cannot add the relation, Stix-Cyber-Observable cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = input.toIds.map(
-    (n) => ({ fromId: stixCyberObservableId, toId: n, relationship_type: input.relationship_type })
-  );
-  await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE)
-    .then((entity) => notify(BUS_TOPICS[ABSTRACT_STIX_CYBER_OBSERVABLE].EDIT_TOPIC, entity, user));
-};
-
 export const stixCyberObservableDeleteRelation = async (context, user, stixCyberObservableId, toId, relationshipType) => {
   return stixObjectOrRelationshipDeleteRelation(context, user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
+// endregion
 
 export const stixCyberObservableEditField = async (context, user, stixCyberObservableId, input, opts = {}) => {
   const originalStixCyberObservable = await storeLoadById(context, user, stixCyberObservableId, ABSTRACT_STIX_CYBER_OBSERVABLE);

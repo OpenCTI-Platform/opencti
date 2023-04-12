@@ -52,7 +52,7 @@ export const countryEditionOverviewFocus = graphql`
 const countryMutationRelationAdd = graphql`
   mutation CountryEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     countryEdit(id: $id) {
       relationAdd(input: $input) {

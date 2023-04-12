@@ -201,7 +201,7 @@ describe('Incident resolver standard behavior', () => {
   });
   it('should add relation in Incident', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IncidentEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation IncidentEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         incidentEdit(id: $id) {
           relationAdd(input: $input) {
             id

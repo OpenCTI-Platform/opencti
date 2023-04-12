@@ -64,7 +64,7 @@ import { promoteObservableToIndicator } from '../domain/stixCyberObservable';
 import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { creatorFromHistory } from '../domain/log';
-import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST } from '../domain/task-common';
 
 // Task manager responsible to execute long manual tasks

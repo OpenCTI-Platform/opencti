@@ -71,7 +71,7 @@ const styles = (theme) => ({
 export const containerAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation ContainerAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     containerEdit(id: $id) {
       relationAdd(input: $input) {

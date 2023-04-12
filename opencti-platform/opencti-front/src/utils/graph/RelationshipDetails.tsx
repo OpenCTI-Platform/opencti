@@ -81,101 +81,177 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const relationshipDetailsQuery = graphql`
   query RelationshipDetailsQuery($id: String!) {
-    stixCoreRelationship(id: $id) {
+    stixRelationship(id: $id) {
       id
       entity_type
-      description
       parent_types
-      start_time
-      stop_time
-      created
-      created_at
-      confidence
-      relationship_type
-      from {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
-        }
-        ... on StixCoreRelationship {
-          relationship_type
-        }
-      }
-      to {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
-        }
-        ... on StixCoreRelationship {
-          relationship_type
-        }
-      }
-      created_at
-      createdBy {
-        ... on Identity {
-          id
-          name
-          entity_type
-        }
-      }
-      creators {
-        id
-        name
-      }
-      objectMarking {
-        edges {
-          node {
-            id
-            definition_type
-            definition
-            x_opencti_order
-            x_opencti_color
-          }
-        }
-      }
-      externalReferences {
-        edges {
-          node {
-            id
-            source_name
-            url
-            external_id
-            description
-          }
-        }
-      }
-      reports(first: 10) {
-        edges {
-          node {
+      ... on StixCoreRelationship {
+        description
+        start_time
+        stop_time
+        created
+        created_at
+        confidence
+        relationship_type
+        from {
+          ... on BasicObject {
             id
             entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        to {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        createdBy {
+          ... on Identity {
+            id
             name
-            description
-            published
-            report_types
-            createdBy {
-              ... on Identity {
-                id
-                name
-                entity_type
-              }
+            entity_type
+          }
+        }
+        creators {
+          id
+          name
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
             }
           }
         }
-        pageInfo {
-          globalCount
+        externalReferences {
+          edges {
+            node {
+              id
+              source_name
+              url
+              external_id
+              description
+            }
+          }
+        }
+        reports(first: 10) {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
+              published
+              report_types
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+            }
+          }
+          pageInfo {
+            globalCount
+          }
+        }
+      }
+      ... on StixRefRelationship {
+        start_time
+        stop_time
+        created_at
+        confidence
+        relationship_type
+        from {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        to {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
+          ... on StixCoreRelationship {
+            relationship_type
+          }
+        }
+        created_at
+        creators {
+          id
+          name
+        }
+        objectMarking {
+          edges {
+            node {
+              id
+              definition_type
+              definition
+              x_opencti_order
+              x_opencti_color
+            }
+          }
+        }
+        reports(first: 10) {
+          edges {
+            node {
+              id
+              entity_type
+              name
+              description
+              published
+              report_types
+              createdBy {
+                ... on Identity {
+                  id
+                  name
+                  entity_type
+                }
+              }
+            }
+          }
+          pageInfo {
+            globalCount
+          }
         }
       }
     }
@@ -195,17 +271,17 @@ RelationshipDetailsComponentProps
     relationshipDetailsQuery,
     queryRef,
   );
-  const { stixCoreRelationship } = entity;
+  const { stixRelationship } = entity;
   const [expanded, setExpanded] = useState(false);
-  const externalReferencesEdges = stixCoreRelationship?.externalReferences?.edges;
-  const reportsEdges = stixCoreRelationship?.reports?.edges;
+  const externalReferencesEdges = stixRelationship?.externalReferences?.edges;
+  const reportsEdges = stixRelationship?.reports?.edges;
   const expandable = externalReferencesEdges
     ? externalReferencesEdges.length > 3
     : false;
   const handleToggleExpand = () => {
     setExpanded(!expanded);
   };
-  if (!stixCoreRelationship) {
+  if (!stixRelationship) {
     return <ErrorNotFound />;
   }
   return (
@@ -217,25 +293,25 @@ RelationshipDetailsComponentProps
         classes={{ root: classes.chipInList }}
         style={{
           backgroundColor: hexToRGB(
-            itemColor(stixCoreRelationship.relationship_type),
+            itemColor(stixRelationship.relationship_type),
             0.08,
           ),
-          color: itemColor(stixCoreRelationship.relationship_type),
+          color: itemColor(stixRelationship.relationship_type),
           border: `1px solid ${itemColor(
-            stixCoreRelationship.relationship_type,
+            stixRelationship.relationship_type,
           )}`,
         }}
-        label={t(`relationship_${stixCoreRelationship.relationship_type}`)}
+        label={t(`relationship_${stixRelationship.relationship_type}`)}
       />
-      {!stixCoreRelationship.from.relationship_type
-        && stixCoreRelationship.from.id && (
+      {!stixRelationship.from?.relationship_type
+        && stixRelationship.from?.id && (
           <RelationShipFromAndTo
-            id={stixCoreRelationship.from.id}
+            id={stixRelationship.from?.id}
             direction={'From'}
           />
       )}
-      {stixCoreRelationship.from.relationship_type
-        && stixCoreRelationship.from.id && (
+      {stixRelationship.from?.relationship_type
+        && stixRelationship.from?.id && (
           <div>
             <Typography
               variant="h3"
@@ -244,18 +320,18 @@ RelationshipDetailsComponentProps
             >
               {t('Source')}
             </Typography>
-            {stixCoreRelationship.from.relationship_type}
+            {stixRelationship.from?.relationship_type}
           </div>
       )}
-      {!stixCoreRelationship.to.relationship_type
-        && stixCoreRelationship.to.id && (
+      {!stixRelationship.to?.relationship_type
+        && stixRelationship.to?.id && (
           <RelationShipFromAndTo
-            id={stixCoreRelationship.to.id}
+            id={stixRelationship.to?.id}
             direction={'To'}
           />
       )}
-      {stixCoreRelationship.to.relationship_type
-        && stixCoreRelationship.to.id && (
+      {stixRelationship.to?.relationship_type
+        && stixRelationship.to?.id && (
           <div>
             <Typography
               variant="h3"
@@ -264,28 +340,28 @@ RelationshipDetailsComponentProps
             >
               {t('Target')}
             </Typography>
-            {stixCoreRelationship.to.relationship_type}
+            {stixRelationship.to?.relationship_type}
           </div>
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creation date')}
       </Typography>
-      {fldt(stixCoreRelationship.created_at)}
+      {fldt(stixRelationship.created_at)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('First seen')}
       </Typography>
-      {fldt(stixCoreRelationship.start_time)}
+      {fldt(stixRelationship.start_time)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Last seen')}
       </Typography>
-      {fldt(stixCoreRelationship.stop_time)}
+      {fldt(stixRelationship.stop_time)}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Description')}
       </Typography>
-      {stixCoreRelationship.description
-      && stixCoreRelationship.description.length > 0 ? (
+      {stixRelationship.description
+      && stixRelationship.description.length > 0 ? (
         <ExpandableMarkdown
-          source={stixCoreRelationship.description}
+          source={stixRelationship.description}
           limit={400}
         />
         ) : (
@@ -294,18 +370,18 @@ RelationshipDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Confidence level')}
       </Typography>
-      {stixCoreRelationship.confidence ? (
-        <ItemConfidence confidence={stixCoreRelationship.confidence} entityType="stix-core-relationship" />
+      {stixRelationship.confidence ? (
+        <ItemConfidence confidence={stixRelationship.confidence} entityType="stix-core-relationship" />
       ) : (
         '-'
       )}
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Marking')}
       </Typography>
-      {stixCoreRelationship.objectMarking
-      && stixCoreRelationship.objectMarking.edges.length > 0 ? (
+      {stixRelationship.objectMarking
+      && stixRelationship.objectMarking.edges.length > 0 ? (
         <ItemMarkings
-          markingDefinitionsEdges={stixCoreRelationship.objectMarking.edges}
+          markingDefinitionsEdges={stixRelationship.objectMarking.edges}
           limit={2}
         />
         ) : (
@@ -314,12 +390,12 @@ RelationshipDetailsComponentProps
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Author')}
       </Typography>
-      <ItemAuthor createdBy={stixCoreRelationship.createdBy} />
+      <ItemAuthor createdBy={stixRelationship.createdBy} />
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {t('Creators')}
       </Typography>
       <div>
-        {(stixCoreRelationship.creators ?? []).map((c) => {
+        {(stixRelationship.creators ?? []).map((c) => {
           return (
             <div
               key={`creator-${c.id}`}
@@ -333,11 +409,11 @@ RelationshipDetailsComponentProps
       </div>
       <Typography variant="h3" gutterBottom={true} className={classes.label}>
         {`${t('Last')} ${
-          (stixCoreRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
+          (stixRelationship.reports?.pageInfo.globalCount ?? 0) >= 10
             ? 10
-            : stixCoreRelationship.reports?.pageInfo.globalCount
+            : stixRelationship.reports?.pageInfo.globalCount
         } ${t('reports')} ${t('of')} ${
-          stixCoreRelationship.reports?.pageInfo.globalCount
+          stixRelationship.reports?.pageInfo.globalCount
         }`}
       </Typography>
       {reportsEdges && reportsEdges.length > 0 && (

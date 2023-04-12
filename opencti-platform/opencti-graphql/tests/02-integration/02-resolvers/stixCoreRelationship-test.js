@@ -139,7 +139,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   });
   it('should add relation in stixCoreRelationship', async () => {
     const RELATION_ADD_QUERY = gql`
-        mutation StixCoreRelationshipEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+        mutation StixCoreRelationshipEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
             stixCoreRelationshipEdit(id: $id) {
                 relationAdd(input: $input) {
                     id

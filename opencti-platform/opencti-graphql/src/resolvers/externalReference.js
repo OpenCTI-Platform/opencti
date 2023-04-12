@@ -14,7 +14,7 @@ import {
 } from '../domain/externalReference';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
+import { RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 import { worksForSource } from '../domain/work';
 import { filesListing, loadFile } from '../database/file-storage';

@@ -12,7 +12,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import { buildRefRelationKey } from '../schema/general';
 
 const containerResolvers = {

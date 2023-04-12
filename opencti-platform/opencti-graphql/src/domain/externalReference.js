@@ -1,5 +1,4 @@
 import * as R from 'ramda';
-import { assoc } from 'ramda';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   createEntity,
@@ -12,10 +11,13 @@ import {
 } from '../database/middleware';
 import { internalLoadById, listEntities, storeLoadById } from '../database/middleware-loader';
 import conf, { BUS_TOPICS } from '../config/conf';
-import { ForbiddenAccess, FunctionalError, ValidationError } from '../config/errors';
+import { FunctionalError, ValidationError } from '../config/errors';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
-import { ABSTRACT_STIX_META_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
-import { isStixMetaRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixMetaRelationship';
+import {
+  ABSTRACT_STIX_REF_RELATIONSHIP,
+  buildRefRelationKey
+} from '../schema/general';
+import { isStixRefRelationship, RELATION_EXTERNAL_REFERENCE } from '../schema/stixRefRelationship';
 import { isEmptyField } from '../database/utils';
 import { BYPASS, BYPASS_REFERENCE } from '../utils/access';
 import { stixCoreObjectImportDelete } from './stixCoreObject';
@@ -67,17 +69,14 @@ export const externalReferenceDelete = async (context, user, externalReferenceId
 };
 
 export const externalReferenceAddRelation = async (context, user, externalReferenceId, input) => {
-  const data = await internalLoadById(context, user, externalReferenceId);
-  if (!data) {
+  const externalReference = await storeLoadById(context, user, externalReferenceId, ENTITY_TYPE_EXTERNAL_REFERENCE);
+  if (!externalReference) {
     throw FunctionalError('Cannot add the relation, External Reference cannot be found.');
   }
-  if (data.entity_type !== ENTITY_TYPE_EXTERNAL_REFERENCE) {
-    throw ForbiddenAccess();
+  if (!isStixRefRelationship(input.relationship_type)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = assoc('toId', externalReferenceId, input);
+  const finalInput = { ...input, toId: externalReferenceId };
   return createRelation(context, user, finalInput).then((relationData) => {
     return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, relationData, user);
   });
@@ -88,8 +87,8 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
   if (!externalReference) {
     throw FunctionalError('Cannot delete the relation, External-Reference cannot be found.');
   }
-  if (!isStixMetaRelationship(relationshipType)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be deleted through this method.`);
+  if (!isStixRefRelationship(relationshipType)) {
+    throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(
     context,
@@ -97,7 +96,7 @@ export const externalReferenceDeleteRelation = async (context, user, externalRef
     fromId,
     externalReferenceId,
     relationshipType,
-    ABSTRACT_STIX_META_RELATIONSHIP
+    ABSTRACT_STIX_REF_RELATIONSHIP
   );
   return notify(BUS_TOPICS[ENTITY_TYPE_EXTERNAL_REFERENCE].EDIT_TOPIC, externalReference, user);
 };

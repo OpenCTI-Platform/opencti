@@ -190,7 +190,7 @@ describe('Sector resolver standard behavior', () => {
   });
   it('should add relation in sector', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation SectorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation SectorEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         sectorEdit(id: $id) {
           relationAdd(input: $input) {
             id

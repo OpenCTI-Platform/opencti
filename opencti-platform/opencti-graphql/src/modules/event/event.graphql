@@ -201,6 +201,6 @@ type Mutation {
     eventFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Event @auth(for: [KNOWLEDGE_KNUPDATE])
     eventContextPatch(id: ID!, input: EditContext!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
     eventContextClean(id: ID!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
-    eventRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    eventRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     eventRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Event @auth(for: [KNOWLEDGE_KNUPDATE])
 }

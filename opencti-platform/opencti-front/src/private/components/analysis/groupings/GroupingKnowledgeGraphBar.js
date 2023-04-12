@@ -59,9 +59,10 @@ import { parseDomain } from '../../../../utils/Graph';
 import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableRelationshipCreation from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipCreation';
-import StixCyberObservableRelationshipEdition from '../../common/stix_cyber_observable_relationships/StixCyberObservableRelationshipEdition';
+import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
+import { isStixNestedRefRelationship } from '../../../../utils/Relation';
 
 const styles = () => ({
   bottomNav: {
@@ -240,14 +241,14 @@ class GroupingKnowledgeGraphBar extends Component {
     ) {
       this.setState({ openEditSighting: true });
     } else if (
-      (this.props.numberOfSelectedLinks === 1
-        && this.props.selectedLinks[0].parent_types.includes(
-          'stix-cyber-observable-relationship',
-        ))
-      || (this.props.numberOfSelectedNodes === 1
-        && this.props.selectedNodes[0].parent_types.includes(
-          'stix-cyber-observable-relationship',
-        ))
+      (
+        this.props.numberOfSelectedLinks === 1
+        && this.props.selectedLinks[0].parent_types.some((el) => isStixNestedRefRelationship(el))
+      )
+      || (
+        this.props.numberOfSelectedNodes === 1
+        && this.props.selectedNodes[0].parent_types.some((el) => isStixNestedRefRelationship(el))
+      )
     ) {
       this.setState({ openEditNested: true });
     }
@@ -366,7 +367,7 @@ class GroupingKnowledgeGraphBar extends Component {
         && numberOfSelectedNodes === 0
         && numberOfSelectedLinks === 1
         && selectedLinks.length === 1
-        && !selectedLinks[0].parent_types.includes('stix-meta-relationship'));
+        && !(selectedLinks[0].parent_types.includes('stix-ref-relationship') && !selectedLinks[0].datable));
     const fromSelectedTypes = numberOfSelectedNodes >= 2 && selectedNodes.length >= 2
       ? R.uniq(R.map((n) => n.entity_type, R.init(selectedNodes)))
       : [];
@@ -849,9 +850,9 @@ class GroupingKnowledgeGraphBar extends Component {
                   handleClose={this.handleCloseSightingEdition.bind(this)}
                   noStoreUpdate={true}
                 />
-                <StixCyberObservableRelationshipEdition
+                <StixNestedRefRelationshipEdition
                   open={openEditNested}
-                  stixCyberObservableRelationshipId={
+                  stixNestedRefRelationshipId={
                     (selectedNodes[0]?.id ?? null)
                     || (selectedLinks[0]?.id ?? null)
                   }
@@ -910,7 +911,7 @@ class GroupingKnowledgeGraphBar extends Component {
                   </Tooltip>
                 )}
                 {onAddRelation && (
-                  <StixCyberObservableRelationshipCreation
+                  <StixNestedRefRelationshipCreation
                     open={openCreatedNested}
                     fromObjects={relationFromObjects}
                     toObjects={relationToObjects}

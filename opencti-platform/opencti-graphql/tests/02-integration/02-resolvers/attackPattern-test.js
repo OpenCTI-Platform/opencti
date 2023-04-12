@@ -179,7 +179,7 @@ describe('AttackPattern resolver standard behavior', () => {
   });
   it('should add relation in attackPattern', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation AttackPatternEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation AttackPatternEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         attackPatternEdit(id: $id) {
           relationAdd(input: $input) {
             id

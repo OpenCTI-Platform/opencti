@@ -13,7 +13,7 @@ import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { CaseIncidentAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
-import { RELATION_OBJECT } from '../../../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 
 export const findById: DomainFindById<BasicStoreEntityCaseIncident> = (context: AuthContext, user: AuthUser, caseIncidentId: string) => {
   return storeLoadById(context, user, caseIncidentId, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);

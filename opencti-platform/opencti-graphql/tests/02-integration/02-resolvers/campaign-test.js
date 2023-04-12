@@ -203,7 +203,7 @@ describe('Campaign resolver standard behavior', () => {
   });
   it('should add relation in campaign', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CampaignEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation CampaignEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         campaignEdit(id: $id) {
           relationAdd(input: $input) {
             id

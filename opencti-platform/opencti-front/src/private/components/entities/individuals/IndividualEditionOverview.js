@@ -52,7 +52,7 @@ export const individualEditionOverviewFocus = graphql`
 const individualMutationRelationAdd = graphql`
   mutation IndividualEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     individualEdit(id: $id) {
       relationAdd(input: $input) {

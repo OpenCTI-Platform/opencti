@@ -260,6 +260,6 @@ type Mutation {
     groupingFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
     groupingContextPatch(id: ID!, input: EditContext): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
     groupingContextClean(id: ID!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
-    groupingRelationAdd(id: ID!, input: StixMetaRelationshipAddInput): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    groupingRelationAdd(id: ID!, input: StixRefRelationshipAddInput): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     groupingRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Grouping @auth(for: [KNOWLEDGE_KNUPDATE])
 }

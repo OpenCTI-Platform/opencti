@@ -93,12 +93,10 @@ import {
   storeMergeEvent,
   storeUpdateEvent,
 } from './redis';
-import { cleanStixIds, STIX_SPEC_VERSION, stixCyberObservableFieldsForType, } from './stix';
+import { cleanStixIds, STIX_SPEC_VERSION, } from './stix';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_CORE_RELATIONSHIP,
-  ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   ABSTRACT_STIX_OBJECT,
   ABSTRACT_STIX_RELATIONSHIP,
   BASE_TYPE_ENTITY,
@@ -117,24 +115,25 @@ import {
   RULE_PREFIX,
 } from '../schema/general';
 import { getParentTypes, isAnId } from '../schema/schemaUtils';
-import { INPUT_FROM, isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import {
+  INPUT_FROM,
+  isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+  STIX_REF_RELATIONSHIP_TYPES
+} from '../schema/stixRefRelationship';
 import {
-  ENTITY_TYPE_HISTORY,
-  ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_HISTORY, ENTITY_TYPE_STATUS,
   ENTITY_TYPE_USER,
   isDatedInternalObject,
   isInternalObject,
 } from '../schema/internalObject';
 import { isStixCoreObject, isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import {
   dateForEndAttributes,
   dateForLimitsAttributes,
@@ -143,7 +142,6 @@ import {
   isModifiedObject,
   isUpdatedAtObject,
   noReferenceAttributes,
-  statsDateAttributes,
 } from '../schema/fieldDataAdapter';
 import { isStixCoreRelationship, RELATION_REVOKED_BY } from '../schema/stixCoreRelationship';
 import {
@@ -170,17 +168,14 @@ import {
 } from '../schema/stixCyberObservable';
 import { BUS_TOPICS, logApp } from '../config/conf';
 import {
-  dayFormat,
   FROM_START,
   FROM_START_STR,
   mergeDeepRightAll,
-  monthFormat,
   now,
   prepareDate,
   UNTIL_END,
   UNTIL_END_STR,
   utcDate,
-  yearFormat,
 } from '../utils/format';
 import { checkObservableSyntax } from '../utils/syntax';
 import { deleteAllFiles, storeFileConverter, upload } from './file-storage';
@@ -196,12 +191,7 @@ import {
   userFilterStoreElements
 } from '../utils/access';
 import { isRuleUser, RULES_ATTRIBUTES_BEHAVIOR } from '../rules/rules';
-import {
-  instanceMetaRefsExtractor,
-  isSingleStixEmbeddedRelationship,
-  isSingleStixEmbeddedRelationshipInput,
-  isStixEmbeddedRelationship,
-} from '../schema/stixEmbeddedRelationship';
+import { instanceMetaRefsExtractor, isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { createEntityAutoEnrichment } from '../domain/enrichment';
 import { convertExternalReferenceToStix, convertStoreToStix, isTrustedStixId } from './stix-converter';
 import {
@@ -403,7 +393,7 @@ export const loadEntity = async (context, user, entityTypes, args = {}) => {
 const loadElementMetaDependencies = async (context, user, element, args = {}) => {
   const { onlyMarking = true } = args;
   const elementId = element.internal_id;
-  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : [ABSTRACT_STIX_META_RELATIONSHIP, ABSTRACT_STIX_CYBER_OBSERVABLE_RELATIONSHIP];
+  const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
   const refsRelations = await listAllRelations(context, user, relTypes, { fromId: elementId });
   const data = {};
@@ -412,7 +402,7 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
   const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
   if (refsRelations.length > 0) {
     // Build flatten view inside the data for stix meta
-    const grouped = R.groupBy((a) => schemaRelationsRefDefinition.convertDatabaseNameToInputName(a.entity_type), refsRelations);
+    const grouped = R.groupBy((a) => schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, a.entity_type), refsRelations);
     const entries = Object.entries(grouped);
     for (let index = 0; index < entries.length; index += 1) {
       const [key, values] = entries[index];
@@ -420,23 +410,22 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
         const resolvedElement = toResolved[v.toId];
         return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
       }, values).filter((d) => isNotEmptyField(d));
-      const metaRefKey = schemaRelationsRefDefinition.convertInputNameToDatabaseName(key);
-      data[key] = isSingleStixEmbeddedRelationship(metaRefKey)
-        ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
+      const metaRefKey = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, key);
+      data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
     }
   }
   return data;
 };
-const loadElementWithDependencies = async (context, user, element, args = {}) => {
-  const depsPromise = loadElementMetaDependencies(context, user, element, args);
+const loadElementWithDependencies = async (context, user, element, opts = {}) => {
+  const depsPromise = loadElementMetaDependencies(context, user, element, opts);
   const isRelation = element.base_type === BASE_TYPE_RELATION;
   if (isRelation) {
     // Load the relation from and to directly with the system user
     // Access right must be checked by hand in this case.
     // eslint-disable-next-line no-use-before-define
-    const fromPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.fromId, element.fromType, { onlyMarking: true });
+    const fromPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.fromId, { onlyMarking: true });
     // eslint-disable-next-line no-use-before-define
-    const toPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.toId, element.toType, { onlyMarking: true });
+    const toPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.toId, { onlyMarking: true });
     const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
     // Check relations consistency
     if (isEmptyField(from) || isEmptyField(to)) {
@@ -461,15 +450,16 @@ const loadElementWithDependencies = async (context, user, element, args = {}) =>
   const deps = await depsPromise;
   return R.mergeRight(element, { ...deps });
 };
-const loadByIdWithDependencies = async (context, user, id, type, args = {}) => {
-  const element = await internalLoadById(context, user, id, type);
+const loadByIdWithDependencies = async (context, user, id, opts = {}) => {
+  const element = await internalLoadById(context, user, id, opts);
   if (!element) return null;
-  return loadElementWithDependencies(context, user, element, args);
+  return loadElementWithDependencies(context, user, element, opts);
 };
 // Get element with every elements connected element -> rel -> to
 export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
-  const { type = null } = opts;
-  return loadByIdWithDependencies(context, user, id, type, { onlyMarking: false });
+  // When loading with explicit references, data must be loaded without internal rels
+  // As rels are here for search and sort there is some data that conflict after references explication resolutions
+  return loadByIdWithDependencies(context, user, id, { ...opts, onlyMarking: false, withoutRels: true });
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
@@ -577,14 +567,14 @@ export const distributionRelations = async (context, user, args) => {
 const TRX_CREATION = 'creation';
 const TRX_UPDATE = 'update';
 const TRX_IDLE = 'idle';
-const depsKeys = () => ([
+const depsKeys = (type) => ([
   ...depsKeysRegister.get(),
   ...[
     // Relationship
     { src: 'fromId', dst: 'from' },
     { src: 'toId', dst: 'to' },
     // Other meta refs
-    ...schemaRelationsRefDefinition.getInputNames().map((e) => ({ src: e })),
+    ...schemaRelationsRefDefinition.getInputNames(type).map((e) => ({ src: e })),
   ],
 ]);
 
@@ -601,7 +591,7 @@ const inputResolveRefs = async (context, user, input, type) => {
     const cleanedInput = { _index: inferIndexFromConceptType(type), ...input };
     let embeddedFromResolution;
     let forceAliases = false;
-    const dependencyKeys = depsKeys();
+    const dependencyKeys = depsKeys(type);
     for (let index = 0; index < dependencyKeys.length; index += 1) {
       const { src, dst, types } = dependencyKeys[index];
       const depTypes = types ?? [];
@@ -631,7 +621,7 @@ const inputResolveRefs = async (context, user, input, type) => {
         } else if (!expectedIds.includes(id)) {
           // If resolution is due to embedded ref, the from must be fully resolved
           // This will be used to generated a correct stream message
-          if (dst === INPUT_FROM && isStixEmbeddedRelationship(type)) {
+          if (dst === INPUT_FROM && isStixRefRelationship(type)) {
             embeddedFromResolution = id;
           } else {
             fetchingIds.push({ id, destKey, multiple: false });
@@ -808,11 +798,11 @@ const computeConfidenceLevel = (input) => {
   }
   return confidence;
 };
-const updatedInputsToData = (inputs) => {
+const updatedInputsToData = (instance, inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
     let val = value;
-    if (!isMultipleAttribute(key) && val) {
+    if (!isMultipleAttribute(instance.entity_type, key) && val) {
       val = R.head(value);
     }
     return { [key]: val };
@@ -822,12 +812,12 @@ const updatedInputsToData = (inputs) => {
 export const mergeInstanceWithInputs = (instance, inputs) => {
   // standard_id must be maintained
   // const inputsWithoutId = inputs.filter((i) => i.key !== ID_STANDARD);
-  const data = updatedInputsToData(inputs);
+  const data = updatedInputsToData(instance, inputs);
   const updatedInstance = R.mergeRight(instance, data);
   return R.reject(R.equals(null))(updatedInstance);
 };
 const partialInstanceWithInputs = (instance, inputs) => {
-  const inputData = updatedInputsToData(inputs);
+  const inputData = updatedInputsToData(instance, inputs);
   return {
     _index: instance._index,
     internal_id: instance.internal_id,
@@ -837,7 +827,7 @@ const partialInstanceWithInputs = (instance, inputs) => {
 };
 const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
   const { key, value, operation = UPDATE_OPERATION_REPLACE } = rawInput; // value can be multi valued
-  const isMultiple = isMultipleAttribute(key);
+  const isMultiple = isMultipleAttribute(instance.entity_type, key);
   let finalVal;
   let finalKey = key;
   if (isDictionaryAttribute(key)) {
@@ -922,7 +912,7 @@ const rebuildAndMergeInputFromExistingData = (rawInput, instance) => {
 };
 const mergeInstanceWithUpdateInputs = (instance, inputs) => {
   const updates = Array.isArray(inputs) ? inputs : [inputs];
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(), ...schemaRelationsRefDefinition.getInputNames()];
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(instance.entity_type), ...schemaRelationsRefDefinition.getInputNames(instance.entity_type)];
   const attributes = updates.filter((e) => !metaKeys.includes(e.key));
   const mergeInput = (input) => rebuildAndMergeInputFromExistingData(input, instance);
   const remappedInputs = R.map((i) => mergeInput(i), attributes);
@@ -973,7 +963,7 @@ const filterTargetByExisting = (sources, targets) => {
       return sameRelationType && sameTarget && noDate(t.i_relation);
     };
     const id = `${source.entity_type}-${source.internal_id}`;
-    const isSingleMeta = isSingleStixEmbeddedRelationship(source.i_relation.entity_type);
+    const isSingleMeta = isSingleRelationsRef(source.i_relation.fromType, source.i_relation.entity_type);
     if (!isSingleMeta && !R.find(finder, targets) && !cache.includes(id)) {
       filtered.push(source);
       cache.push(id);
@@ -1129,7 +1119,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   };
   await Promise.map(groupsOfRelsUpdate, concurrentRelsUpdate, { concurrency: ES_MAX_CONCURRENCY });
   const updatedRelations = updateConnections
-    .filter((u) => isStixRelationShipExceptMeta(u.entity_type))
+    .filter((u) => isStixRelationshipExceptRef(u.entity_type))
     .map((c) => c.standard_id);
   // Update all impacted entities
   logApp.info(`[OPENCTI] Merging impacting ${updateEntities.length} entities for ${targetEntity.internal_id}`);
@@ -1200,7 +1190,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
         value: [v],
       }));
       updateAttributes.push(...dictInputs);
-    } else if (isMultipleAttribute(targetFieldKey)) {
+    } else if (isMultipleAttribute(targetType, targetFieldKey)) {
       const sourceValues = fieldValues || [];
       // For aliased entities, get name of the source to add it as alias of the target
       if (targetFieldKey === ATTRIBUTE_ALIASES || targetFieldKey === ATTRIBUTE_ALIASES_OPENCTI) {
@@ -1350,7 +1340,7 @@ const checkAttributeConsistency = (entityType, key) => {
   if (key.startsWith(RULE_PREFIX)) {
     return;
   }
-  // Always ok for creator_id, need a stronger schena definition
+  // Always ok for creator_id, need a stronger schema definition
   // Waiting for merge of https://github.com/OpenCTI-Platform/opencti/issues/1850
   if (key === 'creator_id') {
     return;
@@ -1372,18 +1362,6 @@ const innerUpdateAttribute = (instance, rawInput) => {
   const input = rebuildAndMergeInputFromExistingData(rawInput, instance);
   if (R.isEmpty(input)) return [];
   const updatedInputs = [input];
-  // Adding dates elements
-  if (R.includes(key, statsDateAttributes)) {
-    const dayValue = dayFormat(R.head(input.value));
-    const monthValue = monthFormat(R.head(input.value));
-    const yearValue = yearFormat(R.head(input.value));
-    const dayInput = { key: `i_${key}_day`, value: [dayValue] };
-    updatedInputs.push(dayInput);
-    const monthInput = { key: `i_${key}_month`, value: [monthValue] };
-    updatedInputs.push(monthInput);
-    const yearInput = { key: `i_${key}_year`, value: [yearValue] };
-    updatedInputs.push(yearInput);
-  }
   // Specific case for Report
   if (instance.entity_type === ENTITY_TYPE_CONTAINER_REPORT && key === 'published') {
     const createdInput = { key: 'created', value: input.value };
@@ -1459,7 +1437,7 @@ const getPreviousInstanceValue = (key, instance) => {
   if (isEmptyField(data)) {
     return undefined;
   }
-  return isMultipleAttribute(key) ? data : [data];
+  return isMultipleAttribute(instance.entity_type, key) ? data : [data];
 };
 
 const updateDateRangeValidation = (instance, inputs, from, to) => {
@@ -1706,11 +1684,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (multiOperationKeys.length > 1) {
     throw UnsupportedError('We cant update the same attribute multiple times in the same operation');
   }
-  // Split attributes and meta
-  // Supports inputs meta or stix meta
-  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(), ...schemaRelationsRefDefinition.getInputNames()];
-  const meta = updates.filter((e) => metaKeys.includes(e.key));
-  const attributes = updates.filter((e) => !metaKeys.includes(e.key));
+
   // Load the element to update
   const initialPromise = storeLoadByIdWithRefs(context, user, id, { type });
   const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
@@ -1738,6 +1712,13 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
   if (updates.length === 0) {
     return { element: initial };
   }
+
+  // Split attributes and meta
+  // Supports inputs meta or stix meta
+  const metaKeys = [...schemaRelationsRefDefinition.getStixNames(initial.entity_type), ...schemaRelationsRefDefinition.getInputNames(initial.entity_type)];
+  const meta = updates.filter((e) => metaKeys.includes(e.key));
+  const attributes = updates.filter((e) => !metaKeys.includes(e.key));
+
   const updated = mergeInstanceWithUpdateInputs(initial, inputs);
   const keys = R.map((t) => t.key, attributes);
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
@@ -1855,11 +1836,12 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     const streamOpts = { publishStreamEvent: false, locks: participantIds };
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
-      const key = schemaRelationsRefDefinition.convertStixNameToInputName(metaKey) || metaKey;
+      const key = schemaRelationsRefDefinition.convertStixNameToInputName(updatedInstance.entity_type, metaKey) || metaKey;
+      const relDef = schemaRelationsRefDefinition.getRelationsRefByInputName(updatedInstance.entity_type, key);
+      const relType = relDef.databaseName;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
-      if (isSingleStixEmbeddedRelationshipInput(key)) {
-        const relType = schemaRelationsRefDefinition.convertInputNameToDatabaseName(key);
+      if (!relDef.multiple) {
         const currentValue = updatedInstance[key];
         const { value: refIds } = meta[metaIndex];
         const targetCreated = R.head(refIds);
@@ -1889,7 +1871,6 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
           }
         }
       } else {
-        const relType = schemaRelationsRefDefinition.convertInputNameToDatabaseName(key);
         // Special access check for RELATION_GRANTED_TO meta
         if (relType === RELATION_GRANTED_TO && !userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
           throw ForbiddenAccess();
@@ -1954,7 +1935,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     // endregion
     // Only push event in stream if modifications really happens
     if (updatedInputs.length > 0) {
-      const message = generateUpdateMessage(updatedInputs);
+      const message = generateUpdateMessage(updatedInstance.entity_type, updatedInputs);
       const isContainCommitReferences = opts.references && opts.references.length > 0;
       const commit = isContainCommitReferences ? {
         message: opts.commitMessage,
@@ -1965,7 +1946,10 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     }
     // Post-operation to update the individual linked to a user
     if (updatedInstance.entity_type === ENTITY_TYPE_USER) {
-      const args = { filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }], connectionFormat: false };
+      const args = {
+        filters: [{ key: 'contact_information', values: [updatedInstance.user_email] }],
+        connectionFormat: false
+      };
       const individuals = await listEntities(context, user, [ENTITY_TYPE_IDENTITY_INDIVIDUAL], args);
       if (individuals.length > 0) {
         const individualId = R.head(individuals).id;
@@ -2111,13 +2095,13 @@ const validateEntityAndRelationCreation = async (context, user, input, type, ent
 
 // region mutation relation
 const buildRelationInput = (input) => {
-  const { relationship_type: relationshipType } = input;
+  const { from, relationship_type: relationshipType } = input;
   // 03. Generate the ID
   const internalId = generateInternalId();
   const standardId = generateStandardId(relationshipType, input);
   // 05. Prepare the relation to be created
   const today = now();
-  let relationAttributes = {};
+  const relationAttributes = {};
   relationAttributes._index = inferIndexFromConceptType(relationshipType);
   // basic-relationship
   relationAttributes.internal_id = internalId;
@@ -2127,7 +2111,7 @@ const buildRelationInput = (input) => {
   relationAttributes.created_at = today;
   relationAttributes.updated_at = today;
   // stix-relationship
-  if (isStixRelationShipExceptMeta(relationshipType)) {
+  if (isStixRelationshipExceptRef(relationshipType)) {
     const stixIds = input.x_opencti_stix_ids || [];
     const haveStixId = isNotEmptyField(input.stix_id);
     if (haveStixId && input.stix_id !== standardId) {
@@ -2155,10 +2139,12 @@ const buildRelationInput = (input) => {
     }
   }
   // stix-observable-relationship
-  if (isStixCyberObservableRelationship(relationshipType)) {
+  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     relationAttributes.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    relationAttributes.created = R.isNil(input.created) ? today : input.created;
+    relationAttributes.modified = R.isNil(input.modified) ? today : input.modified;
     /* istanbul ignore if */
     if (relationAttributes.start_time > relationAttributes.stop_time) {
       throw DatabaseError('You cant create a relation with stop_time less than start_time', {
@@ -2180,21 +2166,6 @@ const buildRelationInput = (input) => {
         from: input.fromId,
         input,
       });
-    }
-  }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(relationAttributes);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (R.includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(relationAttributes[dataKeys[index]]);
-      const monthValue = monthFormat(relationAttributes[dataKeys[index]]);
-      const yearValue = yearFormat(relationAttributes[dataKeys[index]]);
-      relationAttributes = R.pipe(
-        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
-        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
-        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
-      )(relationAttributes);
     }
   }
   return { relation: relationAttributes };
@@ -2297,7 +2268,7 @@ const handleRelationTimeUpdate = (input, instance, startField, stopField) => {
 };
 const buildRelationTimeFilter = (input) => {
   const args = {};
-  const { relationship_type: relationshipType } = input;
+  const { from, relationship_type: relationshipType } = input;
   if (isStixCoreRelationship(relationshipType)) {
     if (!R.isNil(input.start_time)) {
       args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'months').utc());
@@ -2307,7 +2278,7 @@ const buildRelationTimeFilter = (input) => {
       args.stopTimeStart = prepareDate(moment(input.stop_time).subtract(1, 'months').utc());
       args.stopTimeStop = prepareDate(moment(input.stop_time).add(1, 'months').utc());
     }
-  } else if (isStixCyberObservableRelationship(relationshipType)) {
+  } else if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     if (!R.isNil(input.start_time)) {
       args.startTimeStart = prepareDate(moment(input.start_time).subtract(1, 'days').utc());
       args.startTimeStop = prepareDate(moment(input.start_time).add(1, 'days').utc());
@@ -2459,17 +2430,13 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   const buildInstanceRelTo = (to, relType) => buildInnerRelation(element, to, relType);
   // region generic elements
   // -- Upsert multiple refs for other stix elements
-  let metaInputFields;
-  if (isStixCyberObservable(type)) {
-    metaInputFields = stixCyberObservableFieldsForType(type);
-  } else {
-    metaInputFields = schemaRelationsRefDefinition.getRelationsRef(type)
-      .map((ref) => ref.inputName);
-  }
+  const metaInputFields = schemaRelationsRefDefinition.getRelationsRef(element.entity_type)
+    .map((ref) => ref.inputName);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    if (schemaRelationsRefDefinition.isMultipleName(inputField)) {
-      const relType = schemaRelationsRefDefinition.convertInputNameToDatabaseName(inputField);
+    const relDef = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, inputField);
+    if (relDef.multiple) {
+      const relType = relDef.databaseName;
       const existingInstances = element[relType] || [];
       const patchInputData = updatePatch[inputField] ?? [];
       const instancesToCreate = R.filter((m) => !existingInstances.includes(m.internal_id), patchInputData);
@@ -2532,7 +2499,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
       type: TRX_UPDATE,
       update: impactedInputs.length > 0 ? partialInstanceWithInputs(element, impactedInputs) : undefined, // For indexation
       element: updatedInstance,
-      message: generateUpdateMessage(patchInputs),
+      message: generateUpdateMessage(updatedInstance.entity_type, patchInputs),
       previous: resolvedInstance,
       relations: rawRelations, // Added meta relationships
     };
@@ -2568,7 +2535,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.created_at = today;
   data.updated_at = today;
   // stix-relationship
-  if (isStixRelationShipExceptMeta(relationshipType)) {
+  if (isStixRelationshipExceptRef(relationshipType)) {
     const stixIds = input.x_opencti_stix_ids || [];
     const haveStixId = isNotEmptyField(input.stix_id);
     if (haveStixId && input.stix_id !== standardId) {
@@ -2611,11 +2578,13 @@ const buildRelationData = async (context, user, input, opts = {}) => {
     }
   }
   // stix-observable-relationship
-  if (isStixCyberObservableRelationship(relationshipType)) {
+  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
     data.spec_version = STIX_SPEC_VERSION;
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    data.created = R.isNil(input.created) ? today : input.created;
+    data.modified = R.isNil(input.modified) ? today : input.modified;
     /* istanbul ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
@@ -2637,19 +2606,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
         from: input.fromId,
         input,
       });
-    }
-  }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(data);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (R.includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(data[dataKeys[index]]);
-      const monthValue = monthFormat(data[dataKeys[index]]);
-      const yearValue = yearFormat(data[dataKeys[index]]);
-      data[`i_${dataKeys[index]}_day`] = dayValue;
-      data[`i_${dataKeys[index]}_month`] = monthValue;
-      data[`i_${dataKeys[index]}_year`] = yearValue;
     }
   }
   // 04. Create the relation
@@ -2727,8 +2683,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
   // It's not possible to create a single ref relationship if one already exists
-  if (isSingleStixEmbeddedRelationship(relationshipType)) {
-    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(relationshipType);
+  if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
+    const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(resolvedInput.from.entity_type, relationshipType);
     if (isNotEmptyField(resolvedInput.from[key])) {
       const errorData = { from: input.fromId, to: input.toId, relationshipType };
       throw UnsupportedError('Cant add another relation on single ref', { error: errorData });
@@ -2768,7 +2724,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
         throw UnsupportedError('Restricted relation already exists');
       }
       // Meta single relation check
-      if (isSingleStixEmbeddedRelationship(relationshipType)) {
+      if (isSingleRelationsRef(resolvedInput.from.entity_type, relationshipType)) {
         // If relation already exist, we fail
         throw UnsupportedError('Relation cant be created (single cardinality)', {
           relationshipType,
@@ -2789,7 +2745,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       dataRel = await upsertElementRaw(context, user, existingRelationship, relationshipType, resolvedInput);
     } else {
       // Check cyclic reference consistency for embedded relationships before creation
-      if (isStixEmbeddedRelationship(relationshipType)) {
+      if (isStixRefRelationship(relationshipType)) {
         const toRefs = instanceMetaRefsExtractor(relationshipType, fromRule !== undefined, to);
         // We are using rel_ to resolve STIX embedded refs, but in some cases it's not a cyclic relationships
         // Checking the direction of the relation to allow relationships
@@ -2808,20 +2764,20 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     if (dataRel.type === TRX_CREATION) {
       // In case on embedded relationship creation, we need to dispatch
       // an update of the from entity that host this embedded ref.
-      if (isStixEmbeddedRelationship(relationshipType)) {
+      if (isStixRefRelationship(relationshipType)) {
         const previous = resolvedInput.from; // Complete resolution done by the input resolver
         const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
         const instance = R.clone(previous);
-        const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(relationshipType);
-        if (isSingleStixEmbeddedRelationship(relationshipType)) {
+        const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
+        if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
           const inputs = [{ key, value: [targetElement] }];
-          const message = generateUpdateMessage(inputs);
+          const message = generateUpdateMessage(instance.entity_type, inputs);
           // Generate the new version of the from
           instance[key] = targetElement;
           event = await storeUpdateEvent(context, user, previous, instance, message, opts);
         } else {
           const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
-          const message = generateUpdateMessage(inputs);
+          const message = generateUpdateMessage(instance.entity_type, inputs);
           // Generate the new version of the from
           instance[key] = [...(instance[key] ?? []), targetElement];
           event = await storeUpdateEvent(context, user, previous, instance, message, opts);
@@ -2903,7 +2859,7 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc('creator_id', [user.internal_id]),
     R.dissoc('update'),
     R.dissoc('file'),
-    R.omit(schemaRelationsRefDefinition.getInputNames()),
+    R.omit(schemaRelationsRefDefinition.getInputNames(input.entity_type)),
   )(input);
   if (inferred) {
     // Simply add the rule
@@ -2963,21 +2919,6 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     }
     data = R.assoc(INTERNAL_IDS_ALIASES, generateAliasesIdsForInstance(data), data);
   }
-  // Add the additional fields for dates (day, month, year)
-  const dataKeys = Object.keys(data);
-  for (let index = 0; index < dataKeys.length; index += 1) {
-    // Adding dates elements
-    if (R.includes(dataKeys[index], statsDateAttributes)) {
-      const dayValue = dayFormat(data[dataKeys[index]]);
-      const monthValue = monthFormat(data[dataKeys[index]]);
-      const yearValue = yearFormat(data[dataKeys[index]]);
-      data = R.pipe(
-        R.assoc(`i_${dataKeys[index]}_day`, dayValue),
-        R.assoc(`i_${dataKeys[index]}_month`, monthValue),
-        R.assoc(`i_${dataKeys[index]}_year`, yearValue)
-      )(data);
-    }
-  }
   // Create the meta relationships (ref, refs)
   const relToCreate = [];
   const isSegregationEntity = !STIX_ORGANIZATIONS_UNRESTRICTED.some((o) => getParentTypes(data.entity_type).includes(o));
@@ -2999,11 +2940,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   };
   // For meta stix core && meta observables
   if (isStixCoreObject(type) || isStixCyberObservable(type)) {
-    const inputFields = schemaRelationsRefDefinition.getInputNames();
+    const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
     for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
       const inputField = inputFields[fieldIndex];
-      const relType = schemaRelationsRefDefinition.convertInputNameToDatabaseName(inputField);
-      appendMetaRelationships(inputField, relType);
+      appendMetaRelationships(inputField.inputName, inputField.databaseName);
     }
   }
 
@@ -3225,19 +3165,19 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
   try {
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
-    if (isStixEmbeddedRelationship(element.entity_type)) {
+    if (isStixRefRelationship(element.entity_type)) {
       const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
-      const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type);
       const instance = R.clone(previous);
+      const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, element.entity_type);
       let message;
-      if (isSingleStixEmbeddedRelationship(element.entity_type)) {
+      if (isSingleRelationsRef(instance.entity_type, element.entity_type)) {
         const inputs = [{ key, value: [] }];
-        message = generateUpdateMessage(inputs);
+        message = generateUpdateMessage(instance.entity_type, inputs);
         instance[key] = undefined; // Generate the new version of the from
       } else {
         const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_REMOVE }];
-        message = generateUpdateMessage(inputs);
+        message = generateUpdateMessage(instance.entity_type, inputs);
         // To prevent to many patch operations, removed key must be put at the end
         const withoutElementDeleted = (previous[key] ?? []).filter((e) => e.internal_id !== targetElement.internal_id);
         previous[key] = [...withoutElementDeleted, targetElement];
@@ -3346,17 +3286,17 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   if (R.isNil(scopeType) || R.isNil(fromId) || R.isNil(toId)) {
     throw FunctionalError('You need to specify a scope type when deleting a relation with from and to');
   }
-  const fromThing = await internalLoadById(context, user, fromId, opts.type);
+  const fromThing = await internalLoadById(context, user, fromId, opts);
   // Check mandatory attribute
   const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
   const attributesMandatory = await getMandatoryAttributesForSetting(context, entitySetting);
   if (attributesMandatory.length > 0) {
-    const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(relationshipType));
+    const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromThing.entity_type, relationshipType));
     if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {
       throw ValidationError(attribute, { message: 'This attribute is mandatory', attribute });
     }
   }
-  const toThing = await internalLoadById(context, user, toId, opts.type);
+  const toThing = await internalLoadById(context, user, toId, opts);
   // Looks like the caller doesnt give the correct from, to currently
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {

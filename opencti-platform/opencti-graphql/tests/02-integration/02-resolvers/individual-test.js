@@ -164,7 +164,7 @@ describe('Individual resolver standard behavior', () => {
   });
   it('should add relation in individual', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation IndividualEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation IndividualEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         individualEdit(id: $id) {
           relationAdd(input: $input) {
             id

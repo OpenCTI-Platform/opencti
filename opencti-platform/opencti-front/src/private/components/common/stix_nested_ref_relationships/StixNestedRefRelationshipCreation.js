@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
@@ -13,12 +13,11 @@ import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Close, ArrowRightAlt } from '@mui/icons-material';
-import { fetchQuery, commitMutation } from '../../../../relay/environment';
+import { ArrowRightAlt, Close } from '@mui/icons-material';
+import { commitMutation, fetchQuery, QueryRenderer } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { parse } from '../../../../utils/Time';
-import { resolveStixCyberObservableRelationshipsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
 import { truncate } from '../../../../utils/String';
@@ -134,12 +133,21 @@ const styles = (theme) => ({
   },
 });
 
-export const stixCyberObservableRelationshipCreationQuery = graphql`
-  query StixCyberObservableRelationshipCreationQuery(
+const stixNestedRefRelationshipCreationResolveQuery = graphql`
+  query StixNestedRefRelationshipCreationResolveQuery($id: String!, $toType: String!) {
+    stixSchemaRefRelationships(id: $id, toType: $toType) {
+      from
+      to
+    }
+  }
+`;
+
+export const stixNestedRefRelationshipCreationQuery = graphql`
+  query StixNestedRefRelationshipCreationQuery(
     $fromId: StixRef!
     $toId: StixRef!
   ) {
-    stixCyberObservableRelationships(fromId: $fromId, toId: $toId) {
+    stixNestedRefRelationships(fromId: $fromId, toId: $toId) {
       edges {
         node {
           id
@@ -160,7 +168,7 @@ export const stixCyberObservableRelationshipCreationQuery = graphql`
               entity_type
               parent_types
             }
-            ... on StixCyberObservableRelationship {
+            ... on StixRefRelationship {
               relationship_type
             }
           }
@@ -198,11 +206,11 @@ export const stixCyberObservableRelationshipCreationQuery = graphql`
   }
 `;
 
-const stixCyberObservableRelationshipCreationMutation = graphql`
-  mutation StixCyberObservableRelationshipCreationMutation(
-    $input: StixCyberObservableRelationshipAddInput!
+const stixNestedRefRelationshipCreationMutation = graphql`
+  mutation StixNestedRefRelationshipCreationMutation(
+    $input: StixRefRelationshipAddInput!
   ) {
-    stixCyberObservableRelationshipAdd(input: $input) {
+    stixRefRelationshipAdd(input: $input) {
       id
       entity_type
       parent_types
@@ -221,7 +229,7 @@ const stixCyberObservableRelationshipCreationMutation = graphql`
           entity_type
           parent_types
         }
-        ... on StixCyberObservableRelationship {
+        ... on StixRefRelationship {
           relationship_type
         }
       }
@@ -242,6 +250,7 @@ const stixCyberObservableRelationshipCreationMutation = graphql`
       }
       created_at
       updated_at
+      created
       objectMarking {
         edges {
           node {
@@ -257,7 +266,7 @@ const stixCyberObservableRelationshipCreationMutation = graphql`
   }
 `;
 
-const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
+const stixNestedRefRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   confidence: Yup.number()
     .typeError(t('The value must be a number'))
@@ -272,7 +281,7 @@ const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
 });
 
-class StixCyberObservableRelationshipCreation extends Component {
+class StixNestedRefRelationshipCreation extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -299,14 +308,14 @@ class StixCyberObservableRelationshipCreation extends Component {
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
         )(values);
         commitMutation({
-          mutation: stixCyberObservableRelationshipCreationMutation,
+          mutation: stixNestedRefRelationshipCreationMutation,
           variables: {
             input: finalValues,
           },
           setSubmitting,
           onCompleted: (response) => {
             this.props.handleResult(
-              response.stixCyberObservableRelationshipAdd,
+              response.stixRefRelationshipAdd,
             );
           },
         });
@@ -330,7 +339,7 @@ class StixCyberObservableRelationshipCreation extends Component {
         this.props.fromObjects.length === 1
         && this.props.toObjects.length === 1
       ) {
-        fetchQuery(stixCyberObservableRelationshipCreationQuery, {
+        fetchQuery(stixNestedRefRelationshipCreationQuery, {
           fromId: this.props.fromObjects[0].id,
           toId: this.props.toObjects[0].id,
         })
@@ -338,11 +347,11 @@ class StixCyberObservableRelationshipCreation extends Component {
           .then((data) => {
             this.setState({
               step:
-                data.stixCyberObservableRelationships.edges
-                && data.stixCyberObservableRelationships.edges.length > 0
+                data.stixNestedRefRelationships.edges
+                && data.stixNestedRefRelationships.edges.length > 0
                   ? 1
                   : 2,
-              existingRelations: data.stixCyberObservableRelationships.edges,
+              existingRelations: data.stixNestedRefRelationships.edges,
             });
           });
       } else {
@@ -369,7 +378,7 @@ class StixCyberObservableRelationshipCreation extends Component {
     this.props.handleClose();
   }
 
-  renderForm() {
+  renderForm(resolveEntityRef) {
     const {
       t,
       classes,
@@ -380,14 +389,9 @@ class StixCyberObservableRelationshipCreation extends Component {
       stopTime,
       defaultMarkingDefinitions,
     } = this.props;
-    const relationshipTypes = resolveStixCyberObservableRelationshipsTypes(
-      fromObjects[0].entity_type,
-      toObjects[0].entity_type,
-    );
+    const relationshipTypes = resolveEntityRef.from;
     // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = R.head(relationshipTypes)
-      ? R.head(relationshipTypes)
-      : '';
+    const defaultRelationshipType = R.head(relationshipTypes);
     const defaultConfidence = confidence || 15;
     const defaultStartTime = !isNone(startTime) ? startTime : null;
     const defaultEndTime = !isNone(stopTime) ? stopTime : null;
@@ -411,7 +415,7 @@ class StixCyberObservableRelationshipCreation extends Component {
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={stixCyberObservableRelationshipValidation(t)}
+        validationSchema={stixNestedRefRelationshipValidation(t)}
         onSubmit={this.onSubmit.bind(this)}
       >
         {({ submitForm, isSubmitting }) => (
@@ -855,13 +859,30 @@ class StixCyberObservableRelationshipCreation extends Component {
           ? this.renderLoader()
           : ''}
         {step === 1 ? this.renderSelectRelation() : ''}
-        {step === 2 ? this.renderForm() : ''}
+        {step === 2 ? <QueryRenderer
+            query={stixNestedRefRelationshipCreationResolveQuery}
+            variables={{
+              id: this.props.fromObjects[0].id,
+              toType: this.props.toObjects[0].entity_type,
+            }}
+            render={({ props }) => {
+              if (props && props.stixSchemaRefRelationships) {
+                return (
+                  <div>
+                    {this.renderForm(props.stixSchemaRefRelationships)}
+                  </div>
+                );
+              }
+              return this.renderLoader();
+            }}
+          />
+          : ''}
       </Drawer>
     );
   }
 }
 
-StixCyberObservableRelationshipCreation.propTypes = {
+StixNestedRefRelationshipCreation.propTypes = {
   open: PropTypes.bool,
   fromObjects: PropTypes.object,
   toObjects: PropTypes.array,
@@ -882,4 +903,4 @@ export default R.compose(
   inject18n,
   withTheme,
   withStyles(styles),
-)(StixCyberObservableRelationshipCreation);
+)(StixNestedRefRelationshipCreation);

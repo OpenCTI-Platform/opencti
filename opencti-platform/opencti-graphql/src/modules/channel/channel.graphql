@@ -198,6 +198,6 @@ type Mutation {
     channelFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
     channelContextPatch(id: ID!, input: EditContext!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
     channelContextClean(id: ID!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
-    channelRelationAdd(id: ID!, input: StixMetaRelationshipAddInput!): StixMetaRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+    channelRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
     channelRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
 }

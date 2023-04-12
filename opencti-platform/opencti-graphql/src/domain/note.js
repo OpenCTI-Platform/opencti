@@ -7,7 +7,7 @@ import { ENTITY_TYPE_CONTAINER_NOTE } from '../schema/stixDomainObject';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey } from '../schema/general';
 import { now } from '../utils/format';
 import { isStixId } from '../schema/schemaUtils';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_DOMAIN_OBJECTS } from '../database/utils';
 

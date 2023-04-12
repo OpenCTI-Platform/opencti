@@ -4,7 +4,7 @@ import {
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING
-} from './stixMetaRelationship';
+} from './stixRefRelationship';
 import { RELATION_INDICATES } from './stixCoreRelationship';
 
 export const stixDomainObjectOptions = {

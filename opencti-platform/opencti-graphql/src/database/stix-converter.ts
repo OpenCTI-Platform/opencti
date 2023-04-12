@@ -34,15 +34,9 @@ import {
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
   INPUT_VALUES,
-  isStixCyberObservableRelationship
-} from '../schema/stixCyberObservableRelationship';
-import {
-  ENTITY_TYPE_EXTERNAL_REFERENCE,
-  ENTITY_TYPE_KILL_CHAIN_PHASE,
-  ENTITY_TYPE_LABEL,
-  ENTITY_TYPE_MARKING_DEFINITION,
-  isStixMetaObject
-} from '../schema/stixMetaObject';
+  RELATION_OBJECT_MARKING
+} from '../schema/stixRefRelationship';
+import { ENTITY_TYPE_EXTERNAL_REFERENCE, ENTITY_TYPE_KILL_CHAIN_PHASE, ENTITY_TYPE_LABEL, ENTITY_TYPE_MARKING_DEFINITION, isStixMetaObject } from '../schema/stixMetaObject';
 import type * as S from '../types/stix-common';
 import type * as SDO from '../types/stix-sdo';
 import type * as SRO from '../types/stix-sro';
@@ -104,17 +98,7 @@ import {
   isStixCyberObservable
 } from '../schema/stixCyberObservable';
 import { STIX_EXT_MITRE, STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
-import {
-  INPUT_ASSIGNEE,
-  INPUT_CREATED_BY,
-  INPUT_EXTERNAL_REFS,
-  INPUT_GRANTED_REFS,
-  INPUT_KILLCHAIN,
-  INPUT_LABELS,
-  INPUT_MARKINGS,
-  INPUT_OBJECTS
-} from '../schema/general';
-import { isStixMetaRelationship, RELATION_OBJECT_MARKING } from '../schema/stixMetaRelationship';
+import { INPUT_ASSIGNEE, INPUT_CREATED_BY, INPUT_EXTERNAL_REFS, INPUT_GRANTED_REFS, INPUT_KILLCHAIN, INPUT_LABELS, INPUT_MARKINGS, INPUT_OBJECTS } from '../schema/general';
 import { FROM_START, FROM_START_STR, hashValue, UNTIL_END, UNTIL_END_STR } from '../utils/format';
 import { isRelationBuiltin } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
@@ -136,7 +120,7 @@ export const convertTypeToStixType = (type: string): string => {
   if (type.toLowerCase() === ENTITY_HASHED_OBSERVABLE_STIX_FILE.toLowerCase()) {
     return 'file';
   }
-  if (isStixCoreRelationship(type) || isStixMetaRelationship(type)) {
+  if (isStixCoreRelationship(type)) {
     return 'relationship';
   }
   if (isStixSightingRelationship(type)) {
@@ -1315,14 +1299,8 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
     if (isStixCoreRelationship(type)) {
       return convertRelationToStix(basic);
     }
-    if (isStixCyberObservableRelationship(type)) {
-      return convertRelationToStix(basic);
-    }
     if (isStixSightingRelationship(type)) {
       return convertSightingToStix(basic);
-    }
-    if (isStixMetaRelationship(type)) {
-      return convertRelationToStix(basic);
     }
     throw UnsupportedError(`No relation converter available for ${type}`);
   }

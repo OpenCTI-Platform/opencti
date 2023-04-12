@@ -165,7 +165,7 @@ describe('Organization resolver standard behavior', () => {
   });
   it('should add relation in organization', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation OrganizationEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation OrganizationEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         organizationEdit(id: $id) {
           relationAdd(input: $input) {
             id

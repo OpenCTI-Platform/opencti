@@ -29,7 +29,7 @@ const styles = (theme) => ({
 export const externalReferenceLinesMutationRelationAdd = graphql`
   mutation AddExternalReferencesLinesRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     externalReferenceEdit(id: $id) {
       relationAdd(input: $input) {

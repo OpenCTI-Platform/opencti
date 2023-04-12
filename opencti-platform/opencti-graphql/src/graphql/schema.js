@@ -23,10 +23,8 @@ import stixDomainObjectResolvers from '../resolvers/stixDomainObject';
 import stixCyberObservableResolvers from '../resolvers/stixCyberObservable';
 import internalRelationshipResolvers from '../resolvers/internalRelationship';
 import stixRelationshipResolvers from '../resolvers/stixRelationship';
-import stixMetaRelationshipResolvers from '../resolvers/stixMetaRelationship';
 import stixCoreRelationshipResolvers from '../resolvers/stixCoreRelationship';
 import stixSightingRelationshipResolvers from '../resolvers/stixSightingRelationship';
-import stixCyberObservableRelationResolvers from '../resolvers/stixCyberObservableRelationship';
 import identityResolvers from '../resolvers/identity';
 import individualResolvers from '../resolvers/individual';
 import userResolvers from '../resolvers/user';
@@ -72,19 +70,20 @@ import statusResolvers from '../resolvers/status';
 import ruleResolvers from '../resolvers/rule';
 import stixResolvers from '../resolvers/stix';
 import { isSupportedStixType } from '../schema/identifier';
+import stixRefRelationshipResolvers from '../resolvers/stixRefRelationship';
 
 const schemaTypeDefs = [globalTypeDefs];
 
 const validateStixId = (stixId) => {
   if (!stixId.includes('--')) {
-    throw new UserInputError('Provided value is not a valid STIX ID');
+    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID`);
   }
   const [type, uuid] = stixId.split('--');
   if (!isSupportedStixType(type.replace('x-mitre-', ''))) {
-    throw new UserInputError('Provided value is not a valid STIX ID (type not supported)');
+    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID (type ${type} not supported)`);
   }
   if (!uuidValidate(uuid)) {
-    throw new UserInputError('Provided value is not a valid STIX ID (UUID not valid)');
+    throw new UserInputError(`Provided value ${stixId} is not a valid STIX ID (UUID not valid)`);
   }
   return stixId;
 };
@@ -210,14 +209,12 @@ const schemaResolvers = [
   internalRelationshipResolvers,
   // STIX RELATIONSHIPS
   stixRelationshipResolvers,
-  // STIX META RELATIONSHIPS
-  stixMetaRelationshipResolvers,
   // STIX CORE RELATIONSHIPS
   stixCoreRelationshipResolvers,
   // STIX SIGHTING RELATIONSHIPS
   stixSightingRelationshipResolvers,
-  // STIX CYBER OBSERVABLE RELATIONSHIPS
-  stixCyberObservableRelationResolvers,
+  // STIX REF RELATIONSHIPS
+  stixRefRelationshipResolvers,
   // ALL
   organizationOrIndividualResolvers,
   stixObjectOrStixRelationshipResolvers,

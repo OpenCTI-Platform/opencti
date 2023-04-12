@@ -162,7 +162,7 @@ describe('City resolver standard behavior', () => {
   });
   it('should add relation in city', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CityEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation CityEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         cityEdit(id: $id) {
           relationAdd(input: $input) {
             id

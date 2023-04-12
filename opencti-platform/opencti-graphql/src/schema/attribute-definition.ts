@@ -152,28 +152,6 @@ export const updatedAt: AttributeDefinition = {
   upsert: false
 };
 
-export const IcreatedAtDay: AttributeDefinition = {
-  name: 'i_created_at_day',
-  type: 'date',
-  mandatoryType: 'no',
-  multiple: false,
-  upsert: false
-};
-export const IcreatedAtMonth: AttributeDefinition = {
-  name: 'i_created_at_month',
-  type: 'date',
-  mandatoryType: 'no',
-  multiple: false,
-  upsert: false
-};
-export const IcreatedAtYear: AttributeDefinition = {
-  name: 'i_created_at_year',
-  type: 'string', // Should be date ?
-  mandatoryType: 'no',
-  multiple: false,
-  upsert: false
-};
-
 // OTHERS
 
 export const revoked: AttributeDefinition = {

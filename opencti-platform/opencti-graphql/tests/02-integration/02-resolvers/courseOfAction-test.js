@@ -167,7 +167,7 @@ describe('CourseOfAction resolver standard behavior', () => {
   });
   it('should add relation in courseOfAction', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation CourseOfActionEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation CourseOfActionEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         courseOfActionEdit(id: $id) {
           relationAdd(input: $input) {
             id

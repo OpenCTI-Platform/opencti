@@ -11,7 +11,7 @@ import { countAllThings, internalLoadById, listEntities, storeLoadById } from '.
 import { BUS_TOPICS } from '../config/conf';
 import { notify } from '../database/redis';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../schema/stixDomainObject';
-import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_CREATED_BY, RELATION_OBJECT } from '../schema/stixRefRelationship';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
   ABSTRACT_STIX_DOMAIN_OBJECT,

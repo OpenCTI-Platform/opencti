@@ -51,7 +51,7 @@ export const cityEditionOverviewFocus = graphql`
 const cityMutationRelationAdd = graphql`
   mutation CityEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput!
+    $input: StixRefRelationshipAddInput!
   ) {
     cityEdit(id: $id) {
       relationAdd(input: $input) {

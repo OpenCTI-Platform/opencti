@@ -59,7 +59,7 @@ export const intrusionSetEditionOverviewFocus = graphql`
 const intrusionSetMutationRelationAdd = graphql`
   mutation IntrusionSetEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     intrusionSetEdit(id: $id) {
       relationAdd(input: $input) {

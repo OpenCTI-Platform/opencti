@@ -28,18 +28,14 @@ import {
 import { BYPASS, executionContext, isUserCanAccessStixElement, SYSTEM_USER } from '../utils/access';
 import { FROM_START_STR, utcDate } from '../utils/format';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
-import {
-  ABSTRACT_STIX_CORE_RELATIONSHIP,
-  buildRefRelationKey,
-  ENTITY_TYPE_CONTAINER
-} from '../schema/general';
+import { ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey, ENTITY_TYPE_CONTAINER } from '../schema/general';
 import { convertStoreToStix } from '../database/stix-converter';
 import { UnsupportedError } from '../config/errors';
 import { convertFiltersToQueryOptions, isStixMatchFilters } from '../utils/filtering';
 import { getParentTypes } from '../schema/schemaUtils';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { listAllRelations, listEntities } from '../database/middleware-loader';
-import { RELATION_OBJECT } from '../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_STREAM_COLLECTION } from '../schema/internalObject';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';

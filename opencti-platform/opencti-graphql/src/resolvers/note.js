@@ -24,7 +24,7 @@ import {
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import { buildRefRelationKey, KNOWLEDGE_COLLABORATION, KNOWLEDGE_UPDATE } from '../schema/general';
 import { BYPASS, isUserHasCapability } from '../utils/access';
 import { ForbiddenAccess } from '../config/errors';

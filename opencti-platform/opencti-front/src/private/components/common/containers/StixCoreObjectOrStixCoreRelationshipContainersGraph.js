@@ -995,7 +995,7 @@ const StixCoreObjectOrStixCoreRelationshipContainersGraph = createRefetchContain
                     }
                   }
                 }
-                ... on StixMetaRelationship {
+                ... on StixRefRelationship {
                   created_at
                 }
                 ... on StixCoreRelationship {

@@ -35,14 +35,14 @@ import {
   UnsupportedError
 } from '../config/errors';
 import {
-  isStixMetaRelationship,
+  isStixRefRelationship,
   RELATION_CREATED_BY,
   RELATION_GRANTED_TO,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT_ASSIGNEE,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import {
   ABSTRACT_BASIC_RELATIONSHIP,
   BASE_TYPE_RELATION,
@@ -69,17 +69,17 @@ import {
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
 import { isStixObject } from '../schema/stixCoreObject';
-import { isBasicRelationship, isStixRelationShipExceptMeta } from '../schema/stixRelationship';
+import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import { BYPASS } from '../utils/access';
-import { isSingleStixEmbeddedRelationship, } from '../schema/stixEmbeddedRelationship';
+import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { getEntityFromCache } from './cache';
 import { ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { telemetry } from '../config/tracing';
-import { isBooleanAttribute, isDateNumericOrBooleanAttribute, isMultipleAttribute } from '../schema/schema-attributes';
+import { isBooleanAttribute, isDateNumericOrBooleanAttribute } from '../schema/schema-attributes';
 import { convertTypeToStixType } from './stix-converter';
 
 const ELK_ENGINE = 'elk';
@@ -695,7 +695,7 @@ const elBuildRelation = (type, connection) => {
 };
 const elMergeRelation = (concept, fromConnection, toConnection) => {
   if (!fromConnection || !toConnection) {
-    throw DatabaseError('[SEARCH] Something fail in reconstruction of the relation', concept.internal_id);
+    throw DatabaseError('[SEARCH] Something failed in reconstruction of the relation', concept.internal_id);
   }
   const from = elBuildRelation('from', fromConnection);
   from.source_ref = `${convertTypeToStixType(from.fromType)}--temporary`;
@@ -715,7 +715,7 @@ export const elRebuildRelation = (concept) => {
   }
   return concept;
 };
-const elDataConverter = (esHit) => {
+const elDataConverter = (esHit, withoutRels = false) => {
   const elementData = esHit._source;
   const data = {
     _index: esHit._index,
@@ -738,9 +738,13 @@ const elDataConverter = (esHit) => {
       data[key] = val;
     } else if (key.startsWith(REL_INDEX_PREFIX)) {
       // Rebuild rel to stix attributes
-      const rel = key.substring(REL_INDEX_PREFIX.length);
-      const [relType] = rel.split('.');
-      data[relType] = isSingleStixEmbeddedRelationship(relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
+      if (withoutRels) {
+        delete data[key];
+      } else {
+        const rel = key.substring(REL_INDEX_PREFIX.length);
+        const [relType] = rel.split('.');
+        data[relType] = isSingleRelationsRef(data.entity_type, relType) ? R.head(val) : [...(data[relType] ?? []), ...val];
+      }
     } else {
       data[key] = val;
     }
@@ -813,7 +817,8 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, baseData = false, toMap = false, type = null, forceAliases = false } = opts;
+  const { indices = READ_DATA_INDICES, baseData = false } = opts;
+  const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
@@ -880,18 +885,18 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     });
     for (let j = 0; j < data.hits.hits.length; j += 1) {
       const hit = data.hits.hits[j];
-      const element = elDataConverter(hit);
+      const element = elDataConverter(hit, withoutRels);
       hits[element.internal_id] = element;
     }
   }
   return toMap ? hits : Object.values(hits);
 };
 
-export const elLoadById = async (context, user, id, type = null, indices = READ_DATA_INDICES) => {
-  const hits = await elFindByIds(context, user, id, { type, indices });
+export const elLoadById = async (context, user, id, opts = {}) => {
+  const hits = await elFindByIds(context, user, id, opts);
   /* istanbul ignore if */
   if (hits.length > 1) {
-    const errorMeta = { id, type, hits: hits.length };
+    const errorMeta = { id, hits: hits.length };
     throw DatabaseError('[SEARCH] Expect only one response', errorMeta);
   }
   return R.head(hits);
@@ -1736,14 +1741,14 @@ const elRemoveRelationConnection = async (context, user, relsFromTo) => {
     const dataIds = await elFindByIds(context, user, idsToResolve);
     const indexCache = R.mergeAll(dataIds.map((element) => ({ [element.internal_id]: element._index })));
     const bodyUpdateRaw = relsFromTo.map(({ relation, isFromCleanup, isToCleanup }) => {
-      const refField = isStixMetaRelationship(relation.entity_type)
+      const refField = isStixRefRelationship(relation.entity_type)
       && isInferredIndex(relation._index) ? ID_INFERRED : ID_INTERNAL;
       const type = buildRefRelationKey(relation.entity_type, refField);
       const updates = [];
       const fromIndex = indexCache[relation.fromId];
       if (isFromCleanup && fromIndex) {
         let source = `if (ctx._source['${type}'] != null) ctx._source['${type}'].removeIf(rel -> rel == params.key);`;
-        if (isStixMetaRelationship(relation.entity_type)) {
+        if (isStixRefRelationship(relation.entity_type)) {
           source += 'ctx._source[\'updated_at\'] = params.updated_at;';
         }
         const script = {
@@ -1780,7 +1785,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   const toBeRemovedIds = elements.map((e) => e.internal_id);
   const opts = { concurrency: ES_MAX_CONCURRENCY };
   const { relations, relationsToRemoveMap } = await getRelationsToRemove(context, user, elements);
-  const stixRelations = relations.filter((r) => isStixRelationShipExceptMeta(r.relationship_type));
+  const stixRelations = relations.filter((r) => isStixRelationshipExceptRef(r.relationship_type));
   const dependencyDeletions = await BluePromise.map(stixRelations, (r) => stixLoadById(context, user, r.internal_id), opts);
   // Compute the id that needs to be remove from rel
   const basicCleanup = elements.filter((f) => isBasicRelationship(f.entity_type));
@@ -1911,7 +1916,7 @@ export const elIndexElements = async (context, user, message, elements) => {
         // MarkingDefinition (marking) / KillChainPhase (kill_chain_phase) / Label (tagging)
         cache[e.fromId] = e.from;
         cache[e.toId] = e.to;
-        const refField = isStixMetaRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
+        const refField = isStixRefRelationship(e.entity_type) && isInferredIndex(e._index) ? ID_INFERRED : ID_INTERNAL;
         const relationshipType = e.entity_type;
         if (isImpactedRole(fromRole)) {
           impacts.push({ refField, from: e.fromId, relationshipType, to: e.to, type: e.to.entity_type, side: 'from' });
@@ -1943,7 +1948,7 @@ export const elIndexElements = async (context, user, message, elements) => {
         const field = buildRefRelationKey(t.relation, t.field);
         let script = `if (ctx._source['${field}'] == null) ctx._source['${field}'] = [];`;
         script += `ctx._source['${field}'].addAll(params['${field}'])`;
-        if (isStixMetaRelationship(t.relation)) {
+        if (isStixRefRelationship(t.relation)) {
           const fromSide = R.find((e) => e.side === 'from', t.elements);
           if (fromSide && isUpdatedAtObject(fromSide.type)) {
             script += '; ctx._source[\'updated_at\'] = params.updated_at';
@@ -1977,30 +1982,6 @@ export const elIndexElements = async (context, user, message, elements) => {
   }, elIndexElementsFn);
 };
 
-export const elUpdateAttributeValue = async (context, key, previousValue, value) => {
-  const isMultiple = isMultipleAttribute(key);
-  const source = !isMultiple
-    ? 'ctx._source[params.key] = params.value'
-    : `def index = 0;
-       for (att in ctx._source[params.key]) {
-        if(att == params.previousValue) {
-          ctx._source[params.key][index] = params.value;
-        }
-        index++;
-       }`;
-  const query = { match_phrase: { [`${key}.keyword`]: previousValue } };
-  const params = {
-    index: READ_DATA_INDICES,
-    refresh: true,
-    body: {
-      script: { source, params: { key, value, previousValue } },
-      query,
-    },
-  };
-  await elRawUpdateByQuery(params).catch((err) => {
-    throw DatabaseError('[SEARCH] Updating attribute value fail', { error: err, key, value });
-  });
-};
 export const elUpdateRelationConnections = async (elements) => {
   if (elements.length > 0) {
     const source = 'def conn = ctx._source.connections.find(c -> c.internal_id == params.id); '
@@ -2032,7 +2013,7 @@ export const elUpdateEntityConnections = async (elements) => {
       return Array.isArray(doc.data.internal_id) ? doc.data.internal_id : [doc.data.internal_id];
     };
     const bodyUpdate = elements.flatMap((doc) => {
-      const refField = isStixMetaRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
+      const refField = isStixRefRelationship(doc.relationType) && isInferredIndex(doc._index) ? ID_INFERRED : ID_INTERNAL;
       return [
         { update: { _index: doc._index, _id: doc.id, retry_on_conflict: ES_RETRY_ON_CONFLICT } },
         {

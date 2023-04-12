@@ -28,8 +28,14 @@ import {
   INPUT_SRC,
   INPUT_SRC_PAYLOAD,
   INPUT_TO,
-  INPUT_VALUES
-} from '../schema/stixCyberObservableRelationship';
+  INPUT_VALUES,
+  RELATION_CREATED_BY,
+  RELATION_EXTERNAL_REFERENCE,
+  RELATION_GRANTED_TO,
+  RELATION_OBJECT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_MARKING
+} from '../schema/stixRefRelationship';
 import {
   INPUT_ASSIGNEE,
   INPUT_CREATED_BY,
@@ -43,21 +49,8 @@ import {
   INPUT_OBJECTS
 } from '../schema/general';
 import type { OrganizationReliability, StixId } from './stix-common';
-import {
-  RELATION_CREATED_BY,
-  RELATION_EXTERNAL_REFERENCE,
-  RELATION_GRANTED_TO,
-  RELATION_OBJECT,
-  RELATION_OBJECT_ASSIGNEE,
-  RELATION_OBJECT_MARKING
-} from '../schema/stixMetaRelationship';
 import type { PageInfo } from '../generated/graphql';
-import type {
-  windows_integrity_level_enum,
-  windows_service_start_type_enum,
-  windows_service_status_enum,
-  windows_service_type_enum
-} from './stix-sco';
+import type { windows_integrity_level_enum, windows_service_start_type_enum, windows_service_status_enum, windows_service_type_enum } from './stix-sco';
 
 interface StoreFile {
   id: string;

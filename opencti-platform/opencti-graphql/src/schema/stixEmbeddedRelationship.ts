@@ -1,48 +1,36 @@
-import { isStixMetaRelationship, } from './stixMetaRelationship';
-import { isStixCyberObservableRelationship, } from './stixCyberObservableRelationship';
 import type { BasicStoreObject } from '../types/store';
 import { buildRefRelationKey, ID_INFERRED, ID_INTERNAL } from './general';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
+import {
+  bodyMultipart,
+  externalReferences,
+  isStixRefRelationship,
+  killChainPhases,
+  objectLabel
+} from './stixRefRelationship';
 
-export const isStixEmbeddedRelationship = (type: string): boolean => isStixMetaRelationship(type) || isStixCyberObservableRelationship(type);
-
-export const isSingleStixEmbeddedRelationship = (type: string): boolean => schemaRelationsRefDefinition.getDatabaseNames().includes(type)
-  && !schemaRelationsRefDefinition.isMultipleDatabaseName(type);
-
-export const isSingleStixEmbeddedRelationshipInput = (input: string): boolean => schemaRelationsRefDefinition.getInputNames().includes(input)
-  && !schemaRelationsRefDefinition.isMultipleName(input);
+export const isSingleRelationsRef = (entityType: string, databaseName: string): boolean => isStixRefRelationship(databaseName)
+  && !schemaRelationsRefDefinition.isMultipleDatabaseName(entityType, databaseName);
 
 // eslint-disable-next-line
 export const instanceMetaRefsExtractor = (relationshipType: string, isInferred: boolean, data: BasicStoreObject) => {
-  const refField = isStixMetaRelationship(relationshipType) && isInferred ? ID_INFERRED : ID_INTERNAL;
+  const refField = isStixRefRelationship(relationshipType) && isInferred ? ID_INFERRED : ID_INTERNAL;
   const field = buildRefRelationKey(relationshipType, refField);
   const anyData = data as any; // TODO JRI Find a way to not use any
   return anyData[field] ?? [];
 };
 
 const RELATIONS_STIX_ATTRIBUTES = ['source_ref', 'target_ref', 'sighting_of_ref', 'where_sighted_refs'];
-const STIX_REFS = [...schemaRelationsRefDefinition.getStixNames(), ...RELATIONS_STIX_ATTRIBUTES];
+const RELATIONS_EMBEDDED_STIX_ATTRIBUTES = [
+  externalReferences.stixName, killChainPhases.stixName, objectLabel.stixName, bodyMultipart.stixName
+];
 // eslint-disable-next-line
 export const stixRefsExtractor = (data: any, idGenerator: (key: string, data: unknown) => string) => {
-  return STIX_REFS.map((key) => {
-    // stix embedding (label, external ref, kill chain)
-    if (key === 'external_references' && data[key]) {
-      // eslint-disable-next-line
-      return data[key].map((e: any) => idGenerator('External-Reference', e));
-    }
-    if (key === 'kill_chain_phases' && data[key]) {
-      // eslint-disable-next-line
-      return data[key].map((e: any) => idGenerator('Kill-Chain-Phase', e));
-    }
-    if (key === 'labels' && data[key]) {
-      // eslint-disable-next-line
-      return data[key].map((e: any) => idGenerator('Label', { value: e }));
-    }
-    if (key === 'body_multipart' && data[key]) {
-      // eslint-disable-next-line
-      return data[key].map((e: any) => idGenerator('Email-Mime-Part-Type', e));
-    }
+  const stixNames = schemaRelationsRefDefinition.getStixNames(data.extensions[STIX_EXT_OCTI].type)
+    .filter((key) => !RELATIONS_EMBEDDED_STIX_ATTRIBUTES.includes(key))
+    .concat(RELATIONS_STIX_ATTRIBUTES);
+  return stixNames.map((key) => {
     if (key === 'granted_refs' && data.extensions[STIX_EXT_OCTI][key]) {
       // eslint-disable-next-line
       return data.extensions[STIX_EXT_OCTI][key];

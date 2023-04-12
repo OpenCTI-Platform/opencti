@@ -13,6 +13,7 @@ import {
 import { REL_EXTENDED } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
   type: {
@@ -53,6 +54,9 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
         { name: ENTITY_TYPE_LOCATION_POSITION, type: REL_EXTENDED },
       ]
     }
+  ],
+  relationsRefs: [
+    objectOrganization
   ],
   representative: (stix: StixEvent) => {
     return stix.name;

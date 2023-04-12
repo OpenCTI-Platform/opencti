@@ -9,17 +9,15 @@ import {
   updateAttribute,
 } from '../database/middleware';
 import { BUS_TOPICS } from '../config/conf';
-import { FunctionalError } from '../config/errors';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
-import { ABSTRACT_STIX_META_RELATIONSHIP, ENTITY_TYPE_IDENTITY } from '../schema/general';
+import { ENTITY_TYPE_IDENTITY } from '../schema/general';
 import {
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OPINION,
@@ -34,7 +32,10 @@ import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_SIGHTING_RELATIONSHIPS } from '../database/utils';
 import { listRelations, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
-import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipDeleteRelation
+} from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
@@ -109,21 +110,12 @@ export const stixSightingRelationshipEditField = async (context, user, relations
   const { element } = await updateAttribute(context, user, relationshipId, STIX_SIGHTING_RELATIONSHIP, input, opts);
   return notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, element, user);
 };
-export const stixSightingRelationshipAddRelation = async (context, user, stixSightingRelationshipId, input) => {
-  const stixSightingRelationship = await storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
-  if (!stixSightingRelationship) {
-    throw FunctionalError(`Cannot add the relation, ${ABSTRACT_STIX_META_RELATIONSHIP} cannot be found.`);
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = assoc('fromId', stixSightingRelationshipId, input);
-  return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[STIX_SIGHTING_RELATIONSHIP].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
-};
+// endregion
 
+// region relation ref
+export const stixSightingRelationshipAddRelation = async (context, user, stixSightingRelationshipId, input) => {
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixSightingRelationshipId, input, STIX_SIGHTING_RELATIONSHIP);
+};
 export const stixSightingRelationshipDeleteRelation = async (context, user, stixSightingRelationshipId, toId, relationshipType) => {
   return stixObjectOrRelationshipDeleteRelation(context, user, stixSightingRelationshipId, toId, relationshipType, STIX_SIGHTING_RELATIONSHIP);
 };

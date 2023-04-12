@@ -39,6 +39,7 @@ import { REL_EXTENDED, REL_NEW } from '../../database/stix';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
   type: {
@@ -108,6 +109,9 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_TYPE_IDENTITY_INDIVIDUAL, type: REL_EXTENDED },
         { name: ENTITY_TYPE_IDENTITY_ORGANIZATION, type: REL_EXTENDED },
       ] }
+  ],
+  relationsRefs: [
+    objectOrganization
   ],
   representative: (stix: StixChannel) => {
     return stix.name;

@@ -1,6 +1,7 @@
 import { RULE_PREFIX } from './general';
 import { UnsupportedError } from '../config/errors';
 import type { AttributeDefinition, AttrType } from './attribute-definition';
+import { getParentTypes } from './schemaUtils';
 
 export const depsKeysRegister = {
   deps: [] as { src: string, types?: string[] }[],
@@ -14,10 +15,10 @@ export const depsKeysRegister = {
 };
 
 export const schemaAttributesDefinition = {
-  types: {} as Record<string, Map<string, void>>,
-  attributes: {} as Record<string, AttributeDefinition[]>,
-  attributes_by_name: {} as Record<string, AttributeDefinition>,
-  attributes_by_types: {
+  attributes: {} as Record<string, Map<string, AttributeDefinition>>,
+  attributesCache: new Map<string, Map<string, AttributeDefinition>>(),
+
+  attributesByTypes: {
     string: new Map<string, void>(),
     date: new Map<string, void>(),
     numeric: new Map<string, void>(),
@@ -26,94 +27,99 @@ export const schemaAttributesDefinition = {
     json: new Map<string, void>(),
     runtime: new Map<string, void>(),
   } as Record<AttrType, Map<string, void>>,
-  attributes_multiple: new Map<string, void>(),
-  upsert_by_entity: new Map<string, string[]>(),
-
-  // types
-  isTypeIncludedIn(type: string, parent: string) {
-    return this.types[parent].has(type);
-  },
-  register(type: string, children: string[]) {
-    this.types[type] = new Map(children.map((c) => [c, undefined]));
-  },
-  add(type: string, children: string[] | string) {
-    const values = Array.isArray(children) ? children : [children];
-    const currentMap = this.types[type];
-    if (currentMap) {
-      values.forEach((v) => currentMap.set(v));
-    } else {
-      this.types[type] = new Map(values.map((c) => [c, undefined]));
-    }
-  },
-  get(type: string): string[] {
-    return Array.from(this.types[type].keys());
-  },
+  upsertByEntity: new Map<string, string[]>(),
 
   // attributes
   registerAttributes(entityType: string, attributes: AttributeDefinition[]) {
-    // Check the homogeneity of attribute types
-    const allAttributes = this.getAllAttributes();
+    const directAttributes = this.attributes[entityType] ?? new Map<string, AttributeDefinition>();
+
+    // Register given attribute
+    const allAttributes = Object.values(this.attributes);
     attributes.forEach((attribute) => {
-      const existingAttribute = allAttributes.find((a) => a.name === attribute.name);
+      // Check the homogeneity of attribute types
+      const existingAttribute = allAttributes.find((a) => a.get(attribute.name))?.get(attribute.name); // Maybe better way ?
       if (existingAttribute && existingAttribute.type !== attribute.type) {
-        throw UnsupportedError('You can\'t have two attribute with the same name and a different type in the platform', {
+        throw UnsupportedError('You can\'t have two attributes with the same name and a different type in the platform', {
           existingAttribute,
           attribute,
         });
       }
-      this.attributes_by_name[attribute.name] = attribute;
-      // Generate map by types
-      this.attributes_by_types[attribute.type].set(attribute.name);
-      // Generate map by multiple
-      if (attribute.multiple) {
-        this.attributes_multiple.set(attribute.name);
+      // Check duplicate attributes
+      if (directAttributes.has(attribute.name)) {
+        throw UnsupportedError('You can\'t register two attributes with the same name on an entity', {
+          attributeName: attribute.name,
+          entityType
+        });
       }
+
+      directAttributes.set(attribute.name, attribute);
+    });
+    this.attributes[entityType] = directAttributes;
+
+    this.computeCache(entityType);
+  },
+
+  // Extract this method to be call in all methods
+  // When an entity not register any relations, the relations for this entity is not computed
+  // Call only in register mechanism when all the entities will be migrated
+  computeCache(entityType: string) {
+    if (this.attributesCache.has(entityType)) return;
+
+    const directAttributes = this.attributes[entityType] ?? [];
+    // Register inheritance attributes
+    const parentAttributes = new Map(
+      getParentTypes(entityType)
+        .map((type) => Array.from((this.attributes[type] ?? new Map()).values()))
+        .flat()
+        .map((e) => [e.name, e])
+    );
+    const computedWithParentAttributes = new Map([...parentAttributes, ...directAttributes]);
+    this.attributesCache.set(entityType, computedWithParentAttributes);
+
+    // Generate cache map
+    computedWithParentAttributes.forEach((attr) => {
+      // Generate map by types
+      this.attributesByTypes[attr.type as AttrType].set(attr.name);
       // Generate map of upsert by entity type
-      if (attribute.upsert) {
-        const currentList = this.upsert_by_entity.get(entityType);
-        if (currentList) {
-          currentList.push(attribute.name);
-        } else {
-          this.upsert_by_entity.set(entityType, [attribute.name]);
-        }
+      if (attr.upsert) {
+        this.upsertByEntity.set(entityType, [...this.upsertByEntity.get(entityType) ?? [], attr.name]);
       }
     });
-    this.attributes[entityType] = attributes;
   },
 
-  getAttribute(name: string): AttributeDefinition | null {
-    return this.attributes_by_name[name];
-  },
-
-  getAttributes(entityType: string): AttributeDefinition[] {
-    return ((this.attributes)[entityType] ?? []);
+  getAttributes(entityType: string): Map<string, AttributeDefinition> {
+    this.computeCache(entityType);
+    return this.attributesCache.get(entityType) ?? new Map();
   },
 
   getAttributeNames(entityType: string): string[] {
-    return ((this.attributes)[entityType] ?? []).map((attr) => attr.name);
+    this.computeCache(entityType);
+    return Array.from(this.getAttributes(entityType).keys());
   },
 
-  getAllAttributes(): AttributeDefinition[] {
-    return Object.values(this.attributes ?? {}).flat();
+  getAttribute(entityType: string, name: string): AttributeDefinition | null {
+    this.computeCache(entityType);
+    return this.getAttributes(entityType)?.get(name) ?? null;
   },
 
   getUpsertAttributeNames(entityType: string): string[] {
-    return this.upsert_by_entity.get(entityType) ?? [];
+    this.computeCache(entityType);
+    return this.upsertByEntity.get(entityType) ?? [];
   },
 
-  isMultipleAttribute(attributeName: string): boolean {
-    return this.attributes_multiple.has(attributeName);
+  isMultipleAttribute(entityType: string, attributeName: string): boolean {
+    this.computeCache(entityType);
+    return this.getAttribute(entityType, attributeName)?.multiple ?? false;
   },
 
   isSpecificTypeAttribute(attributeName: string, ...attributeType: AttrType[]): boolean {
-    return attributeType.reduce((r, fn) => this.attributes_by_types[fn].has(attributeName) || r, false);
+    return attributeType.reduce((r, fn) => this.attributesByTypes[fn].has(attributeName) || r, false);
   },
 
 };
 
 // -- TYPE --
 
-// TODO Transform to map
 export const isBooleanAttribute = (k: string): boolean => (
   schemaAttributesDefinition.isSpecificTypeAttribute(k, 'boolean')
 );
@@ -135,7 +141,6 @@ export const isDateNumericOrBooleanAttribute = (k: string): boolean => (
 
 // -- MULTIPLE --
 
-// TODO Transform to map
-export const isMultipleAttribute = (k: string): boolean => (
-  k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(k)
+export const isMultipleAttribute = (entityType: string, k: string): boolean => (
+  k.startsWith(RULE_PREFIX) || schemaAttributesDefinition.isMultipleAttribute(entityType, k)
 );

@@ -138,7 +138,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should add relation in stixCyberObservable', async () => {
     const RELATION_ADD_QUERY = gql`
-        mutation StixCyberObservableEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+        mutation StixCyberObservableEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
             stixCyberObservableEdit(id: $id) {
                 relationAdd(input: $input) {
                     id

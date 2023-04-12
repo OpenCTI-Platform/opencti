@@ -205,7 +205,7 @@ describe('AdministrativeArea resolver standard behavior', () => {
   });
   it('should add relation in administrativeArea', async () => {
     const RELATION_ADD_QUERY = gql`
-          mutation AdministrativeAreaEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+          mutation AdministrativeAreaEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
               administrativeAreaRelationAdd(id: $id, input: $input) {
                   id
                   from {

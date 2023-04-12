@@ -4,8 +4,6 @@ import { delEditContext, notify, setEditContext } from '../database/redis';
 import {
   batchListThroughGetTo,
   createEntity,
-  createRelation,
-  createRelations,
   deleteElementById,
   distributionEntities,
   listThroughGetTo,
@@ -32,13 +30,8 @@ import {
   isStixDomainObjectIdentity,
   isStixDomainObjectLocation,
 } from '../schema/stixDomainObject';
-import {
-  ABSTRACT_STIX_CYBER_OBSERVABLE,
-  ABSTRACT_STIX_DOMAIN_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
-  buildRefRelationKey,
-} from '../schema/general';
-import { isStixMetaRelationship, RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixMetaRelationship';
+import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, buildRefRelationKey, } from '../schema/general';
+import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, } from '../schema/stixRefRelationship';
 import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { RELATION_BASED_ON } from '../schema/stixCoreRelationship';
 import { now, utcDate } from '../utils/format';
@@ -46,7 +39,10 @@ import { ENTITY_TYPE_CONTAINER_GROUPING } from '../modules/grouping/grouping-typ
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
-import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipDeleteRelation
+} from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -199,36 +195,14 @@ export const stixDomainObjectsDelete = async (context, user, stixDomainObjectsId
   return stixDomainObjectsIds;
 };
 
+// region relation ref
 export const stixDomainObjectAddRelation = async (context, user, stixDomainObjectId, input) => {
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = { ...input, fromId: stixDomainObjectId };
-  return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, relationData, user);
-    return relationData;
-  });
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixDomainObjectId, input, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
-
-export const stixDomainObjectAddRelations = async (context, user, stixDomainObjectId, input) => {
-  const stixDomainObject = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  if (!stixDomainObject) {
-    throw FunctionalError('Cannot add the relation, Stix-Domain-Object cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = input.toIds.map(
-    (n) => ({ fromId: stixDomainObjectId, toId: n, relationship_type: input.relationship_type })
-  );
-  await createRelations(context, user, finalInput);
-  const entity = await storeLoadById(context, user, stixDomainObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].EDIT_TOPIC, entity, user);
-};
-
 export const stixDomainObjectDeleteRelation = async (context, user, stixDomainObjectId, toId, relationshipType) => {
   return stixObjectOrRelationshipDeleteRelation(context, user, stixDomainObjectId, toId, relationshipType, ABSTRACT_STIX_DOMAIN_OBJECT);
 };
+// endregion
 
 export const stixDomainObjectEditField = async (context, user, stixObjectId, input, opts = {}) => {
   const stixDomainObject = await storeLoadById(context, user, stixObjectId, ABSTRACT_STIX_DOMAIN_OBJECT);
@@ -244,7 +218,7 @@ export const stixDomainObjectEditField = async (context, user, stixObjectId, inp
   }
   // Check is a real update was done
   const updateWithoutMeta = R.pipe(
-    R.omit(schemaRelationsRefDefinition.getInputNames()),
+    R.omit(schemaRelationsRefDefinition.getInputNames(stixDomainObject.entity_type)),
   )(updatedElem);
   const isUpdated = !R.equals(stixDomainObject, updateWithoutMeta);
   if (isUpdated) {

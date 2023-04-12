@@ -30,17 +30,7 @@ const entityTypesQuery = graphql`
         }
       }
     }
-    stixCyberObservableRelationshipTypes: subTypes(
-      type: "stix-cyber-observable-relationship"
-    ) {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    stixMetaRelationshipTypes: subTypes(type: "stix-meta-relationship") {
+    stixRefRelationshipTypes: subTypes(type: "stix-ref-relationship") {
       edges {
         node {
           id
@@ -82,13 +72,9 @@ const useEntityTypes = () => {
         'relationship',
         data.stixCoreRelationshipTypes.edges.map(({ node }) => node),
       ),
-      [formatKey('stixCyberObservableRelationshipTypes')]: optionBuilder(
+      [formatKey('stixRefRelationshipTypes')]: optionBuilder(
         'relationship',
-        data.stixCyberObservableRelationshipTypes.edges.map(({ node }) => node),
-      ),
-      [formatKey('stixMetaRelationshipTypes')]: optionBuilder(
-        'relationship',
-        data.stixMetaRelationshipTypes.edges.map(({ node }) => node),
+        data.stixRefRelationshipTypes.edges.map(({ node }) => node),
       ),
       [formatKey('stixDomainObjectTypes')]: optionBuilder(
         'entity',

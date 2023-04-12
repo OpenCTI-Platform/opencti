@@ -49,7 +49,7 @@ export const sectorEditionOverviewFocus = graphql`
 const sectorMutationRelationAdd = graphql`
   mutation SectorEditionOverviewRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     sectorEdit(id: $id) {
       relationAdd(input: $input) {

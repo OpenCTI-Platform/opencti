@@ -4,9 +4,7 @@ import {
   batchListThroughGetTo,
   batchLoadThroughGetTo,
   createEntity,
-  createRelation,
   createRelationRaw,
-  createRelations,
   deleteElementById,
   distributionEntities,
   storeLoadByIdWithRefs,
@@ -20,20 +18,18 @@ import { FunctionalError, LockTimeoutError, TYPE_LOCK_ERROR, UnsupportedError } 
 import { isStixCoreObject, stixCoreObjectOptions } from '../schema/stixCoreObject';
 import {
   ABSTRACT_STIX_CORE_OBJECT,
-  ABSTRACT_STIX_META_RELATIONSHIP,
   buildRefRelationKey,
   ENTITY_TYPE_IDENTITY,
   INPUT_EXTERNAL_REFS,
 } from '../schema/general';
 import {
-  isStixMetaRelationship,
   RELATION_CREATED_BY,
   RELATION_EXTERNAL_REFERENCE,
   RELATION_KILL_CHAIN_PHASE,
   RELATION_OBJECT,
   RELATION_OBJECT_LABEL,
   RELATION_OBJECT_MARKING,
-} from '../schema/stixMetaRelationship';
+} from '../schema/stixRefRelationship';
 import {
   ENTITY_TYPE_CONTAINER_NOTE,
   ENTITY_TYPE_CONTAINER_OBSERVED_DATA,
@@ -46,7 +42,6 @@ import {
   ENTITY_TYPE_LABEL,
   ENTITY_TYPE_MARKING_DEFINITION,
 } from '../schema/stixMetaObject';
-import { isStixRelationship } from '../schema/stixRelationship';
 import { createWork, workToExportFile } from './work';
 import { pushToConnector } from '../database/rabbitmq';
 import { now } from '../utils/format';
@@ -59,7 +54,11 @@ import { isNotEmptyField, READ_ENTITIES_INDICES, READ_INDEX_INFERRED_ENTITIES } 
 import { RELATION_RELATED_TO } from '../schema/stixCoreRelationship';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
-import { stixObjectOrRelationshipDeleteRelation } from './stixObjectOrStixRelationship';
+import {
+  stixObjectOrRelationshipAddRefRelation,
+  stixObjectOrRelationshipAddRelations,
+  stixObjectOrRelationshipDeleteRelation
+} from './stixObjectOrStixRelationship';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -129,36 +128,17 @@ export const stixCoreRelationships = (context, user, stixCoreObjectId, args) => 
   return relationFindAll(context, user, finalArgs);
 };
 
+// region relation ref
 export const stixCoreObjectAddRelation = async (context, user, stixCoreObjectId, input) => {
-  const data = await internalLoadById(context, user, stixCoreObjectId);
-  if (!isStixCoreObject(data.entity_type) || !isStixRelationship(input.relationship_type)) {
-    throw FunctionalError('Only stix-meta-relationship can be added through this method.', { stixCoreObjectId, input });
-  }
-  const finalInput = R.assoc('fromId', stixCoreObjectId, input);
-  return createRelation(context, user, finalInput);
+  return stixObjectOrRelationshipAddRefRelation(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT);
 };
-
 export const stixCoreObjectAddRelations = async (context, user, stixCoreObjectId, input) => {
-  const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
-  if (!stixCoreObject) {
-    throw FunctionalError('Cannot add the relation, Stix-Core-Object cannot be found.');
-  }
-  if (!isStixMetaRelationship(input.relationship_type)) {
-    throw FunctionalError(`Only ${ABSTRACT_STIX_META_RELATIONSHIP} can be added through this method.`);
-  }
-  const finalInput = R.map(
-    (n) => ({ fromId: stixCoreObjectId, toId: n, relationship_type: input.relationship_type }),
-    input.toIds
-  );
-  await createRelations(context, user, finalInput);
-  return storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT).then((entity) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_CORE_OBJECT].EDIT_TOPIC, entity, user);
-  });
+  return stixObjectOrRelationshipAddRelations(context, user, stixCoreObjectId, input, ABSTRACT_STIX_CORE_OBJECT);
 };
-
 export const stixCoreObjectDeleteRelation = async (context, user, stixCoreObjectId, toId, relationshipType) => {
   return stixObjectOrRelationshipDeleteRelation(context, user, stixCoreObjectId, toId, relationshipType, ABSTRACT_STIX_CORE_OBJECT);
 };
+// endregion
 
 export const stixCoreObjectDelete = async (context, user, stixCoreObjectId) => {
   const stixCoreObject = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);

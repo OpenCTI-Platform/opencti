@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
 import * as Yup from 'yup';
@@ -10,7 +10,7 @@ import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
-import { Close, ArrowRightAlt, Add } from '@mui/icons-material';
+import { Add, ArrowRightAlt, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -28,21 +28,18 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
 import { dayStartDate, parse } from '../../../../utils/Time';
-import {
-  resolveStixCyberObservableRelationshipsTargetTypes,
-  resolveStixCyberObservableRelationshipsTypes,
-} from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import SelectField from '../../../../components/SelectField';
-import StixCyberObservableRelationCreationFromEntityLines, {
-  stixCyberObservableRelationshipCreationFromEntityLinesQuery,
-} from './StixCyberObservableRelationshipCreationFromEntityLines';
+import StixNestedRefRelationCreationFromEntityLines, {
+  stixNestedRefRelationshipCreationFromEntityLinesQuery,
+} from './StixNestedRefRelationshipCreationFromEntityLines';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
 import SearchInput from '../../../../components/SearchInput';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { onlyLinkedTo } from '../../../../utils/Relation';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -190,9 +187,10 @@ const styles = (theme) => ({
   },
 });
 
-const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
-  query StixCyberObservableRelationshipCreationFromEntityQuery($id: String!) {
-    stixObjectOrStixRelationship(id: $id) {
+const stixNestedRefRelationshipResolveTypes = graphql`
+  query StixNestedRefRelationshipCreationFromEntityResolveQuery($id: String!, $toType: String!) {
+    stixSchemaRefRelationships(id: $id, toType: $toType) {
+      entity {
       ... on BasicObject {
         id
         entity_type
@@ -290,14 +288,17 @@ const stixCyberObservableRelationshipCreationFromEntityQuery = graphql`
         observable_value
       }
     }
+      from
+      to
+    }
   }
 `;
 
-const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
-  mutation StixCyberObservableRelationshipCreationFromEntityMutation(
-    $input: StixCyberObservableRelationshipAddInput!
+const stixNestedRefRelationshipCreationFromEntityMutation = graphql`
+  mutation StixNestedRefRelationshipCreationFromEntityMutation(
+    $input: StixRefRelationshipAddInput!
   ) {
-    stixCyberObservableRelationshipAdd(input: $input) {
+    stixRefRelationshipAdd(input: $input) {
       id
       relationship_type
       start_time
@@ -324,7 +325,7 @@ const stixCyberObservableRelationshipCreationFromEntityMutation = graphql`
   }
 `;
 
-const stixCyberObservableRelationshipValidation = (t) => Yup.object().shape({
+const stixNestedRefRelationshipValidation = (t) => Yup.object().shape({
   relationship_type: Yup.string().required(t('This field is required')),
   start_time: Yup.date()
     .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
@@ -338,13 +339,13 @@ const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
     userProxy,
-    'Pagination_stixCyberObservableRelationships',
+    'Pagination_stixNestedRefRelationships',
     paginationOptions,
   );
   ConnectionHandler.insertEdgeBefore(conn, newEdge);
 };
 
-class StixCyberObservableRelationshipCreationFromEntity extends Component {
+class StixNestedRefRelationshipCreationFromEntity extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -407,14 +408,12 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
       R.assoc('stop_time', parse(values.stop_time).format()),
     )(values);
     commitMutation({
-      mutation: stixCyberObservableRelationshipCreationFromEntityMutation,
+      mutation: stixNestedRefRelationshipCreationFromEntityMutation,
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        const payload = store.getRootField(
-          'stixCyberObservableRelationshipAdd',
-        );
+        const payload = store.getRootField('stixRefRelationshipAdd');
         const newEdge = payload.setLinkedRecord(payload, 'node');
         const container = store.getRoot();
         sharedUpdater(
@@ -496,12 +495,12 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
             </Alert>
           )}
           <QueryRenderer
-            query={stixCyberObservableRelationshipCreationFromEntityLinesQuery}
+            query={stixNestedRefRelationshipCreationFromEntityLinesQuery}
             variables={{ count: 25, ...paginationOptions }}
             render={({ props }) => {
               if (props) {
                 return (
-                  <StixCyberObservableRelationCreationFromEntityLines
+                  <StixNestedRefRelationCreationFromEntityLines
                     entityType={entityType}
                     handleSelect={this.handleSelectEntity.bind(this)}
                     data={props}
@@ -599,38 +598,34 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
     );
   }
 
-  renderForm(sourceEntity) {
-    const { t, classes, entityType } = this.props;
+  renderForm(resolveEntityRef) {
+    const { t, classes } = this.props;
     const { targetEntity } = this.state;
-    const { fromTypes, toTypes } = resolveStixCyberObservableRelationshipsTargetTypes(entityType);
-    let fromEntity = sourceEntity;
+    let fromEntity = resolveEntityRef.entity;
     let toEntity = targetEntity;
     let isRelationReversed = false;
-    if (
-      !toTypes.includes(toEntity.entity_type)
-      && fromTypes.includes(toEntity.entity_type)
-    ) {
+    let relationshipTypes;
+    if ((resolveEntityRef.from.length === 0 && resolveEntityRef.to.length !== 0)
+      || (onlyLinkedTo(resolveEntityRef.from) && resolveEntityRef.to.length !== 0 && !onlyLinkedTo(resolveEntityRef.to))) {
       fromEntity = targetEntity;
-      toEntity = sourceEntity;
+      toEntity = resolveEntityRef.entity;
       isRelationReversed = true;
+      relationshipTypes = resolveEntityRef.to;
+    } else {
+      relationshipTypes = resolveEntityRef.from;
     }
-    const relationshipTypes = resolveStixCyberObservableRelationshipsTypes(
-      fromEntity.entity_type,
-      toEntity.entity_type,
-    );
-    const defaultRelationshipType = R.head(relationshipTypes)
-      ? R.head(relationshipTypes)
-      : 'linked-to';
+    const defaultRelationshipType = R.head(relationshipTypes);
     const initialValues = {
       relationship_type: defaultRelationshipType,
       start_time: dayStartDate(),
       stop_time: dayStartDate(),
     };
+
     return (
       <Formik
         enableReinitialize={true}
         initialValues={initialValues}
-        validationSchema={stixCyberObservableRelationshipValidation(t)}
+        validationSchema={stixNestedRefRelationshipValidation(t)}
         onSubmit={this.onSubmit.bind(this, isRelationReversed)}
         onReset={this.handleClose.bind(this)}
       >
@@ -841,30 +836,35 @@ class StixCyberObservableRelationshipCreationFromEntity extends Component {
           classes={{ paper: this.props.classes.drawerPaper }}
           onClose={this.handleClose.bind(this)}
         >
-          <QueryRenderer
-            query={stixCyberObservableRelationshipCreationFromEntityQuery}
-            variables={{ id: entityId }}
-            render={({ props }) => {
-              if (props && props.stixObjectOrStixRelationship) {
-                return (
-                  <div>
-                    {step === 0 ? this.renderSelectEntity() : ''}
-                    {step === 1
-                      ? this.renderForm(props.stixObjectOrStixRelationship)
-                      : ''}
-                  </div>
-                );
-              }
-              return this.renderLoader();
-            }}
-          />
+          <div>
+            {step === 0 ? this.renderSelectEntity() : ''}
+            {step === 1
+              ? <QueryRenderer
+                query={stixNestedRefRelationshipResolveTypes}
+                variables={{
+                  id: entityId,
+                  toType: this.state.targetEntity.entity_type,
+                }}
+                render={({ props }) => {
+                  if (props && props.stixSchemaRefRelationships) {
+                    return (
+                      <div>
+                        {this.renderForm(props.stixSchemaRefRelationships)}
+                      </div>
+                    );
+                  }
+                  return this.renderLoader();
+                }}
+              />
+              : ''}
+          </div>
         </Drawer>
       </div>
     );
   }
 }
 
-StixCyberObservableRelationshipCreationFromEntity.propTypes = {
+StixNestedRefRelationshipCreationFromEntity.propTypes = {
   entityId: PropTypes.string,
   entityType: PropTypes.string,
   paginationOptions: PropTypes.object,
@@ -877,4 +877,4 @@ StixCyberObservableRelationshipCreationFromEntity.propTypes = {
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableRelationshipCreationFromEntity);
+)(StixNestedRefRelationshipCreationFromEntity);

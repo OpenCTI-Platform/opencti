@@ -6,7 +6,7 @@ import type { ModuleDefinition } from '../../../schema/module';
 import { registerDefinition } from '../../../schema/module';
 import feedbackResolvers from './feedback-resolvers';
 import convertFeedbackToStix from './feedback-converter';
-import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixMetaRelationship';
+import { createdBy, objectAssignee, objectMarking } from '../../../schema/stixRefRelationship';
 
 const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> = {
   type: {
@@ -30,13 +30,14 @@ const FEEDBACK_DEFINITION: ModuleDefinition<StoreEntityFeedback, StixFeedback> =
     },
   },
   attributes: [
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'rating', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: true },
   ],
   relations: [],
-  relationsRefs: [createdBy, objectMarking, objectAssignee],
+  relationsRefs: [
+    { ...createdBy, mandatoryType: 'no' },
+    { ...objectMarking, mandatoryType: 'no' },
+    { ...objectAssignee, mandatoryType: 'no' },
+  ],
   representative: (stix: StixFeedback) => {
     return stix.name;
   },

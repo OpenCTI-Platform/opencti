@@ -8,7 +8,7 @@ import { utcDate } from '../../../src/utils/format';
 import { ADMIN_USER, buildStandardUser, testContext } from '../../utils/testQuery';
 import { BASE_TYPE_RELATION, buildRefRelationKey, ENTITY_TYPE_IDENTITY } from '../../../src/schema/general';
 import { storeLoadByIdWithRefs } from '../../../src/database/middleware';
-import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../src/schema/stixRefRelationship';
 import { RELATION_USES } from '../../../src/schema/stixCoreRelationship';
 import { buildAggregationRelationFilter } from '../../../src/database/middleware-loader';
 
@@ -58,14 +58,15 @@ describe('Elasticsearch document loader', () => {
     expect(indexedData).toEqual(documentBody);
     const documentWithIndex = R.assoc('_index', 'test_index-000001', documentBody);
     // Load by internal Id
-    const dataThroughInternal = await elLoadById(testContext, ADMIN_USER, internalId, null, ['test_index']);
+    const opts = { type: null, indices: ['test_index'] };
+    const dataThroughInternal = await elLoadById(testContext, ADMIN_USER, internalId, opts);
     expect(dataThroughInternal.standard_id).toEqual(documentWithIndex.standard_id);
     // Load by stix id
-    const dataThroughStix = await elLoadById(testContext, ADMIN_USER, standardId, null, ['test_index']);
+    const dataThroughStix = await elLoadById(testContext, ADMIN_USER, standardId, opts);
     expect(dataThroughStix.standard_id).toEqual(documentWithIndex.standard_id);
     // Try to delete
     await elDeleteElements(testContext, ADMIN_USER, [dataThroughStix], storeLoadByIdWithRefs);
-    const removedInternal = await elLoadById(testContext, ADMIN_USER, internalId, null, ['test_index']);
+    const removedInternal = await elLoadById(testContext, ADMIN_USER, internalId, opts);
     expect(removedInternal).toBeUndefined();
   });
 });
@@ -137,7 +138,7 @@ describe('Elasticsearch computation', () => {
   it('should relation aggregation accurate', async () => {
     const testingReport = await elLoadById(testContext, ADMIN_USER, 'report--a445d22a-db0c-4b5d-9ec8-e9ad0b6dbdd7');
     const opts = { fromId: testingReport.internal_id, toTypes: ['Stix-Domain-Object'], isTo: true };
-    const distributionArgs = buildAggregationRelationFilter(['stix-meta-relationship'], opts);
+    const distributionArgs = buildAggregationRelationFilter(['stix-ref-relationship'], opts);
     const reportRelationsAggregation = await elAggregationRelationsCount(testContext, ADMIN_USER, READ_RELATIONSHIPS_INDICES, distributionArgs);
     const aggregationMap = new Map(reportRelationsAggregation.map((i) => [i.label, i.value]));
     expect(aggregationMap.get('Indicator')).toEqual(3);
@@ -555,7 +556,7 @@ describe('Elasticsearch pagination', () => {
 
 describe('Elasticsearch basic loader', () => {
   it('should entity load by internal id', async () => {
-    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const malware = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', { type: 'Stix-Domain-Object' });
     const data = await elLoadById(testContext, ADMIN_USER, malware.internal_id);
     expect(data).not.toBeNull();
     expect(data.standard_id).toEqual('malware--21c45dbe-54ec-5bb7-b8cd-9f27cc518714');
@@ -564,7 +565,7 @@ describe('Elasticsearch basic loader', () => {
     expect(data.entity_type).toEqual('Malware');
   });
   it('should entity load by stix id', async () => {
-    const data = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', 'Stix-Domain-Object');
+    const data = await elLoadById(testContext, ADMIN_USER, 'malware--faa5b705-cf44-4e50-8472-29e5fec43c3c', { type: 'Stix-Domain-Object' });
     expect(data).not.toBeNull();
     expect(data.revoked).toBeFalsy();
     expect(data.name).toEqual('Paradise Ransomware');

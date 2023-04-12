@@ -9,13 +9,13 @@ import {
 } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { RELATION_PART_OF } from '../../src/schema/stixCoreRelationship';
-import { RELATION_OBJECT } from '../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../../src/schema/stixRefRelationship';
 import ReportRefsIdentityPartOfRule from '../../src/rules/report-refs-identity-part-of/ReportRefIdentityPartOfRule';
 import { addReport } from '../../src/domain/report';
 import { addOrganization } from '../../src/domain/organization';
 import { elDeleteElements } from '../../src/database/engine';
 import { wait } from '../../src/database/utils';
-import { ABSTRACT_STIX_META_RELATIONSHIP } from '../../src/schema/general';
+import { ABSTRACT_STIX_REF_RELATIONSHIP } from '../../src/schema/general';
 import { listEntities } from '../../src/database/middleware-loader';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../src/schema/stixDomainObject';
 
@@ -157,7 +157,7 @@ describe('Report refs identity rule', () => {
         report.internal_id,
         identityA.internal_id,
         RELATION_OBJECT,
-        ABSTRACT_STIX_META_RELATIONSHIP
+        ABSTRACT_STIX_REF_RELATIONSHIP
       );
       await wait(TEN_SECONDS); // let some time to rule-manager to delete the elements
       const afterDeleteARelations = await getInferences(RELATION_OBJECT);

@@ -3,7 +3,7 @@ import { graphql } from 'react-relay';
 export const groupingKnowledgeGraphtMutationRelationAddMutation = graphql`
   mutation GroupingKnowledgeGraphQueryRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     groupingRelationAdd(id: $id, input: $input) {
       id

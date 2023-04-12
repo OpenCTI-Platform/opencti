@@ -288,8 +288,8 @@ const TotalObservablesCard = ({ title, options, Icon }) => {
 };
 const TopLabelsCard = ({ classes }) => {
   const { n } = useFormatter();
-  const dashboardStixMetaRelationshipsDistributionQuery = graphql`
-    query DashboardStixMetaRelationshipsDistributionQuery(
+  const dashboardStixRefRelationshipsDistributionQuery = graphql`
+    query DashboardStixRefRelationshipsDistributionQuery(
       $field: String!
       $operation: StatsOperation!
       $relationship_type: [String]
@@ -300,7 +300,7 @@ const TopLabelsCard = ({ classes }) => {
       $limit: Int
       $isTo: Boolean
     ) {
-      stixMetaRelationshipsDistribution(
+      stixRefRelationshipsDistribution(
         field: $field
         operation: $operation
         relationship_type: $relationship_type
@@ -335,11 +335,11 @@ const TopLabelsCard = ({ classes }) => {
     isTo: true,
   };
   const data = useLazyLoadQuery(
-    dashboardStixMetaRelationshipsDistributionQuery,
+    dashboardStixRefRelationshipsDistributionQuery,
     queryOptions,
     { fetchPolicy: 'network-only' },
   );
-  const distribution = data.stixMetaRelationshipsDistribution;
+  const distribution = data.stixRefRelationshipsDistribution;
   if (distribution.length === 0) {
     return <NoTableElement />;
   }

@@ -43,7 +43,7 @@ export const opinionEditionOverviewFocus = graphql`
 const opinionMutationRelationAdd = graphql`
     mutation OpinionEditionOverviewRelationAddMutation(
         $id: ID!
-        $input: StixMetaRelationshipAddInput
+        $input: StixRefRelationshipAddInput!
     ) {
         opinionEdit(id: $id) {
             relationAdd(input: $input) {

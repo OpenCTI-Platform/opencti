@@ -72,7 +72,7 @@ const initHttpRollingFeeds = (app: Express.Application) => {
             const baseKey = isComplexKey ? mapping.attribute.split('.')[0] : mapping.attribute;
             const data = element[baseKey];
             if (isNotEmptyField(data)) {
-              if (isMultipleAttribute(baseKey)) {
+              if (isMultipleAttribute(element.entity_type, baseKey)) {
                 dataElements.push(dataFormat(feed.separator, data.join(',')));
               } else if (isDictionaryAttribute(baseKey)) {
                 if (isComplexKey) {

@@ -8,7 +8,7 @@ import { addCity } from '../../src/domain/city';
 import { RULE_PREFIX } from '../../src/schema/general';
 import { FROM_START_STR, UNTIL_END_STR } from '../../src/utils/format';
 import { activateRule, disableRule, getInferences, inferenceLookup } from '../utils/rule-utils';
-import { RELATION_OBJECT_MARKING } from '../../src/schema/stixMetaRelationship';
+import { RELATION_OBJECT_MARKING } from '../../src/schema/stixRefRelationship';
 import { wait } from '../../src/database/utils';
 import { internalLoadById } from '../../src/database/middleware-loader';
 import { logApp } from '../../src/config/conf';

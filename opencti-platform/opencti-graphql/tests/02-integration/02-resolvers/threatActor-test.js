@@ -141,7 +141,7 @@ describe('Threat actor resolver standard behavior', () => {
   });
   it('should add relation in threat actor', async () => {
     const RELATION_ADD_QUERY = gql`
-      mutation ThreatActorEdit($id: ID!, $input: StixMetaRelationshipAddInput!) {
+      mutation ThreatActorEdit($id: ID!, $input: StixRefRelationshipAddInput!) {
         threatActorEdit(id: $id) {
           relationAdd(input: $input) {
             id

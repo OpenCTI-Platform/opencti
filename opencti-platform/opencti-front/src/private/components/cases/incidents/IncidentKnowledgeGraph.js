@@ -89,7 +89,7 @@ const incidentKnowledgeGraphCheckObjectQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         is_inferred
         parent_types
         cases {
@@ -329,7 +329,7 @@ const incidentKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
       }
-      ... on StixCyberObservableRelationship {
+      ... on StixRefRelationship {
         relationship_type
         start_time
         stop_time
@@ -366,6 +366,7 @@ const incidentKnowledgeGraphStixRelationshipQuery = graphql`
           }
         }
         created_at
+        datable
         objectMarking {
           edges {
             node {
@@ -1883,7 +1884,7 @@ const IncidentKnowledgeGraph = createFragmentContainer(
                   }
                 }
               }
-              ... on StixCyberObservableRelationship {
+              ... on StixRefRelationship {
                 relationship_type
                 start_time
                 stop_time
@@ -1920,6 +1921,7 @@ const IncidentKnowledgeGraph = createFragmentContainer(
                   }
                 }
                 created_at
+                datable
                 objectMarking {
                   edges {
                     node {

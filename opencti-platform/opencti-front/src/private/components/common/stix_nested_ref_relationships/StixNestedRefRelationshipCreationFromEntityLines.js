@@ -44,7 +44,7 @@ const styles = (theme) => ({
   },
 });
 
-class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Component {
+class StixNestedRefRelationshipCreationFromEntityLinesContainer extends Component {
   constructor(props) {
     super(props);
     this.state = { expandedPanels: {} };
@@ -131,7 +131,7 @@ class StixCyberObservableRelationshipCreationFromEntityLinesContainer extends Co
   }
 }
 
-StixCyberObservableRelationshipCreationFromEntityLinesContainer.propTypes = {
+StixNestedRefRelationshipCreationFromEntityLinesContainer.propTypes = {
   entityType: PropTypes.string,
   handleSelect: PropTypes.func,
   data: PropTypes.object,
@@ -141,8 +141,8 @@ StixCyberObservableRelationshipCreationFromEntityLinesContainer.propTypes = {
   fld: PropTypes.func,
 };
 
-export const stixCyberObservableRelationshipCreationFromEntityLinesQuery = graphql`
-  query StixCyberObservableRelationshipCreationFromEntityLinesQuery(
+export const stixNestedRefRelationshipCreationFromEntityLinesQuery = graphql`
+  query StixNestedRefRelationshipCreationFromEntityLinesQuery(
     $search: String
     $types: [String]
     $count: Int!
@@ -150,23 +150,23 @@ export const stixCyberObservableRelationshipCreationFromEntityLinesQuery = graph
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
   ) {
-    ...StixCyberObservableRelationshipCreationFromEntityLines_data
-      @arguments(
-        search: $search
-        types: $types
-        count: $count
-        cursor: $cursor
-        orderBy: $orderBy
-        orderMode: $orderMode
-      )
+    ...StixNestedRefRelationshipCreationFromEntityLines_data
+    @arguments(
+      search: $search
+      types: $types
+      count: $count
+      cursor: $cursor
+      orderBy: $orderBy
+      orderMode: $orderMode
+    )
   }
 `;
 
-const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationContainer(
-  StixCyberObservableRelationshipCreationFromEntityLinesContainer,
+const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContainer(
+  StixNestedRefRelationshipCreationFromEntityLinesContainer,
   {
     data: graphql`
-        fragment StixCyberObservableRelationshipCreationFromEntityLines_data on Query
+      fragment StixNestedRefRelationshipCreationFromEntityLines_data on Query
         @argumentDefinitions(
           search: { type: "String" }
           types: { type: "[String]" }
@@ -321,11 +321,11 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
                   ... on ObservedData {
                       name
                   }
-              }
             }
           }
         }
-      `,
+      }
+    `,
   },
   {
     direction: 'forward',
@@ -348,11 +348,11 @@ const StixCyberObservableRelationshipCreationFromEntityLines = createPaginationC
         orderMode: fragmentVariables.orderMode,
       };
     },
-    query: stixCyberObservableRelationshipCreationFromEntityLinesQuery,
+    query: stixNestedRefRelationshipCreationFromEntityLinesQuery,
   },
 );
 
 export default R.compose(
   inject18n,
   withStyles(styles),
-)(StixCyberObservableRelationshipCreationFromEntityLines);
+)(StixNestedRefRelationshipCreationFromEntityLines);

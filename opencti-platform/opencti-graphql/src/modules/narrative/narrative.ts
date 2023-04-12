@@ -7,6 +7,7 @@ import { REL_NEW } from '../../database/stix';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { objectOrganization } from '../../schema/stixRefRelationship';
 
 const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative> = {
   type: {
@@ -40,6 +41,9 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
       targets: [
         { name: ENTITY_TYPE_NARRATIVE, type: REL_NEW },
       ] },
+  ],
+  relationsRefs: [
+    objectOrganization
   ],
   representative: (stix: StixNarrative) => {
     return stix.name;

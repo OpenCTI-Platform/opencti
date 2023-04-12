@@ -13,7 +13,7 @@ import { ENTITY_TYPE_CONTAINER_FEEDBACK } from './feedback-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
 import type { FeedbackAddInput } from '../../../generated/graphql';
 import { isStixId } from '../../../schema/schemaUtils';
-import { RELATION_OBJECT } from '../../../schema/stixMetaRelationship';
+import { RELATION_OBJECT } from '../../../schema/stixRefRelationship';
 
 export const findById: DomainFindById<BasicStoreEntityFeedback> = (context: AuthContext, user: AuthUser, caseId: string) => {
   return storeLoadById(context, user, caseId, ENTITY_TYPE_CONTAINER_FEEDBACK);

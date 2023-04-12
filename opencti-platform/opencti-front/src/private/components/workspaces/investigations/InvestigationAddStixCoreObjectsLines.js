@@ -56,7 +56,7 @@ const styles = (theme) => ({
 export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
   mutation InvestigationAddStixCoreObjectsLinesRelationAddMutation(
     $id: ID!
-    $input: StixMetaRelationshipAddInput
+    $input: StixRefRelationshipAddInput!
   ) {
     workspaceEdit(id: $id) {
       relationAdd(input: $input) {

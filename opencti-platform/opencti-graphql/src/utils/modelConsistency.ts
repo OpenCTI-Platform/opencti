@@ -1,16 +1,11 @@
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import {
-  checkMetaRelationship,
-  checkStixCoreRelationshipMapping,
-  checkStixCyberObservableRelationshipMapping
-} from '../database/stix';
+import { checkRelationshipRef, checkStixCoreRelationshipMapping } from '../database/stix';
 import { FunctionalError } from '../config/errors';
-import { isStixCyberObservableRelationship } from '../schema/stixCyberObservableRelationship';
 import type { BasicObject } from '../generated/graphql';
-import { isStixMetaRelationship } from '../schema/stixMetaRelationship';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
+import { isStixRefRelationship } from '../schema/stixRefRelationship';
 
 type ConsistencyObject = Pick<BasicObject, 'entity_type'>;
 
@@ -33,15 +28,8 @@ export const checkRelationConsistency = async (
             `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
           );
         }
-      } else if (isStixCyberObservableRelationship(relationshipType)) {
-        // Check if StixCyberObservableRelationship is allowed
-        if (!checkStixCyberObservableRelationshipMapping(fromType, toType, relationshipType)) {
-          throw FunctionalError(
-            `The relationship type ${relationshipType} is not allowed between ${fromType} and ${toType}`
-          );
-        }
-      } else if (isStixMetaRelationship(relationshipType)) {
-        checkMetaRelationship(fromType, toType, relationshipType);
+      } else if (isStixRefRelationship(relationshipType)) {
+        checkRelationshipRef(fromType, toType, relationshipType);
       }
     });
   };
