@@ -21,15 +21,15 @@ class UserHistory extends Component {
     const { t, userId } = this.props;
     const { entitySearchTerm } = this.state;
     return (
-      <div>
+      <>
         <Typography
           variant="h4"
           gutterBottom={true}
-          style={{ float: 'left', margin: '16px 0 0 0' }}
+          style={{ float: 'left' }}
         >
           {t('History')}
         </Typography>
-        <div style={{ float: 'right' }}>
+        <div style={{ float: 'right', marginTop: -12 }}>
           <SearchInput
             variant="thin"
             onSubmit={this.handleSearchEntity.bind(this)}
@@ -61,7 +61,7 @@ class UserHistory extends Component {
             return <div />;
           }}
         />
-      </div>
+      </>
     );
   }
 }

@@ -4,7 +4,11 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import { CenterFocusStrongOutlined, Edit, SecurityOutlined } from '@mui/icons-material';
+import {
+  CenterFocusStrongOutlined,
+  Edit,
+  SecurityOutlined,
+} from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -12,6 +16,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { Link } from 'react-router-dom';
 import Fab from '@mui/material/Fab';
 import Drawer from '@mui/material/Drawer';
+import * as R from 'ramda';
 import AccessesMenu from '../AccessesMenu';
 import { Group_group$key } from './__generated__/Group_group.graphql';
 import GroupPopover from './GroupPopover';
@@ -21,6 +26,7 @@ import { UserLine } from '../users/UserLine';
 import UserLineTitles from '../users/UserLineTitles';
 import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
+import { truncate } from '../../../../utils/String';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -64,53 +70,50 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const groupFragment = graphql`
-    fragment Group_group on Group {
-        id
-        entity_type
-        name
-        default_assignation
-        auto_new_marking
-        description
-        members {
-            edges {
-                node {
-                    id
-                    user_email
-                    name
-                    firstname
-                    lastname
-                    external
-                }
-            }
+  fragment Group_group on Group {
+    id
+    entity_type
+    name
+    default_assignation
+    auto_new_marking
+    description
+    members {
+      edges {
+        node {
+          id
+          user_email
+          name
+          firstname
+          lastname
+          external
         }
-        roles {
-            id
-            name
-            description
-        }
-        allowed_marking {
-            id
-            definition
-            x_opencti_color
-        }
+      }
     }
+    roles {
+      id
+      name
+      description
+    }
+    allowed_marking {
+      id
+      definition
+      x_opencti_color
+      x_opencti_order
+    }
+  }
 `;
 
 const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
-
   const group = useFragment<Group_group$key>(groupFragment, groupData);
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
-
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
-
   const userColumns = {
     name: {
       label: 'Name',
@@ -143,23 +146,27 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
       isSortable: true,
     },
   };
-
+  const usersSort = R.sortWith([R.ascend(R.pathOr('name', ['node', 'name']))]);
+  const members = usersSort(group.members?.edges ?? []);
+  const markingsSort = R.sortWith([
+    R.ascend(R.propOr('TLP', 'definition_type')),
+    R.descend(R.propOr(0, 'x_opencti_order')),
+  ]);
+  const allowedMarkings = markingsSort(group.allowed_marking ?? []);
   return (
     <div className={classes.container}>
-    <AccessesMenu />
-      <div>
-        <Typography
-          variant="h1"
-          gutterBottom={true}
-          classes={{ root: classes.title }}
-        >
-          {group.name}
-        </Typography>
-        <div className={classes.popover}>
-          <GroupPopover groupId={group.id} />
-        </div>
-        <div className="clearfix" />
+      <AccessesMenu />
+      <Typography
+        variant="h1"
+        gutterBottom={true}
+        classes={{ root: classes.title }}
+      >
+        {group.name}
+      </Typography>
+      <div className={classes.popover}>
+        <GroupPopover groupId={group.id} />
       </div>
+      <div className="clearfix" />
       <Grid
         container={true}
         spacing={3}
@@ -231,17 +238,21 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                   {t('Allowed markings')}
                 </Typography>
                 <List>
-                  {group.allowed_marking?.map((marking) => (
+                  {allowedMarkings.map((marking) => (
                     <ListItem
                       key={marking?.id}
                       dense={true}
                       divider={true}
                       button={false}
                     >
-                      <ListItemIcon style={{ color: marking?.x_opencti_color ?? undefined }}>
+                      <ListItemIcon
+                        style={{ color: marking?.x_opencti_color ?? undefined }}
+                      >
                         <CenterFocusStrongOutlined />
                       </ListItemIcon>
-                      <ListItemText primary={marking?.definition} />
+                      <ListItemText
+                        primary={truncate(marking?.definition, 40)}
+                      />
                     </ListItem>
                   ))}
                 </List>
@@ -255,27 +266,27 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 20, marginLeft: 0 }}
         >
-        <Grid item={true} xs={12} >
-          <Typography variant="h4" gutterBottom={true}>
-            {t('Members')}
-          </Typography>
-          <Paper classes={{ root: classes.paper }} >
-            <Grid container={true} spacing={3}>
-              <Grid item={true} xs={12} style={{ paddingTop: 20 }} >
-                <UserLineTitles dataColumns={userColumns} />
-                <List>
-                  {group.members?.edges?.map((memberEdge) => (
-                    <UserLine
-                      key={memberEdge?.node.id}
-                      dataColumns={userColumns}
-                      node={memberEdge?.node}
-                    />
-                  ))}
-                </List>
+          <Grid item={true} xs={12}>
+            <Typography variant="h4" gutterBottom={true}>
+              {t('Members')}
+            </Typography>
+            <Paper classes={{ root: classes.paper }} variant="outlined">
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12} style={{ paddingTop: 20 }}>
+                  <UserLineTitles dataColumns={userColumns} />
+                  <List>
+                    {members.map((member) => (
+                      <UserLine
+                        key={member?.node?.id}
+                        dataColumns={userColumns}
+                        node={member.node}
+                      />
+                    ))}
+                  </List>
+                </Grid>
               </Grid>
-            </Grid>
-          </Paper>
-        </Grid>
+            </Paper>
+          </Grid>
         </Grid>
       </Grid>
       <Fab
@@ -294,10 +305,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseUpdate}
       >
-        <GroupEdition
-          groupId={group.id}
-          handleClose={handleCloseUpdate}
-        />
+        <GroupEdition groupId={group.id} handleClose={handleCloseUpdate} />
       </Drawer>
     </div>
   );

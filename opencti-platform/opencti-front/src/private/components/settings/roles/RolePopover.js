@@ -131,6 +131,7 @@ class RolePopover extends Component {
           onClick={this.handleOpen.bind(this)}
           aria-haspopup="true"
           size="large"
+          style={{ marginTop: 3 }}
         >
           <MoreVert />
         </IconButton>

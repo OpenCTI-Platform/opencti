@@ -343,21 +343,23 @@ class UserComponent extends Component {
                     {t('Roles')}
                   </Typography>
                   <List>
-                    {(R.uniq(user.roles ?? [])).sort((a, b) => a.name.localeCompare(b.name)).map((role) => (
-                      <ListItem
-                        key={role.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/roles/${role.id}`}
-                      >
-                        <ListItemIcon>
-                          <SecurityOutlined color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={role.name} />
-                      </ListItem>
-                    ))}
+                    {R.uniq(user.roles ?? [])
+                      .sort((a, b) => a.name.localeCompare(b.name))
+                      .map((role) => (
+                        <ListItem
+                          key={role.id}
+                          dense={true}
+                          divider={true}
+                          button={true}
+                          component={Link}
+                          to={`/dashboard/settings/accesses/roles/${role.id}`}
+                        >
+                          <ListItemIcon>
+                            <SecurityOutlined color="primary" />
+                          </ListItemIcon>
+                          <ListItemText primary={role.name} />
+                        </ListItem>
+                      ))}
                   </List>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -463,11 +465,14 @@ class UserComponent extends Component {
                   <Typography variant="h3" gutterBottom={true}>
                     {t('Hidden entity types')}
                   </Typography>
-                  {user.default_hidden_types && user.default_hidden_types.map((name) => <Chip
-                    key={name}
-                    classes={{ root: classes.chip }}
-                    label={name}
-                  />)}
+                  {user.default_hidden_types
+                    && user.default_hidden_types.map((name) => (
+                      <Chip
+                        key={name}
+                        classes={{ root: classes.chip }}
+                        label={name}
+                      />
+                    ))}
                 </Grid>
               </Grid>
             </Paper>
@@ -486,7 +491,7 @@ class UserComponent extends Component {
             <Paper
               classes={{ root: classes.paper }}
               variant="outlined"
-              style={{ height: 300 }}
+              style={{ marginTop: 15 }}
             >
               <QueryRenderer
                 query={userLogsTimeSeriesQuery}
@@ -515,7 +520,7 @@ class UserComponent extends Component {
                         )}
                         series={[
                           {
-                            name: t('Number of relationships'),
+                            name: t('Number of operations'),
                             data: chartData,
                           },
                         ]}
@@ -530,7 +535,7 @@ class UserComponent extends Component {
               />
             </Paper>
           </Grid>
-          <Grid item={true} xs={6} style={{ paddingTop: 8 }}>
+          <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
             <UserHistory userId={user.id} />
           </Grid>
         </Grid>
@@ -667,8 +672,8 @@ const User = createRefetchContainer(
           description
         }
         capabilities {
-            id
-            name
+          id
+          name
         }
         groups {
           edges {

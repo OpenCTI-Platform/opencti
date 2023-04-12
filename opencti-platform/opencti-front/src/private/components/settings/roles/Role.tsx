@@ -1,5 +1,10 @@
 import React, { useState } from 'react';
-import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  PreloadedQuery,
+  useFragment,
+  usePreloadedQuery,
+} from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import Typography from '@mui/material/Typography';
@@ -14,13 +19,14 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import AccessesMenu from '../AccessesMenu';
 import { useFormatter } from '../../../../components/i18n';
-import { Role_role$data, Role_role$key } from './__generated__/Role_role.graphql';
+import {
+  Role_role$data,
+  Role_role$key,
+} from './__generated__/Role_role.graphql';
 import RolePopover, { roleEditionQuery } from './RolePopover';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { roleEditionCapabilitiesLinesSearch } from './RoleEditionCapabilities';
-import {
-  RoleEditionCapabilitiesLinesSearchQuery,
-} from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
+import { RoleEditionCapabilitiesLinesSearchQuery } from './__generated__/RoleEditionCapabilitiesLinesSearchQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { QueryRenderer } from '../../../../relay/environment';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -42,7 +48,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   title: {
     float: 'left',
-    textTransform: 'uppercase',
   },
   popover: {
     float: 'left',
@@ -92,24 +97,27 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const roleFragment = graphql`
-    fragment Role_role on Role {
-        id
-        name
-        description
-        created_at
-        updated_at
-        capabilities {
-            id
-            name
-            description
-        }
-        default_hidden_types
+  fragment Role_role on Role {
+    id
+    name
+    description
+    created_at
+    updated_at
+    capabilities {
+      id
+      name
+      description
     }
+    default_hidden_types
+  }
 `;
 
-const Role = ({ roleData, groupsQueryRef }: {
-  roleData: Role_role$key,
-  groupsQueryRef: PreloadedQuery<GroupsSearchQuery>
+const Role = ({
+  roleData,
+  groupsQueryRef,
+}: {
+  roleData: Role_role$key;
+  groupsQueryRef: PreloadedQuery<GroupsSearchQuery>;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -117,24 +125,22 @@ const Role = ({ roleData, groupsQueryRef }: {
   const groupsData = usePreloadedQuery(groupsSearchQuery, groupsQueryRef);
   const groupNodes = (role: Role_role$data) => {
     return (groupsData.groups?.edges ?? [])
-      .map((group) => ((((group?.node.roles ?? [])
-        .map((r) => r?.id)).includes(role.id)) ? group?.node : null))
+      .map((group) => ((group?.node.roles ?? []).map((r) => r?.id).includes(role.id)
+        ? group?.node
+        : null))
       .filter((n) => n !== null && n !== undefined);
   };
-
   const hiddenTypes = useEntitySettings()
     .filter((entitySetting) => entitySetting.platform_hidden_type === true)
     .map((hiddenType) => hiddenType.target_type);
-
   const role = useFragment<Role_role$key>(roleFragment, roleData);
-  const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(roleEditionCapabilitiesLinesSearch);
-
+  const queryRef = useQueryLoading<RoleEditionCapabilitiesLinesSearchQuery>(
+    roleEditionCapabilitiesLinesSearch,
+  );
   const [displayUpdate, setDisplayUpdate] = useState(false);
-
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
-
   const handleCloseUpdate = () => {
     setDisplayUpdate(false);
   };
@@ -176,19 +182,25 @@ const Role = ({ roleData, groupsQueryRef }: {
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Hidden entity types')}
                 </Typography>
-                {hiddenTypes.map((name) => (!role.default_hidden_types?.includes(name)
-                  ? <Chip
-                  key={name}
-                  classes={{ root: classes.grey_chip }}
-                  label={t(`entity_${name}`)}
-                />
-                  : <></>))}
-                {role.default_hidden_types && role.default_hidden_types.map((name) => <Chip
-                  key={name}
-                  classes={{ root: classes.chip }}
-                  label={t(`entity_${name}`)}
-                />)}
-                {isEmptyField(hiddenTypes) && isEmptyField(role.default_hidden_types) && <div>{'-'}</div>}
+                {hiddenTypes.map((name) => (!role.default_hidden_types?.includes(name) ? (
+                    <Chip
+                      key={name}
+                      classes={{ root: classes.grey_chip }}
+                      label={t(`entity_${name}`)}
+                    />
+                ) : (
+                    <></>
+                )))}
+                {role.default_hidden_types
+                  && role.default_hidden_types.map((name) => (
+                    <Chip
+                      key={name}
+                      classes={{ root: classes.chip }}
+                      label={t(`entity_${name}`)}
+                    />
+                  ))}
+                {isEmptyField(hiddenTypes)
+                  && isEmptyField(role.default_hidden_types) && <div>{'-'}</div>}
               </Grid>
               <Grid item={true} xs={12}>
                 <Typography variant="h3" gutterBottom={true}>
@@ -222,11 +234,14 @@ const Role = ({ roleData, groupsQueryRef }: {
           <Paper classes={{ root: classes.paper }} variant="outlined">
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={12} style={{ paddingTop: 10 }}>
-                {queryRef
-                  && <React.Suspense>
-                    <CapabilitiesList queryRef={queryRef} role={role} ></CapabilitiesList>
+                {queryRef && (
+                  <React.Suspense>
+                    <CapabilitiesList
+                      queryRef={queryRef}
+                      role={role}
+                    ></CapabilitiesList>
                   </React.Suspense>
-                }
+                )}
               </Grid>
             </Grid>
           </Paper>

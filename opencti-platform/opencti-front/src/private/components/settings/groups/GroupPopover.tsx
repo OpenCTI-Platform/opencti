@@ -117,20 +117,13 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
         onClick={(event) => handleOpen(event)}
         aria-haspopup="true"
         size="large"
+        style={{ marginTop: 3 }}
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenUpdate}>
-          {t('Update')}
-        </MenuItem>
-        <MenuItem onClick={handleOpenDelete}>
-          {t('Delete')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={displayUpdate}
@@ -140,10 +133,7 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseUpdate}
       >
-        <GroupEdition
-          groupId={groupId}
-          handleClose={handleCloseUpdate}
-        />
+        <GroupEdition groupId={groupId} handleClose={handleCloseUpdate} />
       </Drawer>
       <Dialog
         open={displayDelete}
@@ -158,17 +148,10 @@ const GroupPopover = ({ groupId }: { groupId: string }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>

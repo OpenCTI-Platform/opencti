@@ -19,21 +19,17 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface UserLineTitlesProps {
-  dataColumns: DataColumns,
+  dataColumns: DataColumns;
 }
 
-const UserLineTitles: FunctionComponent<UserLineTitlesProps> = ({ dataColumns }) => {
+const UserLineTitles: FunctionComponent<UserLineTitlesProps> = ({
+  dataColumns,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
-
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-      button={false}
-    >
-      <ListItemIcon >
-      </ListItemIcon>
+    <ListItem classes={{ root: classes.item }} divider={false} button={false}>
+      <ListItemIcon></ListItemIcon>
       <ListItemText
         primary={
           <div>
