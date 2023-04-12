@@ -228,16 +228,13 @@ const i18n = {
       'This configuration is not available for this entity type':
         'Esta configuración no está disponible para este tipo de entidad',
       'Hidden entity types': 'Tipos de entidad ocultos',
-      'Hidden entity type': 'Tipo de entidad ocultos',
       'Hidden in roles': 'Oculto en roles',
+      'Hidden in interface': 'Oculto en la interfaz',
       'This configuration hide a specific entity type across the entire platform.':
         'Esta configuración oculta un tipo de entidad específico en toda la plataforma.',
-      'Enforce reference on entity types':
-        'Hacer cumplir la referencia en los tipos de entidad',
+      'Enforce reference': 'Hacer cumplir la referencia',
       'Create external reference at upload':
         'Crear referencia externa al cargar',
-      'Enforce mandatory external references':
-        'Hacer cumplir las referencias externas obligatorias',
       'This configuration enables the requirement of a reference message on an entity update.':
         'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -1778,10 +1775,8 @@ const i18n = {
       disagree: 'en desacuerdo',
       neutral: 'neutral',
       agree: 'de acuerdo',
-      'Entity automatic reference from files':
-        'Referencia automática de entidad desde archivos',
-      'Entities automatic reference from files':
-        'Referencia automática de entidades desde archivos',
+      'Automatic references at file upload':
+        'Referencias automáticas al cargar el archivo',
       'suggestion_threats-indicators':
         'La acción de crear `indica` reñacopmes emtre los indicadores y la amenaza seleccionada, después añade todas las relaciones al contenedor.',
       Collapse: 'Colapso',
@@ -2041,15 +2036,13 @@ const i18n = {
       'This configuration is not available for this entity type':
         "Cette configuration n'est pas disponible pour ce type d'entité",
       'Hidden entity types': "Types d'entité cachés",
-      'Hidden entity type': "Type d'entité caché",
       'Hidden in roles': 'Caché dans les roles',
+      'Hidden in interface': 'Caché dans l\'interface',
       'This configuration hide a specific entity type across the entire platform.':
         "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
-      'Enforce reference on entity types':
-        "Appliquer la référence sur les types d'entités",
-      'Enforce mandatory external references':
-        'Appliquer les références externes obligatoires',
       'Enforce references': 'Appliquer les références',
+      'Enforce reference':
+        'Appliquer les références obligatoires',
       'Hide in the platform': 'Cacher dans la plateforme',
       'This configuration enables the requirement of a reference message on an entity update.':
         "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
@@ -3573,10 +3566,8 @@ const i18n = {
       disagree: 'désapprouve',
       neutral: 'neutre',
       agree: 'approuve',
-      'Entity automatic reference from files':
-        "Référence automatique d'entité à partir de fichiers",
-      'Entities automatic reference from files':
-        'Référence automatique des entités à partir des fichiers',
+      'Automatic references at file upload':
+        'Références automatiques lors du téléchargement du fichier',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       Collapse: 'Réduire',
@@ -3793,13 +3784,12 @@ const i18n = {
       'This configuration is not available for this entity type':
         'この構成は、このエンティティ タイプでは使用できません',
       'Hidden entity types': '非表示のエンティティ種別',
-      'Hidden entity type': '非表示のエンティティ種別',
       'Hidden in roles': 'ロールに隠されている',
+      'Hidden in interface': 'インターフェイスに隠されている',
       'This configuration hide a specific entity type across the entire platform.':
         'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
-      'Enforce reference on entity types':
-        'エンティティ タイプの参照を強制する',
       'Enforce reference on entity type': 'エンティティ タイプの参照を強制する',
+      'Enforce reference': '参照を強制する',
       'This configuration enables the requirement of a reference message on an entity update.':
         'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -5320,10 +5310,8 @@ const i18n = {
       disagree: '反対',
       neutral: '中立',
       agree: '賛成',
-      'Entity automatic reference from files':
-        'ファイルからのエンティティ自動参照',
-      'Entities automatic reference from files':
-        'ファイルからのエンティティ自動参照',
+      'Automatic references at file upload':
+      'ファイルアップロード時の自動参照',
       'suggestion_threats-indicators':
         'インジケータと脅威に `指し示す` のリレーションシップを作成したあと、全てのリレーションシップをコンテナに追加する。',
       Collapse: '崩壊',
@@ -5513,12 +5501,12 @@ const i18n = {
       'This configuration is not available for this entity type':
         '此配置不适用于此实体类型',
       'Hidden entity types': '隐藏的实体类型',
-      'Hidden entity type': '隐藏的实体类型',
       'Hidden in roles': '隱藏在角色中',
+      'Hidden in interface': '隐藏在界面中',
       'This configuration hide a specific entity type across the entire platform.':
         '此配置隐藏了整个平台的特定实体类型。',
-      'Enforce reference on entity types': '对实体类型强制引用',
       'Enforce reference on entity type': '对实体类型强制引用',
+      'Enforce reference': '强制引用',
       'This configuration enables the requirement of a reference message on an entity update.':
         '此配置启用了对实体更新的参考消息的要求。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
@@ -6972,8 +6960,7 @@ const i18n = {
       disagree: '不同意',
       neutral: '中性的',
       agree: '同意',
-      'Entity automatic reference from files': '文件中的实体自动引用',
-      'Entities automatic reference from files': '从文件中自动引用实体',
+      'Automatic references at file upload': '文件上传时自动引用',
       'suggestion_threats-indicators':
         '在指标和所选威胁之间创建“指示”关系，然后将所有关系添加到容器中',
       Collapse: '坍塌',
