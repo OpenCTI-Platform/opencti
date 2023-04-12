@@ -112,9 +112,8 @@ const useStyles = makeStyles((theme) => ({
     padding: 15,
   },
   labelNumber: {
-    fontSize: 30,
+    fontSize: '1.6rem',
     fontWeight: 500,
-    ["@media (max-width: 1000px)"]: { fontSize: 26 }
   },
   labelValue: {
     fontSize: 15,
