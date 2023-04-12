@@ -78,7 +78,7 @@ EntitySettingScaleTickLineProps
                   variant="standard"
                   name="color"
                   label={t('Color')}
-                  style={{ width: '100%' }}
+                  fullWidth={true}
                   onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)
                   }
                 />

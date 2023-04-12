@@ -38,9 +38,7 @@ const isTickDefinitionValid = (tickDefinition: ScaleConfig) => {
     return false;
   }
   tickDefinition.ticks.forEach((tick) => {
-    if (
-      !!tick.value
-      && (tick.value < tickDefinition.min.value
+    if (!tick.value || (tick.value < tickDefinition.min.value
         || tick.value > tickDefinition.max.value)
     ) {
       MESSAGING$.notifyError(
@@ -111,7 +109,7 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
 
   const addTickRow = () => {
     const data: UndefinedTick = {
-      value: undefined,
+      value: '',
       color: '',
       label: '',
     };
@@ -128,8 +126,8 @@ const EntitySettingScale: FunctionComponent<EntitySettingScaleProps> = ({
   };
 
   const sortTick = (a: Tick | UndefinedTick, b: Tick | UndefinedTick) => {
-    if (!a?.value && a?.value !== 0) return -1;
-    if (!b?.value && b?.value !== 0) return -1;
+    if (typeof a.value === 'string') return -1;
+    if (typeof b.value === 'string') return -1;
     return a.value - b.value;
   };
 

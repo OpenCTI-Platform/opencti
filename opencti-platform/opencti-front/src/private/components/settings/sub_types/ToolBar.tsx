@@ -141,7 +141,7 @@ const ToolBar: FunctionComponent<{
   const retrieveNotAvailableSetting = (currentKey: keyof EntitySetting) => entitySettingsSelectedFiltered.filter(({ [currentKey]: v }) => v === null);
   const handleOpenFilesRef = () => {
     handleOpen();
-    setTitle(t('Entities automatic reference from files'));
+    setTitle(t('Automatic references at file upload'));
     setDescription(
       t(
         'This configuration enables an entity to automatically construct an external reference from the uploaded file.',
@@ -154,7 +154,7 @@ const ToolBar: FunctionComponent<{
   };
   const handleOpenHidden = () => {
     handleOpen();
-    setTitle(t('Hidden entity types'));
+    setTitle(t('Hidden in interface'));
     setDescription(
       t(
         'This configuration hide a specific entity type across the entire platform.',
@@ -165,7 +165,7 @@ const ToolBar: FunctionComponent<{
   };
   const handleOpenEnforceRef = () => {
     handleOpen();
-    setTitle(t('Enforce reference on entity types'));
+    setTitle(t('Enforce reference'));
     setDescription(
       t(
         'This configuration enables the requirement of a reference message on an entity update.',
@@ -221,7 +221,7 @@ const ToolBar: FunctionComponent<{
             <ClearOutlined fontSize="small" />
           </IconButton>
         </Typography>
-        <Tooltip title={t('Entities automatic reference from files')}>
+        <Tooltip title={t('Automatic references at file upload')}>
           <span>
             <IconButton
               aria-label="files-ref"
@@ -239,7 +239,7 @@ const ToolBar: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Hidden entity types')}>
+        <Tooltip title={t('Hidden in interface')}>
           <span>
             <IconButton
               aria-label="hidden-entity"
@@ -256,7 +256,7 @@ const ToolBar: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Enforce reference on entity types')}>
+        <Tooltip title={t('Enforce reference')}>
           <span>
             <IconButton
               aria-label="enforce-ref"

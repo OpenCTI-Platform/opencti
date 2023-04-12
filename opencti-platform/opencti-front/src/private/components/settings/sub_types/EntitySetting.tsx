@@ -99,7 +99,7 @@ const EntitySetting = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Hidden entity type')}
+            {t('Hidden in interface')}
           </Typography>
           <Tooltip
             title={
@@ -151,7 +151,7 @@ const EntitySetting = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Entity automatic reference from files')}
+            {t('Automatic references at file upload')}
           </Typography>
           <Tooltip
             title={
@@ -198,7 +198,7 @@ const EntitySetting = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Enforce mandatory external references')}
+            {t('Enforce reference')}
           </Typography>
           <Tooltip
             title={

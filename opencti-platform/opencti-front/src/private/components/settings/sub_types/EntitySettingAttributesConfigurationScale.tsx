@@ -45,7 +45,7 @@ export interface Tick {
 }
 
 export interface UndefinedTick {
-  value: undefined;
+  value: string;
   label: string;
   color: string;
 }
@@ -126,7 +126,7 @@ const EntitySettingAttributesConfigurationScale = ({
   return (
     <>
       {scaleAttributes.map((attr) => (
-        <Grid item={true} xs={6} style={{ marginTop: 25 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 25 }} key={attr.name}>
           <Typography variant="h4" gutterBottom={true}>
             {t(`${attr.name} scale configuration`)}
           </Typography>
