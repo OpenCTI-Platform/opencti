@@ -773,7 +773,6 @@ class OpenCTIStix2:
             "opinion": self.opencti.opinion.import_from_stix2,
             "report": self.opencti.report.import_from_stix2,
             "grouping": self.opencti.grouping.import_from_stix2,
-            "case": self.opencti.case.import_from_stix2,
             "case-rfi": self.opencti.case_rfi.import_from_stix2,
             "case-rft": self.opencti.case_rft.import_from_stix2,
             "case-incident": self.opencti.case_incident.import_from_stix2,
