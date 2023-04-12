@@ -1,4 +1,4 @@
-import type { AuthUser, AuthContext } from '../../types/user';
+import type { AuthContext, AuthUser } from '../../types/user';
 import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
@@ -6,8 +6,7 @@ import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
 import type { NarrativeAddInput, QueryNarrativesArgs } from '../../generated/graphql';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityNarrative, ENTITY_TYPE_NARRATIVE } from './narrative-types';
-import { RELATION_SUBNARRATIVE_OF, RELATION_SUBTECHNIQUE_OF } from '../../schema/stixCoreRelationship';
-import { ENTITY_TYPE_ATTACK_PATTERN } from '../../schema/stixDomainObject';
+import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
 
 export const findById = (context: AuthContext, user: AuthUser, narrativeId: string): BasicStoreEntityNarrative => {
   return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NARRATIVE) as unknown as BasicStoreEntityNarrative;
@@ -35,8 +34,8 @@ export const batchIsSubNarrative = async (context: AuthContext, user: AuthUser, 
     context,
     user,
     narrativeIds,
-    RELATION_SUBTECHNIQUE_OF,
-    ENTITY_TYPE_ATTACK_PATTERN,
+    RELATION_SUBNARRATIVE_OF,
+    ENTITY_TYPE_NARRATIVE,
     { paginate: false }
   );
   return batchNarratives.map((b) => b.length > 0);
