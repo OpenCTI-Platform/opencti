@@ -1,5 +1,5 @@
 import { RELATION_PART_OF } from '../../schema/stixCoreRelationship';
-import type { RuleDefinition, RuleBehavior } from '../../types/rules';
+import type { RuleDefinition } from '../../types/rules';
 import { RELATION_PARTICIPATE_TO } from '../../schema/internalRelationship';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../schema/stixDomainObject';
@@ -53,11 +53,10 @@ const filterPartOf = {
   toTypes: [ENTITY_TYPE_IDENTITY_ORGANIZATION]
 };
 
-const behaviors: Array<RuleBehavior> = [];
 const scopes = [
   { filters: filterParticipateTo, attributes: [] },
   { filters: filterPartOf, attributes: [] }
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

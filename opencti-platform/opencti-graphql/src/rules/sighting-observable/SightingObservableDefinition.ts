@@ -1,7 +1,7 @@
 import { ABSTRACT_STIX_CYBER_OBSERVABLE, ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { ENTITY_TYPE_INDICATOR } from '../../schema/stixDomainObject';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
-import type { RuleDefinition, RuleBehavior } from '../../types/rules';
+import type { RuleDefinition } from '../../types/rules';
 import { RELATION_BASED_ON } from '../../schema/stixCoreRelationship';
 
 const id = 'sighting_observable';
@@ -41,7 +41,6 @@ const display = {
 const scan = { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] };
 
 // For live
-const behaviors: Array<RuleBehavior> = [];
 const scopes = [
   {
     filters: { types: [STIX_SIGHTING_RELATIONSHIP], fromTypes: [ABSTRACT_STIX_CYBER_OBSERVABLE], toTypes: [ENTITY_TYPE_IDENTITY, ENTITY_TYPE_LOCATION] },
@@ -53,5 +52,5 @@ const scopes = [
   },
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

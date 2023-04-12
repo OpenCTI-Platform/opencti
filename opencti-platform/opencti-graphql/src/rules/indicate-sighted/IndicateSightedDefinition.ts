@@ -1,5 +1,5 @@
 import { RELATION_INDICATES } from '../../schema/stixCoreRelationship';
-import type { RuleBehavior, RuleDefinition } from '../../types/rules';
+import type { RuleDefinition } from '../../types/rules';
 import { STIX_SIGHTING_RELATIONSHIP } from '../../schema/stixSightingRelationship';
 import {
   ENTITY_TYPE_CAMPAIGN,
@@ -54,11 +54,10 @@ const filtersIndicates = {
   fromTypes: [ENTITY_TYPE_INDICATOR],
   toTypes: [ENTITY_TYPE_MALWARE, ENTITY_TYPE_THREAT_ACTOR, ENTITY_TYPE_INTRUSION_SET, ENTITY_TYPE_CAMPAIGN, ENTITY_TYPE_INCIDENT]
 };
-const behaviors: Array<RuleBehavior> = [];
 const scopes = [
   { filters: filtersSighting, attributes: [] },
   { filters: filtersIndicates, attributes: [] }
 ];
 
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;

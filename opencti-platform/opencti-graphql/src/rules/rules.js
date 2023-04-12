@@ -2,37 +2,45 @@ import * as R from 'ramda';
 import { UnsupportedError } from '../config/errors';
 import { isInternalId, shortHash } from '../schema/schemaUtils';
 import { RULE_PREFIX } from '../schema/general';
-import { isEmptyField, isNotEmptyField } from '../database/utils';
-import { logApp } from '../config/conf';
 import { RULE_MANAGER_USER_UUID } from '../utils/access';
+import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
+import { isStixCoreObject } from '../schema/stixCoreObject';
+import { isBasicRelationship } from '../schema/stixRelationship';
+import { ENTITY_TYPE_INCIDENT } from '../schema/stixDomainObject';
 
 // region definition
 export const RULES_ATTRIBUTES_BEHAVIOR = {
   OPERATIONS: { MIN: 'MIN', MAX: 'MAX', AVG: 'AVG', SUM: 'SUM', AGG: 'AGG' },
-  _attributes: {
-    start_time: 'MIN',
-    first_seen: 'MIN',
-    stop_time: 'MAX',
-    last_seen: 'MAX',
-    confidence: 'AVG',
-    objectMarking: 'AGG',
-  },
-  register({ ruleId, attribute, operation }) {
-    const meta = { ruleId, attribute, operation };
-    if (isEmptyField(this.OPERATIONS[operation])) {
-      throw UnsupportedError('Try to register an unsupported operation', meta);
+  supportedAttributes(entityType) {
+    if (isStixSightingRelationship(entityType)) {
+      return [
+        { name: 'first_seen', operation: 'MIN' },
+        { name: 'last_seen', operation: 'MAX' },
+        { name: 'confidence', operation: 'AVG' },
+        { name: 'attribute_count', operation: 'SUM' },
+        { name: 'objectMarking', operation: 'AGG' },
+      ];
     }
-    const declaredOperation = this._attributes[attribute];
-    if (isNotEmptyField(declaredOperation) && declaredOperation !== operation) {
-      logApp.warn('Overriding attribute rule operation', meta);
+    if (isBasicRelationship(entityType)) {
+      return [
+        { name: 'start_time', operation: 'MIN' },
+        { name: 'stop_time', operation: 'MAX' },
+        { name: 'confidence', operation: 'AVG' },
+        { name: 'objectMarking', operation: 'AGG' },
+      ];
     }
-    this._attributes[attribute] = operation;
-  },
-  getOperation(name) {
-    return this._attributes[name];
-  },
-  supportedAttributes() {
-    return Object.keys(this._attributes);
+    if (entityType === ENTITY_TYPE_INCIDENT) { // RuleSightingIncident
+      return [
+        { name: 'first_seen', operation: 'MIN' },
+        { name: 'last_seen', operation: 'MAX' },
+        { name: 'confidence', operation: 'AVG' },
+        { name: 'objectMarking', operation: 'AGG' },
+      ];
+    }
+    if (isStixCoreObject(entityType)) {
+      return [{ name: 'objectMarking', operation: 'AGG' }];
+    }
+    return [];
   },
 };
 // endregion

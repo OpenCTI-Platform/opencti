@@ -1,7 +1,7 @@
 import { RELATION_LOCATED_AT } from '../../schema/stixCoreRelationship';
 import { ENTITY_TYPE_LOCATION } from '../../schema/general';
 import { ENTITY_TYPE_CONTAINER_REPORT } from '../../schema/stixDomainObject';
-import type { RuleBehavior, RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
+import type { RuleDefinition, RuleFilters, RuleScope } from '../../types/rules';
 
 const id = 'report_ref_location_located_at';
 const name = 'Locations propagation in reports';
@@ -61,6 +61,5 @@ const scopes: Array<RuleScope> = [
   },
 ];
 
-const behaviors: Array<RuleBehavior> = [];
-const definition: RuleDefinition = { id, name, description, scan, scopes, behaviors, category, display };
+const definition: RuleDefinition = { id, name, description, scan, scopes, category, display };
 export default definition;
