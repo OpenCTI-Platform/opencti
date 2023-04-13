@@ -78,6 +78,8 @@ export const fromB64 = (str) => Base64.decode(str);
 
 export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R.map(R.eqProps)(fields)))(data));
 
+export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
+
 export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':

@@ -377,8 +377,10 @@ const i18n = {
       'Create a feedback': 'Crear un comentario',
       'Update a feedback': 'Actualizar un comentario',
       'Submit a feedback': 'Enviar un comentario',
-      'Do you want to delete this case incident ?': '¿Desea eliminar este incidente de caso?',
-      'Do you want to delete this feedback ?': '¿Quieres eliminar este comentario?',
+      'Do you want to delete this case incident ?':
+        '¿Desea eliminar este incidente de caso?',
+      'Do you want to delete this feedback ?':
+        '¿Quieres eliminar este comentario?',
       'Export to image': 'Exportar a image',
       'Export to PDF': 'Exportar a PDF',
       'Export to CSV': 'Exportar a CSV',
@@ -756,7 +758,9 @@ const i18n = {
       entity_Threats: 'Amenazas',
       entity_Case: 'Caso',
       entity_Feedback: 'Comentario',
-      'entity_Case-Incident': 'Incident',
+      'entity_Case-Incident': 'Respuesta al incidente',
+      'entity_Case-Rfi': 'Solicitud de información',
+      'entity_Case-Rft': 'Solicitud de eliminación',
       entity_Arsenal: 'Arsenal',
       entity_Entities: 'Entidades',
       entity_Techniques: 'Técnicas',
@@ -1141,13 +1145,20 @@ const i18n = {
       'Incident Date': 'Fecha del incidente',
       'Confidence level': 'Nivel de confianza',
       Confidence: 'Confianza',
-      'The min value cannot be greater than max value': 'El valor mínimo no puede ser mayor que el valor máximo',
-      'Each tick value must be between min and max value': 'Cada valor de tick debe estar entre el valor mínimo y máximo',
-      'The value must be between min and max value': 'El valor debe estar entre el valor mínimo y máximo',
-      'The value must be greater than or equal to 0': 'El valor debe ser mayor o igual a 0',
-      'The value must be less than or equal to 100': 'El valor debe ser menor o igual a 100',
-      'The color must be written in hexadecimal. Example: #ff9800': 'El color debe estar escrito en hexadecimal. Ejemplo: #ff9800',
-      'confidence scale configuration has been successfully updated': 'La configuración de la escala de confianza se ha actualizado correctamente',
+      'The min value cannot be greater than max value':
+        'El valor mínimo no puede ser mayor que el valor máximo',
+      'Each tick value must be between min and max value':
+        'Cada valor de tick debe estar entre el valor mínimo y máximo',
+      'The value must be between min and max value':
+        'El valor debe estar entre el valor mínimo y máximo',
+      'The value must be greater than or equal to 0':
+        'El valor debe ser mayor o igual a 0',
+      'The value must be less than or equal to 100':
+        'El valor debe ser menor o igual a 100',
+      'The color must be written in hexadecimal. Example: #ff9800':
+        'El color debe estar escrito en hexadecimal. Ejemplo: #ff9800',
+      'confidence scale configuration has been successfully updated':
+        'La configuración de la escala de confianza se ha actualizado correctamente',
       'Add Tick': 'Añadir rotulador',
       'Response type': 'Tipo de respuesta',
       'Related cases': 'Casos relacionados',
@@ -2037,12 +2048,11 @@ const i18n = {
         "Cette configuration n'est pas disponible pour ce type d'entité",
       'Hidden entity types': "Types d'entité cachés",
       'Hidden in roles': 'Caché dans les roles',
-      'Hidden in interface': 'Caché dans l\'interface',
+      'Hidden in interface': "Caché dans l'interface",
       'This configuration hide a specific entity type across the entire platform.':
         "Cette configuration masque un type d'entité spécifique sur l'ensemble de la plateforme.",
       'Enforce references': 'Appliquer les références',
-      'Enforce reference':
-        'Appliquer les références obligatoires',
+      'Enforce reference': 'Appliquer les références obligatoires',
       'Hide in the platform': 'Cacher dans la plateforme',
       'This configuration enables the requirement of a reference message on an entity update.':
         "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
@@ -2177,8 +2187,10 @@ const i18n = {
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
-      'Do you want to delete this case incident ?': 'Voulez-vous supprimer ce cas d\'incident ?',
-      'Do you want to delete this feedback ?': 'Voulez-vous supprimer ce commentaire ?',
+      'Do you want to delete this case incident ?':
+        "Voulez-vous supprimer ce cas d'incident ?",
+      'Do you want to delete this feedback ?':
+        'Voulez-vous supprimer ce commentaire ?',
       'Export to image': 'Exporter en image',
       'Export to PDF': 'Exporter en PDF',
       'Export to CSV': 'Exporter en CSV',
@@ -2549,7 +2561,9 @@ const i18n = {
       entity_Threats: 'Menaces',
       entity_Case: 'Case',
       entity_Feedback: 'Commentaire',
-      'entity_Case-Incident': 'Incident',
+      'entity_Case-Incident': 'Réponse aux incidents',
+      'entity_Case-Rfi': "Demande d'information",
+      'entity_Case-Rft': 'Demande de retrait',
       entity_Arsenal: 'Arsenal',
       entity_Entities: 'Entité',
       entity_Techniques: 'Techniques',
@@ -2930,16 +2944,23 @@ const i18n = {
       Priority: 'Priorité',
       Rating: 'Notation',
       'Incident type': "Type d'incident",
-      'Incident Date': 'Date de l\'incident',
+      'Incident Date': "Date de l'incident",
       'Confidence level': 'Niveau de confiance',
       Confidence: 'Confiance',
-      'The min value cannot be greater than max value': 'La valeur min ne peut pas être supérieure à la valeur max',
-      'Each tick value must be between min and max value': 'Chaque valeur de marqueur doit être comprise entre la valeur min et max',
-      'The value must be between min and max value': 'La valeur doit être comprise entre la valeur min et max',
-      'The value must be greater than or equal to 0': 'La valeur doit être supérieure ou égale à 0',
-      'The value must be less than or equal to 100': 'La valeur doit être inférieure ou égale à 100',
-      'The color must be written in hexadecimal. Example: #ff9800': 'La couleur doit être écrite en hexadécimal. Exemple : #ff9800',
-      'confidence scale configuration has been successfully updated': 'La configuration de l\'échelle de confiance a été mise à jour avec succès',
+      'The min value cannot be greater than max value':
+        'La valeur min ne peut pas être supérieure à la valeur max',
+      'Each tick value must be between min and max value':
+        'Chaque valeur de marqueur doit être comprise entre la valeur min et max',
+      'The value must be between min and max value':
+        'La valeur doit être comprise entre la valeur min et max',
+      'The value must be greater than or equal to 0':
+        'La valeur doit être supérieure ou égale à 0',
+      'The value must be less than or equal to 100':
+        'La valeur doit être inférieure ou égale à 100',
+      'The color must be written in hexadecimal. Example: #ff9800':
+        'La couleur doit être écrite en hexadécimal. Exemple : #ff9800',
+      'confidence scale configuration has been successfully updated':
+        "La configuration de l'échelle de confiance a été mise à jour avec succès",
       'Add Tick': 'Ajouter un marqueur',
       'Response type': 'Type de réponse',
       'Related cases': 'Cas connexes',
@@ -3931,8 +3952,10 @@ const i18n = {
       'Create a feedback': 'フィードバックを作成する',
       'Update a feedback': 'フィードバックを更新する',
       'Submit a feedback': 'フィードバックを送信する',
-      'Do you want to delete this case incident ?': 'このケース インシデントを削除しますか?',
-      'Do you want to delete this feedback ?': 'このフィードバックを削除しますか?',
+      'Do you want to delete this case incident ?':
+        'このケース インシデントを削除しますか?',
+      'Do you want to delete this feedback ?':
+        'このフィードバックを削除しますか?',
       'Export to image': '画像を出力',
       'Export to PDF': 'PDFを出力',
       'Export to CSV': 'CSVを出力',
@@ -4303,8 +4326,10 @@ const i18n = {
       Threats: '脅威',
       entity_Threats: '脅威',
       entity_Case: '場合',
-      entity_Feedback: 'フィードバック\n',
-      'entity_Case-Incident': '事件',
+      entity_Feedback: 'フィードバック',
+      'entity_Case-Incident': 'インシデント対応',
+      'entity_Case-Rfi': '情報を要求する',
+      'entity_Case-Rft': '削除のリクエスト',
       entity_Arsenal: '武器庫',
       entity_Entities: 'エンティティ',
       entity_Techniques: '技術',
@@ -4682,13 +4707,20 @@ const i18n = {
       'Incident Date': 'インシデントの日付',
       'Confidence level': '信頼水準',
       Confidence: '信頼度',
-      'The min value cannot be greater than max value': '最小値を最大値より大きくすることはできません',
-      'Each tick value must be between min and max value': '各マーカー値は最小値と最大値の間にある必要があります',
-      'The value must be between min and max value': '値は最小値と最大値の間でなければなりません',
-      'The value must be greater than or equal to 0': '値は 0 以上である必要があります',
-      'The value must be less than or equal to 100': '値は 100 以下である必要があります',
-      'The color must be written in hexadecimal. Example: #ff9800': '色は 16 進数で記述する必要があります。例: #ff9800',
-      'confidence scale configuration has been successfully updated': '信頼度スケールの構成が正常に更新されました',
+      'The min value cannot be greater than max value':
+        '最小値を最大値より大きくすることはできません',
+      'Each tick value must be between min and max value':
+        '各マーカー値は最小値と最大値の間にある必要があります',
+      'The value must be between min and max value':
+        '値は最小値と最大値の間でなければなりません',
+      'The value must be greater than or equal to 0':
+        '値は 0 以上である必要があります',
+      'The value must be less than or equal to 100':
+        '値は 100 以下である必要があります',
+      'The color must be written in hexadecimal. Example: #ff9800':
+        '色は 16 進数で記述する必要があります。例: #ff9800',
+      'confidence scale configuration has been successfully updated':
+        '信頼度スケールの構成が正常に更新されました',
       'Add Tick': 'マーカーを追加',
       'Response type': '応答タイプ',
       'Related cases': '関連事例',
@@ -5310,8 +5342,7 @@ const i18n = {
       disagree: '反対',
       neutral: '中立',
       agree: '賛成',
-      'Automatic references at file upload':
-      'ファイルアップロード時の自動参照',
+      'Automatic references at file upload': 'ファイルアップロード時の自動参照',
       'suggestion_threats-indicators':
         'インジケータと脅威に `指し示す` のリレーションシップを作成したあと、全てのリレーションシップをコンテナに追加する。',
       Collapse: '崩壊',
@@ -5975,7 +6006,9 @@ const i18n = {
       entity_Threats: '威胁',
       entity_Case: '案件',
       entity_Feedback: '反饋',
-      'entity_Case-Incident': '事件',
+      'entity_Case-Incident': '事件响应',
+      'entity_Case-Rfi': '信息请求',
+      'entity_Case-Rft': '要求删除',
       entity_Arsenal: '武器库',
       entity_Entities: '实体',
       entity_Techniques: '技術',
@@ -6350,12 +6383,16 @@ const i18n = {
       'Confidence level': '置信级别',
       Confidence: '置信度',
       'The min value cannot be greater than max value': '最小值不能大于最大值',
-      'Each tick value must be between min and max value': '每个刻度值必须介于最小值和最大值之间',
-      'The value must be between min and max value': '该值必须介于最小值和最大值之间',
+      'Each tick value must be between min and max value':
+        '每个刻度值必须介于最小值和最大值之间',
+      'The value must be between min and max value':
+        '该值必须介于最小值和最大值之间',
       'The value must be greater than or equal to 0': '该值必须大于或等于 0',
       'The value must be less than or equal to 100': '该值必须小于或等于 100',
-      'The color must be written in hexadecimal. Example: #ff9800': '颜色必须以十六进制书写。示例：#ff9800',
-      'confidence scale configuration has been successfully updated': '置信度配置已成功更新',
+      'The color must be written in hexadecimal. Example: #ff9800':
+        '颜色必须以十六进制书写。示例：#ff9800',
+      'confidence scale configuration has been successfully updated':
+        '置信度配置已成功更新',
       'Add Tick': '添加标记',
       'Response type': '響應類型',
       'Related cases': '相关案例',
@@ -6978,7 +7015,9 @@ const i18n = {
       entity_Threats: 'Threats',
       entity_Case: 'Case',
       entity_Feedback: 'Feedback',
-      'entity_Case-Incident': 'Incident',
+      'entity_Case-Incident': 'Incident response',
+      'entity_Case-Rfi': 'Request for information',
+      'entity_Case-Rft': 'Request for takedown',
       entity_Arsenal: 'Arsenal',
       entity_Entities: 'Entities',
       entity_Techniques: 'Techniques',

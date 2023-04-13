@@ -55,7 +55,12 @@ import {
   typesContainers,
   workbenchAttributes,
 } from '../../../../../utils/Entity';
-import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../../relay/environment';
 import TextField from '../../../../../components/TextField';
 import DateTimePickerField from '../../../../../components/DateTimePickerField';
 import SwitchField from '../../../../../components/SwitchField';
@@ -64,7 +69,13 @@ import ObjectLabelField from '../../form/ObjectLabelField';
 import ObjectMarkingField from '../../form/ObjectMarkingField';
 import { ExternalReferencesField } from '../../form/ExternalReferencesField';
 import MarkDownField from '../../../../../components/MarkDownField';
-import { convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
+import {
+  computeDuplicates,
+  convertFromStixType,
+  convertToStixType,
+  truncate,
+  uniqWithByFields,
+} from '../../../../../utils/String';
 import ItemIcon from '../../../../../components/ItemIcon';
 import ItemBoolean from '../../../../../components/ItemBoolean';
 import StixItemLabels from '../../../../../components/StixItemLabels';
@@ -1910,20 +1921,34 @@ class WorkbenchFileContentComponent extends Component {
             };
             const attributes = R.pipe(
               R.map((n) => n.node.value),
-              R.filter((n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_')),
+              R.filter(
+                (n) => !R.includes(n, ignoredAttributes) && !n.startsWith('i_'),
+              ),
             )(props.schemaAttributes.edges);
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = observable[attribute] ? buildDate(observable[attribute]) : null;
+                initialValues[attribute] = observable[attribute]
+                  ? buildDate(observable[attribute])
+                  : null;
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = observable[attribute] ?? false;
               } else if (R.includes(attribute, multipleAttributes)) {
-                initialValues[attribute] = Array.isArray(observable[attribute]) ? observable[attribute].join(',') : observable[attribute];
+                initialValues[attribute] = Array.isArray(observable[attribute])
+                  ? observable[attribute].join(',')
+                  : observable[attribute];
               } else if (attribute === 'hashes') {
-                initialValues.hashes_MD5 = observable[attribute] ? observable[attribute].MD5 ?? '' : '';
-                initialValues['hashes_SHA-1'] = observable[attribute] ? observable[attribute]['SHA-1'] ?? '' : '';
-                initialValues['hashes_SHA-256'] = observable[attribute] ? observable[attribute]['SHA-256'] ?? '' : '';
-                initialValues['hashes_SHA-512'] = observable[attribute] ? observable[attribute]['SGA-512'] ?? '' : '';
+                initialValues.hashes_MD5 = observable[attribute]
+                  ? observable[attribute].MD5 ?? ''
+                  : '';
+                initialValues['hashes_SHA-1'] = observable[attribute]
+                  ? observable[attribute]['SHA-1'] ?? ''
+                  : '';
+                initialValues['hashes_SHA-256'] = observable[attribute]
+                  ? observable[attribute]['SHA-256'] ?? ''
+                  : '';
+                initialValues['hashes_SHA-512'] = observable[attribute]
+                  ? observable[attribute]['SGA-512'] ?? ''
+                  : '';
               } else {
                 initialValues[attribute] = observable[attribute] ?? '';
               }
@@ -2230,8 +2255,11 @@ class WorkbenchFileContentComponent extends Component {
         values,
       ),
       labels: R.pluck('label', values.objectLabel),
-      object_marking_refs: R.pluck('entity', values.objectMarking).map((n) => n.standard_id || n.id),
-      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      object_marking_refs: R.pluck('entity', values.objectMarking).map(
+        (n) => n.standard_id || n.id,
+      ),
+      created_by_ref:
+        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     // numberAttributes must be rewritten to actual number
@@ -2240,7 +2268,9 @@ class WorkbenchFileContentComponent extends Component {
       const numberAttribute = numberAttributes[i];
       if (availableKeys.includes(numberAttribute)) {
         const numericAttr = finalValues[numberAttribute];
-        finalValues[numberAttribute] = isEmptyField(numericAttr) ? null : parseInt(numericAttr, 10);
+        finalValues[numberAttribute] = isEmptyField(numericAttr)
+          ? null
+          : parseInt(numericAttr, 10);
       }
     }
     if (!R.isEmpty(hashes)) {
@@ -2266,18 +2296,23 @@ class WorkbenchFileContentComponent extends Component {
         || !n[observableDefaultKey]
         || isEmptyField(n[observableDefaultKey]),
     );
+    const groupedObservablesOfSameTypeAndKey = computeDuplicates(
+      observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
+      R.uniqBy(R.prop('id'), [
+        ...observablesOfSameTypeAndKey.filter(
+          (n) => n.id !== updatedObservable.id,
+        ),
+        updatedObservable,
+      ]),
+    );
+    const deduplicatedObservablesOfSameTypeAndKey = R.map(
+      (n) => R.mergeAll(n),
+      groupedObservablesOfSameTypeAndKey,
+    );
     this.setState(
       {
         stixCyberObservables: [
-          ...uniqWithByFields(
-            observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
-            R.uniqBy(R.prop('id'), [
-              ...observablesOfSameTypeAndKey.filter(
-                (n) => n.id !== updatedObservable.id,
-              ),
-              updatedObservable,
-            ]),
-          ),
+          ...deduplicatedObservablesOfSameTypeAndKey,
           ...otherObservables.filter((n) => n.id !== updatedObservable.id),
         ],
         stixDomainObjects: uniqWithByFields(
@@ -2326,7 +2361,9 @@ class WorkbenchFileContentComponent extends Component {
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => ['report', 'note', 'grouping', 'feedback', 'case-incident'].includes(convertToStixType(n.label))),
+      R.filter((n) => ['report', 'note', 'grouping', 'feedback', 'case-incident'].includes(
+        convertToStixType(n.label),
+      )),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
@@ -2372,7 +2409,9 @@ class WorkbenchFileContentComponent extends Component {
             );
             for (const attribute of attributes) {
               if (R.includes(attribute, dateAttributes)) {
-                initialValues[attribute] = container[attribute] ? buildDate(container[attribute]) : now();
+                initialValues[attribute] = container[attribute]
+                  ? buildDate(container[attribute])
+                  : now();
               } else if (R.includes(attribute, booleanAttributes)) {
                 initialValues[attribute] = container[attribute] || false;
               } else {
@@ -2380,9 +2419,11 @@ class WorkbenchFileContentComponent extends Component {
               }
             }
             return (
-              <Formik initialValues={initialValues}
+              <Formik
+                initialValues={initialValues}
                 onSubmit={this.onSubmitContainer.bind(this)}
-                onReset={this.onResetContainer.bind(this)}>
+                onReset={this.onResetContainer.bind(this)}
+              >
                 {({
                   submitForm,
                   handleReset,
@@ -2829,10 +2870,16 @@ class WorkbenchFileContentComponent extends Component {
       }
       : null;
     const finalValues = {
-      ...R.omit(['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'], values),
+      ...R.omit(
+        ['objectLabel', 'objectMarking', 'createdBy', 'externalReferences'],
+        values,
+      ),
       labels: R.pluck('label', values.objectLabel),
-      object_marking_refs: R.pluck('entity', values.objectMarking).map((n) => n.standard_id || n.id),
-      created_by_ref: values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
+      object_marking_refs: R.pluck('entity', values.objectMarking).map(
+        (n) => n.standard_id || n.id,
+      ),
+      created_by_ref:
+        values.createdBy?.entity?.standard_id || values.createdBy?.entity?.id,
       external_references: R.pluck('entity', values.externalReferences),
     };
     const stixType = convertToStixType(containerType);
