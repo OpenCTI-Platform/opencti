@@ -147,17 +147,12 @@ IncidentEditionDetailsProps
   const handleSubmitField = (name: string, value: string | string[] | null) => {
     if (!enableReferences) {
       const finalValue: string = value as string;
-      incidentEditionDetailsValidation(t)
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          commitFieldPatch({
-            variables: {
-              id: incident.id,
-              input: [{ key: name, value: [finalValue ?? ''] }],
-            },
-          });
-        })
-        .catch(() => false);
+      commitFieldPatch({
+        variables: {
+          id: incident.id,
+          input: [{ key: name, value: [finalValue ?? ''] }],
+        },
+      });
     }
   };
 

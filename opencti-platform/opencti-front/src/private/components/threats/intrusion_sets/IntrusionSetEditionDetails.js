@@ -123,18 +123,13 @@ const IntrusionSetEditionDetailsComponent = (props) => {
       if (name === 'goals') {
         finalValue = value && value.length > 0 ? R.split('\n', value) : [];
       }
-      intrusionSetValidation(t)
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          commitMutation({
-            mutation: intrusionSetMutationFieldPatch,
-            variables: {
-              id: intrusionSet.id,
-              input: { key: name, value: finalValue || '' },
-            },
-          });
-        })
-        .catch(() => false);
+      commitMutation({
+        mutation: intrusionSetMutationFieldPatch,
+        variables: {
+          id: intrusionSet.id,
+          input: { key: name, value: finalValue || '' },
+        },
+      });
     }
   };
 

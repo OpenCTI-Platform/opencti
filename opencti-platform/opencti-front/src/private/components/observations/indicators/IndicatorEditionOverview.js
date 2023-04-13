@@ -185,20 +185,15 @@ const IndicatorEditionOverviewComponent = ({
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      indicatorValidator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: indicator.id,
-              input: {
-                key: name,
-                value: finalValue ?? '',
-              },
-            },
-          });
-        })
-        .catch(() => false);
+      editor.fieldPatch({
+        variables: {
+          id: indicator.id,
+          input: {
+            key: name,
+            value: finalValue ?? '',
+          },
+        },
+      });
     }
   };
 

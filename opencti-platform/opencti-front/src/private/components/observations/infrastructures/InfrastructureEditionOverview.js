@@ -172,17 +172,12 @@ const InfrastructureEditionOverviewComponent = (props) => {
       if (name === 'x_opencti_workflow_id') {
         finalValue = value.value;
       }
-      infrastructureValidator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: infrastructure.id,
-              input: { key: name, value: finalValue ?? '' },
-            },
-          });
-        })
-        .catch(() => false);
+      editor.fieldPatch({
+        variables: {
+          id: infrastructure.id,
+          input: { key: name, value: finalValue ?? '' },
+        },
+      });
     }
   };
 
