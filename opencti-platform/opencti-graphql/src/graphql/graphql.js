@@ -49,10 +49,11 @@ const createApolloServer = () => {
     apolloValidationRules.push(...protection.validationRules);
   }
   // In production mode, we use static from the server
-  const playgroundOptions = DEV_MODE ? {} : {
+  const playgroundOptions = DEV_MODE ? { settings: { 'request.credentials': 'include' } } : {
     cdnUrl: `${basePath}/static`,
     title: 'OpenCTI Playground',
-    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`
+    faviconUrl: `${basePath}/static/@apollographql/graphql-playground-react@1.7.42/build/static/favicon.png`,
+    settings: { 'request.credentials': 'include' }
   };
   const playgroundPlugin = ApolloServerPluginLandingPageGraphQLPlayground(playgroundOptions);
   apolloPlugins.push(PLAYGROUND_ENABLED ? playgroundPlugin : ApolloServerPluginLandingPageDisabled());
