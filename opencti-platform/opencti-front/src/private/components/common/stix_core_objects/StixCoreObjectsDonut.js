@@ -11,6 +11,7 @@ import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -254,7 +255,12 @@ const StixCoreObjectsDonut = ({
           ) {
             const data = props.stixCoreObjectsDistribution;
             const chartData = data.map((n) => n.value);
-            const labels = data.map((n) => n.label);
+            // eslint-disable-next-line no-nested-ternary
+            const labels = data.map((n) => (selection.attribute.endsWith('_id')
+              ? defaultValue(n.entity)
+              : selection.attribute === 'entity_type'
+                ? t(`entity_${n.label}`)
+                : n.label));
             return (
               <Chart
                 options={donutChartOptions(theme, labels)}
