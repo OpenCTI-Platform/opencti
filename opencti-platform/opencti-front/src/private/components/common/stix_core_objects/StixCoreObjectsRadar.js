@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 
 const stixCoreObjectsRadarDistributionQuery = graphql`
   query StixCoreObjectsRadarDistributionQuery(
-    $objectId: String
+    $objectId: [String]
     $relationship_type: [String]
     $toTypes: [String]
     $field: String!
@@ -194,7 +194,7 @@ const StixCoreObjectsRadar = ({
     const dataSelectionTypes = R.head(
       finalFilters.filter((n) => n.key === 'entity_type'),
     )?.values || ['Stix-Core-Object'];
-    const dataSelectionObjectId = R.head(finalFilters.filter((n) => n.key === 'elementId'))?.values || null;
+    const dataSelectionObjectId = finalFilters.filter((n) => n.key === 'elementId')?.values || null;
     const dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
       ?.values || null;
     const dataSelectionToTypes = R.head(finalFilters.filter((n) => n.key === 'toTypes'))?.values || null;

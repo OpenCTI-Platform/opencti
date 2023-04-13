@@ -139,6 +139,30 @@ const stixDomainObjectsTimelineQuery = graphql`
             name
             description
           }
+          ... on Event {
+            name
+            description
+          }
+          ... on Channel {
+            name
+            description
+          }
+          ... on Narrative {
+            name
+            description
+          }
+          ... on Language {
+            name
+          }
+          ... on DataComponent {
+            name
+          }
+          ... on DataSource {
+            name
+          }
+          ... on Case {
+            name
+          }
         }
       }
     }

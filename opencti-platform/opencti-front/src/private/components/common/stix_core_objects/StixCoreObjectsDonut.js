@@ -24,7 +24,7 @@ const useStyles = makeStyles(() => ({
 
 const stixCoreObjectsDonutDistributionQuery = graphql`
   query StixCoreObjectsDonutDistributionQuery(
-    $objectId: String
+    $objectId: [String]
     $relationship_type: [String]
     $toTypes: [String]
     $elementWithTargetTypes: [String]

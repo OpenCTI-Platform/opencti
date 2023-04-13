@@ -262,6 +262,8 @@ class StixDomainObjectThreatKnowledge extends Component {
         'Malware',
         'Tool',
         'Vulnerability',
+        'Narrative',
+        'Channel',
         'Sector',
         'Organization',
         'Individual',
@@ -269,6 +271,7 @@ class StixDomainObjectThreatKnowledge extends Component {
         'Country',
         'City',
         'Note',
+        'Event',
       ];
     } else {
       toTypes = ['Attack-Pattern', 'Malware', 'Tool', 'Vulnerability'];

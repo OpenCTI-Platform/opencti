@@ -11557,7 +11557,7 @@ type Query {
     numberParameters: [StixCoreObjectsNumberParameters]
   ): [Number] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreObjectsDistribution(
-    objectId: String
+    objectId: [String]
     relationship_type: [String]
     toTypes: [String]
     elementWithTargetTypes: [String]
@@ -11622,7 +11622,7 @@ type Query {
     filterMode: FilterMode
     search: String): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixDomainObjectsDistribution(
-    objectId: String
+    objectId: [String]
     relationship_type: [String]
     toTypes: [String]
     elementWithTargetTypes: [String]

@@ -17207,7 +17207,7 @@ export type QueryStixCoreObjectsDistributionArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   limit?: InputMaybe<Scalars['Int']>;
-  objectId?: InputMaybe<Scalars['String']>;
+  objectId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -17483,7 +17483,7 @@ export type QueryStixDomainObjectsDistributionArgs = {
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<InputMaybe<StixDomainObjectsFiltering>>>;
   limit?: InputMaybe<Scalars['Int']>;
-  objectId?: InputMaybe<Scalars['String']>;
+  objectId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   operation: StatsOperation;
   order?: InputMaybe<Scalars['String']>;
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
