@@ -30,7 +30,7 @@ const Rules = () => {
   const { t } = useFormatter();
   const { viewStorage, helpers } = usePaginationLocalStorage(
     LOCAL_STORAGE_KEY,
-    { searchTerm: '' },
+    {},
   );
   return (
     <UserContext.Consumer>
@@ -49,7 +49,7 @@ const Rules = () => {
                 <SearchInput
                   variant="small"
                   onSubmit={helpers.handleSearch}
-                  keyword={viewStorage.searchTerm}
+                  keyword={viewStorage.searchTerm ?? ''}
                 />
               </div>
             </div>
@@ -60,7 +60,7 @@ const Rules = () => {
               render={({ props }) => {
                 if (props) {
                   return (
-                    <RulesList data={props} keyword={viewStorage.searchTerm} />
+                    <RulesList data={props} keyword={viewStorage.searchTerm ?? ''} />
                   );
                 }
                 return <div />;
