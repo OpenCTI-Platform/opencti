@@ -21,6 +21,10 @@ import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -154,6 +158,13 @@ const styles = (theme) => ({
     height: 30,
     textTransform: 'uppercase',
     borderRadius: 0,
+  },
+  killChainPhaseItem: {
+    paddingLeft: 10,
+    transition: 'background-color 0.1s ease',
+    '&:hover': {
+      background: 'rgba(0, 0, 0, 0.1)',
+    },
   },
 });
 
@@ -420,6 +431,27 @@ class StixCoreRelationshipContainer extends Component {
                           stixCoreRelationship.description
                         )}
                       </Markdown>
+                      <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+                        {t('Kill chain phases')}
+                      </Typography>
+                      <List>
+                        {stixCoreRelationship.killChainPhases.edges.map((killChainPhaseEdge) => {
+                          const killChainPhase = killChainPhaseEdge.node;
+                          return (
+                            <ListItem
+                              key={killChainPhase.phase_name}
+                              dense={true}
+                              divider={true}
+                              classes={{ root: classes.killChainPhaseItem }}
+                            >
+                              <ListItemIcon>
+                                <ItemIcon type={killChainPhase.entity_type} />
+                              </ListItemIcon>
+                              <ListItemText primary={killChainPhase.phase_name} />
+                            </ListItem>
+                          );
+                        })}
+                      </List>
                     </div>
                   </Grid>
                 </Grid>
@@ -661,6 +693,17 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           }
         }
         workflowEnabled
+        killChainPhases {
+            edges {
+                node {
+                    id
+                    entity_type
+                    kill_chain_name
+                    phase_name
+                    x_opencti_order
+                }
+            }
+        }
         x_opencti_inferences {
           rule {
             id
