@@ -477,7 +477,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
   // region test the groups existence and eventually auto create groups
   if (providerGroups.length > 0) {
     const providerGroupsIds = providerGroups.map((groupName) => generateStandardId(ENTITY_TYPE_GROUP, { name: groupName }));
-    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: [{ key: 'internal_id', values: providerGroupsIds }] });
+    const foundGroups = await findGroups(context, SYSTEM_USER, { filters: [{ key: 'standard_id', values: providerGroupsIds }] });
     const foundGroupsNames = foundGroups.edges.map((group) => group.node.name);
     const newGroupsToCreate = [];
     providerGroups.forEach((groupName) => {
