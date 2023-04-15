@@ -11,6 +11,7 @@ import requests
 import urllib3
 from pythonjsonlogger import jsonlogger
 
+from pycti import __version__
 from pycti.api import LOGGER
 from pycti.api.opencti_api_connector import OpenCTIApiConnector
 from pycti.api.opencti_api_work import OpenCTIApiWork
@@ -145,7 +146,10 @@ class OpenCTIApiClient:
         # Define API
         self.api_token = token
         self.api_url = url + "/graphql"
-        self.request_headers = {"Authorization": "Bearer " + token}
+        self.request_headers = {
+            "User-Agent": "pycti/" + __version__,
+            "Authorization": "Bearer " + token,
+        }
         self.session = requests.session()
 
         # Define the dependencies
