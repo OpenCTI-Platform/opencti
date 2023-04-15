@@ -32,27 +32,22 @@ const SharingMenu = () => {
       <MenuList component="nav">
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/streams'}
-          selected={location.pathname === '/dashboard/data/sharing/streams'}
+          to={'/dashboard/data/ingestion/sync'}
+          selected={location.pathname === '/dashboard/data/ingestion/sync'}
           dense={false}
         >
-          <ListItemText primary={t('Live streams')} />
+          <ListItemText primary={t('Remote OCTI Streams')} />
         </MenuItem>
         <MenuItem
           component={Link}
-          to={'/dashboard/data/sharing/feeds'}
-          selected={location.pathname.includes('/dashboard/data/sharing/feeds')}
+          to={'/dashboard/data/ingestion/taxii'}
+          selected={location.pathname.includes(
+            '/dashboard/data/ingestion/taxii',
+          )}
           dense={false}
+          disabled={true}
         >
-          <ListItemText primary={t('Feeds (CSV)')} />
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          to={'/dashboard/data/sharing/taxii'}
-          selected={location.pathname.includes('/dashboard/data/sharing/taxii')}
-          dense={false}
-        >
-          <ListItemText primary={t('TAXII collections')} />
+          <ListItemText primary={t('TAXII Feeds')} />
         </MenuItem>
       </MenuList>
     </Drawer>

@@ -1,5 +1,7 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
+import makeStyles from '@mui/styles/makeStyles';
+import { useTheme } from '@mui/styles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
 import SyncLines, { SyncLinesQuery } from './sync/SyncLines';
@@ -8,10 +10,20 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import useAuth from '../../../utils/hooks/useAuth';
 import { useFormatter } from '../../../components/i18n';
 import { SYNC_MANAGER } from '../../../utils/platformModulesHelper';
+import IngestionMenu from './IngestionMenu';
 
 const LOCAL_STORAGE_KEY = 'sync-view';
 
+const useStyles = makeStyles(() => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 50px 0',
+  },
+}));
+
 const Sync = () => {
+  const theme = useTheme();
+  const classes = useStyles();
   const { t } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const {
@@ -23,7 +35,6 @@ const Sync = () => {
     orderAsc: false,
     searchTerm: '',
   });
-
   const dataColumns = {
     name: {
       label: 'Name',
@@ -50,7 +61,6 @@ const Sync = () => {
       isSortable: false,
     },
   };
-
   if (!platformModuleHelpers.isSyncManagerEnable()) {
     return (
       <Alert severity="info">
@@ -59,7 +69,8 @@ const Sync = () => {
     );
   }
   return (
-    <>
+    <div className={classes.container}>
+      <IngestionMenu />
       <ListLines
         sortBy={viewStorage.sortBy}
         orderAsc={viewStorage.orderAsc}
@@ -69,6 +80,21 @@ const Sync = () => {
         displayImport={false}
         secondaryAction={true}
         keyword={viewStorage.searchTerm}
+        message={
+          <>
+            {t(
+              'You can configure your platform to consume remote OCTI streams. A list of public and commercial native feeds is available in the',
+            )}{' '}
+            <a
+              href="https://filigran.notion.site/63392969969c4941905520d37dc7ad4a?v=0a5716cac77b4406825ba3db0acfaeb2"
+              target="_blank"
+              style={{ color: theme.palette.secondary.main }}
+            >
+              OpenCTI ecosystem space
+            </a>
+            .
+          </>
+        }
       >
         <QueryRenderer
           query={SyncLinesQuery}
@@ -85,7 +111,7 @@ const Sync = () => {
         />
       </ListLines>
       <SyncCreation paginationOptions={paginationOptions} />
-    </>
+    </div>
   );
 };
 

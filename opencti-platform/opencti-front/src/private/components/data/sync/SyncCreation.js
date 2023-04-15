@@ -47,7 +47,7 @@ const useStyles = makeStyles((theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 30,
+    right: 230,
   },
   buttons: {
     width: '100%',

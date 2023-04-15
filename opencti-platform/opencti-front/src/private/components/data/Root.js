@@ -34,7 +34,16 @@ const Root = () => (
       path="/dashboard/data/connectors/:connectorId"
       render={(routeProps) => <RootConnector {...routeProps} />}
     />
-    <BoundaryRoute exact path="/dashboard/data/sync" component={Sync} />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/ingestion"
+      render={() => <Redirect to="/dashboard/data/ingestion/sync" />}
+    />
+    <BoundaryRoute
+      exact
+      path="/dashboard/data/ingestion/sync"
+      component={Sync}
+    />
     <BoundaryRoute
       exact
       path="/dashboard/data/sharing"
