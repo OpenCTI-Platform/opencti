@@ -135,7 +135,7 @@ class StixSightingRelationshipLineComponent extends Component {
                   label={
                     node.x_opencti_negative
                       ? t('False positive')
-                      : t('Malicious')
+                      : t('True positive')
                   }
                 />
               </div>

@@ -375,7 +375,7 @@ class StixSightingRelationshipContainer extends Component {
                         label={
                           stixSightingRelationship.x_opencti_negative
                             ? t('False positive')
-                            : t('Malicious')
+                            : t('True positive')
                         }
                       />
                       <Typography
