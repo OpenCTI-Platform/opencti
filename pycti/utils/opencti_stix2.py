@@ -1484,32 +1484,62 @@ class OpenCTIStix2:
             entity["object_refs"] = []
             objects_to_get = entity["objects"]
             for entity_object in entity["objects"]:
-                if entity["type"] == "report" and entity_object["entity_type"] not in [
-                    "Note",
-                    "Report",
-                    "Opinion",
-                ]:
+                if (
+                    entity["type"] == "report"
+                    and entity_object["entity_type"]
+                    not in [
+                        "Note",
+                        "Report",
+                        "Opinion",
+                    ]
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "note" and entity_object["entity_type"] not in [
-                    "Note",
-                    "Opinion",
-                ]:
+                elif (
+                    entity["type"] == "note"
+                    and entity_object["entity_type"]
+                    not in [
+                        "Note",
+                        "Opinion",
+                    ]
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "opinion" and entity_object[
-                    "entity_type"
-                ] not in ["Opinion"]:
+                elif (
+                    entity["type"] == "opinion"
+                    and entity_object["entity_type"] not in ["Opinion"]
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "observed-data":
+                elif (
+                    entity["type"] == "observed-data"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "grouping":
+                elif (
+                    entity["type"] == "grouping"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "case-incident":
+                elif (
+                    entity["type"] == "case-incident"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "feedback":
+                elif (
+                    entity["type"] == "feedback"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "case-rfi":
+                elif (
+                    entity["type"] == "case-rfi"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
-                elif entity["type"] == "case-rft":
+                elif (
+                    entity["type"] == "case-rft"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
                     entity["object_refs"].append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
@@ -1578,40 +1608,36 @@ class OpenCTIStix2:
             del entity["importFilesIds"]
 
         # StixRefRelationship
-        if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
-            stix_nested_ref_relationships = (
-                self.opencti.stix_nested_ref_relationship.list(
-                    fromId=entity["x_opencti_id"]
-                )
-            )
-            for stix_nested_ref_relationship in stix_nested_ref_relationships:
-                if "standard_id" in stix_nested_ref_relationship["to"]:
-                    if MultipleRefRelationship.has_value(
+        stix_nested_ref_relationships = self.opencti.stix_nested_ref_relationship.list(
+            fromId=entity["x_opencti_id"]
+        )
+        for stix_nested_ref_relationship in stix_nested_ref_relationships:
+            if "standard_id" in stix_nested_ref_relationship["to"]:
+                if MultipleRefRelationship.has_value(
+                    stix_nested_ref_relationship["relationship_type"]
+                ):
+                    key = (
                         stix_nested_ref_relationship["relationship_type"]
-                    ):
-                        key = (
-                            stix_nested_ref_relationship["relationship_type"]
-                            .replace("obs_", "")
-                            .replace("-", "_")
-                            + "_refs"
+                        .replace("obs_", "")
+                        .replace("-", "_")
+                        + "_refs"
+                    )
+                    if key in entity:
+                        entity[key].append(
+                            stix_nested_ref_relationship["to"]["standard_id"]
                         )
-                        if key in entity:
-                            entity[key].append(
-                                stix_nested_ref_relationship["to"]["standard_id"]
-                            )
-                        else:
-                            entity[key] = [
-                                stix_nested_ref_relationship["to"]["standard_id"]
-                            ]
                     else:
-                        key = (
-                            stix_nested_ref_relationship["relationship_type"]
-                            .replace("obs_", "")
-                            .replace("-", "_")
-                            + "_ref"
-                        )
-                        entity[key] = stix_nested_ref_relationship["to"]["standard_id"]
-
+                        entity[key] = [
+                            stix_nested_ref_relationship["to"]["standard_id"]
+                        ]
+                else:
+                    key = (
+                        stix_nested_ref_relationship["relationship_type"]
+                        .replace("obs_", "")
+                        .replace("-", "_")
+                        + "_ref"
+                    )
+                    entity[key] = stix_nested_ref_relationship["to"]["standard_id"]
         result.append(entity)
 
         if mode == "simple":
@@ -1622,28 +1648,43 @@ class OpenCTIStix2:
                 uuids.append(x["id"])
             # Get extra refs
             for key in entity.keys():
-                if entity["type"] in STIX_CYBER_OBSERVABLE_MAPPING:
-                    if key.endswith("_ref"):
-                        type = entity[key].split("--")[0]
+                if key.endswith("_ref"):
+                    type = entity[key].split("--")[0]
+                    if type in STIX_CYBER_OBSERVABLE_MAPPING:
+                        objects_to_get.append(
+                            {
+                                "id": entity[key],
+                                "entity_type": "Stix-Cyber-Observable",
+                                "parent_types": ["Stix-Cyber-Observable"],
+                            }
+                        )
+                    else:
+                        objects_to_get.append(
+                            {
+                                "id": entity[key],
+                                "entity_type": "Stix-Domain-Object",
+                                "parent_types": ["Stix-Domain-Object"],
+                            }
+                        )
+                elif key.endswith("_refs"):
+                    for value in entity[key]:
+                        type = value.split("--")[0]
                         if type in STIX_CYBER_OBSERVABLE_MAPPING:
                             objects_to_get.append(
                                 {
-                                    "id": entity[key],
+                                    "id": value,
                                     "entity_type": "Stix-Cyber-Observable",
-                                    "parent_types": ["Styx-Cyber-Observable"],
+                                    "parent_types": ["Stix-Cyber-Observable"],
                                 }
                             )
-                    elif key.endswith("_refs"):
-                        for value in entity[key]:
-                            type = value.split("--")[0]
-                            if type in STIX_CYBER_OBSERVABLE_MAPPING:
-                                objects_to_get.append(
-                                    {
-                                        "id": value,
-                                        "entity_type": "Stix-Cyber-Observable",
-                                        "parent_types": ["Styx-Cyber-Observable"],
-                                    }
-                                )
+                        else:
+                            objects_to_get.append(
+                                {
+                                    "id": value,
+                                    "entity_type": "Stix-Domain-Object",
+                                    "parent_types": ["Stix-Domain-Object"],
+                                }
+                            )
             # Get extra relations (from)
             stix_core_relationships = self.opencti.stix_core_relationship.list(
                 elementId=entity["x_opencti_id"]
@@ -1741,7 +1782,9 @@ class OpenCTIStix2:
                 "Tool": self.opencti.tool.read,
                 "Vulnerability": self.opencti.vulnerability.read,
                 "Incident": self.opencti.incident.read,
+                "Stix-Core-Object": self.opencti.stix_core_object.read,
                 "Stix-Cyber-Observable": self.opencti.stix_cyber_observable.read,
+                "Stix-Domain-Object": self.opencti.stix_domain_object.read,
                 "stix-core-relationship": self.opencti.stix_core_relationship.read,
                 "stix-sighting-relationship": self.opencti.stix_sighting_relationship.read,
             }
@@ -1769,15 +1812,18 @@ class OpenCTIStix2:
                     ),
                 )
                 entity_object_data = do_read(id=entity_object["id"])
-                stix_entity_object = self.prepare_export(
-                    self.generate_export(entity_object_data),
-                    "simple",
-                    max_marking_definition_entity,
-                )
-                # Add to result
-                entity_object_bundle = self.filter_objects(uuids, stix_entity_object)
-                uuids = uuids + [x["id"] for x in entity_object_bundle]
-                result = result + entity_object_bundle
+                if entity_object_data is not None:
+                    stix_entity_object = self.prepare_export(
+                        self.generate_export(entity_object_data),
+                        "simple",
+                        max_marking_definition_entity,
+                    )
+                    # Add to result
+                    entity_object_bundle = self.filter_objects(
+                        uuids, stix_entity_object
+                    )
+                    uuids = uuids + [x["id"] for x in entity_object_bundle]
+                    result = result + entity_object_bundle
             for relation_object in relations_to_get:
                 relation_object_data = self.prepare_export(
                     self.opencti.stix_core_relationship.read(id=relation_object["id"])
