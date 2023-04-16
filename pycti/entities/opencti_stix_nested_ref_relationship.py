@@ -18,20 +18,48 @@ class StixNestedRefRelationship:
             start_time
             stop_time
             from {
-                ... on StixCyberObservable {
+                ... on StixObject {
                     id
                     standard_id
                     entity_type
                     parent_types
+                }
+                ... on StixCoreRelationship {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                } 
+                ... on StixSightingRelationship {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                }                 
+                ... on StixCyberObservable {
                     observable_value
                 }
             }
             to {
-                ... on StixCyberObservable {
+                ... on StixObject {
                     id
                     standard_id
                     entity_type
                     parent_types
+                }
+                ... on StixCoreRelationship {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                } 
+                ... on StixSightingRelationship {
+                    id
+                    standard_id
+                    entity_type
+                    parent_types
+                }                 
+                ... on StixCyberObservable {
                     observable_value
                 }
             }
