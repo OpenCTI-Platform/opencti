@@ -23,6 +23,7 @@ import WidgetConfig from './WidgetConfig';
 import StixCoreObjectsMultiVerticalBars from '../../common/stix_core_objects/StixCoreObjectsMultiVerticalBars';
 import StixCoreObjectsNumber from '../../common/stix_core_objects/StixCoreObjectsNumber';
 import StixCoreObjectsList from '../../common/stix_core_objects/StixCoreObjectsList';
+import StixCoreObjectsDistributionList from '../../common/stix_core_objects/StixCoreObjectsDistributionList';
 import StixCoreObjectsMultiLineChart from '../../common/stix_core_objects/StixCoreObjectsMultiLineChart';
 import StixCoreObjectsMultiAreaChart from '../../common/stix_core_objects/StixCoreObjectsMultiAreaChart';
 import StixCoreObjectsTimeline from '../../common/stix_core_objects/StixCoreObjectsTimeline';
@@ -33,6 +34,7 @@ import StixCoreObjectsHorizontalBars from '../../common/stix_core_objects/StixCo
 import StixCoreRelationshipsMultiHorizontalBars from '../../common/stix_core_relationships/StixCoreRelationshipsMultiHorizontalBars';
 import StixCoreObjectsRadar from '../../common/stix_core_objects/StixCoreObjectsRadar';
 import StixCoreRelationshipsList from '../../common/stix_core_relationships/StixCoreRelationshipsList';
+import StixCoreRelationshipsDistributionList from '../../common/stix_core_relationships/StixCoreRelationshipsDistributionList';
 import StixCoreRelationshipsNumber from '../../common/stix_core_relationships/StixCoreRelationshipsNumber';
 import StixCoreRelationshipsMultiLineChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiLineChart';
 import StixCoreRelationshipsMultiAreaChart from '../../common/stix_core_relationships/StixCoreRelationshipsMultiAreaChart';
@@ -239,6 +241,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             variant="inLine"
           />
         );
+      case 'distribution-list':
+        return (
+          <StixCoreObjectsDistributionList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
       case 'vertical-bar':
         return (
           <StixCoreObjectsMultiVerticalBars
@@ -367,6 +379,16 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       case 'list':
         return (
           <StixCoreRelationshipsList
+            startDate={startDate}
+            endDate={endDate}
+            dataSelection={widget.dataSelection}
+            parameters={widget.parameters}
+            variant="inLine"
+          />
+        );
+      case 'distribution-list':
+        return (
+          <StixCoreRelationshipsDistributionList
             startDate={startDate}
             endDate={endDate}
             dataSelection={widget.dataSelection}

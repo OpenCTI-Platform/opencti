@@ -84,6 +84,17 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
         node {
           id
           ...StixCoreObjectOrStixCoreRelationshipNoteCard_node
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
+            }
+          }
         }
       }
     }

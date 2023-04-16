@@ -80,6 +80,8 @@ export const uniqWithByFields = R.curry((fields, data) => R.uniqWith(R.allPass(R
 
 export const computeDuplicates = (fields, data) => R.groupWith(R.allPass(R.map(R.eqProps)(fields)), data);
 
+export const capitalizeFirstLetter = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
 export const renderObservableValue = (observable) => {
   switch (observable.entity_type) {
     case 'IPv4-Addr':

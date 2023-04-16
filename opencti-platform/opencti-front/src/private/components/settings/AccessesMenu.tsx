@@ -7,7 +7,10 @@ import {
   Security as SecurityIcon,
 } from '@mui/icons-material';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
-import useGranted, { SETTINGS_SETACCESSES, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import useGranted, {
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETMARKINGS,
+} from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
 const SettingsMenu: FunctionComponent = () => {
@@ -33,7 +36,6 @@ const SettingsMenu: FunctionComponent = () => {
       icon: <ReceiptOutlined fontSize="medium" />,
     },
   ];
-
   const markingEntries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/marking',
@@ -41,13 +43,14 @@ const SettingsMenu: FunctionComponent = () => {
       icon: <CenterFocusStrongOutlined fontSize="medium" />,
     },
   ];
-
   const setAccess = useGranted([SETTINGS_SETACCESSES]);
   const setMarkings = useGranted([SETTINGS_SETMARKINGS]);
   if (setAccess) {
     return (
       <Security needs={[SETTINGS_SETACCESSES]}>
-        <NavToolbarMenu entries={setMarkings ? [...entries, ...markingEntries] : entries} />
+        <NavToolbarMenu
+          entries={setMarkings ? [...entries, ...markingEntries] : entries}
+        />
       </Security>
     );
   }

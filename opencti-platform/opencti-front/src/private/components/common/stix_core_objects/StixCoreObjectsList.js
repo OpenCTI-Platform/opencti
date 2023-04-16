@@ -342,10 +342,7 @@ const StixCoreObjectsList = ({
                         }`}
                       >
                         <ListItemIcon>
-                          <ItemIcon
-                            type={stixCoreObject.entity_type}
-                            color="primary"
-                          />
+                          <ItemIcon type={stixCoreObject.entity_type} />
                         </ListItemIcon>
                         <ListItemText
                           primary={

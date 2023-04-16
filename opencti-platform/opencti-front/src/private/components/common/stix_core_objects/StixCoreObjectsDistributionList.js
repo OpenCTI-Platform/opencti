@@ -1,10 +1,10 @@
 import React from 'react';
+import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import * as R from 'ramda';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import { Link } from 'react-router-dom';
@@ -63,65 +63,49 @@ const inlineStyles = {
   },
 };
 
-const stixCoreRelationshipsDistributionListDistributionQuery = graphql`
-  query StixCoreRelationshipsDistributionListDistributionQuery(
+const stixCoreObjectsDistributionListDistributionQuery = graphql`
+  query StixCoreObjectsDistributionListDistributionQuery(
+    $objectId: [String]
+    $relationship_type: [String]
+    $toTypes: [String]
     $field: String!
-    $operation: StatsOperation!
     $startDate: DateTime
     $endDate: DateTime
     $dateAttribute: String
-    $isTo: Boolean
+    $operation: StatsOperation!
     $limit: Int
-    $elementId: [String]
-    $elementWithTargetTypes: [String]
-    $fromId: [String]
-    $fromRole: String
-    $fromTypes: [String]
-    $toId: [String]
-    $toRole: String
-    $toTypes: [String]
-    $relationship_type: [String]
-    $confidences: [Int]
-    $search: String
-    $filters: [StixCoreRelationshipsFiltering]
+    $order: String
+    $types: [String]
+    $filters: [StixCoreObjectsFiltering]
     $filterMode: FilterMode
-    $dynamicFrom: [StixCoreObjectsFiltering]
-    $dynamicTo: [StixCoreObjectsFiltering]
+    $search: String
   ) {
-    stixCoreRelationshipsDistribution(
+    stixCoreObjectsDistribution(
+      objectId: $objectId
+      relationship_type: $relationship_type
+      toTypes: $toTypes
       field: $field
-      operation: $operation
       startDate: $startDate
       endDate: $endDate
       dateAttribute: $dateAttribute
-      isTo: $isTo
+      operation: $operation
       limit: $limit
-      elementId: $elementId
-      elementWithTargetTypes: $elementWithTargetTypes
-      fromId: $fromId
-      fromRole: $fromRole
-      fromTypes: $fromTypes
-      toId: $toId
-      toRole: $toRole
-      toTypes: $toTypes
-      relationship_type: $relationship_type
-      confidences: $confidences
-      search: $search
+      order: $order
+      types: $types
       filters: $filters
       filterMode: $filterMode
-      dynamicFrom: $dynamicFrom
-      dynamicTo: $dynamicTo
+      search: $search
     ) {
       label
       value
       entity {
         ... on BasicObject {
-          id
           entity_type
+          id
         }
         ... on BasicRelationship {
-          id
           entity_type
+          id
         }
         ... on AttackPattern {
           name
@@ -168,6 +152,10 @@ const stixCoreRelationshipsDistributionListDistributionQuery = graphql`
           description
         }
         ... on City {
+          name
+          description
+        }
+        ... on AdministrativeArea {
           name
           description
         }
@@ -223,9 +211,6 @@ const stixCoreRelationshipsDistributionListDistributionQuery = graphql`
         ... on Case {
           name
         }
-        ... on Report {
-          name
-        }
         ... on StixCyberObservable {
           observable_value
         }
@@ -234,6 +219,7 @@ const stixCoreRelationshipsDistributionListDistributionQuery = graphql`
           definition
         }
         ... on Creator {
+          entity_type
           name
         }
         ... on Report {
@@ -254,17 +240,11 @@ const stixCoreRelationshipsDistributionListDistributionQuery = graphql`
   }
 `;
 
-const StixCoreRelationshipsDistributionList = ({
-  title,
+const StixCoreObjectsDistributionList = ({
   variant,
   height,
-  stixCoreObjectId,
-  relationshipType,
-  toTypes,
-  field,
   startDate,
   endDate,
-  dateAttribute,
   dataSelection,
   parameters = {},
 }) => {
@@ -272,69 +252,58 @@ const StixCoreRelationshipsDistributionList = ({
   const { t, n } = useFormatter();
   const hasSetAccess = useGranted([SETTINGS_SETACCESSES]);
   const renderContent = () => {
-    let finalFilters = [];
-    let selection = {};
-    let dataSelectionRelationshipType = null;
-    let dataSelectionFromId = null;
-    let dataSelectionToId = null;
-    let dataSelectionFromTypes = null;
-    let dataSelectionToTypes = null;
-    if (dataSelection) {
-      // eslint-disable-next-line prefer-destructuring
-      selection = dataSelection[0];
-      finalFilters = convertFilters(selection.filters);
-      dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
-        ?.values || null;
-      dataSelectionFromId = R.head(finalFilters.filter((o) => o.key === 'fromId'))?.values || null;
-      dataSelectionToId = R.head(finalFilters.filter((o) => o.key === 'toId'))?.values || null;
-      dataSelectionFromTypes = R.head(finalFilters.filter((o) => o.key === 'fromTypes'))?.values
-        || null;
-      dataSelectionToTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;
-      finalFilters = finalFilters.filter(
-        (o) => ![
-          'relationship_type',
-          'fromId',
-          'toId',
-          'fromTypes',
-          'toTypes',
-        ].includes(o.key),
-      );
-    }
-    const finalField = selection.attribute || field || 'entity_type';
-    const variables = {
-      fromId: dataSelectionFromId || stixCoreObjectId,
-      toId: dataSelectionToId,
-      relationship_type: dataSelectionRelationshipType || relationshipType,
-      fromTypes: dataSelectionFromTypes,
-      toTypes: dataSelectionToTypes || toTypes,
-      field: finalField,
-      operation: 'count',
-      startDate,
-      endDate,
-      dateAttribute,
-      limit: 10,
-      filters: finalFilters,
-      isTo: selection.isTo,
-      dynamicFrom: convertFilters(selection.dynamicFrom),
-      dynamicTo: convertFilters(selection.dynamicTo),
-    };
+    const selection = dataSelection[0];
+    let finalFilters = convertFilters(selection.filters);
+    const dataSelectionTypes = R.head(
+      finalFilters.filter((o) => o.key === 'entity_type'),
+    )?.values || ['Stix-Core-Object'];
+    const dataSelectionObjectId = finalFilters.filter((o) => o.key === 'elementId')?.values || null;
+    const dataSelectionRelationshipType = R.head(finalFilters.filter((o) => o.key === 'relationship_type'))
+      ?.values || null;
+    const dataSelectionToTypes = R.head(finalFilters.filter((o) => o.key === 'toTypes'))?.values || null;
+    finalFilters = finalFilters.filter(
+      (o) => !['entity_type', 'elementId', 'relationship_type', 'toTypes'].includes(
+        o.key,
+      ),
+    );
     return (
       <QueryRenderer
-        query={stixCoreRelationshipsDistributionListDistributionQuery}
-        variables={variables}
+        query={stixCoreObjectsDistributionListDistributionQuery}
+        variables={{
+          objectId: dataSelectionObjectId,
+          relationship_type: dataSelectionRelationshipType,
+          toTypes: dataSelectionToTypes,
+          types: dataSelectionTypes,
+          field: selection.attribute,
+          operation: 'count',
+          startDate,
+          endDate,
+          dateAttribute:
+            selection.date_attribute && selection.date_attribute.length > 0
+              ? selection.date_attribute
+              : 'created_at',
+          filters: finalFilters,
+          limit: 10,
+        }}
         render={({ props }) => {
           if (
             props
-            && props.stixCoreRelationshipsDistribution
-            && props.stixCoreRelationshipsDistribution.length > 0
+            && props.stixCoreObjectsDistribution
+            && props.stixCoreObjectsDistribution.length > 0
           ) {
-            const data = props.stixCoreRelationshipsDistribution.map((o) => ({
+            const data = props.stixCoreObjectsDistribution.map((o) => ({
               label:
-                finalField === 'internal_id' ? defaultValue(o.entity) : o.label,
+                // eslint-disable-next-line no-nested-ternary
+                selection.attribute.endsWith('_id')
+                  ? defaultValue(o.entity)
+                  : selection.attribute === 'entity_type'
+                    ? t(`entity_${o.label}`)
+                    : o.label,
               value: o.value,
-              id: finalField === 'internal_id' ? o.entity.id : null,
-              type:
-                finalField === 'internal_id' ? o.entity.entity_type : o.label,
+              id: selection.attribute.endsWith('_id') ? o.entity.id : null,
+              type: selection.attribute.endsWith('_id')
+                ? o.entity.entity_type
+                : o.label,
             }));
             return (
               <div id="container" className={classes.container}>
@@ -414,20 +383,20 @@ const StixCoreRelationshipsDistributionList = ({
         variant="h4"
         gutterBottom={true}
         style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
-        {parameters.title || title || t('Relationships distribution')}
+        {parameters.title || t('Distribution of entities')}
       </Typography>
-      {variant !== 'inLine' ? (
+      {variant === 'inLine' ? (
+        renderContent()
+      ) : (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           {renderContent()}
         </Paper>
-      ) : (
-        renderContent()
       )}
     </div>
   );
 };
 
-export default StixCoreRelationshipsDistributionList;
+export default StixCoreObjectsDistributionList;

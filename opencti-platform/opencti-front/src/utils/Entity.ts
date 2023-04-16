@@ -68,6 +68,10 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/cases/incidents';
     case 'Feedback':
       return '/dashboard/cases/feedbacks';
+    case 'User':
+    case 'Creator':
+    case 'Assignee':
+      return '/dashboard/settings/accesses/users';
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

@@ -41,6 +41,7 @@ import {
   Radar,
   ViewListOutline,
   StarSettingsOutline,
+  FormatListNumberedRtl,
 } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
@@ -55,7 +56,7 @@ import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import { truncate } from '../../../../utils/String';
+import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import { ignoredAttributesInDashboards } from '../../../../utils/Entity';
@@ -201,6 +202,15 @@ const visualizationTypes = [
     dataSelectionLimit: 1,
     category: 'timeseries',
     availableParameters: [],
+    isRelationships: true,
+    isEntities: true,
+  },
+  {
+    key: 'distribution-list',
+    name: 'List (distribution)',
+    dataSelectionLimit: 1,
+    category: 'distribution',
+    availableParameters: ['attribute'],
     isRelationships: true,
     isEntities: true,
   },
@@ -599,6 +609,8 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
         return <ChartTimeline fontSize="large" color="primary" />;
       case 'list':
         return <ViewListOutline fontSize="large" color="primary" />;
+      case 'distribution-list':
+        return <FormatListNumberedRtl fontSize="large" color="primary" />;
       case 'number':
         return <Counter fontSize="large" color="primary" />;
       case 'heatmap':
@@ -1185,6 +1197,9 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                       {[
                                         ...attributes,
                                         { value: 'created-by.internal_id' },
+                                        {
+                                          value: 'object-assignee.internal_id',
+                                        },
                                         { value: 'object-marking.internal_id' },
                                         {
                                           value: 'kill-chain-phase.internal_id',
@@ -1194,7 +1209,11 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                                           key={attribute.value}
                                           value={attribute.value}
                                         >
-                                          {attribute.value}
+                                          {t(
+                                            capitalizeFirstLetter(
+                                              attribute.value,
+                                            ),
+                                          )}
                                         </MenuItem>
                                       ))}
                                     </Select>

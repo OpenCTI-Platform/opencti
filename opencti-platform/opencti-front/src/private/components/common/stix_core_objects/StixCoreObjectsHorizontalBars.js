@@ -263,7 +263,7 @@ const StixCoreObjectsHorizontalBars = ({
                     : n.label,
               y: n.value,
               fillColor:
-                selection.attribute === 'internal_id'
+                selection.attribute.endsWith('_id')
                   ? itemColor(n.entity.entity_type)
                   : itemColor(n.label),
             }));
