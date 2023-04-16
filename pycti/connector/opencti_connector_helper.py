@@ -640,6 +640,26 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
     def get_name(self) -> Optional[Union[bool, int, str]]:
         return self.connect_name
 
+    def get_stream_name(self):
+        if self.connect_live_stream_id is not None:
+            if self.connect_live_stream_id in ["live", "raw"]:
+                return self.connect_live_stream_id
+            else:
+                query = """
+                    query StreamCollection($id: String!) {
+                        streamCollection(id: $id)  {
+                            name
+                            description
+                            stream_live
+                            stream_public
+                        }
+                    }
+                """
+                result = self.api.query(query, {"id": self.connect_live_stream_id})
+                return result["data"]["streamCollection"]
+        else:
+            raise ValueError("This connector is not connected to any stream")
+
     def get_only_contextual(self) -> Optional[Union[bool, int, str]]:
         return self.connect_only_contextual
 
