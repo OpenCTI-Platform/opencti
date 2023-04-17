@@ -6,14 +6,13 @@ import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import ItemIcon from '../../../../components/ItemIcon';
+import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 
 const styles = (theme) => ({
   paper: {
@@ -78,30 +77,7 @@ class ToolDetailsComponent extends Component {
                   ))}
                 </List>
               )}
-              <Typography
-                variant="h3"
-                gutterBottom={true}
-                style={{ marginTop: 20 }}
-              >
-                {t('Kill chain phases')}
-              </Typography>
-              <List>
-                {tool.killChainPhases.edges.map((killChainPhaseEdge) => {
-                  const killChainPhase = killChainPhaseEdge.node;
-                  return (
-                    <ListItem
-                      key={killChainPhase.phase_name}
-                      dense={true}
-                      divider={true}
-                    >
-                      <ListItemIcon>
-                        <ItemIcon type={killChainPhase.entity_type} />
-                      </ListItemIcon>
-                      <ListItemText primary={killChainPhase.phase_name} />
-                    </ListItem>
-                  );
-                })}
-              </List>
+              <StixCoreObjectKillChainPhasesView killChainPhasesEdges={tool.killChainPhases.edges} />
             </Grid>
           </Grid>
         </Paper>
