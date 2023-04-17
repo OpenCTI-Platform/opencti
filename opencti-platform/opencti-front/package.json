@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "5.6.2",
+  "version": "5.7.0",
   "private": true,
   "main": "src/index.tsx",
   "license": "Apache-2.0",
