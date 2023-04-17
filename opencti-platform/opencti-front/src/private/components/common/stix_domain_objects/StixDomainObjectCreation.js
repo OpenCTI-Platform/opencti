@@ -46,7 +46,9 @@ import { DataComponentCreationForm } from '../../techniques/data_components/Data
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
 import { CaseIncidentCreationForm } from '../../cases/incidents/CaseIncidentCreation';
-import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useGranted, {
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -61,7 +63,14 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
   }
 `;
 
-const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion']; // Language as no ui, note and opinion are not useful
+const UNSUPPORTED_TYPES = [
+  'Language',
+  'Note',
+  'Opinion',
+  'Feedback',
+  'Case-Rfi',
+  'Case-Rft',
+]; // Language as no ui, note and opinion are not useful
 const IDENTITY_ENTITIES = [
   'Sector',
   'Organization',
@@ -75,6 +84,12 @@ const LOCATION_ENTITIES = [
   'City',
   'Location',
   'Administrative-Area',
+];
+const CONTAINER_ENTITIES = [
+  'Report',
+  'Grouping',
+  'Case-Incident',
+  'Observed-Data',
 ];
 
 const useStyles = makeStyles((theme) => ({
@@ -161,6 +176,12 @@ const buildEntityTypes = (t, queryData, stixDomainObjectTypes) => {
     if (
       stixDomainObjectTypes.includes('Location')
       && LOCATION_ENTITIES.includes(n.value)
+    ) {
+      return true;
+    }
+    if (
+      stixDomainObjectTypes.includes('Container')
+      && CONTAINER_ENTITIES.includes(n.value)
     ) {
       return true;
     }
@@ -440,21 +461,22 @@ const StixDomainPanel = ({
     if (type === 'Opinion') {
       // Opinion
       const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
-      return (userIsKnowledgeEditor
-        ? <OpinionCreationFormKnowledgeEditor
+      return userIsKnowledgeEditor ? (
+        <OpinionCreationFormKnowledgeEditor
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
           updater={creationUpdater}
         />
-        : <OpinionCreationFormKnowledgeParticipant
-            defaultConfidence={confidence}
-            defaultCreatedBy={baseCreatedBy}
-            defaultMarkingDefinitions={baseMarkingDefinitions}
-            onReset={onClose}
-            updater={creationUpdater}
-          />
+      ) : (
+        <OpinionCreationFormKnowledgeParticipant
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
       );
     }
     if (type === 'Organization') {

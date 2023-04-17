@@ -66,9 +66,11 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
   // eslint-disable-next-line no-nested-ternary
   const link = node.relationship_type
     ? !restrictedWithFrom
-      ? `${resolveLink(node.from.entity_type)}/${
-        node.from.id
-      }/knowledge/relations/${node.id}`
+      ? `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/${
+        node.relationship_type === 'stix-sighting-relationship'
+          ? 'sightings'
+          : 'relations'
+      }/${node.id}`
       : null
     : `${resolveLink(node.entity_type)}/${node.id}`;
   const entityType = !restrictedWithFrom ? node.entity_type : 'unknown';

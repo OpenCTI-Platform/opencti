@@ -877,7 +877,7 @@ class ToolBar extends Component {
               open={this.state.containerCreation}
               display={true}
               speeddial={true}
-              stixCoreObjectTypes={['Report', 'Grouping']}
+              stixDomainObjectTypes={['Container']}
               handleClose={() => this.setState({ containerCreation: false })}
               creationCallback={(data) => {
                 const element = {

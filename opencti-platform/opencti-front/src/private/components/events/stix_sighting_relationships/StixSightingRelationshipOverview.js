@@ -37,6 +37,7 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = (theme) => ({
   container: {
@@ -521,7 +522,16 @@ class StixSightingRelationshipContainer extends Component {
               )}
             </div>
           ) : (
-            <div style={{ margin: '30px 0 0px 0' }}>
+            <div style={{ margin: '50px 0 0 0' }}>
+              <Grid container={true} spacing={3}>
+                <Grid item={true} xs={12}>
+                  <StixCoreObjectOrStixRelationshipLastContainers
+                    stixCoreObjectOrStixRelationshipId={
+                      stixSightingRelationship.id
+                    }
+                  />
+                </Grid>
+              </Grid>
               <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
                 <Grid item={true} xs={6}>
                   <StixSightingRelationshipExternalReferences

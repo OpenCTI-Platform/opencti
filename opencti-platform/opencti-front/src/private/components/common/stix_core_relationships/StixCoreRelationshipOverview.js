@@ -33,7 +33,6 @@ import StixCoreRelationshipEdition, {
 import { commitMutation } from '../../../../relay/environment';
 import { stixCoreRelationshipEditionFocus } from './StixCoreRelationshipEditionOverview';
 import StixCoreRelationshipStixCoreRelationships from './StixCoreRelationshipStixCoreRelationships';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import StixCoreRelationshipInference from './StixCoreRelationshipInference';
@@ -46,6 +45,7 @@ import ItemStatus from '../../../../components/ItemStatus';
 import ItemCreator from '../../../../components/ItemCreator';
 import StixCoreRelationshipSharing from './StixCoreRelationshipSharing';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import StixCoreObjectOrStixRelationshipLastContainers from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = (theme) => ({
   container: {
@@ -562,10 +562,8 @@ class StixCoreRelationshipContainer extends Component {
                   />
                 </Grid>
                 <Grid item={true} xs={6}>
-                  <StixCoreObjectOrStixCoreRelationshipLastReports
-                    stixCoreObjectOrStixCoreRelationshipId={
-                      stixCoreRelationship.id
-                    }
+                  <StixCoreObjectOrStixRelationshipLastContainers
+                    stixCoreObjectOrStixRelationshipId={stixCoreRelationship.id}
                   />
                 </Grid>
               </Grid>
@@ -2391,7 +2389,7 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   observable_value
                 }
                 ... on ObservedData {
-                  name  
+                  name
                   objects(first: 1) {
                     edges {
                       node {

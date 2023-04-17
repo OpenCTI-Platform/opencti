@@ -88,7 +88,6 @@ const CHANNEL_DEFINITION: ModuleDefinition<StoreEntityChannel, StixChannel> = {
         { name: ENTITY_TYPE_ATTACK_PATTERN, type: REL_EXTENDED },
         { name: ENTITY_TYPE_MALWARE, type: REL_EXTENDED },
         { name: ENTITY_TYPE_TOOL, type: REL_EXTENDED },
-        { name: ENTITY_TYPE_LANGUAGE, type: REL_EXTENDED },
       ] },
     { name: RELATION_PUBLISHES,
       targets: [

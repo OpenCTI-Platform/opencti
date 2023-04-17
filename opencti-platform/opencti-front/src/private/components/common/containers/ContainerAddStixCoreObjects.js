@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, includes } from 'ramda';
+import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -27,6 +27,7 @@ import ContainerAddStixCoreObjectsLines, {
 } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
+import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/Entity';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -149,11 +150,11 @@ class ContainerAddStixCoreObjects extends Component {
   }
 
   static isTypeDomainObject(types) {
-    return !types || includes('Stix-Domain-Object', types);
+    return !types || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0);
   }
 
   static isTypeObservable(types) {
-    return !types || includes('Stix-Cyber-Observable', types);
+    return !types || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0);
   }
 
   renderDomainObjectCreation(paginationOptions) {
@@ -586,7 +587,7 @@ ContainerAddStixCoreObjects.propTypes = {
   openExports: PropTypes.bool,
 };
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(ContainerAddStixCoreObjects);

@@ -14,6 +14,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import { CaseIncident_case$key } from './__generated__/CaseIncident_case.graphql';
+import { useFormatter } from '../../../../components/i18n';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -93,10 +94,12 @@ interface CaseIncidentProps {
   data: CaseIncident_case$key;
 }
 
-const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) => {
+const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
+  data,
+}) => {
   const classes = useStyles();
+  const { t } = useFormatter();
   const caseIncidentData = useFragment(caseIncidentFragment, data);
-
   return (
     <div className={classes.container}>
       <ContainerHeader
@@ -126,10 +129,51 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
         classes={{ container: classes.gridContainer }}
         style={{ marginTop: 25 }}
       >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
+            types={['Incident', 'stix-sighting-relationship']}
+            title={t('Incidents & alerts')}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseIncidentData}
+            types={['Stix-Cyber-Observable']}
+            title={t('Observables')}
+          />
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseIncidentData}
+            title={t('Attack patterns')}
+            types={['Attack-Pattern']}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseIncidentData}
+            types={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+              'Tool',
+              'Identity',
+              'Location',
+            ]}
+            title={t('Other entities')}
           />
         </Grid>
       </Grid>
@@ -140,7 +184,9 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({ data }) =
         style={{ marginTop: 25 }}
       >
         <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={caseIncidentData.id} />
+          <StixCoreObjectExternalReferences
+            stixCoreObjectId={caseIncidentData.id}
+          />
         </Grid>
         <Grid item={true} xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseIncidentData.id} />

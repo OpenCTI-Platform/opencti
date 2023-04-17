@@ -11,10 +11,7 @@ import ContainerStixObjectsOrStixRelationshipsLines, {
 import { useFormatter } from '../../../../components/i18n';
 import Security from '../../../../utils/Security';
 import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
-import {
-  ContainerStixObjectsOrStixRelationshipsLinesQuery$data,
-  ContainerStixObjectsOrStixRelationshipsLinesQuery$variables,
-} from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
+import { ContainerStixObjectsOrStixRelationshipsLinesQuery$data } from './__generated__/ContainerStixObjectsOrStixRelationshipsLinesQuery.graphql';
 import { ContainerStixObjectsOrStixRelationships_container$data } from './__generated__/ContainerStixObjectsOrStixRelationships_container.graphql';
 import useAuth, { UserContext } from '../../../../utils/hooks/useAuth';
 import useGranted, {
@@ -34,20 +31,15 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface ContainerStixObjectsOrStixRelationshipsComponentProps {
+  title?: string;
   types?: string[];
   isSupportParticipation: boolean;
   container: ContainerStixObjectsOrStixRelationships_container$data;
-  paginationOptions?: ContainerStixObjectsOrStixRelationshipsLinesQuery$variables;
 }
 
 const ContainerStixObjectsOrStixRelationshipsComponent: FunctionComponent<
 ContainerStixObjectsOrStixRelationshipsComponentProps
-> = ({
-  container,
-  paginationOptions,
-  isSupportParticipation = false,
-  types,
-}) => {
+> = ({ container, isSupportParticipation = false, types, title }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -57,8 +49,15 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
   if (isSupportParticipation && isContainerOwner) {
     security.push(KNOWLEDGE_KNPARTICIPATE);
   }
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const paginationOptions = {
+    id: container.id,
+    types: types ?? [],
+    count: 50,
+  };
   const dataColumns = {
     entity_type: {
       label: 'Type',
@@ -103,7 +102,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
         gutterBottom={true}
         style={{ float: 'left', paddingBottom: 11 }}
       >
-        {t('Related entities')}
+        {title ?? t('Related entities')}
       </Typography>
       <Security needs={security}>
         <ContainerAddStixCoreObjects
@@ -120,10 +119,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <QueryRenderer
           query={ContainerStixObjectsOrStixRelationshipsLinesQuery}
-          variables={{
-            id: container.id,
-            count: 50,
-          }}
+          variables={paginationOptions}
           render={({
             props,
           }: {
@@ -134,6 +130,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
                 <ContainerStixObjectsOrStixRelationshipsLines
                   container={props.container}
                   dataColumns={dataColumns}
+                  paginationOptions={paginationOptions}
                 />
               );
             }
