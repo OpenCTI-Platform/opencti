@@ -55,13 +55,13 @@ class ToolDetailsComponent extends Component {
               >
                 {t('Tool version')}
               </Typography>
-              {tool.tool_version}
+              {tool.tool_version ?? '-'}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Tool types')}
               </Typography>
-              {tool.tool_types && (
+              {(tool.tool_types && tool.tool_types.length > 0) ? (
                 <List>
                   {tool.tool_types.map((tool_type) => (
                     <ListItem key={tool_type} dense={true} divider={true}>
@@ -76,7 +76,7 @@ class ToolDetailsComponent extends Component {
                     </ListItem>
                   ))}
                 </List>
-              )}
+              ) : ('-')}
               <StixCoreObjectKillChainPhasesView killChainPhasesEdges={tool.killChainPhases.edges} />
             </Grid>
           </Grid>

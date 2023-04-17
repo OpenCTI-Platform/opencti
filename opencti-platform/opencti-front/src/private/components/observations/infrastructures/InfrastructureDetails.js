@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { compose, propOr } from 'ramda';
+import { compose } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
 import Chip from '@mui/material/Chip';
+import { List } from '@mui/material';
 import EntityStixCoreRelationshipsDonut from '../../common/stix_core_relationships/EntityStixCoreRelationshipsDonut';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import inject18n from '../../../../components/i18n';
@@ -52,15 +53,20 @@ class InfrastructureDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Infrastructure types')}
               </Typography>
-              {propOr(['-'], 'infrastructure_types', infrastructure).map(
-                (infrastructureType) => (
-                  <Chip
-                    key={infrastructureType}
-                    classes={{ root: classes.chip }}
-                    label={infrastructureType}
-                  />
-                ),
-              )}
+              {infrastructure.infrastructure_types && infrastructure.infrastructure_types.length > 0
+                ? <List>{
+                  infrastructure.infrastructure_types.map(
+                    (infrastructureType) => (
+                      <Chip
+                        key={infrastructureType}
+                        classes={{ root: classes.chip }}
+                        label={infrastructureType}
+                      />
+                    ),
+                  )
+                }
+                </List>
+                : ('-')}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
@@ -75,13 +81,13 @@ class InfrastructureDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('First seen')}
               </Typography>
-              {fldt(infrastructure.first_seen)}
+              {infrastructure.first_seen ? fldt(infrastructure.first_seen) : ('-')}
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
                 {t('Last seen')}
               </Typography>
-              {fldt(infrastructure.last_seen)}
+              {infrastructure.last_seen ? fldt(infrastructure.last_seen) : ('-')}
             </Grid>
             <Grid item={true} xs={6}>
               <StixCoreObjectKillChainPhasesView killChainPhasesEdges={infrastructure.killChainPhases.edges} />
