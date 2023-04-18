@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Chip from '@mui/material/Chip';
@@ -10,11 +10,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import {
-  Launch,
-  SettingsApplications,
-  PermIdentity,
-} from '@mui/icons-material';
+import { PermIdentity, SettingsApplications } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
@@ -22,6 +18,7 @@ import AttackPatternParentAttackPatterns from './AttackPatternParentAttackPatter
 import AttackPatternSubAttackPatterns from './AttackPatternSubAttackPatterns';
 import AttackPatternCoursesOfAction from './AttackPatternCoursesOfAction';
 import AttackPatternDataComponents from './AttackPatternDataComponents';
+import StixCoreObjectKillChainPhasesView from '../../common/stix_core_objects/StixCoreObjectKillChainPhasesView';
 
 const styles = () => ({
   paper: {
@@ -101,32 +98,7 @@ class AttackPatternDetailsComponent extends Component {
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
             <Grid item={true} xs={6}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Kill chain phases')}
-              </Typography>
-              {attackPattern.killChainPhases.edges.length > 0 ? (
-                <List>
-                  {attackPattern.killChainPhases.edges.map(
-                    (killChainPhaseEdge) => {
-                      const killChainPhase = killChainPhaseEdge.node;
-                      return (
-                        <ListItem
-                          key={killChainPhase.phase_name}
-                          dense={true}
-                          divider={true}
-                        >
-                          <ListItemIcon>
-                            <Launch />
-                          </ListItemIcon>
-                          <ListItemText primary={killChainPhase.phase_name} />
-                        </ListItem>
-                      );
-                    },
-                  )}
-                </List>
-              ) : (
-                ''
-              )}
+              <StixCoreObjectKillChainPhasesView killChainPhasesEdges={attackPattern.killChainPhases.edges} firstLine={true} />
               <Typography
                 variant="h3"
                 gutterBottom={true}

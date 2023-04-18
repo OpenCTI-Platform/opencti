@@ -55,25 +55,30 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({ source
   const shouldBeTruncated = (source || '').length > limit;
 
   return (
-    <div style={{ position: 'relative' }}>
-      {shouldBeTruncated && (
-        <div style={{ position: 'absolute', top: -32, right: 0 }}>
-          <IconButton onClick={onClick} size="large">
-            {expand ? <ExpandLess /> : <ExpandMore />}
-          </IconButton>
+    <span>
+    {source
+      ? <div style={{ position: 'relative' }}>
+        {shouldBeTruncated && (
+          <div style={{ position: 'absolute', top: -32, right: 0 }}>
+            <IconButton onClick={onClick} size="large">
+              {expand ? <ExpandLess/> : <ExpandMore/>}
+            </IconButton>
+          </div>
+        )}
+        <div style={{ marginTop: 10 }}>
+          <Markdown
+            remarkPlugins={[remarkGfm, remarkParse]}
+            components={MarkDownComponents(theme)}
+            className="markdown"
+          >
+            {expand ? source : truncate(source, limit)}
+          </Markdown>
         </div>
-      )}
-      <div style={{ marginTop: 10 }}>
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkParse]}
-          components={MarkDownComponents(theme)}
-          className="markdown"
-        >
-          {expand ? source : truncate(source, limit)}
-        </Markdown>
+        <div className="clearfix"/>
       </div>
-      <div className="clearfix" />
-    </div>
+      : ('-')
+    }
+    </span>
   );
 };
 
