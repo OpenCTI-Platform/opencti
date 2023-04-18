@@ -54,7 +54,20 @@ export const batchRoles = async (context, user, groupIds) => {
 };
 
 export const addGroup = async (context, user, group) => {
-  const created = await createEntity(context, user, group, ENTITY_TYPE_GROUP);
+  let groupWithDefaultValues = group;
+  if (groupWithDefaultValues.default_assignation === undefined) {
+    groupWithDefaultValues = {
+      ...groupWithDefaultValues,
+      default_assignation: false,
+    };
+  }
+  if (groupWithDefaultValues.auto_new_marking === undefined) {
+    groupWithDefaultValues = {
+      ...groupWithDefaultValues,
+      auto_new_marking: false,
+    };
+  }
+  const created = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].ADDED_TOPIC, created, user);
 };
 
