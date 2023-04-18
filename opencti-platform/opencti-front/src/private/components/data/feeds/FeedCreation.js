@@ -31,6 +31,7 @@ import Filters from '../../common/lists/Filters';
 import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 export const feedCreationAllTypesQuery = graphql`
   query FeedCreationAllTypesQuery {
@@ -175,7 +176,14 @@ const FeedCreation = (props) => {
     setOpen(true);
   };
 
+  const resetStates = () => {
+    setSelectedTypes([]);
+    setFilters({});
+    setFeedAttributes({ 0: {} });
+  };
+
   const handleClose = () => {
+    resetStates();
     setOpen(false);
   };
 
@@ -187,7 +195,7 @@ const FeedCreation = (props) => {
     const updatedFeedAttributes = [];
     for (let index = 0; index < attrValues.length; index += 1) {
       const feedAttr = attrValues[index];
-      const mappingEntries = Object.entries(feedAttr.mappings);
+      const mappingEntries = isNotEmptyField(feedAttr) ? Object.entries(feedAttr.mappings) : [];
       const keepMappings = mappingEntries.filter(([k]) => types.includes(k));
       updatedFeedAttributes.push({
         attribute: feedAttr.attribute,
@@ -237,10 +245,7 @@ const FeedCreation = (props) => {
   };
 
   const areAttributesValid = () => {
-    if (
-      selectedTypes.length === 0
-      || Object.keys(feedAttributes).length === 0
-    ) {
+    if (selectedTypes.length === 0 || Object.keys(feedAttributes).length === 0) {
       return false;
     }
     for (const n of Object.keys(feedAttributes)) {

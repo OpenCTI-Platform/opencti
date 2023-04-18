@@ -29,6 +29,7 @@ import { feedCreationAllTypesQuery } from './FeedCreation';
 import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const styles = (theme) => ({
   header: {
@@ -137,7 +138,7 @@ const FeedEditionContainer = (props) => {
     const updatedFeedAttributes = [];
     for (let index = 0; index < attrValues.length; index += 1) {
       const feedAttr = attrValues[index];
-      const mappingEntries = Object.entries(feedAttr.mappings);
+      const mappingEntries = isNotEmptyField(feedAttr) ? Object.entries(feedAttr.mappings) : [];
       const keepMappings = mappingEntries.filter(([k]) => types.includes(k));
       updatedFeedAttributes.push({
         attribute: feedAttr.attribute,
