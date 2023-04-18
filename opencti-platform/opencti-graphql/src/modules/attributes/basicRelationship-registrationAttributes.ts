@@ -1,6 +1,7 @@
 import {
   AttributeDefinition,
   createdAt,
+  creators,
   entityType,
   internalId,
   standardId,
@@ -16,5 +17,6 @@ const basicRelationshipAttributes: Array<AttributeDefinition> = [
   createdAt,
   updatedAt,
   { name: 'i_inference_weight', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+  creators,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_BASIC_RELATIONSHIP, basicRelationshipAttributes);
