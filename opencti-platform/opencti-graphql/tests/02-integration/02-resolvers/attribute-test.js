@@ -58,7 +58,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_MIGRATION_STATUS }
     });
     let attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(7);
+    expect(attributes.length).toEqual(8);
     expect(attributes.map((node) => node.value).includes('entity_type')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('platformVersion')).toBeTruthy(); // Direct attribute
 
@@ -121,7 +121,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_PARTICIPATE_TO }
     });
     let attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(9);
+    expect(attributes.length).toEqual(10);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
     queryResult = await queryAsAdmin({
@@ -129,7 +129,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: RELATION_HAS_REFERENCE }
     });
     attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(6);
+    expect(attributes.length).toEqual(7);
     expect(attributes.map((node) => node.value).includes('standard_id')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('i_inference_weight')).toBeTruthy(); // Direct attribute
 

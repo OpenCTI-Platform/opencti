@@ -1,7 +1,7 @@
 import {
   AttributeDefinition,
   created,
-  creators, modified,
+  modified,
   specVersion,
   xOpenctiStixIds
 } from '../../schema/attribute-definition';
@@ -11,7 +11,6 @@ import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
 const stixObjectAttributes: Array<AttributeDefinition> = [
   xOpenctiStixIds,
   specVersion,
-  creators,
   created,
   modified,
 ];
