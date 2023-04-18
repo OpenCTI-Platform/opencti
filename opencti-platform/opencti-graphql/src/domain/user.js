@@ -18,7 +18,7 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
@@ -132,8 +132,46 @@ export const batchOrganizations = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
-export const batchRoles = async (context, user, groupId) => {
+export const batchRolesForGroups = async (context, user, groupId) => {
   return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+};
+
+export const batchRolesForUsers = async (context, user, userIds) => {
+  // Get all groups for users
+  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const groupIds = [];
+  const usersWithGroups = {};
+  usersGroups.forEach((userGroup) => {
+    if (!groupIds.includes(userGroup.toId)) {
+      groupIds.push(userGroup.toId);
+    }
+    if (usersWithGroups[userGroup.fromId]) {
+      usersWithGroups[userGroup.fromId] = [...usersWithGroups[userGroup.fromId], userGroup.toId];
+    } else {
+      usersWithGroups[userGroup.fromId] = [userGroup.toId];
+    }
+  });
+  // Get all roles for groups
+  const roleIds = [];
+  const groupWithRoles = {};
+  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  groupsRoles.forEach((groupRole) => {
+    if (!roleIds.includes(groupRole.toId)) {
+      roleIds.push(groupRole.toId);
+    }
+    if (groupWithRoles[groupRole.fromId]) {
+      groupWithRoles[groupRole.fromId] = [...groupWithRoles[groupRole.fromId], groupRole.toId];
+    } else {
+      groupWithRoles[groupRole.fromId] = [groupRole.toId];
+    }
+  });
+  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ids: roleIds });
+  const rolesMap = R.mergeAll(roles.map((r) => ({ [r.id]: r })));
+  return userIds.map((u) => {
+    const groups = usersWithGroups[u] ?? [];
+    const idRoles = groups.map((g) => groupWithRoles[g] ?? []).flat();
+    return idRoles.map((r) => rolesMap[r]);
+  });
 };
 
 export const computeAvailableMarkings = (markings, all) => {
