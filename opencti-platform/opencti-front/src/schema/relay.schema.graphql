@@ -1285,7 +1285,6 @@ input UserAddInput {
   description: String
   language: String
   theme: String
-  roles: [ID]
   objectOrganization: [ID!]
 }
 

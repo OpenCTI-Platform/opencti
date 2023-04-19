@@ -23364,7 +23364,6 @@ export type UserAddInput = {
   name: Scalars['String'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']>>;
   password?: InputMaybe<Scalars['String']>;
-  roles?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
   theme?: InputMaybe<Scalars['String']>;
   user_email?: InputMaybe<Scalars['String']>;
 };

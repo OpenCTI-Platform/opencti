@@ -7,13 +7,11 @@ import { delEditContext, delUserContext, notify, setEditContext } from '../datab
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import {
-  batchListThroughGetFrom,
   batchListThroughGetTo,
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  listThroughGetFrom,
   listThroughGetTo,
   patchAttribute,
   updateAttribute,
@@ -75,8 +73,14 @@ export const ROLE_DEFAULT = 'Default';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 
 const roleSessionRefresh = async (context, user, roleId) => {
-  const members = await listThroughGetFrom(context, user, [roleId], RELATION_HAS_ROLE, ENTITY_TYPE_USER);
-  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
+  // Get all groups that have this role
+  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
+  const groupIds = groupsRoles.map((group) => group.fromId);
+  // Get all users for groups
+  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const userIds = R.uniq(usersGroups.map((u) => u.fromId));
+  // Mark for refresh all impacted sessions
+  const sessions = await findSessionsForUsers(userIds);
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
@@ -137,10 +141,6 @@ export const findAll = (context, user, args) => {
 
 export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
-};
-
-export const batchGroupsFromRoles = async (context, user, roleId, opts = {}) => {
-  return batchListThroughGetFrom(context, user, roleId, RELATION_HAS_ROLE, ENTITY_TYPE_GROUP, opts);
 };
 
 const internalUserIds = Object.keys(INTERNAL_USERS);
@@ -298,16 +298,6 @@ export const roleEditContext = async (context, user, roleId, input) => {
   });
 };
 
-const assignRoleToUser = async (context, user, userId, roleName) => {
-  const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
-  const assignInput = {
-    fromId: userId,
-    toId: generateToId,
-    relationship_type: RELATION_HAS_ROLE,
-  };
-  return createRelation(context, user, assignInput);
-};
-
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   await createRelation(context, user, assignInput);
@@ -350,9 +340,6 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('roles')
   )(newUser);
   const userCreated = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER);
-  // Link to the roles
-  const userRoles = newUser.roles ?? []; // Expected roles name
-  await Promise.all(userRoles.map((role) => assignRoleToUser(context, user, userCreated.id, role)));
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
   await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, userCreated.id, organization), userOrganizations));
@@ -366,7 +353,7 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
-  logAudit.info(user, USER_CREATION, { user: userEmail, roles: userRoles, groups });
+  logAudit.info(user, USER_CREATION, { user: userEmail, groups });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
