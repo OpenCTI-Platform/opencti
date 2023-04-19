@@ -15946,6 +15946,7 @@ export type Query = {
   stixRefRelationship?: Maybe<StixRefRelationship>;
   stixRefRelationships?: Maybe<StixRefRelationshipConnection>;
   stixRefRelationshipsDistribution?: Maybe<Array<Maybe<Distribution>>>;
+  stixRefRelationshipsNumber?: Maybe<Number>;
   stixRelationship?: Maybe<StixRelationship>;
   stixRelationships?: Maybe<StixRelationshipConnection>;
   stixSchemaRefRelationships?: Maybe<DefinitionRefRelationship>;
@@ -17588,6 +17589,13 @@ export type QueryStixRefRelationshipsDistributionArgs = {
   relationship_type?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   startDate?: InputMaybe<Scalars['DateTime']>;
   toTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type QueryStixRefRelationshipsNumberArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  fromId?: InputMaybe<Scalars['StixRef']>;
+  types?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -30720,6 +30728,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   stixRefRelationship?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, Partial<QueryStixRefRelationshipArgs>>;
   stixRefRelationships?: Resolver<Maybe<ResolversTypes['StixRefRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRefRelationshipsArgs>>;
   stixRefRelationshipsDistribution?: Resolver<Maybe<Array<Maybe<ResolversTypes['Distribution']>>>, ParentType, ContextType, RequireFields<QueryStixRefRelationshipsDistributionArgs, 'field' | 'operation'>>;
+  stixRefRelationshipsNumber?: Resolver<Maybe<ResolversTypes['Number']>, ParentType, ContextType, Partial<QueryStixRefRelationshipsNumberArgs>>;
   stixRelationship?: Resolver<Maybe<ResolversTypes['StixRelationship']>, ParentType, ContextType, Partial<QueryStixRelationshipArgs>>;
   stixRelationships?: Resolver<Maybe<ResolversTypes['StixRelationshipConnection']>, ParentType, ContextType, Partial<QueryStixRelationshipsArgs>>;
   stixSchemaRefRelationships?: Resolver<Maybe<ResolversTypes['DefinitionRefRelationship']>, ParentType, ContextType, Partial<QueryStixSchemaRefRelationshipsArgs>>;

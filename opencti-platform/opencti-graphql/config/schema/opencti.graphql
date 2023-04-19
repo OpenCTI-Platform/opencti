@@ -12374,6 +12374,7 @@ type Query {
     order: String
     isTo: Boolean
   ): [Distribution] @auth(for: [KNOWLEDGE, EXPLORE])
+  stixRefRelationshipsNumber(types: [String!], fromId: StixRef, endDate: DateTime): Number @auth(for: [KNOWLEDGE])
 
   ####### ALL
   stixObjectOrStixRelationship(id: String!): StixObjectOrStixRelationship @auth(for: [KNOWLEDGE, EXPLORE])

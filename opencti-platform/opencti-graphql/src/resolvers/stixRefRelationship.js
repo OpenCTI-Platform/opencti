@@ -3,12 +3,14 @@ import {
   addStixRefRelationship,
   findAll,
   findById,
-  findNested, isDatable,
+  findNested,
+  isDatable,
   schemaRefRelationships,
   stixRefRelationshipCleanContext,
   stixRefRelationshipDelete,
   stixRefRelationshipEditContext,
-  stixRefRelationshipEditField
+  stixRefRelationshipEditField,
+  stixRefRelationshipsNumber
 } from '../domain/stixRefRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -32,6 +34,7 @@ const stixRefRelationshipResolvers = {
     stixNestedRefRelationships: (_, args, context) => findNested(context, context.user, args),
     stixSchemaRefRelationships: (_, { id, toType }, context) => schemaRefRelationships(context, context.user, id, toType),
     stixRefRelationshipsDistribution: (_, args, context) => distributionRelations(context, context.user, args),
+    stixRefRelationshipsNumber: (_, args, context) => stixRefRelationshipsNumber(context, context.user, args),
   },
   StixRefRelationship: {
     from: (rel, _, context) => loadByIdLoader.load(rel.fromId, context, context.user),
