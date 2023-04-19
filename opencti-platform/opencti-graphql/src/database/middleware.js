@@ -30,6 +30,8 @@ import {
   READ_DATA_INDICES_INFERRED,
   READ_INDEX_HISTORY,
   READ_INDEX_INFERRED_RELATIONSHIPS,
+  READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS,
+  READ_INDEX_STIX_META_RELATIONSHIPS,
   READ_RELATIONSHIPS_INDICES,
   READ_RELATIONSHIPS_INDICES_WITHOUT_INFERRED,
   UPDATE_OPERATION_ADD,
@@ -395,7 +397,8 @@ const loadElementMetaDependencies = async (context, user, element, args = {}) =>
   const elementId = element.internal_id;
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
-  const refsRelations = await listAllRelations(context, user, relTypes, { fromId: elementId });
+  const refArgs = { indices: [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], fromId: elementId };
+  const refsRelations = await listAllRelations(context, user, relTypes, refArgs);
   const data = {};
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
