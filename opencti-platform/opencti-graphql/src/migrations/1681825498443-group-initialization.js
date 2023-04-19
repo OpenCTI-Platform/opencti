@@ -1,11 +1,12 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
-import { findAll, groupEditField } from '../domain/group';
+import { groupEditField } from '../domain/group';
+import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
+import { listAllEntities } from '../database/middleware-loader';
 
 export const up = async (next) => {
   const context = executionContext('migration');
-  const groupsEdges = await findAll(context, SYSTEM_USER);
-  const groups = groupsEdges.edges.map((n) => n.node);
+  const groups = await listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP]);
   const groupEditionPromises = groups.map((group) => {
     const updateInput = [];
     if (group.auto_new_marking === undefined) {
