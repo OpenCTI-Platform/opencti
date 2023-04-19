@@ -526,7 +526,6 @@ export type Assignee = {
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   name: Scalars['String'];
-  user_email: Scalars['String'];
 };
 
 export type AssigneeConnection = {
@@ -26412,7 +26411,6 @@ export type AssigneeResolvers<ContextType = any, ParentType extends ResolversPar
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  user_email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

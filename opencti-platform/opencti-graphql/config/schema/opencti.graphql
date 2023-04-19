@@ -1136,7 +1136,6 @@ type Assignee {
   id: ID! # internal_id
   name: String!
   entity_type: String!
-  user_email: String!
 }
 type OtpElement {
   secret: String!
