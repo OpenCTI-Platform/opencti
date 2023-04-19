@@ -248,12 +248,11 @@ const createRole = async (input: { name: string, description: string, capabiliti
 
 // region user management
 const USER_CREATION_MUTATION = `
-  mutation userCreation($email: user_email_String_minLength_5_format_email, $name: name_String_NotNull_minLength_2!, $password: String!, $roles: [ID]) {
+  mutation userCreation($email: user_email_String_minLength_5_format_email, $name: name_String_NotNull_minLength_2!, $password: String!) {
     userAdd(input: {
       user_email: $email
       name: $name
       password: $password
-      roles: $roles
     }) {
       id
     }
@@ -269,12 +268,10 @@ const createUser = async (user: User) => {
         const role = group.roles[index];
         await createRole(role);
       }
-      const roleIds = group.roles.map((r) => r.name);
       await adminQuery(USER_CREATION_MUTATION, {
         email: user.email,
         name: user.email,
         password: user.password,
-        roles: roleIds
       });
     }
     await createGroup(group);
