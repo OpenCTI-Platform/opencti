@@ -1173,7 +1173,6 @@ type User implements BasicObject & InternalObject {
   objectOrganization: OrganizationConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime!
   updated_at: DateTime!
-  allowed_marking: [MarkingDefinition]
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
   # Technical
   editContext: [EditUserContext!]

@@ -57,6 +57,7 @@ interface EntityFilters<T extends BasicStoreCommon> extends ListFilter<T> {
 }
 
 export interface EntityOptions<T extends BasicStoreCommon> extends EntityFilters<T> {
+  ids?: Array<string>;
   indices?: Array<string>;
 }
 

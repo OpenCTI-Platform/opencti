@@ -1,8 +1,8 @@
 import * as R from 'ramda';
+import { uniq } from 'ramda';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { uniq } from 'ramda';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
@@ -19,17 +19,47 @@ import {
   updateAttribute,
 } from '../database/middleware';
 import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
+} from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { addGroup, findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { convertRelationToAction, IMPERSONATE_ACTION, LOGIN_ACTION, LOGOUT_ACTION, ROLE_DELETION, USER_CREATION, USER_DELETION, } from '../config/audit';
+import {
+  convertRelationToAction,
+  IMPERSONATE_ACTION,
+  LOGIN_ACTION,
+  LOGOUT_ACTION,
+  ROLE_DELETION,
+  USER_CREATION,
+  USER_DELETION,
+} from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER
+} from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
@@ -209,8 +239,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
 
 export const getRoles = async (context, userGroups) => {
   const groupIds = userGroups.map((r) => r.id);
-  const roles = await listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-  return roles;
+  return listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
 };
 
 export const getCapabilities = async (context, userId, userRoles, isUserPlatform) => {
