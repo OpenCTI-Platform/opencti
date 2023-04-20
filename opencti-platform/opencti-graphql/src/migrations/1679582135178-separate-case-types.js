@@ -21,7 +21,8 @@ export const up = async (next) => {
   await BluePromise.map(vocab.edges, async ({ node: { name, id } }) => {
     const vocabCases = cases.edges.filter(({ node: { case_type } }) => case_type === name).map(({ node }) => node);
     await BluePromise.map(vocabCases, async (c) => {
-      const authUser = await findById(context, SYSTEM_USER, c.creator_id);
+      const firstCreator = Array.isArray(c.creator_id) ? c.creator_id.at(0) : c.creator_id;
+      const authUser = await findById(context, SYSTEM_USER, firstCreator);
       const newCase = { ...c };
       delete newCase.case_type;
       switch (name) {
@@ -38,7 +39,9 @@ export const up = async (next) => {
     await deleteElementById(context, SYSTEM_USER, id, ENTITY_TYPE_VOCABULARY);
   });
   const caseEntitySettings = await findByType(context, SYSTEM_USER, ENTITY_TYPE_CONTAINER_CASE);
-  await deleteElementById(context, SYSTEM_USER, caseEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING);
+  if (caseEntitySettings?.id) {
+    await deleteElementById(context, SYSTEM_USER, caseEntitySettings.id, ENTITY_TYPE_ENTITY_SETTING);
+  }
 
   // NEW VOCAB
   const category = VocabularyCategory.IncidentResponseTypesOv;
