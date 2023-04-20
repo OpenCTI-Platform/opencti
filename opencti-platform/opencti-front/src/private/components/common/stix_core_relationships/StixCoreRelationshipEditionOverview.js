@@ -581,6 +581,7 @@ const StixCoreRelationshipEditionFragment = createFragmentContainer(
           edges {
             node {
               id
+              entity_type
               kill_chain_name
               phase_name
               x_opencti_order
