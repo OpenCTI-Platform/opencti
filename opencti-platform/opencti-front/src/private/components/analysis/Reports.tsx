@@ -31,7 +31,9 @@ const Reports: FunctionComponent<ReportsProps> = ({
   authorId,
   onChangeOpenExports,
 }) => {
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
+  const {
+    platformModuleHelpers: { isRuntimeFieldEnable },
+  } = useAuth();
   const additionnalFilters = [];
   if (authorId) {
     additionnalFilters.push({
@@ -177,6 +179,8 @@ const Reports: FunctionComponent<ReportsProps> = ({
             'confidence',
             'published_start_date',
             'published_end_date',
+            'objectContains',
+
           ]}
         >
           {queryRef && (

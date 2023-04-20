@@ -2684,7 +2684,9 @@ class WorkbenchFileContentComponent extends Component {
         ? [R.ascend(R.prop(containerSortBy))]
         : [R.descend(R.prop(containerSortBy))],
     );
-    const sortedObjects = sort(resolvedObjects);
+    const sortedObjects = sort(
+      resolvedObjects.filter((n) => n.type !== 'marking-definition'),
+    );
     return (
       <div style={{ padding: '0 15px 0 15px' }}>
         <List classes={{ root: classes.linesContainer }}>

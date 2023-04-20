@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { Link } from 'react-router-dom';
 import Badge from '@mui/material/Badge';
+import Tooltip from '@mui/material/Tooltip';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
@@ -78,7 +79,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontSize: 12,
     height: 20,
     float: 'left',
-    width: 120,
+    width: 150,
     textTransform: 'uppercase',
     borderRadius: '0',
   },
@@ -313,14 +314,18 @@ NotificationLineProps
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                <Chip
-                  classes={{ root: classes.chipInList }}
-                  color={
-                    data.notification_type === 'live' ? 'warning' : 'secondary'
-                  }
-                  variant="outlined"
-                  label={data.name}
-                />
+                <Tooltip title={data.name}>
+                  <Chip
+                    classes={{ root: classes.chipInList }}
+                    color={
+                      data.notification_type === 'live'
+                        ? 'warning'
+                        : 'secondary'
+                    }
+                    variant="outlined"
+                    label={data.name}
+                  />
+                </Tooltip>
               </div>
             </div>
           }
