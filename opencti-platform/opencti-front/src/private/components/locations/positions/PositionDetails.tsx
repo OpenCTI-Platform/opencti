@@ -16,6 +16,7 @@ import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import {
   PositionDetails_positionRelationships$key,
 } from './__generated__/PositionDetails_positionRelationships.graphql';
+import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -147,8 +148,9 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({ position, qu
   });
 
   const getTargetedEntities = (type: string) => (data?.stixCoreRelationships?.edges ?? [])
-    .filter(({ node }) => node.to.entity_type === type)
-    .map(({ node }) => node.to.name);
+    .filter(({ node }) => isNotEmptyField(node.to))
+    .filter(({ node }) => node.to?.entity_type === type)
+    .map(({ node }) => node.to?.name);
 
   const cities = getTargetedEntities('City');
   const countries = getTargetedEntities('Country');
