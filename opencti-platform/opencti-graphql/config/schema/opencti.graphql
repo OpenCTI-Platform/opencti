@@ -10903,8 +10903,8 @@ interface StixRelationship {
   standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship!
-  to: StixObjectOrStixRelationship!
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
   # Technical
   creators: [Creator!]
@@ -10986,8 +10986,8 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   standard_id: String!
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
-  from: StixObjectOrStixRelationship!
-  to: StixObjectOrStixRelationship!
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   spec_version: String!
   x_opencti_inferences: [Inference]
   # StixCoreRelationship
@@ -11129,8 +11129,8 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
-  from: StixObjectOrStixRelationship!
-  to: StixObjectOrStixRelationship!
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
   # StixSightingRelationship
   relationship_type: String!
@@ -11229,8 +11229,8 @@ type StixRefRelationship implements BasicRelationship & StixRelationship {
   x_opencti_stix_ids: [StixId]
   is_inferred: Boolean!
   spec_version: String!
-  from: StixObjectOrStixRelationship!
-  to: StixObjectOrStixRelationship!
+  from: StixObjectOrStixRelationship
+  to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
   reports(first: Int): ReportConnection
   notes(first: Int): NoteConnection
