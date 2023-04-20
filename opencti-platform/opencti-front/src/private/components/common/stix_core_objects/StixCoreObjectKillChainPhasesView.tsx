@@ -39,24 +39,27 @@ const StixCoreObjectKillChainPhasesView: FunctionComponent<StixCoreObjectKillCha
       <Typography variant="h3" gutterBottom={true} style={firstLine ? undefined : { marginTop: 20 }}>
         {t('Kill chain phases')}
       </Typography>
-      {killChainPhasesEdges.length > 0 ? <List>
-        {killChainPhasesEdges.map((killChainPhaseEdge) => {
-          const killChainPhase = killChainPhaseEdge.node;
-          return (
-            <ListItem
-              key={killChainPhase.phase_name}
-              dense={true}
-              divider={true}
-              classes={{ root: classes.killChainPhaseItem }}
-            >
-              <ListItemIcon>
-                <ItemIcon type={killChainPhase.entity_type}/>
-              </ListItemIcon>
-              <ListItemText primary={killChainPhase.phase_name}/>
-            </ListItem>
-          );
-        })}
-      </List> : ('-')}
+      {killChainPhasesEdges.length > 0
+        ? <List>
+          {killChainPhasesEdges.map((killChainPhaseEdge) => {
+            const killChainPhase = killChainPhaseEdge.node;
+            return (
+              <ListItem
+                key={killChainPhase.phase_name}
+                dense={true}
+                divider={true}
+                classes={{ root: classes.killChainPhaseItem }}
+              >
+                <ListItemIcon>
+                  <ItemIcon type={killChainPhase.entity_type}/>
+                </ListItemIcon>
+                <ListItemText primary={killChainPhase.phase_name}/>
+              </ListItem>
+            );
+          })}
+          </List>
+        : ('-')
+      }
     </div>
   );
 };
