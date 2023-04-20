@@ -23124,7 +23124,6 @@ export type UrlAddInput = {
 
 export type User = BasicObject & InternalObject & {
   __typename?: 'User';
-  allowed_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
   api_token: Scalars['String'];
   capabilities: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime'];
@@ -23365,7 +23364,6 @@ export type UserAddInput = {
   name: Scalars['String'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']>>;
   password?: InputMaybe<Scalars['String']>;
-  roles?: InputMaybe<Array<InputMaybe<Scalars['ID']>>>;
   theme?: InputMaybe<Scalars['String']>;
   user_email?: InputMaybe<Scalars['String']>;
 };
@@ -32446,7 +32444,6 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  allowed_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

@@ -1,35 +1,63 @@
 import * as R from 'ramda';
+import { uniq } from 'ramda';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
-import { uniq } from 'ramda';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import {
-  batchListThroughGetFrom,
   batchListThroughGetTo,
   createEntity,
   createRelation,
   deleteElementById,
   deleteRelationsByFromAndTo,
-  listThroughGetFrom,
   listThroughGetTo,
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
-import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_USER, } from '../schema/internalObject';
-import { isInternalRelationship, RELATION_ACCESSES_TO, RELATION_HAS_CAPABILITY, RELATION_HAS_ROLE, RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO, } from '../schema/internalRelationship';
+import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  ENTITY_TYPE_CAPABILITY,
+  ENTITY_TYPE_GROUP,
+  ENTITY_TYPE_ROLE,
+  ENTITY_TYPE_SETTINGS,
+  ENTITY_TYPE_USER,
+} from '../schema/internalObject';
+import {
+  isInternalRelationship,
+  RELATION_ACCESSES_TO,
+  RELATION_HAS_CAPABILITY,
+  RELATION_HAS_ROLE,
+  RELATION_MEMBER_OF,
+  RELATION_PARTICIPATE_TO,
+} from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
 import { addGroup, findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { convertRelationToAction, IMPERSONATE_ACTION, LOGIN_ACTION, LOGOUT_ACTION, ROLE_DELETION, USER_CREATION, USER_DELETION, } from '../config/audit';
+import {
+  convertRelationToAction,
+  IMPERSONATE_ACTION,
+  LOGIN_ACTION,
+  LOGOUT_ACTION,
+  ROLE_DELETION,
+  USER_CREATION,
+  USER_DELETION,
+} from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
-import { BYPASS, executionContext, INTERNAL_USERS, isBypassUser, isUserHasCapability, KNOWLEDGE_ORGANIZATION_RESTRICT, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
+import {
+  BYPASS,
+  executionContext,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  KNOWLEDGE_ORGANIZATION_RESTRICT,
+  SETTINGS_SET_ACCESSES,
+  SYSTEM_USER
+} from '../utils/access';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
@@ -45,8 +73,14 @@ export const ROLE_DEFAULT = 'Default';
 const PLATFORM_ORGANIZATION = 'settings_platform_organization';
 
 const roleSessionRefresh = async (context, user, roleId) => {
-  const members = await listThroughGetFrom(context, user, [roleId], RELATION_HAS_ROLE, ENTITY_TYPE_USER);
-  const sessions = await findSessionsForUsers(members.map((e) => e.internal_id));
+  // Get all groups that have this role
+  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { toId: roleId, fromTypes: [ENTITY_TYPE_GROUP] });
+  const groupIds = groupsRoles.map((group) => group.fromId);
+  // Get all users for groups
+  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { toId: groupIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const userIds = R.uniq(usersGroups.map((u) => u.fromId));
+  // Mark for refresh all impacted sessions
+  const sessions = await findSessionsForUsers(userIds);
   await Promise.all(sessions.map((s) => markSessionForRefresh(s.id)));
 };
 
@@ -109,10 +143,6 @@ export const batchGroups = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_MEMBER_OF, ENTITY_TYPE_GROUP, opts);
 };
 
-export const batchGroupsFromRoles = async (context, user, roleId, opts = {}) => {
-  return batchListThroughGetFrom(context, user, roleId, RELATION_HAS_ROLE, ENTITY_TYPE_GROUP, opts);
-};
-
 const internalUserIds = Object.keys(INTERNAL_USERS);
 export const batchCreator = async (context, user, userIds) => {
   const userToFinds = R.uniq(userIds.filter((u) => isNotEmptyField(u)).filter((u) => !internalUserIds.includes(u)));
@@ -132,8 +162,46 @@ export const batchOrganizations = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
-export const batchRoles = async (context, user, groupId) => {
+export const batchRolesForGroups = async (context, user, groupId) => {
   return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+};
+
+export const batchRolesForUsers = async (context, user, userIds) => {
+  // Get all groups for users
+  const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
+  const groupIds = [];
+  const usersWithGroups = {};
+  usersGroups.forEach((userGroup) => {
+    if (!groupIds.includes(userGroup.toId)) {
+      groupIds.push(userGroup.toId);
+    }
+    if (usersWithGroups[userGroup.fromId]) {
+      usersWithGroups[userGroup.fromId] = [...usersWithGroups[userGroup.fromId], userGroup.toId];
+    } else {
+      usersWithGroups[userGroup.fromId] = [userGroup.toId];
+    }
+  });
+  // Get all roles for groups
+  const roleIds = [];
+  const groupWithRoles = {};
+  const groupsRoles = await listAllRelations(context, user, RELATION_HAS_ROLE, { fromId: groupIds, toTypes: [ENTITY_TYPE_ROLE] });
+  groupsRoles.forEach((groupRole) => {
+    if (!roleIds.includes(groupRole.toId)) {
+      roleIds.push(groupRole.toId);
+    }
+    if (groupWithRoles[groupRole.fromId]) {
+      groupWithRoles[groupRole.fromId] = [...groupWithRoles[groupRole.fromId], groupRole.toId];
+    } else {
+      groupWithRoles[groupRole.fromId] = [groupRole.toId];
+    }
+  });
+  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ids: roleIds });
+  const rolesMap = R.mergeAll(roles.map((r) => ({ [r.id]: r })));
+  return userIds.map((u) => {
+    const groups = usersWithGroups[u] ?? [];
+    const idRoles = groups.map((g) => groupWithRoles[g] ?? []).flat();
+    return idRoles.map((r) => rolesMap[r]);
+  });
 };
 
 export const computeAvailableMarkings = (markings, all) => {
@@ -171,8 +239,7 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
 
 export const getRoles = async (context, userGroups) => {
   const groupIds = userGroups.map((r) => r.id);
-  const roles = await listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
-  return roles;
+  return listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE);
 };
 
 export const getCapabilities = async (context, userId, userRoles, isUserPlatform) => {
@@ -231,16 +298,6 @@ export const roleEditContext = async (context, user, roleId, input) => {
   });
 };
 
-const assignRoleToUser = async (context, user, userId, roleName) => {
-  const generateToId = generateStandardId(ENTITY_TYPE_ROLE, { name: roleName });
-  const assignInput = {
-    fromId: userId,
-    toId: generateToId,
-    relationship_type: RELATION_HAS_ROLE,
-  };
-  return createRelation(context, user, assignInput);
-};
-
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
   await createRelation(context, user, assignInput);
@@ -283,9 +340,6 @@ export const addUser = async (context, user, newUser) => {
     R.dissoc('roles')
   )(newUser);
   const userCreated = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER);
-  // Link to the roles
-  const userRoles = newUser.roles ?? []; // Expected roles name
-  await Promise.all(userRoles.map((role) => assignRoleToUser(context, user, userCreated.id, role)));
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
   await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, userCreated.id, organization), userOrganizations));
@@ -299,7 +353,7 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
-  logAudit.info(user, USER_CREATION, { user: userEmail, roles: userRoles, groups });
+  logAudit.info(user, USER_CREATION, { user: userEmail, groups });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 

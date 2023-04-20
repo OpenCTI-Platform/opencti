@@ -10,7 +10,7 @@ import { deleteElementById } from '../database/middleware';
 export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);
   const start = new Date().getTime();
-  logApp.info('[MIGRATION] Roles under groups');
+  logApp.info('[MIGRATION] Roles missing groups');
   const relationArgs = { fromTypes: [ENTITY_TYPE_USER], connectionFormat: false };
   const currentRolesRelations = await listAllRelations(context, context.user, [RELATION_HAS_ROLE], relationArgs);
   // If remaining user->roles relationships available.
@@ -19,7 +19,7 @@ export const up = async (next) => {
     const groups = await listAllEntities(context, context.user, [ENTITY_TYPE_GROUP], { connectionFormat: false });
     const groupsNames = groups.map((group) => group.name);
     // For each role, create the corresponding group
-    logApp.info(`[MIGRATION] Roles under groups creating ${roles.length} groups from roles`);
+    logApp.info(`[MIGRATION] Roles missing groups creating ${roles.length} groups from roles`);
     const roleGroupAssociations = {};
     for (let i = 0; i < roles.length; i += 1) {
       const role = roles[i];
@@ -35,7 +35,7 @@ export const up = async (next) => {
       roleGroupAssociations[role.id] = addedGroup.id;
     }
     // Remap each user to the corresponding groups
-    logApp.info(`[MIGRATION] Roles under groups remapping ${currentRolesRelations.length} roles relations`);
+    logApp.info(`[MIGRATION] Roles missing groups remapping ${currentRolesRelations.length} roles relations`);
     for (let index = 0; index < currentRolesRelations.length; index += 1) {
       const { id, entity_type, fromId: userId, toId: roleId } = currentRolesRelations[index];
       const groupRelationInput = { relationship_type: RELATION_MEMBER_OF, toId: roleGroupAssociations[roleId] };
@@ -44,7 +44,7 @@ export const up = async (next) => {
       await deleteElementById(context, context.user, id, entity_type);
     }
   }
-  logApp.info(`[MIGRATION] Roles under groups done in ${new Date() - start} ms`);
+  logApp.info(`[MIGRATION] Roles missing groups done in ${new Date() - start} ms`);
   next();
 };
 

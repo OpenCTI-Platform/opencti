@@ -1236,7 +1236,6 @@ type User implements BasicObject & InternalObject {
   objectOrganization: OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
-  allowed_marking: [MarkingDefinition]
   sessions: [SessionDetail]
   editContext: [EditUserContext!]
 }
@@ -1286,7 +1285,6 @@ input UserAddInput {
   description: String
   language: String
   theme: String
-  roles: [ID]
   objectOrganization: [ID!]
 }
 

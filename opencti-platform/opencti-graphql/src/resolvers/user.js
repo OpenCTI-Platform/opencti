@@ -8,7 +8,7 @@ import {
   batchGroups,
   batchOrganizations,
   batchRoleCapabilities,
-  batchRoles,
+  batchRolesForGroups,
   batchCreator,
   bookmarks,
   deleteBookmark,
@@ -38,6 +38,7 @@ import {
   userIdDeleteRelation,
   userRenewToken,
   userWithOrigin,
+  batchRolesForUsers,
 } from '../domain/user';
 import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
@@ -53,7 +54,8 @@ import { findSessions, findUserSessions, killSession, killUserSessions } from '.
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
-const rolesLoader = batchLoader(batchRoles);
+const rolesGroupsLoader = batchLoader(batchRolesForGroups);
+const rolesUsersLoader = batchLoader(batchRolesForUsers);
 const rolesCapabilitiesLoader = batchLoader(batchRoleCapabilities);
 const creatorLoader = batchLoader(batchCreator);
 
@@ -72,6 +74,7 @@ const userResolvers = {
     bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
   },
   User: {
+    roles: (current, _, context) => rolesUsersLoader.load(current.id, context, context.user),
     groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
     objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
     editContext: (current) => fetchEditContext(current.id),
@@ -88,7 +91,7 @@ const userResolvers = {
     capabilities: (role, _, context) => rolesCapabilitiesLoader.load(role.id, context, context.user),
   },
   Group: {
-    roles: (group, _, context) => rolesLoader.load(group.id, context, context.user),
+    roles: (group, _, context) => rolesGroupsLoader.load(group.id, context, context.user),
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),
