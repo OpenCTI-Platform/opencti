@@ -153,10 +153,10 @@ const computeListTaskElements = async (context, user, task) => {
   const processingElements = [];
   // const expectedNumber = task_ids.length;
   const isUndefinedPosition = R.isNil(task_position) || R.isEmpty(task_position);
-  const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex(task_position);
+  const startIndex = isUndefinedPosition ? 0 : task_ids.findIndex((id) => task_position === id) + 1;
   const ids = R.take(MAX_TASK_ELEMENTS, task_ids.slice(startIndex));
   for (let elementId = 0; elementId < ids.length; elementId += 1) {
-    const elementToResolve = task_ids[elementId];
+    const elementToResolve = ids[elementId];
     const element = await internalLoadById(context, user, elementToResolve);
     if (element) {
       processingElements.push({ element, next: element.id });
