@@ -1,7 +1,7 @@
 import { dissoc, filter, head, includes, isEmpty, isNil } from 'ramda';
 // eslint-disable-next-line import/extensions
 import { stripIgnoredCharacters } from 'graphql/index.js';
-import { booleanConf, logApp } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
 import { AUTH_REQUIRED, UNSUPPORTED_ERROR } from '../config/errors';
@@ -30,6 +30,7 @@ const tryResolveKeyPromises = async (data) => {
 
 const API_CALL_MESSAGE = 'API Call'; // If you touch this, you need to change the performance agent
 const perfLog = booleanConf('app:performance_logger', false);
+const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 export default {
   requestDidStart: /* istanbul ignore next */ () => {
     const start = Date.now();
@@ -56,6 +57,7 @@ export default {
         if (isWrite) {
           const { input } = contextVariables;
           if (input) {
+            // Inner relation counting
             if (!isNil(input.createdBy) && !isEmpty(input.createdBy)) innerRelationCount += 1;
             if (!isNil(input.markingDefinitions)) innerRelationCount += innerCompute(input.markingDefinitions);
             if (!isNil(input.labels)) innerRelationCount += innerCompute(input.labels);
@@ -63,6 +65,12 @@ export default {
             if (!isNil(input.objectRefs)) innerRelationCount += innerCompute(input.objectRefs);
             if (!isNil(input.observableRefs)) innerRelationCount += innerCompute(input.observableRefs);
             if (!isNil(input.relationRefs)) innerRelationCount += innerCompute(input.relationRefs);
+            // Anonymization of sensitive data
+            LOGS_SENSITIVE_FIELDS.forEach((field) => {
+              if (isNotEmptyField(input[field])) {
+                input[field] = '** Redacted **';
+              }
+            });
           }
         }
         const operationType = `${isWrite ? 'WRITE' : 'READ'}`;
