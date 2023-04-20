@@ -148,7 +148,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
             >
               <ItemMarkings
                 variant="inList"
-                markingDefinitionsEdges={node.objectMarking.edges ?? []}
+                markingDefinitionsEdges={node.objectMarking?.edges ?? []}
                 limit={1}
               />
             </div>
