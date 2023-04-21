@@ -445,9 +445,8 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
   });
   const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
   if (targetsToResolved.length > 0) {
-    const args = { ids: targetsToResolved, connectionFormat: false };
-    fromToPromise = listAllThings(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args)
-      .then((things) => new Map(things.map((i) => [i.internal_id, i])));
+    const args = { toMap: true, connectionFormat: false };
+    fromToPromise = elFindByIds(context, user, targetsToResolved, args);
   }
   const [fromToMap, depsElementsMap] = await Promise.all([fromToPromise, depsPromise]);
   const loadedElements = [];
@@ -455,8 +454,8 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
     const element = elements[i];
     const isRelation = element.base_type === BASE_TYPE_RELATION;
     if (isRelation) {
-      const rawFrom = fromToMap.get(element.fromId);
-      const rawTo = fromToMap.get(element.toId);
+      const rawFrom = fromToMap[element.fromId];
+      const rawTo = fromToMap[element.toId];
       const deps = depsElementsMap.get(element.id);
       // Check relations consistency
       if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
@@ -466,15 +465,15 @@ const loadElementsWithDependencies = async (context, user, elements, opts = {}) 
         logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
         // Auto deletion of the invalid relation
         await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
-        return null;
-      }
-      const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
-      const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
-      // Check relations marking access.
-      const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
-      const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
-      if (canAccessFrom && canAccessTo) {
-        loadedElements.push(R.mergeRight(element, { from, to, ...deps }));
+      } else {
+        const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
+        const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
+        // Check relations marking access.
+        const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
+        const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
+        if (canAccessFrom && canAccessTo) {
+          loadedElements.push(R.mergeRight(element, { from, to, ...deps }));
+        }
       }
     } else {
       const deps = depsElementsMap.get(element.id);
