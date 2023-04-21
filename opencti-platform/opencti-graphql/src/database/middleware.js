@@ -392,90 +392,125 @@ export const loadEntity = async (context, user, entityTypes, args = {}) => {
 // endregion
 
 // region Loader element
-const loadElementMetaDependencies = async (context, user, element, args = {}) => {
+const loadElementMetaDependencies = async (context, user, elements, args = {}) => {
   const { onlyMarking = true } = args;
-  const elementId = element.internal_id;
+  const workingElements = Array.isArray(elements) ? elements : [elements];
+  const workingElementsMap = new Map(workingElements.map((i) => [i.internal_id, i]));
+  const elementIds = workingElements.map((element) => element.internal_id);
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
-  const refArgs = { indices: [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], fromId: elementId };
+  const refArgs = { indices: [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], fromId: elementIds };
   const refsRelations = await listAllRelations(context, user, relTypes, refArgs);
-  const data = {};
+  const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
-  if (refsRelations.length > 0) {
+  // const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, connectionFormat: false });
+  const toResolvedMap = new Map(toResolvedElements.map((i) => [i.internal_id, i]));
+  const refEntries = Object.entries(refsPerElements);
+  const loadedElementMap = new Map();
+  for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
+    const [elementId, dependencies] = refEntries[indexRef];
+    const element = workingElementsMap.get(elementId);
     // Build flatten view inside the data for stix meta
-    const grouped = R.groupBy((a) => schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, a.entity_type), refsRelations);
-    const entries = Object.entries(grouped);
-    for (let index = 0; index < entries.length; index += 1) {
-      const [key, values] = entries[index];
-      const resolvedElementsWithRelation = R.map((v) => {
-        const resolvedElement = toResolved[v.toId];
-        return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
-      }, values).filter((d) => isNotEmptyField(d));
-      const metaRefKey = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, key);
-      data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
+    const data = {};
+    if (element) {
+      const grouped = R.groupBy((a) => schemaRelationsRefDefinition.convertDatabaseNameToInputName(element.entity_type, a.entity_type), dependencies);
+      const entries = Object.entries(grouped);
+      for (let index = 0; index < entries.length; index += 1) {
+        const [key, values] = entries[index];
+        const resolvedElementsWithRelation = R.map((v) => {
+          const resolvedElement = toResolvedMap.get(v.toId);
+          return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
+        }, values).filter((d) => isNotEmptyField(d));
+        const metaRefKey = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, key);
+        data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
+      }
+      loadedElementMap.set(elementId, data);
     }
   }
-  return data;
+  return loadedElementMap;
+};
+const loadElementsWithDependencies = async (context, user, elements, opts = {}) => {
+  const elementsToDeps = [...elements];
+  let fromToPromise = Promise.resolve();
+  const targetsToResolved = [];
+  elements.forEach((e) => {
+    const isRelation = e.base_type === BASE_TYPE_RELATION;
+    if (isRelation) {
+      elementsToDeps.push({ internal_id: e.fromId, entity_type: e.fromType });
+      elementsToDeps.push({ internal_id: e.toId, entity_type: e.toType });
+      targetsToResolved.push(...[e.fromId, e.toId]);
+    }
+  });
+  const depsPromise = loadElementMetaDependencies(context, user, elementsToDeps, opts);
+  if (targetsToResolved.length > 0) {
+    const args = { ids: targetsToResolved, connectionFormat: false };
+    fromToPromise = listAllThings(context, user, [ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP], args)
+      .then((things) => new Map(things.map((i) => [i.internal_id, i])));
+  }
+  const [fromToMap, depsElementsMap] = await Promise.all([fromToPromise, depsPromise]);
+  const loadedElements = [];
+  for (let i = 0; i < elements.length; i += 1) {
+    const element = elements[i];
+    const isRelation = element.base_type === BASE_TYPE_RELATION;
+    if (isRelation) {
+      const rawFrom = fromToMap.get(element.fromId);
+      const rawTo = fromToMap.get(element.toId);
+      const deps = depsElementsMap.get(element.id);
+      // Check relations consistency
+      if (isEmptyField(rawFrom) || isEmptyField(rawTo)) {
+        const validFrom = isEmptyField(rawFrom) ? 'invalid' : 'valid';
+        const validTo = isEmptyField(rawTo) ? 'invalid' : 'valid';
+        const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
+        logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
+        // Auto deletion of the invalid relation
+        await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
+        return null;
+      }
+      const from = R.mergeRight(element, { ...rawFrom, ...depsElementsMap.get(element.fromId) });
+      const to = R.mergeRight(element, { ...rawTo, ...depsElementsMap.get(element.toId) });
+      // Check relations marking access.
+      const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
+      const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
+      if (canAccessFrom && canAccessTo) {
+        loadedElements.push(R.mergeRight(element, { from, to, ...deps }));
+      }
+    } else {
+      const deps = depsElementsMap.get(element.id);
+      loadedElements.push(R.mergeRight(element, { ...deps }));
+    }
+  }
+  return loadedElements;
 };
 const loadElementWithDependencies = async (context, user, element, opts = {}) => {
-  const depsPromise = loadElementMetaDependencies(context, user, element, opts);
-  const isRelation = element.base_type === BASE_TYPE_RELATION;
-  if (isRelation) {
-    // Load the relation from and to directly with the system user
-    // Access right must be checked by hand in this case.
-    // eslint-disable-next-line no-use-before-define
-    const fromPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.fromId, { onlyMarking: true });
-    // eslint-disable-next-line no-use-before-define
-    const toPromise = loadByIdWithDependencies(context, SYSTEM_USER, element.toId, { onlyMarking: true });
-    const [from, to, deps] = await Promise.all([fromPromise, toPromise, depsPromise]);
-    // Check relations consistency
-    if (isEmptyField(from) || isEmptyField(to)) {
-      const validFrom = isEmptyField(from) ? 'invalid' : 'valid';
-      const validTo = isEmptyField(to) ? 'invalid' : 'valid';
-      const message = `From ${element.fromId} is ${validFrom}, To ${element.toId} is ${validTo}`;
-      logApp.warn(`Auto delete of invalid relation ${element.id}. ${message}`);
-      // Auto deletion of the invalid relation
-      await elDeleteElements(context, SYSTEM_USER, [element], storeLoadByIdWithRefs);
-      return null;
-    }
-    // Check relations marking access.
-    const canAccessFrom = await isUserCanAccessStoreElement(context, user, from);
-    const canAccessTo = await isUserCanAccessStoreElement(context, user, to);
-    if (canAccessFrom && canAccessTo) {
-      return R.mergeRight(element, { from, to, ...deps });
-    }
-    // Relation is accessible but access rights is not align with the user asking for the information
-    // In this case the element is considered as not existing
-    return null;
-  }
-  const deps = await depsPromise;
-  return R.mergeRight(element, { ...deps });
+  const elements = await loadElementsWithDependencies(context, user, [element], opts);
+  return elements.length === 1 ? elements.at(0) : null;
 };
-const loadByIdWithDependencies = async (context, user, id, opts = {}) => {
-  const element = await internalLoadById(context, user, id, opts);
-  if (!element) return null;
-  return loadElementWithDependencies(context, user, element, opts);
+const loadByIdsWithDependencies = async (context, user, ids, opts = {}) => {
+  const elements = await elFindByIds(context, user, ids, { ...opts, withoutRels: true, connectionFormat: false });
+  if (elements.length > 0) {
+    return loadElementsWithDependencies(context, user, elements, opts);
+  }
+  return [];
 };
 // Get element with every elements connected element -> rel -> to
-export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
+export const storeLoadByIdsWithRefs = async (context, user, ids, opts = {}) => {
   // When loading with explicit references, data must be loaded without internal rels
   // As rels are here for search and sort there is some data that conflict after references explication resolutions
-  return loadByIdWithDependencies(context, user, id, { ...opts, onlyMarking: false, withoutRels: true });
+  return loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false, withoutRels: true });
+};
+export const storeLoadByIdWithRefs = async (context, user, id, opts = {}) => {
+  const elements = await storeLoadByIdsWithRefs(context, user, [id], opts);
+  return elements.length > 0 ? R.head(elements) : null;
 };
 export const stixLoadById = async (context, user, id, opts = {}) => {
   const instance = await storeLoadByIdWithRefs(context, user, id, opts);
-  if (instance) {
-    return convertStoreToStix(instance);
-  }
-  return undefined;
+  return instance ? convertStoreToStix(instance) : undefined;
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
-  const instances = await Promise.map(ids, (id) => stixLoadById(context, user, id, opts), {
-    concurrency: ES_MAX_CONCURRENCY,
-  });
-  return instances.filter((i) => isNotEmptyField(i));
+  const elements = await loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false, withoutRels: true });
+  return elements.map((instance) => convertStoreToStix(instance));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);

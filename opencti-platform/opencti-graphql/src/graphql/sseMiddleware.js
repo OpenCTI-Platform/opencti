@@ -7,7 +7,7 @@ import { authenticateUserFromRequest, batchGroups, STREAMAPI } from '../domain/u
 import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { streamCollectionGroups } from '../domain/stream';
-import { stixLoadById, stixLoadByIds, storeLoadByIdWithRefs } from '../database/middleware';
+import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
 import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
@@ -348,19 +348,17 @@ const createSseMiddleware = () => {
   const resolveAndPublishMissingRefs = async (context, cache, channel, req, eventId, stixData) => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
     const missingElements = await resolveMissingReferences(context, req, refs, cache);
-    for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
-      const missingRef = missingElements[missingIndex];
+    const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
+    for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
+      const missingInstance = missingInstances[missingIndex];
       if (channel.connected()) {
-        const missingInstance = await storeLoadByIdWithRefs(context, req.user, missingRef);
-        if (missingInstance) {
-          const missingData = convertStoreToStix(missingInstance);
-          const message = generateCreateMessage(missingInstance);
-          const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-          const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
-          channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-          cache.set(missingData.id);
-          await wait(channel.delay);
-        }
+        const missingData = convertStoreToStix(missingInstance);
+        const message = generateCreateMessage(missingInstance);
+        const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+        const content = { data: missingData, message, origin, version: EVENT_CURRENT_VERSION };
+        channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+        cache.set(missingData.id);
+        await wait(channel.delay);
       }
     }
   };
@@ -371,21 +369,20 @@ const createSseMiddleware = () => {
     if (noDependencies === false) {
       const allRelCallback = async (relations) => {
         const notCachedRelations = relations.filter((m) => !cache.has(m.standard_id));
-        for (let relIndex = 0; relIndex < notCachedRelations.length; relIndex += 1) {
-          const relation = notCachedRelations[relIndex];
+        const findRelIds = notCachedRelations.map((r) => r.internal_id);
+        const missingRelations = await storeLoadByIdsWithRefs(context, req.user, findRelIds);
+        for (let relIndex = 0; relIndex < missingRelations.length; relIndex += 1) {
+          const missingRelation = missingRelations[relIndex];
           if (channel.connected()) {
-            const missingRelation = await storeLoadByIdWithRefs(context, req.user, relation.id);
-            if (missingRelation) {
-              const stixRelation = convertStoreToStix(missingRelation);
-              // Resolve refs
-              await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
-              // Publish relations
-              const message = generateCreateMessage(missingRelation);
-              const origin = { referer: EVENT_TYPE_DEPENDENCIES };
-              const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
-              channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
-              cache.set(stixRelation.id);
-            }
+            const stixRelation = convertStoreToStix(missingRelation);
+            // Resolve refs
+            await resolveAndPublishMissingRefs(context, cache, channel, req, eventId, stixRelation);
+            // Publish relations
+            const message = generateCreateMessage(missingRelation);
+            const origin = { referer: EVENT_TYPE_DEPENDENCIES };
+            const content = { data: stixRelation, message, origin, version: EVENT_CURRENT_VERSION };
+            channel.sendEvent(eventId, EVENT_TYPE_CREATE, content);
+            cache.set(stixRelation.id);
           }
         }
         // Send the Heartbeat with last event id
@@ -624,29 +621,26 @@ const createSseMiddleware = () => {
       if (isRecoveryMode) {
         // noinspection UnnecessaryLocalVariableJS
         const queryCallback = async (elements) => {
-          for (let index = 0; index < elements.length; index += 1) {
-            const { internal_id: elemId, standard_id: standardId } = elements[index];
-            if (!cache.has(standardId)) { // With dependency resolving, id can be added in a previous iteration
-              const instance = await storeLoadByIdWithRefs(context, user, elemId);
-              if (instance) {
-                const stixData = convertStoreToStix(instance);
-                const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
-                const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
-                if (channel.connected()) {
-                  // publish missing dependencies if needed
-                  await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);
-                  // publish element
-                  if (!cache.has(stixData.id)) {
-                    const message = generateCreateMessage(instance);
-                    const origin = { referer: EVENT_TYPE_INIT };
-                    const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };
-                    channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
-                    cache.set(stixData.id);
-                  }
-                } else {
-                  return channel.connected();
-                }
+          const workingElementsIds = elements.filter((e) => !cache.has(e.standard_id)).map((e) => e.internal_id);
+          const instances = await storeLoadByIdsWithRefs(context, user, workingElementsIds);
+          for (let index = 0; index < instances.length; index += 1) {
+            const instance = instances[index];
+            const stixData = convertStoreToStix(instance);
+            const stixUpdatedAt = stixData.extensions[STIX_EXT_OCTI].updated_at;
+            const eventId = `${utcDate(stixUpdatedAt).toDate().getTime()}-0`;
+            if (channel.connected()) {
+              // publish missing dependencies if needed
+              await resolveAndPublishDependencies(context, noDependencies, cache, channel, req, eventId, stixData);
+              // publish element
+              if (!cache.has(stixData.id)) {
+                const message = generateCreateMessage(instance);
+                const origin = { referer: EVENT_TYPE_INIT };
+                const eventData = { data: stixData, message, origin, version: EVENT_CURRENT_VERSION };
+                channel.sendEvent(eventId, EVENT_TYPE_CREATE, eventData);
+                cache.set(stixData.id);
               }
+            } else {
+              return channel.connected();
             }
           }
           await wait(channel.delay);
@@ -656,6 +650,7 @@ const createSseMiddleware = () => {
           after: startIsoDate,
           before: recoverIsoDate
         });
+        queryOptions.first = 100;
         queryOptions.callback = queryCallback;
         await elList(context, user, queryIndices, queryOptions);
       }
