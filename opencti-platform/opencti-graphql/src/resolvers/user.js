@@ -43,7 +43,7 @@ import {
   userWithOrigin,
   batchRolesForUsers,
 } from '../domain/user';
-import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -51,9 +51,9 @@ import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
-import { LOGIN_ACTION } from '../config/audit';
 import { executionContext } from '../utils/access';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
@@ -116,7 +116,7 @@ const userResolvers = {
             if (err || info) {
               logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
               const auditUser = userWithOrigin(req, { user_email: input.email });
-              logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
+              publishUserAction({ user: auditUser, event_type: 'login', status: 'error', context_data: { provider: auth.provider } });
             }
             resolve({ user: authUser, provider: auth.provider });
           })({ body });

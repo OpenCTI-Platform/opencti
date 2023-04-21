@@ -5,7 +5,7 @@ import bcrypt from 'bcryptjs';
 import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
-import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
+import { BUS_TOPICS, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
 import {
   batchListThroughGetTo,
   createEntity,
@@ -44,15 +44,6 @@ import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import {
-  convertRelationToAction,
-  IMPERSONATE_ACTION,
-  LOGIN_ACTION,
-  LOGOUT_ACTION,
-  ROLE_DELETION,
-  USER_CREATION,
-  USER_DELETION,
-} from '../config/audit';
 import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
 import {
   BYPASS,
@@ -69,6 +60,7 @@ import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } fr
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
 import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -303,7 +295,7 @@ export const findCapabilities = (context, user, args) => {
 export const roleDelete = async (context, user, roleId) => {
   await roleSessionRefresh(context, user, roleId);
   await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
-  logAudit.info(user, ROLE_DELETION, { id: roleId });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'role_delete', data: roleId } });
   return roleId;
 };
 
@@ -447,7 +439,7 @@ export const addUser = async (context, user, newUser) => {
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
   const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
-  logAudit.info(user, USER_CREATION, { user: userEmail, groups });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_create', data: { user: userEmail, groups } } });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
@@ -566,7 +558,7 @@ export const meEditField = async (context, user, userId, inputs, password = null
 
 export const userDelete = async (context, user, userId) => {
   await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
-  logAudit.info(user, USER_DELETION, { user: userId });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_delete', data: { user_id: userId } } });
   await killUserSessions(userId);
   return userId;
 };
@@ -581,8 +573,7 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
-  const operation = convertRelationToAction(input.relationship_type);
-  logAudit.info(user, operation, { from: userId, to: input.toId, type: input.relationship_type });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: userId, input } } });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
@@ -592,8 +583,8 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
   await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
-  const operation = convertRelationToAction(relationshipType, false);
-  logAudit.info(user, operation, { from: targetUser.id, to: toId, type: relationshipType });
+  const input = { relationship_type: relationshipType, toId };
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: targetUser.id, input } } });
   await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -615,8 +606,8 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
   await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
-  const operation = convertRelationToAction(RELATION_PARTICIPATE_TO, false);
-  logAudit.info(user, operation, { from: userId, to: toId, type: RELATION_PARTICIPATE_TO });
+  const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: userId, input } } });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -702,6 +693,7 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     }
   }
   // endregion
+  await publishUserAction({ user, event_type: 'login', status: 'success', context_data: { provider: providedName } });
   return user;
 };
 
@@ -765,6 +757,7 @@ export const otpUserLogin = async (req, user, { code }) => {
 };
 
 export const logout = async (context, user, req, res) => {
+  await publishUserAction({ user, event_type: 'logout', status: 'success', context_data: undefined });
   await delUserContext(user);
   return new Promise((resolve, reject) => {
     res.clearCookie(OPENCTI_SESSION);
@@ -773,7 +766,6 @@ export const logout = async (context, user, req, res) => {
         reject(err);
         return;
       }
-      logAudit.info(user, LOGOUT_ACTION);
       resolve(user.id);
     });
   });
@@ -882,11 +874,8 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       if (isEmptyField(applicantUser)) {
         logApp.warn(`User ${applicantId} cant be impersonate (not exists)`);
       } else {
-        logAudit.info(applicantUser, IMPERSONATE_ACTION, { from: user.id, to: applicantUser.id });
         impersonate = applicantUser;
       }
-    } else {
-      logAudit.error(user, IMPERSONATE_ACTION, { to: applicantId });
     }
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
@@ -904,7 +893,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
   // Build the user session with only required fields
-  logAudit.info(userWithOrigin(req, user), LOGIN_ACTION, { provider });
+  await publishUserAction({ user, event_type: 'login', status: 'success', context_data: { provider } });
   return internalAuthenticateUser(context, req, user, provider, token);
 };
 
@@ -918,7 +907,6 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     if (provider === AUTH_BEARER) {
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
-        logAudit.info(userWithOrigin(req, auth), 'LOGIN_BEARER_CHANGE', { provider });
         // Session doesn't match, kill the current session and try to re auth
         await logout(context, auth, req, res);
         return await authenticateUserFromRequest(context, req, res);
@@ -932,7 +920,6 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const passwordCompare = isNotEmptyField(password) && isNotEmptyField(sessionPassword);
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
-        logAudit.info(userWithOrigin(req, auth), 'LOGIN_BASIC_CHANGE', { provider });
         // Session doesn't match, kill the current session and try to re auth
         await logout(context, auth, req, res);
         return await authenticateUserFromRequest(context, req, res);
@@ -945,7 +932,6 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     const isImpersonateChange = auth.impersonate && isNotSameUser;
     const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
     if (isImpersonateChange || isNowImpersonate) {
-      logAudit.info(userWithOrigin(req, auth), 'LOGIN_IMPERSONATE_CHANGE', { provider });
       // Impersonate doesn't match, kill the current session and try to re auth
       await logout(context, auth, req, res);
       return await authenticateUserFromRequest(context, req, res);
@@ -953,7 +939,6 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     // If session is marked for refresh, reload the user data in the session
     // If session is old by a past application version, make a refresh
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
-      logAudit.info(userWithOrigin(req, auth), 'SESSION_REFRESH', { provider });
       const { session_provider } = req.session;
       const { provider: userProvider, token: userToken } = session_provider;
       return await internalAuthenticateUser(context, req, auth, userProvider, userToken);

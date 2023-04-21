@@ -13,6 +13,7 @@ import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityC
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
 import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -451,7 +452,11 @@ export const storeLoadById = async <T extends BasicStoreObject>(context: AuthCon
   if (R.isNil(type) || R.isEmpty(type)) {
     throw FunctionalError('You need to specify a type when loading a element');
   }
-  return internalLoadById<T>(context, user, id, { type });
+  const data = await internalLoadById<T>(context, user, id, { type });
+  if (data) {
+    await publishUserAction({ user, event_type: 'read', status: 'success', context_data: { id, entity_type: data.entity_type } });
+  }
+  return data;
 };
 
 export const storeLoadByIds = async <T extends BasicStoreObject>(context: AuthContext, user: AuthUser, ids: string[], type: string): Promise<T[]> => {

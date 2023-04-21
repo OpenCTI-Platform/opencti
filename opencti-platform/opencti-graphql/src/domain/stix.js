@@ -25,6 +25,7 @@ import { createQueryTask } from './task';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const stixDelete = async (context, user, id) => {
   const element = await internalLoadById(context, user, id);
@@ -84,6 +85,8 @@ export const askListExport = async (context, user, format, entityType, selectedI
       },
     };
   };
+  const contextData = { type: 'list', max_marking: maxMarkingId, ids: selectedIds, params: listParams };
+  await publishUserAction({ user, event_type: 'export', status: 'success', context_data: contextData });
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
     map(async (connector) => {
@@ -124,6 +127,8 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       },
     };
   };
+  const contextData = { type: 'entity', max_marking: maxMarkingId, ids: [entity.id] };
+  await publishUserAction({ user, event_type: 'export', status: 'success', context_data: contextData });
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
     map(async (connector) => {

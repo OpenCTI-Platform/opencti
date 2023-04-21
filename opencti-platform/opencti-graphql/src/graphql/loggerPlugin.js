@@ -4,7 +4,8 @@ import { stripIgnoredCharacters } from 'graphql/index.js';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { isNotEmptyField } from '../database/utils';
 import { getMemoryStatistics } from '../domain/settings';
-import { AUTH_REQUIRED, UNSUPPORTED_ERROR } from '../config/errors';
+import { AUTH_REQUIRED, FORBIDDEN_ACCESS, UNSUPPORTED_ERROR } from '../config/errors';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const innerCompute = (inners) => {
   return filter((i) => !isNil(i) && !isEmpty(i), inners).length;
@@ -99,6 +100,8 @@ export default {
           // If worker is still retrying, this is not yet a problem, can be logged in warning until then.
           if (isRetryableCall) {
             logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
+          } else if (callError.name === FORBIDDEN_ACCESS) {
+            await publishUserAction({ user: contextUser, event_type: 'unauthorized', status: 'error', context_data: { path } });
           } else {
             // Every other uses cases are logged with error level
             logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });

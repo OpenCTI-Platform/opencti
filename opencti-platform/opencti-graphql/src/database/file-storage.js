@@ -6,15 +6,15 @@ import { chain, CredentialsProviderError, memoize } from '@aws-sdk/property-prov
 import { remoteProvider } from '@aws-sdk/credential-provider-node/dist-cjs/remoteProvider';
 import mime from 'mime-types';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import conf, { booleanConf, logApp, logAudit } from '../config/conf';
+import conf, { booleanConf, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
-import { UPLOAD_ACTION } from '../config/audit';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
 import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { publishUserAction } from '../listener/UserActionListener';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -267,7 +267,6 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
   if (!metadata.version) {
     metadata.version = now();
   }
-  logAudit.info(user, UPLOAD_ACTION, { path, filename, metadata });
   const fullMetadata = {
     ...metadata,
     filename: encodeURIComponent(filename),
@@ -295,6 +294,7 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
+  await publishUserAction({ user, event_type: 'upload', status: 'success', context_data: { id: file.metaData.entity_id, filename } });
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);

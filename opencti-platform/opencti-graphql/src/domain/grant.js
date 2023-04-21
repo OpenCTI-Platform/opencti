@@ -3,8 +3,7 @@ import { createEntity, createRelation } from '../database/middleware';
 import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE } from '../schema/internalObject';
 import { RELATION_HAS_CAPABILITY } from '../schema/internalRelationship';
 import { generateStandardId } from '../schema/identifier';
-import { logAudit } from '../config/conf';
-import { GROUP_CREATION, ROLE_CREATION } from '../config/audit';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const addCapability = async (context, user, capability) => {
   return createEntity(context, user, capability, ENTITY_TYPE_CAPABILITY);
@@ -26,14 +25,12 @@ export const addRole = async (context, user, role) => {
     });
   });
   await Promise.all(relationPromises);
-  // Audit log
-  logAudit.info(user, ROLE_CREATION, { role });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'role_creation', data: role } });
   return roleEntity;
 };
 
 export const addGroup = async (context, user, group) => {
   const groupEntity = await createEntity(context, user, group, ENTITY_TYPE_GROUP);
-  // Audit log
-  logAudit.info(user, GROUP_CREATION, { group });
+  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'group_creation', data: group } });
   return groupEntity;
 };
