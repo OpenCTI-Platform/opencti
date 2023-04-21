@@ -267,7 +267,7 @@ export const rulesCleanHandler = async (
       try {
         const isElementCleanable = isNotEmptyField(instance[`${RULE_PREFIX}${rule.id}`]);
         if (isElementCleanable) {
-          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id);
+          const processingElement: StoreObject = await storeLoadByIdWithRefs(context, RULE_MANAGER_USER, instance.internal_id) as unknown as StoreObject;
           // In case of "inference of inference", element can be recursively cleanup by the deletion system
           if (processingElement) {
             await rule.clean(processingElement, deletedDependencies);

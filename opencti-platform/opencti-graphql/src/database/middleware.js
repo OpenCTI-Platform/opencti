@@ -1337,7 +1337,7 @@ export const mergeEntities = async (context, user, targetEntityId, sourceEntityI
     // Entities must be fully loaded with admin user to resolve/move all dependencies
     const initialInstance = await storeLoadByIdWithRefs(context, user, targetEntityId);
     const target = { ...initialInstance };
-    const sources = await Promise.all(sourceEntityIds.map((sourceId) => storeLoadByIdWithRefs(context, SYSTEM_USER, sourceId)));
+    const sources = await storeLoadByIdsWithRefs(context, SYSTEM_USER, sourceEntityIds);
     const sourcesDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, sources.map((s) => s.internal_id));
     const targetDependencies = await loadMergeEntitiesDependencies(context, SYSTEM_USER, [initialInstance.internal_id]);
     // - TRANSACTION PART
