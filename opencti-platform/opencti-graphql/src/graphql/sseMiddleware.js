@@ -356,7 +356,7 @@ const createSseMiddleware = () => {
     for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
       const missingElementId = missingElements[missingIndex];
       const missingInstance = missingMap.get(missingElementId);
-      if (channel.connected()) {
+      if (!cache.has(missingInstance.standard_id) && channel.connected()) {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
         const origin = { referer: EVENT_TYPE_DEPENDENCIES };
