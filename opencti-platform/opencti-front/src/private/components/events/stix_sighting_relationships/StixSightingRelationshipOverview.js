@@ -1119,6 +1119,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              fromId
+              fromType
               to {
                 ... on BasicObject {
                   id
@@ -1370,6 +1372,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              toId
+              toType
             }
             ... on StixSightingRelationship {
               id
@@ -1923,6 +1927,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              fromId
+              fromType
               to {
                 ... on BasicObject {
                   id
@@ -2631,6 +2637,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              toId
+              toType
             }
           }
         }
@@ -3039,6 +3047,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             }
           }
         }
+        fromId
+        fromType
         to {
           ... on BasicObject {
             id
@@ -3274,6 +3284,8 @@ const StixSightingRelationshipOverview = createFragmentContainer(
             }
           }
         }
+        toId
+        toType
       }
     `,
   },

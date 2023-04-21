@@ -18,6 +18,7 @@ import {
   nodePaint,
 } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
+import { isEmptyField } from '../../../../utils/utils';
 
 const styles = () => ({
   container: {
@@ -76,16 +77,32 @@ class StixCoreRelationshipInference extends Component {
   render() {
     const { t, classes, inference, theme, stixCoreRelationship, paddingRight } = this.props;
     const width = window.innerWidth - (paddingRight ? 450 : 250);
+    const stixRelationship = { ...stixCoreRelationship };
+    // Complete the relationship if needed
+    if (isEmptyField(stixRelationship.from)) {
+      stixRelationship.from = { id: stixCoreRelationship.fromId, name: 'Restricted', entity_type: stixCoreRelationship.fromType, parent_types: [] };
+    }
+    if (isEmptyField(stixRelationship.to)) {
+      stixRelationship.to = { id: stixCoreRelationship.toId, name: 'Restricted', relationship_type: stixCoreRelationship.toType, parent_types: [] };
+    }
+    // Complete the explanations if needed
+    const explanations = inference.explanation.map((ex) => {
+      const data = { ...ex };
+      if (isEmptyField(ex.from)) {
+        data.from = { id: ex.fromId, name: 'Restricted', entity_type: ex.fromType, parent_types: [] };
+      }
+      if (isEmptyField(ex.to)) {
+        data.to = { id: ex.toId, name: 'Restricted', relationship_type: ex.toType, parent_types: [] };
+      }
+      return data;
+    });
+    // Build the graph objects
     const graphObjects = [
-      R.assoc('inferred', true, stixCoreRelationship),
-      stixCoreRelationship.from,
-      stixCoreRelationship.to,
-      ...R.filter((n) => n !== null, inference.explanation),
-      ...R.pipe(
-        R.filter((n) => n && n.from && n.to),
-        R.map((n) => [n.from, n.to]),
-        R.flatten,
-      )(inference.explanation),
+      R.assoc('inferred', true, stixRelationship),
+      stixRelationship.from,
+      stixRelationship.to,
+      ...explanations.filter((n) => n !== null),
+      ...explanations.filter((n) => n !== null).map((n) => [n.from, n.to]).flat(),
     ];
     const graphData = buildGraphData(graphObjects, [], t);
     return (

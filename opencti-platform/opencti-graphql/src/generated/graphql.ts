@@ -19761,7 +19761,9 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   entity_type: Scalars['String'];
   externalReferences?: Maybe<ExternalReferenceConnection>;
   from?: Maybe<StixObjectOrStixRelationship>;
+  fromId: Scalars['String'];
   fromRole?: Maybe<Scalars['String']>;
+  fromType: Scalars['String'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID'];
   is_inferred: Scalars['Boolean'];
@@ -19784,8 +19786,10 @@ export type StixCoreRelationship = BasicRelationship & StixRelationship & {
   stixCoreRelationships?: Maybe<StixCoreRelationshipConnection>;
   stop_time?: Maybe<Scalars['DateTime']>;
   to?: Maybe<StixObjectOrStixRelationship>;
+  toId: Scalars['String'];
   toRole?: Maybe<Scalars['String']>;
   toStix?: Maybe<Scalars['String']>;
+  toType: Scalars['String'];
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -21208,7 +21212,9 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   externalReferences?: Maybe<ExternalReferenceConnection>;
   first_seen?: Maybe<Scalars['DateTime']>;
   from?: Maybe<StixObjectOrStixRelationship>;
+  fromId: Scalars['String'];
   fromRole?: Maybe<Scalars['String']>;
+  fromType: Scalars['String'];
   groupings?: Maybe<GroupingConnection>;
   id: Scalars['ID'];
   is_inferred: Scalars['Boolean'];
@@ -21226,8 +21232,10 @@ export type StixSightingRelationship = BasicRelationship & StixRelationship & {
   standard_id: Scalars['String'];
   status?: Maybe<Status>;
   to?: Maybe<StixObjectOrStixRelationship>;
+  toId: Scalars['String'];
   toRole?: Maybe<Scalars['String']>;
   toStix?: Maybe<Scalars['String']>;
+  toType: Scalars['String'];
   updated_at: Scalars['DateTime'];
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -31408,7 +31416,9 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipExternalReferencesArgs>>;
   from?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  fromId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -31431,8 +31441,10 @@ export type StixCoreRelationshipResolvers<ContextType = any, ParentType extends 
   stixCoreRelationships?: Resolver<Maybe<ResolversTypes['StixCoreRelationshipConnection']>, ParentType, ContextType, Partial<StixCoreRelationshipStixCoreRelationshipsArgs>>;
   stop_time?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  toId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
@@ -31841,7 +31853,9 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   externalReferences?: Resolver<Maybe<ResolversTypes['ExternalReferenceConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipExternalReferencesArgs>>;
   first_seen?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   from?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  fromId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   fromRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  fromType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   groupings?: Resolver<Maybe<ResolversTypes['GroupingConnection']>, ParentType, ContextType, Partial<StixSightingRelationshipGroupingsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -31859,8 +31873,10 @@ export type StixSightingRelationshipResolvers<ContextType = any, ParentType exte
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   status?: Resolver<Maybe<ResolversTypes['Status']>, ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
+  toId?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   toStix?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  toType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
