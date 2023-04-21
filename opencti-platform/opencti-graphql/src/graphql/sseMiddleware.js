@@ -349,8 +349,13 @@ const createSseMiddleware = () => {
     const refs = stixRefsExtractor(stixData, generateStandardId);
     const missingElements = await resolveMissingReferences(context, req, refs, cache);
     const missingInstances = await storeLoadByIdsWithRefs(context, req.user, missingElements);
-    for (let missingIndex = 0; missingIndex < missingInstances.length; missingIndex += 1) {
-      const missingInstance = missingInstances[missingIndex];
+    const missingAllPerIds = missingInstances.map((m) => {
+      return [m.internal_id, m.standard_id, ...(m.x_opencti_stix_ids ?? [])].map((id) => ({ id, value: m }));
+    }).flat();
+    const missingMap = new Map(missingAllPerIds.map((m) => [m.id, m.value]));
+    for (let missingIndex = 0; missingIndex < missingElements.length; missingIndex += 1) {
+      const missingElementId = missingElements[missingIndex];
+      const missingInstance = missingMap.get(missingElementId);
       if (channel.connected()) {
         const missingData = convertStoreToStix(missingInstance);
         const message = generateCreateMessage(missingInstance);
