@@ -11,7 +11,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
 import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import { truncate } from '../utils/mailData';
 import {
   isDateAttribute,
@@ -297,7 +297,7 @@ const generateCreateDeleteMessage = (type, instance) => {
     }
     return `${type}s a ${entityType} \`${name}\``;
   }
-  if (isStixRelationship(instance.entity_type)) {
+  if (isBasicRelationship(instance.entity_type)) {
     const from = extractEntityRepresentative(instance.from);
     let fromType = instance.from.entity_type;
     if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {

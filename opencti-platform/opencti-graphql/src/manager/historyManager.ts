@@ -36,7 +36,7 @@ interface HistoryContext {
   external_references?: Array<string>;
 }
 
-interface HistoryData extends BasicStoreEntity {
+export interface HistoryData extends BasicStoreEntity {
   event_type: string;
   timestamp: string;
   entity_type: 'History';
@@ -192,6 +192,7 @@ const initHistoryManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
+        filters: [{ key: 'event_type', values: ['create'] }]
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

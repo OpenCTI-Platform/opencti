@@ -9,6 +9,7 @@ interface UserCapability {
 }
 
 interface UserOrigin {
+  socket: string;
   name?: string;
   user_id?: string;
   applicant_id?: string;

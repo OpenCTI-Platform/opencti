@@ -7,6 +7,7 @@ interface BasicUserAction {
 }
 export interface UserReadAction extends BasicUserAction {
   event_type: 'read'
+  instance: unknown
   context_data: {
     id: string
     entity_type: string
@@ -34,9 +35,11 @@ export interface UserUploadAction extends BasicUserAction {
 }
 export interface UserAdminAction extends BasicUserAction {
   event_type: 'admin'
+  message: string
   context_data: {
-    type: string
-    data: unknown
+    type: 'group' | 'role' | 'user'
+    operation: 'create' | 'update' | 'delete'
+    input: unknown
   }
 }
 export interface UserLoginAction extends BasicUserAction {

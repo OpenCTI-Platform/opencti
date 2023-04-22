@@ -466,6 +466,23 @@ const Settings = () => {
                               variant="standard"
                               helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
                             />
+                            <Field
+                                component={SwitchField}
+                                disabled={!isAccessAdmin}
+                                type="checkbox"
+                                name="enterprise_edition"
+                                label={t('Enterprise edition')}
+                                containerstyle={{
+                                  margin: '20px 0',
+                                }}
+                                onChange={(name, value) => handleSubmitField(id, name, value)}
+                                helperText={
+                                  <SubscriptionFocus
+                                      context={editContext}
+                                      fieldName="enterprise_edition"
+                                  />
+                                }
+                            />
                           </Form>
                         )}
                       </Formik>

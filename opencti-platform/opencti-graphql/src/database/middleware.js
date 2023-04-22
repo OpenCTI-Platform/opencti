@@ -836,7 +836,7 @@ const computeConfidenceLevel = (input) => {
   }
   return confidence;
 };
-const updatedInputsToData = (instance, inputs) => {
+export const updatedInputsToData = (instance, inputs) => {
   const inputPairs = R.map((input) => {
     const { key, value } = input;
     let val = value;
@@ -3391,6 +3391,6 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
     const r = relationsToDelete[i];
     await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
   }
-  return true;
+  return { from: fromThing, to: toThing, deletions: relationsToDelete };
 };
 // endregion

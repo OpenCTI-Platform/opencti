@@ -13,6 +13,7 @@ export const ENTITY_TYPE_ROLE = 'Role';
 export const ENTITY_TYPE_CAPABILITY = 'Capability';
 export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_HISTORY = 'History';
+export const ENTITY_TYPE_AUDIT = 'Audit';
 export const ENTITY_TYPE_WORK = 'work';
 export const ENTITY_TYPE_TASK = 'Task';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';

@@ -14,7 +14,7 @@ import {
   deleteRelationsByFromAndTo,
   listThroughGetTo,
   patchAttribute,
-  updateAttribute,
+  updateAttribute, updatedInputsToData,
 } from '../database/middleware';
 import {
   listAllEntities,
@@ -44,7 +44,7 @@ import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
 import { findSessionsForUsers, killUserSessions, markSessionForRefresh } from '../database/session';
-import { buildPagination, isEmptyField, isNotEmptyField } from '../database/utils';
+import { buildPagination, extractEntityRepresentative, isEmptyField, isNotEmptyField } from '../database/utils';
 import {
   BYPASS,
   executionContext,
@@ -97,6 +97,7 @@ export const userWithOrigin = (req, user) => {
     ip: req?.ip,
     user_id: user?.id,
     referer: req?.headers.referer,
+    socket: 'query',
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
   };
@@ -294,8 +295,14 @@ export const findCapabilities = (context, user, args) => {
 
 export const roleDelete = async (context, user, roleId) => {
   await roleSessionRefresh(context, user, roleId);
-  await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'role_delete', data: roleId } });
+  const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes role ${deleted.name}`,
+    context_data: { type: 'role', operation: 'delete', inputs: { id: roleId } }
+  });
   return roleId;
 };
 
@@ -315,7 +322,14 @@ export const roleEditContext = async (context, user, roleId, input) => {
 
 export const assignOrganizationToUser = async (context, user, userId, organizationId) => {
   const assignInput = { fromId: userId, toId: organizationId, relationship_type: RELATION_PARTICIPATE_TO };
-  await createRelation(context, user, assignInput);
+  const created = await createRelation(context, user, assignInput);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `adds ${created.toType} ${extractEntityRepresentative(created.to)} to user ${created.from.user_email}`,
+    context_data: { type: 'user', operation: 'update', input: assignInput }
+  });
   await userSessionRefresh(userId);
   return user;
 };
@@ -438,8 +452,13 @@ export const addUser = async (context, user, newUser) => {
   }));
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
-  const groups = defaultGroups.edges.map((g) => ({ id: g.node.id, name: g.node.name }));
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_create', data: { user: userEmail, groups } } });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates user ${userEmail}`,
+    context_data: { type: 'user', operation: 'create', input: newUser }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
 
@@ -487,6 +506,14 @@ export const userEditField = async (context, user, userId, inputs) => {
     }
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
+  const input = updatedInputsToData(element, inputs);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates ${inputs.map((i) => i.key).join(', ')} from user ${element.user_email}`,
+    context_data: { type: 'user', operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
 
@@ -557,8 +584,14 @@ export const meEditField = async (context, user, userId, inputs, password = null
 };
 
 export const userDelete = async (context, user, userId) => {
-  await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_delete', data: { user_id: userId } } });
+  const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes user ${deleted.user_email}`,
+    context_data: { type: 'user', operation: 'delete', inputs: { id: userId } }
+  });
   await killUserSessions(userId);
   return userId;
 };
@@ -573,7 +606,13 @@ export const userAddRelation = async (context, user, userId, input) => {
   }
   const finalInput = R.assoc('fromId', userId, input);
   const relationData = await createRelation(context, user, finalInput);
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: userId, input } } });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `adds ${relationData.toType} ${extractEntityRepresentative(relationData.to)} to user ${userData.user_email}`,
+    context_data: { type: 'user', operation: 'update', input }
+  });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
 };
@@ -582,9 +621,15 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const { to } = await deleteRelationsByFromAndTo(context, user, targetUser.id, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: relationshipType, toId };
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: targetUser.id, input } } });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `removes ${to.entity_type} ${extractEntityRepresentative(to)} from user ${targetUser.user_email}`,
+    context_data: { type: 'user', operation: 'update', input }
+  });
   await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };
@@ -605,9 +650,15 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   if (!targetUser) {
     throw FunctionalError('Cannot delete the relation, User cannot be found.');
   }
-  await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const { to } = await deleteRelationsByFromAndTo(context, user, userId, toId, RELATION_PARTICIPATE_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'user_update', data: { user_id: userId, input } } });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `removes ${to.entity_type} ${extractEntityRepresentative(to)} from user ${targetUser.user_email}`,
+    context_data: { type: 'user', operation: 'update', input }
+  });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
 };

@@ -27,6 +27,7 @@ import historyManager from './manager/historyManager';
 import clusterManager from './manager/clusterManager';
 import notificationManager from './manager/notificationManager';
 import publisherManager from './manager/publisherManager';
+import auditListener from './manager/auditListener';
 import auditManager from './manager/auditManager';
 
 // region dynamic modules
@@ -103,7 +104,8 @@ const startModules = async () => {
   // region Cluster manager
   await clusterManager.start();
   // endregion
-  // region Audit manager
+  // region Audit
+  await auditListener.start();
   await auditManager.start();
   // endregion
 };
@@ -156,7 +158,8 @@ const shutdownModules = async () => {
   // region Cluster manager
   stoppingPromises.push(clusterManager.shutdown());
   // endregion
-  // region Audit manager
+  // region Audit listener
+  stoppingPromises.push(auditListener.shutdown());
   stoppingPromises.push(auditManager.shutdown());
   // endregion
   await Promise.all(stoppingPromises);

@@ -129,7 +129,3 @@ interface StixMarkingsObject extends StixObject {
 
 // Stix core definition
 export type StixCoreObject = StixDomainObject | StixCyberObject | StixRelation | StixSighting;
-
-// export const isStixCoreObjectHaveCreator = (stix: StixCoreObject): stix is StixDomainObject | StixRelation | StixSighting => {
-//   return Object.prototype.hasOwnProperty.call(stix as StixDomainObject, 'created_by_ref');
-// };

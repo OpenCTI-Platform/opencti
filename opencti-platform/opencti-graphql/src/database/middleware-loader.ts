@@ -454,7 +454,11 @@ export const storeLoadById = async <T extends BasicStoreObject>(context: AuthCon
   }
   const data = await internalLoadById<T>(context, user, id, { type });
   if (data) {
-    await publishUserAction({ user, event_type: 'read', status: 'success', context_data: { id, entity_type: data.entity_type } });
+    await publishUserAction({ user,
+      event_type: 'read',
+      status: 'success',
+      instance: data,
+      context_data: { id, entity_type: data.entity_type } });
   }
   return data;
 };

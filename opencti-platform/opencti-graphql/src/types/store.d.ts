@@ -559,6 +559,9 @@ export interface BasicStoreSettings extends BasicStoreEntity {
   platform_email: string;
   platform_organization: string;
   platform_theme_dark_background: string;
+  enterprise_edition?: Date;
+  audit_listeners_ids?: string[];
+  audit_listeners_users?: string[];
 }
 
 type BasicStoreObject = BasicStoreEntity | BasicStoreCyberObservable | BasicStoreRelation;

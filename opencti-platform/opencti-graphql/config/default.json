@@ -86,6 +86,10 @@
     "enabled": true,
     "lock_key": "history_manager_lock"
   },
+  "audit_manager": {
+    "enabled": true,
+    "lock_key": "audit_manager_lock"
+  },
   "connector_manager": {
     "enabled": true,
     "lock_key": "connector_manager_lock",

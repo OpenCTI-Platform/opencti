@@ -1,98 +1,141 @@
-import LRU from 'lru-cache';
-import {
-  ActionHandler,
-  ActionListener,
-  registerUserActionListener,
-  UserAction,
-} from '../listener/UserActionListener';
-import { isStixCoreObject } from '../schema/stixCoreObject';
-import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import { logAudit } from '../config/conf';
+import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
+import { AUDIT_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
+import conf, { booleanConf, logApp } from '../config/conf';
+import { INDEX_HISTORY, isEmptyField } from '../database/utils';
+import { TYPE_LOCK_ERROR } from '../config/errors';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import type { SseEvent } from '../types/event';
+import { utcDate } from '../utils/format';
+import { listEntities } from '../database/middleware-loader';
+import { ENTITY_TYPE_AUDIT } from '../schema/internalObject';
+import type { AuthContext } from '../types/user';
+import { OrderingMode } from '../generated/graphql';
+import type { HistoryData } from './historyManager';
+import type { AuditStreamEvent } from './auditListener';
+import { BASE_TYPE_ENTITY } from '../schema/general';
+import { elIndexElements } from '../database/engine';
 
 // Use of this Code Software is subject to the terms of Filigran EULA
 // License is currently under construction, please contact Filigran at contact@filigran.io to have more information
 
+const AUDIT_ENGINE_KEY = conf.get('audit_manager:lock_key');
+const SCHEDULE_TIME = 10000;
+
+const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<AuditStreamEvent>>) => {
+  // TODO Check EULA
+  if (isEmptyField(events) || events.length === 0) {
+    return;
+  }
+  const historyElements = events.map((event) => {
+    // eslint-disable-next-line no-console
+    console.log(`>>> ${event.data.origin.user_id} ${event.data.message}`);
+    const [time] = event.id.split('-');
+    const eventDate = utcDate(parseInt(time, 10)).toISOString();
+    const contextData = { ...event.data.data, message: event.data.message };
+    const activityDate = utcDate(eventDate).toDate();
+    return {
+      _index: INDEX_HISTORY,
+      internal_id: event.id,
+      base_type: BASE_TYPE_ENTITY,
+      created_at: activityDate,
+      updated_at: activityDate,
+      entity_type: ENTITY_TYPE_AUDIT,
+      event_type: event.event,
+      user_id: event.data.origin?.user_id,
+      applicant_id: event.data.origin?.applicant_id,
+      timestamp: eventDate,
+      context_data: contextData,
+    };
+  });
+  // Bulk the history data insertions
+  await elIndexElements(context, SYSTEM_USER, `audit (${historyElements.length})`, historyElements);
+};
+
+const auditStreamHandler = async (streamEvents: Array<SseEvent<AuditStreamEvent>>) => {
+  try {
+    const context = executionContext('audit_manager');
+    await eventsApplyHandler(context, streamEvents);
+  } catch (e) {
+    logApp.error('[OPENCTI-MODULE] Error executing audit manager', { error: e });
+  }
+};
+
 const initAuditManager = () => {
-  const auditReadCache = new LRU({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
-  const auditLogger = (action: UserAction) => {
-    const level = action.status === 'error' ? 'error' : 'info';
-    logAudit._log(level, action.user, action.event_type, action.context_data);
+  const WAIT_TIME_ACTION = 2000;
+  let scheduler: SetIntervalAsyncTimer<[]>;
+  let streamProcessor: StreamProcessor;
+  let syncListening = true;
+  let running = false;
+  const wait = (ms: number) => {
+    return new Promise((resolve) => {
+      setTimeout(resolve, ms);
+    });
   };
-  const auditHandler: ActionListener = {
-    id: 'AUDIT_MANAGER',
-    next: async (action: UserAction) => {
-      if (action.event_type === 'login') {
-        auditLogger(action);
-        const { provider } = action.context_data;
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} login from ${provider}`);
+  const auditHandler = async (lastEventId: string) => {
+    let lock;
+    try {
+      // Lock the manager
+      lock = await lockResource([AUDIT_ENGINE_KEY], { retryCount: 0 });
+      running = true;
+      logApp.info('[OPENCTI-MODULE] Running audit manager');
+      const streamOpts = { streamName: AUDIT_STREAM_NAME, withInternal: false };
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Audit manager', auditStreamHandler, streamOpts);
+      await streamProcessor.start(lastEventId);
+      while (syncListening) {
+        await wait(WAIT_TIME_ACTION);
       }
-      if (action.event_type === 'logout') {
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} logout`);
+    } catch (e: any) {
+      if (e.name === TYPE_LOCK_ERROR) {
+        logApp.debug('[OPENCTI-MODULE] Audit manager already started by another API');
+      } else {
+        logApp.error('[OPENCTI-MODULE] Audit manager failed to start', { error: e });
       }
-      if (action.event_type === 'read') {
-        const { id, entity_type } = action.context_data;
-        const identifier = `${id}-${action.user.id}`;
-        if (!auditReadCache.has(identifier)) {
-          if (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type)) {
-            auditLogger(action);
-            // eslint-disable-next-line no-console
-            console.log(`>>> ${action.user.user_email} reading ${id}/${entity_type}`);
-            auditReadCache.set(identifier, undefined);
-          }
-        }
-      }
-      if (action.event_type === 'upload') {
-        const { id, filename } = action.context_data;
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} uploading ${id}/${filename}`);
-      }
-      if (action.event_type === 'download') {
-        const { id, filename } = action.context_data;
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} downloading ${id}/${filename}`);
-      }
-      if (action.event_type === 'export') {
-        const { type, ids } = action.context_data;
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} exporting ${type}/${ids.join(', ')}`);
-      }
-      if (action.event_type === 'admin') {
-        const { type } = action.context_data;
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} operate ${type}`);
-      }
-      if (action.event_type === 'unauthorized') {
-        const { path } = action.context_data;
-        auditLogger(action);
-        // eslint-disable-next-line no-console
-        console.log(`>>> ${action.user.user_email} unauthorized for ${path}`);
-      }
+    } finally {
+      running = false;
+      if (streamProcessor) await streamProcessor.shutdown();
+      if (lock) await lock.unlock();
     }
   };
-  let handler: ActionHandler;
   return {
     start: async () => {
-      handler = registerUserActionListener(auditHandler);
+      // To start the manager we need to find the last event id indexed
+      // and restart the stream consumption from this point.
+      const context = executionContext('audit_manager');
+      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_AUDIT], {
+        first: 1,
+        indices: [INDEX_HISTORY],
+        connectionFormat: false,
+        orderBy: ['timestamp'],
+        orderMode: OrderingMode.Desc,
+      });
+      let lastEventId = '0-0';
+      if (histoElements.length > 0) {
+        const histoDate = histoElements[0].timestamp;
+        lastEventId = `${utcDate(histoDate).unix() * 1000}-0`;
+      }
+      // Start the listening of events
+      scheduler = setIntervalAsync(async () => {
+        if (syncListening) {
+          await auditHandler(lastEventId);
+        }
+      }, SCHEDULE_TIME);
     },
     status: () => {
       return {
         id: 'AUDIT_MANAGER',
-        enable: true,
-        running: true,
+        enable: booleanConf('audit_manager:enabled', true),
+        running,
       };
     },
     shutdown: async () => {
-      if (handler) handler.unregister();
+      syncListening = false;
+      if (scheduler) {
+        await clearIntervalAsync(scheduler);
+      }
       return true;
     },
   };
 };
 const auditManager = initAuditManager();
+
 export default auditManager;

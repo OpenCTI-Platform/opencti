@@ -94,6 +94,7 @@ import {
 } from './__generated__/TopBarNotificationNumberSubscription.graphql';
 import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
+import TopMenuAudits from './TopMenuAudits';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -445,6 +446,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             '/dashboard/techniques/data_sources/',
           ) && <TopMenuDataSource />}
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
+          {location.pathname.includes('/dashboard/audits') && (
+              <TopMenuAudits />
+          )}
           {location.pathname.includes('/dashboard/settings') && (
             <TopMenuSettings />
           )}

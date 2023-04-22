@@ -25,12 +25,23 @@ export const addRole = async (context, user, role) => {
     });
   });
   await Promise.all(relationPromises);
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'role_creation', data: role } });
+  await publishUserAction({ user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates role ${role.name}`,
+    context_data: { type: 'role', operation: 'create', input: role }
+  });
   return roleEntity;
 };
 
 export const addGroup = async (context, user, group) => {
   const groupEntity = await createEntity(context, user, group, ENTITY_TYPE_GROUP);
-  await publishUserAction({ user, event_type: 'admin', status: 'success', context_data: { type: 'group_creation', data: group } });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates group ${group.name}`,
+    context_data: { type: 'group', operation: 'create', input: group }
+  });
   return groupEntity;
 };
