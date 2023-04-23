@@ -94,10 +94,12 @@ export const userWithOrigin = (req, user) => {
   // - In stream message to also identifier the user
   // - In logging system to know the level of the error message
   const origin = {
+    socket: 'query',
     ip: req?.ip,
     user_id: user?.id,
+    group_ids: user?.group_ids,
+    organization_ids: user?.organizations?.map((o) => o.internal_id) ?? [],
     referer: req?.headers.referer,
-    socket: 'query',
     applicant_id: req?.headers['opencti-applicant-id'],
     call_retry_number: req?.headers['opencti-retry-number'],
   };
@@ -845,7 +847,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     impersonate_user_id: impersonate !== undefined ? origin.id : null,
     capabilities: user.capabilities.map((c) => ({ id: c.id, internal_id: c.internal_id, name: c.name })),
     default_hidden_types: user.default_hidden_types,
-    organizations: user.organizations,
+    group_ids: user.groups?.map((g) => g.internal_id) ?? [],
+    organizations: user.organizations ?? [],
     allowed_organizations: user.allowed_organizations,
     inside_platform_organization: user.inside_platform_organization,
     allowed_marking: user.allowed_marking.map((m) => ({
@@ -944,7 +947,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
   // Build the user session with only required fields
-  await publishUserAction({ user, event_type: 'login', status: 'success', context_data: { provider } });
+  await publishUserAction({ user: userWithOrigin(req, user), event_type: 'login', status: 'success', context_data: { provider } });
   return internalAuthenticateUser(context, req, user, provider, token);
 };
 

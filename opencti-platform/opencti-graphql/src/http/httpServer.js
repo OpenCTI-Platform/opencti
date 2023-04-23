@@ -61,9 +61,11 @@ const createHttpServer = async () => {
         if (wsSession.user) {
           const context = executionContext('api');
           const origin = {
+            socket: 'subscription',
             ip: webSocket._socket.remoteAddress,
             user_id: wsSession.user?.id,
-            socket: 'subscription'
+            group_ids: wsSession.user?.group_ids,
+            organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
           };
           context.user = { ...wsSession.user, origin };
           return context;

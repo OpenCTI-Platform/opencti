@@ -328,7 +328,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     {
       key: 'benign',
       description:
-        'Activity that is not suspicious or malicious in and of itself, but when combined with other activity may indicate suspicious or malicious behavior.',
+        'Audit that is not suspicious or malicious in and of itself, but when combined with other activity may indicate suspicious or malicious behavior.',
     },
     {
       key: 'compromised',

@@ -11415,6 +11415,7 @@ type Query {
   logs(
     first: Int
     after: ID
+    types: [String!]
     orderBy: LogsOrdering
     orderMode: OrderingMode
     filters: [LogsFiltering!]

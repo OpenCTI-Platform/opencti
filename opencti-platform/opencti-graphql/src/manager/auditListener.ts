@@ -2,7 +2,7 @@ import LRU from 'lru-cache';
 import { ActionHandler, ActionListener, registerUserActionListener, UserAction, } from '../listener/UserActionListener';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import conf, { logAudit } from '../config/conf';
+import conf, { booleanConf, logAudit } from '../config/conf';
 import { extractEntityRepresentative, isEmptyField } from '../database/utils';
 import type { BasicStoreObject, BasicStoreSettings } from '../types/store';
 import { EVENT_AUDIT_VERSION, storeAuditEvent } from '../database/redis';
@@ -29,6 +29,7 @@ import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 // ------------------------------------------------------------------------ //
 
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
+const EXTENDED_USER_TRACKING = booleanConf('app:audit_logs:extended_user_tracking', true);
 
 export interface AuditStreamEvent {
   version: string
@@ -93,6 +94,7 @@ const initAuditManager = () => {
       if (action.user.origin.socket !== 'query') {
         return;
       }
+      // Security
       if (action.event_type === 'login') {
         const { provider } = action.context_data;
         const message = `login from ${provider}`;
@@ -101,31 +103,6 @@ const initAuditManager = () => {
       if (action.event_type === 'logout') {
         await auditLogger(action, 'logout');
       }
-      if (action.event_type === 'read') {
-        const instance = action.instance as BasicStoreObject;
-        const { entity_type } = instance;
-        const identifier = `${instance.internal_id}-${action.user.id}`;
-        if (!auditReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
-          const message = `reads ${extractEntityRepresentative(instance)}`;
-          await auditLogger(action, message);
-          auditReadCache.set(identifier, undefined);
-        }
-      }
-      if (action.event_type === 'upload') {
-        const { filename } = action.context_data;
-        const message = `uploads ${filename}`;
-        await auditLogger(action, message);
-      }
-      if (action.event_type === 'download') {
-        const { filename } = action.context_data;
-        const message = `downloads ${filename}`;
-        await auditLogger(action, message);
-      }
-      if (action.event_type === 'export') {
-        const { type } = action.context_data;
-        const message = `exports a list of ${type}s`;
-        await auditLogger(action, message);
-      }
       if (action.event_type === 'admin') {
         await auditLogger(action, action.message);
       }
@@ -133,6 +110,34 @@ const initAuditManager = () => {
         const { path } = action.context_data;
         const message = `tries an unauthorized access to ${path}`;
         await auditLogger(action, message);
+      }
+      // USer tracking
+      if (EXTENDED_USER_TRACKING) {
+        if (action.event_type === 'read') {
+          const instance = action.instance as BasicStoreObject;
+          const { entity_type } = instance;
+          const identifier = `${instance.internal_id}-${action.user.id}`;
+          if (!auditReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
+            const message = `reads ${extractEntityRepresentative(instance)}`;
+            await auditLogger(action, message);
+            auditReadCache.set(identifier, undefined);
+          }
+        }
+        if (action.event_type === 'upload') {
+          const { filename } = action.context_data;
+          const message = `uploads ${filename}`;
+          await auditLogger(action, message);
+        }
+        if (action.event_type === 'download') {
+          const { filename } = action.context_data;
+          const message = `downloads ${filename}`;
+          await auditLogger(action, message);
+        }
+        if (action.event_type === 'export') {
+          const { type } = action.context_data;
+          const message = `exports a list of ${type}s`;
+          await auditLogger(action, message);
+        }
       }
     }
   };

@@ -17410,6 +17410,7 @@ export type QueryLogsArgs = {
   orderBy?: InputMaybe<LogsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<Scalars['String']>>;
 };
 
 

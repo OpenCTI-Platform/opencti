@@ -59,6 +59,8 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
       entity_type: ENTITY_TYPE_AUDIT,
       event_type: event.event,
       user_id: event.data.origin?.user_id,
+      group_ids: event.data.origin?.group_ids ?? [],
+      organization_ids: event.data.origin?.organization_ids ?? [],
       applicant_id: event.data.origin?.applicant_id,
       timestamp: eventDate,
       context_data: contextData,

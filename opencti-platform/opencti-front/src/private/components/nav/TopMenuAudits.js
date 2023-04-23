@@ -24,11 +24,11 @@ const TopMenuAudits = () => {
 
   return (
         <div>
-            <Button component={Link} size="small" to="/dashboard/audits"
-                    variant={location.pathname === '/dashboard/audits' || location.pathname === '/dashboard/audits' ? 'contained' : 'text'}
-                    color={location.pathname === '/dashboard/audits' || location.pathname === '/dashboard/audits' ? 'secondary' : 'primary'}
+            <Button component={Link} size="small" to="/dashboard/activity"
+                    variant={location.pathname === '/dashboard/activity' || location.pathname === '/dashboard/audits' ? 'contained' : 'text'}
+                    color={location.pathname === '/dashboard/activity' || location.pathname === '/dashboard/audits' ? 'secondary' : 'primary'}
                     classes={{ root: classes.button }}>
-                {t('Audit')}
+                {t('Activity')}
             </Button>
         </div>
   );

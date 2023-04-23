@@ -13,7 +13,7 @@ export const findAll: DomainFindAll<LogConnection> = (context, user, args) => {
     orderBy: 'timestamp',
     orderMode: 'desc',
     ...args,
-    types: [ENTITY_TYPE_HISTORY],
+    types: args.types ? args.types : [ENTITY_TYPE_HISTORY],
   };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };

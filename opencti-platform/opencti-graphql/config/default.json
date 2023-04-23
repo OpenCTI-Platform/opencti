@@ -23,7 +23,8 @@
       "logs_files": true,
       "logs_console": true,
       "logs_max_files": 7,
-      "logs_directory": "./logs"
+      "logs_directory": "./logs",
+      "extended_user_tracking": true
     },
     "graphql": {
       "armor_enabled": false,

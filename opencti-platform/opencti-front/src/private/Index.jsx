@@ -17,7 +17,7 @@ import RootTechnique from './components/techniques/Root';
 import RootEntities from './components/entities/Root';
 import RootLocation from './components/locations/Root';
 import RootSettings from './components/settings/Root';
-import RootAudits from './components/settings/audits/Root';
+import RootActivity from './components/settings/activity/Root';
 import RootNotifications from './components/profile/Root';
 import RootData from './components/data/Root';
 import RootWorkspaces from './components/workspaces/Root';
@@ -75,7 +75,7 @@ const Index = () => {
           <BoundaryRoute path="/dashboard/data" render={RootData} />
           <BoundaryRoute path="/dashboard/workspaces" component={RootWorkspaces} />
           <BoundaryRoute path="/dashboard/settings" component={RootSettings} />
-          <BoundaryRoute path="/dashboard/audits" component={RootAudits} />
+          <BoundaryRoute path="/dashboard/audits" component={RootActivity} />
           <BoundaryRoute path="/dashboard/import" component={RootImport} />
           <BoundaryRoute path="/dashboard/profile" component={RootNotifications} />
           <Route component={NoMatch} />

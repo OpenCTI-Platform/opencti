@@ -36,11 +36,11 @@ const TopMenuSettings = () => {
                 classes={{ root: classes.button }}>
                 {t('Parameters')}
             </Button>
-            <Button component={Link} size="small" to="/dashboard/settings/audits"
-                    variant={location.pathname === '/dashboard/settings/audits' || location.pathname === '/dashboard/settings/audits' ? 'contained' : 'text'}
-                    color={location.pathname === '/dashboard/settings/audits' || location.pathname === '/dashboard/settings/audits' ? 'secondary' : 'primary'}
+            <Button component={Link} size="small" to="/dashboard/settings/activity"
+                    variant={location.pathname.includes('/dashboard/settings/activity') ? 'contained' : 'text'}
+                    color={location.pathname.includes('/dashboard/settings/activity') ? 'secondary' : 'primary'}
                     classes={{ root: classes.button }}>
-                {t('Audit logs')}
+                {t('Activity')}
             </Button>
             <Security needs={[SETTINGS_SETMARKINGS, SETTINGS_SETACCESSES]}>
                 <Button component={Link} size="small" to="/dashboard/settings/accesses"

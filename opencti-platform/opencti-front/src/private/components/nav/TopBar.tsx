@@ -446,7 +446,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             '/dashboard/techniques/data_sources/',
           ) && <TopMenuDataSource />}
           {location.pathname.includes('/dashboard/data') ? <TopMenuData /> : ''}
-          {location.pathname.includes('/dashboard/audits') && (
+          {location.pathname.includes('/dashboard/activity') && (
               <TopMenuAudits />
           )}
           {location.pathname.includes('/dashboard/settings') && (
