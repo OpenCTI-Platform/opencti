@@ -3,7 +3,6 @@
   "version": "5.7.2",
   "private": true,
   "main": "src/index.tsx",
-  "license": "Apache-2.0",
   "dependencies": {
     "@ckeditor/ckeditor5-react": "5.1.0",
     "@date-io/date-fns": "2.16.0",

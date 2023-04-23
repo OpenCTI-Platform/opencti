@@ -1,4 +1,33 @@
-                                 Apache License
+Copyright (c) 2021-2023 Filigran SAS
+
+-----------------------------------------------------------------
+
+The OpenCTI Community Edition is licensed under the Apache License,
+Version 2.0 (the "Apache License").
+    
+The OpenCTI Enterprise Edition is licensed under the OpenCTI
+Non-Commercial License (the "Non-Commercial License").
+
+-----------------------------------------------------------------
+
+The source files in this repository have a header indicating
+which license they are under.
+
+If no such header is provided, this means that the file is belonging
+to the Community Edition under the Apache License, Version 2.0.
+
+-----------------------------------------------------------------
+
+OpenCTI Community Edition License
+
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+                                Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/
 
@@ -173,29 +202,181 @@
       incurred by, or claims asserted against, such Contributor by reason
       of your accepting any such warranty or additional liability.
 
-   END OF TERMS AND CONDITIONS
-
-   APPENDIX: How to apply the Apache License to your work.
-
-      To apply the Apache License to your work, attach the following
-      boilerplate notice, with the fields enclosed by brackets "[]"
-      replaced with your own identifying information. (Don't include
-      the brackets!)  The text should be enclosed in the appropriate
-      comment syntax for the file format. We also recommend that a
-      file or class name and description of purpose be included on the
-      same "printed page" as the copyright notice for easier
-      identification within third-party archives.
-
-   Copyright [yyyy] [name of copyright owner]
-
-   Licensed under the Apache License, Version 2.0 (the "License");
-   you may not use this file except in compliance with the License.
-   You may obtain a copy of the License at
-
-       http://www.apache.org/licenses/LICENSE-2.0
+   Appendix
 
    Unless required by applicable law or agreed to in writing, software
    distributed under the License is distributed on an "AS IS" BASIS,
    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
    See the License for the specific language governing permissions and
    limitations under the License.
+
+   END OF TERMS AND CONDITIONS
+
+-----------------------------------------------------------------
+
+OpenCTI Enterprise Edition License
+
+                        OpenCTI Non-Commercial License
+                           Version 1.0, April 2023
+
+   This OpenCTI Enterprise Edition (EE) supplemental license (this “EE 
+   Supplemental License”) governs the use of this software and 
+   documentation (collectively, the “EE Software”) by you and any
+   entity you represent (collectively, “You”). If You have separately 
+   entered into the Filigran SAS Enterprise Agreement (the “Enterprise
+   Agreement”), then this EE Supplemental License hereby incorporates
+   by reference the Enterprise Agreement and modifies the Enterprise
+   Agreement solely to the extent set forth herein. If You have
+   separately entered into the Filigran Cloud Service Agreement 
+   (the “Cloud Service Agreement”), then this EE Supplemental License
+   hereby incorporates by reference the Agreement and modifies
+   the Cloud Agreement solely to the extent set forth herein.
+   If You have not entered into either the Enterprise Agreement or
+   the Cloud Service Agreement, then You may use the EE Software 
+   solely as set forth in Section 2 below.
+
+   In the event of a direct conflict between the terms of this EE
+   Supplemental License and the terms of the Enterprise Agreement
+   or the Cloud Service Agreement, as applicable, the terms of this
+   EE Supplemental License will control. Except to the extent
+   modified by this EE Supplemental License, the Enterprise 
+   Agreement or the Cloud Service Agreement, as applicable, 
+   remain in full force and effect in accordance with its terms.
+
+   By using the EE Software, You hereby agree to the below terms 
+   and conditions.
+
+   1. Notwithstanding any terms to the contrary in the Enterprise
+   Agreement or Cloud Service Agreement, You may copy, modify
+   and publish patches to the EE Software in a production 
+   environment (such copies, “Production Copies,” such modifications,
+   “Production Modifications” and such patches, “Production
+   Patches”) if and only if (a) You have agreed to, and are in
+   full compliance with, the Enterprise Agreement or Cloud 
+   Service Agreement, as applicable, and (b) You have a valid
+   license to the EE Software for the correct number of instances.
+   You agree that Filigran and/or its licensors (as applicable)
+   will own all right, title and interest in and to all such 
+   Production Copies, Production Modifications and Production
+   Patches. You may display and/or distribute such Production
+   Copies, Production Modifications and Production Patches if
+   and only if (i) You have a valid license to the EE Software
+   for the correct number of projects and (ii) You are incompliance
+   with the Enterprise Agreement or Cloud Service Agreement, as
+   applicable. You hereby assign to Filigran all right, title
+   and interest in and to all Production Copies, Production
+   Modifications and Production Patches, including all intellectual
+   property rights embodied in or related to the foregoing.
+
+   2. Notwithstanding the foregoing, You may copy and modify 
+   the EE Software solely for development and testing purposes
+   (such copies, “Development Copies” and such modifications,
+   “Development Modifications”) with or without a license to
+   the EE Software if your use is in compliance with this
+   Section 2. You agree that Filigran and/or its licensors
+   (as applicable) will own all right, title and interest
+   in and to all Development Copies and Development Modifications
+   and You hereby assign to Filigran all right, title and interest
+   in and to all Development Copies and Development Modifications,
+   including all intellectual property rights embodied in or
+   related to the foregoing. If You do not have a license to
+   the EE Software, then You further agree as follows:
+
+   Other than as expressly set forth in this Section 2,
+   You may not (a) copy or modify the EE Software, (b)
+   create derivative works of the EE Software, (c) remove
+   or modify any notice of any patent, copyright, trademark,
+   or other proprietary rights that appear on or in the EE
+   Software, (d) reverse engineer, decompile, translate,
+   disassemble, or discover the source code of all or any
+   portion of the EE Software, (e) publicly display all or
+   any part of the EE Software, (f) distribute, disclose,
+   market, lease, publish, merge, resell, assign, loan,
+   sublicense, rent, or transfer the EE Software to any third
+   party, (g) use the EE Software for any dial-up, remote
+   access, interactive, or other on-line or hosted service,
+   or to provide a service bureau, time share, or other
+   services to third parties, (h) merge the EE Software into
+   another product, (i) disclose the results of any EE Software
+   performance benchmarks or test results to any third party
+   without Filigran’s prior written consent, (j) use any
+   trademarks, logos, service marks, trade names of Filigran,
+   or any portion thereof, without Filigran’s prior written
+   consent,(k) use the EE Software, or any portion thereof,
+   in a manner that does not comply with applicable law,
+   regulations, or governmental orders, or (l) use or store
+   the EE Software on equipment not owned or controlled by
+   Customer. 
+
+   THE EE SOFTWARE IS PROVIDED ON AN “AS IS” BASIS WITHOUT
+   ANY REPRESENTATIONS, WARRANTIES, COVENANTS, OR CONDITIONS
+   OF ANY KIND (EXPRESS OR IMPLIED, STATUTORY OR OTHERWISE),
+   INCLUDING, BUT NOT LIMITED TO, WARRANTIES OF MERCHANTABILITY,
+   TITLE, FITNESS FOR A PARTICULAR PURPOSE, OR NONINFRINGEMENT. 
+   FURTHER, FILIGRAN DOES NOT REPRESENT OR WARRANT THAT (A)
+   THE ACCESS TO OR USE OF THE EE SOFTWARE WILL BE SECURE,
+   TIMELY, UNINTERRUPTED, ERROR-FREE, OR OPERATE IN COMBINATION
+   WITH ANY OTHER HARDWARE, SOFTWARE, SYSTEM, OR DATA, (B) THE
+   EE SOFTWARE WILL MEET YOUR REQUIREMENTS OR EXPECTATIONS, OR
+   OTHERWISE PRODUCE ANY PARTICULAR RESULTS, (C) ERRORS OR
+   DEFECTS WILL BE CORRECTED, PATCHES OR WORKAROUNDS WILL
+   BE PROVIDED, OR FILIGRAN WILL DETECT ANY BUG IN THE EE
+   SOFTWARE, (D) THE SOFTWARE IS FREE OF VIRUSES OR OTHER
+   HARMFUL COMPONENTS, OR (E) THIRD-PARTY DISRUPTIONS OR
+   SECURITY BREACHES OF THE EE SOFTWARE WILL BE PREVENTED.
+
+   FILIGRAN WILL NOT BE LIABLE FOR ANY LOSS OF PROFITS OR
+   ANY INDIRECT, SPECIAL, INCIDENTAL, RELIANCE, OR CONSEQUENTIAL
+   DAMAGES OF ANY KIND, REGARDLESS OF THE FORM OF ACTION, WHETHER
+   IN CONTRACT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY,
+   OR OTHERWISE, EVEN IF INFORMED OF THE POSSIBILITY OF SUCH
+   DAMAGES IN ADVANCE. 
+
+   FILIGRAN’S ENTIRE LIABILITY TO YOU FOR USE OF THE EE SOFTWARE
+   WILL NOT EXCEED $100.
+
+   3. You are not granted any other rights beyond what is
+   expressly stated herein and in the Enterprise Agreement
+   or Cloud Agreement, as applicable.
+
+   4. This EE Supplemental License does not apply to Filigran
+   software that is distributed as part of the Filigran
+   Community Edition (CE) (the “CE Software”).
+
+-----------------------------------------------------------------
+
+Examples of License Headers in File
+
+
+OpenCTI Community Edition License
+-----------------------------------------------------------------
+Copyright (c) 2021-2023 Filigran SAS
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+-----------------------------------------------------------------
+
+OpenCTI Enterprise Edition License
+-----------------------------------------------------------------
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+-----------------------------------------------------------------

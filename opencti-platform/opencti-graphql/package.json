@@ -2,7 +2,6 @@
   "name": "opencti-graphql",
   "version": "5.7.2",
   "main": "src/back.js",
-  "license": "Apache-2.0",
   "scripts": {
     "check-ts": "tsc --noEmit",
     "install:python": "pip3 install -r src/python/requirements.txt",

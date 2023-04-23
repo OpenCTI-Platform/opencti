@@ -27,6 +27,15 @@ Once data has been capitalized and processed by the analysts within OpenCTI, new
 
 OpenCTI not only allows [imports](https://filigran.notion.site/Import-Export-7dc143dfbb6147b0881080487ed9db33#4ffd142e88ad489abc3370ea8f738a82) but also [exports of data](https://filigran.notion.site/Import-Export-7dc143dfbb6147b0881080487ed9db33#8dfec135e334415fb18f1f169fe89804) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are currently developed to accelerate interactions between the tool and other platforms.
 
+## Editions of the platform
+
+OpenCTI platform has 2 different editions: Community (CE) and Enterprise (EE). The purpose of the Enterprise Edition is to provide [additional and powerful features](https://www.filigran.io/en/solutions/offers/enterprise-editions) which require specific investments in research and development. You can enable the Enterprise Edition directly in the settings of the platform.
+
+* OpenCTI Community Edition, licensed under the [Apache 2, Version 2.0 license](LICENSE).
+* OpenCTI Enterprise Edition, licensed under the [Non-Commercial license](LICENSE).
+
+To understand what OpenCTI Enterprise Edition brings in terms of features, just check the [Enterprise Editions page](https://www.filigran.io/en/solutions/offers/enterprise-editions) on the Filigran website. You can also try this edition by enabling it in the settings of the platform.
+
 ## Documentation and demonstration
 
 If you want to know more on OpenCTI, you can read the [documentation on the tool](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintained by the OpenCTI developers.
