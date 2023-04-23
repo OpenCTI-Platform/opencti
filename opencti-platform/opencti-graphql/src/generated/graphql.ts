@@ -19834,6 +19834,7 @@ export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
   created_at: Scalars['DateTime'];
   editContext?: Maybe<Array<EditUserContext>>;
+  enterprise_edition?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   otp_mandatory?: Maybe<Scalars['Boolean']>;
@@ -32301,6 +32302,7 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;

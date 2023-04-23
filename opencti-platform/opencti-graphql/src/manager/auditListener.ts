@@ -11,8 +11,22 @@ import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
 
-// Use of this Code Software is subject to the terms of Filigran EULA
-// License is currently under construction, please contact Filigran at contact@filigran.io to have more information
+// ------------------------------------------------------------------------ //
+//     OpenCTI Enterprise Edition License                                   //
+// ------------------------------------------------------------------------ //
+//     Copyright (c) 2021-2023 Filigran SAS                                 //
+//                                                                          //
+// This file is part of the OpenCTI Enterprise Edition ("EE") and is        //
+// licensed under the OpenCTI Non-Commercial License (the "License");       //
+// you may not use this file except in compliance with the License.         //
+// You may obtain a copy of the License at                                  //
+//                                                                          //
+// https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE          //
+//                                                                          //
+// Unless required by applicable law or agreed to in writing, software      //
+// distributed under the License is distributed on an "AS IS" BASIS,        //
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
+// ------------------------------------------------------------------------ //
 
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
 
@@ -56,9 +70,9 @@ const initAuditManager = () => {
   const auditLogger = async (action: UserAction, message: string) => {
     const context = executionContext('audit_listener');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
-    // If eula is not validated
+    // If enterprise edition is not activated
     if (isEmptyField(settings.enterprise_edition)) {
-      // return;
+      return;
     }
     // If validated, log to audit console, files
     const level = action.status === 'error' ? 'error' : 'info';

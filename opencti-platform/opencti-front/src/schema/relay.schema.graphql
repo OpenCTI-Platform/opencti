@@ -1047,6 +1047,7 @@ type Settings implements InternalObject & BasicObject {
   platform_feature_flags: [Module!]
   created_at: DateTime!
   updated_at: DateTime!
+  enterprise_edition: DateTime
   otp_mandatory: Boolean
   password_policy_min_length: Int
   password_policy_max_length: Int

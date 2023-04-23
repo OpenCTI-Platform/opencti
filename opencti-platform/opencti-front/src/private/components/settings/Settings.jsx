@@ -3,6 +3,7 @@ import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid';
+import Button from '@mui/material/Button';
 import Tooltip from '@mui/material/Tooltip';
 import { InformationOutline } from 'mdi-material-ui';
 import Paper from '@mui/material/Paper';
@@ -25,8 +26,10 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
+import { now } from '../../../utils/Time';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
 import { fieldSpacingContainerStyle } from '../../../utils/field';
+import { isNotEmptyField } from '../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -45,7 +48,7 @@ const useStyles = makeStyles((theme) => ({
   },
   button: {
     float: 'left',
-    margin: '20px 0 20px 0',
+    margin: '20px 0 0 0',
   },
   nested: {
     paddingLeft: theme.spacing(4),
@@ -123,7 +126,15 @@ const settingsQuery = graphql`
         name
         focusOn
       }
+      enterprise_edition
       otp_mandatory
+    }
+    about {
+      version
+      dependencies {
+        name
+        version
+      }
     }
   }
 `;
@@ -159,6 +170,7 @@ export const settingsMutationFieldPatch = graphql`
         platform_login_message
         platform_consent_message
         platform_consent_confirm_text
+        enterprise_edition
       }
     }
   }
@@ -174,24 +186,10 @@ const settingsFocus = graphql`
   }
 `;
 
-const settingsAboutQuery = graphql`
-  query SettingsAboutQuery {
-    about {
-      version
-      dependencies {
-        name
-        version
-      }
-    }
-  }
-`;
-
 const settingsValidation = (t) => Yup.object().shape({
   platform_title: Yup.string().required(t('This field is required')),
   platform_favicon: Yup.string().nullable(),
-  platform_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
+  platform_email: Yup.string().required(t('This field is required')).email(t('The value must be an email address')),
   platform_theme: Yup.string().nullable(),
   platform_theme_dark_background: Yup.string().nullable(),
   platform_theme_dark_paper: Yup.string().nullable(),
@@ -215,6 +213,7 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_login_message: Yup.string().nullable(),
   platform_consent_message: Yup.string().nullable(),
   platform_consent_confirm_text: Yup.string().nullable(),
+  enterprise_edition: Yup.string().nullable(),
 });
 
 const Settings = () => {
@@ -277,7 +276,7 @@ const Settings = () => {
         query={settingsQuery}
         render={({ props }) => {
           if (props && props.settings) {
-            const { settings } = props;
+            const { settings, about } = props;
             const { id, editContext } = settings;
             const initialValues = R.pipe(
               R.pick([
@@ -313,9 +312,37 @@ const Settings = () => {
             )(settings);
             const authProviders = settings.platform_providers;
             const modules = settings.platform_modules;
+            const { version, dependencies } = about;
+            const clusterInfo = settings.platform_cluster.instances_number > 1 ? `Cluster of ${settings.platform_cluster.instances_number} nodes` : 'Single node';
+            const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
             return (
               <div>
                 <Grid container={true} spacing={3}>
+                  <Grid item={true} xs={12}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t('Platform')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <b>OpenCTI {version} {isEnterpriseEdition ? 'Enterprise edition' : 'Community edition'}</b> ({clusterInfo})
+                      { isEnterpriseEdition && <div>Activated since {settings.enterprise_edition}</div>}
+                      { !isEnterpriseEdition && <div>
+                        <Button variant="contained" color="secondary"
+                            onClick={() => handleSubmitField(id, 'enterprise_edition', now())}
+                            classes={{ root: classes.button }}>
+                          {t('Activate enterprise edition')}
+                        </Button>
+                      </div>}
+                      { isEnterpriseEdition && <div>
+                        <Button variant="contained" color="secondary"
+                                onClick={() => handleSubmitField(id, 'enterprise_edition', '')}
+                                classes={{ root: classes.button }}>
+                          {t('Reset enterprise edition')}
+                        </Button>
+                      </div>}
+                    </Paper>
+                  </Grid>
+                </Grid>
+                <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Configuration')}
@@ -906,55 +933,22 @@ const Settings = () => {
                       {t('Tools')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <QueryRenderer
-                        query={settingsAboutQuery}
-                        render={({ props: aboutProps }) => {
-                          if (aboutProps) {
-                            const { version, dependencies } = aboutProps.about;
-                            const clusterInfo = settings.platform_cluster.instances_number > 1
-                              ? `Cluster of ${settings.platform_cluster.instances_number} nodes`
-                              : 'Single node';
-                            return (
-                              <List style={{ marginTop: -20 }}>
-                                <ListItem divider={true}>
-                                  <ListItemText
-                                    primary={`OpenCTI (${clusterInfo})`}
-                                  />
-                                  <Chip label={version} color="primary" />
-                                </ListItem>
-                                <List component="div" disablePadding>
-                                  {modules.map((module) => (
-                                    <ListItem
-                                      key={module.id}
-                                      divider={true}
-                                      className={classes.nested}
-                                    >
-                                      <ListItemText primary={t(module.id)} />
-                                      <Chip
-                                        label={
-                                          module.enable
-                                            ? t('Enabled')
-                                            : t('Disabled')
-                                        }
-                                        color={
-                                          module.enable ? 'success' : 'error'
-                                        }
-                                      />
-                                    </ListItem>
-                                  ))}
-                                </List>
-                                {dependencies.map((dep) => (
-                                  <ListItem key={dep.name} divider={true}>
-                                    <ListItemText primary={t(dep.name)} />
-                                    <Chip label={dep.version} color="primary" />
-                                  </ListItem>
-                                ))}
-                              </List>
-                            );
-                          }
-                          return <Loader variant="inElement" />;
-                        }}
-                      />
+                      <List style={{ marginTop: -20 }}>
+                        {modules.map((module) => (
+                            <ListItem key={module.id} divider={true}>
+                              <ListItemText primary={t(module.id)} />
+                              <Chip label={module.enable ? t('Enabled') : t('Disabled')}
+                                    color={module.enable ? 'success' : 'error'}
+                              />
+                            </ListItem>
+                        ))}
+                        {dependencies.map((dep) => (
+                            <ListItem key={dep.name} divider={true}>
+                              <ListItemText primary={t(dep.name)} />
+                              <Chip label={dep.version} color="primary" />
+                            </ListItem>
+                        ))}
+                      </List>
                     </Paper>
                   </Grid>
                 </Grid>
