@@ -1,19 +1,21 @@
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { AUDIT_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
-import { INDEX_HISTORY, isEmptyField } from '../database/utils';
+import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
-import { ENTITY_TYPE_AUDIT } from '../schema/internalObject';
+import { ENTITY_TYPE_AUDIT, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext } from '../types/user';
 import { OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
 import type { AuditStreamEvent } from './auditListener';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
+import { getEntityFromCache } from '../database/cache';
+import type { BasicStoreSettings } from '../types/store';
 
 // ------------------------------------------------------------------------ //
 //     OpenCTI Enterprise Edition License                                   //
@@ -36,8 +38,9 @@ const AUDIT_ENGINE_KEY = conf.get('audit_manager:lock_key');
 const SCHEDULE_TIME = 10000;
 
 const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<AuditStreamEvent>>) => {
-  // TODO Check EULA
-  if (isEmptyField(events) || events.length === 0) {
+  const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  // If no events or enterprise edition is not activated
+  if (isEmptyField(settings.enterprise_edition) || isEmptyField(events) || events.length === 0) {
     return;
   }
   const historyElements = events.map((event) => {
@@ -134,10 +137,10 @@ const initAuditManager = () => {
         }
       }, SCHEDULE_TIME);
     },
-    status: () => {
+    status: (settings?: BasicStoreSettings) => {
       return {
         id: 'AUDIT_MANAGER',
-        enable: booleanConf('audit_manager:enabled', true),
+        enable: booleanConf('audit_manager:enabled', true) && isNotEmptyField(settings?.enterprise_edition),
         running,
       };
     },

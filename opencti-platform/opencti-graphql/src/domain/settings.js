@@ -17,9 +17,7 @@ export const getMemoryStatistics = () => {
 
 const getClusterInformation = async () => {
   const clusterConfig = await getClusterInstances();
-  const info = {
-    instances_number: clusterConfig.length
-  };
+  const info = { instances_number: clusterConfig.length };
   const allManagers = clusterConfig.map((i) => i.managers).flat();
   const groupManagersById = R.groupBy((manager) => manager.id, allManagers);
   const modules = Object.entries(groupManagersById).map(([id, managers]) => ({
@@ -27,10 +25,7 @@ const getClusterInformation = async () => {
     enable: managers.reduce((acc, m) => acc || m.enable, false),
     running: managers.reduce((acc, m) => acc || m.running, false),
   }));
-  return {
-    info,
-    modules
-  };
+  return { info, modules };
 };
 
 export const isModuleActivated = async (moduleId) => {
