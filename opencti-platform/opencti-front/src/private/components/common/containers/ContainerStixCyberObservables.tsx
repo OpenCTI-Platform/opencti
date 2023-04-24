@@ -8,7 +8,6 @@ import ContainerStixCyberObservablesLines, {
 } from './ContainerStixCyberObservablesLines';
 import StixCyberObservablesRightBar from '../../observations/stix_cyber_observables/StixCyberObservablesRightBar';
 import ToolBar from '../../data/ToolBar';
-import { defaultValue } from '../../../../utils/Graph';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import { Theme } from '../../../../components/Theme';
 import { Filters } from '../../../../components/list_lines';
@@ -27,6 +26,7 @@ import { ContainerStixCyberObservablesLinesSearchQuery$data } from './__generate
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ExportContextProvider from '../../../../utils/ExportContextProvider';
 import { convertFilters } from '../../../../utils/ListParameters';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles<Theme>(() => ({
   container: {
@@ -124,7 +124,7 @@ ContainerStixCyberObservablesComponentProps
 
   // Format filters Front (object)
   const toolbarFilters = {
-    containedBy: [{ id: container.id, value: defaultValue(container) }],
+    objectContains: [{ id: container.id, value: defaultValue(container) }],
     entity_type:
       types && types.length > 0
         ? types.map((n) => ({ id: n, value: n }))
