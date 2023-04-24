@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useState } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import ActivityMenu from '../../ActivityMenu';
 import { Theme } from '../../../../../components/Theme';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import useEntityToggle from '../../../../../utils/hooks/useEntityToggle';
-import useAuth from '../../../../../utils/hooks/useAuth';
 import {
   AuditLinesPaginationQuery,
   AuditLinesPaginationQuery$variables,
@@ -13,6 +14,7 @@ import {
 import useQueryLoading from '../../../../../utils/hooks/useQueryLoading';
 import AuditLines, { AuditLinesQuery } from './AuditLines';
 import { AuditLine_node$data } from './__generated__/AuditLine_node.graphql';
+import { AuditLineDummy } from './AuditLine';
 
 // ------------------------------------------------------------------------ //
 //     OpenCTI Enterprise Edition License                                   //
@@ -76,8 +78,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const Audit = () => {
   const classes = useStyles();
-  const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
-  const isRuntimeSort = isRuntimeFieldEnable() ?? false;
+  const [withHistory, setWithHistory] = useState(false);
 
   const {
     viewStorage,
@@ -95,6 +96,7 @@ const Audit = () => {
       count: 25,
     },
   );
+  storageHelpers.handleAddProperty('types', withHistory ? ['History', 'Audit'] : ['Audit']);
 
   const {
     numberOfElements,
@@ -102,14 +104,12 @@ const Audit = () => {
     searchTerm,
     sortBy,
     orderAsc,
-    openExports,
   } = viewStorage;
 
   const {
     selectedElements,
     deSelectedElements,
     selectAll,
-    handleToggleSelectAll,
     onToggleEntity,
   } = useEntityToggle<AuditLine_node$data>('view-audit');
 
@@ -120,9 +120,9 @@ const Audit = () => {
       isSortable: true,
     },
     creator: {
-      label: 'Creators',
+      label: 'User',
       width: '15%',
-      isSortable: isRuntimeSort,
+      isSortable: false,
     },
     message: {
       label: 'Message',
@@ -130,51 +130,46 @@ const Audit = () => {
       isSortable: false,
     },
   };
-
   const queryRef = useQueryLoading<AuditLinesPaginationQuery>(
     AuditLinesQuery,
     paginationOptions,
   );
 
+  const extraFields = <div style={{ float: 'left' }}>
+      <FormControlLabel
+        value="start"
+        control={<Checkbox style={{ padding: 7 }} onChange={() => setWithHistory(!withHistory)} checked={withHistory}/>}
+        label="Include knowledge"
+        labelPlacement="end"
+    />
+  </div>;
+
   return (
       <div className={classes.container}>
         <ActivityMenu />
-        <ListLines
-            sortBy={sortBy}
+        <ListLines sortBy={sortBy}
             orderAsc={orderAsc}
             dataColumns={dataColumns}
             handleSort={storageHelpers.handleSort}
             handleSearch={storageHelpers.handleSearch}
             handleAddFilter={storageHelpers.handleAddFilter}
             handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            handleToggleExports={storageHelpers.handleToggleExports}
-            openExports={openExports}
-            handleToggleSelectAll={handleToggleSelectAll}
             selectAll={selectAll}
-            exportEntityType="Audit"
+            extraFields={extraFields}
             keyword={searchTerm}
             filters={filters}
             paginationOptions={paginationOptions}
             numberOfElements={numberOfElements}
-            iconExtension={true}
             availableFilterKeys={[
+              'elementId',
               'creator',
+              'organization',
+              'group',
               'created_start_date',
               'created_end_date',
-            ]}
-        >
+            ]}>
           {queryRef && (
-              <React.Suspense
-                  fallback={
-                    <>
-                      {Array(20)
-                        .fill(0)
-                        .map((idx) => (
-                              <div key={idx} />
-                        ))}
-                    </>
-                  }
-              >
+              <React.Suspense fallback={<>{Array(20).fill(0).map((idx) => (<AuditLineDummy key={idx} dataColumns={dataColumns}/>))}</>}>
                 <AuditLines
                     queryRef={queryRef}
                     paginationOptions={paginationOptions}

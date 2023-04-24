@@ -4,17 +4,18 @@ import { timeSeriesHistories } from '../database/middleware';
 import { EVENT_TYPE_CREATE, INDEX_HISTORY, READ_INDEX_HISTORY } from '../database/utils';
 import { OPENCTI_SYSTEM_UUID } from '../schema/general';
 import { ENTITY_TYPE_HISTORY } from '../schema/internalObject';
-import type { CreateEntity, DomainFindAll } from './domainTypes';
+import type { CreateEntity } from './domainTypes';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { Log, LogConnection } from '../types/log';
+import type { Log } from '../types/log';
+import type { QueryAuditsArgs, QueryLogsArgs } from '../generated/graphql';
 
-export const findAll: DomainFindAll<LogConnection> = (context, user, args) => {
-  const finalArgs = {
-    orderBy: 'timestamp',
-    orderMode: 'desc',
-    ...args,
-    types: args.types ? args.types : [ENTITY_TYPE_HISTORY],
-  };
+export const findHistory = (context: AuthContext, user: AuthUser, args: QueryLogsArgs) => {
+  const finalArgs = { ...args, orderBy: args.orderBy ?? 'timestamp', orderMode: args.orderMode ?? 'desc', types: [ENTITY_TYPE_HISTORY] };
+  return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
+};
+
+export const findAudits = (context: AuthContext, user: AuthUser, args: QueryAuditsArgs) => {
+  const finalArgs = { ...args, types: args.types ? args.types : [ENTITY_TYPE_HISTORY] };
   return elPaginate(context, user, READ_INDEX_HISTORY, finalArgs);
 };
 

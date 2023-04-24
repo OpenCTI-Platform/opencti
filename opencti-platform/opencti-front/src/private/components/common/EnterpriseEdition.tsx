@@ -1,7 +1,8 @@
-import React from 'react';
+import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import ActivityMenu from '../../ActivityMenu';
-import { Theme } from '../../../../../components/Theme';
+import AlertTitle from '@mui/material/AlertTitle';
+import { Theme } from '../../../components/Theme';
+import { useFormatter } from '../../../components/i18n';
 
 // ------------------------------------------------------------------------ //
 //     OpenCTI Enterprise Edition License                                   //
@@ -20,54 +21,22 @@ import { Theme } from '../../../../../components/Theme';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
 // ------------------------------------------------------------------------ //
 
-const useStyles = makeStyles<Theme>((theme) => ({
-  container: {
-    margin: 0,
-    padding: '0 200px 0 0',
-  },
-  gridContainer: {
+const useStyles = makeStyles<Theme>(() => ({
+  alert: {
+    width: '100%',
     marginBottom: 20,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
-const Statistics = () => {
+const EnterpriseEdition = () => {
   const classes = useStyles();
-  return (
-      <div className={classes.container}>
-        <ActivityMenu />
-      </div>
-  );
+  const { t } = useFormatter();
+  return <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
+                  severity="warning" variant="outlined" style={{ position: 'relative' }}>
+        <AlertTitle style={{ marginBottom: 0 }}>
+            {t('You need to activate OpenCTI enterprise edition to use the activity feature')}<br/>
+        </AlertTitle>
+    </Alert>;
 };
 
-export default Statistics;
+export default EnterpriseEdition;

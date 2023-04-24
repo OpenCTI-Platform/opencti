@@ -141,11 +141,7 @@ class SessionsListComponent extends Component {
     )(data);
     return (
       <div>
-        <List
-          component="nav"
-          aria-labelledby="nested-list-subheader"
-          className={classes.root}
-        >
+        <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
           {sessions.map((session) => {
             const { user, sessions: userSessions } = session;
             const orderedSessions = R.sort(

@@ -332,10 +332,15 @@ enum LogsOrdering {
   timestamp
 }
 enum LogsFilter {
+  elementId
   event_type
   entity_id
+  created
   connection_id
   user_id
+  creator
+  group
+  organization
   applicant_id
 }
 type LogConnection {
@@ -353,8 +358,8 @@ type LogEdge {
   node: Log!
 }
 type ContextData {
-  id: String!
-  entity_type: String!
+  id: String
+  entity_type: String
   from_id: String
   to_id: String
   message: String!
@@ -367,6 +372,7 @@ type Log {
   timestamp: DateTime!
   user_id: String!
   user: Creator
+  raw_data: String @auth(for: [SETTINGS])
   context_data: ContextData
 }
 
@@ -946,6 +952,11 @@ type Provider {
   strategy: String
   provider: String
 }
+type AuditListener {
+  id: ID!
+  name: String!
+  entity_type: String!
+}
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String! @auth
@@ -989,7 +1000,8 @@ type Settings implements InternalObject & BasicObject {
   platform_feature_flags: [Module!] @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
-  enterprise_edition: DateTime @auth
+  enterprise_edition: DateTime @auth(for: [SETTINGS])
+  audit_listeners: [AuditListener!] @auth(for: [SETTINGS])
   otp_mandatory: Boolean @auth
   password_policy_min_length: Int @auth
   password_policy_max_length: Int @auth
@@ -11415,13 +11427,22 @@ type Query {
   logs(
     first: Int
     after: ID
-    types: [String!]
     orderBy: LogsOrdering
     orderMode: OrderingMode
     filters: [LogsFiltering!]
     filterMode: FilterMode
     search: String
   ): LogConnection @auth(for: [KNOWLEDGE])
+  audits(
+    first: Int
+    after: ID
+    types: [String!]
+    orderBy: LogsOrdering
+    orderMode: OrderingMode
+    filters: [LogsFiltering!]
+    filterMode: FilterMode
+    search: String
+  ): LogConnection @auth(for: [SETTINGS])
   logsTimeSeries(
     userId: String
     field: String!

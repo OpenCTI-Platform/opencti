@@ -44,8 +44,6 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
     return;
   }
   const historyElements = events.map((event) => {
-    // eslint-disable-next-line no-console
-    console.log(`>>> ${event.data.origin.user_id} ${event.data.message}`);
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const contextData = { ...event.data.data, message: event.data.message };

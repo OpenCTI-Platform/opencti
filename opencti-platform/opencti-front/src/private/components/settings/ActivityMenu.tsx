@@ -8,10 +8,6 @@ const ActivityMenu: FunctionComponent = () => {
       label: 'Audit logs',
     },
     {
-      path: '/dashboard/settings/activity/statistics',
-      label: 'Statistics',
-    },
-    {
       path: '/dashboard/settings/activity/configuration',
       label: 'Configuration',
     },

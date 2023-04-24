@@ -7,6 +7,7 @@ import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
 import { CreatorFieldSearchQuery$data } from './__generated__/CreatorFieldSearchQuery.graphql';
 import ItemIcon from '../../../../components/ItemIcon';
+import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -26,7 +27,7 @@ const useStyles = makeStyles(() => ({
 interface CreatorFieldProps {
   name: string;
   label: string;
-  onChange?: (name: string, value: unknown) => void;
+  onChange?: (name: string, value: Option) => void;
   containerStyle?: Record<string, string | number>;
   helpertext?: string;
 }

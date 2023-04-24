@@ -513,7 +513,7 @@ export const userEditField = async (context, user, userId, inputs) => {
     user,
     event_type: 'admin',
     status: 'success',
-    message: `updates ${inputs.map((i) => i.key).join(', ')} from user ${element.user_email}`,
+    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for user \`${element.user_email}\``,
     context_data: { type: 'user', operation: 'update', input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
@@ -629,7 +629,7 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     user,
     event_type: 'admin',
     status: 'success',
-    message: `removes ${to.entity_type} ${extractEntityRepresentative(to)} from user ${targetUser.user_email}`,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
     context_data: { type: 'user', operation: 'update', input }
   });
   await userSessionRefresh(targetUser.id);
@@ -658,7 +658,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     user,
     event_type: 'admin',
     status: 'success',
-    message: `removes ${to.entity_type} ${extractEntityRepresentative(to)} from user ${targetUser.user_email}`,
+    message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
     context_data: { type: 'user', operation: 'update', input }
   });
   await userSessionRefresh(userId);
@@ -934,6 +934,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
+  await publishUserAction({ user: userWithOrigin(req, sessionUser), event_type: 'login', status: 'success', context_data: { provider } });
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -947,7 +948,6 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
   // Build the user session with only required fields
-  await publishUserAction({ user: userWithOrigin(req, user), event_type: 'login', status: 'success', context_data: { provider } });
   return internalAuthenticateUser(context, req, user, provider, token);
 };
 

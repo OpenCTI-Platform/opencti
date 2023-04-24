@@ -4,8 +4,7 @@
 // @ts-nocheck
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import Audit from './audit/Audit';
-import Statistics from './statistics/Statistics';
+import Audit from './audit/Root';
 import Configuration from './configuration/Configuration';
 
 // ------------------------------------------------------------------------ //
@@ -29,7 +28,6 @@ const RootActivity = () => {
   return (
       <Switch>
           <Route exact path="/dashboard/settings/activity/audit" render={() => <Audit/>}/>
-          <Route exact path="/dashboard/settings/activity/statistics" render={() => <Statistics/>}/>
           <Route exact path="/dashboard/settings/activity/configuration" render={() => <Configuration/>}/>
       </Switch>
   );

@@ -49,6 +49,7 @@ const ObjectOrganizationField = (props) => {
     defaultOrganizations,
     outlined = true,
     multiple = true,
+    alert = true,
   } = props;
 
   const defaultStateOrganizations = (defaultOrganizations ?? []).map((n) => ({
@@ -103,39 +104,44 @@ const ObjectOrganizationField = (props) => {
       />
     );
   }
+  const FieldElement = <Field
+      component={AutocompleteField}
+      name={name}
+      multiple={multiple}
+      disabled={disabled}
+      style={{ width: '100%' }}
+      textfieldprops={{
+        variant: 'standard',
+        label: label ?? '',
+        helperText: helpertext,
+        fullWidth: true,
+        onFocus: searchOrganizations,
+      }}
+      noOptionsText={t('No available options')}
+      options={organizations}
+      onInputChange={searchOrganizations}
+      onChange={typeof onChange === 'function' ? onChange : null}
+      renderOption={(renderProps, option) => (
+          <li {...renderProps}>
+              <div className={classes.icon}>
+                  <ItemIcon type="Organization" />
+              </div>
+              <div className={classes.text}>{option.label}</div>
+          </li>
+      )}
+  />;
+  if (!alert) {
+    return FieldElement;
+  }
   return (
-    <Alert
-      severity="warning"
+    <Alert severity="warning"
       variant="outlined"
       style={style}
-      classes={{ message: classes.message }}
-    >
+      classes={{ message: classes.message }}>
       <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
-      <Field
-        component={AutocompleteField}
-        name={name}
-        multiple={multiple}
-        disabled={disabled}
-        style={{ width: '100%', marginTop: 10 }}
-        textfieldprops={{
-          variant: 'standard',
-          helperText: helpertext,
-          fullWidth: true,
-          onFocus: searchOrganizations,
-        }}
-        noOptionsText={t('No available options')}
-        options={organizations}
-        onInputChange={searchOrganizations}
-        onChange={typeof onChange === 'function' ? onChange : null}
-        renderOption={(renderProps, option) => (
-          <li {...renderProps}>
-            <div className={classes.icon}>
-              <ItemIcon type="Organization" />
-            </div>
-            <div className={classes.text}>{option.label}</div>
-          </li>
-        )}
-      />
+        <div style={{ marginTop: 10 }}>
+            {FieldElement}
+        </div>
     </Alert>
   );
 };

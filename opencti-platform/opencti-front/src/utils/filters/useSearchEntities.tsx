@@ -361,6 +361,42 @@ const useSearchEntities = ({
             });
         }
         break;
+      case 'group':
+        fetchQuery(searchGroupFieldQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const groupToEntities = R.pipe(
+              R.pathOr([], ['groups', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: 'Group',
+              })),
+            )(data);
+            unionSetEntities('group', groupToEntities);
+          });
+        break;
+      case 'organization':
+        fetchQuery(searchObjectOrganizationFieldQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const organizationToEntities = R.pipe(
+              R.pathOr([], ['organizations', 'edges']),
+              R.map((n) => ({
+                label: n.node.name,
+                value: n.node.id,
+                type: 'Organization',
+              })),
+            )(data);
+            unionSetEntities('organization', organizationToEntities);
+          });
+        break;
       case 'createdBy':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Organization', 'Individual', 'System'],

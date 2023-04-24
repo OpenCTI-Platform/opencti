@@ -141,6 +141,7 @@ class ListLines extends Component {
       handleSearch,
       handleChangeView,
       disableCards,
+      extraFields,
       handleAddFilter,
       handleRemoveFilter,
       handleToggleExports,
@@ -206,6 +207,7 @@ class ListLines extends Component {
                     />
                   </div>
                 )}
+                {extraFields}
                 {availableFilterKeys && availableFilterKeys.length > 0 && (
                   <Filters
                     searchContext={{ entityTypes: [exportEntityType] }}

@@ -68,12 +68,12 @@ const initAuditManager = () => {
       data,
     };
   };
-  const auditLogger = async (action: UserAction, message: string) => {
+  const auditLogger = async (action: UserAction, message: string): Promise<boolean> => {
     const context = executionContext('audit_listener');
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     // If enterprise edition is not activated
     if (isEmptyField(settings.enterprise_edition)) {
-      return;
+      return false;
     }
     // If validated, log to audit console, files
     const level = action.status === 'error' ? 'error' : 'info';
@@ -85,7 +85,9 @@ const initAuditManager = () => {
       // Push to audit stream
       const event = buildAuditStreamEvent(action, message);
       await storeAuditEvent(event);
+      return true;
     }
+    return false;
   };
   const auditHandler: ActionListener = {
     id: 'AUDIT_MANAGER',
@@ -118,9 +120,11 @@ const initAuditManager = () => {
           const { entity_type } = instance;
           const identifier = `${instance.internal_id}-${action.user.id}`;
           if (!auditReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
-            const message = `reads ${extractEntityRepresentative(instance)}`;
-            await auditLogger(action, message);
-            auditReadCache.set(identifier, undefined);
+            const message = `reads ${instance.entity_type} \`${extractEntityRepresentative(instance)}\``;
+            const published = await auditLogger(action, message);
+            if (published) {
+              auditReadCache.set(identifier, undefined);
+            }
           }
         }
         if (action.event_type === 'upload') {

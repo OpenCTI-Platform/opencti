@@ -18,6 +18,7 @@ const AuditLineFragment = graphql`
   fragment AuditLines_data on Query
   @argumentDefinitions(
     search: { type: "String" }
+    types: { type: "[String!]" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
     orderBy: { type: "LogsOrdering", defaultValue: timestamp }
@@ -25,15 +26,15 @@ const AuditLineFragment = graphql`
     filters: { type: "[LogsFiltering!]" }
   )
   @refetchable(queryName: "AuditLinesRefetchQuery") {
-    logs(
+    audits(
       search: $search
       first: $count
-      types: ["Audit"]
+      types: $types
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_logs") {
+    ) @connection(key: "Pagination_audits") {
       edges {
         node {
           ...AuditLine_node
@@ -51,6 +52,7 @@ const AuditLineFragment = graphql`
 export const AuditLinesQuery = graphql`
   query AuditLinesPaginationQuery(
     $search: String
+    $types: [String!]
     $count: Int!
     $cursor: ID
     $orderBy: LogsOrdering
@@ -60,6 +62,7 @@ export const AuditLinesQuery = graphql`
     ...AuditLines_data
     @arguments(
       search: $search
+      types: $types
       count: $count
       cursor: $cursor
       orderBy: $orderBy
@@ -102,7 +105,7 @@ const AuditLines: FunctionComponent<AuditLinesProps> = ({
     linesQuery: AuditLinesQuery,
     linesFragment: AuditLineFragment,
     queryRef,
-    nodePath: ['logs', 'pageInfo', 'globalCount'],
+    nodePath: ['audits', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
 
@@ -112,8 +115,8 @@ const AuditLines: FunctionComponent<AuditLinesProps> = ({
       loadMore={loadMore}
       hasMore={hasMore}
       isLoading={isLoadingMore}
-      dataList={data?.logs?.edges ?? []}
-      globalCount={data?.logs?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      dataList={data?.audits?.edges ?? []}
+      globalCount={data?.audits?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={AuditLine}
       DummyLineComponent={AuditLineDummy}
       dataColumns={dataColumns}
