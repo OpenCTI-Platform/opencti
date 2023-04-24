@@ -934,7 +934,8 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   }
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
-  await publishUserAction({ user: userWithOrigin(req, sessionUser), event_type: 'login', status: 'success', context_data: { provider } });
+  const userOrigin = userWithOrigin(req, sessionUser);
+  await publishUserAction({ user: userOrigin, event_type: 'login', status: 'success', context_data: { provider } });
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -943,7 +944,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   req.session.session_provider = { provider, token };
   req.session.session_refresh = false;
   req.session.save();
-  return sessionUser;
+  return userOrigin;
 };
 
 export const authenticateUser = async (context, req, user, provider, token = '') => {
