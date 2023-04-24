@@ -81,6 +81,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface FilterIconButtonProps {
+  availableFilterKeys?: string[];
   filters: Filters<{ id: string; value: string }[]>;
   handleRemoveFilter?: (key: string) => void;
   classNameNumber?: number;
@@ -90,6 +91,7 @@ interface FilterIconButtonProps {
 }
 
 const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
+  availableFilterKeys,
   filters,
   handleRemoveFilter,
   classNameNumber,
@@ -123,11 +125,13 @@ const FilterIconButton: FunctionComponent<FilterIconButtonProps> = ({
     classOperator = classes.operator3;
   }
 
-  const lastKey = last(toPairs(filters))?.[0];
+  const filterPairs = toPairs(filters).filter((currentFilter) => !availableFilterKeys || availableFilterKeys?.some((k) => currentFilter[0].startsWith(k)));
+
+  const lastKey = last(filterPairs)?.[0];
 
   return (
     <div className={finalClassName} style={{ width: dataColumns?.filters.width }}>
-      {toPairs(filters).map((currentFilter) => {
+      {filterPairs.map((currentFilter) => {
         const filterKey = currentFilter[0];
         const filterContent = currentFilter[1];
         const label = `${truncate(t(`filter_${filterKey}`), 20)}`;
