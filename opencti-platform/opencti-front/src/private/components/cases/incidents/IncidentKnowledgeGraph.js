@@ -52,7 +52,7 @@ const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
 export const incidentKnowledgeGraphQuery = graphql`
   query IncidentKnowledgeGraphQuery($id: String!) {
-    case(id: $id) {
+    caseIncident(id: $id) {
       ...IncidentKnowledgeGraph_case
     }
   }
@@ -248,6 +248,18 @@ const incidentKnowledgeGraphStixCoreObjectQuery = graphql`
         name
       }
       ... on Case {
+        name
+      }
+      ... on CaseIncident {
+        name
+      }
+      ... on Feedback {
+        name
+      }
+      ... on CaseRfi {
+        name
+      }
+      ... on CaseRft {
         name
       }
       ... on Narrative {
@@ -1623,7 +1635,7 @@ const IncidentKnowledgeGraph = createFragmentContainer(
   IncidentKnowledgeGraphComponent,
   {
     caseData: graphql`
-      fragment IncidentKnowledgeGraph_case on Case {
+      fragment IncidentKnowledgeGraph_case on CaseIncident {
         id
         name
         x_opencti_graph_data
@@ -1793,6 +1805,18 @@ const IncidentKnowledgeGraph = createFragmentContainer(
                 name
               }
               ... on Case {
+                name
+              }
+              ... on CaseIncident {
+                name
+              }
+              ... on Feedback {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
                 name
               }
               ... on StixCyberObservable {

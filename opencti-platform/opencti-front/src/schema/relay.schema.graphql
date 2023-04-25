@@ -7086,11 +7086,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting | Creator
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | EntitySetting | Creator
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | EntitySetting
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | Feedback | EntitySetting
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | EntitySetting
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -9418,6 +9418,8 @@ enum VocabularyCategory {
   permissions_ov
   processor_architecture_ov
   report_types_ov
+  request_for_information_types_ov
+  request_for_takedown_types_ov
   service_status_ov
   service_type_ov
   start_type_ov
@@ -10000,7 +10002,6 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
   description: String
-  rating: Int
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -10021,8 +10022,6 @@ enum CaseRfisOrdering {
   created
   modified
   context
-  severity
-  priority
   created_at
   updated_at
   creator
@@ -10030,6 +10029,8 @@ enum CaseRfisOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  severity
+  priority
 }
 
 enum CaseRfisFilter {
@@ -10045,9 +10046,9 @@ enum CaseRfisFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
+  confidence
   severity
   priority
-  confidence
 }
 
 input CaseRfisFiltering {
@@ -10071,9 +10072,9 @@ input CaseRfiAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
+  description: String
   severity: String
   priority: String
-  description: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -10128,7 +10129,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
   description: String
-  rating: Int
   creators: [Creator!]
   toStix: String
   importFiles(first: Int): FileConnection
@@ -10149,8 +10149,6 @@ enum CaseRftsOrdering {
   created
   modified
   context
-  severity
-  priority
   created_at
   updated_at
   creator
@@ -10158,6 +10156,8 @@ enum CaseRftsOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  severity
+  priority
 }
 
 enum CaseRftsFilter {
@@ -10173,9 +10173,9 @@ enum CaseRftsFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
+  confidence
   severity
   priority
-  confidence
 }
 
 input CaseRftsFiltering {
@@ -10199,9 +10199,9 @@ input CaseRftAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
+  description: String
   severity: String
   priority: String
-  description: String
   confidence: Int
   revoked: Boolean
   lang: String

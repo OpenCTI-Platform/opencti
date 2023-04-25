@@ -117,7 +117,6 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   # Cases
   name: String!
   description: String
-  rating: Int
   # Technical
   creators: [Creator!]
   toStix: String
@@ -129,7 +128,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
-  # Rft
+  # Request For Information
   takedown_types: [String!]
   severity: String
   priority: String
@@ -141,8 +140,6 @@ enum CaseRftsOrdering {
   created
   modified
   context
-  severity
-  priority
   created_at
   updated_at
   creator
@@ -150,6 +147,8 @@ enum CaseRftsOrdering {
   x_opencti_workflow_id
   confidence
   objectMarking
+  severity
+  priority
 }
 
 # Filtering
@@ -166,9 +165,9 @@ enum CaseRftsFilter {
   labelledBy
   assigneeTo
   x_opencti_workflow_id
+  confidence
   severity
   priority
-  confidence
 }
 
 input CaseRftsFiltering {
@@ -210,9 +209,9 @@ input CaseRftAddInput {
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
+  description: String
   severity: String
   priority: String
-  description: String
   confidence: Int
   revoked: Boolean
   lang: String

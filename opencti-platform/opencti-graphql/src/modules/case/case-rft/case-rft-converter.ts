@@ -9,9 +9,9 @@ const convertCaseRftToStix = (instance: StoreEntityCaseRft): StixCaseRft => {
     ...caseRft,
     name: instance.name,
     description: instance.description,
+    takedown_types: instance.takedown_types,
     severity: instance.severity,
     priority: instance.priority,
-    takedown_types: instance.takedown_types,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({

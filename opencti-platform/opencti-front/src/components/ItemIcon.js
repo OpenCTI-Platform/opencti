@@ -180,7 +180,9 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return (
         <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />
       );
-    case 'Case-rfi':
+    case 'Case-Rfi':
+      return <Brain style={style} fontSize={fontSize} role="img" />;
+    case 'Case-Rft':
       return <Brain style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':

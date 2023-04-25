@@ -7,7 +7,7 @@ import CaseIncidentPopover from './CaseIncidentPopover';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import Security from '../../../../utils/Security';
-import { SETTINGS } from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
@@ -44,6 +44,10 @@ const caseIncidentFragment = graphql`
         name
         entity_type
       }
+    }
+    creators {
+      id
+      name
     }
     objectMarking {
       edges {
@@ -198,7 +202,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
           (edge) => edge.node,
         )}
       />
-      <Security needs={[SETTINGS]}>
+      <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>
     </div>

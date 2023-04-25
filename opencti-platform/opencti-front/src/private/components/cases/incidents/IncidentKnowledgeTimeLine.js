@@ -28,7 +28,7 @@ export const incidentKnowledgeTimeLineQuery = graphql`
     $orderMode: OrderingMode
     $filters: [StixObjectOrStixRelationshipsFiltering]
   ) {
-    case(id: $id) {
+    caseIncident(id: $id) {
       ...IncidentKnowledgeTimeLine_case
         @arguments(
           search: $search
@@ -123,7 +123,7 @@ const IncidentKnowledgeTimeLineComponent = ({
 
 export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
   caseData: graphql`
-    fragment IncidentKnowledgeTimeLine_case on Case
+    fragment IncidentKnowledgeTimeLine_case on CaseIncident
     @argumentDefinitions(
       types: { type: "[String]" }
       search: { type: "String" }
@@ -325,6 +325,22 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
               name
               description
             }
+            ... on CaseIncident {
+              name
+              description
+            }
+            ... on Feedback {
+              name
+              description
+            }
+            ... on CaseRfi {
+              name
+              description
+            }
+            ... on CaseRft {
+              name
+              description
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -487,6 +503,22 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                   name
                   description
                 }
+                ... on CaseIncident {
+                  name
+                  description
+                }
+                ... on Feedback {
+                  name
+                  description
+                }
+                ... on CaseRfi {
+                  name
+                  description
+                }
+                ... on CaseRft {
+                  name
+                  description
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -638,6 +670,22 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                   description
                 }
                 ... on Case {
+                  name
+                  description
+                }
+                ... on CaseIncident {
+                  name
+                  description
+                }
+                ... on Feedback {
+                  name
+                  description
+                }
+                ... on CaseRfi {
+                  name
+                  description
+                }
+                ... on CaseRft {
                   name
                   description
                 }

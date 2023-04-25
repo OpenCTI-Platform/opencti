@@ -139,7 +139,7 @@ const CaseIncidentDetailsFragment = graphql`
         node {
           id
           entity_type
-          ... on Case {
+          ... on CaseIncident {
             name
             description
             created
@@ -228,9 +228,9 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Description')}
             </Typography>
-            {data.description && (
+            {data.description ? (
               <ExpandableMarkdown source={data.description} limit={300} />
-            )}
+            ) : '-'}
           </Grid>
         </Grid>
         <Typography variant="h3" gutterBottom={true}>

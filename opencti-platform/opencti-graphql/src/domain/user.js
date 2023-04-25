@@ -6,16 +6,7 @@ import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import {
-  batchListThroughGetTo,
-  createEntity,
-  createRelation,
-  deleteElementById,
-  deleteRelationsByFromAndTo,
-  listThroughGetTo,
-  patchAttribute,
-  updateAttribute,
-} from '../database/middleware';
+import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, } from '../database/middleware';
 import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -723,7 +714,7 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     session_version: PLATFORM_VERSION
   };
 };
-const buildCompleteUser = async (context, client) => {
+export const buildCompleteUser = async (context, client) => {
   if (!client) {
     return undefined;
   }
@@ -911,6 +902,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       password,
     };
     await addUser(context, SYSTEM_USER, userToCreate);
+    await userSessionRefresh(OPENCTI_ADMIN_UUID);
   }
 };
 

@@ -37,7 +37,6 @@ describe('SubType resolver standard behavior', () => {
   });
   it('should list default subTypes', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY });
-    // Updated because we have add two types
     expect(queryResult.data.subTypes.edges.length).toEqual(37);
     expect(isSorted(queryResult.data.subTypes.edges.map((edge) => edge.node.id))).toEqual(true);
   });

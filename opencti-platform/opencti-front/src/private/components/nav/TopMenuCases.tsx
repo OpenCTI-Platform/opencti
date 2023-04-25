@@ -7,6 +7,7 @@ import {
 } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
+import { Brain } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
@@ -50,24 +51,44 @@ const TopMenuCases = () => {
           {t('Cases - Incidents')}
         </Button>
       )}
-      {/*      <Button
-        component={Link}
-        to="/dashboard/cases/feedbacks"
-        variant={
-          location.pathname === '/dashboard/cases/rfis' ? 'contained' : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/rfis'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-        disabled={true}
-      >
-        <Brain className={classes.icon} fontSize="small" />
-        {t('RFIs')}
-      </Button> */}
+      {!useIsHiddenEntity('Case-Rfi') && (
+        <Button
+          component={Link}
+          to="/dashboard/cases/rfis"
+          variant={
+            location.pathname === '/dashboard/cases/rfis' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/rfis'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <Brain className={classes.icon} fontSize="small" />
+          {t('Cases - RFIs')}
+        </Button>
+      )}
+      {!useIsHiddenEntity('Case-Rft') && (
+        <Button
+          component={Link}
+          to="/dashboard/cases/rfts"
+          variant={
+            location.pathname === '/dashboard/cases/rfts' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/rfts'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <Brain className={classes.icon} fontSize="small" />
+          {t('Cases - RFTs')}
+        </Button>
+      )}
       {!useIsHiddenEntity('Feedback') && (
         <Button
           component={Link}

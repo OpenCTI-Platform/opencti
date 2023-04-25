@@ -36,7 +36,7 @@ const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
 
 export const incidentKnowledgeCorrelationQuery = graphql`
   query IncidentKnowledgeCorrelationQuery($id: String!) {
-    case(id: $id) {
+    caseIncident(id: $id) {
       ...IncidentKnowledgeCorrelation_case
     }
   }
@@ -1150,7 +1150,7 @@ const IncidentKnowledgeCorrelation = createFragmentContainer(
   IncidentKnowledgeCorrelationComponent,
   {
     caseData: graphql`
-      fragment IncidentKnowledgeCorrelation_case on Case {
+      fragment IncidentKnowledgeCorrelation_case on CaseIncident {
         id
         name
         x_opencti_graph_data

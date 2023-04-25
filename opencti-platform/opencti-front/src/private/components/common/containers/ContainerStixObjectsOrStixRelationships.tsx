@@ -159,6 +159,11 @@ const ContainerStixObjectsOrStixRelationships = createFragmentContainer(
         id
         createdBy {
           id
+          name
+        }
+        creators {
+          id
+          name
         }
         objects {
           edges {

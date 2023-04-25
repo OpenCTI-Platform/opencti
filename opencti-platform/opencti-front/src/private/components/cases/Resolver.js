@@ -40,6 +40,8 @@ const Resolver = () => {
                 redirectLink = `/dashboard/cases/incidents/${caseEntity.id}`;
               } else if (caseEntity.entity_type === 'Case-Rfi') {
                 redirectLink = `/dashboard/cases/rfis/${caseEntity.id}`;
+              } else if (caseEntity.entity_type === 'Case-Rft') {
+                redirectLink = `/dashboard/cases/rfts/${caseEntity.id}`;
               } else {
                 redirectLink = `/dashboard/cases/others/${caseEntity.id}`;
               }
