@@ -39,7 +39,7 @@ import {
   RELATION_PARTICIPATE_TO,
 } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { addGroup, findAll as findGroups } from './group';
+import { findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
@@ -61,6 +61,7 @@ import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
 import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
 import { publishUserAction } from '../listener/UserActionListener';
+import { addGroup } from './grant';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -302,7 +303,7 @@ export const roleDelete = async (context, user, roleId) => {
     user,
     event_type: 'admin',
     status: 'success',
-    message: `deletes role ${deleted.name}`,
+    message: `deletes role \`${deleted.name}\``,
     context_data: { type: 'role', operation: 'delete', inputs: { id: roleId } }
   });
   return roleId;
@@ -329,7 +330,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     user,
     event_type: 'admin',
     status: 'success',
-    message: `adds ${created.toType} ${extractEntityRepresentative(created.to)} to user ${created.from.user_email}`,
+    message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${created.from.user_email}\``,
     context_data: { type: 'user', operation: 'update', input: assignInput }
   });
   await userSessionRefresh(userId);
@@ -343,6 +344,7 @@ export const assignOrganizationNameToUser = async (context, user, userId, organi
 };
 
 export const assignGroupToUser = async (context, user, userId, groupName) => {
+  // No need for audit log here, only use for provider login
   const generateToId = generateStandardId(ENTITY_TYPE_GROUP, { name: groupName });
   const assignInput = {
     fromId: userId,
@@ -458,7 +460,7 @@ export const addUser = async (context, user, newUser) => {
     user,
     event_type: 'admin',
     status: 'success',
-    message: `creates user ${userEmail}`,
+    message: `creates user \`${userEmail}\``,
     context_data: { type: 'user', operation: 'create', input: newUser }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
@@ -466,6 +468,13 @@ export const addUser = async (context, user, newUser) => {
 
 export const roleEditField = async (context, user, roleId, input) => {
   const { element } = await updateAttribute(context, user, roleId, ENTITY_TYPE_ROLE, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
+    context_data: { type: 'role', operation: 'update', input }
+  });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
 };
@@ -480,6 +489,13 @@ export const roleAddRelation = async (context, user, roleId, input) => {
   }
   const finalInput = R.assoc('fromId', roleId, input);
   const relationData = await createRelation(context, user, finalInput);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentative(relationData.to)}\` for role \`${role.name}\``,
+    context_data: { type: 'user', operation: 'update', input }
+  });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
 };
@@ -492,7 +508,14 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   if (!isInternalRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_INTERNAL_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  const deleted = await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentative(deleted.to)}\` for role \`${role.name}\``,
+    context_data: { type: 'role', operation: 'delete', input: { roleId, toId, relationshipType } }
+  });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
 };
@@ -591,7 +614,7 @@ export const userDelete = async (context, user, userId) => {
     user,
     event_type: 'admin',
     status: 'success',
-    message: `deletes user ${deleted.user_email}`,
+    message: `deletes user \`${deleted.user_email}\``,
     context_data: { type: 'user', operation: 'delete', inputs: { id: userId } }
   });
   await killUserSessions(userId);
@@ -612,7 +635,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     user,
     event_type: 'admin',
     status: 'success',
-    message: `adds ${relationData.toType} ${extractEntityRepresentative(relationData.to)} to user ${userData.user_email}`,
+    message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${userData.user_email}\``,
     context_data: { type: 'user', operation: 'update', input }
   });
   await userSessionRefresh(userId);
@@ -918,7 +941,7 @@ export const userRenewToken = async (context, user, userId) => {
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 
-export const internalAuthenticateUser = async (context, req, user, provider, token) => {
+export const internalAuthenticateUser = async (context, req, user, provider, token, isSessionRefresh = false) => {
   let impersonate;
   const logged = await buildCompleteUser(context, user);
   const applicantId = req.headers['opencti-applicant-id'];
@@ -935,7 +958,9 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
   const userOrigin = userWithOrigin(req, sessionUser);
-  await publishUserAction({ user: userOrigin, event_type: 'login', status: 'success', context_data: { provider } });
+  if (!isSessionRefresh) {
+    await publishUserAction({ user: userOrigin, event_type: 'login', status: 'success', context_data: { provider } });
+  }
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -996,7 +1021,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     if (auth.session_version !== PLATFORM_VERSION || req.session.session_refresh) {
       const { session_provider } = req.session;
       const { provider: userProvider, token: userToken } = session_provider;
-      return await internalAuthenticateUser(context, req, auth, userProvider, userToken);
+      return await internalAuthenticateUser(context, req, auth, userProvider, userToken, true);
     }
     // If everything ok, return the authenticated user.
     return userWithOrigin(req, auth);

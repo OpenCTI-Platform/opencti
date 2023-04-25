@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import { DatabaseError, UnsupportedError } from '../config/errors';
-import { isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -271,6 +271,8 @@ export const extractEntityRepresentative = (entityData) => {
     const from = moment(entityData.first_observed).utc().toISOString();
     const to = moment(entityData.last_observed).utc().toISOString();
     mainValue = `${from} - ${to}`;
+  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
+    return entityData.description;
   } else if (isNotEmptyField(entityData.name)) {
     mainValue = entityData.name;
   } else if (isNotEmptyField(entityData.description)) {

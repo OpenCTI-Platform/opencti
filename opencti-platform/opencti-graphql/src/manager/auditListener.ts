@@ -99,7 +99,7 @@ const initAuditManager = () => {
       // Security
       if (action.event_type === 'login') {
         const { provider } = action.context_data;
-        const message = `login from ${provider}`;
+        const message = `login from provider \`${provider}\``;
         await auditLogger(action, message);
       }
       if (action.event_type === 'logout') {
@@ -110,7 +110,7 @@ const initAuditManager = () => {
       }
       if (action.event_type === 'unauthorized') {
         const { path } = action.context_data;
-        const message = `tries an unauthorized access to ${path}`;
+        const message = `tries an unauthorized access to \`${path}\``;
         await auditLogger(action, message);
       }
       // USer tracking
@@ -128,18 +128,18 @@ const initAuditManager = () => {
           }
         }
         if (action.event_type === 'upload') {
-          const { filename } = action.context_data;
-          const message = `uploads ${filename}`;
+          const { file_name, entity_name } = action.context_data;
+          const message = `uploads in \`${entity_name}\` the file \`${file_name}\``;
           await auditLogger(action, message);
         }
         if (action.event_type === 'download') {
-          const { filename } = action.context_data;
-          const message = `downloads ${filename}`;
+          const { file_name, entity_name } = action.context_data;
+          const message = `downloads from \`${entity_name}\` the file \`${file_name}\``;
           await auditLogger(action, message);
         }
         if (action.event_type === 'export') {
-          const { type } = action.context_data;
-          const message = `exports a list of ${type}s`;
+          const { file_name, entity_name } = action.context_data;
+          const message = `asks for export generation in \`${entity_name}\` (\`${file_name}\`)`;
           await auditLogger(action, message);
         }
       }

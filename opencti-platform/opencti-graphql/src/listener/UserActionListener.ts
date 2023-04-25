@@ -1,4 +1,6 @@
 import type { AuthUser } from '../types/user';
+import { extractEntityRepresentative } from '../database/utils';
+import type { BasicStoreObject } from '../types/store';
 
 interface BasicUserAction {
   user: AuthUser
@@ -23,21 +25,27 @@ export interface UserDownloadAction extends BasicUserAction {
   event_type: 'download'
   context_data: {
     id: string
-    filename: string
+    path: string
+    entity_name: string
+    entity_type: string
+    file_name: string
   }
 }
 export interface UserUploadAction extends BasicUserAction {
   event_type: 'upload'
   context_data: {
     id: string
-    filename: string
+    path: string
+    entity_name: string
+    entity_type: string
+    file_name: string
   }
 }
 export interface UserAdminAction extends BasicUserAction {
   event_type: 'admin'
   message: string
   context_data: {
-    type: 'group' | 'role' | 'user'
+    type: 'group' | 'role' | 'user' | 'marking' | 'setting' | 'label'
     operation: 'create' | 'update' | 'delete'
     input: unknown
   }
@@ -55,10 +63,16 @@ export interface UserLogoutAction extends BasicUserAction {
 export interface UserExportAction extends BasicUserAction {
   event_type: 'export'
   context_data: {
-    type: 'list' | 'entity'
+    export_scope: 'query' | 'single' | 'selection'
+    export_type: 'simple' | 'full'
+    id: string
+    element_id: string // Same as id
+    entity_name: string
+    entity_type: string
+    file_name: string
     max_marking: string
-    ids: string[]
-    params?: unknown
+    list_params?: unknown,
+    selected_ids?: string[],
   }
 }
 export type UserAction = UserReadAction | UserDownloadAction | UserUploadAction | UserLoginAction |
@@ -86,4 +100,14 @@ export const publishUserAction = async (userAction: UserAction) => {
     actionPromises.push(listener.next(userAction));
   }
   return Promise.all(actionPromises);
+};
+
+export const buildContextDataForFile = (entity: BasicStoreObject, path: string, filename: string) => {
+  return {
+    path,
+    id: entity?.internal_id,
+    entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+    entity_type: entity?.entity_type ?? 'global',
+    file_name: filename
+  };
 };

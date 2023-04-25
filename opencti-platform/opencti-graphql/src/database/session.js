@@ -71,11 +71,11 @@ export const findUserSessions = async (userId) => {
   return [];
 };
 
-export const killSession = (id) => {
+export const killSession = async (id) => {
   const { store } = applicationSession;
   return new Promise((accept) => {
-    store.destroy(id, () => {
-      accept(id);
+    store.destroy(id, (data) => {
+      accept(data);
     });
   });
 };
@@ -83,11 +83,13 @@ export const killSession = (id) => {
 export const killUserSessions = async (userId) => {
   const sessions = await findUserSessions(userId);
   const sessionsIds = sessions.map((s) => s.id);
+  const killedSessions = [];
   for (let index = 0; index < sessionsIds.length; index += 1) {
     const sessionId = sessionsIds[index];
-    await killSession(sessionId);
+    const killedSession = await killSession(sessionId);
+    killedSessions.push(killedSession);
   }
-  return sessionsIds;
+  return killedSessions;
 };
 
 export const markSessionForRefresh = async (id) => {

@@ -1,11 +1,12 @@
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { logApp } from '../config/conf';
 import { userAddRelation } from '../domain/user';
-import { addGroup, groupAddRelation } from '../domain/group';
+import { groupAddRelation } from '../domain/group';
 import { listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER, } from '../schema/internalObject';
 import { RELATION_HAS_ROLE, RELATION_MEMBER_OF } from '../schema/internalRelationship';
 import { deleteElementById } from '../database/middleware';
+import { addGroup } from '../domain/grant';
 
 export const up = async (next) => {
   const context = executionContext('migration', SYSTEM_USER);

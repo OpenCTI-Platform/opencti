@@ -6,6 +6,7 @@ import { BUS_TOPICS } from '../config/conf';
 import { ENTITY_TYPE_LABEL } from '../schema/stixMetaObject';
 import { generateStandardId, normalizeName } from '../schema/identifier';
 import { isAnId } from '../schema/schemaUtils';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const findById = (context, user, labelIdOrName) => {
   // Could be internal_id (uuidV4)
@@ -43,16 +44,37 @@ export const addLabel = async (context, user, label) => {
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value)))
   )(label);
   const created = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates label \`${label.value}\``,
+    context_data: { type: 'label', operation: 'create', input: finalLabel }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
 };
 
 export const labelDelete = async (context, user, labelId) => {
-  await deleteElementById(context, user, labelId, ENTITY_TYPE_LABEL);
+  const deleted = await deleteElementById(context, user, labelId, ENTITY_TYPE_LABEL);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes label \`${deleted.value}\``,
+    context_data: { type: 'label', operation: 'delete', input: { id: labelId } }
+  });
   return labelId;
 };
 
 export const labelEditField = async (context, user, labelId, input, opts = {}) => {
   const { element } = await updateAttribute(context, user, labelId, ENTITY_TYPE_LABEL, input, opts);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for label \`${element.value}\``,
+    context_data: { type: 'label', operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, element, user);
 };
 

@@ -1,6 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
 import {
-  addGroup,
   groupDelete,
   findAll,
   findById,
@@ -17,6 +16,7 @@ import { BUS_TOPICS } from '../config/conf';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
+import { addGroup } from '../domain/grant';
 
 const markingsLoader = batchLoader(batchMarkingDefinitions);
 const membersLoader = batchLoader(batchMembers);

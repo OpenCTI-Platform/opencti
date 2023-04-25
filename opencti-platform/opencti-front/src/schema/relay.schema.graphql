@@ -333,7 +333,6 @@ type LogsWorkerConfig {
 
 enum LogsOrdering {
   event
-  creator
   timestamp
 }
 
@@ -368,7 +367,6 @@ type LogEdge {
 }
 
 type ContextData {
-  id: String
   entity_type: String
   from_id: String
   to_id: String
@@ -384,6 +382,7 @@ type Log {
   user_id: String!
   user: Creator
   raw_data: String
+  context_uri: String
   context_data: ContextData
 }
 

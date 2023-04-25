@@ -17,13 +17,20 @@ import {
   isStixDomainObjectShareableContainer,
   STIX_ORGANIZATIONS_UNRESTRICTED,
 } from '../schema/stixDomainObject';
-import { ABSTRACT_STIX_CYBER_OBSERVABLE, ABSTRACT_STIX_DOMAIN_OBJECT, ABSTRACT_STIX_OBJECT, ABSTRACT_STIX_RELATIONSHIP, INPUT_GRANTED_REFS } from '../schema/general';
-import { UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
+import {
+  ABSTRACT_STIX_CORE_OBJECT,
+  ABSTRACT_STIX_CYBER_OBSERVABLE,
+  ABSTRACT_STIX_DOMAIN_OBJECT,
+  ABSTRACT_STIX_OBJECT,
+  ABSTRACT_STIX_RELATIONSHIP,
+  INPUT_GRANTED_REFS
+} from '../schema/general';
+import { extractEntityRepresentative, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { createQueryTask } from './task';
 import { getParentTypes } from '../schema/schemaUtils';
-import { internalLoadById } from '../database/middleware-loader';
+import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';
 import { publishUserAction } from '../listener/UserActionListener';
 
@@ -46,6 +53,7 @@ export const stixObjectMerge = async (context, user, targetId, sourceIds) => {
 export const askListExport = async (context, user, format, entityType, selectedIds, listParams, type = 'simple', maxMarkingId = null) => {
   const connectors = await connectorsForExport(context, user, format, true);
   const markingLevel = maxMarkingId ? await findMarkingDefinitionById(context, user, maxMarkingId) : null;
+  const entity = listParams.elementId ? await storeLoadById(context, user, listParams.elementId, ABSTRACT_STIX_CORE_OBJECT) : null;
   const toFileName = (connector) => {
     const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
@@ -59,11 +67,12 @@ export const askListExport = async (context, user, format, entityType, selectedI
         },
         event: {
           export_scope: 'selection', // query or selection or single
+          element_id: entity?.id,
+          entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+          entity_type: entityType, // Exported entity type
           export_type: type, // Simple or full
           file_name: fileName, // Export expected file name
           max_marking: maxMarkingId, // Max marking id
-          entity_type: entityType, // Exported entity type
-          element_id: listParams.elementId,
           selected_ids: selectedIds, // ids that are both selected via checkboxes and respect the filtering
         },
       };
@@ -75,18 +84,17 @@ export const askListExport = async (context, user, format, entityType, selectedI
       },
       event: {
         export_scope: 'query', // query or selection or single
+        id: entity?.id,
+        element_id: entity?.id,
+        entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+        entity_type: entityType, // Exported entity type
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
-        entity_type: entityType, // Exported entity type
-        element_id: listParams.elementId,
-        // For list entity export
         list_params: listParams,
       },
     };
   };
-  const contextData = { type: 'list', max_marking: maxMarkingId, ids: selectedIds, params: listParams };
-  await publishUserAction({ user, event_type: 'export', status: 'success', context_data: contextData });
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
     map(async (connector) => {
@@ -94,6 +102,7 @@ export const askListExport = async (context, user, format, entityType, selectedI
       const path = `export/${entityType}/`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
+      await publishUserAction({ user, event_type: 'export', status: 'success', context_data: message.event });
       await pushToConnector(context, connector, message);
       return work;
     }, connectors)
@@ -118,17 +127,16 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       },
       event: {
         export_scope: 'single', // query or selection or single
+        id: entity.id, // Location of the file export = the exported element
+        entity_id: entity.id, // Location of the file export = the exported element
+        entity_name: extractEntityRepresentative(entity),
+        entity_type: entity.entity_type, // Exported entity type
         export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
         max_marking: maxMarkingId, // Max marking id
-        entity_type: entity.entity_type, // Exported entity type
-        // For single entity export
-        entity_id: entity.id, // Location of the file export = the exported element
       },
     };
   };
-  const contextData = { type: 'entity', max_marking: maxMarkingId, ids: [entity.id] };
-  await publishUserAction({ user, event_type: 'export', status: 'success', context_data: contextData });
   // noinspection UnnecessaryLocalVariableJS
   const worksForExport = await Promise.all(
     map(async (connector) => {
@@ -137,6 +145,7 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(context, connector, message);
+      await publishUserAction({ user, event_type: 'export', status: 'success', context_data: message.event });
       return work;
     }, connectors)
   );

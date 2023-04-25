@@ -22,7 +22,8 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { getEntityFromCache } from '../database/cache';
 import { isNotEmptyField } from '../database/utils';
-import { publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from '../database/middleware-loader';
 
 const setCookieError = (res, message) => {
   res.cookie('opencti_flash', message || 'Unknown error', {
@@ -131,7 +132,13 @@ const createApp = async (app) => {
       const { file } = req.params;
       const data = await loadFile(executeContext, auth, file);
       const { filename, entity_id } = data.metaData;
-      await publishUserAction({ user: auth, event_type: 'download', status: 'success', context_data: { id: entity_id ?? 'global', filename } });
+      const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
+      await publishUserAction({
+        user: auth,
+        event_type: 'download',
+        status: 'success',
+        context_data: buildContextDataForFile(entity, file, filename)
+      });
       const stream = await downloadFile(executeContext, file);
       res.attachment(file);
       stream.pipe(res);
@@ -153,7 +160,13 @@ const createApp = async (app) => {
       const { file } = req.params;
       const data = await loadFile(executeContext, auth, file);
       const { filename, entity_id } = data.metaData;
-      await publishUserAction({ user: auth, event_type: 'download', status: 'success', context_data: { id: entity_id ?? 'global', filename } });
+      const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
+      await publishUserAction({
+        user: auth,
+        event_type: 'download',
+        status: 'success',
+        context_data: buildContextDataForFile(entity, file, filename)
+      });
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');

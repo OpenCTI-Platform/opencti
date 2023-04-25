@@ -90,13 +90,13 @@ const AuditLineFragment = graphql`
     id
     event_type
     timestamp
+    context_uri
     user {
       id
       name
     }
     raw_data
     context_data {
-      id
       entity_type
       message
     }
@@ -133,11 +133,11 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
               {`\`${data.user?.name}\` ${data.context_data?.message}`}
             </Markdown>
           </div>
-          {data.context_data?.id && <div style={{ marginTop: 16 }}>
+          {data.context_uri && <div style={{ marginTop: 16 }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Instance context')}
             </Typography>
-            <Link to={`/dashboard/id/${data.context_data?.id}`}>View the element</Link>
+            <Link to={data.context_uri}>View the element</Link>
           </div>}
           <div style={{ marginTop: 16 }}>
             <Typography variant="h4" gutterBottom={true}>

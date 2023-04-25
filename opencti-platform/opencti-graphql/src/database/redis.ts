@@ -237,8 +237,10 @@ export const getSessionTtl = (key: string) => {
 export const setSession = (key: string, value: any, expirationTime: number) => {
   return setKeyWithList(key, ['platform_sessions'], value, expirationTime);
 };
-export const killSession = (key: string) => {
-  return delKeyWithList(key, ['platform_sessions']);
+export const killSession = async (key: string) => {
+  const currentSession = await getSession(key);
+  await delKeyWithList(key, ['platform_sessions']);
+  return { sessionId: key, session: currentSession };
 };
 export const getSessionKeys = () => {
   return getClientBase().zrange('platform_sessions', 0, -1);

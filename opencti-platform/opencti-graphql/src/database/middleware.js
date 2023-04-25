@@ -2463,8 +2463,8 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   }
   // If file directly attached
   if (!isEmptyField(updatePatch.file)) {
-    const meta = { entity_id: element.internal_id };
-    const file = await upload(context, user, `import/${element.entity_type}/${element.internal_id}`, updatePatch.file, meta);
+    const path = `import/${element.entity_type}/${element.internal_id}`;
+    const file = await upload(context, user, path, updatePatch.file, { entity: element });
     const convertedFile = storeFileConverter(user, file);
     // The patch for message generation is just an add
     const filePatch = { key: 'x_opencti_files', value: [convertedFile], operation: UPDATE_OPERATION_ADD };
@@ -3017,24 +3017,24 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
   }
 
   // Transaction succeed, complete the result to send it back
-  const created = R.pipe(
+  const entity = R.pipe(
     R.assoc('id', internalId),
     R.assoc('base_type', BASE_TYPE_ENTITY),
     R.assoc('parent_types', getParentTypes(type))
   )(data);
   // If file directly attached
   if (!isEmptyField(input.file)) {
-    const meta = { entity_id: created.internal_id };
-    const file = await upload(context, user, `import/${created.entity_type}/${created.internal_id}`, input.file, meta);
-    created.x_opencti_files = [storeFileConverter(user, file)];
+    const path = `import/${entity.entity_type}/${entity.internal_id}`;
+    const file = await upload(context, user, path, input.file, { entity });
+    entity.x_opencti_files = [storeFileConverter(user, file)];
   }
 
   // Simply return the data
   return {
     type: TRX_CREATION,
     update: null,
-    element: created,
-    message: generateCreateMessage(created),
+    element: entity,
+    message: generateCreateMessage(entity),
     previous: null,
     relations: relToCreate, // Added meta relationships
   };

@@ -54,6 +54,7 @@ import { batchLoader } from '../database/middleware';
 import { executionContext } from '../utils/access';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
 import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from '../database/middleware-loader';
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
@@ -134,9 +135,32 @@ const userResolvers = {
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
-    sessionKill: (_, { id }) => killSession(id),
+    sessionKill: async (_, { id }, context) => {
+      const kill = await killSession(id);
+      const { user } = kill.session;
+      await publishUserAction({
+        user: context.user,
+        event_type: 'admin',
+        status: 'success',
+        message: `kills \`specific session\` for user \`${user.user_email}\``,
+        context_data: { type: 'user', operation: 'delete', input: { user_id: user.id, session_id: kill.sessionId } }
+      });
+      return id;
+    },
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
-    userSessionsKill: (_, { id }) => killUserSessions(id),
+    userSessionsKill: async (_, { id }, context) => {
+      const user = await internalLoadById(context, context.user, id);
+      const sessions = await killUserSessions(id);
+      const sessionIds = sessions.map((s) => s.sessionId);
+      await publishUserAction({
+        user: context.user,
+        event_type: 'admin',
+        status: 'success',
+        message: `kills \`all sessions\` for user \`${user.user_email}\``,
+        context_data: { type: 'user', operation: 'delete', input: { user_id: id } }
+      });
+      return sessionIds;
+    },
     logout: (_, args, context) => logout(context, context.user, context.req, context.res),
     roleEdit: (_, { id }, context) => ({
       delete: () => roleDelete(context, context.user, id),

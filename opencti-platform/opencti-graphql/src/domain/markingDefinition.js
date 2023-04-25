@@ -8,6 +8,7 @@ import { ENTITY_TYPE_GROUP } from '../schema/internalObject';
 import { SYSTEM_USER } from '../utils/access';
 import { groupAddRelation } from './group';
 import { RELATION_ACCESSES_TO } from '../schema/internalRelationship';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const findById = (context, user, markingDefinitionId) => {
   return storeLoadById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
@@ -35,16 +36,37 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
       })
     );
   }
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates marking \`${created.name}\``,
+    context_data: { type: 'marking', operation: 'create', input: markingToCreate }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
 
 export const markingDefinitionDelete = async (context, user, markingDefinitionId) => {
-  await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+  const deleted = await deleteElementById(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes marking \`${deleted.name}\``,
+    context_data: { type: 'marking', operation: 'delete', input: { id: markingDefinitionId } }
+  });
   return markingDefinitionId;
 };
 
 export const markingDefinitionEditField = async (context, user, markingDefinitionId, input, opts = {}) => {
   const { element } = await updateAttribute(context, user, markingDefinitionId, ENTITY_TYPE_MARKING_DEFINITION, input, opts);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for marking \`${element.name}\``,
+    context_data: { type: 'marking', operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);
 };
 

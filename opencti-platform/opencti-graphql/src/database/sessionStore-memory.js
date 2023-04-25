@@ -84,14 +84,9 @@ class SessionStoreMemory extends Store {
 
   destroy(sid, fn) {
     const { store } = this;
-    if (Array.isArray(sid)) {
-      sid.forEach((s) => {
-        store.delete(s);
-      });
-    } else {
-      store.delete(sid);
-    }
-    return fn && fn(null);
+    const data = store.get(sid);
+    store.delete(sid);
+    return fn && fn(data);
   }
 
   ids(fn) {

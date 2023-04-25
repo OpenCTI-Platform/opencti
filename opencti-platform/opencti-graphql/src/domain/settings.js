@@ -10,6 +10,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { PROVIDERS } from '../config/providers';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -93,5 +94,12 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
   const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
+    context_data: { type: 'setting', operation: 'update', input }
+  });
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

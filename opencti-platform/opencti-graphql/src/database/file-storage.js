@@ -14,7 +14,7 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
-import { publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -248,7 +248,8 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
   }
 };
 
-export const upload = async (context, user, path, fileUpload, meta = {}, noTriggerImport = false, errorOnExisting = false) => {
+export const upload = async (context, user, path, fileUpload, opts) => {
+  const { entity, meta = {}, noTriggerImport = false, errorOnExisting = false } = opts;
   const { createReadStream, filename, mimetype, encoding = '' } = await fileUpload;
   const key = `${path}/${filename}`;
   let existingFile = null;
@@ -273,6 +274,7 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
     mimetype: fileMime,
     encoding,
     creator_id: user.id,
+    entity_id: entity?.internal_id,
   };
   const s3Upload = new Upload({
     client: s3Client,
@@ -294,7 +296,8 @@ export const upload = async (context, user, path, fileUpload, meta = {}, noTrigg
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
-  await publishUserAction({ user, event_type: 'upload', status: 'success', context_data: { id: file.metaData.entity_id, filename } });
+  const contextData = buildContextDataForFile(entity, path, filename);
+  await publishUserAction({ user, event_type: 'upload', status: 'success', context_data: contextData });
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);

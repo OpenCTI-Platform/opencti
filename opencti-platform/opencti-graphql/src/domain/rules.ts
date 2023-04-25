@@ -30,6 +30,7 @@ import { createRuleTask, deleteTask } from './task';
 import { notify } from '../database/redis';
 import { getEntitiesFromCache } from '../database/cache';
 import { isModuleActivated } from './settings';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const RULES_DECLARATION: Array<RuleRuntime> = [
   AttributedToAttributedRule,
@@ -92,5 +93,12 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
     await Promise.all(tasks.map((t) => deleteTask(context, user, t.internal_id)));
     await createRuleTask(context, user, resolvedRule, { rule: ruleId, enable: active });
   }
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `${active ? 'activates' : 'deactivates'} rule \`${resolvedRule?.name}\``,
+    context_data: { type: 'setting', operation: 'update', input: { id: ruleId, active } }
+  });
   return getRule(context, user, ruleId);
 };

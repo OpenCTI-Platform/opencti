@@ -18,29 +18,31 @@ export const addRole = async (context, user, role) => {
   const roleEntity = await createEntity(context, user, roleToCreate, ENTITY_TYPE_ROLE);
   const relationPromises = capabilities.map(async (capabilityName) => {
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
-    return createRelation(context, user, {
-      fromId: roleEntity.id,
-      toId: generateToId,
-      relationship_type: RELATION_HAS_CAPABILITY,
-    });
+    return createRelation(context, user, { fromId: roleEntity.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
   });
   await Promise.all(relationPromises);
-  await publishUserAction({ user,
+  await publishUserAction({
+    user,
     event_type: 'admin',
     status: 'success',
-    message: `creates role ${role.name}`,
+    message: `creates role \`${role.name}\``,
     context_data: { type: 'role', operation: 'create', input: role }
   });
   return roleEntity;
 };
 
 export const addGroup = async (context, user, group) => {
-  const groupEntity = await createEntity(context, user, group, ENTITY_TYPE_GROUP);
+  const groupWithDefaultValues = {
+    ...group,
+    default_assignation: group.default_assignation ?? false,
+    auto_new_marking: group.auto_new_marking ?? false
+  };
+  const groupEntity = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP);
   await publishUserAction({
     user,
     event_type: 'admin',
     status: 'success',
-    message: `creates group ${group.name}`,
+    message: `creates group \`${group.name}\``,
     context_data: { type: 'group', operation: 'create', input: group }
   });
   return groupEntity;

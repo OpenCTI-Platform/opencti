@@ -16,6 +16,7 @@ const logResolvers = {
   Log: {
     user: (log, _, context) => creatorLoader.load(log.applicant_id || log.user_id, context, context.user),
     raw_data: (log, _, __) => JSON.stringify(log, null, 2),
+    context_uri: (log, _, __) => (log.context_data.id ? `/dashboard/id/${log.context_data.id}` : undefined),
   },
   // Backward compatibility
   ContextData: {
@@ -23,15 +24,14 @@ const logResolvers = {
       const refPromises = Promise.all(
         (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE))
       ).then((refs) => refs.filter((element) => element !== undefined));
-
       return Promise.resolve(data.external_references ?? [])
         .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
     }
   },
   LogsFilter: {
-    entity_id: 'context_data.id',
-    elementId: 'context_data.id',
-    connection_id: 'context_data.*_id',
+    entity_id: 'context_data.*id',
+    elementId: 'context_data.*id', // Compatibility with standard filters
+    connection_id: 'context_data.*id', // Compatibility with standard filters
     user_id: 'user_id',
     creator: 'user_id',
     group: 'group_ids',

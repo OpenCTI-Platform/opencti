@@ -3856,7 +3856,6 @@ export type ContextData = {
   entity_type?: Maybe<Scalars['String']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['String']>;
   message: Scalars['String'];
   to_id?: Maybe<Scalars['String']>;
 };
@@ -10740,6 +10739,7 @@ export enum LocationsOrdering {
 export type Log = {
   __typename?: 'Log';
   context_data?: Maybe<ContextData>;
+  context_uri?: Maybe<Scalars['String']>;
   event_type: Scalars['String'];
   id: Scalars['ID'];
   raw_data?: Maybe<Scalars['String']>;
@@ -10781,7 +10781,6 @@ export type LogsFiltering = {
 };
 
 export enum LogsOrdering {
-  Creator = 'creator',
   Event = 'event',
   Timestamp = 'timestamp'
 }
@@ -28276,7 +28275,6 @@ export type ContextDataResolvers<ContextType = any, ParentType extends Resolvers
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -30244,6 +30242,7 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
 
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
+  context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
