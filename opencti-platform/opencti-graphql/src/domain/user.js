@@ -999,7 +999,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       return await internalAuthenticateUser(context, req, auth, userProvider, userToken);
     }
     // If everything ok, return the authenticated user.
-    return auth;
+    return userWithOrigin(req, auth);
   }
   // If user not identified, try to extract token from bearer
   let loginProvider = AUTH_BEARER;
