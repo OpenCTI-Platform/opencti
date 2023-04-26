@@ -213,8 +213,8 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     // Attributes
     id: instance.internal_id,
     type: instance.entity_type,
-    created_at: instance.created_at,
-    updated_at: instance.updated_at,
+    created_at: convertToStixDate(instance.created_at),
+    updated_at: convertToStixDate(instance.updated_at),
     aliases: instance.x_opencti_aliases ?? [],
     files: (instance.x_opencti_files ?? []).map((file) => ({
       name: file.name,
@@ -306,8 +306,8 @@ const buildEmailBodyMultipart = (instance: StoreCyberObservable): Array<SCO.Stix
 export const buildStixDomain = (instance: StoreEntity | StoreRelation): S.StixDomainObject => {
   return {
     ...buildStixObject(instance),
-    created: instance.created,
-    modified: instance.modified,
+    created: convertToStixDate(instance.created),
+    modified: convertToStixDate(instance.modified),
     revoked: instance.revoked,
     confidence: instance.confidence,
     lang: instance.lang,
@@ -325,8 +325,8 @@ const buildStixMarkings = (instance: StoreEntity): S.StixMarkingsObject => {
   return {
     ...buildStixObject(instance),
     created_by_ref: instance[INPUT_CREATED_BY]?.standard_id,
-    created: instance.created,
-    modified: instance.updated_at,
+    created: convertToStixDate(instance.created),
+    modified: convertToStixDate(instance.updated_at),
     external_references: buildExternalReferences(instance),
     object_marking_refs: (instance[INPUT_MARKINGS] ?? []).map((m) => m.standard_id),
   };
@@ -601,7 +601,7 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     name: instance.name,
     description: instance.description,
     report_types: instance.report_types,
-    published: instance.published,
+    published: convertToStixDate(instance.published),
     object_refs: convertObjectReferences(instance),
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
@@ -638,8 +638,8 @@ const convertObservedDataToStix = (instance: StoreEntity, type: string): SDO.Sti
   const observedData = buildStixDomain(instance);
   return {
     ...observedData,
-    first_observed: instance.first_observed,
-    last_observed: instance.last_observed,
+    first_observed: convertToStixDate(instance.first_observed),
+    last_observed: convertToStixDate(instance.last_observed),
     number_observed: instance.number_observed,
     object_refs: convertObjectReferences(instance),
     extensions: {

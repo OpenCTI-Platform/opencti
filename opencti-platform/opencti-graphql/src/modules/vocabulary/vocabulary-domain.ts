@@ -55,15 +55,17 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
-  const created = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates vocabulary \`${created.name}\` in \`${created.category}\``,
-    context_data: { entity_type: ENTITY_TYPE_VOCABULARY, operation: 'create', input: vocabulary }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user);
+  const { element, isCreation } = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates vocabulary \`${element.name}\` in \`${element.category}\``,
+      context_data: { entity_type: ENTITY_TYPE_VOCABULARY, operation: 'create', input: vocabulary }
+    });
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
 
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {

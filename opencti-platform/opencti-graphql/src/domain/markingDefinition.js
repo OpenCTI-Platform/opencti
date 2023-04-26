@@ -22,7 +22,7 @@ export const findAll = (context, user, args) => {
 export const addMarkingDefinition = async (context, user, markingDefinition) => {
   const markingColor = markingDefinition.x_opencti_color ? markingDefinition.x_opencti_color : '#ffffff';
   const markingToCreate = R.assoc('x_opencti_color', markingColor, markingDefinition);
-  const created = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION);
+  const { element, isCreation } = await createEntity(context, user, markingToCreate, ENTITY_TYPE_MARKING_DEFINITION, { complete: true });
   const filters = [{ key: 'auto_new_marking', values: [true] }];
   // Bypass current right to read group
   const groups = await listEntities(context, SYSTEM_USER, [ENTITY_TYPE_GROUP], { filters, connectionFormat: false });
@@ -31,19 +31,21 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
       groups.map((group) => {
         return groupAddRelation(context, SYSTEM_USER, group.id, {
           relationship_type: RELATION_ACCESSES_TO,
-          toId: created.id,
+          toId: element.id,
         });
       })
     );
   }
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates marking \`${created.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_MARKING_DEFINITION, operation: 'create', input: markingToCreate }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates marking \`${element.definition}\``,
+      context_data: { entity_type: ENTITY_TYPE_MARKING_DEFINITION, operation: 'create', input: markingToCreate }
+    });
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, element, user);
 };
 
 export const markingDefinitionDelete = async (context, user, markingDefinitionId) => {

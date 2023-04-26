@@ -213,15 +213,17 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
 export const registerSync = async (context, user, syncData) => {
   const data = { ...syncData, running: false };
   await testSync(context, user, data);
-  const created = await createEntity(context, user, data, ENTITY_TYPE_SYNC);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates synchronizer \`${syncData.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_SYNC, operation: 'create', input: data }
-  });
-  return created;
+  const { element, isCreation } = await createEntity(context, user, data, ENTITY_TYPE_SYNC, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates synchronizer \`${syncData.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_SYNC, operation: 'create', input: data }
+    });
+  }
+  return element;
 };
 export const syncEditField = async (context, user, syncId, input) => {
   const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);

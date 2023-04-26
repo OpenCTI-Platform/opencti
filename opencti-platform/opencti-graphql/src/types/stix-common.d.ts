@@ -40,8 +40,8 @@ interface StixOpenctiExtension {
   linked_to_refs: Array<StixId>;
   stix_ids: Array<StixId>;
   type: string;
-  created_at: Date;
-  updated_at: Date;
+  created_at: StixDate;
+  updated_at: StixDate;
   is_inferred: boolean;
   workflow_id: string | undefined;
   assignee_ids: string[];
@@ -66,8 +66,8 @@ interface StixObject {
 // SDO
 interface StixDomainObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
-  created: Date;
-  modified: Date;
+  created: StixDate;
+  modified: StixDate;
   revoked: boolean; // optional
   labels: Array<string>; // optional
   confidence: number; // optional
@@ -79,8 +79,8 @@ interface StixDomainObject extends StixObject {
 // SRO
 interface StixRelationshipObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
-  created: Date;
-  modified: Date;
+  created: StixDate;
+  modified: StixDate;
   revoked: boolean; // optional
   labels: Array<string>; // optional
   confidence: number; // optional
@@ -121,8 +121,8 @@ interface StixContainerExtension extends StixOpenctiExtension {
 // Markings
 interface StixMarkingsObject extends StixObject {
   created_by_ref: StixId | undefined; // optional
-  created: Date;
-  modified: Date;
+  created: StixDate;
+  modified: StixDate;
   external_references?: Array<StixInternalExternalReference>; // optional
   object_marking_refs: Array<StixId>; // optional
 }

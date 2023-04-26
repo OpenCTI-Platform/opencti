@@ -18,15 +18,17 @@ export const findAll = (context, user, args) => {
 export const addKillChainPhase = async (context, user, killChainPhase) => {
   const phaseOrder = killChainPhase.x_opencti_order ? killChainPhase.x_opencti_order : 0;
   const killChainPhaseToCreate = assoc('x_opencti_order', phaseOrder, killChainPhase);
-  const created = await createEntity(context, user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates kill-chain \`${created.kill_chain_name}\``,
-    context_data: { entity_type: ENTITY_TYPE_KILL_CHAIN_PHASE, operation: 'create', input: killChainPhaseToCreate }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, created, user);
+  const { element, isCreation } = await createEntity(context, user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates kill-chain \`${element.kill_chain_name}\``,
+      context_data: { entity_type: ENTITY_TYPE_KILL_CHAIN_PHASE, operation: 'create', input: killChainPhaseToCreate }
+    });
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, element, user);
 };
 
 export const killChainPhaseDelete = async (context, user, killChainPhaseId) => {

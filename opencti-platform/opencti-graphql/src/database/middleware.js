@@ -2789,6 +2789,9 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       }
       // TODO Handling merging relation when updating to prevent multiple relations finding
       existingRelationship = R.head(filteredRelations);
+      // We can use the resolved input from/to to complete the element
+      existingRelationship.from = from;
+      existingRelationship.to = to;
     }
     // endregion
     let dataRel;
@@ -3173,6 +3176,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
 };
 
 export const createEntity = async (context, user, input, type, opts = {}) => {
+  const isCompleteResult = opts.complete === true;
   // volumes of objects relationships must be controlled
   if (input.objects && input.objects.length > MAX_BATCH_SIZE) {
     const objectSequences = R.splitEvery(MAX_BATCH_SIZE, input.objects);
@@ -3186,14 +3190,14 @@ export const createEntity = async (context, user, input, type, opts = {}) => {
       const upsertInput = R.assoc(INPUT_OBJECTS, objectSequence, input);
       await createEntityRaw(context, user, upsertInput, type, opts);
     }
-    return created.element;
+    return isCompleteResult ? created : created.element;
   }
   const data = await createEntityRaw(context, user, input, type, opts);
   // In case of creation, start an enrichment
   if (data.isCreation) {
     await createEntityAutoEnrichment(context, user, data.element.id, type);
   }
-  return data.element;
+  return isCompleteResult ? data : data.element;
 };
 export const createInferredEntity = async (context, input, ruleContent, type) => {
   const opts = {

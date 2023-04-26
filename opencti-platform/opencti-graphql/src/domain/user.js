@@ -443,27 +443,29 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('external', newUser.external ? newUser.external : false),
     R.dissoc('roles')
   )(newUser);
-  const userCreated = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER);
+  const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
   // Link to organizations
   const userOrganizations = newUser.objectOrganization ?? [];
-  await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, userCreated.id, organization), userOrganizations));
+  await Promise.all(R.map((organization) => assignOrganizationToUser(context, user, element.id, organization), userOrganizations));
   // Assign default groups to user
   const defaultGroups = await findGroups(context, user, { filters: [{ key: 'default_assignation', values: [true] }] });
   const relationGroups = defaultGroups.edges.map((e) => ({
-    fromId: userCreated.id,
+    fromId: element.id,
     toId: e.node.internal_id,
     relationship_type: RELATION_MEMBER_OF,
   }));
   await Promise.all(relationGroups.map((relation) => createRelation(context, user, relation)));
   // Audit log
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates user \`${userEmail}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'create', input: newUser }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates user \`${userEmail}\``,
+      context_data: { entity_type: ENTITY_TYPE_USER, operation: 'create', input: newUser }
+    });
+  }
+  return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
 };
 
 export const roleEditField = async (context, user, roleId, input) => {

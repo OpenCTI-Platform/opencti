@@ -39,15 +39,17 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);
-  const created = await createEntity(context, user, input, ENTITY_TYPE_FEED);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates csv feed \`${created.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'create', input }
-  });
-  return created;
+  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_FEED, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates csv feed \`${element.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'create', input }
+    });
+  }
+  return element;
 };
 export const findById: DomainFindById<StoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
   return storeLoadById<StoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);

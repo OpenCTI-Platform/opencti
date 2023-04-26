@@ -15,20 +15,22 @@ export const addRole = async (context, user, role) => {
     assoc('description', role.description ? role.description : ''),
     dissoc('capabilities'),
   )(role);
-  const roleEntity = await createEntity(context, user, roleToCreate, ENTITY_TYPE_ROLE);
+  const { element, isCreation } = await createEntity(context, user, roleToCreate, ENTITY_TYPE_ROLE, { complete: true });
   const relationPromises = capabilities.map(async (capabilityName) => {
     const generateToId = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: capabilityName });
-    return createRelation(context, user, { fromId: roleEntity.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
+    return createRelation(context, user, { fromId: element.id, toId: generateToId, relationship_type: RELATION_HAS_CAPABILITY });
   });
   await Promise.all(relationPromises);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates role \`${role.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'create', input: role }
-  });
-  return roleEntity;
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates role \`${role.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'create', input: role }
+    });
+  }
+  return element;
 };
 
 export const addGroup = async (context, user, group) => {
@@ -37,13 +39,15 @@ export const addGroup = async (context, user, group) => {
     default_assignation: group.default_assignation ?? false,
     auto_new_marking: group.auto_new_marking ?? false
   };
-  const groupEntity = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'create', input: group }
-  });
-  return groupEntity;
+  const { element, isCreation } = await createEntity(context, user, groupWithDefaultValues, ENTITY_TYPE_GROUP, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates group \`${group.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'create', input: group }
+    });
+  }
+  return element;
 };

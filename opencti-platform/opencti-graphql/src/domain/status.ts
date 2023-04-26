@@ -52,15 +52,17 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
   return findAll(context, user, args);
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {
-  const data = await createEntity(context, user, input, ENTITY_TYPE_STATUS_TEMPLATE);
-  await publishUserAction({
-    user,
-    event_type: 'admin',
-    status: 'success',
-    message: `creates status template \`${data.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, operation: 'create', input }
-  });
-  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
+  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_STATUS_TEMPLATE, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates status template \`${element.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, operation: 'create', input }
+    });
+  }
+  return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, element, user);
 };
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
