@@ -7,6 +7,7 @@ import Typography from '@mui/material/Typography';
 import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
+import * as PropTypes from 'prop-types';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
@@ -323,6 +324,15 @@ const StixCoreObjectsDonut = ({
       )}
     </div>
   );
+};
+
+StixCoreObjectsDonut.propTypes = {
+  variant: PropTypes.string,
+  height: PropTypes.number,
+  startDate: PropTypes.string,
+  endDate: PropTypes.string,
+  dataSelection: PropTypes.array,
+  parameters: PropTypes.object,
 };
 
 export default StixCoreObjectsDonut;
