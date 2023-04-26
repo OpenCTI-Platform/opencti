@@ -10,7 +10,7 @@ import { graphql, useFragment } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { Close, KeyboardArrowRightOutlined } from '@mui/icons-material';
+import { Close } from '@mui/icons-material';
 import Skeleton from '@mui/material/Skeleton';
 import makeStyles from '@mui/styles/makeStyles';
 import { DataColumns } from '../../../../../components/list_lines';
@@ -160,9 +160,6 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
               <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
                 {fldt(data.timestamp)}
               </div>
-              <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
-                {data.user?.name}
-              </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
                 <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
               </div>
@@ -196,14 +193,6 @@ export const AuditLineDummy = ({
                 height="100%"
               />
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.creator.width }}>
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
             <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
               <Skeleton
                 animation="wave"
@@ -215,9 +204,6 @@ export const AuditLineDummy = ({
           </div>
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
-      </ListItemIcon>
     </ListItem>
   );
 };

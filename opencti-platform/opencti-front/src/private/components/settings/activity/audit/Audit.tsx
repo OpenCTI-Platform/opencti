@@ -66,14 +66,9 @@ const Audit = () => {
       width: '25%',
       isSortable: true,
     },
-    creator: {
-      label: 'User',
-      width: '15%',
-      isSortable: false,
-    },
     message: {
       label: 'Message',
-      width: '60%',
+      width: '75%',
       isSortable: false,
     },
   };
