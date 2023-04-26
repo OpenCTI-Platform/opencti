@@ -268,8 +268,8 @@ class StixCoreRelationshipCreation extends Component {
             'stop_time',
             values.stop_time ? parse(values.stop_time).format() : null,
           ),
-          R.assoc('createdBy', values.createdBy?.value),
           R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+          R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
           R.assoc(
             'externalReferences',

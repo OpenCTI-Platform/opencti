@@ -56,8 +56,8 @@ export const defaultScale = JSON.stringify({
 // Available settings works by override.
 export const availableSettings: Record<string, Array<string>> = {
   [ABSTRACT_STIX_DOMAIN_OBJECT]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type', 'enforce_reference'],
-  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['enforce_reference'],
-  [STIX_SIGHTING_RELATIONSHIP]: ['enforce_reference'],
+  [ABSTRACT_STIX_CORE_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference'],
+  [STIX_SIGHTING_RELATIONSHIP]: ['attributes_configuration', 'enforce_reference'],
   // enforce_reference not available on specific entities
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],

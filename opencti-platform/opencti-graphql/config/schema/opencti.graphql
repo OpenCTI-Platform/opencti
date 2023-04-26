@@ -11057,25 +11057,28 @@ type StixCoreRelationship implements BasicRelationship & StixRelationship {
   workflowEnabled: Boolean
 }
 input StixCoreRelationshipAddInput {
+  # StixRelationship
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   fromId: StixRef!
   toId: StixRef!
+  created: DateTime
+  modified: DateTime
+  confidence: Int
   relationship_type: String!
+  createdBy: String
+  objectMarking: [String]
+  # StixCoreRelationship
   description: String
   start_time: DateTime
   stop_time: DateTime
-  confidence: Int
   revoked: Boolean
   lang: String
-  createdBy: String
-  objectMarking: [String]
-  objectOrganization: [String]
   objectLabel: [String]
+  objectOrganization: [String]
   externalReferences: [String]
   killChainPhases: [String]
-  created: DateTime
-  modified: DateTime
+
   clientMutationId: String
   update: Boolean
 }
@@ -11175,23 +11178,26 @@ type StixSightingRelationship implements BasicRelationship & StixRelationship {
   workflowEnabled: Boolean
 }
 input StixSightingRelationshipAddInput {
+  # StixRelationship
   stix_id: StixId
   x_opencti_stix_ids: [StixId]
   fromId: StixRef!
   toId: StixRef!
+  created: DateTime
+  modified: DateTime
+  confidence: Int
+  createdBy: String
+  objectMarking: [String]
+  # StixSightingRelationship
   description: String
   first_seen: DateTime
   last_seen: DateTime
   attribute_count: Int!
   x_opencti_negative: Boolean
-  confidence: Int
-  createdBy: String
-  objectMarking: [String]
   objectLabel: [String]
   objectOrganization: [String]
   externalReferences: [String]
-  created: DateTime
-  modified: DateTime
+
   clientMutationId: String
   update: Boolean
 }

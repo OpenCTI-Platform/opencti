@@ -7,6 +7,10 @@ import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
 import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Dialog from '@mui/material/Dialog';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
@@ -15,6 +19,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Button from '@mui/material/Button';
 import { itemColor } from '../../../../utils/Colors';
 import { resolveLink } from '../../../../utils/Entity';
 import { truncate } from '../../../../utils/String';
@@ -40,8 +45,8 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOrStixRelationshipLastContainers
   from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixSightingRelationshipLabelsView
-  from './StixSightingRelationshipLabelsView';
+import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
+import Transition from '../../../../components/Transition';
 
 const styles = (theme) => ({
   container: {
@@ -159,7 +164,7 @@ const styles = (theme) => ({
 class StixSightingRelationshipContainer extends Component {
   constructor(props) {
     super(props);
-    this.state = { openEdit: false };
+    this.state = { openEdit: false, openDelete: false };
   }
 
   handleOpenEdition() {
@@ -178,7 +183,16 @@ class StixSightingRelationshipContainer extends Component {
     this.setState({ openEdit: false });
   }
 
-  handleDelete() {
+  handleOpenDelete() {
+    this.setState({ displayDelete: true });
+  }
+
+  handleCloseDelete() {
+    this.setState({ displayDelete: false });
+  }
+
+  submitDelete() {
+    this.setState({ deleting: true });
     const { location, stixSightingRelationship } = this.props;
     commitMutation({
       mutation: stixSightingRelationshipEditionDeleteMutation,
@@ -582,9 +596,37 @@ class StixSightingRelationshipContainer extends Component {
             stixSightingRelationshipId={stixSightingRelationship.id}
             inferred={stixSightingRelationship.x_opencti_inferences !== null}
             handleClose={this.handleCloseEdition.bind(this)}
-            handleDelete={this.handleDelete.bind(this)}
+            handleDelete={this.handleOpenDelete.bind(this)}
           />
         </Security>
+        <Dialog
+          open={this.state.displayDelete}
+          PaperProps={{ elevation: 1 }}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDelete.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete this sighting?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitDelete.bind(this)}
+              disabled={this.state.deleting}
+            >
+              {t('Delete')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </div>
     );
   }

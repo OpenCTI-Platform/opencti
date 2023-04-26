@@ -21,7 +21,10 @@ import { adaptFieldValue } from '../../../../utils/String';
 import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
 import StatusField from '../form/StatusField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import {
+  useIsEnforceReference,
+  useSchemaEditionValidation,
+} from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
 import {
@@ -197,20 +200,6 @@ export const stixCoreRelationshipEditionOverviewQuery = graphql`
   }
 `;
 
-const stixCoreRelationshipValidation = (t: (v: string) => string) => Yup.object().shape({
-  confidence: Yup.number().nullable(),
-  start_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .nullable(),
-  stop_time: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .min(Yup.ref('stop_time'), "The end date can't be before start date")
-    .nullable(),
-  description: Yup.string().nullable(),
-  references: Yup.array(),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 interface StixCoreRelationshipEditionOverviewProps {
   handleClose: () => void;
   handleDelete: () => void;
@@ -246,13 +235,28 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
 
   const { editContext } = stixCoreRelationship;
 
+  const basicShape = {
+    confidence: Yup.number().nullable(),
+    start_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    stop_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .min(Yup.ref('stop_time'), "The end date can't be before start date")
+      .nullable(),
+    description: Yup.string().nullable(),
+    references: Yup.array(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const stixCoreRelationshipValidator = useSchemaEditionValidation('stix-core-relationship', basicShape);
+
   const queries = {
     fieldPatch: stixCoreRelationshipMutationFieldPatch,
     relationAdd: stixCoreRelationshipMutationRelationAdd,
     relationDelete: stixCoreRelationshipMutationRelationDelete,
     editionFocus: stixCoreRelationshipEditionFocus,
   };
-  const editor = useFormEditor(stixCoreRelationship, enableReferences, queries, stixCoreRelationshipValidation(t));
+  const editor = useFormEditor(stixCoreRelationship, enableReferences, queries, stixCoreRelationshipValidator);
 
   const onSubmit: FormikConfig<StixCoreRelationshipAddInput>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -315,7 +319,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={stixCoreRelationshipValidation(t)}
+          validationSchema={stixCoreRelationshipValidator}
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (
