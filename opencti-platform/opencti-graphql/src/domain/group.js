@@ -61,7 +61,7 @@ export const groupDelete = async (context, user, groupId) => {
     event_type: 'admin',
     status: 'success',
     message: `deletes group \`${group.name}\``,
-    context_data: { type: 'group', operation: 'delete', input: { id: groupId } }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'delete', input: group }
   });
   return groupId;
 };
@@ -73,7 +73,7 @@ export const groupEditField = async (context, user, groupId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
-    context_data: { type: 'group', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'update', input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
@@ -99,7 +99,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `adds ${created.entity_type} \`${extractEntityRepresentative(created)}\` for group \`${group.name}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
@@ -126,7 +126,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     event_type: 'admin',
     status: 'success',
     message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
-    context_data: { type: 'role', operation: 'delete', input: { groupId, fromId, toId, relationshipType } }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: { groupId, fromId, toId, relationshipType } }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);

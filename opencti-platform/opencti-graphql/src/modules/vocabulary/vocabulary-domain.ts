@@ -11,6 +11,7 @@ import { READ_ENTITIES_INDICES } from '../../database/utils';
 import { getVocabulariesCategories, updateElasticVocabularyValue } from './vocabulary-utils';
 import type { DomainFindById } from '../../domain/domainTypes';
 import { UnsupportedError } from '../../config/errors';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 export const findById: DomainFindById<BasicStoreEntityVocabulary> = (context: AuthContext, user: AuthUser, id: string) => {
   return storeLoadById(context, user, id, ENTITY_TYPE_VOCABULARY);
@@ -55,6 +56,13 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
   const created = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates vocabulary \`${created.name}\` in \`${created.category}\``,
+    context_data: { entity_type: ENTITY_TYPE_VOCABULARY, operation: 'create', input: vocabulary }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user);
 };
 
@@ -64,6 +72,13 @@ export const deleteVocabulary = async (context: AuthContext, user: AuthUser, voc
   const completeCategory = getVocabulariesCategories().find(({ key }) => key === vocabulary.category);
   const deletable = !vocabulary.builtIn && (!completeCategory || (!completeCategory.fields.some(({ required }) => required) || usages.length === 0));
   if (deletable) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `deletes vocabulary \`${vocabulary.name}\` in \`${vocabulary.category}\``,
+      context_data: { entity_type: ENTITY_TYPE_VOCABULARY, operation: 'delete', input: { id: vocabularyId } }
+    });
     if (completeCategory) {
       await elRawUpdateByQuery({
         index: READ_ENTITIES_INDICES,
@@ -124,11 +139,15 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }
     }
-    const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
-    await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
-    return element;
   }
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for vocabulary \`${element.name}\` in \`${element.category}\``,
+    context_data: { entity_type: ENTITY_TYPE_VOCABULARY, operation: 'update', input }
+  });
   await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
   return element;
 };

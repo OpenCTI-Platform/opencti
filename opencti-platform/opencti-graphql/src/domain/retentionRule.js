@@ -8,8 +8,7 @@ import { UnsupportedError } from '../config/errors';
 import { utcDate } from '../utils/format';
 import { RETENTION_MANAGER_USER } from '../utils/access';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
-
-// 'id', 'standard_id', 'name', 'filters', 'last_execution_date', 'last_deleted_count', 'remaining_count'
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const checkRetentionRule = async (context, input) => {
   const { filters, max_retention: maxDays } = input;
@@ -42,16 +41,37 @@ export const createRetentionRule = async (context, user, input) => {
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates retention rule \`${retentionRule.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'create', input }
+  });
   return retentionRule;
 };
 
 export const retentionRuleEditField = async (context, user, retentionRuleId, input) => {
   const { element } = await updateAttribute(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for retention rule \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'update', input }
+  });
   return element;
 };
 
 export const deleteRetentionRule = async (context, user, retentionRuleId) => {
-  await deleteElementById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
+  const deleted = await deleteElementById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes retention rule \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'delete', input: deleted }
+  });
   return retentionRuleId;
 };
 

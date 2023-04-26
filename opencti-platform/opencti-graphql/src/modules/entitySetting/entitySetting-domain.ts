@@ -28,17 +28,15 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntityS
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
-  return updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input)
-    .then(async ({ element }) => {
-      await publishUserAction({
-        user,
-        event_type: 'admin',
-        status: 'success',
-        message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
-        context_data: { type: 'setting', operation: 'update', input }
-      });
-      return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
-    });
+  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
+    context_data: { entity_type: element.target_type, operation: 'update', input }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

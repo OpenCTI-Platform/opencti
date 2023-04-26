@@ -7,6 +7,7 @@ import { SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
 import { checkActionValidity, createDefaultTask, isTaskEnabledEntity } from './task-common';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -120,12 +121,33 @@ export const createQueryTask = async (context, user, input) => {
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
   const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: 'creates `background task`',
+    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'create', input: queryTask }
+  });
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
 };
 
+export const deleteRuleTasks = async (context, user, ruleId) => {
+  const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
+  const args = { filters: tasksFilters, connectionFormat: false };
+  const tasks = await listEntities(context, user, [ENTITY_TYPE_TASK], args);
+  await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_TASK)));
+};
+
 export const deleteTask = async (context, user, taskId) => {
-  await deleteElementById(context, user, taskId, ENTITY_TYPE_TASK);
+  const deleted = await deleteElementById(context, user, taskId, ENTITY_TYPE_TASK);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: 'deletes `background task`',
+    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'delete', input: deleted }
+  });
   return taskId;
 };
 

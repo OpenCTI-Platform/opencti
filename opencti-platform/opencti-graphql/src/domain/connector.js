@@ -20,6 +20,7 @@ import { delEditContext, notify, redisGetWork, setEditContext } from '../databas
 import { BUS_TOPICS, getPlatformHttpProxyAgent, logApp } from '../config/conf';
 import { deleteWorkForConnector } from './work';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { publishUserAction } from '../listener/UserActionListener';
 
 // region connectors
 export const loadConnectorById = (context, user, id) => {
@@ -64,7 +65,14 @@ export const pingConnector = async (context, user, id, state) => {
 };
 export const resetStateConnector = async (context, user, id) => {
   const patch = { connector_state: '', connector_state_reset: true };
-  await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+  const { element } = await patchAttribute(context, user, id, ENTITY_TYPE_CONNECTOR, patch);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `resets \`state\` for connector \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, operation: 'update', input: { id } }
+  });
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
 };
 export const registerConnector = async (context, user, connectorData) => {
@@ -108,6 +116,13 @@ export const connectorDelete = async (context, user, connectorId) => {
   await deleteWorkForConnector(context, user, connectorId);
   await unregisterConnector(connectorId);
   const { element } = await internalDeleteElementById(context, user, connectorId);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes connector \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, operation: 'delete', input: element }
+  });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user);
   return element.internal_id;
@@ -198,14 +213,36 @@ export const fetchRemoteStreams = async (context, user, { uri, token, ssl_verify
 export const registerSync = async (context, user, syncData) => {
   const data = { ...syncData, running: false };
   await testSync(context, user, data);
-  return createEntity(context, user, data, ENTITY_TYPE_SYNC);
+  const created = await createEntity(context, user, data, ENTITY_TYPE_SYNC);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates synchronizer \`${syncData.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_SYNC, operation: 'create', input: data }
+  });
+  return created;
 };
 export const syncEditField = async (context, user, syncId, input) => {
   const { element } = await updateAttribute(context, user, syncId, ENTITY_TYPE_SYNC, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for synchronizer \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_SYNC, operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_SYNC].EDIT_TOPIC, element, user);
 };
 export const syncDelete = async (context, user, syncId) => {
-  await deleteElementById(context, user, syncId, ENTITY_TYPE_SYNC);
+  const deleted = await deleteElementById(context, user, syncId, ENTITY_TYPE_SYNC);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes synchronizer \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_SYNC, operation: 'delete', input: deleted }
+  });
   return syncId;
 };
 export const syncCleanContext = async (context, user, syncId) => {

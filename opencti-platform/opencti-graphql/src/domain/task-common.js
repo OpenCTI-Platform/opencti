@@ -11,6 +11,7 @@ import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const TASK_TYPE_LIST = 'LIST';
@@ -54,6 +55,13 @@ export const createListTask = async (user, input) => {
   checkActionValidity(user, actions);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
   const listTask = { ...task, actions, task_ids: ids };
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: 'creates `background task`',
+    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'create', input: listTask }
+  });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;
 };

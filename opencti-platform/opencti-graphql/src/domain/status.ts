@@ -23,6 +23,7 @@ import type { BasicStoreEntity, BasicWorkflowStatus } from '../types/store';
 import { getEntitiesFromCache } from '../database/cache';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { elCount } from '../database/engine';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const findTemplateById = (context: AuthContext, user: AuthUser, statusTemplateId: string): StatusTemplate => {
   return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE) as unknown as StatusTemplate;
@@ -52,23 +53,58 @@ export const getTypeStatuses = async (context: AuthContext, user: AuthUser, type
 };
 export const createStatusTemplate = async (context: AuthContext, user: AuthUser, input: StatusTemplateAddInput) => {
   const data = await createEntity(context, user, input, ENTITY_TYPE_STATUS_TEMPLATE);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates status template \`${data.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, operation: 'create', input }
+  });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
 export const createStatus = async (context: AuthContext, user: AuthUser, subTypeId: string, input: StatusAddInput) => {
   const data = await createEntity(context, user, { type: subTypeId, ...input }, ENTITY_TYPE_STATUS);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
+    context_data: { entity_type: subTypeId, operation: 'update', input: { type: subTypeId, ...input } }
+  });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, data, user);
 };
 export const statusEditField = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string, input: EditInput) => {
   const { element } = await updateAttribute(context, user, statusId, ENTITY_TYPE_STATUS, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
+    context_data: { entity_type: subTypeId, operation: 'update', input: { type: subTypeId, ...input } }
+  });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
   return findSubTypeById(subTypeId);
 };
 export const statusTemplateEditField = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditInput[]) => {
   const { element } = await updateAttribute(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for status template \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, element, user);
 };
 export const statusDelete = async (context: AuthContext, user: AuthUser, subTypeId: string, statusId: string) => {
   const { element: deleted } = await internalDeleteElementById(context, user, statusId);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`workflow\` for entity setting \`${subTypeId}\``,
+    context_data: { entity_type: subTypeId, operation: 'update', input: { id: subTypeId } }
+  });
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, deleted, user);
   return findSubTypeById(subTypeId);
 };
@@ -77,25 +113,33 @@ export const statusTemplateDelete = async (context: AuthContext, user: AuthUser,
   const result = await listAllEntities(context, user, [ENTITY_TYPE_STATUS], { filters, connectionFormat: false });
   await Promise.all(result.map((status) => internalDeleteElementById(context, user, status.id)
     .then(({ element }) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].DELETE_TOPIC, element, user))));
-  await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+  const deleted = await deleteElementById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes status template \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_STATUS_TEMPLATE, operation: 'delete', input: deleted }
+  });
   return statusTemplateId;
 };
 export const statusTemplateEditContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string, input: EditContext) => {
   await setEditContext(user, statusTemplateId, input);
   // eslint-disable-next-line max-len
-  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
+  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
+    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
+  });
 };
 export const statusTemplateCleanContext = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   await delEditContext(user, statusTemplateId);
   // eslint-disable-next-line max-len
-  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user));
+  return storeLoadById(context, user, statusTemplateId, ENTITY_TYPE_STATUS_TEMPLATE).then((statusTemplate) => {
+    return notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].EDIT_TOPIC, statusTemplate, user);
+  });
 };
 export const statusTemplateUsagesNumber = async (context: AuthContext, user: AuthUser, statusTemplateId: string) => {
   const filters = [{ key: ['template_id'], values: [statusTemplateId] }];
-  const options = {
-    filters,
-    types: [ENTITY_TYPE_STATUS],
-  };
+  const options = { filters, types: [ENTITY_TYPE_STATUS] };
   const result = elCount(context, user, READ_INDEX_INTERNAL_OBJECTS, options);
   const count = await Promise.all([result]);
   return count[0];

@@ -45,7 +45,7 @@ export interface UserAdminAction extends BasicUserAction {
   event_type: 'admin'
   message: string
   context_data: {
-    type: 'group' | 'role' | 'user' | 'marking' | 'setting' | 'label'
+    entity_type: string
     operation: 'create' | 'update' | 'delete'
     input: unknown
   }

@@ -8,13 +8,14 @@ import {
   READ_STIX_INDICES
 } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
+import { ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
 import { convertFiltersToQueryOptions } from '../utils/filtering';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const STIX_MEDIA_TYPE = 'application/stix+json;version=2.1';
 
@@ -29,6 +30,13 @@ export const createTaxiiCollection = async (context, user, input) => {
     ...input,
   };
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `creates Taxii collection \`${input.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TAXII_COLLECTION, operation: 'create', input }
+  });
   return data;
 };
 export const findById = async (context, user, collectionId) => {
@@ -39,10 +47,24 @@ export const findAll = (context, user, args) => {
 };
 export const taxiiCollectionEditField = async (context, user, collectionId, input) => {
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for Taxii collection \`${element.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'update', input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };
 export const taxiiCollectionDelete = async (context, user, collectionId) => {
-  await deleteElementById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  const deleted = await deleteElementById(context, user, collectionId, ENTITY_TYPE_TAXII_COLLECTION);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes Taxii collection \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TAXII_COLLECTION, operation: 'delete', input: deleted }
+  });
   return collectionId;
 };
 export const taxiiCollectionCleanContext = async (context, user, collectionId) => {

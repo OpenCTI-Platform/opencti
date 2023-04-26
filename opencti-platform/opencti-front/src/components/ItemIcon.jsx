@@ -13,7 +13,10 @@ import {
   DescriptionOutlined,
   CenterFocusStrongOutlined,
   ShortTextOutlined,
+  LayersClearOutlined,
+  AssignmentOutlined,
   LoginOutlined,
+  ExtensionOutlined,
   LogoutOutlined,
   ManageAccountsOutlined,
   WorkOutline,
@@ -47,6 +50,8 @@ import {
   LockPattern,
   Fire,
   CityVariantOutline,
+  FileDelimitedOutline,
+  DatabaseExportOutline,
   LabelOutline,
   ProgressWrench,
   HexagonOutline,
@@ -89,6 +94,18 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <LogoutOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Vocabulary':
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'RetentionRule':
+      return <LayersClearOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'StreamCollection':
+      return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'TaxiiCollection':
+      return <DatabaseExportOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Feed':
+      return <FileDelimitedOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Task':
+      return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Connector':
+      return <ExtensionOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Group':
     case 'Marking-Definition':
       return <CenterFocusStrongOutlined style={style} fontSize={fontSize} role="img"/>;

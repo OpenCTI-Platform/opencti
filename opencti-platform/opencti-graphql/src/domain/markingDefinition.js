@@ -41,7 +41,7 @@ export const addMarkingDefinition = async (context, user, markingDefinition) => 
     event_type: 'admin',
     status: 'success',
     message: `creates marking \`${created.name}\``,
-    context_data: { type: 'marking', operation: 'create', input: markingToCreate }
+    context_data: { entity_type: ENTITY_TYPE_MARKING_DEFINITION, operation: 'create', input: markingToCreate }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].ADDED_TOPIC, created, user);
 };
@@ -53,7 +53,7 @@ export const markingDefinitionDelete = async (context, user, markingDefinitionId
     event_type: 'admin',
     status: 'success',
     message: `deletes marking \`${deleted.name}\``,
-    context_data: { type: 'marking', operation: 'delete', input: { id: markingDefinitionId } }
+    context_data: { entity_type: ENTITY_TYPE_MARKING_DEFINITION, operation: 'delete', input: deleted }
   });
   return markingDefinitionId;
 };
@@ -65,7 +65,7 @@ export const markingDefinitionEditField = async (context, user, markingDefinitio
     event_type: 'admin',
     status: 'success',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for marking \`${element.name}\``,
-    context_data: { type: 'marking', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_MARKING_DEFINITION, operation: 'update', input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_MARKING_DEFINITION].EDIT_TOPIC, element, user);
 };

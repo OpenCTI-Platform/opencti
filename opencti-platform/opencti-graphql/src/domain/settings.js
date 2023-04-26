@@ -99,7 +99,7 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
-    context_data: { type: 'setting', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, operation: 'update', input }
   });
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

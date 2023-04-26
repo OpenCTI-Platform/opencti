@@ -49,7 +49,7 @@ export const addLabel = async (context, user, label) => {
     event_type: 'admin',
     status: 'success',
     message: `creates label \`${label.value}\``,
-    context_data: { type: 'label', operation: 'create', input: finalLabel }
+    context_data: { entity_type: ENTITY_TYPE_LABEL, operation: 'create', input: finalLabel }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
 };
@@ -61,7 +61,7 @@ export const labelDelete = async (context, user, labelId) => {
     event_type: 'admin',
     status: 'success',
     message: `deletes label \`${deleted.value}\``,
-    context_data: { type: 'label', operation: 'delete', input: { id: labelId } }
+    context_data: { entity_type: ENTITY_TYPE_LABEL, operation: 'delete', input: deleted }
   });
   return labelId;
 };
@@ -73,7 +73,7 @@ export const labelEditField = async (context, user, labelId, input, opts = {}) =
     event_type: 'admin',
     status: 'success',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for label \`${element.value}\``,
-    context_data: { type: 'label', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_LABEL, operation: 'update', input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].EDIT_TOPIC, element, user);
 };

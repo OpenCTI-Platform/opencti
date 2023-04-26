@@ -143,7 +143,7 @@ const userResolvers = {
         event_type: 'admin',
         status: 'success',
         message: `kills \`specific session\` for user \`${user.user_email}\``,
-        context_data: { type: 'user', operation: 'delete', input: { user_id: user.id, session_id: kill.sessionId } }
+        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: user.id, session_id: kill.sessionId } }
       });
       return id;
     },
@@ -157,7 +157,7 @@ const userResolvers = {
         event_type: 'admin',
         status: 'success',
         message: `kills \`all sessions\` for user \`${user.user_email}\``,
-        context_data: { type: 'user', operation: 'delete', input: { user_id: id } }
+        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: id } }
       });
       return sessionIds;
     },

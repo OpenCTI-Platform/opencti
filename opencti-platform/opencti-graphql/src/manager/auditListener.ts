@@ -9,7 +9,7 @@ import { EVENT_AUDIT_VERSION, storeAuditEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { executionContext, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
 
 // ------------------------------------------------------------------------ //
 //     OpenCTI Enterprise Edition License                                   //
@@ -92,11 +92,15 @@ const initAuditManager = () => {
   const auditHandler: ActionListener = {
     id: 'AUDIT_MANAGER',
     next: async (action: UserAction) => {
-      // Subscription is not part of  the listening
+      // Internal users must not be tracked
+      if (INTERNAL_USERS[action.user.id]) {
+        return;
+      }
+      // Subscription is not part of the listening
       if (action.user.origin.socket !== 'query') {
         return;
       }
-      // Security
+      // region Security
       if (action.event_type === 'login') {
         const { provider } = action.context_data;
         const message = `login from provider \`${provider}\``;
@@ -113,7 +117,8 @@ const initAuditManager = () => {
         const message = `tries an unauthorized access to \`${path}\``;
         await auditLogger(action, message);
       }
-      // USer tracking
+      // endregion
+      // region User tracking
       if (EXTENDED_USER_TRACKING) {
         if (action.event_type === 'read') {
           const instance = action.instance as BasicStoreObject;
@@ -143,6 +148,7 @@ const initAuditManager = () => {
           await auditLogger(action, message);
         }
       }
+      // endregion
     }
   };
   let handler: ActionHandler;

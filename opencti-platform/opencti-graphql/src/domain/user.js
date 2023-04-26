@@ -304,7 +304,7 @@ export const roleDelete = async (context, user, roleId) => {
     event_type: 'admin',
     status: 'success',
     message: `deletes role \`${deleted.name}\``,
-    context_data: { type: 'role', operation: 'delete', inputs: { id: roleId } }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: deleted }
   });
   return roleId;
 };
@@ -331,7 +331,7 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
     event_type: 'admin',
     status: 'success',
     message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${created.from.user_email}\``,
-    context_data: { type: 'user', operation: 'update', input: assignInput }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input: assignInput }
   });
   await userSessionRefresh(userId);
   return user;
@@ -461,7 +461,7 @@ export const addUser = async (context, user, newUser) => {
     event_type: 'admin',
     status: 'success',
     message: `creates user \`${userEmail}\``,
-    context_data: { type: 'user', operation: 'create', input: newUser }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'create', input: newUser }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, userCreated, user);
 };
@@ -473,7 +473,7 @@ export const roleEditField = async (context, user, roleId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
-    context_data: { type: 'role', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'update', input }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
@@ -494,7 +494,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentative(relationData.to)}\` for role \`${role.name}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
@@ -514,7 +514,7 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
     event_type: 'admin',
     status: 'success',
     message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentative(deleted.to)}\` for role \`${role.name}\``,
-    context_data: { type: 'role', operation: 'delete', input: { roleId, toId, relationshipType } }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: { roleId, toId, relationshipType } }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
@@ -537,7 +537,7 @@ export const userEditField = async (context, user, userId, inputs) => {
     event_type: 'admin',
     status: 'success',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for user \`${element.user_email}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
@@ -615,7 +615,7 @@ export const userDelete = async (context, user, userId) => {
     event_type: 'admin',
     status: 'success',
     message: `deletes user \`${deleted.user_email}\``,
-    context_data: { type: 'user', operation: 'delete', inputs: { id: userId } }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: deleted }
   });
   await killUserSessions(userId);
   return userId;
@@ -636,7 +636,7 @@ export const userAddRelation = async (context, user, userId, input) => {
     event_type: 'admin',
     status: 'success',
     message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${userData.user_email}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
@@ -653,7 +653,7 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
     event_type: 'admin',
     status: 'success',
     message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
@@ -682,7 +682,7 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
     event_type: 'admin',
     status: 'success',
     message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
-    context_data: { type: 'user', operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
   });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
