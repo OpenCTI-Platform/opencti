@@ -3,8 +3,8 @@ import { ActionHandler, ActionListener, registerUserActionListener, UserAction, 
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import conf, { booleanConf, logAudit } from '../config/conf';
-import { extractEntityRepresentative, isEmptyField } from '../database/utils';
-import type { BasicStoreObject, BasicStoreSettings } from '../types/store';
+import { isEmptyField } from '../database/utils';
+import type { BasicStoreSettings } from '../types/store';
 import { EVENT_AUDIT_VERSION, storeAuditEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
@@ -121,11 +121,10 @@ const initAuditManager = () => {
       // region User tracking
       if (EXTENDED_USER_TRACKING) {
         if (action.event_type === 'read') {
-          const instance = action.instance as BasicStoreObject;
-          const { entity_type } = instance;
-          const identifier = `${instance.internal_id}-${action.user.id}`;
+          const { id, entity_type, entity_name } = action.context_data;
+          const identifier = `${id}-${action.user.id}`;
           if (!auditReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
-            const message = `reads ${instance.entity_type} \`${extractEntityRepresentative(instance)}\``;
+            const message = `reads ${entity_type} \`${entity_name}\``;
             const published = await auditLogger(action, message);
             if (published) {
               auditReadCache.set(identifier, undefined);

@@ -22,6 +22,7 @@ import { getEntitiesMapFromCache } from '../database/cache';
 import type { AuthContext } from '../types/user';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { OrderingMode } from '../generated/graphql';
+import { extractStixRepresentative } from '../database/stix-converter';
 
 const HISTORY_ENGINE_KEY = conf.get('history_manager:lock_key');
 const SCHEDULE_TIME = 10000;
@@ -29,6 +30,7 @@ const SCHEDULE_TIME = 10000;
 interface HistoryContext {
   id: string;
   entity_type: string;
+  entity_name: string;
   message: string;
   from_id?: string | undefined;
   to_id?: string | undefined;
@@ -76,6 +78,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       id: stix.extensions[STIX_EXT_OCTI].id,
       message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
+      entity_name: extractStixRepresentative(stix),
     };
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;

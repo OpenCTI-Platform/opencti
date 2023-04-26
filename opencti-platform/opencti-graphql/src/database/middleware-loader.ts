@@ -4,9 +4,11 @@ import {
   offsetToCursor,
   READ_DATA_INDICES,
   READ_ENTITIES_INDICES,
-  READ_RELATIONSHIPS_INDICES
+  READ_RELATIONSHIPS_INDICES,
+  extractEntityRepresentative,
 } from './utils';
 import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
+import { elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
@@ -457,8 +459,12 @@ export const storeLoadById = async <T extends BasicStoreObject>(context: AuthCon
     await publishUserAction({ user,
       event_type: 'read',
       status: 'success',
-      instance: data,
-      context_data: { id, entity_type: data.entity_type } });
+      context_data: {
+        id,
+        entity_name: extractEntityRepresentative(data),
+        entity_type: data.entity_type
+      }
+    });
   }
   return data;
 };

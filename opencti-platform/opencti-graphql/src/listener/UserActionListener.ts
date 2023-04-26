@@ -9,9 +9,9 @@ interface BasicUserAction {
 }
 export interface UserReadAction extends BasicUserAction {
   event_type: 'read'
-  instance: unknown
   context_data: {
     id: string
+    entity_name: string
     entity_type: string
   }
 }

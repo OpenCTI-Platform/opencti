@@ -367,6 +367,7 @@ type LogEdge {
 }
 
 type ContextData {
+  entity_name: String
   entity_type: String
   from_id: String
   to_id: String
@@ -377,6 +378,7 @@ type ContextData {
 
 type Log {
   id: ID!
+  entity_type: String
   event_type: String!
   timestamp: DateTime!
   user_id: String!

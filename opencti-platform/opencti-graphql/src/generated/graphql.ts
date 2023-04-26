@@ -3853,6 +3853,7 @@ export enum ContainersOrdering {
 export type ContextData = {
   __typename?: 'ContextData';
   commit?: Maybe<Scalars['String']>;
+  entity_name?: Maybe<Scalars['String']>;
   entity_type?: Maybe<Scalars['String']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']>;
@@ -10740,6 +10741,7 @@ export type Log = {
   __typename?: 'Log';
   context_data?: Maybe<ContextData>;
   context_uri?: Maybe<Scalars['String']>;
+  entity_type?: Maybe<Scalars['String']>;
   event_type: Scalars['String'];
   id: Scalars['ID'];
   raw_data?: Maybe<Scalars['String']>;
@@ -28272,6 +28274,7 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
   commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -30243,6 +30246,7 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

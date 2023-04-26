@@ -18,6 +18,7 @@ import { AuditLine_node$key } from './__generated__/AuditLine_node.graphql';
 import { Theme } from '../../../../../components/Theme';
 import { useFormatter } from '../../../../../components/i18n';
 import ItemIcon from '../../../../../components/ItemIcon';
+import { isNotEmptyField } from '../../../../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -88,6 +89,7 @@ interface AuditLineProps {
 const AuditLineFragment = graphql`
   fragment AuditLine_node on Log {
     id
+    entity_type
     event_type
     timestamp
     context_uri
@@ -98,6 +100,7 @@ const AuditLineFragment = graphql`
     raw_data
     context_data {
       entity_type
+      entity_name
       message
     }
   }
@@ -112,6 +115,8 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const { fldt } = useFormatter();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
+  const isHistoryUpdate = data.entity_type === 'History' && data.event_type === 'update' && isNotEmptyField(data.context_data?.entity_name);
+  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${isHistoryUpdate ? (`for ${data.context_data?.entity_type}\`${data.context_data?.entity_name}\``) : ''}`;
   return (
     <>
       { selectedLog && <Drawer open={true} anchor="right" elevation={1}
@@ -129,9 +134,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
             <Typography variant="h4" gutterBottom={true}>
               {t('Message')}
             </Typography>
-            <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">
-              {`\`${data.user?.name}\` ${data.context_data?.message}`}
-            </Markdown>
+            <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
           </div>
           {data.context_uri && <div style={{ marginTop: 16 }}>
             <Typography variant="h4" gutterBottom={true}>
@@ -161,9 +164,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
                 {data.user?.name}
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
-                <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">
-                  {`\`${data.user?.name}\` ${data.context_data?.message}`}
-                </Markdown>
+                <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
               </div>
             </div>
           }
