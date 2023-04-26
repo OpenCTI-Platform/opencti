@@ -15,9 +15,11 @@ import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useFormatter } from '../../../../components/i18n';
-import StixCoreRelationshipCreationForm from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
+import StixCoreRelationshipCreationForm, {
+  stixCoreRelationshipBasicShape,
+} from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
 import { deleteNodeFromEdge } from '../../../../utils/store';
-import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { parse } from '../../../../utils/Time';
 
 const useStyles = makeStyles((theme) => ({
@@ -83,6 +85,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
   const [commitRelationDelete] = useMutation(indicatorMutationRelationDelete);
 
   const enableReferences = useIsEnforceReference('stix-core-relationship');
+  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
   const [expandedPanels, setExpandedPanels] = useState({});
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
@@ -107,7 +110,7 @@ const IndicatorAddObservablesLinesContainer = (props) => {
         updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 200 }),
       });
       // Add with references
-    } else if (enableReferences) {
+    } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
       handleOpenForm();
       setSelected(stixCyberObservable);
       // Add

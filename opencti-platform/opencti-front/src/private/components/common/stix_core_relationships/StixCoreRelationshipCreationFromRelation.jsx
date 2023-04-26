@@ -290,7 +290,12 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       R.assoc('stop_time', formatDate(values.stop_time)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+      R.assoc('createdBy', values.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+      R.assoc(
+        'externalReferences',
+        R.pluck('value', values.externalReferences),
+      ),
     )(values);
     commitMutation({
       mutation: isRelationReversed

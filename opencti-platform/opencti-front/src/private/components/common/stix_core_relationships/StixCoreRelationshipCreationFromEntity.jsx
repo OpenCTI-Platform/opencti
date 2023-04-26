@@ -271,10 +271,13 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         R.assoc('toId', toEntityId),
         R.assoc('start_time', formatDate(values.start_time)),
         R.assoc('stop_time', formatDate(values.stop_time)),
-        R.assoc('createdBy', values.createdBy?.value),
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
-        R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
+        R.assoc('createdBy', values.createdBy?.value),
         R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
+        R.assoc(
+          'externalReferences',
+          R.pluck('value', values.externalReferences),
+        ),
       )(values);
       try {
         // eslint-disable-next-line no-await-in-loop

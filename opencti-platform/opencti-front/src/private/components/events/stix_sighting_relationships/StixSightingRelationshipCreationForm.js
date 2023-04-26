@@ -98,19 +98,17 @@ const StixSightingRelationshipCreationForm = ({
   const { t } = useFormatter();
   const classes = useStyles();
   const basicShape = {
-    attribute_count: Yup.number()
-      .typeError(t('The value must be a number'))
-      .integer(t('The value must be a number'))
-      .required(t('This field is required')),
-    confidence: Yup.number().required(t('This field is required')),
+    attribute_count: Yup.number().required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     first_seen: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     last_seen: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .min(Yup.ref('first_seen'), "The end date can't be before start date")
       .nullable(),
     description: Yup.string().nullable(),
-    x_opencti_negative: Yup.boolean(),
+    x_opencti_negative: Yup.boolean().nullable(),
   };
   const stixSightingRelationshipValidator = useSchemaCreationValidation('stix-sighting-relationship', basicShape);
 
@@ -135,10 +133,10 @@ const StixSightingRelationshipCreationForm = ({
     first_seen: defaultFirstSeen,
     last_seen: defaultLastSeen,
     description: '',
-    externalReferences: [],
     objectMarking: defaultMarkingDefinitions ?? [],
     createdBy: defaultCreatedBy ?? '',
     x_opencti_negative: false,
+    externalReferences: [],
   };
 
   return (

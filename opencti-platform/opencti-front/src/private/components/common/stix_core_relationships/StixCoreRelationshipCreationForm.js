@@ -85,6 +85,19 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+export const stixCoreRelationshipBasicShape = (t) => ({
+  relationship_type: Yup.string().required(t('This field is required')),
+  confidence: Yup.number().nullable(),
+  start_time: Yup.date()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
+  stop_time: Yup.date()
+    .min(Yup.ref('start_time'), "The end date can't be before start date")
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+    .nullable(),
+  description: Yup.string().nullable(),
+});
+
 const StixCoreRelationshipCreationForm = ({
   fromEntities,
   toEntities,
@@ -101,19 +114,7 @@ const StixCoreRelationshipCreationForm = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const basicShape = {
-    relationship_type: Yup.string().required(t('This field is required')),
-    confidence: Yup.number().required(t('This field is required')),
-    start_time: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    stop_time: Yup.date()
-      .nullable()
-      .min(Yup.ref('start_time'), "The end date can't be before start date")
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    description: Yup.string().nullable(),
-  };
-  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', basicShape);
+  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
