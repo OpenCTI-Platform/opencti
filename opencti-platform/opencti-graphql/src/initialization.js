@@ -263,7 +263,7 @@ export const createBasicRolesAndCapabilities = async (context) => {
     description: 'Administrator role that bypass every capabilities',
     capabilities: [BYPASS],
   });
-  await addRole(context, SYSTEM_USER, {
+  const connectorRole = await addRole(context, SYSTEM_USER, {
     name: 'Connector',
     description: 'Connector role that has the recommended capabilities',
     capabilities: [
@@ -291,6 +291,17 @@ export const createBasicRolesAndCapabilities = async (context) => {
     relationship_type: 'has-role',
   };
   await groupAddRelation(context, SYSTEM_USER, defaultGroup.id, defaultRoleRelationInput);
+  // Create connector group with connector role
+  const connectorGroup = await addGroup(context, SYSTEM_USER, {
+    name: 'Connectors',
+    description: 'Connector group',
+    auto_new_marking: true,
+  });
+  const connectorRoleRelationInput = {
+    toId: connectorRole.id,
+    relationship_type: 'has-role',
+  };
+  await groupAddRelation(context, SYSTEM_USER, connectorGroup.id, connectorRoleRelationInput);
 };
 
 const createVocabularies = async (context) => {
