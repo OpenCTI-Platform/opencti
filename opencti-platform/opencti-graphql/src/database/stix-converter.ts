@@ -117,7 +117,6 @@ import { FROM_START, FROM_START_STR, UNTIL_END, UNTIL_END_STR } from '../utils/f
 import { isRelationBuiltin } from './stix';
 import { isInternalRelationship } from '../schema/internalRelationship';
 import { isInternalObject } from '../schema/internalObject';
-import { ENTITY_TYPE_VOCABULARY } from '../modules/vocabulary/vocabulary-types';
 
 export const isTrustedStixId = (stixId: string): boolean => {
   const segments = stixId.split('--');
@@ -1413,7 +1412,6 @@ const convertToStix = (instance: StoreObject): S.StixObject => {
         return convertKillChainPhaseToStix(basic);
       case ENTITY_TYPE_EXTERNAL_REFERENCE:
         return convertExternalReferenceToStix(basic);
-      case ENTITY_TYPE_VOCABULARY:
       default:
         throw UnsupportedError(`No meta converter available for ${type}`);
     }
