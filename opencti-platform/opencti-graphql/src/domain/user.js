@@ -833,7 +833,8 @@ export const otpUserLogin = async (req, user, { code }) => {
 };
 
 export const logout = async (context, user, req, res) => {
-  await publishUserAction({ user, event_type: 'logout', status: 'success', context_data: undefined });
+  const withOrigin = userWithOrigin(req, user);
+  await publishUserAction({ user: withOrigin, event_type: 'logout', status: 'success', context_data: undefined });
   await delUserContext(user);
   return new Promise((resolve, reject) => {
     res.clearCookie(OPENCTI_SESSION);

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import Checkbox from '@mui/material/Checkbox';
 import FormControlLabel from '@mui/material/FormControlLabel';
@@ -35,56 +35,16 @@ import { AuditLineDummy } from './AuditLine';
 
 const LOCAL_STORAGE_KEY = 'view-audit';
 
-const useStyles = makeStyles<Theme>((theme) => ({
+const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
     padding: '0 200px 0 0',
-  },
-  gridContainer: {
-    marginBottom: 20,
-  },
-  title: {
-    float: 'left',
-    textTransform: 'uppercase',
-  },
-  popover: {
-    float: 'left',
-    marginTop: '-13px',
-  },
-  paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
-    borderRadius: 6,
-  },
-  editButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 230,
-  },
-  drawerPaper: {
-    minHeight: '100vh',
-    width: '50%',
-    position: 'fixed',
-    overflow: 'auto',
-    transition: theme.transitions.create('width', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
-    padding: 0,
   },
 }));
 
 const Audit = () => {
   const classes = useStyles();
-  const [withHistory, setWithHistory] = useState(false);
-
-  const {
-    viewStorage,
-    paginationOptions,
-    helpers: storageHelpers,
-  } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(
+  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -93,26 +53,13 @@ const Audit = () => {
       sortBy: 'timestamp',
       orderAsc: false,
       openExports: false,
+      types: ['Audit'],
       count: 25,
     },
   );
-  storageHelpers.handleAddProperty('types', withHistory ? ['History', 'Audit'] : ['Audit']);
 
-  const {
-    numberOfElements,
-    filters,
-    searchTerm,
-    sortBy,
-    orderAsc,
-  } = viewStorage;
-
-  const {
-    selectedElements,
-    deSelectedElements,
-    selectAll,
-    onToggleEntity,
-  } = useEntityToggle<AuditLine_node$data>('view-audit');
-
+  const { numberOfElements, filters, searchTerm, sortBy, orderAsc, types } = viewStorage;
+  const { selectedElements, deSelectedElements, selectAll, onToggleEntity } = useEntityToggle<AuditLine_node$data>('view-audit');
   const dataColumns = {
     timestamp: {
       label: 'timestamp',
@@ -130,15 +77,14 @@ const Audit = () => {
       isSortable: false,
     },
   };
-  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(
-    AuditLinesQuery,
-    paginationOptions,
-  );
+  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(AuditLinesQuery, paginationOptions);
 
   const extraFields = <div style={{ float: 'left' }}>
-      <FormControlLabel
-        value="start"
-        control={<Checkbox style={{ padding: 7 }} onChange={() => setWithHistory(!withHistory)} checked={withHistory}/>}
+      <FormControlLabel value="start"
+        control={<Checkbox style={{ padding: 7 }} onChange={() => {
+          const newTypes = types?.length === 1 ? ['History', 'Audit'] : ['Audit'];
+          storageHelpers.handleAddProperty('types', newTypes);
+        }} checked={types?.length === 2}/>}
         label="Include knowledge"
         labelPlacement="end"
     />
