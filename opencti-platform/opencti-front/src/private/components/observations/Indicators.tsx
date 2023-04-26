@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import * as R from 'ramda';
+import React from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import ListLines from '../../../components/list_lines/ListLines';
 import IndicatorsLines, { indicatorsLinesQuery } from './indicators/IndicatorsLines';
@@ -31,30 +30,6 @@ const LOCAL_STORAGE_KEY = 'view-indicators';
 
 const Indicators = () => {
   const classes = useStyles();
-  const [indicatorTypes, setIndicatorTypes] = useState<string[]>([]);
-  const [observableTypes, setObservableTypes] = useState<string[]>([]);
-
-  const additionnalFilters = [];
-  if (indicatorTypes.length > 0) {
-    additionnalFilters.push(
-      {
-        key: 'pattern_type',
-        values: indicatorTypes,
-        operator: 'eq',
-        filterMode: 'or',
-      },
-    );
-  }
-  if (observableTypes.length > 0) {
-    additionnalFilters.push(
-      {
-        key: 'x_opencti_main_observable_type',
-        values: observableTypes,
-        operator: 'eq',
-        filterMode: 'or',
-      },
-    );
-  }
 
   const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage < IndicatorsLinesPaginationQuery$variables >(LOCAL_STORAGE_KEY, {
     numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -64,7 +39,7 @@ const Indicators = () => {
     orderAsc: false,
     openExports: false,
     count: 25,
-  }, additionnalFilters);
+  });
 
   const {
     numberOfElements,
@@ -89,28 +64,27 @@ const Indicators = () => {
     paginationOptions,
   );
 
+  const patternType = filters?.pattern_type ?? [];
+  const observableType = filters?.x_opencti_main_observable_type ?? [];
+
   const handleToggleIndicatorType = (type: string) => {
-    if (indicatorTypes.includes(type)) {
-      setIndicatorTypes(indicatorTypes.filter(
-        (t) => t !== type,
-      ));
+    if (patternType.map((t) => t.id)?.includes(type)) {
+      storageHelpers.handleRemoveFilter('pattern_type', type);
     } else {
-      setIndicatorTypes(R.append(type, indicatorTypes));
+      storageHelpers.handleAddFilter('pattern_type', type, type);
     }
   };
 
   const handleToggleObservableType = (type: string) => {
-    if (observableTypes.includes(type)) {
-      setObservableTypes(observableTypes.filter(
-        (t) => t !== type,
-      ));
+    if (observableType.map((t) => t.id)?.includes(type)) {
+      storageHelpers.handleRemoveFilter('x_opencti_main_observable_type', type);
     } else {
-      setObservableTypes(R.append(type, observableTypes));
+      storageHelpers.handleAddFilter('x_opencti_main_observable_type', type, type);
     }
   };
 
   const handleClearObservableTypes = () => {
-    setObservableTypes([]);
+    storageHelpers.handleRemoveFilter('x_opencti_main_observable_type');
   };
 
   const renderLines = (platformModuleHelpers: ModuleHelper | undefined) => {
@@ -263,8 +237,8 @@ const Indicators = () => {
               />
             </Security>
             <IndicatorsRightBar
-              indicatorTypes={indicatorTypes}
-              observableTypes={observableTypes}
+              indicatorTypes={patternType.map((t) => t.id as string) ?? []}
+              observableTypes={observableType.map((t) => t.id as string) ?? []}
               handleToggleIndicatorType={handleToggleIndicatorType}
               handleToggleObservableType={handleToggleObservableType}
               handleClearObservableTypes={handleClearObservableTypes}

@@ -202,6 +202,7 @@ class ListLines extends Component {
                   && !noHeaders
                   && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
                 <FilterIconButton
+                  availableFilterKeys={availableFilterKeys}
                   filters={filters}
                   handleRemoveFilter={handleRemoveFilter}
                 />

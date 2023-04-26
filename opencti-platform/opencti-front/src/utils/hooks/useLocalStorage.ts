@@ -35,7 +35,7 @@ export interface LocalStorage {
 
 export interface UseLocalStorageHelpers {
   handleSearch: (value: string) => void;
-  handleRemoveFilter: (key: string) => void;
+  handleRemoveFilter: (key: string, id?: string) => void;
   handleSort: (field: string, order: boolean) => void;
   handleAddFilter: HandleAddFilter;
   handleToggleExports: () => void;
@@ -86,7 +86,7 @@ export type HandleAddFilter = (
   k: string,
   id: string,
   value: Record<string, unknown> | string,
-  event: SyntheticEvent
+  event?: SyntheticEvent
 ) => void;
 
 export type UseLocalStorage = [
@@ -222,10 +222,28 @@ export const usePaginationLocalStorage = <U>(
 
   const helpers = {
     handleSearch: (value: string) => setValue((c) => ({ ...c, searchTerm: value })),
-    handleRemoveFilter: (value: string) => setValue((c) => ({
-      ...c,
-      filters: R.dissoc<Filters, string>(value, c.filters as Filters),
-    })),
+    handleRemoveFilter: (k: string, id?: string) => setValue((c) => {
+      if (id) {
+        const values = c.filters?.[k].filter((f) => f.id !== id);
+        if (values && values.length > 0) {
+          return {
+            ...c,
+            filters: {
+              ...c.filters,
+              [k]: values,
+            },
+          };
+        }
+        return {
+          ...c,
+          filters: R.dissoc<Filters, string>(k, c.filters as Filters),
+        };
+      }
+      return {
+        ...c,
+        filters: R.dissoc<Filters, string>(k, c.filters as Filters),
+      };
+    }),
     handleSort: (field: string, order: boolean) => setValue((c) => ({
       ...c,
       sortBy: field,
@@ -238,7 +256,7 @@ export const usePaginationLocalStorage = <U>(
       k: string,
       id: string,
       value: Record<string, unknown> | string,
-      event: SyntheticEvent,
+      event?: SyntheticEvent,
     ) => {
       if (event) {
         event.stopPropagation();
