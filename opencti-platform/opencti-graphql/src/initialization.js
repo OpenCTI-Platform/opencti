@@ -14,7 +14,7 @@ import { checkPythonAvailability } from './python/pythonBridge';
 import { lockResource, redisIsAlive } from './database/redis';
 import { ENTITY_TYPE_MIGRATION_STATUS } from './schema/internalObject';
 import { applyMigration, lastAvailableMigrationTime } from './database/migration';
-import { createEntity, loadEntity, patchAttribute } from './database/middleware';
+import { createEntity, loadEntity } from './database/middleware';
 import { INDEX_INTERNAL_OBJECTS, INTERNAL_SYNC_QUEUE } from './database/utils';
 import { ConfigurationError, LockTimeoutError, TYPE_LOCK_ERROR, UnknownError, UnsupportedError } from './config/errors';
 import { BYPASS, BYPASS_REFERENCE, executionContext, ROLE_ADMINISTRATOR, SYSTEM_USER } from './utils/access';
@@ -173,21 +173,6 @@ const initializeMigration = async (context) => {
   const lastRun = `${time}-init`;
   const migrationStatus = { internal_id: uuidv4(), lastRun };
   await createEntity(context, SYSTEM_USER, migrationStatus, ENTITY_TYPE_MIGRATION_STATUS);
-};
-
-// This code will patch release <= 4.0.1
-// This prevent some complex procedure for users. To be removed after some times
-const alignMigrationLastRun = async (context) => {
-  const migrationStatus = await loadEntity(context, SYSTEM_USER, [ENTITY_TYPE_MIGRATION_STATUS]);
-  const { lastRun } = migrationStatus;
-  const [lastRunTime] = lastRun.split('-');
-  const lastRunStamp = parseInt(lastRunTime, 10);
-  const timeAvailableMigrationTimestamp = lastAvailableMigrationTime();
-  if (lastRunStamp > timeAvailableMigrationTimestamp) {
-    // Reset the last run to apply migration.
-    const patch = { lastRun: '1608026400000-init' };
-    await patchAttribute(context, SYSTEM_USER, migrationStatus.internal_id, ENTITY_TYPE_MIGRATION_STATUS, patch);
-  }
 };
 
 const createMarkingDefinitions = async (context) => {
@@ -390,7 +375,6 @@ const platformInit = async (withMarkings = true) => {
       await isCompatiblePlatform(context);
       await initializeAdminUser(context);
       await initCreateEntitySettings(context);
-      await alignMigrationLastRun(context);
       await applyMigration(context);
     }
   } catch (e) {
