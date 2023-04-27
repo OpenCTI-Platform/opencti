@@ -672,7 +672,6 @@ const StixCoreRelationshipOverview = createFragmentContainer(
         x_opencti_inferences {
           rule {
             id
-
             name
             description
           }
@@ -1442,6 +1441,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              fromId
+              fromType
               to {
                 ... on BasicObject {
                   id
@@ -2287,6 +2288,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              toId
+              toType
             }
             ... on StixSightingRelationship {
               id
@@ -2953,6 +2956,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              fromId
+              fromType
               to {
                 ... on BasicObject {
                   id
@@ -3799,6 +3804,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                   }
                 }
               }
+              toId
+              toType
             }
           }
         }
@@ -4305,6 +4312,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             }
           }
         }
+        fromId
+        fromType
         to {
           ... on BasicObject {
             id
@@ -4781,6 +4790,8 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             }
           }
         }
+        toId
+        toType
       }
     `,
   },
