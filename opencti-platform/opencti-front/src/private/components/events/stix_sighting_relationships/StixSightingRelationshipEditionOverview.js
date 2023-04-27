@@ -151,11 +151,11 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
   x_opencti_workflow_id: Yup.object(),

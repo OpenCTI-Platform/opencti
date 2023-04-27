@@ -356,11 +356,11 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
   negative: Yup.boolean(),
 });
@@ -404,8 +404,8 @@ class StixSightingRelationshipCreationFromRelation extends Component {
       assoc('number', parseInt(values.number, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
-      assoc('first_seen', parse(values.first_seen).format()),
-      assoc('last_seen', parse(values.last_seen).format()),
+      assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+      assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
     )(values);
