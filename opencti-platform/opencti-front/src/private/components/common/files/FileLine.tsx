@@ -86,6 +86,7 @@ interface FileLineComponentProps {
   nested?: boolean;
   workNested?: boolean;
   isExternalReferenceAttachment?: boolean;
+  onDelete?: () => void;
 }
 
 const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
@@ -98,6 +99,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
   nested,
   workNested,
   isExternalReferenceAttachment,
+  onDelete,
 }) => {
   const classes = useStyles();
   const { t, fld } = useFormatter();
@@ -153,10 +155,7 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
     setDisplayRemove(false);
   };
 
-  const executeRemove = (
-    mutation: GraphQLTaggedNode,
-    variables: { fileName: string } | { workId: string },
-  ) => {
+  const executeRemove = (mutation: GraphQLTaggedNode, variables: { fileName: string } | { workId: string }) => {
     setDeleting(true);
     commitMutation({
       mutation,
@@ -179,6 +178,9 @@ const FileLineComponent: FunctionComponent<FileLineComponentProps> = ({
         setDeleting(false);
         setDisplayDelete(false);
         setDisplayRemove(false);
+        if (onDelete) {
+          onDelete();
+        }
         MESSAGING$.notifySuccess(t('File successfully removed'));
       },
       optimisticResponse: undefined,

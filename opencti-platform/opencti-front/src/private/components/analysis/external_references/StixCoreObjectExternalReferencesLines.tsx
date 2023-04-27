@@ -332,30 +332,21 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <ItemIcon type="External-Reference" />
                         </ListItemIcon>
                         <ListItemText
-                          primary={truncate(
-                            `${externalReference.source_name} ${externalReferenceId}`,
-                            70,
-                          )}
+                          primary={truncate(`${externalReference.source_name} ${externalReferenceId}`, 70)}
                           secondary={truncate(externalReferenceSecondary, 70)}
                         />
                         <ListItemSecondaryAction>
                           <Tooltip title={t('Browse the link')}>
                             <IconButton
-                              onClick={() => handleOpenExternalLink(
-                                externalReference.url ?? '',
-                              )
-                              }
-                              size="large"
-                              color="primary"
-                            >
+                              onClick={() => handleOpenExternalLink(externalReference.url ?? '')}
+                              size="large" color="primary">
                               <OpenInBrowserOutlined />
                             </IconButton>
                           </Tooltip>
                           <Security needs={[KNOWLEDGE_KNUPLOAD]}>
                             <FileUploader
                               entityId={externalReference.id}
-                              onUploadSuccess={() => relay.refetchConnection(200)
-                              }
+                              onUploadSuccess={() => relay.refetchConnection(200)}
                               color="inherit"
                               size={undefined}
                             />
@@ -368,8 +359,7 @@ StixCoreObjectExternalReferencesLinesContainerProps
                           <Security needs={[KNOWLEDGE_KNUPDATE]}>
                             <ExternalReferencePopover
                               id={externalReference.id}
-                              handleRemove={() => handleOpenDialog(externalReferenceEdge)
-                              }
+                              handleRemove={() => handleOpenDialog(externalReferenceEdge)}
                             />
                           </Security>
                         </ListItemSecondaryAction>
@@ -384,11 +374,8 @@ StixCoreObjectExternalReferencesLinesContainerProps
                                 file={file?.node}
                                 nested={true}
                                 workNested={true}
-                                connectors={
-                                  importConnsPerFormat[
-                                    file?.node.metaData?.mimetype ?? 0
-                                  ]
-                                }
+                                onDelete={() => relay.refetchConnection(200)}
+                                connectors={ importConnsPerFormat[file?.node.metaData?.mimetype ?? 0] }
                                 handleOpenImport={handleOpenImport}
                               />
                             ))}
