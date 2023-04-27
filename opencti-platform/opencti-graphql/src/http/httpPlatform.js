@@ -11,13 +11,12 @@ import nconf from 'nconf';
 import showdown from 'showdown';
 import rateLimit from 'express-rate-limit';
 import contentDisposition from 'content-disposition';
-import { basePath, booleanConf, DEV_MODE, logApp, logAudit } from '../config/conf';
+import { basePath, booleanConf, DEV_MODE, logApp } from '../config/conf';
 import passport, { empty, isStrategyActivated, STRATEGY_CERT } from '../config/providers';
-import { authenticateUser, authenticateUserFromRequest, loginFromProvider, userWithOrigin } from '../domain/user';
+import { authenticateUser, authenticateUserFromRequest, loginFromProvider } from '../domain/user';
 import { downloadFile, getFileContent, loadFile } from '../database/file-storage';
 import createSseMiddleware from '../graphql/sseMiddleware';
 import initTaxiiApi from './httpTaxii';
-import { LOGIN_ACTION } from '../config/audit';
 import initHttpRollingFeeds from './httpRollingFeed';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -266,7 +265,7 @@ const createApp = async (app) => {
       const logged = await callbackLogin();
       await authenticateUser(context, req, logged, provider);
     } catch (err) {
-      logAudit.error(userWithOrigin(req, {}), LOGIN_ACTION, { provider, error: err?.message });
+      logApp.error(`Error login through provider ${provider}`, { error: err?.message });
       setCookieError(res, 'Invalid authentication, please ask your administrator');
     } finally {
       res.redirect(referer ?? '/');
