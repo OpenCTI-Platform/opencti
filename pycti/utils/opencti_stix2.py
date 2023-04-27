@@ -1163,7 +1163,6 @@ class OpenCTIStix2:
                         "To ref of the sighting not found, doing nothing..."
                     )
                     return None
-        date = datetime.datetime.today().strftime("%Y-%m-%dT%H:%M:%SZ")
         if (
             "x_opencti_negative" not in stix_sighting
             and self.opencti.get_attribute_in_extension("negative", stix_sighting)
@@ -1181,10 +1180,10 @@ class OpenCTIStix2:
             else None,
             first_seen=stix_sighting["first_seen"]
             if "first_seen" in stix_sighting
-            else date,
+            else None,
             last_seen=stix_sighting["last_seen"]
             if "last_seen" in stix_sighting
-            else date,
+            else None,
             count=stix_sighting["count"] if "count" in stix_sighting else 1,
             x_opencti_negative=stix_sighting["x_opencti_negative"]
             if "x_opencti_negative" in stix_sighting
