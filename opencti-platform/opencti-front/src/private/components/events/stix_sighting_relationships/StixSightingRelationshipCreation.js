@@ -288,11 +288,11 @@ const stixSightingRelationshipValidation = (t) => Yup.object().shape({
     .integer(t('The value must be a number'))
     .required(t('This field is required')),
   first_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   last_seen: Yup.date()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-    .required(t('This field is required')),
+    .nullable()
+    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   description: Yup.string().nullable(),
   x_opencti_negative: Yup.boolean(),
 });
@@ -314,14 +314,8 @@ class StixSightingRelationshipCreation extends Component {
           R.assoc('attribute_count', parseInt(values.attribute_count, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
-          R.assoc(
-            'first_seen',
-            values.first_seen ? parse(values.first_seen).format() : null,
-          ),
-          R.assoc(
-            'last_seen',
-            values.first_seen ? parse(values.last_seen).format() : null,
-          ),
+          R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
+          R.assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
         )(values);
