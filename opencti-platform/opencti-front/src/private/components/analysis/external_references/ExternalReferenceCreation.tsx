@@ -307,22 +307,15 @@ ExternalReferenceCreationProps
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{
-                        style: { marginTop: 20, width: '100%' },
-                      }}
+                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{
                         classes: { fullWidth: true, variant: 'standard' },
-                        onChange: (
-                          event: React.ChangeEvent<HTMLInputElement>,
-                        ) => {
+                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
                           const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (
-                            document.getElementById(
-                              'external_id',
-                            ) as HTMLInputElement
-                          ).value;
+                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
                           if (!externalIdValue && fileName) {
+                            setFieldValue('file', event.currentTarget.files?.[0]);
                             setFieldValue('external_id', fileName);
                           }
                         },
@@ -431,25 +424,14 @@ ExternalReferenceCreationProps
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{
-                        style: { marginTop: 20, width: '100%' },
-                      }}
+                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                      InputProps={{
-                        classes: {
-                          fullWidth: true,
-                          variant: 'standard',
-                        },
-                        onChange: (
-                          event: React.ChangeEvent<HTMLInputElement>,
-                        ) => {
+                      InputProps={{ classes: { fullWidth: true, variant: 'standard' },
+                        onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
                           const fileName = event.target.value.split('\\').pop();
-                          const externalIdValue = (
-                            document.getElementById(
-                              'external_id',
-                            ) as HTMLInputElement
-                          ).value;
+                          const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
                           if (!externalIdValue && fileName) {
+                            setFieldValue('file', event.currentTarget.files?.[0]);
                             setFieldValue('external_id', fileName);
                           }
                         },
