@@ -404,9 +404,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
   const toResolvedIds = R.uniq(refsRelations.map((rel) => rel.toId));
-  // const toResolved = await elFindByIds(context, user, toResolvedIds, { toMap: true });
-  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, connectionFormat: false });
-  const toResolvedMap = new Map(toResolvedElements.map((i) => [i.internal_id, i]));
+  const toResolvedElements = await elFindByIds(context, user, toResolvedIds, { withoutRels: true, connectionFormat: false, toMap: true });
   const refEntries = Object.entries(refsPerElements);
   const loadedElementMap = new Map();
   for (let indexRef = 0; indexRef < refEntries.length; indexRef += 1) {
@@ -420,7 +418,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
       for (let index = 0; index < entries.length; index += 1) {
         const [key, values] = entries[index];
         const resolvedElementsWithRelation = R.map((v) => {
-          const resolvedElement = toResolvedMap.get(v.toId);
+          const resolvedElement = toResolvedElements[v.toId];
           return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
         }, values).filter((d) => isNotEmptyField(d));
         const metaRefKey = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, key);
@@ -508,7 +506,7 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
   return instance ? convertStoreToStix(instance) : undefined;
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
-  const elements = await loadByIdsWithDependencies(context, user, ids, { ...opts, onlyMarking: false, withoutRels: true });
+  const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   return elements.map((instance) => convertStoreToStix(instance));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
