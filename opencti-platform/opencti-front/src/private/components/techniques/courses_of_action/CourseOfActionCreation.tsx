@@ -33,6 +33,7 @@ import {
   CourseOfActionCreationMutation$variables,
 } from './__generated__/CourseOfActionCreationMutation.graphql';
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -99,15 +100,17 @@ const courseOfActionMutation = graphql`
   }
 `;
 
+const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
+
 interface CourseOfActionAddInput {
-  name: string;
-  description: string;
-  confidence: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  confidence: number | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface CourseOfActionFormProps {
@@ -132,7 +135,6 @@ CourseOfActionFormProps
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -141,20 +143,9 @@ CourseOfActionFormProps
     description: Yup.string().nullable(),
   };
   const courseOfActionValidator = useSchemaCreationValidation(
-    'Course-Of-Action',
+    COURSE_OF_ACTION_TYPE,
     basicShape,
   );
-
-  const initialValues: CourseOfActionAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation<CourseOfActionCreationMutation>(
     courseOfActionMutation,
@@ -162,7 +153,11 @@ CourseOfActionFormProps
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: CourseOfActionCreationMutation$variables['input'] = {
       name: values.name,
@@ -197,82 +192,95 @@ CourseOfActionFormProps
     });
   };
 
+  const initialValues = useDefaultValues(
+    COURSE_OF_ACTION_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
-      initialValues={initialValues}
-      validationSchema={courseOfActionValidator}
-      onSubmit={onSubmit}
+    initialValues={initialValues}
+    validationSchema={courseOfActionValidator}
+    onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            variant="standard"
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={['Course-Of-Action']}
-          />
-          <Field
-            component={MarkDownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Course-Of-Action']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
       )}
     </Formik>
   );
@@ -302,9 +310,9 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
       <div>
         <Fab
           onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
+             color="secondary"
+             aria-label="Add"
+             className={classes.createButton}
         >
           <Add />
         </Fab>
@@ -312,8 +320,8 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
           open={open}
           anchor="right"
           elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
+                sx={{ zIndex: 1202 }}
+                classes={{ paper: classes.drawerPaper }}
           onClose={handleClose}
         >
           <div className={classes.header}>

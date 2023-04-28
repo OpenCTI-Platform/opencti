@@ -259,7 +259,7 @@ describe('Testing schema relations ref definition', () => {
     expect(relationsRefSDO.includes(objectAssignee)).toBe(false);
     expect(relationsRefReport.includes(objectAssignee)).toBe(true);
 
-    expect(schemaRelationsRefDefinition.getRelationsRefByInputName(ENTITY_TYPE_CONTAINER_REPORT, createdBy.inputName).inputName === createdBy.inputName).toBe(true);
+    expect(schemaRelationsRefDefinition.getRelationRef(ENTITY_TYPE_CONTAINER_REPORT, createdBy.inputName).inputName === createdBy.inputName).toBe(true);
     expect(schemaRelationsRefDefinition.getInputNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectMarking.inputName)).toBe(true);
     expect(schemaRelationsRefDefinition.getStixNames(ENTITY_TYPE_CONTAINER_REPORT).includes(objectLabel.stixName)).toBe(true);
     expect(schemaRelationsRefDefinition.isMultipleDatabaseName(ENTITY_TYPE_CONTAINER_REPORT, externalReferences.databaseName)).toBe(true);

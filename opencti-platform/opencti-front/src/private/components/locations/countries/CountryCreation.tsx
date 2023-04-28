@@ -29,6 +29,7 @@ import {
   CountryCreationMutation,
   CountryCreationMutation$variables,
 } from './__generated__/CountryCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -84,12 +85,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const countryMutation = graphql`
   mutation CountryCreationMutation($input: CountryAddInput!) {
-  countryAdd(input: $input) {
-    id
-    name
-    description
-    entity_type
-    parent_types
+    countryAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
+      parent_types
       ...CountryLine_node
     }
   }
@@ -114,15 +115,22 @@ interface CountryFormProps {
   inputValue?: string;
 }
 
-export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+const COUNTRY_TYPE = 'Country';
+
+export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const countryValidator = useSchemaCreationValidation('Country', basicShape);
+  const countryValidator = useSchemaCreationValidation(COUNTRY_TYPE, basicShape);
   const [commit] = useMutation<CountryCreationMutation>(countryMutation);
 
   const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -154,19 +162,24 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
     });
   };
 
+  const initialValues = useDefaultValues<CountryAddInput>(
+    COUNTRY_TYPE,
+    {
+      name: '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return <Formik<CountryAddInput>
-      initialValues={{
-        name: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
-      validationSchema={countryValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={initialValues}
+    validationSchema={countryValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -174,80 +187,80 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Country']}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Country']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
@@ -271,17 +284,17 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
   return (
     <div>
       <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -295,9 +308,9 @@ const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLi
         </div>
         <div className={classes.container}>
           <CountryCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

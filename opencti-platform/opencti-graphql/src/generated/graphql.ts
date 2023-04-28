@@ -852,7 +852,7 @@ export type Attribute = {
 
 export type AttributeConnection = {
   __typename?: 'AttributeConnection';
-  edges?: Maybe<Array<Maybe<AttributeEdge>>>;
+  edges: Array<AttributeEdge>;
   pageInfo: PageInfo;
 };
 
@@ -5279,6 +5279,29 @@ export enum DataSourcesOrdering {
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
+export type DefaultMarking = {
+  __typename?: 'DefaultMarking';
+  entity_type?: Maybe<Scalars['String']>;
+  values?: Maybe<Array<MarkingDefinition>>;
+};
+
+export type DefaultMarkingInput = {
+  entity_type: Scalars['String'];
+  values?: InputMaybe<Array<Scalars['String']>>;
+};
+
+export type DefaultValue = {
+  __typename?: 'DefaultValue';
+  id: Scalars['String'];
+  name: Scalars['String'];
+};
+
+export type DefaultValueAttribute = {
+  __typename?: 'DefaultValueAttribute';
+  defaultValues: Array<DefaultValue>;
+  name: Scalars['String'];
+};
+
 export type DefinitionRefRelationship = {
   __typename?: 'DefinitionRefRelationship';
   entity: StixObjectOrStixRelationship;
@@ -6288,6 +6311,7 @@ export type EntitySetting = BasicObject & InternalObject & {
   attributes_configuration?: Maybe<Scalars['String']>;
   availableSettings: Array<Scalars['String']>;
   created_at: Scalars['DateTime'];
+  defaultValuesAttributes: Array<DefaultValueAttribute>;
   enforce_reference?: Maybe<Scalars['Boolean']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
@@ -7131,10 +7155,11 @@ export type GetMetrics = {
 
 export type Group = BasicObject & InternalObject & {
   __typename?: 'Group';
-  allowed_marking?: Maybe<Array<Maybe<MarkingDefinition>>>;
+  allowed_marking?: Maybe<Array<MarkingDefinition>>;
   auto_new_marking?: Maybe<Scalars['Boolean']>;
   created_at?: Maybe<Scalars['DateTime']>;
   default_assignation?: Maybe<Scalars['Boolean']>;
+  default_marking?: Maybe<Array<DefaultMarking>>;
   description?: Maybe<Scalars['String']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
@@ -7178,6 +7203,7 @@ export type GroupEditMutations = {
   contextClean?: Maybe<Group>;
   contextPatch?: Maybe<Group>;
   delete?: Maybe<Scalars['ID']>;
+  editDefaultMarking?: Maybe<Group>;
   fieldPatch?: Maybe<Group>;
   relationAdd?: Maybe<InternalRelationship>;
   relationDelete?: Maybe<Group>;
@@ -7186,6 +7212,11 @@ export type GroupEditMutations = {
 
 export type GroupEditMutationsContextPatchArgs = {
   input?: InputMaybe<EditContext>;
+};
+
+
+export type GroupEditMutationsEditDefaultMarkingArgs = {
+  input: DefaultMarkingInput;
 };
 
 
@@ -11661,6 +11692,7 @@ export type MeUser = BasicObject & InternalObject & {
   api_token: Scalars['String'];
   capabilities: Array<Capability>;
   default_hidden_types: Array<Maybe<Scalars['String']>>;
+  default_marking?: Maybe<Array<DefaultMarking>>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
   external?: Maybe<Scalars['Boolean']>;
@@ -23834,11 +23866,14 @@ export enum TriggersOrdering {
 
 export type TypeAttribute = {
   __typename?: 'TypeAttribute';
+  defaultValues?: Maybe<Array<DefaultValue>>;
   label?: Maybe<Scalars['String']>;
   mandatory: Scalars['Boolean'];
   mandatoryType: Scalars['String'];
+  multiple?: Maybe<Scalars['Boolean']>;
   name: Scalars['String'];
   scale?: Maybe<Scalars['String']>;
+  type: Scalars['String'];
 };
 
 export type Url = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -25984,6 +26019,10 @@ export type ResolversTypes = ResolversObject<{
   DataSourcesFiltering: DataSourcesFiltering;
   DataSourcesOrdering: DataSourcesOrdering;
   DateTime: ResolverTypeWrapper<Scalars['DateTime']>;
+  DefaultMarking: ResolverTypeWrapper<DefaultMarking>;
+  DefaultMarkingInput: DefaultMarkingInput;
+  DefaultValue: ResolverTypeWrapper<DefaultValue>;
+  DefaultValueAttribute: ResolverTypeWrapper<DefaultValueAttribute>;
   DefinitionRefRelationship: ResolverTypeWrapper<Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversTypes['StixObjectOrStixRelationship'] }>;
   DependencyVersion: ResolverTypeWrapper<DependencyVersion>;
   Dictionary: ResolverTypeWrapper<Dictionary>;
@@ -26056,7 +26095,7 @@ export type ResolversTypes = ResolversObject<{
   GroupAddInput: GroupAddInput;
   GroupConnection: ResolverTypeWrapper<Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupEdge']>>> }>;
   GroupEdge: ResolverTypeWrapper<Omit<GroupEdge, 'node'> & { node: ResolversTypes['Group'] }>;
-  GroupEditMutations: ResolverTypeWrapper<Omit<GroupEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Group']>, contextPatch?: Maybe<ResolversTypes['Group']>, fieldPatch?: Maybe<ResolversTypes['Group']>, relationDelete?: Maybe<ResolversTypes['Group']> }>;
+  GroupEditMutations: ResolverTypeWrapper<Omit<GroupEditMutations, 'contextClean' | 'contextPatch' | 'editDefaultMarking' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversTypes['Group']>, contextPatch?: Maybe<ResolversTypes['Group']>, editDefaultMarking?: Maybe<ResolversTypes['Group']>, fieldPatch?: Maybe<ResolversTypes['Group']>, relationDelete?: Maybe<ResolversTypes['Group']> }>;
   Grouping: ResolverTypeWrapper<BasicStoreEntityGrouping>;
   GroupingAddInput: GroupingAddInput;
   GroupingConnection: ResolverTypeWrapper<Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversTypes['GroupingEdge']>>> }>;
@@ -26706,6 +26745,10 @@ export type ResolversParentTypes = ResolversObject<{
   DataSourceEdge: Omit<DataSourceEdge, 'node'> & { node: ResolversParentTypes['DataSource'] };
   DataSourcesFiltering: DataSourcesFiltering;
   DateTime: Scalars['DateTime'];
+  DefaultMarking: DefaultMarking;
+  DefaultMarkingInput: DefaultMarkingInput;
+  DefaultValue: DefaultValue;
+  DefaultValueAttribute: DefaultValueAttribute;
   DefinitionRefRelationship: Omit<DefinitionRefRelationship, 'entity'> & { entity: ResolversParentTypes['StixObjectOrStixRelationship'] };
   DependencyVersion: DependencyVersion;
   Dictionary: Dictionary;
@@ -26766,7 +26809,7 @@ export type ResolversParentTypes = ResolversObject<{
   GroupAddInput: GroupAddInput;
   GroupConnection: Omit<GroupConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupEdge']>>> };
   GroupEdge: Omit<GroupEdge, 'node'> & { node: ResolversParentTypes['Group'] };
-  GroupEditMutations: Omit<GroupEditMutations, 'contextClean' | 'contextPatch' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Group']>, contextPatch?: Maybe<ResolversParentTypes['Group']>, fieldPatch?: Maybe<ResolversParentTypes['Group']>, relationDelete?: Maybe<ResolversParentTypes['Group']> };
+  GroupEditMutations: Omit<GroupEditMutations, 'contextClean' | 'contextPatch' | 'editDefaultMarking' | 'fieldPatch' | 'relationDelete'> & { contextClean?: Maybe<ResolversParentTypes['Group']>, contextPatch?: Maybe<ResolversParentTypes['Group']>, editDefaultMarking?: Maybe<ResolversParentTypes['Group']>, fieldPatch?: Maybe<ResolversParentTypes['Group']>, relationDelete?: Maybe<ResolversParentTypes['Group']> };
   Grouping: BasicStoreEntityGrouping;
   GroupingAddInput: GroupingAddInput;
   GroupingConnection: Omit<GroupingConnection, 'edges'> & { edges?: Maybe<Array<Maybe<ResolversParentTypes['GroupingEdge']>>> };
@@ -27476,7 +27519,7 @@ export type AttributeResolvers<ContextType = any, ParentType extends ResolversPa
 }>;
 
 export type AttributeConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['AttributeConnection'] = ResolversParentTypes['AttributeConnection']> = ResolversObject<{
-  edges?: Resolver<Maybe<Array<Maybe<ResolversTypes['AttributeEdge']>>>, ParentType, ContextType>;
+  edges?: Resolver<Array<ResolversTypes['AttributeEdge']>, ParentType, ContextType>;
   pageInfo?: Resolver<ResolversTypes['PageInfo'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -28690,6 +28733,24 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
   name: 'DateTime';
 }
 
+export type DefaultMarkingResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultMarking'] = ResolversParentTypes['DefaultMarking']> = ResolversObject<{
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  values?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DefaultValueResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValue'] = ResolversParentTypes['DefaultValue']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type DefaultValueAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValueAttribute'] = ResolversParentTypes['DefaultValueAttribute']> = ResolversObject<{
+  defaultValues?: Resolver<Array<ResolversTypes['DefaultValue']>, ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
 export type DefinitionRefRelationshipResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefinitionRefRelationship'] = ResolversParentTypes['DefinitionRefRelationship']> = ResolversObject<{
   entity?: Resolver<ResolversTypes['StixObjectOrStixRelationship'], ParentType, ContextType>;
   from?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
@@ -28976,6 +29037,7 @@ export type EntitySettingResolvers<ContextType = any, ParentType extends Resolve
   attributes_configuration?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   availableSettings?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  defaultValuesAttributes?: Resolver<Array<ResolversTypes['DefaultValueAttribute']>, ParentType, ContextType>;
   enforce_reference?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -29269,10 +29331,11 @@ export type GetMetricsResolvers<ContextType = any, ParentType extends ResolversP
 }>;
 
 export type GroupResolvers<ContextType = any, ParentType extends ResolversParentTypes['Group'] = ResolversParentTypes['Group']> = ResolversObject<{
-  allowed_marking?: Resolver<Maybe<Array<Maybe<ResolversTypes['MarkingDefinition']>>>, ParentType, ContextType>;
+  allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   auto_new_marking?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   default_assignation?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29302,6 +29365,7 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
   contextClean?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType>;
   contextPatch?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<GroupEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
+  editDefaultMarking?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsEditDefaultMarkingArgs, 'input'>>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsFieldPatchArgs, 'input'>>;
   relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationDeleteArgs, 'relationship_type'>>;
@@ -30567,6 +30631,7 @@ export type MeUserResolvers<ContextType = any, ParentType extends ResolversParen
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
   default_hidden_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  default_marking?: Resolver<Maybe<Array<ResolversTypes['DefaultMarking']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -33617,11 +33682,14 @@ export type TriggerEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type TypeAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['TypeAttribute'] = ResolversParentTypes['TypeAttribute']> = ResolversObject<{
+  defaultValues?: Resolver<Maybe<Array<ResolversTypes['DefaultValue']>>, ParentType, ContextType>;
   label?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mandatory?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   mandatoryType?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  multiple?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   scale?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -34285,6 +34353,9 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   DataSourceConnection?: DataSourceConnectionResolvers<ContextType>;
   DataSourceEdge?: DataSourceEdgeResolvers<ContextType>;
   DateTime?: GraphQLScalarType;
+  DefaultMarking?: DefaultMarkingResolvers<ContextType>;
+  DefaultValue?: DefaultValueResolvers<ContextType>;
+  DefaultValueAttribute?: DefaultValueAttributeResolvers<ContextType>;
   DefinitionRefRelationship?: DefinitionRefRelationshipResolvers<ContextType>;
   DependencyVersion?: DependencyVersionResolvers<ContextType>;
   Dictionary?: DictionaryResolvers<ContextType>;

@@ -74,6 +74,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_assignation', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'auto_new_marking', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'default_marking', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   [ENTITY_TYPE_USER]: [
     { name: 'user_email', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

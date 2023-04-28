@@ -21,11 +21,14 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
-import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
+import {
+  AdministrativeAreaCreationMutation$variables,
+} from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,9 +109,9 @@ interface AdministrativeAreaFormProps {
   inputValue?: string;
 }
 
-export const AdministrativeAreaCreationForm: FunctionComponent<
-AdministrativeAreaFormProps
-> = ({
+const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
+
+export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAreaFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -129,7 +132,7 @@ AdministrativeAreaFormProps
       .nullable(),
   };
   const administrativeAreaValidator = useSchemaCreationValidation(
-    'Administrative-Area',
+    ADMINISTRATIVE_AREA_TYPE,
     basicShape,
   );
   const [commit] = useMutation(administrativeAreaMutation);
@@ -166,108 +169,114 @@ AdministrativeAreaFormProps
       },
     });
   };
+
+  const initialValues = useDefaultValues<AdministrativeAreaAddInput>(
+    ADMINISTRATIVE_AREA_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      latitude: '',
+      longitude: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<AdministrativeAreaAddInput>
-      initialValues={{
-        name: inputValue ?? '',
-        description: '',
-        latitude: '',
-        longitude: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
-      validationSchema={administrativeAreaValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}
-    >
+    initialValues={initialValues}
+    validationSchema={administrativeAreaValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}
+  >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            variant="standard"
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={['Administrative-Area']}
-          />
-          <Field
-            component={MarkDownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows={4}
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="latitude"
-            label={t('Latitude')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="longitude"
-            label={t('Longitude')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Administrative-Area']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows={4}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="latitude"
+          label={t('Latitude')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="longitude"
+          label={t('Longitude')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
       )}
     </Formik>
   );

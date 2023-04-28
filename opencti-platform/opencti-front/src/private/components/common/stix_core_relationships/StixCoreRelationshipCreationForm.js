@@ -20,6 +20,7 @@ import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles((theme) => ({
@@ -98,6 +99,8 @@ export const stixCoreRelationshipBasicShape = (t) => ({
   description: Yup.string().nullable(),
 });
 
+const STIX_CORE_RELATIONSHIP_TYPE = 'stix-core-relationship';
+
 const StixCoreRelationshipCreationForm = ({
   fromEntities,
   toEntities,
@@ -114,7 +117,7 @@ const StixCoreRelationshipCreationForm = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
+  const stixCoreRelationshipValidator = useSchemaCreationValidation(STIX_CORE_RELATIONSHIP_TYPE, stixCoreRelationshipBasicShape(t));
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -128,17 +131,20 @@ const StixCoreRelationshipCreationForm = ({
       ? 'related-to'
       : '';
 
-  const initialValues = {
-    relationship_type: defaultRelationshipType,
-    confidence: defaultConfidence ?? 75,
-    start_time: !isNone(defaultStartTime) ? defaultStartTime : null,
-    stop_time: !isNone(defaultStopTime) ? defaultStopTime : null,
-    description: '',
-    killChainPhases: [],
-    externalReferences: [],
-    objectMarking: defaultMarkingDefinitions ?? [],
-    createdBy: defaultCreatedBy ?? '',
-  };
+  const initialValues = useDefaultValues(
+    STIX_CORE_RELATIONSHIP_TYPE,
+    {
+      relationship_type: defaultRelationshipType,
+      confidence: defaultConfidence,
+      start_time: !isNone(defaultStartTime) ? defaultStartTime : null,
+      stop_time: !isNone(defaultStopTime) ? defaultStopTime : null,
+      description: '',
+      killChainPhases: [],
+      externalReferences: [],
+      objectMarking: defaultMarkingDefinitions ?? [],
+      createdBy: defaultCreatedBy ?? '',
+    },
+  );
 
   return (
     <Formik

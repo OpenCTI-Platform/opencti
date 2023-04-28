@@ -31,6 +31,7 @@ import {
   AttackPatternCreationMutation$variables,
 } from './__generated__/AttackPatternCreationMutation.graphql';
 import { AttackPatternsLinesPaginationQuery$variables } from './__generated__/AttackPatternsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -99,17 +100,19 @@ const attackPatternMutation = graphql`
   }
 `;
 
+const ATTACK_PATTERN_TYPE = 'Attack-Pattern';
+
 interface AttackPatternAddInput {
-  name: string;
-  description: string;
-  x_mitre_id: string;
-  confidence: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  killChainPhases: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  x_mitre_id: string
+  confidence: number | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  killChainPhases: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface AttackPatternFormProps {
@@ -130,7 +133,6 @@ AttackPatternFormProps
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -140,22 +142,9 @@ AttackPatternFormProps
     x_mitre_id: Yup.string().nullable(),
   };
   const attackPatternValidator = useSchemaCreationValidation(
-    'Attack-Pattern',
+    ATTACK_PATTERN_TYPE,
     basicShape,
   );
-
-  const initialValues = {
-    name: '',
-    x_mitre_id: '',
-    description: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    killChainPhases: [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation<AttackPatternCreationMutation>(
     attackPatternMutation,
@@ -163,7 +152,11 @@ AttackPatternFormProps
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
       name: values.name,
@@ -199,6 +192,22 @@ AttackPatternFormProps
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    ATTACK_PATTERN_TYPE,
+    {
+      name: '',
+      x_mitre_id: '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      killChainPhases: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -295,7 +304,8 @@ AttackPatternFormProps
 const AttackPatternCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: AttackPatternsLinesPaginationQuery$variables;
+  paginationOptions: AttackPatternsLinesPaginationQuery$variables
+  ;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();

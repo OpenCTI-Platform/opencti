@@ -398,7 +398,7 @@ enum AttributesOrdering {
 
 type AttributeConnection {
   pageInfo: PageInfo!
-  edges: [AttributeEdge]
+  edges: [AttributeEdge!]!
 }
 
 type AttributeEdge {
@@ -1096,6 +1096,16 @@ type GroupEdge {
   node: Group!
 }
 
+input DefaultMarkingInput {
+  entity_type: String!
+  values: [String!]
+}
+
+type DefaultMarking {
+  entity_type: String
+  values: [MarkingDefinition!]
+}
+
 type Group implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -1109,7 +1119,8 @@ type Group implements InternalObject & BasicObject {
   created_at: DateTime
   updated_at: DateTime
   roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
-  allowed_marking: [MarkingDefinition]
+  allowed_marking: [MarkingDefinition!]
+  default_marking: [DefaultMarking!]
   editContext: [EditUserContext!]
 }
 
@@ -1271,6 +1282,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilities: [Capability!]!
   default_hidden_types: [String]!
   allowed_marking: [MarkingDefinition!]
+  default_marking: [DefaultMarking!]
   otp_mandatory: Boolean
 }
 
@@ -7917,6 +7929,7 @@ type GroupEditMutations {
   contextClean: Group
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
+  editDefaultMarking(input: DefaultMarkingInput!): Group
 }
 
 type UserEditMutations {
@@ -10529,17 +10542,30 @@ input CaseTaskAddInput {
   update: Boolean
 }
 
+type DefaultValue {
+  id: String!
+  name: String!
+}
+
 type TypeAttribute {
   name: String!
-  mandatoryType: String!
+  type: String!
   mandatory: Boolean!
+  mandatoryType: String!
+  multiple: Boolean
   label: String
+  defaultValues: [DefaultValue!]
   scale: String
 }
 
 type ScaleAttribute {
   name: String!
   scale: String!
+}
+
+type DefaultValueAttribute {
+  name: String!
+  defaultValues: [DefaultValue!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -10555,6 +10581,7 @@ type EntitySetting implements InternalObject & BasicObject {
   attributesDefinitions: [TypeAttribute!]!
   mandatoryAttributes: [String!]!
   scaleAttributes: [ScaleAttribute!]!
+  defaultValuesAttributes: [DefaultValueAttribute!]!
   availableSettings: [String!]!
   created_at: DateTime!
   updated_at: DateTime!

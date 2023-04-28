@@ -21,13 +21,10 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { dayStartDate } from '../../../../utils/Time';
 import TextField from '../../../../components/TextField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
@@ -37,6 +34,7 @@ import SliderField from '../../../../components/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -114,16 +112,16 @@ export const noteCreationMutation = graphql`
 `;
 
 interface NoteAddInput {
-  created: Date;
-  attribute_abstract: string;
-  content: string;
-  note_types: string[];
-  confidence: number;
-  likelihood?: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
+  created: Date
+  attribute_abstract: string
+  content: string
+  note_types: string[]
+  confidence: number | undefined
+  likelihood?: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
   file: File | undefined
 }
 
@@ -143,6 +141,8 @@ interface NoteFormProps {
   defaultMarkingDefinitions?: Option[];
   defaultConfidence?: number;
 }
+
+export const NOTE_TYPE = 'Note';
 
 export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   updater,
@@ -168,23 +168,11 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   };
   // createdBy must be excluded from the validation if user is not an editor, it will be handled directly by the backend
   const noteValidator = useSchemaCreationValidation(
-    'Note',
+    NOTE_TYPE,
     basicShape,
     userIsKnowledgeEditor ? [] : ['createdBy'],
   );
-  const initialValues: NoteAddInput = {
-    created: dayStartDate(),
-    attribute_abstract: '',
-    content: inputValue || '',
-    note_types: [],
-    confidence: defaultConfidence ?? 75,
-    likelihood: 50,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+
   const [commit] = userIsKnowledgeEditor
     ? useMutation(noteCreationMutation)
     : useMutation(noteCreationUserMutation);
@@ -226,6 +214,23 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues<NoteAddInput>(
+    NOTE_TYPE,
+    {
+      created: '' as unknown as Date,
+      attribute_abstract: '',
+      content: inputValue || '',
+      note_types: [],
+      confidence: defaultConfidence,
+      likelihood: 50,
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

@@ -110,8 +110,6 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
       searchTerm,
       currentView,
       paginationOptions,
-      defaultStartTime,
-      defaultStopTime,
       openExports,
       handleToggleExports,
       exportContext,
@@ -310,8 +308,6 @@ class StixDomainObjectAttackPatternsKillChainComponent extends Component {
               onCreate={this.props.relay.refetch.bind(this)}
               targetStixDomainObjectTypes={['Attack-Pattern']}
               paginationOptions={paginationOptions}
-              defaultStartTime={defaultStartTime}
-              defaultStopTime={defaultStopTime}
               targetEntities={targetEntities}
             />
           </Security>
@@ -343,8 +339,6 @@ StixDomainObjectAttackPatternsKillChainComponent.propTypes = {
   paginationOptions: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
-  defaultStartTime: PropTypes.string,
-  defaultStopTime: PropTypes.string,
 };
 
 export const stixDomainObjectAttackPatternsKillChainStixCoreRelationshipsQuery = graphql`

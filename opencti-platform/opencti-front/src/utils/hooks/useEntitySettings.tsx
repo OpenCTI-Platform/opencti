@@ -1,22 +1,46 @@
-import { useFragment } from 'react-relay';
+import { graphql, useFragment } from 'react-relay';
 import * as Yup from 'yup';
 import { ObjectShape } from 'yup/lib/object';
 import BaseSchema, { AnySchema } from 'yup/lib/schema';
 import useAuth from './useAuth';
-import { entitySettingsFragment } from '../../private/components/settings/sub_types/EntitySetting';
-import {
-  EntitySettingConnection_entitySettings$data,
-  EntitySettingConnection_entitySettings$key,
-} from '../../private/components/settings/sub_types/__generated__/EntitySettingConnection_entitySettings.graphql';
 import { useFormatter } from '../../components/i18n';
+import {
+  useEntitySettingsConnection_entitySettings$data,
+  useEntitySettingsConnection_entitySettings$key,
+} from './__generated__/useEntitySettingsConnection_entitySettings.graphql';
 
-export type EntitySetting =
-  EntitySettingConnection_entitySettings$data['edges'][0]['node'];
+export const entitySettingsFragment = graphql`
+  fragment useEntitySettingsConnection_entitySettings on EntitySettingConnection {
+    edges {
+      node {
+        id
+        target_type
+        platform_entity_files_ref
+        platform_hidden_type
+        enforce_reference
+        mandatoryAttributes
+        scaleAttributes {
+          name
+          scale
+        }
+        defaultValuesAttributes {
+          name
+          defaultValues {
+            id
+            name
+          }
+        }
+      }
+    }
+  }
+`;
+
+export type EntitySetting = useEntitySettingsConnection_entitySettings$data['edges'][0]['node'];
 
 const useEntitySettings = (entityType?: string | string[]): EntitySetting[] => {
   const { entitySettings } = useAuth();
   const entityTypes = Array.isArray(entityType) ? entityType : [entityType];
-  return useFragment<EntitySettingConnection_entitySettings$key>(
+  return useFragment<useEntitySettingsConnection_entitySettings$key>(
     entitySettingsFragment,
     entitySettings,
   )

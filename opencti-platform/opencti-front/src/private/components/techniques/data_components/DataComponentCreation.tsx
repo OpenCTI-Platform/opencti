@@ -24,11 +24,14 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
-import { DataComponentsLinesPaginationQuery$variables } from './__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery$variables,
+} from './__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -97,14 +100,14 @@ const dataComponentMutation = graphql`
 `;
 
 interface DataComponentAddInput {
-  name: string;
-  description: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
-  confidence: number;
-  file: File | undefined;
+  name: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
+  confidence: number | undefined
+  file: File | undefined
 }
 
 interface DataComponentFormProps {
@@ -117,9 +120,9 @@ interface DataComponentFormProps {
   defaultConfidence?: number;
 }
 
-export const DataComponentCreationForm: FunctionComponent<
-DataComponentFormProps
-> = ({
+const DATA_COMPONENT_TYPE = 'Data-Component';
+
+export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps> = ({
   updater,
   onReset,
   inputValue,
@@ -136,19 +139,10 @@ DataComponentFormProps
     confidence: Yup.number().nullable(),
   };
   const dataComponentValidator = useSchemaCreationValidation(
-    'Data-Component',
+    DATA_COMPONENT_TYPE,
     basicShape,
   );
-  const initialValues: DataComponentAddInput = {
-    name: inputValue || '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    confidence: defaultConfidence ?? 75,
-    file: undefined,
-  };
+
   const [commit] = useMutation(dataComponentMutation);
   const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
     values: DataComponentAddInput,
@@ -191,109 +185,128 @@ DataComponentFormProps
     });
   };
 
+  const initialValues = useDefaultValues<DataComponentAddInput>(
+    DATA_COMPONENT_TYPE,
+    {
+      name: inputValue || '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      confidence: defaultConfidence,
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<DataComponentAddInput>
-      initialValues={initialValues}
-      validationSchema={dataComponentValidator}
-      onSubmit={onSubmit}
+    initialValues={initialValues}
+    validationSchema={dataComponentValidator}
+    onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            variant="standard"
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={['Data-Component']}
-          />
-          <ConfidenceField
-            entityType="Data-Component"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          <Field
-            component={MarkDownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={{
-              marginTop: 20,
-              width: '100%',
-            }}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Data-Component']}
+        />
+        <ConfidenceField
+          entityType="Data-Component"
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={{
+            marginTop: 20,
+            width: '100%',
+          }}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
       )}
     </Formik>
   );
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean;
-  display?: boolean;
-  inputValue?: string;
-  paginationOptions: DataComponentsLinesPaginationQuery$variables;
-}> = ({ contextual, display, inputValue, paginationOptions }) => {
+  contextual?: boolean,
+  display?: boolean,
+  inputValue?: string,
+  paginationOptions: DataComponentsLinesPaginationQuery$variables
+}> = ({
+  contextual,
+  display,
+  inputValue,
+  paginationOptions,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
@@ -311,8 +324,8 @@ const DataComponentCreation: FunctionComponent<{
     <div>
       <Fab
         onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
+           color="secondary"
+           aria-label="Add"
         className={classes.createButton}
       >
         <Add />
@@ -322,7 +335,7 @@ const DataComponentCreation: FunctionComponent<{
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+              classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         <div className={classes.header}>

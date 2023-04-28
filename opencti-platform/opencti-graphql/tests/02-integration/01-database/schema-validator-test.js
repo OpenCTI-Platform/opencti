@@ -1,12 +1,13 @@
-import { describe, expect, it, afterAll } from 'vitest';
+import { afterAll, describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
 import { queryAsAdmin, testContext } from '../../utils/testQuery';
 import { ENTITY_TYPE_DATA_COMPONENT, } from '../../../src/schema/stixDomainObject';
 import { SYSTEM_USER } from '../../../src/utils/access';
 import { ENTITY_TYPE_ENTITY_SETTING } from '../../../src/modules/entitySetting/entitySetting-types';
 import { validateInputCreation, validateInputUpdate } from '../../../src/schema/schema-validator';
+import { resetCacheForEntity } from '../../../src/database/cache';
 
-const CREATE_QUERY = gql`
+const CREATE_DATA_COMPONENT_QUERY = gql`
   mutation DataComponentAdd($input: DataComponentAddInput!) {
     dataComponentAdd(input: $input) {
       id
@@ -17,14 +18,53 @@ const CREATE_QUERY = gql`
   }
 `;
 
-const UPDATE_QUERY = gql`
+const UPDATE_DATA_COMPONENT_QUERY = gql`
   mutation DataComponentEdit($id: ID!, $input: [EditInput]!) {
     dataComponentFieldPatch(id: $id, input: $input) {
       id
       name
+      description
     }
   }
 `;
+const DELETE_DATA_COMPONENT_QUERY = gql`
+  mutation dataComponentDelete($id: ID!) {
+    dataSourceDelete(id: $id)
+  }
+`;
+
+const READ_ENTITY_SETTING_QUERY_BY = gql`
+  query entitySettingsByTargetType($targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      id
+    }
+  }
+`;
+
+const UPDATE_ENTITY_SETTING_QUERY = gql`
+  mutation entitySettingsEdit($ids: [ID!]!, $input: [EditInput!]!) {
+    entitySettingsFieldPatch(ids: $ids, input: $input) {
+      id
+    }
+  }
+`;
+
+const updateEntitySetting = async (attributesConfiguration) => {
+  const queryResult = await queryAsAdmin({
+    query: READ_ENTITY_SETTING_QUERY_BY,
+    variables: { targetType: ENTITY_TYPE_DATA_COMPONENT }
+  });
+  const entitySettingIdDataComponent = queryResult.data.entitySettingByType.id;
+
+  await queryAsAdmin({
+    query: UPDATE_ENTITY_SETTING_QUERY,
+    variables: {
+      ids: [entitySettingIdDataComponent],
+      input: { key: 'attributes_configuration', value: [JSON.stringify(attributesConfiguration)] }
+    },
+  });
+  resetCacheForEntity(ENTITY_TYPE_ENTITY_SETTING);
+};
 
 describe('Create and Update Validation', () => {
   const dataComponentStixId = 'data-component--934ab9db-49a9-4adb-9f1f-823d586928c0';
@@ -33,28 +73,37 @@ describe('Create and Update Validation', () => {
     const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
     await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null);
   });
-  it('should invalidate format schema attribute at creation', async () => {
-    const attributesConfiguration = JSON.stringify([{ alias: 'confidence', mandatory: true }]); // Invalid JSON format for Entity Setting
-    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_ENTITY_SETTING, entitySetting, null)).rejects.toThrow();
-  });
 
   it('should validate mandatory attributes at creation', async () => {
-    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
-    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const dataComponent = { name: 'entity name', confidence: 50, stix_id: dataComponentStixId };
-    await validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting);
+    // With value and without default value - description
+    await updateEntitySetting([{ name: 'description', mandatory: true }]);
 
-    await queryAsAdmin({ query: CREATE_QUERY, variables: dataComponent });
+    let dataComponent = { name: 'entity name', description: 'My beautiful description', stix_id: dataComponentStixId };
+    let queryResult = await queryAsAdmin({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
+    expect(queryResult.data.dataComponentAdd.description).toEqual('My beautiful description');
+    await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
+
+    // Without value and with default value - description
+    await updateEntitySetting([{ name: 'description', mandatory: true, default_values: ['test'] }]);
+
+    dataComponent = { name: 'entity name', stix_id: dataComponentStixId };
+    queryResult = await queryAsAdmin({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
+    expect(queryResult.data.dataComponentAdd.description).toEqual('test');
+    await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
+
+    // With value and default value - description
+    dataComponent = { name: 'entity name', description: 'description', stix_id: dataComponentStixId };
+    queryResult = await queryAsAdmin({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
+    expect(queryResult.data.dataComponentAdd.description).toEqual('description');
+    await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
   });
   it('should invalidate mandatory attributes at creation', async () => {
-    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
-    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed confidence
-    await expect(validateInputCreation(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting)).rejects.toThrow();
+    await updateEntitySetting([{ name: 'description', mandatory: true }]);
 
-    const queryResult = await queryAsAdmin({ query: CREATE_QUERY, variables: dataComponent });
+    const dataComponent = { name: 'entity name', stix_id: dataComponentStixId }; // Missed description
+    const queryResult = await queryAsAdmin({ query: CREATE_DATA_COMPONENT_QUERY, variables: { input: dataComponent } });
     expect(queryResult.errors.length > 0).toBeTruthy();
+    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is mandatory');
   });
 
   it('should validate schema at update', async () => {
@@ -64,36 +113,31 @@ describe('Create and Update Validation', () => {
   });
 
   it('should validate mandatory attributes at update', async () => {
-    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }, { name: 'x_opencti_workflow_id', mandatory: false }]); // Valid attributes for Data Component
-    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const dataComponent = { name: 'update name' };
-    const dataComponentInitial = { name: 'initial name', confidence: 50, stix_id: dataComponentStixId };
-    await validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial);
-
+    await updateEntitySetting([]);
     await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { id: dataComponentStixId, input: { key: 'name', value: ['update name'] } },
+      query: CREATE_DATA_COMPONENT_QUERY,
+      variables: { input: { name: 'entity name', stix_id: dataComponentStixId } }
     });
-  });
-  it('should invalidate mandatory attributes at update', async () => {
-    const attributesConfiguration = JSON.stringify([{ name: 'confidence', mandatory: true }]); // Valid attributes for Data Component
-    const entitySetting = { target_type: 'Data-Component', attributes_configuration: attributesConfiguration };
-    const dataComponent = { confidence: '' }; // Missed confidence
-    const dataComponentInitial = { name: 'initial name', confidence: 50, stix_id: dataComponentStixId };
-    await expect(validateInputUpdate(testContext, SYSTEM_USER, ENTITY_TYPE_DATA_COMPONENT, dataComponent, entitySetting, dataComponentInitial)).rejects.toThrow();
+    await updateEntitySetting([{ name: 'description', mandatory: true }]);
 
     const queryResult = await queryAsAdmin({
-      query: UPDATE_QUERY,
-      variables: { id: dataComponentStixId, input: { key: 'confidence', value: [''] } },
+      query: UPDATE_DATA_COMPONENT_QUERY,
+      variables: { id: dataComponentStixId, input: { key: 'description', value: ['50'] } },
+    });
+    expect(queryResult.data.dataComponentFieldPatch.description).toEqual('50');
+  });
+  it('should invalidate mandatory attributes at update', async () => {
+    await updateEntitySetting([{ name: 'description', mandatory: true }]);
+
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_DATA_COMPONENT_QUERY,
+      variables: { id: dataComponentStixId, input: { key: 'description', value: [''] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
+    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is mandatory');
   });
   afterAll(async () => {
-    const DELETE_QUERY = gql`
-      mutation dataComponentDelete($id: ID!) {
-        dataSourceDelete(id: $id)
-      }
-    `;
-    await queryAsAdmin({ query: DELETE_QUERY, variables: { id: dataComponentStixId } });
+    await queryAsAdmin({ query: DELETE_DATA_COMPONENT_QUERY, variables: { id: dataComponentStixId } });
+    await updateEntitySetting([]);
   });
 });

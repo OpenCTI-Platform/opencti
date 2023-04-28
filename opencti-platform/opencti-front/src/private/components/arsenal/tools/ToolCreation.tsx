@@ -33,6 +33,7 @@ import {
   ToolCreationMutation,
   ToolCreationMutation$variables,
 } from './__generated__/ToolCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -90,17 +91,19 @@ const toolMutation = graphql`
   }
 `;
 
+const TOOL_TYPE = 'Tool';
+
 interface ToolAddInput {
-  name: string;
-  description: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  killChainPhases: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  tool_types: string[];
-  confidence: number;
-  file: File | undefined;
+  name: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  killChainPhases: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  tool_types: string[]
+  confidence: number | undefined
+  file: File | undefined
 }
 
 interface ToolFormProps {
@@ -130,20 +133,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     confidence: Yup.number().nullable(),
     tool_types: Yup.array().nullable(),
   };
-  const toolValidator = useSchemaCreationValidation('Tool', basicShape);
-
-  const initialValues: ToolAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    killChainPhases: [],
-    objectLabel: [],
-    externalReferences: [],
-    tool_types: [],
-    confidence: defaultConfidence ?? 75,
-    file: undefined,
-  };
+  const toolValidator = useSchemaCreationValidation(TOOL_TYPE, basicShape);
 
   const [commit] = useMutation<ToolCreationMutation>(toolMutation);
 
@@ -185,6 +175,22 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    TOOL_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy ?? '' as unknown as Option,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      killChainPhases: [],
+      objectLabel: [],
+      externalReferences: [],
+      tool_types: [],
+      confidence: defaultConfidence,
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

@@ -9,37 +9,46 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
+import type { AttributeDefinition } from './attribute-definition';
 
 const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
+
+export const validateFormatSchemaAttribute = (
+  instanceType: string,
+  attributeName: string,
+  attributeDefinition: AttributeDefinition | undefined,
+  value: unknown
+) => {
+  if (isJsonAttribute(attributeName)) {
+    if (!attributeDefinition) {
+      throw ValidationError(attributeName, {
+        message: 'This attribute is not declared for this type',
+        data: { attribute: attributeName, entityType: instanceType }
+      });
+    }
+    if (attributeDefinition.schemaDef) {
+      const validate = ajv.compile(attributeDefinition.schemaDef);
+      const valid = validate(JSON.parse(value as string));
+      if (!valid) {
+        throw ValidationError(attributeName, { message: 'The JSON Schema is not valid', data: validate.errors });
+      }
+    }
+  }
+};
 
 const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     const inputEntries = Object.entries(input);
     inputEntries.forEach(([key, value]) => {
-      if (isJsonAttribute(key)) {
-        const attribute = availableAttributes.get(key);
-        if (!attribute) {
-          throw ValidationError(key, {
-            message: 'This attribute is not declared for this type',
-            data: { attribute: key, entityType: instanceType }
-          });
-        }
-        if (attribute.schemaDef) {
-          const validate = ajv.compile(attribute.schemaDef);
-          const valid = validate(JSON.parse(value as string));
-          if (!valid) {
-            throw ValidationError(key, { message: 'The JSON Schema is not valid', data: validate.errors });
-          }
-        }
-      }
+      validateFormatSchemaAttribute(instanceType, key, availableAttributes.get(key), value);
     });
   };
   return telemetry(context, user, 'SCHEMA ATTRIBUTES VALIDATION', {
     [SemanticAttributes.DB_NAME]: 'validation',
-    [SemanticAttributes.DB_OPERATION]: 'schema',
+    [SemanticAttributes.DB_OPERATION]: 'schema_attributes',
   }, validateFormatSchemaAttributesFn);
 };
 
@@ -57,7 +66,7 @@ const validateMandatoryAttributes = (
   }
   const mandatoryAttributes = attributesConfiguration.filter((attr) => attr.mandatory);
   // In creation if enforce reference is activated, user must provide a least 1 external references
-  if (isCreation && entitySetting.enforce_reference === true) {
+  if (isCreation && entitySetting.enforce_reference) {
     mandatoryAttributes.push({ name: externalReferences.inputName, mandatory: true });
   }
   const inputKeys = Object.keys(input);
@@ -77,7 +86,7 @@ const validateMandatoryAttributesOnCreation = async (
   const validateMandatoryAttributesOnCreationFn = async () => {
     // Should have all the mandatory keys and the associated values not null
     const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
-        && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+      && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
     validateMandatoryAttributes(input, entitySetting, true, inputValidValue);
   };
@@ -95,7 +104,7 @@ const validateMandatoryAttributesOnUpdate = async (
   const validateMandatoryAttributesOnUpdateFn = async () => {
     // If the mandatory key is present the associated value should be not null
     const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
-        || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+      || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
 
     validateMandatoryAttributes(input, entitySetting, false, inputValidValue);
   };
@@ -119,7 +128,7 @@ export const validateInputCreation = async (
     // Functional validator
     const validator = getEntityValidatorCreation(instanceType);
     if (validator) {
-      const validate = await validator(input);
+      const validate = await validator(context, user, input);
       if (!validate) {
         throw UnsupportedError('The input is not valid', { input });
       }
@@ -165,7 +174,7 @@ export const validateInputUpdate = async (
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
-      const validate = await validator(inputs, initial);
+      const validate = await validator(context, user, inputs, initial);
       if (!validate) {
         throw UnsupportedError('The input is not valid', { inputs });
       }

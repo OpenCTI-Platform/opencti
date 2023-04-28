@@ -1,4 +1,5 @@
 import type { BasicStoreCommon, BasicStoreIdentifier, StoreMarkingDefinition } from './store';
+import type { Group } from './group';
 
 interface UserRole {
   name: string;
@@ -27,11 +28,12 @@ interface AuthUser extends BasicStoreIdentifier {
   inside_platform_organization: boolean;
   origin: Partial<UserOrigin>;
   roles: Array<UserRole>;
-  groups: Array<BasicStoreCommon>;
+  groups: Array<Group>;
   organizations: Array<BasicStoreCommon>;
   allowed_organizations: Array<BasicStoreCommon>;
   capabilities: Array<UserCapability>;
   allowed_marking: Array<StoreMarkingDefinition>;
+  default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>;
   all_marking: Array<StoreMarkingDefinition>;
   api_token: string;
 }

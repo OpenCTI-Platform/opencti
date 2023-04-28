@@ -21,7 +21,6 @@ import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { dayStartDate } from '../../../../utils/Time';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -35,8 +34,11 @@ import {
   CaseIncidentAddInput,
   CaseIncidentCreationCaseMutation,
 } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
-import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import {
+  CaseIncidentsLinesCasesPaginationQuery$variables,
+} from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 import RichTextField from '../../../../components/RichTextField';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,18 +98,18 @@ const caseIncidentMutation = graphql`
 `;
 
 interface FormikCaseIncidentAddInput {
-  name: string;
-  confidence: number;
-  severity: string;
-  priority: string;
-  description: string;
+  name: string
+  confidence: number | undefined
+  severity: string
+  priority: string
+  description: string
   content: string;
-  file: File | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectAssignee: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
+  file: File | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
   created: Date;
   response_types: string[];
   caseTemplates?: Option[];
@@ -125,6 +127,8 @@ interface IncidentFormProps {
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
 }
+
+const CASE_INCIDENT_TYPE = 'Case-Incident';
 
 export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   updater,
@@ -144,7 +148,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     content: Yup.string().nullable(),
   };
   const caseIncidentValidator = useSchemaCreationValidation(
-    'Case-Incident',
+    CASE_INCIDENT_TYPE,
     basicShape,
   );
   const [commit] = useMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
@@ -193,25 +197,30 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues<FormikCaseIncidentAddInput>(
+    CASE_INCIDENT_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      description: '',
+      content: '',
+      severity: '',
+      caseTemplates: [],
+      response_types: [],
+      created: '' as unknown as Date,
+      priority: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<FormikCaseIncidentAddInput>
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        content: '',
-        severity: '',
-        caseTemplates: [],
-        response_types: [],
-        created: dayStartDate(),
-        priority: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
+    initialValues={initialValues}
       validationSchema={caseIncidentValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -362,7 +371,8 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
 const CaseIncidentCreation = ({
   paginationOptions,
 }: {
-  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables;
+  paginationOptions: CaseIncidentsLinesCasesPaginationQuery$variables
+  ;
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();

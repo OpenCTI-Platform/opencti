@@ -1,4 +1,6 @@
-export type ValidatorFn = (instance: Record<string, unknown>, initialInstance?: Record<string, unknown>) => Promise<boolean>;
+import type { AuthContext, AuthUser } from '../types/user';
+
+export type ValidatorFn = (context: AuthContext, user: AuthUser, instance: Record<string, unknown>, initialInstance?: Record<string, unknown>) => Promise<boolean>;
 
 const entityValidators = new Map<string, { validatorCreation?: ValidatorFn, validatorUpdate?: ValidatorFn }>();
 export const registerEntityValidator = (type: string, validators: { validatorCreation?: ValidatorFn, validatorUpdate?: ValidatorFn }) => {

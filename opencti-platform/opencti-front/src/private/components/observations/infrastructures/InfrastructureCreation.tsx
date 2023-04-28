@@ -13,9 +13,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -39,6 +37,7 @@ import {
 import {
   InfrastructuresLinesPaginationQuery$variables,
 } from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,10 +95,12 @@ const infrastructureMutation = graphql`
   }
 `;
 
+const INFRASTRUCTURE_TYPE = 'Infrastructure';
+
 interface InfrastructureAddInput {
   name: string
   infrastructure_types: string[]
-  confidence: number
+  confidence: number | undefined
   description: string
   createdBy: Option | undefined
   objectMarking: Option[]
@@ -143,33 +144,22 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
       .nullable()
       .min(
         Yup.ref('first_seen'),
-        "The last seen date can't be before first seen date",
+        'The last seen date can\'t be before first seen date',
       )
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
   const infrastructureValidator = useSchemaCreationValidation(
-    'Infrastructure',
+    INFRASTRUCTURE_TYPE,
     basicShape,
   );
 
-  const initialValues: InfrastructureAddInput = {
-    name: '',
-    infrastructure_types: [],
-    confidence: defaultConfidence ?? 75,
-    description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    first_seen: null,
-    last_seen: null,
-    killChainPhases: [],
-    file: undefined,
-  };
-
   const [commit] = useMutation<InfrastructureCreationMutation>(infrastructureMutation);
 
-  const onSubmit: FormikConfig<InfrastructureAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<InfrastructureAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    setErrors,
+    resetForm,
+  }) => {
     const input: InfrastructureCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -206,6 +196,24 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    INFRASTRUCTURE_TYPE,
+    {
+      name: '',
+      infrastructure_types: [],
+      confidence: defaultConfidence,
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      first_seen: null,
+      last_seen: null,
+      killChainPhases: [],
+      file: undefined,
+    },
+  );
 
   return (
     <Formik
@@ -324,7 +332,9 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
   );
 };
 
-const InfrastructureCreation = ({ paginationOptions }: { paginationOptions: InfrastructuresLinesPaginationQuery$variables }) => {
+const InfrastructureCreation = ({ paginationOptions }: {
+  paginationOptions: InfrastructuresLinesPaginationQuery$variables
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

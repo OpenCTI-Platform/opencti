@@ -43,8 +43,7 @@ import {
 import {
   elAggregationCount,
   elAggregationRelationsCount,
-  elDeleteElements,
-  elFindByFromAndTo,
+  elDeleteElements, elFindByFromAndTo,
   elFindByIds,
   elHistogramCount,
   elIndexElements,
@@ -229,7 +228,11 @@ import {
   isNumericAttribute,
   schemaAttributesDefinition
 } from '../schema/schema-attributes';
-import { getEntitySettingFromCache } from '../modules/entitySetting/entitySetting-utils';
+import {
+  getAttributesConfiguration,
+  getDefaultValues,
+  getEntitySettingFromCache
+} from '../modules/entitySetting/entitySetting-utils';
 import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { validateInputCreation, validateInputUpdate } from '../schema/schema-validator';
 import { getMandatoryAttributesForSetting } from '../domain/attribute';
@@ -421,7 +424,7 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
           const resolvedElement = toResolvedElements[v.toId];
           return resolvedElement ? { ...resolvedElement, i_relation: v } : {};
         }, values).filter((d) => isNotEmptyField(d));
-        const metaRefKey = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, key);
+        const metaRefKey = schemaRelationsRefDefinition.getRelationRef(element.entity_type, key);
         data[key] = !metaRefKey.multiple ? R.head(resolvedElementsWithRelation) : resolvedElementsWithRelation;
       }
       loadedElementMap.set(elementId, data);
@@ -622,7 +625,7 @@ const idLabel = (label) => {
   return isAnId(label) ? label : generateStandardId(ENTITY_TYPE_LABEL, { value: normalizeName(label) });
 };
 
-const inputResolveRefs = async (context, user, input, type) => {
+const inputResolveRefs = async (context, user, input, type, entitySetting) => {
   const inputResolveRefsFn = async () => {
     const fetchingIds = [];
     const expectedIds = [];
@@ -712,7 +715,13 @@ const inputResolveRefs = async (context, user, input, type) => {
     // We only accept missing objects_refs (Report, Opinion, Note, Observed-data)
     const expectedUnresolvedIds = unresolvedIds.filter((u) => !(input[INPUT_OBJECTS] || []).includes(u));
     if (expectedUnresolvedIds.length > 0) {
-      throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIds });
+      // If unresolved ids come from default values, don't throw
+      const attributesConfiguration = getAttributesConfiguration(entitySetting);
+      const defaultValues = attributesConfiguration?.map((attr) => attr.default_values).flat() ?? [];
+      const expectedUnresolvedIdsNotDefault = expectedUnresolvedIds.filter((id) => !defaultValues.includes(id));
+      if (expectedUnresolvedIdsNotDefault) {
+        throw MissingReferenceError({ input, unresolvedIds: expectedUnresolvedIdsNotDefault });
+      }
     }
     // In case of objects missing reference, we reject twice before accepting
     const retryNumber = user.origin?.call_retry_number;
@@ -1880,7 +1889,7 @@ export const updateAttribute = async (context, user, id, type, inputs, opts = {}
     for (let metaIndex = 0; metaIndex < meta.length; metaIndex += 1) {
       const { key: metaKey } = meta[metaIndex];
       const key = schemaRelationsRefDefinition.convertStixNameToInputName(updatedInstance.entity_type, metaKey) || metaKey;
-      const relDef = schemaRelationsRefDefinition.getRelationsRefByInputName(updatedInstance.entity_type, key);
+      const relDef = schemaRelationsRefDefinition.getRelationRef(updatedInstance.entity_type, key);
       const relType = relDef.databaseName;
       // ref and _refs are expecting direct identifier in the value
       // We dont care about the operation here, the only thing we can do is replace
@@ -2123,6 +2132,31 @@ const upsertRelationRule = async (context, instance, input, opts = {}) => {
   return await patchAttribute(context, RULE_MANAGER_USER, instance.id, instance.entity_type, patch, opts);
 };
 // endregion
+
+export const fillDefaultValues = (user, input, entitySetting) => {
+  const attributesConfiguration = getAttributesConfiguration(entitySetting);
+  if (!attributesConfiguration) {
+    return input;
+  }
+  const filledValues = new Map();
+  attributesConfiguration.filter((attr) => attr.default_values)
+    .filter((attr) => INPUT_MARKINGS !== attr.name)
+    .forEach((attr) => {
+      if (input[attr.name] === undefined || input[attr.name] === null) { // empty is a valid value
+        filledValues.set(attr.name, getDefaultValues(attr, schemaAttributesDefinition.isMultipleAttribute(entitySetting.target_type, attr.name)));
+      }
+    });
+
+  // Marking management
+  if (input[INPUT_MARKINGS] === undefined || input[INPUT_MARKINGS] === null) { // empty is a valid value
+    const defaultMarkings = user.default_marking ?? [];
+    const globalDefaultMarking = (defaultMarkings.find((entry) => entry.entity_type === 'GLOBAL')?.values ?? []).map((m) => m.id);
+    if (!isEmptyField(globalDefaultMarking)) {
+      filledValues.set(INPUT_MARKINGS, globalDefaultMarking);
+    }
+  }
+  return { ...input, ...Object.fromEntries(filledValues) };
+};
 
 const validateEntityAndRelationCreation = async (context, user, input, type, entitySetting, opts = {}) => {
   if (opts.bypassValidation !== true) { // Allow creation directly from the back-end
@@ -2483,7 +2517,7 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
     .map((ref) => ref.inputName);
   for (let fieldIndex = 0; fieldIndex < metaInputFields.length; fieldIndex += 1) {
     const inputField = metaInputFields[fieldIndex];
-    const relDef = schemaRelationsRefDefinition.getRelationsRefByInputName(element.entity_type, inputField);
+    const relDef = schemaRelationsRefDefinition.getRelationRef(element.entity_type, inputField);
     if (relDef.multiple) {
       const relType = relDef.databaseName;
       const existingInstances = element[relType] || [];
@@ -2717,9 +2751,10 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
   }
 
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
-  await validateEntityAndRelationCreation(context, user, input, relationshipType, entitySetting, opts);
+  const filledInput = fillDefaultValues(user, input, entitySetting);
+  await validateEntityAndRelationCreation(context, user, filledInput, relationshipType, entitySetting, opts);
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
+  const resolvedInput = await inputResolveRefs(context, user, filledInput, relationshipType, entitySetting);
   const { from, to } = resolvedInput;
   // check if user has "edit" access on from and to
   if (!validateUserAccessOperation(user, from, 'edit') || !validateUserAccessOperation(user, to, 'edit')) {
@@ -3058,11 +3093,12 @@ const userHaveCapability = (user, capability) => {
 const createEntityRaw = async (context, user, input, type, opts = {}) => {
   // Region - Pre-Check
   const entitySetting = await getEntitySettingFromCache(context, type);
-  await validateEntityAndRelationCreation(context, user, input, type, entitySetting, opts);
+  const filledInput = fillDefaultValues(user, input, entitySetting);
+  await validateEntityAndRelationCreation(context, user, filledInput, type, entitySetting, opts);
   // Endregion
   const { fromRule } = opts;
   // We need to check existing dependencies
-  const resolvedInput = await inputResolveRefs(context, user, input, type);
+  const resolvedInput = await inputResolveRefs(context, user, filledInput, type, entitySetting);
   // Generate all the possibles ids
   // For marking def, we need to force the standard_id
   const participantIds = getInputIds(type, resolvedInput, fromRule);
@@ -3387,7 +3423,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   const fromThing = await internalLoadById(context, user, fromId, opts);
   // Check mandatory attribute
   const entitySetting = await getEntitySettingFromCache(context, fromThing.entity_type);
-  const attributesMandatory = await getMandatoryAttributesForSetting(context, entitySetting);
+  const attributesMandatory = await getMandatoryAttributesForSetting(context, context.user, entitySetting);
   if (attributesMandatory.length > 0) {
     const attribute = attributesMandatory.find((attr) => attr === schemaRelationsRefDefinition.convertDatabaseNameToInputName(fromThing.entity_type, relationshipType));
     if (attribute && fromThing[buildRefRelationKey(relationshipType)].length === 1) {

@@ -7,7 +7,7 @@ import { Field } from 'formik';
 import { graphql, useMutation } from 'react-relay';
 import { useFormatter } from '../../../../components/i18n';
 import SelectField from '../../../../components/SelectField';
-import { entitySettingsPatch } from '../sub_types/EntitySetting';
+import { entitySettingPatch } from '../sub_types/entitySetting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditionOverview_role.graphql';
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
@@ -123,7 +123,7 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
     ...initialEntitySettingsEntityType,
   ]);
 
-  const mutation = role ? hiddenTypesListRoleMutationFieldPatch : entitySettingsPatch;
+  const mutation = role ? hiddenTypesListRoleMutationFieldPatch : entitySettingPatch;
   const [commit] = useMutation(mutation);
 
   const handleChangeGlobal = (values: string[]) => {

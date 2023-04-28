@@ -13,17 +13,17 @@ import ItemIcon from '../../../../components/ItemIcon';
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 export const objectAssigneeFieldMembersSearchQuery = graphql`
-    query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
-        members(search: $search, first: $first, entityTypes: $entityTypes) {
-            edges {
-                node {
-                    id
-                    entity_type
-                    name
-                }
-            }
+  query ObjectAssigneeFieldMembersSearchQuery($search: String, $first: Int, $entityTypes: [MemberType!]) {
+    members(search: $search, first: $first, entityTypes: $entityTypes) {
+      edges {
+        node {
+          id
+          entity_type
+          name
         }
+      }
     }
+  }
 `;
 
 export const objectAssigneeFieldAssigneesSearchQuery = graphql`
@@ -114,33 +114,33 @@ class ObjectAssigneeField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, style, label, classes, onChange, helpertext, disabled } = this.props;
     return (
-        <Field component={AutocompleteField}
-            style={style}
-            name={name}
-            disabled={disabled}
-            multiple={true}
-            textfieldprops={{
-              variant: 'standard',
-              label: t('Assignee(s)'),
-              helperText: helpertext,
-              onFocus: this.searchAssignees.bind(this),
-            }}
-            noOptionsText={t('No available options')}
-            options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
-            onInputChange={this.handleSearch.bind(this)}
-            onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-            renderOption={(props, option) => (
-                <li {...props}>
-                    <div className={classes.icon}>
-                        <ItemIcon type={option.type} />
-                    </div>
-                    <div className={classes.text}>{option.label}</div>
-                </li>
-            )}
-            classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
+      <Field component={AutocompleteField}
+             style={style}
+             name={name}
+             disabled={disabled}
+             multiple={true}
+             textfieldprops={{
+               variant: 'standard',
+               label: label ?? t('Assignee(s)'),
+               helperText: helpertext,
+               onFocus: this.searchAssignees.bind(this),
+             }}
+             noOptionsText={t('No available options')}
+             options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
+             onInputChange={this.handleSearch.bind(this)}
+             onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+             renderOption={(props, option) => (
+               <li {...props}>
+                 <div className={classes.icon}>
+                   <ItemIcon type={option.type} />
+                 </div>
+                 <div className={classes.text}>{option.label}</div>
+               </li>
+             )}
+             classes={{ clearIndicator: classes.autoCompleteIndicator }}
+      />
     );
   }
 }

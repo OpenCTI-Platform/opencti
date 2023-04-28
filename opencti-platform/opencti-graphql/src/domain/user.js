@@ -39,7 +39,7 @@ import {
   RELATION_PARTICIPATE_TO,
 } from '../schema/internalRelationship';
 import { ABSTRACT_INTERNAL_RELATIONSHIP, OPENCTI_ADMIN_UUID } from '../schema/general';
-import { findAll as findGroups } from './group';
+import { defaultMarkingDefinitionsByGroups, findAll as findGroups } from './group';
 import { generateStandardId } from '../schema/identifier';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { now } from '../utils/format';
@@ -239,6 +239,21 @@ export const computeAvailableMarkings = (markings, all) => {
   return R.uniqBy((m) => m?.id ?? '', computedMarkings);
 };
 
+export const computeDefaultMarking = (defaultMarkings) => {
+  const results = [];
+  (defaultMarkings ?? []).filter((d) => !!d.entity_type)
+    .forEach((d) => {
+      const existing = results.find((r) => r.entity_type === d.entity_type);
+      if (existing) {
+        existing.values = [...(d.values ?? []), ...existing.values];
+      } else {
+        results.push(d);
+      }
+    });
+
+  return results;
+};
+
 const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilities) => {
   const groupIds = userGroups.map((r) => r.id);
   const userCapabilities = capabilities.map((c) => c.name);
@@ -250,9 +265,9 @@ const getUserAndGlobalMarkings = async (context, userId, userGroups, capabilitie
   } else {
     userMarkingsPromise = listThroughGetTo(context, SYSTEM_USER, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION);
   }
-  const [userMarkings, markings] = await Promise.all([userMarkingsPromise, allMarkingsPromise]);
+  const [userMarkings, markings, defaultMarkings] = await Promise.all([userMarkingsPromise, allMarkingsPromise, defaultMarkingDefinitionsByGroups(context, groupIds)]);
   const computedMarkings = computeAvailableMarkings(userMarkings, markings);
-  return { user: computedMarkings, all: markings };
+  return { user: computedMarkings, all: markings, default: computeDefaultMarking(defaultMarkings) };
 };
 
 export const getRoles = async (context, userGroups) => {
@@ -898,6 +913,15 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
       internal_id: m.internal_id,
       definition_type: m.definition_type,
     })),
+    default_marking: user.default_marking?.map((entry) => ({
+      entity_type: entry.entity_type,
+      values: entry.values?.map((m) => ({
+        id: m.id,
+        standard_id: m.standard_id,
+        internal_id: m.internal_id,
+        definition_type: m.definition_type,
+      }))
+    })),
     all_marking: user.all_marking.map((m) => ({
       id: m.id,
       standard_id: m.standard_id,
@@ -939,6 +963,7 @@ export const buildCompleteUser = async (context, client) => {
     inside_platform_organization: isUserPlatform,
     allowed_marking: marking.user,
     all_marking: marking.all,
+    default_marking: marking.default,
   };
 };
 

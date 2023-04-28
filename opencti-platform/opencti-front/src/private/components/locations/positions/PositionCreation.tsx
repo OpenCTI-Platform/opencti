@@ -30,6 +30,7 @@ import {
   PositionCreationMutation$variables,
 } from './__generated__/PositionCreationMutation.graphql';
 import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -87,6 +88,8 @@ const positionMutation = graphql`
   }
 `;
 
+const POSITION_TYPE = 'Position';
+
 interface PositionAddInput {
   name: string
   description: string
@@ -131,21 +134,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     street_address: Yup.string().nullable().max(1000, t('The value is too long')),
     postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-  const positionValidator = useSchemaCreationValidation('Position', basicShape);
-
-  const initialValues = {
-    name: '',
-    description: '',
-    latitude: '',
-    longitude: '',
-    street_address: '',
-    postal_code: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const positionValidator = useSchemaCreationValidation(POSITION_TYPE, basicShape);
 
   const [commit] = useMutation<PositionCreationMutation>(positionMutation);
 
@@ -186,11 +175,28 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues(
+    POSITION_TYPE,
+    {
+      name: '',
+      description: '',
+      latitude: '',
+      longitude: '',
+      street_address: '',
+      postal_code: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return <Formik
-      initialValues={initialValues}
-      validationSchema={positionValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={initialValues}
+    validationSchema={positionValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -198,105 +204,105 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Position']}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="longitude"
-              label={t('Longitude')}fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="street_address"
-                    label={t('Street address')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="postal_code"
-                    label={t('Postal code')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Position']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows={4}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="latitude"
+          label={t('Latitude')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="longitude"
+          label={t('Longitude')} fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="street_address"
+          label={t('Street address')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="postal_code"
+          label={t('Postal code')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
@@ -318,38 +324,38 @@ const PositionCreation = ({ paginationOptions }: { paginationOptions: PositionsL
   );
 
   return (
-      <div>
-        <Fab onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}>
-          <Add />
-        </Fab>
-        <Drawer open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
-          <div className={classes.header}>
-            <IconButton aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary">
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a position')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <PositionCreationForm
-                updater={updater}
-                onCompleted={() => handleClose()}
-                onReset={onReset}
-            />
-          </div>
-        </Drawer>
-      </div>
+    <div>
+      <Fab onClick={handleOpen}
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
+        <Add />
+      </Fab>
+      <Drawer open={open}
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
+        <div className={classes.header}>
+          <IconButton aria-label="Close"
+                      className={classes.closeButton}
+                      onClick={handleClose}
+                      size="large"
+                      color="primary">
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a position')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <PositionCreationForm
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
+          />
+        </div>
+      </Drawer>
+    </div>
   );
 };
 

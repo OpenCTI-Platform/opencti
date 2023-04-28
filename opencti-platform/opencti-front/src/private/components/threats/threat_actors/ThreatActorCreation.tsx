@@ -32,6 +32,7 @@ import {
   ThreatActorCreationMutation$variables,
 } from './__generated__/ThreatActorCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,16 +90,18 @@ const threatActorMutation = graphql`
   }
 `;
 
+const THREAT_ACTOR_TYPE = 'Threat-Actor';
+
 interface ThreatActorAddInput {
-  name: string;
-  threat_actor_types: string[];
-  confidence: number;
-  description: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  threat_actor_types: string[]
+  confidence: number | undefined
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[],
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface ThreatActorFormProps {
@@ -131,21 +134,9 @@ ThreatActorFormProps
     description: Yup.string().nullable(),
   };
   const threatActorValidator = useSchemaCreationValidation(
-    'Threat-Actor',
+    THREAT_ACTOR_TYPE,
     basicShape,
   );
-
-  const initialValues: ThreatActorAddInput = {
-    name: inputValue ?? '',
-    threat_actor_types: [],
-    confidence: defaultConfidence ?? 75,
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
 
@@ -186,6 +177,22 @@ ThreatActorFormProps
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    THREAT_ACTOR_TYPE,
+    {
+      name: inputValue ?? '',
+      threat_actor_types: [],
+      confidence: defaultConfidence,
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}

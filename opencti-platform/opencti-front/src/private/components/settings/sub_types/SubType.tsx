@@ -8,11 +8,10 @@ import { GraphQLSubscriptionConfig } from 'relay-runtime';
 import { useFormatter } from '../../../../components/i18n';
 import ItemStatusTemplate from '../../../../components/ItemStatusTemplate';
 import SubTypeStatusPopover from './SubTypeWorkflowPopover';
-import EntitySetting from './EntitySetting';
+import EntitySettingSettings from './entitySetting/EntitySettingSettings';
 import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
-import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
-import EntitySettingAttributesConfigurationScale from './EntitySettingAttributesConfigurationScale';
 import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
+import EntitySettingAttributes from './entitySetting/EntitySettingAttributes';
 import CustomizationMenu from '../CustomizationMenu';
 
 const useStyles = makeStyles(() => ({
@@ -30,24 +29,25 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-export const entitySettingSubscription = graphql`
+const entitySettingSubscription = graphql`
   subscription SubTypeEntitySettingSubscription($id: ID!) {
     entitySetting(id: $id) {
-      ...EntitySetting_entitySetting
+      id
     }
   }
 `;
 
 // -- GRAPHQL - ENTITY --
 
-export const subTypeFragment = graphql`
+const subTypeFragment = graphql`
   fragment SubType_subType on SubType {
     id
     label
     workflowEnabled
     settings {
       id
-      ...EntitySetting_entitySetting
+      ...EntitySettingSettings_entitySetting
+      ...EntitySettingAttributes_entitySetting
     }
     statuses {
       edges {
@@ -99,7 +99,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               {t('Configuration')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
-              <EntitySetting entitySettingsData={subType.settings} />
+              <EntitySettingSettings entitySettingsData={subType.settings} />
               <div style={{ marginTop: 10 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Workflow')}
@@ -113,12 +113,13 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
             </Paper>
           </div>
         </Grid>
-        <EntitySettingAttributesConfiguration
-          entitySettingsData={subType.settings}
-        />
-        <EntitySettingAttributesConfigurationScale
-          entitySettingsData={subType.settings}
-        />
+        <Grid item={true} xs={12} style={{ marginTop: 25 }}>
+          <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 25 }}>
+            {/* I18n */}
+            {t('Attributes')}
+          </Typography>
+          <EntitySettingAttributes entitySettingsData={subType.settings}></EntitySettingAttributes>
+        </Grid>
       </Grid>
     </div>
   );

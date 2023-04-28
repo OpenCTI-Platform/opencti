@@ -30,6 +30,7 @@ import {
   SectorCreationMutation$variables,
 } from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,6 +97,8 @@ const sectorMutation = graphql`
   }
 `;
 
+const SECTOR_TYPE = 'Sector';
+
 interface SectorAddInput {
   name: string;
   description: string;
@@ -129,16 +132,8 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const sectorValidator = useSchemaCreationValidation('Sector', basicShape);
-  const initialValues: SectorAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const sectorValidator = useSchemaCreationValidation(SECTOR_TYPE, basicShape);
+
   const [commit] = useMutation<SectorCreationMutation>(sectorMutation);
   const onSubmit: FormikConfig<SectorAddInput>['onSubmit'] = (
     values,
@@ -175,82 +170,96 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    SECTOR_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
-      validationSchema={sectorValidator}
-      onSubmit={onSubmit}
+                 validationSchema={sectorValidator}
+                 onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-            component={TextField}
-            variant="standard"
-            name="name"
-            label={t('Name')}
-            fullWidth={true}
-            detectDuplicate={['Sector']}
-          />
-          <Field
-            component={MarkDownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-            name="createdBy"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-            name="objectLabel"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.objectLabel}
-          />
-          <ObjectMarkingField
-            name="objectMarking"
-            style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-            name="externalReferences"
-            style={fieldSpacingContainerStyle}
-            setFieldValue={setFieldValue}
-            values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-              variant="contained"
-              onClick={handleReset}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-              variant="contained"
-              color="secondary"
-              onClick={submitForm}
-              disabled={isSubmitting}
-              classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Sector']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
       )}
     </Formik>
   );
@@ -271,18 +280,18 @@ const SectorCreation = ({
     <div>
       <Fab
         onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}
       >
         <Add />
       </Fab>
       <Drawer
         open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         <div className={classes.header}>

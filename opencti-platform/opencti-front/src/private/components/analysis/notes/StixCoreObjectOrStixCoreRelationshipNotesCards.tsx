@@ -5,17 +5,13 @@ import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
-import {
-  EditOutlined,
-  ExpandMoreOutlined,
-  RateReviewOutlined,
-} from '@mui/icons-material';
+import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import { noteCreationUserMutation } from './NoteCreation';
+import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { Theme } from '../../../../components/Theme';
@@ -36,9 +32,12 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import {
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   heading: {
@@ -133,13 +132,13 @@ const toOptions = (
 }));
 
 export interface NoteAddInput {
-  attribute_abstract: string;
-  content: string;
-  confidence: number;
-  note_types: string[];
-  likelihood?: number;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  attribute_abstract: string
+  content: string
+  confidence: number | undefined
+  note_types: string[]
+  likelihood?: number
+  objectMarking: Option[]
+  objectLabel: Option[]
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
@@ -186,16 +185,19 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const notes = data?.notes?.edges ?? [];
   const bottomRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
-  const [more, setMore] = useState<boolean>(false);
-  const initialValues: NoteAddInput = {
-    attribute_abstract: '',
-    content: '',
-    likelihood: 50,
-    confidence: 75,
-    note_types: [],
-    objectMarking: toOptions(defaultMarkings),
-    objectLabel: [],
-  };
+
+const [more, setMore] = useState<boolean>(false);  const initialValues = useDefaultValues<NoteAddInput>(
+    NOTE_TYPE,
+    {
+      attribute_abstract: '',
+      content: '',
+      likelihood: 50,
+      confidence: undefined,
+      note_types: [],
+      objectMarking: toOptions(defaultMarkings),
+      objectLabel: [],
+    },
+  );
   const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });

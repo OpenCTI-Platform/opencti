@@ -5,9 +5,10 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 export const ENTITY_TYPE_ENTITY_SETTING = 'EntitySetting';
 
 export interface AttributeConfiguration {
-  name: string;
-  mandatory: boolean;
-  scale?: Scale;
+  name: string
+  mandatory: boolean
+  default_values?: string[]
+  scale?: Scale
 }
 
 export interface Scale {

@@ -260,6 +260,7 @@ const i18n = {
         'Esta configuración habilita el requerimiento de un mensaje de referencia en la creación o modificación de una entidad.',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
+      Mandatory: 'Obligatoria',
       'Mandatory attributes': 'Atributos obligatorios',
       'Default mandatory attributes': 'Atributos obligatorios predeterminados',
       'Additional mandatory attributes': 'Atributos obligatorios adicionales',
@@ -1108,6 +1109,7 @@ const i18n = {
       'Auto new markings': 'Autorización de nuevos marcados',
       'Default membership': 'Pertenencia predeterminada',
       'Allowed markings': 'Marcas permitidas',
+      'Default markings': 'Marcas predeterminadas',
       Members: 'Miembros',
       'can edit': 'puede editar',
       'can view': 'puede ver',
@@ -2211,6 +2213,7 @@ const i18n = {
         "Cette configuration permet l'exigence d'un message de référence sur une création ou modification d'entité.",
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
+      Mandatory: 'Obligatoire',
       'Mandatory attributes': 'Attributs obligatoires',
       'Default mandatory attributes': 'Attributs obligatoires par défaut',
       'Additional mandatory attributes':
@@ -3043,6 +3046,7 @@ const i18n = {
       'Auto new markings': 'Autorisation pour les nouveaux marquages',
       'Default membership': 'Adhésion par défaut',
       'Allowed markings': 'Marquages autorisés',
+      'Default markings': 'Marquages par défaut',
       Members: 'Membres',
       'can edit': 'peut modifier',
       'can view': 'peut voir',
@@ -4104,6 +4108,7 @@ const i18n = {
         'この構成により、エンティティの作成または変更に関する参照メッセージの要件が有効になります。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
+      Mandatory: '必須',
       'Mandatory attributes': '必須属性',
       'Default mandatory attributes': 'デフォルトの必須属性',
       'Additional mandatory attributes': '追加の必須属性',
@@ -4934,6 +4939,7 @@ const i18n = {
       'Auto new markings': '新しいマーキングの自動化',
       'Default membership': '既定のメンバーシップ',
       'Allowed markings': '許可されるマーキング',
+      'Default markings': 'デフォルトのマーキング',
       Members: 'メンバ',
       'can edit': '編集することができます',
       'can view': '見ることができます',
@@ -5923,6 +5929,7 @@ const i18n = {
         '此配置启用了对实体创建或修改的参考消息的要求。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         '此配置使实体能够从上传的文件自动构建外部引用。',
+      Mandatory: '强制的',
       'Mandatory attributes': '必須属性',
       'Default mandatory attributes': '默认强制属性',
       'Additional mandatory attributes': '额外的强制属性',
@@ -6701,6 +6708,7 @@ const i18n = {
       'Auto new markings': '新標記的自動化',
       'Default membership': '默認成員資格',
       'Allowed markings': '允許的標記',
+      'Default markings': '默认标记',
       Members: '成员',
       'can edit': '可以編輯',
       'can view': '可以查看',

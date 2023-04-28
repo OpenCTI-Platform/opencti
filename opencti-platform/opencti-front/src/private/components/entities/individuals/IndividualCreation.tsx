@@ -30,6 +30,7 @@ import {
 } from './__generated__/IndividualCreationMutation.graphql';
 import { IndividualsLinesPaginationQuery$variables } from './__generated__/IndividualsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -87,6 +88,8 @@ const individualMutation = graphql`
   }
 `;
 
+const INDIVIDUAL_TYPE = 'Individual';
+
 interface IndividualAddInput {
   name: string
   description: string
@@ -119,17 +122,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const individualValidator = useSchemaCreationValidation('Individual', basicShape);
-
-  const initialValues: IndividualAddInput = {
-    name: '',
-    description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const individualValidator = useSchemaCreationValidation(INDIVIDUAL_TYPE, basicShape);
 
   const [commit] = useMutation<IndividualCreationMutation>(individualMutation);
 
@@ -166,11 +159,24 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues(
+    INDIVIDUAL_TYPE,
+    {
+      name: '',
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return <Formik
-      initialValues={initialValues}
-      validationSchema={individualValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={initialValues}
+    validationSchema={individualValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -178,79 +184,81 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['User']}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['User']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
 
-const IndividualCreation = ({ paginationOptions }: { paginationOptions: IndividualsLinesPaginationQuery$variables }) => {
+const IndividualCreation = ({ paginationOptions }: {
+  paginationOptions: IndividualsLinesPaginationQuery$variables
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -269,17 +277,17 @@ const IndividualCreation = ({ paginationOptions }: { paginationOptions: Individu
   return (
     <div>
       <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -293,9 +301,9 @@ const IndividualCreation = ({ paginationOptions }: { paginationOptions: Individu
         </div>
         <div className={classes.container}>
           <IndividualCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

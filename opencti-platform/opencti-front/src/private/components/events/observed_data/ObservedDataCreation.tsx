@@ -12,15 +12,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { parse } from '../../../../utils/Time';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/store';
@@ -35,6 +33,7 @@ import {
   ObservedDataCreationMutation$variables,
 } from './__generated__/ObservedDataCreationMutation.graphql';
 import { ObservedDatasLinesPaginationQuery$variables } from './__generated__/ObservedDatasLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,12 +90,14 @@ const observedDataCreationMutation = graphql`
   }
 `;
 
+const OBSERVED_DATA_TYPE = 'Observed-Data';
+
 interface ObservedDataAddInput {
   objects: { value: string }[]
   first_observed: Date
   last_observed: Date
   number_observed: number
-  confidence: number
+  confidence: number | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
@@ -135,26 +136,17 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
     confidence: Yup.number().nullable(),
   };
   const observedDataValidator = useSchemaCreationValidation(
-    'Observed-Data',
+    OBSERVED_DATA_TYPE,
     basicShape,
   );
 
-  const initialValues: ObservedDataAddInput = {
-    objects: [],
-    first_observed: dayStartDate(),
-    last_observed: dayStartDate(),
-    number_observed: 1,
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
-
   const [commit] = useMutation<ObservedDataCreationMutation>(observedDataCreationMutation);
 
-  const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    setErrors,
+    resetForm,
+  }) => {
     const input: ObservedDataCreationMutation$variables['input'] = {
       objects: values.objects.map((v) => v.value),
       first_observed: parse(values.first_observed).format(),
@@ -189,6 +181,22 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    OBSERVED_DATA_TYPE,
+    {
+      objects: [],
+      first_observed: '' as unknown as Date,
+      last_observed: '' as unknown as Date,
+      number_observed: 1,
+      confidence: defaultConfidence,
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
 
   return (
     <Formik
@@ -293,7 +301,9 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
   );
 };
 
-const ObservedDataCreation = ({ paginationOptions }: { paginationOptions: ObservedDatasLinesPaginationQuery$variables }) => {
+const ObservedDataCreation = ({ paginationOptions }: {
+  paginationOptions: ObservedDatasLinesPaginationQuery$variables
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

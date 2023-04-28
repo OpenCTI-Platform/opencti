@@ -388,7 +388,7 @@ enum AttributesOrdering {
 }
 type AttributeConnection {
   pageInfo: PageInfo!
-  edges: [AttributeEdge]
+  edges: [AttributeEdge!]!
 }
 type AttributeEdge {
   cursor: String!
@@ -1036,6 +1036,14 @@ type GroupEdge {
   cursor: String!
   node: Group!
 }
+input DefaultMarkingInput {
+  entity_type: String!
+  values: [String!]
+}
+type DefaultMarking {
+  entity_type: String
+  values: [MarkingDefinition!]
+}
 type Group implements InternalObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
@@ -1053,7 +1061,8 @@ type Group implements InternalObject & BasicObject {
     orderBy: RolesOrdering
     orderMode: OrderingMode
   ): [Role]
-  allowed_marking: [MarkingDefinition]
+  allowed_marking: [MarkingDefinition!]
+  default_marking: [DefaultMarking!]
   # Technical
   editContext: [EditUserContext!]
 }
@@ -1209,6 +1218,7 @@ type MeUser implements BasicObject & InternalObject {
   capabilities: [Capability!]!
   default_hidden_types: [String]!
   allowed_marking: [MarkingDefinition!]
+  default_marking: [DefaultMarking!]
   otp_mandatory: Boolean
 }
 type SessionDetail {
@@ -12584,6 +12594,7 @@ type GroupEditMutations {
   contextClean: Group
   relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
+  editDefaultMarking(input: DefaultMarkingInput!): Group
 }
 type UserEditMutations {
   delete: ID

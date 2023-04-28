@@ -1,17 +1,14 @@
-import { Field, Form, Formik } from 'formik';
+import { Field, Form, Formik, FormikErrors } from 'formik';
 import React, { FunctionComponent } from 'react';
 import makeStyles from '@mui/styles/makeStyles';
 import { DeleteOutline } from '@mui/icons-material';
 import Grid from '@mui/material/Grid';
 import BaseSchema from 'yup/lib/schema';
 import IconButton from '@mui/material/IconButton';
-import TextField from '../../../../components/TextField';
-import ColorPickerField from '../../../../components/ColorPickerField';
-import type {
-  Tick,
-  UndefinedTick,
-} from './EntitySettingAttributesConfigurationScale';
-import { useFormatter } from '../../../../components/i18n';
+import TextField from '../../../../../components/TextField';
+import ColorPickerField from '../../../../../components/ColorPickerField';
+import { useFormatter } from '../../../../../components/i18n';
+import { Tick, UndefinedTick } from './scale';
 
 const useStyles = makeStyles(() => ({
   button: {
@@ -23,16 +20,16 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface EntitySettingScaleTickLineProps {
-  tick: Tick | UndefinedTick;
-  tickLabel: string;
-  deleteEnabled?: boolean;
-  validation: (t: (v: string) => string) => BaseSchema;
-  handleUpdate: (name: keyof Tick, value: number | string) => void;
-  handleDelete?: () => void;
-  noMargin?: boolean;
+  tick: Tick | UndefinedTick
+  tickLabel: string
+  deleteEnabled?: boolean
+  validation: (t: (v: string) => string, min: number, max: number) => BaseSchema
+  handleUpdate: (validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>, name: keyof Tick, value: number | string) => void
+  handleDelete?: () => void
+  noMargin?: boolean
 }
 
-const EntitySettingScaleTickLine: FunctionComponent<
+const ScaleConfigurationLine: FunctionComponent<
 EntitySettingScaleTickLineProps
 > = ({
   tick,
@@ -45,19 +42,15 @@ EntitySettingScaleTickLineProps
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+
   return (
     <Formik
       enableReinitialize={true}
       initialValues={tick}
-      validationSchema={validation(t)}
+      validationSchema={validation}
       onSubmit={() => {}}
     >
-      {() => {
-        const handleTickValueUpdate = (name: keyof Tick, value: string) => {
-          if (handleUpdate) {
-            handleUpdate(name, value !== '' ? Number.parseInt(value, 10) : '');
-          }
-        };
+      {({ validateForm }) => {
         return (
           <Form style={{ marginTop: noMargin ? 0 : 15 }}>
             <Grid container spacing={3} columns={13}>
@@ -69,7 +62,7 @@ EntitySettingScaleTickLineProps
                   name="value"
                   label={tickLabel}
                   fullWidth={true}
-                  onSubmit={handleTickValueUpdate}
+                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value !== '' ? Number.parseInt(value, 10) : '')}
                 />
               </Grid>
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
@@ -79,8 +72,7 @@ EntitySettingScaleTickLineProps
                   name="color"
                   label={t('Color')}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)
-                  }
+                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
               </Grid>
               <Grid item xs={4} style={{ paddingTop: noMargin ? 0 : 24 }}>
@@ -90,8 +82,7 @@ EntitySettingScaleTickLineProps
                   name="label"
                   label={t('Label')}
                   fullWidth={true}
-                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(name, value)
-                  }
+                  onSubmit={(name: keyof Tick, value: string) => handleUpdate(validateForm, name, value)}
                 />
               </Grid>
               {deleteEnabled && (
@@ -99,10 +90,7 @@ EntitySettingScaleTickLineProps
                   <div className={classes.button}>
                     {handleDelete && (
                       <IconButton onClick={() => handleDelete()}>
-                        <DeleteOutline
-                          fontSize="small"
-                          style={{ color: '#00b1ff' }}
-                        />
+                        <DeleteOutline fontSize="small" style={{ color: '#00b1ff' }} />
                       </IconButton>
                     )}
                   </div>
@@ -116,4 +104,4 @@ EntitySettingScaleTickLineProps
   );
 };
 
-export default EntitySettingScaleTickLine;
+export default ScaleConfigurationLine;

@@ -27,7 +27,6 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
@@ -37,6 +36,8 @@ import {
 } from './__generated__/IndicatorCreationMutation.graphql';
 import { parse } from '../../../../utils/Time';
 import { IndicatorsLinesPaginationQuery$variables } from './__generated__/IndicatorsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -98,9 +99,11 @@ const indicatorMutation = graphql`
   }
 `;
 
+const INDICATOR_TYPE = 'Indicator';
+
 interface IndicatorAddInput {
   name: string
-  confidence: number
+  confidence: number | undefined
   indicator_types: string[]
   pattern: string
   pattern_type: string
@@ -155,7 +158,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       .nullable()
       .min(
         Yup.ref('valid_from'),
-        "The valid until date can't be before valid from date",
+        'The valid until date can\'t be before valid from date',
       )
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
     x_mitre_platforms: Yup.array().nullable(),
@@ -165,30 +168,9 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
     createObservables: Yup.boolean().nullable(),
   };
   const indicatorValidator = useSchemaCreationValidation(
-    'Indicator',
+    INDICATOR_TYPE,
     basicShape,
   );
-
-  const initialValues = {
-    name: '',
-    confidence: defaultConfidence ?? 75,
-    indicator_types: [],
-    pattern: '',
-    pattern_type: '',
-    x_opencti_main_observable_type: '',
-    x_mitre_platforms: [],
-    valid_from: null,
-    valid_until: null,
-    description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    killChainPhases: [],
-    objectLabel: [],
-    externalReferences: [],
-    x_opencti_detection: false,
-    x_opencti_score: 50,
-    file: undefined,
-  };
 
   const [commit] = useMutation<IndicatorCreationMutation>(indicatorMutation);
 
@@ -235,6 +217,30 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    INDICATOR_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      indicator_types: [],
+      pattern: '',
+      pattern_type: '',
+      x_opencti_main_observable_type: '',
+      x_mitre_platforms: [],
+      valid_from: null,
+      valid_until: null,
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      killChainPhases: [],
+      objectLabel: [],
+      externalReferences: [],
+      x_opencti_detection: false,
+      x_opencti_score: 50,
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

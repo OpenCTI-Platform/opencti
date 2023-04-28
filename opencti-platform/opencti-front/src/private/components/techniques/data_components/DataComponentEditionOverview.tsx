@@ -132,14 +132,14 @@ interface DataComponentEditionOverviewComponentProps {
 }
 
 interface DataComponentAddInput {
-  name: string;
-  description: string | null;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  x_opencti_workflow_id: Option;
-  confidence: number | null;
-  message?: string;
-  references?: Option[];
+  name: string
+  description: string | null
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  x_opencti_workflow_id: Option
+  confidence: number | undefined
+  message?: string
+  references?: Option[]
 }
 
 const DataComponentEditionOverview: FunctionComponent<

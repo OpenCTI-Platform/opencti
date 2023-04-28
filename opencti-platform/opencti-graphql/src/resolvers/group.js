@@ -1,15 +1,18 @@
 import { withFilter } from 'graphql-subscriptions';
 import {
-  groupDelete,
-  findAll,
-  findById,
   batchMarkingDefinitions,
   batchMembers,
-  groupEditField,
-  groupDeleteRelation,
+  batchRoles,
+  defaultMarkingDefinitions,
+  findAll,
+  findById,
   groupAddRelation,
   groupCleanContext,
-  groupEditContext, batchRoles,
+  groupDelete,
+  groupDeleteRelation,
+  groupEditContext,
+  groupEditDefaultMarking,
+  groupEditField,
 } from '../domain/group';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
@@ -29,6 +32,7 @@ const groupResolvers = {
   },
   Group: {
     allowed_marking: (stixCoreObject, _, context) => markingsLoader.load(stixCoreObject.id, context, context.user),
+    default_marking: (group, _, context) => defaultMarkingDefinitions(context, group),
     roles: (stixCoreObject, _, context) => rolesLoader.load(stixCoreObject.id, context, context.user),
     members: (group, _, context) => membersLoader.load(group.id, context, context.user),
     editContext: (group) => fetchEditContext(group.id),
@@ -41,6 +45,7 @@ const groupResolvers = {
       contextClean: () => groupCleanContext(context, context.user, id),
       relationAdd: ({ input }) => groupAddRelation(context, context.user, id, input),
       relationDelete: ({ fromId, toId, relationship_type: relationshipType }) => groupDeleteRelation(context, context.user, id, fromId, toId, relationshipType),
+      editDefaultMarking: ({ input }) => groupEditDefaultMarking(context, context.user, id, input),
     }),
     groupAdd: (_, { input }, context) => addGroup(context, context.user, input),
   },

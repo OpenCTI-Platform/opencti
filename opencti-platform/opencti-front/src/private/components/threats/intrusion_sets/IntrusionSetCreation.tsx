@@ -13,9 +13,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -33,6 +31,7 @@ import {
   IntrusionSetCreationMutation$variables,
 } from './__generated__/IntrusionSetCreationMutation.graphql';
 import { IntrusionSetsLinesPaginationQuery$variables } from './__generated__/IntrusionSetsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -90,10 +89,12 @@ const intrusionSetMutation = graphql`
   }
 `;
 
+const INTRUSION_SET_TYPE = 'Intrusion-Set';
+
 interface IntrusionSetAddInput {
   name: string
   description: string
-  confidence: number
+  confidence: number | undefined
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
@@ -127,21 +128,15 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
     description: Yup.string().nullable(),
   };
   const intrusionSetValidator = useSchemaCreationValidation(
-    'Intrusion-Set',
+    INTRUSION_SET_TYPE,
     basicShape,
   );
-  const initialValues = {
-    name: '',
-    confidence: defaultConfidence ?? 75,
-    description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
   const [commit] = useMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
-  const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    setErrors,
+    resetForm,
+  }) => {
     const input: IntrusionSetCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -174,6 +169,21 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    INTRUSION_SET_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      description: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -264,7 +274,9 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
   );
 };
 
-const IntrusionSetCreation = ({ paginationOptions }: { paginationOptions: IntrusionSetsLinesPaginationQuery$variables }) => {
+const IntrusionSetCreation = ({ paginationOptions }: {
+  paginationOptions: IntrusionSetsLinesPaginationQuery$variables
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

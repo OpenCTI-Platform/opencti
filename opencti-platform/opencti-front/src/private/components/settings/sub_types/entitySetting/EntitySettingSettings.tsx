@@ -6,81 +6,41 @@ import { Tooltip } from '@mui/material';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
-import { useFormatter } from '../../../../components/i18n';
-import { EntitySetting_entitySetting$key } from './__generated__/EntitySetting_entitySetting.graphql';
-import { SubType_subType$data } from './__generated__/SubType_subType.graphql';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
-import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
+import { useFormatter } from '../../../../../components/i18n';
+import { EntitySetting_entitySetting$key } from '../__generated__/EntitySetting_entitySetting.graphql';
+import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
+import ErrorNotFound from '../../../../../components/ErrorNotFound';
+import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import EntitySettingHiddenInRoles from './EntitySettingHiddenInRoles';
-import Security from '../../../../utils/Security';
+import Security from '../../../../../utils/Security';
 
-export const entitySettingsFragment = graphql`
-  fragment EntitySettingConnection_entitySettings on EntitySettingConnection {
-    edges {
-      node {
-        id
-        enforce_reference
-        platform_entity_files_ref
-        platform_hidden_type
-        target_type
-        mandatoryAttributes
-        scaleAttributes {
-          name
-          scale
-        }
-      }
-    }
-  }
-`;
-
-// used only for entity settings configuration
-export const entitySettingFragment = graphql`
-  fragment EntitySetting_entitySetting on EntitySetting {
+const entitySettingFragment = graphql`
+  fragment EntitySettingSettings_entitySetting on EntitySetting {
     id
     target_type
     platform_entity_files_ref
     platform_hidden_type
     enforce_reference
-    attributesDefinitions {
-      name
-      label
-      mandatory
-      mandatoryType
-      scale
-    }
-    attributes_configuration
     availableSettings
   }
 `;
 
-export const entitySettingQuery = graphql`
-  query EntitySettingQuery($targetType: String!) {
-    entitySettingByType(targetType: $targetType) {
-      ...EntitySetting_entitySetting
-    }
-  }
-`;
-
-export const entitySettingsPatch = graphql`
-  mutation EntitySettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
+export const entitySettingPatch = graphql`
+  mutation EntitySettingSettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
-      ...EntitySetting_entitySetting
+      ...EntitySettingSettings_entitySetting
     }
   }
 `;
 
-const EntitySetting = ({
-  entitySettingsData,
-}: {
-  entitySettingsData: SubType_subType$data['settings'];
-}) => {
+const EntitySettingSettings = ({ entitySettingsData }: { entitySettingsData: SubType_subType$data['settings'] }) => {
   const { t } = useFormatter();
   const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
 
-  const [commit] = useMutation(entitySettingsPatch);
+  const [commit] = useMutation(entitySettingPatch);
 
   const handleSubmitField = (name: string, value: boolean) => {
     commit({
@@ -242,4 +202,4 @@ const EntitySetting = ({
   );
 };
 
-export default EntitySetting;
+export default EntitySettingSettings;

@@ -26,6 +26,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -104,8 +105,15 @@ interface CityFormProps {
   inputValue?: string;
 }
 
-export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+const CITY_TYPE = 'City';
+
+export const CityCreationForm: FunctionComponent<CityFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -114,7 +122,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
     latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
     longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
   };
-  const cityValidator = useSchemaCreationValidation('City', basicShape);
+  const cityValidator = useSchemaCreationValidation(CITY_TYPE, basicShape);
   const [commit] = useMutation(cityMutation);
 
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
@@ -148,21 +156,26 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
     });
   };
 
+  const initialValues = useDefaultValues(
+    CITY_TYPE,
+    {
+      name: '',
+      description: '',
+      latitude: '',
+      longitude: '',
+      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return <Formik<CityAddInput>
-      initialValues={{
-        name: '',
-        description: '',
-        latitude: '',
-        longitude: '',
-        createdBy: defaultCreatedBy ?? { value: '', label: '' },
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
-      validationSchema={cityValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={initialValues}
+    validationSchema={cityValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -170,90 +183,90 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['City']}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="longitude"
-              label={t('Longitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['City']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows={4}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="latitude"
+          label={t('Latitude')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <Field
+          component={TextField}
+          variant="standard"
+          name="longitude"
+          label={t('Longitude')}
+          fullWidth={true}
+          style={{ marginTop: 20 }}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
@@ -275,17 +288,17 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
   return (
     <div>
       <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
@@ -298,7 +311,7 @@ const CityCreation = ({ paginationOptions }: { paginationOptions: CitiesLinesPag
           <Typography variant="h6">{t('Create a city')}</Typography>
         </div>
         <div className={classes.container}>
-          <CityCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
+          <CityCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose} />
         </div>
       </Drawer>
     </div>

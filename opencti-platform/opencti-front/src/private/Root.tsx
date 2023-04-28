@@ -22,6 +22,13 @@ const rootPrivateQuery = graphql`
         name
       }
       default_hidden_types
+      default_marking {
+        entity_type
+        values {
+          id
+          definition
+        }
+      }
     }
     settings {
       platform_map_tile_server_dark
@@ -45,7 +52,7 @@ const rootPrivateQuery = graphql`
       version
     }
     entitySettings {
-      ...EntitySettingConnection_entitySettings
+      ...useEntitySettingsConnection_entitySettings
     }
     schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
       edges {

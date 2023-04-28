@@ -18,6 +18,7 @@ import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import SwitchField from '../../../../components/SwitchField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles((theme) => ({
   containerRelation: {
@@ -82,6 +83,8 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
+const STIX_SIGHTING_TYPE = 'stix-sighting-relationship';
+
 const StixSightingRelationshipCreationForm = ({
   fromEntities,
   toEntities,
@@ -110,7 +113,7 @@ const StixSightingRelationshipCreationForm = ({
     description: Yup.string().nullable(),
     x_opencti_negative: Yup.boolean().nullable(),
   };
-  const stixSightingRelationshipValidator = useSchemaCreationValidation('stix-sighting-relationship', basicShape);
+  const stixSightingRelationshipValidator = useSchemaCreationValidation(STIX_SIGHTING_TYPE, basicShape);
 
   const fromEntity = fromEntities[0];
   const toEntity = toEntities[0];
@@ -127,17 +130,20 @@ const StixSightingRelationshipCreationForm = ({
     20,
   );
 
-  const initialValues = {
-    attribute_count: 1,
-    confidence: defaultConfidence ?? 75,
-    first_seen: defaultFirstSeen,
-    last_seen: defaultLastSeen,
-    description: '',
-    objectMarking: defaultMarkingDefinitions ?? [],
-    createdBy: defaultCreatedBy ?? '',
-    x_opencti_negative: false,
-    externalReferences: [],
-  };
+  const initialValues = useDefaultValues(
+    STIX_SIGHTING_TYPE,
+    {
+      attribute_count: 1,
+      confidence: defaultConfidence,
+      first_seen: defaultFirstSeen,
+      last_seen: defaultLastSeen,
+      description: '',
+      objectMarking: defaultMarkingDefinitions ?? [],
+      createdBy: defaultCreatedBy ?? '',
+      x_opencti_negative: false,
+      externalReferences: [],
+    },
+  );
 
   return (
     <Formik
