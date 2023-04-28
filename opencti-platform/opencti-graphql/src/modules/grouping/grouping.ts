@@ -31,8 +31,6 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'context', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'x_opencti_graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   relations: [],
   representative: (stix: StixGrouping) => {
