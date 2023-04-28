@@ -291,6 +291,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     x_opencti_workflow_id: convertStatus(t, stixSightingRelationship) as Option,
     createdBy: convertCreatedBy(stixSightingRelationship) as Option,
     objectMarking: convertMarkings(stixSightingRelationship),
+    references: [],
   };
 
   return (

@@ -292,6 +292,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
     x_opencti_workflow_id: convertStatus(t, stixCoreRelationship) as Option,
     createdBy: convertCreatedBy(stixCoreRelationship) as Option,
     objectMarking: convertMarkings(stixCoreRelationship),
+    references: [],
   };
   return (
     <div>

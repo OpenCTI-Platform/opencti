@@ -46,7 +46,7 @@ const styles = () => ({
 });
 
 const StixCoreObjectOrRelationshipLabelsView = (props) => {
-  const { classes, labels, t, marginTop, mutationRelationAdd, mutationRelationDelete, enableReferences } = props;
+  const { classes, labels, t, marginTop, mutationRelationsAdd, mutationRelationDelete, enableReferences } = props;
 
   const isLabelManager = useGranted([SETTINGS_SETLABELS]);
 
@@ -96,7 +96,7 @@ const StixCoreObjectOrRelationshipLabelsView = (props) => {
       filter((value) => !currentLabelsIds.includes(value)),
     )(values.new_labels);
     commitMutation({
-      mutation: mutationRelationAdd,
+      mutation: mutationRelationsAdd,
       variables: {
         id: props.id,
         input: {
@@ -322,7 +322,7 @@ StixCoreObjectOrRelationshipLabelsView.propTypes = {
   t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,
-  mutationRelationAdd: PropTypes.func,
+  mutationRelationsAdd: PropTypes.func,
   mutationRelationDelete: PropTypes.func,
 };
 
