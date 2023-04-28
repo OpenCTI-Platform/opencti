@@ -32,7 +32,6 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [objectOrganization],

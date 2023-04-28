@@ -34,7 +34,6 @@ const NARRATIVE_DEFINITION: ModuleDefinition<StoreEntityNarrative, StixNarrative
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'narrative_types', type: 'string', mandatoryType: 'no', multiple: true, upsert: true },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     { name: RELATION_SUBNARRATIVE_OF,

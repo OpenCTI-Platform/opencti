@@ -39,7 +39,6 @@ const ADMINISTRATIVE_AREA_DEFINITION: ModuleDefinition<StoreEntityAdministrative
     { name: 'latitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'longitude', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     entityLocationType,
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     {

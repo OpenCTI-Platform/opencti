@@ -42,7 +42,6 @@ const EVENT_DEFINITION: ModuleDefinition<StoreEntityEvent, StixEvent> = {
     { name: 'event_types', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Event types' },
     { name: 'start_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'Start date' },
     { name: 'stop_time', type: 'date', mandatoryType: 'customizable', multiple: false, upsert: true, label: 'End date' },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [
     {

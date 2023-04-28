@@ -35,7 +35,6 @@ const DATA_SOURCE_DEFINITION: ModuleDefinition<StoreEntityDataSource, StixDataSo
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
     { name: 'x_mitre_platforms', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Platforms' },
     { name: 'collection_layers', type: 'string', mandatoryType: 'customizable', multiple: true, upsert: true, label: 'Layers' },
-    { name: 'x_opencti_workflow_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [
