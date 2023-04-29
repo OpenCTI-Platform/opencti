@@ -15,7 +15,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, { logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
 import { executionContext, SYSTEM_USER } from '../utils/access';
