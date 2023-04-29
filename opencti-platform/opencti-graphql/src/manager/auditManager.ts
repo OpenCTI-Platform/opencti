@@ -1,3 +1,18 @@
+/*
+Copyright (c) 2021-2023 Filigran SAS
+
+This file is part of the OpenCTI Enterprise Edition ("EE") and is
+licensed under the OpenCTI Non-Commercial License (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+*/
+
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
 import { AUDIT_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
@@ -16,23 +31,6 @@ import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/store';
-
-// ------------------------------------------------------------------------ //
-//     OpenCTI Enterprise Edition License                                   //
-// ------------------------------------------------------------------------ //
-//     Copyright (c) 2021-2023 Filigran SAS                                 //
-//                                                                          //
-// This file is part of the OpenCTI Enterprise Edition ("EE") and is        //
-// licensed under the OpenCTI Non-Commercial License (the "License");       //
-// you may not use this file except in compliance with the License.         //
-// You may obtain a copy of the License at                                  //
-//                                                                          //
-// https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE          //
-//                                                                          //
-// Unless required by applicable law or agreed to in writing, software      //
-// distributed under the License is distributed on an "AS IS" BASIS,        //
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. //
-// ------------------------------------------------------------------------ //
 
 const AUDIT_ENGINE_KEY = conf.get('audit_manager:lock_key');
 const SCHEDULE_TIME = 10000;
