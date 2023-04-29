@@ -528,7 +528,7 @@ class CaseRfi:
                 + "}",
             )
             query = """
-               mutation CaseRfiEditRelationAdd($id: ID!, $input: StixMetaRelationshipAddInput) {
+               mutation CaseRfiEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput) {
                    caseRfiEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
