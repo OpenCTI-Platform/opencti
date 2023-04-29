@@ -14,7 +14,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 */
 
 import { clearIntervalAsync, setIntervalAsync, SetIntervalAsyncTimer } from 'set-interval-async/fixed';
-import { AUDIT_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
+import { ACTIVITY_STREAM_NAME, createStreamProcessor, lockResource, StreamProcessor } from '../database/redis';
 import conf, { booleanConf, logApp } from '../config/conf';
 import { INDEX_HISTORY, isEmptyField, isNotEmptyField } from '../database/utils';
 import { TYPE_LOCK_ERROR } from '../config/errors';
@@ -22,20 +22,20 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
-import { ENTITY_TYPE_AUDIT, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext } from '../types/user';
 import { OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
-import type { AuditStreamEvent } from './auditListener';
+import type { ActivityStreamEvent } from './activityListener';
 import { BASE_TYPE_ENTITY } from '../schema/general';
 import { elIndexElements } from '../database/engine';
 import { getEntityFromCache } from '../database/cache';
 import type { BasicStoreSettings } from '../types/store';
 
-const AUDIT_ENGINE_KEY = conf.get('audit_manager:lock_key');
+const ACTIVITY_ENGINE_KEY = conf.get('activity_manager:lock_key');
 const SCHEDULE_TIME = 10000;
 
-const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<AuditStreamEvent>>) => {
+const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<ActivityStreamEvent>>) => {
   const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
   // If no events or enterprise edition is not activated
   if (isEmptyField(settings.enterprise_edition) || isEmptyField(events) || events.length === 0) {
@@ -52,7 +52,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
       base_type: BASE_TYPE_ENTITY,
       created_at: activityDate,
       updated_at: activityDate,
-      entity_type: ENTITY_TYPE_AUDIT,
+      entity_type: ENTITY_TYPE_ACTIVITY,
       event_type: event.event,
       user_id: event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
@@ -63,19 +63,19 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
     };
   });
   // Bulk the history data insertions
-  await elIndexElements(context, SYSTEM_USER, `audit (${historyElements.length})`, historyElements);
+  await elIndexElements(context, SYSTEM_USER, `activity (${historyElements.length})`, historyElements);
 };
 
-const auditStreamHandler = async (streamEvents: Array<SseEvent<AuditStreamEvent>>) => {
+const activityStreamHandler = async (streamEvents: Array<SseEvent<ActivityStreamEvent>>) => {
   try {
-    const context = executionContext('audit_manager');
+    const context = executionContext('activity_manager');
     await eventsApplyHandler(context, streamEvents);
   } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing audit manager', { error: e });
+    logApp.error('[OPENCTI-MODULE] Error executing activity manager', { error: e });
   }
 };
 
-const initAuditManager = () => {
+const initActivityManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
@@ -86,24 +86,24 @@ const initAuditManager = () => {
       setTimeout(resolve, ms);
     });
   };
-  const auditHandler = async (lastEventId: string) => {
+  const activityHandler = async (lastEventId: string) => {
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([AUDIT_ENGINE_KEY], { retryCount: 0 });
+      lock = await lockResource([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
-      logApp.info('[OPENCTI-MODULE] Running audit manager');
-      const streamOpts = { streamName: AUDIT_STREAM_NAME, withInternal: false };
-      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Audit manager', auditStreamHandler, streamOpts);
+      logApp.info('[OPENCTI-MODULE] Running activity manager');
+      const streamOpts = { streamName: ACTIVITY_STREAM_NAME, withInternal: false };
+      streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
       while (syncListening) {
         await wait(WAIT_TIME_ACTION);
       }
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.debug('[OPENCTI-MODULE] Audit manager already started by another API');
+        logApp.debug('[OPENCTI-MODULE] Activity manager already started by another API');
       } else {
-        logApp.error('[OPENCTI-MODULE] Audit manager failed to start', { error: e });
+        logApp.error('[OPENCTI-MODULE] Activity manager failed to start', { error: e });
       }
     } finally {
       running = false;
@@ -115,8 +115,8 @@ const initAuditManager = () => {
     start: async () => {
       // To start the manager we need to find the last event id indexed
       // and restart the stream consumption from this point.
-      const context = executionContext('audit_manager');
-      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_AUDIT], {
+      const context = executionContext('activity_manager');
+      const histoElements = await listEntities<HistoryData>(context, SYSTEM_USER, [ENTITY_TYPE_ACTIVITY], {
         first: 1,
         indices: [INDEX_HISTORY],
         connectionFormat: false,
@@ -131,14 +131,14 @@ const initAuditManager = () => {
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
         if (syncListening) {
-          await auditHandler(lastEventId);
+          await activityHandler(lastEventId);
         }
       }, SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {
       return {
-        id: 'AUDIT_MANAGER',
-        enable: booleanConf('audit_manager:enabled', true) && isNotEmptyField(settings?.enterprise_edition),
+        id: 'ACTIVITY_MANAGER',
+        enable: isNotEmptyField(settings?.enterprise_edition),
         running,
       };
     },
@@ -151,6 +151,6 @@ const initAuditManager = () => {
     },
   };
 };
-const auditManager = initAuditManager();
+const activityManager = initActivityManager();
 
-export default auditManager;
+export default activityManager;

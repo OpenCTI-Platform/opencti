@@ -65,7 +65,7 @@ export const configurationQuery = graphql`
         settings {
             id
             enterprise_edition
-            audit_listeners {
+            activity_listeners {
                 id
                 name
                 entity_type
@@ -78,7 +78,7 @@ export const configurationFieldPatch = graphql`
     mutation ConfigurationFieldPatchMutation($id: ID!, $input: [EditInput]!) {
         settingsEdit(id: $id) {
             fieldPatch(input: $input) {
-                audit_listeners {
+                activity_listeners {
                     id
                     name
                     entity_type
@@ -97,12 +97,12 @@ const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = (
   const { t } = useFormatter();
   const [commit] = useMutation(configurationFieldPatch);
   const { settings } = usePreloadedQuery<ConfigurationQuery>(configurationQuery, queryRef);
-  const currentListeners = (settings.audit_listeners ?? []).map((a) => a.id);
+  const currentListeners = (settings.activity_listeners ?? []).map((a) => a.id);
   const onChangeData = (resetForm: () => void) => {
     return (name: string, data: Option) => {
       if (!currentListeners.includes(data.value)) {
         const value = R.uniq([...currentListeners, data.value]);
-        commit({ variables: { id: settings?.id, input: { key: 'audit_listeners_ids', value } } });
+        commit({ variables: { id: settings?.id, input: { key: 'activity_listeners_ids', value } } });
       }
       resetForm();
     };
@@ -118,7 +118,7 @@ const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = (
             <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
                    severity="warning" variant="outlined" style={{ position: 'relative' }}>
                 <AlertTitle style={{ marginBottom: 0 }}>
-                    {t('Audit logs can be enhance to listen for users actions like see, upload, download...')}<br/>
+                    {t('Activity logs can be enhance to listen for users actions like see, upload, download...')}<br/>
                     {t('To activate it you need to choose witch users/groups/organizations you want to enhance')}<br/>
                     {t('History of new listeners will start as soon added in the configuration')}<br/>
                 </AlertTitle>
@@ -145,7 +145,7 @@ const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = (
                 </Formik>
             </div>
             <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
-                {(settings.audit_listeners ?? []).map((listener) => {
+                {(settings.activity_listeners ?? []).map((listener) => {
                   return (
                         <div key={listener.id}>
                             <ListItem classes={{ root: classes.item }} divider={true} button={true}>
@@ -162,7 +162,7 @@ const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = (
                                 <ListItemSecondaryAction>
                                     <IconButton aria-label="Kill" onClick={() => {
                                       const value = currentListeners.filter((c) => c !== listener.id);
-                                      commit({ variables: { id: settings?.id, input: { key: 'audit_listeners_ids', value } } });
+                                      commit({ variables: { id: settings?.id, input: { key: 'activity_listeners_ids', value } } });
                                     }} size="large">
                                         <Delete />
                                     </IconButton>

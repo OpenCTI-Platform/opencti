@@ -5,7 +5,7 @@ const ActivityMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/activity/audit',
-      label: 'Audit logs',
+      label: 'Activity logs',
     },
     {
       path: '/dashboard/settings/activity/configuration',

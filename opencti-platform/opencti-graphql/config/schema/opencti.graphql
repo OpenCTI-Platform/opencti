@@ -954,7 +954,7 @@ type Provider {
   strategy: String
   provider: String
 }
-type AuditListener {
+type ActivityListener {
   id: ID!
   name: String!
   entity_type: String!
@@ -1003,7 +1003,7 @@ type Settings implements InternalObject & BasicObject {
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   enterprise_edition: DateTime @auth(for: [SETTINGS])
-  audit_listeners: [AuditListener!] @auth(for: [SETTINGS])
+  activity_listeners: [ActivityListener!] @auth(for: [SETTINGS])
   otp_mandatory: Boolean @auth
   password_policy_min_length: Int @auth
   password_policy_max_length: Int @auth

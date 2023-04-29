@@ -116,7 +116,7 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
   const isHistoryUpdate = data.entity_type === 'History' && data.event_type === 'update' && isNotEmptyField(data.context_data?.entity_name);
-  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${isHistoryUpdate ? (`for ${data.context_data?.entity_type}\`${data.context_data?.entity_name}\``) : ''}`;
+  const message = `\`${data.user?.name}\` ${data.context_data?.message} ${isHistoryUpdate ? (`for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`) : ''}`;
   return (
     <>
       { selectedLog && <Drawer open={true} anchor="right" elevation={1}

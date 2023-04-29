@@ -42,6 +42,7 @@ import {
   PowerSettingsNewOutlined,
   TaskAltOutlined,
   CasesOutlined,
+  SettingsOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -98,6 +99,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <LayersClearOutlined style={style} fontSize={fontSize} role="img" />;
     case 'StreamCollection':
       return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Settings':
+      return <SettingsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'TaxiiCollection':
       return <DatabaseExportOutline style={style} fontSize={fontSize} role="img" />;
     case 'Feed':

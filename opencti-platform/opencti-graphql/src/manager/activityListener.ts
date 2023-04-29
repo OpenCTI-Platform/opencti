@@ -17,19 +17,19 @@ import LRU from 'lru-cache';
 import { ActionHandler, ActionListener, registerUserActionListener, UserAction, } from '../listener/UserActionListener';
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
-import conf, { booleanConf, logAudit } from '../config/conf';
+import conf, { logAudit } from '../config/conf';
 import { isEmptyField } from '../database/utils';
 import type { BasicStoreSettings } from '../types/store';
-import { EVENT_AUDIT_VERSION, storeAuditEvent } from '../database/redis';
+import { EVENT_ACTIVITY_VERSION, storeActivityEvent } from '../database/redis';
 import type { UserOrigin } from '../types/user';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
-import { executionContext, INTERNAL_USERS, isBypassUser, SYSTEM_USER } from '../utils/access';
+import { executionContext, INTERNAL_USERS, SYSTEM_USER } from '../utils/access';
 
 const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [];
-const EXTENDED_USER_TRACKING = booleanConf('app:audit_logs:extended_user_tracking', true);
+const EXTENDED_ACTIONS = ['read', 'upload', 'download', 'export'];
 
-export interface AuditStreamEvent {
+export interface ActivityStreamEvent {
   version: string
   type: string
   message: string
@@ -38,8 +38,8 @@ export interface AuditStreamEvent {
   data: object
 }
 
-const initAuditManager = () => {
-  const auditReadCache = new LRU({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
+const initActivityManager = () => {
+  const activityReadCache = new LRU({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
   const cleanInputData = (obj: any) => {
     const stack = [obj];
     while (stack?.length > 0) {
@@ -55,10 +55,10 @@ const initAuditManager = () => {
     }
     return obj;
   };
-  const buildAuditStreamEvent = (action: UserAction, message: string): AuditStreamEvent => {
+  const buildActivityStreamEvent = (action: UserAction, message: string): ActivityStreamEvent => {
     const data = cleanInputData(action.context_data ?? {});
     return {
-      version: EVENT_AUDIT_VERSION,
+      version: EVENT_ACTIVITY_VERSION,
       type: action.event_type,
       message,
       status: action.status,
@@ -66,29 +66,27 @@ const initAuditManager = () => {
       data,
     };
   };
-  const auditLogger = async (action: UserAction, message: string): Promise<boolean> => {
-    const context = executionContext('audit_listener');
+  const activityLogger = async (action: UserAction, message: string): Promise<boolean> => {
+    const context = executionContext('activity_listener');
+    const level = action.status === 'error' ? 'error' : 'info';
     const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     // If enterprise edition is not activated
     if (isEmptyField(settings.enterprise_edition)) {
       return false;
     }
-    // If validated, log to audit console, files
-    const level = action.status === 'error' ? 'error' : 'info';
-    logAudit._log(level, action.user, action.event_type, { ...action.context_data, message });
-    // If specific user listening configured
-    // User with bypass access is by default audited to prevent any silent modifications
-    const auditListeners = settings.audit_listeners_users ?? [];
-    if (isBypassUser(action.user) || auditListeners.includes(action.user.id)) {
-      // Push to audit stream
-      const event = buildAuditStreamEvent(action, message);
-      await storeAuditEvent(event);
-      return true;
+    // If extended actions, is action is not for listened user
+    const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
+    if (EXTENDED_ACTIONS.includes(action.event_type) && !isUserListening) {
+      return false;
     }
-    return false;
+    // If standard action, log and push to activity stream.
+    logAudit._log(level, action.user, action.event_type, { ...action.context_data, message });
+    const event = buildActivityStreamEvent(action, message);
+    await storeActivityEvent(event);
+    return true;
   };
-  const auditHandler: ActionListener = {
-    id: 'AUDIT_MANAGER',
+  const activityHandler: ActionListener = {
+    id: 'ACTIVITY_MANAGER',
     next: async (action: UserAction) => {
       // Internal users must not be tracked
       if (INTERNAL_USERS[action.user.id]) {
@@ -102,48 +100,46 @@ const initAuditManager = () => {
       if (action.event_type === 'login') {
         const { provider } = action.context_data;
         const message = `login from provider \`${provider}\``;
-        await auditLogger(action, message);
+        await activityLogger(action, message);
       }
       if (action.event_type === 'logout') {
-        await auditLogger(action, 'logout');
+        await activityLogger(action, 'logout');
       }
       if (action.event_type === 'admin') {
-        await auditLogger(action, action.message);
+        await activityLogger(action, action.message);
       }
       if (action.event_type === 'unauthorized') {
         const { path } = action.context_data;
         const message = `tries an unauthorized access to \`${path}\``;
-        await auditLogger(action, message);
+        await activityLogger(action, message);
       }
       // endregion
-      // region User tracking
-      if (EXTENDED_USER_TRACKING) {
-        if (action.event_type === 'read') {
-          const { id, entity_type, entity_name } = action.context_data;
-          const identifier = `${id}-${action.user.id}`;
-          if (!auditReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
-            const message = `reads ${entity_type} \`${entity_name}\``;
-            const published = await auditLogger(action, message);
-            if (published) {
-              auditReadCache.set(identifier, undefined);
-            }
+      // region User extended actions
+      if (action.event_type === 'read') {
+        const { id, entity_type, entity_name } = action.context_data;
+        const identifier = `${id}-${action.user.id}`;
+        if (!activityReadCache.has(identifier) && (isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type))) {
+          const message = `reads \`${entity_name}\` (${entity_type})`;
+          const published = await activityLogger(action, message);
+          if (published) {
+            activityReadCache.set(identifier, undefined);
           }
         }
-        if (action.event_type === 'upload') {
-          const { file_name, entity_name } = action.context_data;
-          const message = `uploads in \`${entity_name}\` the file \`${file_name}\``;
-          await auditLogger(action, message);
-        }
-        if (action.event_type === 'download') {
-          const { file_name, entity_name } = action.context_data;
-          const message = `downloads from \`${entity_name}\` the file \`${file_name}\``;
-          await auditLogger(action, message);
-        }
-        if (action.event_type === 'export') {
-          const { file_name, entity_name } = action.context_data;
-          const message = `asks for export generation in \`${entity_name}\` (\`${file_name}\`)`;
-          await auditLogger(action, message);
-        }
+      }
+      if (action.event_type === 'upload') {
+        const { file_name, entity_name } = action.context_data;
+        const message = `uploads in \`${entity_name}\` the file \`${file_name}\``;
+        await activityLogger(action, message);
+      }
+      if (action.event_type === 'download') {
+        const { file_name, entity_name } = action.context_data;
+        const message = `downloads from \`${entity_name}\` the file \`${file_name}\``;
+        await activityLogger(action, message);
+      }
+      if (action.event_type === 'export') {
+        const { file_name, entity_name } = action.context_data;
+        const message = `asks for export generation in \`${entity_name}\` (\`${file_name}\`)`;
+        await activityLogger(action, message);
       }
       // endregion
     }
@@ -151,11 +147,11 @@ const initAuditManager = () => {
   let handler: ActionHandler;
   return {
     start: async () => {
-      handler = registerUserActionListener(auditHandler);
+      handler = registerUserActionListener(activityHandler);
     },
     status: () => {
       return {
-        id: 'AUDIT_MANAGER',
+        id: 'ACTIVITY_MANAGER',
         enable: true,
         running: true,
       };
@@ -168,5 +164,5 @@ const initAuditManager = () => {
     },
   };
 };
-const auditListener = initAuditManager();
-export default auditListener;
+const activityListener = initActivityManager();
+export default activityListener;

@@ -51,7 +51,7 @@ const Audit = () => {
       sortBy: 'timestamp',
       orderAsc: false,
       openExports: false,
-      types: ['Audit'],
+      types: ['Activity'],
       count: 25,
     },
   );
@@ -75,7 +75,7 @@ const Audit = () => {
   const extraFields = <div style={{ float: 'left' }}>
       <FormControlLabel value="start"
         control={<Checkbox style={{ padding: 7 }} onChange={() => {
-          const newTypes = types?.length === 1 ? ['History', 'Audit'] : ['Audit'];
+          const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
           storageHelpers.handleAddProperty('types', newTypes);
         }} checked={types?.length === 2}/>}
         label="Include knowledge"

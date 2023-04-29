@@ -1013,7 +1013,7 @@ type Provider {
   provider: String
 }
 
-type AuditListener {
+type ActivityListener {
   id: ID!
   name: String!
   entity_type: String!
@@ -1062,7 +1062,7 @@ type Settings implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   enterprise_edition: DateTime
-  audit_listeners: [AuditListener!]
+  activity_listeners: [ActivityListener!]
   otp_mandatory: Boolean
   password_policy_min_length: Int
   password_policy_max_length: Int

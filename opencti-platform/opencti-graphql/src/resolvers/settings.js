@@ -26,7 +26,7 @@ const settingsResolvers = {
   },
   Settings: {
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
-    audit_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.audit_listeners_ids),
+    activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,

@@ -23,8 +23,7 @@
       "logs_files": true,
       "logs_console": true,
       "logs_max_files": 7,
-      "logs_directory": "./logs",
-      "extended_user_tracking": true
+      "logs_directory": "./logs"
     },
     "graphql": {
       "armor_enabled": false,
@@ -87,9 +86,8 @@
     "enabled": true,
     "lock_key": "history_manager_lock"
   },
-  "audit_manager": {
-    "enabled": true,
-    "lock_key": "audit_manager_lock"
+  "activity_manager": {
+    "lock_key": "activity_manager_lock"
   },
   "connector_manager": {
     "enabled": true,

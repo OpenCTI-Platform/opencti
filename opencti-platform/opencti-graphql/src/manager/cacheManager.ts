@@ -102,9 +102,9 @@ const platformSettings = (context: AuthContext) => {
     const membersOrganizationMap = new Map(Object.entries(R.groupBy((r) => r.organization, memberOfOrgs)).map(([k, v]) => [k, v.map((t) => t.user)]));
     return listAllEntities<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false }).then((settings) => {
       return settings.map((s) => {
-        const auditListenerIds = s.audit_listeners_ids ?? [];
-        const audit_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
-        return { ...s, audit_listeners_users };
+        const auditListenerIds = s.activity_listeners_ids ?? [];
+        const activity_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
+        return { ...s, activity_listeners_users };
       });
     });
   };

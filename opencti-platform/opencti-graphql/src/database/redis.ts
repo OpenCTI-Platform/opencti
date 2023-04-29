@@ -39,7 +39,7 @@ import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
-import type { AuditStreamEvent } from '../manager/auditListener';
+import type { ActivityStreamEvent } from '../manager/activityListener';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
@@ -702,11 +702,11 @@ export const fetchRangeNotifications = async <T extends BaseEvent> (start: Date,
 // endregion
 
 // region opencti audit stream
-export const EVENT_AUDIT_VERSION = '1';
-export const AUDIT_STREAM_NAME = `${REDIS_PREFIX}stream.audit`;
-const auditTrimming = conf.get('redis:audit_trimming') || 50000;
-export const storeAuditEvent = async (event: AuditStreamEvent) => {
-  await getClientBase().call('XADD', AUDIT_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...mapJSToStream(event));
+export const EVENT_ACTIVITY_VERSION = '1';
+export const ACTIVITY_STREAM_NAME = `${REDIS_PREFIX}stream.activity`;
+const auditTrimming = conf.get('redis:activity_trimming') || 50000;
+export const storeActivityEvent = async (event: ActivityStreamEvent) => {
+  await getClientBase().call('XADD', ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...mapJSToStream(event));
 };
 // endregion
 
