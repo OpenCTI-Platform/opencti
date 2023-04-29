@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import {
   BiotechOutlined,
   TipsAndUpdatesOutlined,
+  PowerSettingsNewOutlined,
 } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -48,7 +49,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <BiotechOutlined className={classes.icon} fontSize="small" />
-          {t('Cases - Incidents')}
+          {t('Incident response')}
         </Button>
       )}
       {!useIsHiddenEntity('Case-Rfi') && (
@@ -67,7 +68,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <Brain className={classes.icon} fontSize="small" />
-          {t('Cases - RFIs')}
+          {t('Requests for information')}
         </Button>
       )}
       {!useIsHiddenEntity('Case-Rft') && (
@@ -85,8 +86,8 @@ const TopMenuCases = () => {
           }
           classes={{ root: classes.button }}
         >
-          <Brain className={classes.icon} fontSize="small" />
-          {t('Cases - RFTs')}
+          <PowerSettingsNewOutlined className={classes.icon} fontSize="small" />
+          {t('Requests for takedown')}
         </Button>
       )}
       {!useIsHiddenEntity('Feedback') && (
@@ -107,45 +108,9 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
-          {t('Cases - Feedbacks')}
+          {t('Feedbacks')}
         </Button>
       )}
-      {/* <Button
-        component={Link}
-        to="/dashboard/cases/others"
-        variant={
-          location.pathname === '/dashboard/cases/others' ? 'contained' : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/others'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-        disabled={true}
-      >
-        <WorkOutlineOutlined className={classes.icon} fontSize="small" />
-        {t('Others')}
-      </Button>
-      <Button
-        component={Link}
-        to="/dashboard/cases/feedbacks"
-        variant={
-          location.pathname === '/dashboard/cases/tasks' ? 'contained' : 'text'
-        }
-        size="small"
-        color={
-          location.pathname === '/dashboard/cases/tasks'
-            ? 'secondary'
-            : 'primary'
-        }
-        classes={{ root: classes.button }}
-        disabled={true}
-      >
-        <TaskAltOutlined className={classes.icon} fontSize="small" />
-        {t('Tasks')}
-      </Button> */}
     </div>
   );
 };

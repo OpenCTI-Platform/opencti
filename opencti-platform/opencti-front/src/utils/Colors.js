@@ -35,14 +35,26 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#727926';
       }
       return '#7f8727';
-    case 'Case':
     case 'Case-Incident':
-    case 'Case-rfi':
-    case 'Feedback':
       if (dark) {
         return '#ad1457';
       }
       return '#ec407a';
+    case 'Case-Rfi':
+      if (dark) {
+        return '#0c5c98';
+      }
+      return '#3880b7';
+    case 'Case-Rft':
+      if (dark) {
+        return '#4a2e7a';
+      }
+      return '#5c418a';
+    case 'Case-Feedback':
+      if (dark) {
+        return '#107a6e';
+      }
+      return '#44a49d';
     case 'Campaign':
       if (dark) {
         return '#4a148c';

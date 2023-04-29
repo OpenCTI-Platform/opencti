@@ -48,7 +48,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
         classes={{ root: classes.buttonHome }}
       >
         <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
-        {t('Cases - Feedbacks')}
+        {t('Feedbacks')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"

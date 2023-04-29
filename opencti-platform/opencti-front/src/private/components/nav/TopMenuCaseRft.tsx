@@ -1,7 +1,7 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, BiotechOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined, PowerSettingsNewOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -44,8 +44,8 @@ const TopMenuCaseRft: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <BiotechOutlined className={classes.icon} fontSize="small" />
-        {t('Cases - Rfts')}
+        <PowerSettingsNewOutlined className={classes.icon} fontSize="small" />
+        {t('Requests for takedown')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"

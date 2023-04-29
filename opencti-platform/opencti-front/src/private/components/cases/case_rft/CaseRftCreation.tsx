@@ -210,7 +210,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
           }}
         />
         <OpenVocabField
-          label={t('Takedown type')}
+          label={t('Request for takedown type')}
           type="request_for_takedown_types_ov"
           name="takedown_types"
           multiple

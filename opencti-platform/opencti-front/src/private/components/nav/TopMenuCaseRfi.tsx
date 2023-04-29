@@ -1,7 +1,8 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, BiotechOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
+import { Brain } from 'mdi-material-ui';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
@@ -44,8 +45,8 @@ const TopMenuCaseRfi: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <BiotechOutlined className={classes.icon} fontSize="small" />
-        {t('Cases - Rfis')}
+        <Brain className={classes.icon} fontSize="small" />
+        {t('Requests for information')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -131,15 +132,13 @@ const TopMenuCaseRfi: FunctionComponent = () => {
         component={Link}
         to={`/dashboard/cases/rfis/${caseId}/observables`}
         variant={
-          location.pathname
-          === `/dashboard/cases/rfis/${caseId}/observables`
+          location.pathname === `/dashboard/cases/rfis/${caseId}/observables`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname
-          === `/dashboard/cases/rfis/${caseId}/observables`
+          location.pathname === `/dashboard/cases/rfis/${caseId}/observables`
             ? 'secondary'
             : 'primary'
         }
@@ -147,42 +146,42 @@ const TopMenuCaseRfi: FunctionComponent = () => {
       >
         {t('Observables')}
       </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/cases/rfis/${caseId}/files`}
-          variant={
-            location.pathname === `/dashboard/cases/rfis/${caseId}/files`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === `/dashboard/cases/rfis/${caseId}/files`
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('Data')}
-        </Button>
-        <Button
-          component={Link}
-          to={`/dashboard/cases/rfis/${caseId}/history`}
-          variant={
-            location.pathname === `/dashboard/cases/rfis/${caseId}/history`
-              ? 'contained'
-              : 'text'
-          }
-          size="small"
-          color={
-            location.pathname === `/dashboard/cases/rfis/${caseId}/history`
-              ? 'secondary'
-              : 'primary'
-          }
-          classes={{ root: classes.button }}
-        >
-          {t('History')}
-        </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/cases/rfis/${caseId}/files`}
+        variant={
+          location.pathname === `/dashboard/cases/rfis/${caseId}/files`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === `/dashboard/cases/rfis/${caseId}/files`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('Data')}
+      </Button>
+      <Button
+        component={Link}
+        to={`/dashboard/cases/rfis/${caseId}/history`}
+        variant={
+          location.pathname === `/dashboard/cases/rfis/${caseId}/history`
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname === `/dashboard/cases/rfis/${caseId}/history`
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        {t('History')}
+      </Button>
     </div>
   );
 };

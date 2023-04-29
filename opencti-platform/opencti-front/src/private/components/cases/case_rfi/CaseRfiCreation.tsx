@@ -210,7 +210,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({ updat
           }}
         />
         <OpenVocabField
-          label={t('Information type')}
+          label={t('Request for information type')}
           type="request_for_information_types_ov"
           name="information_types"
           multiple

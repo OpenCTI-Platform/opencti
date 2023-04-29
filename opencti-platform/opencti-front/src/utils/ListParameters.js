@@ -55,7 +55,6 @@ const buildParamsFromHistory = (params) => {
 
 const saveParamsToLocalStorage = (localStorageKey, params) => {
   const storageParams = pipe(
-    dissoc('searchTerm'),
     dissoc('timeLineSearchTerm'),
     dissoc('graphData'),
     dissoc('anchorEl'),

@@ -50,7 +50,7 @@ const TopMenuCaseIncident: FunctionComponent = () => {
         classes={{ root: classes.buttonHome }}
       >
         <BiotechOutlined className={classes.icon} fontSize="small" />
-        {t('Cases - Incidents')}
+        {t('Incident response')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"

@@ -31,6 +31,7 @@ import {
   BiotechOutlined,
   MapOutlined,
   RouterOutlined,
+  PowerSettingsNewOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -183,7 +184,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Case-Rfi':
       return <Brain style={style} fontSize={fontSize} role="img" />;
     case 'Case-Rft':
-      return <Brain style={style} fontSize={fontSize} role="img" />;
+      return (
+        <PowerSettingsNewOutlined
+          style={style}
+          fontSize={fontSize}
+          role="img"
+        />
+      );
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':
