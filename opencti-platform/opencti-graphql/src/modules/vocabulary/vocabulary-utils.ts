@@ -830,7 +830,7 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
     { key: 'none' },
   ],
   request_for_takedown_types_ov: [
-    { key: 'pishing' },
+    { key: 'phishing' },
     { key: 'brand-abuse' },
   ],
   // S
