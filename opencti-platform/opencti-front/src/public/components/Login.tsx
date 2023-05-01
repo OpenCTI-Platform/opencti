@@ -4,7 +4,9 @@ import { useTheme } from '@mui/styles';
 import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
+import Box from '@mui/material/Box';
 import makeStyles from '@mui/styles/makeStyles';
+import Checkbox from '@mui/material/Checkbox';
 import { APP_BASE_PATH, fileUri } from '../../relay/environment';
 import logo from '../../static/images/logo.png';
 import LoginForm from './LoginForm';
@@ -12,12 +14,19 @@ import OTPForm from './OTPForm';
 import OtpActivationComponent from './OtpActivation';
 import { Theme } from '../../components/Theme';
 import { LoginRootPublicQuery$data } from '../__generated__/LoginRootPublicQuery.graphql';
+import { useFormatter } from '../../components/i18n';
+import { isNotEmptyField } from '../../utils/utils';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
     textAlign: 'center',
     margin: '0 auto',
-    width: 450,
+    width: '80%',
+  },
+  login: {
+    textAlign: 'center',
+    margin: '0 auto',
+    maxWidth: 450,
   },
   appBar: {
     borderTopLeftRadius: '10px',
@@ -89,6 +98,8 @@ interface LoginProps {
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
+  const { t } = useFormatter();
+
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
@@ -151,6 +162,10 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
       ))}
     </div>
   );
+  const consentMessage = settings.platform_consent_message;
+  const consentConfirmText = settings.platform_consent_confirm_text
+    ? settings.platform_consent_confirm_text
+    : t('I have read and comply with the above statement');
   const loginMessage = settings.platform_login_message;
   const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
@@ -159,7 +174,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const isAuthForm = providers.filter((p) => p?.type === 'FORM').length > 0;
   const authSSOs = providers.filter((p) => p.type === 'SSO');
   const isAuthButtons = authSSOs.length > 0;
-  const isLoginMessage = loginMessage && loginMessage.length > 0;
+  const isLoginMessage = isNotEmptyField(loginMessage);
   let loginHeight = 280;
   if (type === '2FA_ACTIVATION') {
     loginHeight = 80;
@@ -177,7 +192,11 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     loginHeight = 150;
   }
   const marginTop = dimension.height / 2 - loginHeight / 2 - 200;
-
+  const [checked, setChecked] = useState(false);
+  const handleChange = () => {
+    setChecked(!checked);
+  };
+  const isConsentMessage = isNotEmptyField(consentMessage);
   const loginScreen = () => (
     <div>
       <img
@@ -185,17 +204,39 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
         alt="logo"
         className={classes.logo}
       />
-      {loginMessage && loginMessage.length > 0 && (
+      {isLoginMessage && (
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <Markdown>{loginMessage}</Markdown>
         </Paper>
       )}
-      {isAuthForm && (
-        <Paper variant="outlined">
+      {isConsentMessage && (
+        <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Markdown>{consentMessage}</Markdown>
+          <Box
+            display="flex"
+            justifyContent="center"
+            alignItems="center"
+          >
+            <Markdown>{`${consentConfirmText}:`}</Markdown>
+            <Checkbox name='consent' edge='start' onChange={handleChange} style={{ margin: 0 }}></Checkbox>
+          </Box>
+        </Paper>
+      )}
+      {isAuthForm && !isConsentMessage && (
+        <Paper variant="outlined" classes={{ root: classes.login }}>
           <LoginForm />
         </Paper>
       )}
-      {isAuthButtons && renderExternalAuth(authSSOs)}
+      {isAuthForm && isConsentMessage && checked && (
+        <Paper variant="outlined" classes={{ root: classes.login }}>
+          <LoginForm />
+        </Paper>
+      )}
+      {isAuthButtons && !isConsentMessage && renderExternalAuth(authSSOs)}
+      {providers?.length === 0 && (
+        <div>No authentication provider available</div>
+      )}
+      {isAuthButtons && isConsentMessage && checked && renderExternalAuth(authSSOs)}
       {providers?.length === 0 && (
         <div>No authentication provider available</div>
       )}

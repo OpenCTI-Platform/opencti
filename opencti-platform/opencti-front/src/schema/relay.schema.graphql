@@ -1035,6 +1035,8 @@ type Settings implements InternalObject & BasicObject {
   platform_map_tile_server_dark: String
   platform_map_tile_server_light: String
   platform_login_message: String
+  platform_consent_message: String
+  platform_consent_confirm_text: String
   platform_reference_attachment: Boolean
   platform_feature_flags: [Module!]
   created_at: DateTime!

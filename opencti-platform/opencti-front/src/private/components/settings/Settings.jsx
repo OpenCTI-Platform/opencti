@@ -81,6 +81,8 @@ const settingsQuery = graphql`
       platform_theme
       platform_language
       platform_login_message
+      platform_consent_message
+      platform_consent_confirm_text
       platform_theme_dark_background
       platform_theme_dark_paper
       platform_theme_dark_nav
@@ -153,6 +155,8 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_login_message
+        platform_consent_message
+        platform_consent_confirm_text
       }
     }
   }
@@ -207,6 +211,8 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
+  platform_consent_message: Yup.string().nullable(),
+  platform_consent_confirm_text: Yup.string().nullable(),
 });
 
 const Settings = () => {
@@ -279,6 +285,8 @@ const Settings = () => {
                 'platform_theme',
                 'platform_language',
                 'platform_login_message',
+                'platform_consent_message',
+                'platform_consent_confirm_text',
                 'platform_theme_dark_background',
                 'platform_theme_dark_paper',
                 'platform_theme_dark_nav',
@@ -319,7 +327,7 @@ const Settings = () => {
                               variant="standard"
                               name="platform_title"
                               label={t('Platform title')}
-                              fullWidth={true}
+                              fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               helperText={<SubscriptionFocus context={editContext} fieldName="platform_title"/>}
@@ -328,7 +336,7 @@ const Settings = () => {
                               variant="standard"
                               name="platform_favicon"
                               label={t('Platform favicon URL')}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)}
@@ -338,7 +346,7 @@ const Settings = () => {
                               variant="standard"
                               name="platform_email"
                               label={t('Sender email address')}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)}
@@ -348,7 +356,7 @@ const Settings = () => {
                               variant="standard"
                               name="platform_theme"
                               label={t('Theme')}
-                              fullWidth={true}
+                              fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onChange={(name, value) => handleSubmitField(id, name, value)}
@@ -360,7 +368,7 @@ const Settings = () => {
                               variant="standard"
                               name="platform_language"
                               label={t('Language')}
-                              fullWidth={true}
+                              fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onChange={(name, value) => handleSubmitField(id, name, value)}
@@ -404,11 +412,17 @@ const Settings = () => {
                         validationSchema={settingsValidation(t)}>
                         {() => (
                           <Form>
+                            <Typography variant="h1" gutterBottom={true} style={{ marginTop: '20px' }}>
+                            {t('Platform Message Configuration')}
+                            </Typography>
+                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                              {t('Platform Login Message')}
+                            </Typography>
                             <Field
                               component={MarkDownField}
                               name="platform_login_message"
                               label={t('Platform login message')}
-                              fullWidth={true}
+                              fullWidth
                               multiline={true}
                               rows="3"
                               style={{ marginTop: 20 }}
@@ -416,6 +430,53 @@ const Settings = () => {
                               onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               variant="standard"
                               helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
+                            />
+                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                              {t('Platform Consent Message')}
+                            </Typography>
+                            <Field
+                              component={MarkDownField}
+                              name="platform_consent_message"
+                              label={t('Platform Consent Message - requires acceptance to enable login form when set')}
+                              fullWidth
+                              multiline={true}
+                              rows="3"
+                              style={{ marginTop: 20 }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              variant="standard"
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_consent_message"
+                                />
+                              }
+                            />
+                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                              {t('Platform Consent Confirm Text')}
+                            </Typography>
+                            <Field
+                              component={MarkDownField}
+                              name="platform_consent_confirm_text"
+                              label={`${t('Platform Consent Confirm Text - confirm label next to confirm checkbox')
+                              }. ${t('Default')}: ${
+                                t('I have read and comply with the above statement')}`
+                                    }
+                              fullWidth
+                              multiline={true}
+                              rows="3"
+                              style={{ marginTop: 20 }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              variant="standard"
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_consent_confirm_text"
+                                />
+                              }
                             />
                           </Form>
                         )}
@@ -443,7 +504,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
                               }
@@ -463,7 +524,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -484,7 +545,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -505,7 +566,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -526,7 +587,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -547,7 +608,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -569,7 +630,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -590,7 +651,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -611,7 +672,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -650,7 +711,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
                               }
@@ -670,7 +731,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -691,7 +752,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -712,7 +773,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -733,7 +794,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -754,7 +815,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -776,7 +837,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -797,7 +858,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)
@@ -818,7 +879,7 @@ const Settings = () => {
                               InputLabelProps={{
                                 shrink: true,
                               }}
-                              fullWidth={true}
+                              fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onSubmit={(name, value) => handleSubmitField(id, name, value)

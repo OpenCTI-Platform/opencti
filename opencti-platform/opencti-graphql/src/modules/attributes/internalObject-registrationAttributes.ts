@@ -48,6 +48,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'platform_theme_light_logo_login', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platform_language', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platform_login_message', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'platform_consent_message', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'platform_consent_confirm_text', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'otp_mandatory', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'password_policy_min_length', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'password_policy_max_length', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
