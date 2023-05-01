@@ -361,6 +361,7 @@ ContainerStixCyberObservablesComponentProps
               container={container}
               handleCopy={handleCopy}
               warning={true}
+              rightOffset={250 + 85}
             />
             <StixCyberObservablesRightBar
               types={types}

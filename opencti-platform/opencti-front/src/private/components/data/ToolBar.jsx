@@ -80,31 +80,32 @@ import { hexToRGB } from '../../../utils/Colors';
 import { externalReferencesQueriesSearchQuery } from '../analysis/external_references/ExternalReferencesQueries';
 import StixDomainObjectCreation from '../common/stix_domain_objects/StixDomainObjectCreation';
 import ItemMarkings from '../../../components/ItemMarkings';
+import { getBannerSettings } from '../../../utils/SystemBanners';
 
 const styles = (theme) => ({
   bottomNav: {
     padding: 0,
-    zIndex: 1100,
+    zIndex: 1000,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithLargePadding: {
-    zIndex: 1100,
+    zIndex: 1000,
     padding: '0 230px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithMediumPadding: {
-    zIndex: 1100,
+    zIndex: 1000,
     padding: '0 200px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
   },
   bottomNavWithSmallPadding: {
-    zIndex: 1100,
+    zIndex: 1000,
     padding: '0 180px 0 0',
     display: 'flex',
     height: 50,
@@ -295,6 +296,9 @@ class ToolBar extends Component {
       enrichSelected: [],
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   componentDidMount() {
@@ -1190,6 +1194,7 @@ class ToolBar extends Component {
       deleteDisable,
       warning,
       warningMessage,
+      rightOffset,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1303,7 +1308,7 @@ class ToolBar extends Component {
         PaperProps={{
           variant: 'elevation',
           elevation: 1,
-          style: { paddingLeft: navOpen ? 185 : 60 },
+          style: { paddingLeft: navOpen ? 185 : 60, bottom: this.bannerHeight, paddingRight: rightOffset ?? 85 },
         }}
       >
         <Toolbar style={{ minHeight: 54 }}>
@@ -2281,6 +2286,7 @@ ToolBar.propTypes = {
   handleCopy: PropTypes.func,
   warning: PropTypes.bool,
   warningMessage: PropTypes.string,
+  rightOffset: PropTypes.number,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

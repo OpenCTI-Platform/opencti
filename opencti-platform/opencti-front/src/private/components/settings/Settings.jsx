@@ -26,6 +26,7 @@ import Alert from '@mui/material/Alert';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
+import MarkDownField from '../../../components/MarkdownField';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
@@ -89,6 +90,9 @@ const settingsQuery = graphql`
       platform_email
       platform_theme
       platform_language
+      platform_login_message
+      platform_banner_text
+      platform_banner_level
       platform_theme_dark_background
       platform_theme_dark_paper
       platform_theme_dark_nav
@@ -165,6 +169,9 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         enterprise_edition
+        platform_login_message
+        platform_banner_text
+        platform_banner_level
       }
     }
   }
@@ -207,6 +214,9 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   enterprise_edition: Yup.string().nullable(),
+  platform_login_message: Yup.string().nullable(),
+  platform_banner_text: Yup.string().nullable(),
+  platform_banner_level: Yup.string().nullable(),
 });
 
 const Settings = () => {
@@ -277,6 +287,9 @@ const Settings = () => {
                 'platform_email',
                 'platform_theme',
                 'platform_language',
+                'platform_login_message',
+                'platform_banner_text',
+                'platform_banner_level',
                 'platform_theme_dark_background',
                 'platform_theme_dark_paper',
                 'platform_theme_dark_nav',
@@ -425,6 +438,56 @@ const Settings = () => {
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
                             <HiddenTypesList />
+
+                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '30px' }}>
+                            {t('Platform Banner Configuration')}
+                            </Typography>
+
+                            <Field
+                              component={SelectField}
+                              variant="standard"
+                              name="platform_banner_level"
+                              label={t('Platform Banner Level')}
+                              fullWidth={true}
+                              containerstyle={{
+                                marginTop: 5,
+                                width: '100%',
+                              }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
+                              helpertext={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_banner_level"
+                                />
+                              }
+                            >
+                              <MenuItem value="auto">
+                                <em>{t('Automatic')}</em>
+                              </MenuItem>
+                              <MenuItem value="OFF">{t('OFF')}</MenuItem>
+                              <MenuItem value="GREEN">{t('GREEN')}</MenuItem>
+                              <MenuItem value="RED">{t('RED')}</MenuItem>
+                              <MenuItem value="YELLOW">{t('YELLOW')}</MenuItem>
+                            </Field>
+                            <Field
+                              component={MarkDownField}
+                              name="platform_banner_text"
+                              label={t('Platform Banner Text')}
+                              fullWidth={true}
+                              multiline={true}
+                              rows="3"
+                              style={{ marginTop: 20 }}
+                              onFocus={(name) => handleChangeFocus(id, name)}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
+                              variant="standard"
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_banner_text"
+                                />
+                              }
+                            />
                           </Form>
                         )}
                       </Formik>

@@ -19817,6 +19817,8 @@ export type Settings = BasicObject & InternalObject & {
   password_policy_min_symbols?: Maybe<Scalars['Int']>;
   password_policy_min_uppercase?: Maybe<Scalars['Int']>;
   password_policy_min_words?: Maybe<Scalars['Int']>;
+  platform_banner_level?: Maybe<Scalars['String']>;
+  platform_banner_text?: Maybe<Scalars['String']>;
   platform_cluster: Cluster;
   platform_consent_confirm_text?: Maybe<Scalars['String']>;
   platform_consent_message?: Maybe<Scalars['String']>;
@@ -19832,6 +19834,8 @@ export type Settings = BasicObject & InternalObject & {
   platform_organization?: Maybe<Organization>;
   platform_providers: Array<Provider>;
   platform_reference_attachment?: Maybe<Scalars['Boolean']>;
+  platform_session_idle_timeout?: Maybe<Scalars['Int']>;
+  platform_session_timeout?: Maybe<Scalars['Int']>;
   platform_theme?: Maybe<Scalars['String']>;
   platform_theme_dark_accent?: Maybe<Scalars['String']>;
   platform_theme_dark_background?: Maybe<Scalars['String']>;
@@ -32559,6 +32563,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   password_policy_min_symbols?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  platform_banner_level?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_banner_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -32574,6 +32580,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   platform_organization?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType>;
   platform_providers?: Resolver<Array<ResolversTypes['Provider']>, ParentType, ContextType>;
   platform_reference_attachment?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
+  platform_session_idle_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  platform_session_timeout?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_accent?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_theme_dark_background?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

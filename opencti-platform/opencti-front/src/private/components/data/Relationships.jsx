@@ -323,6 +323,7 @@ class Relationships extends Component {
               handleClearSelectedElements={this.handleClearSelectedElements.bind(
                 this,
               )}
+              rightOffset={0}
             />
           </div>
         )}

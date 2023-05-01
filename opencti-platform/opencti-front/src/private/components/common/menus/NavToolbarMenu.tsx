@@ -1,4 +1,4 @@
-import React, { FunctionComponent, ReactElement } from 'react';
+import React, { FunctionComponent, ReactElement, useEffect, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import MenuList from '@mui/material/MenuList';
@@ -8,6 +8,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawer: {
@@ -33,6 +34,10 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const location = useLocation();
+  const [bannerHeight, setBannerHeight] = useState('');
+  useEffect(() => {
+    getBannerSettings(({ bannerHeight: bH }) => setBannerHeight(bH));
+  }, []);
 
   return (
     <Drawer
@@ -41,7 +46,7 @@ const NavToolbarMenu: FunctionComponent<{ entries: MenuEntry[] }> = ({
       classes={{ paper: classes.drawer }}
     >
       <div className={classes.toolbar} />
-      <MenuList component="nav">
+      <MenuList component="nav" style={{ marginTop: bannerHeight, marginBottom: bannerHeight }}>
         {entries.map((entry, idx) => {
           return (
             <MenuItem

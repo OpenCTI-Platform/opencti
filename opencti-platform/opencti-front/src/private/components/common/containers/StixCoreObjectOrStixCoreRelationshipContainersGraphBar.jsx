@@ -43,6 +43,7 @@ import { dateFormat } from '../../../../utils/Time';
 import { truncate } from '../../../../utils/String';
 import { resolveLink } from '../../../../utils/Entity';
 import { parseDomain } from '../../../../utils/Graph';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = () => ({
   bottomNav: {
@@ -81,6 +82,9 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
       openEditEntity: false,
       displayRemove: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenStixCoreObjectsTypes(event) {
@@ -191,7 +195,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
           anchor="bottom"
           variant="permanent"
           classes={{ paper: classes.bottomNav }}
-          PaperProps={{ variant: 'elevation', elevation: 1 }}
+          PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: this.bannerHeight } }}
         >
           <div
             style={{
@@ -392,7 +396,7 @@ class StixCoreObjectOrStixCoreRelationshipContainersGraphBar extends Component {
         anchor="bottom"
         variant="permanent"
         classes={{ paper: classes.bottomNav }}
-        PaperProps={{ variant: 'elevation', elevation: 1 }}
+        PaperProps={{ variant: 'elevation', elevation: 1, style: { bottom: this.bannerHeight } }}
       >
         <div
           style={{

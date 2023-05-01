@@ -28,10 +28,11 @@ import { entitySettingPatch } from './entitySetting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
+import { useBannerSettings } from '../../../../utils/SystemBanners';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
-    zIndex: 1100,
+    zIndex: 1040,
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -191,6 +192,9 @@ const ToolBar: FunctionComponent<{
     });
     handleClose();
   };
+
+  const { bannerHeight } = useBannerSettings();
+
   return (
     <Drawer
       anchor="bottom"
@@ -200,7 +204,7 @@ const ToolBar: FunctionComponent<{
       PaperProps={{
         variant: 'elevation',
         elevation: 1,
-        style: { paddingLeft: navOpen ? 185 : 60 },
+        style: { paddingLeft: navOpen ? 185 : 60, bottom: bannerHeight },
       }}
     >
       <Toolbar style={{ minHeight: 54 }}>

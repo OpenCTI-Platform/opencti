@@ -152,6 +152,7 @@ const Vocabularies = () => {
               deleteDisable={true}
               filters={{ entity_type: [{ id: 'Vocabulary' }] }}
               variant="small"
+              rightOffset={200 + 85}
             />
           </>
         )}

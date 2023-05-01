@@ -4,6 +4,7 @@ import { isNone } from '../components/i18n';
 const defaultDateFormat = 'YYYY-MM-DD';
 const yearDateFormat = 'YYYY';
 
+export const ONE_SECOND = 1000;
 export const FIVE_SECONDS = 5000;
 export const TEN_SECONDS = FIVE_SECONDS * 2;
 
@@ -85,4 +86,34 @@ export const minutesBetweenDates = (startDate, endDate) => {
   const start = parse(startDate);
   const end = parse(endDate);
   return end.diff(start, 'minutes') + 1;
+};
+
+export const secondsBetweenDates = (startDate, endDate) => {
+  const start = parse(startDate);
+  const end = parse(endDate);
+  return end.diff(start, 'seconds') + 1;
+};
+
+/**
+ * Returns a string of the format "hh:MM:ss" from a given number of seconds.
+ *
+ * @param {number} seconds
+ */
+export const formatSeconds = (seconds) => {
+  const ONE_MINUTE = 60;
+  const ONE_HOUR = ONE_MINUTE * ONE_MINUTE;
+
+  const leadingZero = (value) => {
+    return value < 10 ? `0${value}` : String(value);
+  };
+
+  const hours = Math.floor(seconds / ONE_HOUR);
+  let secondsLeft = seconds % ONE_HOUR;
+  const minutes = Math.floor(secondsLeft / ONE_MINUTE);
+  secondsLeft = Math.floor(secondsLeft % ONE_MINUTE);
+
+  const formattedHours = hours ? `${leadingZero(hours)}:` : '';
+  const formattedMins = (minutes || hours) ? `${leadingZero(minutes)}:` : '';
+  const formattedSecs = `${leadingZero(secondsLeft)}`;
+  return `${formattedHours}${formattedMins}${formattedSecs}`;
 };

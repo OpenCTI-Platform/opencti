@@ -21,6 +21,10 @@ const subscription = graphql`
 
 const dashboardQuery = graphql`
   query RootDashboardQuery($id: String!) {
+    settings {
+      platform_banner_text
+      platform_banner_level
+    }  
     workspace(id: $id) {
       id
       name
@@ -72,6 +76,7 @@ class RootDashboard extends Component {
                         <Dashboard
                           {...routeProps}
                           workspace={props.workspace}
+                          settings={props.settings}
                         />
                       )}
                     />

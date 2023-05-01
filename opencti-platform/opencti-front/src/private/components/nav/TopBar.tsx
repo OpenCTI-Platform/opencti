@@ -96,6 +96,8 @@ import TopMenuCaseRfi from './TopMenuCaseRfi';
 import TopMenuCaseRft from './TopMenuCaseRft';
 import TopMenuTask from './TopMenuTask';
 import TopMenuAudits from './TopMenuAudits';
+import SystemBanners from '../../../public/components/SystemBanners';
+import IdleTimeoutLockscreen, { getSettings } from '../IdleTimeoutLockscreen';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   appBar: {
@@ -231,15 +233,19 @@ const TopBar: FunctionComponent<TopBarProps> = ({
   const handleCloseMenu = () => {
     setMenuOpen({ open: false, anchorEl: null });
   };
-  const handleLogout = () => {
+  const handleLogout = (redirect = '') => {
+    function redirectWindow() {
+      if (redirect === '' || redirect.length === undefined) window.location.reload();
+      else window.location.replace(redirect);
+    }
     commitMutation({
       mutation: logoutMutation,
       variables: {},
-      onCompleted: () => window.location.reload(),
+      onCompleted: redirectWindow,
       updater: undefined,
       optimisticUpdater: undefined,
       optimisticResponse: undefined,
-      onError: undefined,
+      onError: redirectWindow,
       setSubmitting: undefined,
     });
   };
@@ -259,6 +265,15 @@ const TopBar: FunctionComponent<TopBarProps> = ({
     setOpenDrawer(false);
     handleCloseMenu();
   };
+  const [bannerHeight, setBannerHeight] = useState('');
+  const [idleTimeoutLimit, setIdleTimeoutLimit] = useState(0);
+  useEffect(() => {
+    getSettings(({ idleLimit }) => {
+      if (idleLimit > 0) {
+        setIdleTimeoutLimit(idleLimit);
+      }
+    });
+  }, []);
 
   return (
     <AppBar
@@ -267,7 +282,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
       variant="elevation"
       elevation={1}
     >
-      <Toolbar>
+      {/* Header and Footer Banners containing classification level of system */}
+      <SystemBanners handleBannerChange={setBannerHeight} handleLogout={handleLogout} />
+      <Toolbar style={{ marginTop: bannerHeight }}>
         <div className={classes.logoContainer}>
           <Link to="/dashboard">
             <img
@@ -290,7 +307,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           {location.pathname.includes('/dashboard/import') && <TopMenuImport />}
           {(location.pathname === '/dashboard/analysis'
             || location.pathname.match('/dashboard/analysis/[a-z_]+$')) && (
-            <TopMenuAnalysis />
+              <TopMenuAnalysis />
           )}
           {location.pathname === '/dashboard/profile/me' && <TopMenuProfile />}
           {location.pathname !== '/dashboard/profile/me'
@@ -299,7 +316,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/cases'
             || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
-            <TopMenuCases />
+              <TopMenuCases />
           )}
           {location.pathname.includes('/dashboard/cases/incidents/') && (
             <TopMenuCaseIncident />
@@ -336,7 +353,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           ) && <TopMenuExternalReference />}
           {(location.pathname === '/dashboard/events'
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
-            <TopMenuEvents />
+              <TopMenuEvents />
           )}
           {location.pathname.includes('/dashboard/events/incidents/') && (
             <TopMenuIncident />
@@ -349,7 +366,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/observations'
             || location.pathname.match('/dashboard/observations/[a-z_]+$')) && (
-            <TopMenuObservations />
+              <TopMenuObservations />
           )}
           {location.pathname.includes(
             '/dashboard/observations/indicators/',
@@ -365,7 +382,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/threats'
             || location.pathname.match('/dashboard/threats/[a-z_]+$')) && (
-            <TopMenuThreats />
+              <TopMenuThreats />
           )}
           {location.pathname.includes('/dashboard/threats/threat_actors/') && (
             <TopMenuThreatActor />
@@ -378,7 +395,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/arsenal'
             || location.pathname.match('/dashboard/arsenal/[a-z_]+$')) && (
-            <TopMenuArsenal />
+              <TopMenuArsenal />
           )}
           {location.pathname.includes('/dashboard/arsenal/malwares/') && (
             <TopMenuMalware />
@@ -394,7 +411,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           ) && <TopMenuVulnerability />}
           {(location.pathname === '/dashboard/entities'
             || location.pathname.match('/dashboard/entities/[a-z_]+$')) && (
-            <TopMenuEntities />
+              <TopMenuEntities />
           )}
           {location.pathname.includes('/dashboard/entities/sectors/') && (
             <TopMenuSector />
@@ -413,7 +430,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/locations'
             || location.pathname.match('/dashboard/locations/[a-z_]+$')) && (
-            <TopMenuLocation />
+              <TopMenuLocation />
           )}
           {location.pathname.includes('/dashboard/locations/countries/') && (
             <TopMenuCountry />
@@ -432,7 +449,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {(location.pathname === '/dashboard/techniques'
             || location.pathname.match('/dashboard/techniques/[a-z_]+$')) && (
-            <TopMenuTechniques />
+              <TopMenuTechniques />
           )}
           {location.pathname.includes(
             '/dashboard/techniques/attack_patterns/',
@@ -597,6 +614,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
               classes={{ root: classes.button }}
               aria-owns={menuOpen.open ? 'menu-appbar' : undefined}
               aria-haspopup="true"
+              id="profile-menu-button"
               onClick={handleOpenMenu}
               color={
                 location.pathname === '/dashboard/profile/me'
@@ -620,7 +638,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
                 {t('Profile')}
               </MenuItem>
               <MenuItem onClick={handleOpenDrawer}>{t('Feedback')}</MenuItem>
-              <MenuItem onClick={handleLogout}>{t('Logout')}</MenuItem>
+              <MenuItem id="logout-button" onClick={() => handleLogout()}>{t('Logout')}</MenuItem>
             </Menu>
           </div>
         </div>
@@ -629,6 +647,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
         openDrawer={openDrawer}
         handleCloseDrawer={handleCloseDrawer}
       />
+      {idleTimeoutLimit > 0 && <IdleTimeoutLockscreen handleLogout={handleLogout} />}
     </AppBar>
   );
 };

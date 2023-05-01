@@ -70,6 +70,7 @@ import StixCyberObservableEdition from '../../observations/stix_cyber_observable
 import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
 import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = () => ({
   bottomNav: {
@@ -116,6 +117,9 @@ class CaseRftKnowledgeGraphBar extends Component {
       displayRemove: false,
       deleteObject: false,
     };
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
   }
 
   handleOpenRemove() {
@@ -438,6 +442,7 @@ class CaseRftKnowledgeGraphBar extends Component {
         PaperProps={{
           variant: 'elevation',
           elevation: 1,
+          style: { bottom: this.bannerHeight },
         }}
       >
         <div

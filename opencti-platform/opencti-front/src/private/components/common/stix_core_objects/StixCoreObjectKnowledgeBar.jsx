@@ -44,6 +44,7 @@ import {
   GlobeModel,
 } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = (theme) => ({
   drawer: {
@@ -61,6 +62,13 @@ const styles = (theme) => ({
 });
 
 class StixCoreObjectKnowledgeBar extends Component {
+  constructor(props) {
+    super(props);
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
+  }
+
   render() {
     const { t, location, classes, stixCoreObjectLink, availableSections } = this.props;
     // eslint-disable-next-line max-len
@@ -72,7 +80,7 @@ class StixCoreObjectKnowledgeBar extends Component {
         classes={{ paper: classes.drawer }}
       >
         <div className={classes.toolbar} />
-        <MenuList style={{ paddingBottom: 0 }} component="nav">
+        <MenuList style={{ paddingBottom: 0 }} sx={{ marginTop: this.bannerHeight }} component="nav">
           <MenuItem
             component={Link}
             to={`${stixCoreObjectLink}/overview`}
@@ -766,6 +774,7 @@ class StixCoreObjectKnowledgeBar extends Component {
         )}
         <MenuList
           style={{ paddingBottom: 0 }}
+          sx={{ marginBottom: this.bannerHeight }}
           component="nav"
           subheader={
             <ListSubheader style={{ height: 35 }}>{t('Other')}</ListSubheader>

@@ -166,6 +166,7 @@ const Feedbacks: FunctionComponent<FeedbacksProps> = () => {
               filters={{
                 entity_type: [{ id: 'Feedback', value: 'Feedback' }],
               }}
+              rightOffset={0}
             />
           </Suspense>
         )}

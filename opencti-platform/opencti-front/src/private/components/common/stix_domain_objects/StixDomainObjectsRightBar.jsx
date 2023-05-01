@@ -14,6 +14,7 @@ import { FilterOffOutline } from 'mdi-material-ui';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixDomainObjectsLinesSubTypesQuery } from './StixDomainObjectsLines';
+import { getBannerSettings } from '../../../../utils/SystemBanners';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -36,6 +37,13 @@ const styles = (theme) => ({
 });
 
 class StixDomainObjectsRightBar extends Component {
+  constructor(props) {
+    super(props);
+    getBannerSettings(({ bannerHeight }) => {
+      this.bannerHeight = bannerHeight;
+    });
+  }
+
   render() {
     const { classes, t, types = [], handleToggle, handleClear } = this.props;
     return (
@@ -61,6 +69,7 @@ class StixDomainObjectsRightBar extends Component {
               )(subTypesEdges);
               return (
                 <List
+                  sx={{ marginTop: this.bannerHeight, marginBottom: this.bannerHeight }}
                   subheader={
                     <ListSubheader component="div">
                       {t('Entity types')}
