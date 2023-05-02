@@ -1040,6 +1040,12 @@ type Settings implements InternalObject & BasicObject {
   created_at: DateTime! @auth
   updated_at: DateTime! @auth
   otp_mandatory: Boolean @auth
+  password_policy_min_length: Int  @auth(for: [SETTINGS])
+  password_policy_min_symbols: Int  @auth(for: [SETTINGS])
+  password_policy_min_numbers: Int  @auth(for: [SETTINGS])
+  password_policy_min_words: Int  @auth(for: [SETTINGS])
+  password_policy_min_lowercase: Int  @auth(for: [SETTINGS])
+  password_policy_min_uppercase: Int  @auth(for: [SETTINGS])
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])
 }

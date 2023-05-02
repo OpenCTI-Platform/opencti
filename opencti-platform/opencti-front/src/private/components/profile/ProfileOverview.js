@@ -31,6 +31,7 @@ import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
+import PasswordPolicies from '../common/form/PasswordPolicies';
 
 const styles = () => ({
   container: {
@@ -283,12 +284,10 @@ const ProfileOverviewComponent = (props) => {
   };
   return (
     <div className={classes.container}>
-      <Dialog
-        open={display2FA}
+      <Dialog open={display2FA}
         PaperProps={{ elevation: 1 }}
         keepMounted={false}
-        onClose={() => setDisplay2FA(false)}
-      >
+        onClose={() => setDisplay2FA(false)}>
         <DialogTitle style={{ textAlign: 'center' }}>
           {t('Enable two-factor authentication')}
         </DialogTitle>
@@ -300,11 +299,7 @@ const ProfileOverviewComponent = (props) => {
         <Typography variant="h1" gutterBottom={true}>
           {t('Profile')} {external && `(${t('external')})`}
         </Typography>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
-          validationSchema={userValidation(t)}
-        >
+        <Formik enableReinitialize={true} initialValues={initialValues} validationSchema={userValidation(t)}>
           {() => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -435,7 +430,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </div>
         <div className="clearfix" />
-        <Formik
+        { external === false && <Formik
           enableReinitialize={true}
           initialValues={{
             current_password: '',
@@ -443,8 +438,7 @@ const ProfileOverviewComponent = (props) => {
             confirmation: '',
           }}
           validationSchema={passwordValidation(t)}
-          onSubmit={handleSubmitPasswords}
-        >
+          onSubmit={handleSubmitPasswords}>
           {({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
@@ -456,6 +450,7 @@ const ProfileOverviewComponent = (props) => {
                 fullWidth={true}
                 disabled={external}
               />
+              <PasswordPolicies/>
               <Field
                 component={TextField}
                 variant="standard"
@@ -490,7 +485,7 @@ const ProfileOverviewComponent = (props) => {
               </div>
             </Form>
           )}
-        </Formik>
+        </Formik> }
       </Paper>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Typography variant="h1" gutterBottom={true}>

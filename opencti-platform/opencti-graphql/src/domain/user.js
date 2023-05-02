@@ -6,7 +6,16 @@ import { v4 as uuid } from 'uuid';
 import { delEditContext, delUserContext, notify, setEditContext } from '../database/redis';
 import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { BUS_TOPICS, logApp, logAudit, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, } from '../database/middleware';
+import {
+  batchListThroughGetTo,
+  createEntity,
+  createRelation,
+  deleteElementById,
+  deleteRelationsByFromAndTo,
+  listThroughGetTo,
+  patchAttribute,
+  updateAttribute,
+} from '../database/middleware';
 import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
@@ -314,6 +323,54 @@ export const assignGroupToUser = async (context, user, userId, groupName) => {
   return rel;
 };
 
+export const checkPasswordInlinePolicy = (context, policy, password) => {
+  const { password_policy_min_length, password_policy_min_symbols, password_policy_min_numbers } = policy;
+  const { password_policy_min_words, password_policy_min_lowercase, password_policy_min_uppercase } = policy;
+  const errors = [];
+  if (isEmptyField(password)) {
+    errors.push('required');
+  }
+  if (password_policy_min_length && password_policy_min_length > 0) {
+    if (password.length < password_policy_min_length) {
+      errors.push(`size must be >= ${password_policy_min_length}`);
+    }
+  }
+  if (password_policy_min_symbols && password_policy_min_symbols > 0) {
+    if ((password.match(/[^a-zA-Z0-9]/g) ?? []).length < password_policy_min_symbols) {
+      errors.push(`number of symbols must be >= ${password_policy_min_symbols}`);
+    }
+  }
+  if (password_policy_min_numbers && password_policy_min_numbers > 0) {
+    if ((password.match(/[0-9]/g) ?? []).length < password_policy_min_numbers) {
+      errors.push(`number of digits must be >= ${password_policy_min_numbers}`);
+    }
+  }
+  if (password_policy_min_words && password_policy_min_words > 0) {
+    if (password.split(/[|, -]/).length < password_policy_min_words) {
+      errors.push(`number of words must be >= ${password_policy_min_words}`);
+    }
+  }
+  if (password_policy_min_lowercase && password_policy_min_lowercase > 0) {
+    if ((password.match(/[a-z]/g) ?? []).length < password_policy_min_lowercase) {
+      errors.push(`number of lower chars must be >= ${password_policy_min_lowercase}`);
+    }
+  }
+  if (password_policy_min_uppercase && password_policy_min_uppercase > 0) {
+    if ((password.match(/[A-Z]/g) ?? []).length < password_policy_min_uppercase) {
+      errors.push(`number of upper chars must be >= ${password_policy_min_uppercase}`);
+    }
+  }
+  return errors;
+};
+
+export const checkPasswordFromPolicy = async (context, password) => {
+  const settings = await getEntityFromCache(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
+  const errors = checkPasswordInlinePolicy(context, settings, password);
+  if (errors.length > 0) {
+    throw FunctionalError(`Invalid password: ${errors.join(', ')}`);
+  }
+};
+
 export const addUser = async (context, user, newUser) => {
   const userEmail = newUser.user_email.toLowerCase();
   const existingUser = await elLoadBy(context, SYSTEM_USER, 'user_email', userEmail, ENTITY_TYPE_USER);
@@ -321,10 +378,17 @@ export const addUser = async (context, user, newUser) => {
     throw FunctionalError('User already exists', { email: userEmail });
   }
   // Create the user
+  let userPassword = newUser.password;
+  // If user is external and password is not specified, associate a random password
+  if (newUser.external === true && isEmptyField(userPassword)) {
+    userPassword = uuid();
+  } else { // If local user, check the password policy
+    await checkPasswordFromPolicy(context, userPassword);
+  }
   const userToCreate = R.pipe(
     R.assoc('user_email', userEmail),
     R.assoc('api_token', newUser.api_token ? newUser.api_token : uuid()),
-    R.assoc('password', bcrypt.hashSync(newUser.password ? newUser.password.toString() : uuid())),
+    R.assoc('password', bcrypt.hashSync(userPassword)),
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
@@ -386,7 +450,9 @@ export const userEditField = async (context, user, userId, inputs) => {
   for (let index = 0; index < inputs.length; index += 1) {
     const input = inputs[index];
     if (input.key === 'password') {
-      input.value = [bcrypt.hashSync(R.head(input.value).toString())];
+      const userPassword = R.head(input.value).toString();
+      await checkPasswordFromPolicy(context, userPassword);
+      input.value = [bcrypt.hashSync(userPassword)];
     }
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
@@ -437,7 +503,7 @@ export const addBookmark = async (context, user, id, type) => {
 
 const PROTECTED_USER_ATTRIBUTES = ['api_token', 'external'];
 const PROTECTED_EXTERNAL_ATTRIBUTES = ['user_email', 'user_name'];
-export const meEditField = (context, user, userId, inputs, password = null) => {
+export const meEditField = async (context, user, userId, inputs, password = null) => {
   const input = R.head(inputs);
   const { key } = input;
   // Check if field can be updated by the user

@@ -38,6 +38,7 @@ const rootPrivateQuery = graphql`
       }
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
+      ...PasswordPolicies_policies
     }
     about {
       version

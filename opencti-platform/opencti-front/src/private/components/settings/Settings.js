@@ -2,10 +2,7 @@ import React from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
-import Tooltip from '@mui/material/Tooltip';
 import Grid from '@mui/material/Grid';
-import Alert from '@mui/material/Alert';
-import AlertTitle from '@mui/material/AlertTitle';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
@@ -17,7 +14,6 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import Chip from '@mui/material/Chip';
 import { deepPurple } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
-import { InformationOutline } from 'mdi-material-ui';
 import { VpnKeyOutlined } from '@mui/icons-material';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
@@ -27,10 +23,7 @@ import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
-import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
-import useGranted, { SETTINGS_SETACCESSES } from '../../../utils/hooks/useGranted';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
-import SwitchField from '../../../components/SwitchField';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -159,11 +152,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_login
         platform_language
         platform_login_message
-        platform_organization {
-          id
-          name
-        }
-        otp_mandatory
       }
     }
   }
@@ -218,15 +206,12 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
   platform_login_message: Yup.string().nullable(),
-  platform_organization: Yup.object().nullable(),
-  otp_mandatory: Yup.boolean(),
 });
 
 const Settings = () => {
   const classes = useStyles();
   const { t } = useFormatter();
 
-  const isAccessAdmin = useGranted([SETTINGS_SETACCESSES]);
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -266,9 +251,6 @@ const Settings = () => {
         finalValue = '#000000';
       }
     }
-    if (name === 'platform_organization') {
-      finalValue = finalValue.value;
-    }
     settingsValidation(t)
       .validateAt(name, { [name]: finalValue })
       .then(() => {
@@ -289,15 +271,6 @@ const Settings = () => {
             const { settings } = props;
             const { id, editContext } = settings;
             const initialValues = R.pipe(
-              R.assoc(
-                'platform_organization',
-                settings.platform_organization
-                  ? {
-                    label: settings.platform_organization.name,
-                    value: settings.platform_organization.id,
-                  }
-                  : '',
-              ),
               R.pick([
                 'platform_title',
                 'platform_favicon',
@@ -325,8 +298,6 @@ const Settings = () => {
                 'platform_theme_light_logo_login',
                 'platform_map_tile_server_dark',
                 'platform_map_tile_server_light',
-                'platform_organization',
-                'otp_mandatory',
               ]),
             )(settings);
             const authProviders = settings.platform_providers;
@@ -339,108 +310,60 @@ const Settings = () => {
                       {t('Configuration')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Formik
-                        onSubmit={() => {
-                        }}
-                        enableReinitialize={true}
-                        initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
-                      >
+                      <Formik onSubmit={() => {}} enableReinitialize={true} initialValues={initialValues}
+                        validationSchema={settingsValidation(t)}>
                         {() => (
                           <Form>
-                            <Field
-                              component={TextField}
+                            <Field component={TextField}
                               variant="standard"
                               name="platform_title"
                               label={t('Platform title')}
                               fullWidth={true}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_title"
-                                />
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_title"/>}
                             />
-                            <Field
-                              component={TextField}
+                            <Field component={TextField}
                               variant="standard"
                               name="platform_favicon"
                               label={t('Platform favicon URL')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_favicon"
-                                />
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_favicon"/>}
                             />
-                            <Field
-                              component={TextField}
+                            <Field component={TextField}
                               variant="standard"
                               name="platform_email"
                               label={t('Sender email address')}
                               fullWidth={true}
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_email"
-                                />
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_email"/>}
                             />
-                            <Field
-                              component={SelectField}
+                            <Field component={SelectField}
                               variant="standard"
                               name="platform_theme"
                               label={t('Theme')}
                               fullWidth={true}
-                              containerstyle={{
-                                marginTop: 20,
-                                width: '100%',
-                              }}
+                              containerstyle={{ marginTop: 20, width: '100%' }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_theme"
-                                />
-                              }
-                            >
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
+                              helpertext={<SubscriptionFocus context={editContext} fieldName="platform_theme"/>}>
                               <MenuItem value="dark">{t('Dark')}</MenuItem>
                               <MenuItem value="light">{t('Light')}</MenuItem>
                             </Field>
-                            <Field
-                              component={SelectField}
+                            <Field component={SelectField}
                               variant="standard"
                               name="platform_language"
                               label={t('Language')}
                               fullWidth={true}
-                              containerstyle={{
-                                marginTop: 20,
-                                width: '100%',
-                              }}
+                              containerstyle={{ marginTop: 20, width: '100%' }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helpertext={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_language"
-                                />
-                              }
-                            >
+                              onChange={(name, value) => handleSubmitField(id, name, value)}
+                              helpertext={<SubscriptionFocus context={editContext} fieldName="platform_language"/>}>
                               <MenuItem value="auto">
                                 <em>{t('Automatic')}</em>
                               </MenuItem>
@@ -451,57 +374,6 @@ const Settings = () => {
                               <MenuItem value="zh-cn">简化字</MenuItem>
                             </Field>
                             <HiddenTypesList />
-                            <div style={{ marginTop: 20 }}>
-                              {isAccessAdmin && (
-                                <div>
-                                  <Typography
-                                    variant="h3"
-                                    gutterBottom={true}
-                                    style={{ marginTop: 30 }}
-                                  >
-                                    {t('Admin access only')}
-                                  </Typography>
-                                  <Alert
-                                    classes={{
-                                      root: classes.alert,
-                                      message: classes.message,
-                                    }}
-                                    severity="warning"
-                                    variant="outlined"
-                                    style={{ position: 'relative' }}
-                                  >
-                                    <AlertTitle>
-                                      {t('Platform organization')}
-                                    </AlertTitle>
-                                    <Tooltip
-                                      title={t(
-                                        'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one',
-                                      )}
-                                    >
-                                      <InformationOutline
-                                        fontSize="small"
-                                        color="primary"
-                                        style={{
-                                          position: 'absolute',
-                                          top: 10,
-                                          right: 18,
-                                        }}
-                                      />
-                                    </Tooltip>
-                                    <ObjectOrganizationField
-                                      name="platform_organization"
-                                      disabled={!isAccessAdmin}
-                                      onChange={(name, value) => handleSubmitField(id, name, value)
-                                      }
-                                      style={{ width: '100%' }}
-                                      multiple={false}
-                                      outlined={false}
-                                    />
-                                  </Alert>
-                                </div>
-                              )}
-                              {!isAccessAdmin && <div></div>}
-                            </div>
                           </Form>
                         )}
                       </Formik>
@@ -526,13 +398,9 @@ const Settings = () => {
                           </ListItem>
                         ))}
                       </List>
-                      <Formik
-                        onSubmit={() => {
-                        }}
-                        enableReinitialize={true}
+                      <Formik onSubmit={() => {}} enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
-                      >
+                        validationSchema={settingsValidation(t)}>
                         {() => (
                           <Form>
                             <Field
@@ -544,33 +412,9 @@ const Settings = () => {
                               rows="3"
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_login_message"
-                                />
-                              }
-                            />
-                            <Field
-                              component={SwitchField}
-                              disabled={!isAccessAdmin}
-                              type="checkbox"
-                              name="otp_mandatory"
-                              label={t('Enforce two-factor authentication')}
-                              containerstyle={{
-                                margin: '20px 0',
-                              }}
-                              onChange={(name, value) => handleSubmitField(id, name, value)
-                              }
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="otp_mandatory"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
                             />
                           </Form>
                         )}
@@ -584,13 +428,10 @@ const Settings = () => {
                       {t('Dark theme')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Formik
-                        onSubmit={() => {
-                        }}
+                      <Formik onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}
-                      >
+                        validationSchema={settingsValidation(t)}>
                         {() => (
                           <Form>
                             <Field

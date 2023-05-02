@@ -41,7 +41,7 @@ const TopMenuSettings = () => {
                     variant={location.pathname.includes('/dashboard/settings/accesses') ? 'contained' : 'text'}
                     color={location.pathname.includes('/dashboard/settings/accesses') ? 'secondary' : 'primary'}
                     classes={{ root: classes.button }}>
-                    {t('Accesses')}
+                    {t('Security')}
                 </Button>
             </Security>
             <Button component={Link} size="small" to="/dashboard/settings/entity_types"
