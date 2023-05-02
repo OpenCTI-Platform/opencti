@@ -106,7 +106,7 @@ const AccessSettings: FunctionComponent<AccessSettingsComponentProps> = ({ query
     }).catch(() => false);
   };
   const initialValues = {
-    platform_organization: settings.platform_organization ? { label: settings?.platform_organization?.name, value: settings?.platform_organization?.id } : '',
+    platform_organization: settings.platform_organization ? { label: settings.platform_organization?.name, value: settings.platform_organization?.id } : '',
     password_policy_min_length: settings.password_policy_min_length,
     password_policy_min_symbols: settings.password_policy_min_symbols,
     password_policy_min_numbers: settings.password_policy_min_numbers,
