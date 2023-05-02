@@ -1,13 +1,11 @@
-import React, { useState } from 'react';
+import PropTypes from 'prop-types';
 import * as R from 'ramda';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom-v5-compat';
-import {
-  FiltersVariant,
-  isUniqFilter,
-} from '../../../../utils/filters/filtersUtils';
+import { FiltersVariant, isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import DialogFilters from './DialogFilters';
 import FiltersElement from './FiltersElement';
 import ListFilters from './ListFilters';
-import DialogFilters from './DialogFilters';
 
 const Filters = ({
   variant,
@@ -122,6 +120,21 @@ const Filters = ({
       allEntityTypes={allEntityTypes}
     />
   );
+};
+
+Filters.propTypes = {
+  variant: PropTypes.string.isRequired,
+  disabled: PropTypes.bool,
+  size: PropTypes.string,
+  fontSize: PropTypes.string,
+  availableFilterKeys: PropTypes.arrayOf(PropTypes.string).isRequired,
+  noDirectFilters: PropTypes.bool,
+  availableEntityTypes: PropTypes.arrayOf(PropTypes.string),
+  availableRelationshipTypes: PropTypes.arrayOf(PropTypes.string),
+  availableRelationFilterTypes: PropTypes.arrayOf(PropTypes.string),
+  allEntityTypes: PropTypes.bool,
+  handleAddFilter: PropTypes.func.isRequired,
+  type: PropTypes.string,
 };
 
 export default Filters;

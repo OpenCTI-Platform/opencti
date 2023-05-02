@@ -115,8 +115,8 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
   const data = useFragment(triggerLineFragment, node);
   const filters = JSON.parse(data.filters ?? '{}');
   const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
+    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
+    TRIGGER_EMAIL_OUTCOME: t('Email'),
     webhook: t('Webhook'),
   };
   const eventTypes: Record<string, string> = {

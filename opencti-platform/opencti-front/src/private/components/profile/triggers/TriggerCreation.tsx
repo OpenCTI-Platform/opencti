@@ -1,51 +1,45 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { FunctionComponent, useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import { BackupTableOutlined, CampaignOutlined, Close } from '@mui/icons-material';
+import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Chip from '@mui/material/Chip';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import {
-  BackupTableOutlined,
-  CampaignOutlined,
-  Close,
-} from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import SpeedDialIcon from '@mui/material/SpeedDialIcon';
-import SpeedDialAction from '@mui/material/SpeedDialAction';
-import SpeedDial from '@mui/material/SpeedDial';
-import makeStyles from '@mui/styles/makeStyles';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
 import Drawer from '@mui/material/Drawer';
-import * as R from 'ramda';
-import MenuItem from '@mui/material/MenuItem';
-import Box from '@mui/material/Box';
-import Chip from '@mui/material/Chip';
-import Checkbox from '@mui/material/Checkbox';
+import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
-import TextField from '../../../../components/TextField';
-import MarkDownField from '../../../../components/MarkDownField';
-import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import { handleErrorInForm } from '../../../../relay/environment';
-import { insertNode } from '../../../../utils/store';
-import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import Filters from '../../common/lists/Filters';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import SelectField from '../../../../components/SelectField';
-import {
-  TriggerCreationLiveMutation,
-  TriggerCreationLiveMutation$data,
-  TriggerEventType,
-} from './__generated__/TriggerCreationLiveMutation.graphql';
-import TriggersField from './TriggersField';
-import TimePickerField from '../../../../components/TimePickerField';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import MenuItem from '@mui/material/MenuItem';
+import SpeedDial from '@mui/material/SpeedDial';
+import SpeedDialAction from '@mui/material/SpeedDialAction';
+import SpeedDialIcon from '@mui/material/SpeedDialIcon';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import * as R from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useMutation } from 'react-relay';
+import * as Yup from 'yup';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { useFormatter } from '../../../../components/i18n';
+import MarkDownField from '../../../../components/MarkDownField';
+import SelectField from '../../../../components/SelectField';
+import TextField from '../../../../components/TextField';
+import { Theme } from '../../../../components/Theme';
+import TimePickerField from '../../../../components/TimePickerField';
+import { handleErrorInForm } from '../../../../relay/environment';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import { insertNode } from '../../../../utils/store';
+import { dayStartDate, parse } from '../../../../utils/Time';
+import Filters from '../../common/lists/Filters';
+import { TriggerCreationLiveMutation, TriggerCreationLiveMutation$data, TriggerEventType } from './__generated__/TriggerCreationLiveMutation.graphql';
+import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import TriggersField from './TriggersField';
+import { TRIGGER_EMAIL_OUTCOME, TRIGGER_USER_INTERFACE_OUTCOME } from './triggerUtils';
+import type { Filters as FiltersType } from '../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -169,13 +163,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<
-  Record<string, { id: string; value: string }[]>
-  >({});
+  const [filters, setFilters] = useState<FiltersType<{ id: string; value: string }[]>>({});
   const onReset = () => {
     handleClose?.();
     setFilters({});
-  };
+  }
   const handleAddFilter = (
     key: string,
     id: string,
@@ -219,35 +211,29 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
     delete: t('Deletion'),
   };
   const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
+    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
+    TRIGGER_EMAIL_OUTCOME: t('Email'),
     webhook: t('Webhook'),
   };
   const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
-    values: TriggerLiveAddInput,
-    { setSubmitting, setErrors, resetForm }: FormikHelpers<TriggerLiveAddInput>,
+    values,
+    { setSubmitting, setErrors, resetForm },
   ) => {
-    const jsonFilters = JSON.stringify(filters);
     const finalValues = {
-      name: values.name,
-      event_types: values.event_types,
-      outcomes: values.outcomes,
-      description: values.description,
-      filters: jsonFilters,
+      ...values,
+      filters: JSON.stringify(filters),
     };
     commitLive({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
-        if (paginationOptions) {
-          insertNode(
-            store,
-            'Pagination_myTriggers',
-            paginationOptions,
-            'triggerLiveAdd',
-          );
-        }
+        insertNode(
+          store,
+          'Pagination_myTriggers',
+          paginationOptions,
+          'triggerLiveAdd',
+        );
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -266,24 +252,23 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
     setFieldValue: (
       field: string,
       value: unknown,
-      shouldValidate?: boolean | undefined
     ) => void,
     values: TriggerLiveAddInput,
   ) => (
-    <React.Fragment>
+    <>
       <Field
         component={TextField}
         variant="standard"
         name="name"
         label={t('Name')}
-        fullWidth={true}
+        fullWidth
       />
       <Field
         component={MarkDownField}
         name="description"
         label={t('Description')}
-        fullWidth={true}
-        multiline={true}
+        fullWidth
+        multiline
         rows="4"
         style={{ marginTop: 20 }}
       />
@@ -292,12 +277,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
         variant="standard"
         name="event_types"
         label={t('Triggering on')}
-        fullWidth={true}
-        multiple={true}
-        onChange={(name: string, value: string[]) => setFieldValue('event_types', value)
-        }
+        fullWidth
+        multiple
+        onChange={setFieldValue}
         inputProps={{ name: 'event_types', id: 'event_types' }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={fieldSpacingContainerStyle}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -307,15 +291,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
         )}
       >
         <MenuItem value="create">
-          <Checkbox checked={values.event_types.indexOf('create') > -1} />
+          <Checkbox checked={values.event_types.includes('create')} />
           <ListItemText primary={eventTypesOptions.create} />
         </MenuItem>
         <MenuItem value="update">
-          <Checkbox checked={values.event_types.indexOf('update') > -1} />
+          <Checkbox checked={values.event_types.includes('update')} />
           <ListItemText primary={eventTypesOptions.update} />
         </MenuItem>
         <MenuItem value="delete">
-          <Checkbox checked={values.event_types.indexOf('delete') > -1} />
+          <Checkbox checked={values.event_types.includes('delete')} />
           <ListItemText primary={eventTypesOptions.delete} />
         </MenuItem>
       </Field>
@@ -324,12 +308,11 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
         variant="standard"
         name="outcomes"
         label={t('Notification')}
-        fullWidth={true}
-        multiple={true}
-        onChange={(name: string, value: string[]) => setFieldValue('outcomes', value)
-        }
+        fullWidth
+        multiple
+        onChange={setFieldValue}
         inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={fieldSpacingContainerStyle}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -338,30 +321,24 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
           </Box>
         )}
       >
-        <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
+        <MenuItem value={TRIGGER_USER_INTERFACE_OUTCOME}>
           <Checkbox
-            checked={
-              values.outcomes.indexOf('f4ee7b33-006a-4b0d-b57d-411ad288653d')
-              > -1
-            }
+            checked={values.outcomes.includes(TRIGGER_USER_INTERFACE_OUTCOME)}
           />
           <ListItemText
-            primary={outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']}
+            primary={outcomesOptions[TRIGGER_USER_INTERFACE_OUTCOME]}
           />
         </MenuItem>
-        <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
+        <MenuItem value={TRIGGER_EMAIL_OUTCOME}>
           <Checkbox
-            checked={
-              values.outcomes.indexOf('44fcf1f4-8e31-4b31-8dbc-cd6993e1b822')
-              > -1
-            }
+            checked={values.outcomes.includes(TRIGGER_EMAIL_OUTCOME)}
           />
           <ListItemText
-            primary={outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']}
+            primary={outcomesOptions[TRIGGER_EMAIL_OUTCOME]}
           />
         </MenuItem>
-        <MenuItem value="webhook" disabled={true}>
-          <Checkbox checked={values.outcomes.indexOf('webhook') > -1} />
+        <MenuItem value="webhook" disabled>
+          <Checkbox checked={values.outcomes.includes('webhook')} />
           <ListItemText primary={outcomesOptions.webhook} />
         </MenuItem>
       </Field>
@@ -391,15 +368,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
             'toTypes',
           ]}
           handleAddFilter={handleAddFilter}
-          noDirectFilters={true}
-          disabled={undefined}
-          size={undefined}
-          fontSize={undefined}
-          availableEntityTypes={undefined}
-          availableRelationshipTypes={undefined}
-          allEntityTypes={undefined}
-          type={undefined}
-          availableRelationFilterTypes={undefined}
+          noDirectFilters
         />
       </div>
       <div className="clearfix" />
@@ -408,12 +377,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
         handleRemoveFilter={handleRemoveFilter}
         classNameNumber={2}
       />
-    </React.Fragment>
+    </>
   );
   const renderClassic = () => (
     <div>
       <Drawer
-        disableRestoreFocus={true}
+        disableRestoreFocus
         open={open}
         anchor="right"
         elevation={1}
@@ -477,7 +446,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerCreationProps> = ({
   );
   const renderContextual = () => (
     <Dialog
-      disableRestoreFocus={true}
+      disableRestoreFocus
       open={open ?? false}
       onClose={handleClose}
       PaperProps={{ elevation: 1 }}
@@ -553,8 +522,8 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
     time: dayStartDate().toISOString(),
   };
   const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
+    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
+    TRIGGER_EMAIL_OUTCOME: t('Email'),
     webhook: t('Webhook'),
   };
   const onDigestSubmit: FormikConfig<TriggerDigestAddInput>['onSubmit'] = (
@@ -612,20 +581,20 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
     ) => void,
     values: TriggerDigestAddInput,
   ) => (
-    <React.Fragment>
+    <>
       <Field
         component={TextField}
         variant="standard"
         name="name"
         label={t('Name')}
-        fullWidth={true}
+        fullWidth
       />
       <Field
         component={MarkDownField}
         name="description"
         label={t('Description')}
-        fullWidth={true}
-        multiline={true}
+        fullWidth
+        multiline
         rows="4"
         style={{ marginTop: 20 }}
       />
@@ -633,7 +602,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
         name="trigger_ids"
         setFieldValue={setFieldValue}
         values={values.trigger_ids}
-        style={{ marginTop: 20, width: '100%' }}
+        style={fieldSpacingContainerStyle}
         paginationOptions={paginationOptions}
       />
       <Field
@@ -641,8 +610,8 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
         variant="standard"
         name="period"
         label={t('Period')}
-        fullWidth={true}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        fullWidth
+        containerstyle={fieldSpacingContainerStyle}
       >
         <MenuItem value="hour">{t('hour')}</MenuItem>
         <MenuItem value="day">{t('day')}</MenuItem>
@@ -655,8 +624,8 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
           variant="standard"
           name="day"
           label={t('Week day')}
-          fullWidth={true}
-          containerstyle={{ marginTop: 20, width: '100%' }}
+          fullWidth
+          containerstyle={fieldSpacingContainerStyle}
         >
           <MenuItem value="1">{t('Monday')}</MenuItem>
           <MenuItem value="2">{t('Tuesday')}</MenuItem>
@@ -673,8 +642,8 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
           variant="standard"
           name="day"
           label={t('Month day')}
-          fullWidth={true}
-          containerstyle={{ marginTop: 20, width: '100%' }}
+          fullWidth
+          containerstyle={fieldSpacingContainerStyle}
         >
           {Array.from(Array(31).keys()).map((idx) => (
             <MenuItem key={idx} value={(idx + 1).toString()}>
@@ -687,7 +656,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
         <Field
           component={TimePickerField}
           name="time"
-          withMinutes={true}
+          withMinutes
           TextFieldProps={{
             label: t('Time'),
             variant: 'standard',
@@ -701,12 +670,12 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
         variant="standard"
         name="outcomes"
         label={t('Notification')}
-        fullWidth={true}
-        multiple={true}
+        fullWidth
+        multiple
         onChange={(name: string, value: string[]) => setFieldValue('outcomes', value)
         }
         inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={fieldSpacingContainerStyle}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -718,35 +687,35 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
         <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
           <Checkbox
             checked={
-              values.outcomes.indexOf('f4ee7b33-006a-4b0d-b57d-411ad288653d')
+              values.outcomes.indexOf(TRIGGER_USER_INTERFACE_OUTCOME)
               > -1
             }
           />
           <ListItemText
-            primary={outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']}
+            primary={outcomesOptions[TRIGGER_USER_INTERFACE_OUTCOME]}
           />
         </MenuItem>
         <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
           <Checkbox
             checked={
-              values.outcomes.indexOf('44fcf1f4-8e31-4b31-8dbc-cd6993e1b822')
+              values.outcomes.indexOf(TRIGGER_EMAIL_OUTCOME)
               > -1
             }
           />
           <ListItemText
-            primary={outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']}
+            primary={outcomesOptions[TRIGGER_EMAIL_OUTCOME]}
           />
         </MenuItem>
-        <MenuItem value="webhook" disabled={true}>
+        <MenuItem value="webhook" disabled>
           <Checkbox checked={values.outcomes.indexOf('webhook') > -1} />
           <ListItemText primary={outcomesOptions.webhook} />
         </MenuItem>
       </Field>
-    </React.Fragment>
+    </>
   );
   const renderClassic = () => (
     <Drawer
-      disableRestoreFocus={true}
+      disableRestoreFocus
       open={open}
       anchor="right"
       elevation={1}
@@ -809,7 +778,7 @@ const TriggerDigestCreation: FunctionComponent<TriggerCreationProps> = ({
   );
   const renderContextual = () => (
     <Dialog
-      disableRestoreFocus={true}
+      disableRestoreFocus
       open={open ?? false}
       onClose={handleClose}
       PaperProps={{ elevation: 1 }}

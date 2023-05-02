@@ -1,0 +1,2 @@
+export const TRIGGER_USER_INTERFACE_OUTCOME = 'f4ee7b33-006a-4b0d-b57d-411ad288653d';
+export const TRIGGER_EMAIL_OUTCOME = '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822';

@@ -23,6 +23,7 @@ import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { TRIGGER_EMAIL_OUTCOME, TRIGGER_USER_INTERFACE_OUTCOME } from './triggerUtils';
 
 const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -275,8 +276,8 @@ TriggerEditionOverviewProps
     delete: t('Deletion'),
   };
   const outcomesOptions: Record<string, string> = {
-    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
-    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
+    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
+    TRIGGER_EMAIL_OUTCOME: t('Email'),
     webhook: t('Webhook'),
   };
   return (
@@ -423,8 +424,7 @@ TriggerEditionOverviewProps
             label={t('Notification')}
             fullWidth={true}
             multiple={true}
-            onChange={(name: string, value: string[]) => handleSubmitField('outcomes', value)
-            }
+            onChange={handleSubmitField}
             inputProps={{ name: 'outcomes', id: 'outcomes' }}
             containerstyle={{ marginTop: 20, width: '100%' }}
             renderValue={(selected: Array<string>) => (
@@ -435,31 +435,23 @@ TriggerEditionOverviewProps
               </Box>
             )}
           >
-            <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
+            <MenuItem value={TRIGGER_USER_INTERFACE_OUTCOME}>
               <Checkbox
-                checked={
-                  values.outcomes.indexOf(
-                    'f4ee7b33-006a-4b0d-b57d-411ad288653d',
-                  ) > -1
-                }
+                checked={values.outcomes.includes(TRIGGER_USER_INTERFACE_OUTCOME)}
               />
               <ListItemText
                 primary={
-                  outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']
+                  outcomesOptions[TRIGGER_USER_INTERFACE_OUTCOME]
                 }
               />
             </MenuItem>
-            <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
+            <MenuItem value={TRIGGER_EMAIL_OUTCOME}>
               <Checkbox
-                checked={
-                  values.outcomes.indexOf(
-                    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
-                  ) > -1
-                }
+                checked={values.outcomes.includes(TRIGGER_EMAIL_OUTCOME)}
               />
               <ListItemText
                 primary={
-                  outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']
+                  outcomesOptions[TRIGGER_EMAIL_OUTCOME]
                 }
               />
             </MenuItem>
