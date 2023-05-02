@@ -31,14 +31,15 @@ export const caseRfiMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    caseRfiFieldPatch(
-      id: $id
-      input: $input
-      commitMessage: $commitMessage
-      references: $references
-    ) {
-      ...CaseRfiEditionOverview_case
-      ...CaseUtils_case
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
+        ...CaseRfiEditionOverview_case
+        ...CaseUtils_case
+      }
     }
   }
 `;
@@ -48,8 +49,10 @@ export const caseRfiEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    caseRfiContextPatch(id: $id, input: $input) {
-      id
+    stixDomainObjectEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -114,9 +117,11 @@ const caseRfiMutationRelationAdd = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    caseRfiRelationAdd(id: $id, input: $input) {
-      from {
-        ...CaseRfiEditionOverview_case
+    stixDomainObjectEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...CaseRfiEditionOverview_case
+        }
       }
     }
   }
@@ -128,12 +133,13 @@ const caseRfiMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    caseRfiRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
-      ...CaseRfiEditionOverview_case
+    stixDomainObjectEdit(id: $id){
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+      ) {
+        ...CaseRfiEditionOverview_case
+      }
     }
   }
 `;

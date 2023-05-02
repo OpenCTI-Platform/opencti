@@ -198,10 +198,5 @@ type Query {
 
 type Mutation {
   caseDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseContextClean(id: ID!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
   caseSetTemplate(id: ID!, caseTemplatesId: [ID!]!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -228,9 +228,4 @@ input FeedbackAddInput {
 type Mutation {
   feedbackAdd(input: FeedbackAddInput!): Feedback @auth
   feedbackDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  feedbackRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  feedbackRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
-  feedbackFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
-  feedbackContextPatch(id: ID!, input: EditContext!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
-  feedbackContextClean(id: ID!): Feedback @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -1,6 +1,6 @@
 import { Promise as BluePromise } from 'bluebird';
 import { containersObjectsOfObject } from '../../domain/container';
-import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDelete, stixDomainObjectDeleteRelation, stixDomainObjectEditContext, stixDomainObjectEditField } from '../../domain/stixDomainObject';
+import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
@@ -37,26 +37,11 @@ const caseResolvers: Resolvers = {
     caseDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
     },
-    caseFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
-    },
-    caseRelationAdd: (_, { id, input }, context) => {
-      return stixDomainObjectAddRelation(context, context.user, id, input);
-    },
-    caseRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
-      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
-    },
-    caseContextPatch: (_, { id, input }, context) => {
-      return stixDomainObjectEditContext(context, context.user, id, input);
-    },
-    caseContextClean: (_, { id }, context) => {
-      return stixDomainObjectCleanContext(context, context.user, id);
-    },
     caseSetTemplate: async (_, { id, caseTemplatesId }, context) => {
       await BluePromise.map(caseTemplatesId, (caseTemplateId) => upsertTemplateForCase(context, context.user, id, caseTemplateId));
       return findById(context, context.user, id);
     },
-  },
+  }
 };
 
 export default caseResolvers;

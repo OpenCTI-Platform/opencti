@@ -8444,40 +8444,15 @@ type Mutation {
   administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
   caseDelete(id: ID!): ID
-  caseRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Case
-  caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case
-  caseContextPatch(id: ID!, input: EditContext!): Case
-  caseContextClean(id: ID!): Case
   caseSetTemplate(id: ID!, caseTemplatesId: [ID!]!): Case
   feedbackAdd(input: FeedbackAddInput!): Feedback
   feedbackDelete(id: ID!): ID
-  feedbackRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  feedbackRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Feedback
-  feedbackFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Feedback
-  feedbackContextPatch(id: ID!, input: EditContext!): Feedback
-  feedbackContextClean(id: ID!): Feedback
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
   caseIncidentDelete(id: ID!): ID
-  caseIncidentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseIncidentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseIncident
-  caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident
-  caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident
-  caseIncidentContextClean(id: ID!): CaseIncident
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
-  caseRfiRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseRfiRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRfi
-  caseRfiFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRfi
-  caseRfiContextPatch(id: ID!, input: EditContext!): CaseRfi
-  caseRfiContextClean(id: ID!): CaseRfi
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
-  caseRftRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseRftRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRft
-  caseRftFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRft
-  caseRftContextPatch(id: ID!, input: EditContext!): CaseRft
-  caseRftContextClean(id: ID!): CaseRft
   caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate
   caseTemplateDelete(id: ID!): ID
   caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate

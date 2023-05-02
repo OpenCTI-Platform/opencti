@@ -236,9 +236,4 @@ input CaseIncidentAddInput {
 type Mutation {
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident @auth
   caseIncidentDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseIncidentRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseIncidentRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseIncidentFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseIncidentContextPatch(id: ID!, input: EditContext!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseIncidentContextClean(id: ID!): CaseIncident @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -29,14 +29,15 @@ const feedbackMutationFieldPatch = graphql`
     $commitMessage: String
     $references: [String]
   ) {
-    feedbackFieldPatch(
-      id: $id
-      input: $input
-      commitMessage: $commitMessage
-      references: $references
-    ) {
-      ...FeedbackEditionOverview_case
-      ...Feedback_case
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(
+        input: $input
+        commitMessage: $commitMessage
+        references: $references
+      ) {
+        ...FeedbackEditionOverview_case
+        ...Feedback_case
+      }
     }
   }
 `;
@@ -46,8 +47,10 @@ export const feedbackEditionOverviewFocus = graphql`
     $id: ID!
     $input: EditContext!
   ) {
-    feedbackContextPatch(id: $id, input: $input) {
-      id
+    stixDomainObjectEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
     }
   }
 `;
@@ -105,9 +108,11 @@ const feedbackMutationRelationAdd = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    feedbackRelationAdd(id: $id, input: $input) {
-      from {
-        ...FeedbackEditionOverview_case
+    stixDomainObjectEdit(id: $id) {
+      relationAdd(input: $input) {
+        from {
+          ...FeedbackEditionOverview_case
+        }
       }
     }
   }
@@ -119,12 +124,13 @@ const feedbackMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    feedbackRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
-      ...FeedbackEditionOverview_case
+    stixDomainObjectEdit(id: $id){
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+      ) {
+        ...FeedbackEditionOverview_case
+      }
     }
   }
 `;
