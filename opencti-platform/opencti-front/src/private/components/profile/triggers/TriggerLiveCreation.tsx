@@ -1,39 +1,41 @@
-import { Close } from '@mui/icons-material';
-import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
-import Checkbox from '@mui/material/Checkbox';
-import Chip from '@mui/material/Chip';
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { FunctionComponent, useState } from 'react';
+import { Field, Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Drawer from '@mui/material/Drawer';
-import IconButton from '@mui/material/IconButton';
-import ListItemText from '@mui/material/ListItemText';
-import MenuItem from '@mui/material/MenuItem';
-import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
-import { Field, Form, Formik } from 'formik';
-import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import * as R from 'ramda';
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useMutation } from 'react-relay';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import FilterIconButton from '../../../../components/FilterIconButton';
-import { useFormatter } from '../../../../components/i18n';
-import { Filters as FiltersType } from '../../../../components/list_lines';
-import MarkDownField from '../../../../components/MarkDownField';
-import SelectField from '../../../../components/SelectField';
+import { graphql, useMutation } from 'react-relay';
+import makeStyles from '@mui/styles/makeStyles';
+import { FormikConfig, FormikHelpers } from 'formik/dist/types';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import Drawer from '@mui/material/Drawer';
+import * as R from 'ramda';
+import MenuItem from '@mui/material/MenuItem';
+import Box from '@mui/material/Box';
+import Chip from '@mui/material/Chip';
+import Checkbox from '@mui/material/Checkbox';
+import ListItemText from '@mui/material/ListItemText';
 import TextField from '../../../../components/TextField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
+import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { insertNode } from '../../../../utils/store';
-import Filters from '../../common/lists/Filters';
-import { TriggerEventType, TriggerLiveCreationLiveMutation, TriggerLiveCreationLiveMutation$data } from './__generated__/TriggerLiveCreationLiveMutation.graphql';
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
-import { TRIGGER_EMAIL_OUTCOME, TRIGGER_USER_INTERFACE_OUTCOME } from './triggerUtils';
+import Filters from '../../common/lists/Filters';
+import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import SelectField from '../../../../components/SelectField';
+import {
+  TriggerLiveCreationLiveMutation,
+  TriggerLiveCreationLiveMutation$data,
+  TriggerEventType,
+} from './__generated__/TriggerLiveCreationLiveMutation.graphql';
+import FilterIconButton from '../../../../components/FilterIconButton';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -144,7 +146,9 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-  const [filters, setFilters] = useState<FiltersType<{ id: string; value: string }[]>>({});
+  const [filters, setFilters] = useState<
+  Record<string, { id: string; value: string }[]>
+  >({});
   const onReset = () => {
     handleClose?.();
     setFilters({});
@@ -192,8 +196,8 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     delete: t('Deletion'),
   };
   const outcomesOptions: Record<string, string> = {
-    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
-    TRIGGER_EMAIL_OUTCOME: t('Email'),
+    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
+    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
     webhook: t('Webhook'),
   };
   const onLiveSubmit: FormikConfig<TriggerLiveAddInput>['onSubmit'] = (
@@ -239,6 +243,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
     setFieldValue: (
       field: string,
       value: unknown,
+      shouldValidate?: boolean | undefined
     ) => void,
     values: TriggerLiveAddInput,
   ) => (
@@ -248,14 +253,14 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         variant="standard"
         name="name"
         label={t('Name')}
-        fullWidth
+        fullWidth={true}
       />
       <Field
         component={MarkDownField}
         name="description"
         label={t('Description')}
-        fullWidth
-        multiline
+        fullWidth={true}
+        multiline={true}
         rows="4"
         style={{ marginTop: 20 }}
       />
@@ -264,11 +269,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         variant="standard"
         name="event_types"
         label={t('Triggering on')}
-        fullWidth
-        multiple
-        onChange={setFieldValue}
+        fullWidth={true}
+        multiple={true}
+        onChange={(name: string, value: string[]) => setFieldValue('event_types', value)
+        }
         inputProps={{ name: 'event_types', id: 'event_types' }}
-        containerstyle={fieldSpacingContainerStyle}
+        containerstyle={{ marginTop: 20, width: '100%' }}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -278,15 +284,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         )}
       >
         <MenuItem value="create">
-          <Checkbox checked={values.event_types.includes('create')} />
+          <Checkbox checked={values.event_types.indexOf('create') > -1} />
           <ListItemText primary={eventTypesOptions.create} />
         </MenuItem>
         <MenuItem value="update">
-          <Checkbox checked={values.event_types.includes('update')} />
+          <Checkbox checked={values.event_types.indexOf('update') > -1} />
           <ListItemText primary={eventTypesOptions.update} />
         </MenuItem>
         <MenuItem value="delete">
-          <Checkbox checked={values.event_types.includes('delete')} />
+          <Checkbox checked={values.event_types.indexOf('delete') > -1} />
           <ListItemText primary={eventTypesOptions.delete} />
         </MenuItem>
       </Field>
@@ -295,11 +301,12 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         variant="standard"
         name="outcomes"
         label={t('Notification')}
-        fullWidth
-        multiple
-        onChange={setFieldValue}
+        fullWidth={true}
+        multiple={true}
+        onChange={(name: string, value: string[]) => setFieldValue('outcomes', value)
+        }
         inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={fieldSpacingContainerStyle}
+        containerstyle={{ marginTop: 20, width: '100%' }}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -311,26 +318,26 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
           <Checkbox
             checked={
-              values.outcomes.indexOf(TRIGGER_USER_INTERFACE_OUTCOME)
+              values.outcomes.indexOf('f4ee7b33-006a-4b0d-b57d-411ad288653d')
               > -1
             }
           />
           <ListItemText
-            primary={outcomesOptions[TRIGGER_USER_INTERFACE_OUTCOME]}
+            primary={outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']}
           />
         </MenuItem>
         <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
           <Checkbox
             checked={
-              values.outcomes.indexOf(TRIGGER_EMAIL_OUTCOME)
+              values.outcomes.indexOf('44fcf1f4-8e31-4b31-8dbc-cd6993e1b822')
               > -1
             }
           />
           <ListItemText
-            primary={outcomesOptions[TRIGGER_EMAIL_OUTCOME]}
+            primary={outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']}
           />
         </MenuItem>
-        <MenuItem value="webhook" disabled>
+        <MenuItem value="webhook" disabled={true}>
           <Checkbox checked={values.outcomes.indexOf('webhook') > -1} />
           <ListItemText primary={outcomesOptions.webhook} />
         </MenuItem>
@@ -361,7 +368,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
             'toTypes',
           ]}
           handleAddFilter={handleAddFilter}
-          noDirectFilters
+          noDirectFilters={true}
+          disabled={undefined}
+          size={undefined}
+          fontSize={undefined}
+          availableEntityTypes={undefined}
+          availableRelationshipTypes={undefined}
+          allEntityTypes={undefined}
+          type={undefined}
+          availableRelationFilterTypes={undefined}
         />
       </div>
       <FilterIconButton
@@ -374,7 +389,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const renderClassic = () => (
     <div>
       <Drawer
-        disableRestoreFocus
+        disableRestoreFocus={true}
         open={open}
         anchor="right"
         elevation={1}
@@ -438,7 +453,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   );
   const renderContextual = () => (
     <Dialog
-      disableRestoreFocus
+      disableRestoreFocus={true}
       open={open ?? false}
       onClose={handleClose}
       PaperProps={{ elevation: 1 }}

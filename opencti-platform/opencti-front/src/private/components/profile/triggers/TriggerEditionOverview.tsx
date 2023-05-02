@@ -23,7 +23,6 @@ import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import FilterIconButton from '../../../../components/FilterIconButton';
-import { TRIGGER_EMAIL_OUTCOME, TRIGGER_USER_INTERFACE_OUTCOME } from './triggerUtils';
 
 const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -276,8 +275,8 @@ TriggerEditionOverviewProps
     delete: t('Deletion'),
   };
   const outcomesOptions: Record<string, string> = {
-    TRIGGER_USER_INTERFACE_OUTCOME: t('User interface'),
-    TRIGGER_EMAIL_OUTCOME: t('Email'),
+    'f4ee7b33-006a-4b0d-b57d-411ad288653d': t('User interface'),
+    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822': t('Email'),
     webhook: t('Webhook'),
   };
   return (
@@ -424,7 +423,8 @@ TriggerEditionOverviewProps
             label={t('Notification')}
             fullWidth={true}
             multiple={true}
-            onChange={handleSubmitField}
+            onChange={(name: string, value: string[]) => handleSubmitField('outcomes', value)
+            }
             inputProps={{ name: 'outcomes', id: 'outcomes' }}
             containerstyle={{ marginTop: 20, width: '100%' }}
             renderValue={(selected: Array<string>) => (
@@ -435,23 +435,31 @@ TriggerEditionOverviewProps
               </Box>
             )}
           >
-            <MenuItem value={TRIGGER_USER_INTERFACE_OUTCOME}>
+            <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
               <Checkbox
-                checked={values.outcomes.includes(TRIGGER_USER_INTERFACE_OUTCOME)}
+                checked={
+                  values.outcomes.indexOf(
+                    'f4ee7b33-006a-4b0d-b57d-411ad288653d',
+                  ) > -1
+                }
               />
               <ListItemText
                 primary={
-                  outcomesOptions[TRIGGER_USER_INTERFACE_OUTCOME]
+                  outcomesOptions['f4ee7b33-006a-4b0d-b57d-411ad288653d']
                 }
               />
             </MenuItem>
-            <MenuItem value={TRIGGER_EMAIL_OUTCOME}>
+            <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
               <Checkbox
-                checked={values.outcomes.includes(TRIGGER_EMAIL_OUTCOME)}
+                checked={
+                  values.outcomes.indexOf(
+                    '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
+                  ) > -1
+                }
               />
               <ListItemText
                 primary={
-                  outcomesOptions[TRIGGER_EMAIL_OUTCOME]
+                  outcomesOptions['44fcf1f4-8e31-4b31-8dbc-cd6993e1b822']
                 }
               />
             </MenuItem>
