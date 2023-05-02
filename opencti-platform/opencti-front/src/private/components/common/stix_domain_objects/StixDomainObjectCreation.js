@@ -641,10 +641,10 @@ const StixDomainObjectCreation = ({
     setStatus({ open: true, type: null });
   };
   const stateHandleClose = () => setStatus({ open: false, type: null });
-  const creationUpdater = (store, rootField) => {
+  const creationUpdater = (store, rootField, element) => {
     const payload = store.getRootField(rootField);
     if (creationCallback) {
-      creationCallback(payload);
+      creationCallback(element);
     } else {
       const newEdge = payload.setLinkedRecord(payload, 'node'); // Creation of the pagination container.
       const container = store.getRoot();

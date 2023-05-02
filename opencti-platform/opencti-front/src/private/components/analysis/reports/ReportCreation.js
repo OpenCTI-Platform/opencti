@@ -136,9 +136,9 @@ export const ReportCreationForm = ({
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'reportAdd');
+          updater(store, 'reportAdd', response.reportAdd);
         }
       },
       onError: (error) => {

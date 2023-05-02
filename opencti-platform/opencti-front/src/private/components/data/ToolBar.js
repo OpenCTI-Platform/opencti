@@ -881,10 +881,11 @@ class ToolBar extends Component {
               handleClose={() => this.setState({ containerCreation: false })}
               creationCallback={(data) => {
                 const element = {
-                  label: data.stixDomainObjectAdd.name,
-                  value: data.stixDomainObjectAdd.id,
-                  type: data.stixDomainObjectAdd.entity_type,
+                  label: data.name,
+                  value: data.id,
+                  type: data.entity_type,
                 };
+                this.setState(({ containers }) => ({ containers: [...(containers ?? []), element] }));
                 this.handleChangeActionInputValues(i, null, element);
               }}
             />
