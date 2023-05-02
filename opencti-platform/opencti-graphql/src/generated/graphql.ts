@@ -19084,6 +19084,12 @@ export type Settings = BasicObject & InternalObject & {
   id: Scalars['ID'];
   otp_mandatory?: Maybe<Scalars['Boolean']>;
   parent_types: Array<Scalars['String']>;
+  password_config_digits?: Maybe<Scalars['Int']>;
+  password_config_lowercase?: Maybe<Scalars['Int']>;
+  password_config_max_length?: Maybe<Scalars['Int']>;
+  password_config_min_length?: Maybe<Scalars['Int']>;
+  password_config_special_char?: Maybe<Scalars['Int']>;
+  password_config_uppercase?: Maybe<Scalars['Int']>;
   platform_cluster: Cluster;
   platform_email?: Maybe<Scalars['String']>;
   platform_favicon?: Maybe<Scalars['String']>;
@@ -31202,6 +31208,12 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_config_digits?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_config_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_config_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_config_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_config_special_char?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
+  password_config_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

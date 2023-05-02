@@ -1,4 +1,5 @@
 import { withFilter } from 'graphql-subscriptions';
+import nconf from 'nconf';
 import { BUS_TOPICS } from '../config/conf';
 import {
   getApplicationInfo,
@@ -24,6 +25,12 @@ const settingsResolvers = {
     relationships: (_, __, context) => elAggregationCount(context, context.user, READ_DATA_INDICES, { types: ['stix-relationship'], field: 'entity_type' }),
   },
   Settings: {
+    password_config_digits: () => Number(nconf.get('app:password_config_digits')),
+    password_config_lowercase: () => Number(nconf.get('app:password_config_lowercase')),
+    password_config_max_length: () => Number(nconf.get('app:password_config_max_length')),
+    password_config_min_length: () => Number(nconf.get('app:password_config_min_length')),
+    password_config_special_char: () => Number(nconf.get('app:password_config_special_char')),
+    password_config_uppercase: () => Number(nconf.get('app:password_config_uppercase')),
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     editContext: (settings) => fetchEditContext(settings.id),

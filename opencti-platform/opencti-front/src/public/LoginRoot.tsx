@@ -15,6 +15,12 @@ export const rootPublicQuery = graphql`
       platform_login_message
       platform_theme_dark_logo_login
       platform_theme_light_logo_login
+      password_config_min_length
+      password_config_max_length
+      password_config_uppercase
+      password_config_lowercase
+      password_config_digits
+      password_config_special_char
       platform_providers {
         name
         type

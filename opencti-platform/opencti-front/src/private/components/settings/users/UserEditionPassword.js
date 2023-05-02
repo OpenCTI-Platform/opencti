@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import { passwordValidate } from '../../../../utils/PasswordValidate';
 
 const styles = (theme) => ({
   buttons: {
@@ -33,12 +34,15 @@ const userMutationFieldPatch = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-});
+function passwordValidation(t) {
+  Yup.addMethod(Yup.string, "password", passwordValidate);
+  return Yup.object().shape({
+    password: Yup.string().password(t("Password does not meet criteria")).required(t("Required")),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+  });
+}
 
 class UserEditionPasswordComponent extends Component {
   onSubmit(values, { setSubmitting, resetForm }) {
@@ -66,7 +70,7 @@ class UserEditionPasswordComponent extends Component {
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={userValidation(t)}
+          validationSchema={passwordValidation.bind(this)(t)}
           onSubmit={this.onSubmit.bind(this)}
         >
           {({ submitForm, isSubmitting }) => (

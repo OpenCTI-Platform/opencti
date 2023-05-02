@@ -44,6 +44,12 @@
         "exporter_prometheus": 14269
       }
     },
+    "password_config_min_length":10,
+    "password_config_max_length":50,
+    "password_config_uppercase":1,
+    "password_config_lowercase":1,
+    "password_config_digits":1,
+    "password_config_special_char":1,
     "request_timeout": 1200000,
     "session_timeout": 1200000,
     "session_manager": "shared",

@@ -12577,6 +12577,7 @@ __metadata:
     mdi-material-ui: 7.6.0
     moment: 2.29.4
     moment-timezone: 0.5.41
+    password-validator: ^5.3.0
     pdfmake: 0.2.7*
     prettier: 2.8.4
     prop-types: 15.8.1
@@ -12804,6 +12805,13 @@ __metadata:
   version: 0.1.1
   resolution: "pascalcase@npm:0.1.1"
   checksum: f83681c3c8ff75fa473a2bb2b113289952f802ff895d435edd717e7cb898b0408cbdb247117a938edcbc5d141020909846cc2b92c47213d764e2a94d2ad2b925
+  languageName: node
+  linkType: hard
+
+"password-validator@npm:^5.3.0":
+  version: 5.3.0
+  resolution: "password-validator@npm:5.3.0"
+  checksum: 4ffd5e6aa24cd262a136a5d338cff0396a45d129e688768e66aa19ad2ff536c65be12c1289e26901859ac1a04eff58aa3c49e3f1196dc5790e45c36aa7b66b4b
   languageName: node
   linkType: hard
 

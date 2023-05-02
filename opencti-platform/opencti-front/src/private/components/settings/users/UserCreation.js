@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Form, Formik, Field } from 'formik';
 import withStyles from '@mui/styles/withStyles';
@@ -19,6 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import { passwordValidate } from '../../../../utils/PasswordValidate';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -71,19 +72,22 @@ const userMutation = graphql`
   }
 `;
 
-const userValidation = (t) => Yup.object().shape({
-  name: Yup.string().required(t('This field is required')),
-  user_email: Yup.string()
-    .required(t('This field is required'))
-    .email(t('The value must be an email address')),
-  firstname: Yup.string().nullable(),
-  lastname: Yup.string().nullable(),
-  description: Yup.string().nullable(),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-});
+function userValidation(t) {
+  Yup.addMethod(Yup.string, "password", passwordValidate);
+  return Yup.object().shape({
+    name: Yup.string().required(t('This field is required')),
+    user_email: Yup.string()
+      .required(t('This field is required'))
+      .email(t('The value must be an email address')),
+    firstname: Yup.string().nullable(),
+    lastname: Yup.string().nullable(),
+    description: Yup.string().nullable(),
+    password: Yup.string().password(t("Password does not meet criteria")).required(t("Required")),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+  });
+}
 
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
@@ -191,7 +195,7 @@ class UserCreation extends Component {
                 confirmation: '',
                 objectOrganization: [],
               }}
-              validationSchema={userValidation(t)}
+              validationSchema={userValidation.bind(this)(t)}
               onSubmit={this.onSubmit.bind(this)}
               onReset={this.onReset.bind(this)}
             >

@@ -31,6 +31,7 @@ import Loader from '../../../components/Loader';
 import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
+import { passwordValidate } from '../../../utils/PasswordValidate';
 
 const styles = () => ({
   container: {
@@ -105,13 +106,15 @@ const userValidation = (t) => Yup.object().shape({
   otp_activated: Yup.boolean(),
 });
 
-const passwordValidation = (t) => Yup.object().shape({
-  current_password: Yup.string().required(t('This field is required')),
-  password: Yup.string().required(t('This field is required')),
-  confirmation: Yup.string()
-    .oneOf([Yup.ref('password'), null], t('The values do not match'))
-    .required(t('This field is required')),
-});
+function passwordValidation(t) {
+  Yup.addMethod(Yup.string, "password", passwordValidate);
+  return Yup.object().shape({
+    password: Yup.string().password(t("Password does not meet criteria")).required(t("Required")),
+    confirmation: Yup.string()
+      .oneOf([Yup.ref('password'), null], t('The values do not match'))
+      .required(t('This field is required')),
+  });
+}
 
 const Otp = ({ closeFunction, secret, uri }) => {
   const { t } = useFormatter();

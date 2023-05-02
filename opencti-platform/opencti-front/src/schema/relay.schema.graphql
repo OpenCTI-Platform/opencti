@@ -1093,6 +1093,12 @@ type Settings implements InternalObject & BasicObject {
   created_at: DateTime!
   updated_at: DateTime!
   otp_mandatory: Boolean
+  password_config_min_length: Int
+  password_config_max_length: Int
+  password_config_uppercase: Int
+  password_config_lowercase: Int
+  password_config_digits: Int
+  password_config_special_char: Int
   editContext: [EditUserContext!]
 }
 
