@@ -25,6 +25,7 @@ const i18n = {
       'Other STIX IDs': 'Otros ID de STIX',
       // Interface
       'Two factor authentication': 'Autenticación de dos factores',
+      'Password security policies': 'Políticas de seguridad de contraseñas',
       'Number of chars must be greater or equals to': 'Número de caracteres debe ser mayor o igual a',
       'Number of symbols must be greater or equals to': 'El número de símbolos debe ser mayor o igual a',
       'Number of digits must be greater or equals to': 'Número de dígitos debe ser mayor o igual a',
@@ -1849,6 +1850,7 @@ const i18n = {
       'Other STIX IDs': 'Autres IDs STIX',
       // Interface
       'Two factor authentication': 'Authentification à deux facteurs',
+      'Password security policies': 'Politiques de sécurité des mots de passe',
       'Number of chars must be greater or equals to': 'Le nombre de caractères doit être supérieur ou égal à',
       'Number of symbols must be greater or equals to': 'Le nombre de symboles doit être supérieur ou égal à',
       'Number of digits must be greater or equals to': 'Le nombre de chiffres doit être supérieur ou égal à',
@@ -3680,6 +3682,7 @@ const i18n = {
       'Other STIX IDs': 'その他のSTIX ID',
       // Interface
       'Two factor authentication': '二要素認証',
+      'Password security policies': 'パスワード セキュリティ ポリシー',
       'Number of chars must be greater or equals to': '文字数は次の値以上でなければなりません',
       'Number of symbols must be greater or equals to': 'シンボルの数は次の値以上でなければなりません',
       'Number of digits must be greater or equals to': '桁数は以上でなければなりません',
@@ -5463,6 +5466,7 @@ const i18n = {
       'Other STIX IDs': '其它STIX IDs',
       // Interface
       'Two factor authentication': '雙重身份驗證',
+      'Password security policies': '密碼安全策略',
       'Number of chars must be greater or equals to': '字符數必須大於或等於',
       'Number of symbols must be greater or equals to': '符號數必須大於或等於',
       'Number of digits must be greater or equals to': '位數必須大於或等於',
