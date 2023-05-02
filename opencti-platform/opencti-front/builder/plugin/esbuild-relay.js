@@ -5,7 +5,7 @@ const {print, parse} = require('graphql');
 module.exports.RelayPlugin = {
     name: 'relay',
     setup: (build) => {
-        build.onLoad({filter: /\.(js|tsx)$/, namespace: "file"}, async (args) => {
+        build.onLoad({filter: /\.(js|tsx|jsx)$/, namespace: "file"}, async (args) => {
             let contents;
             if (args.path.includes('src') && !args.path.includes('node_modules') && !args.path.includes('__generated__')) {
                 contents = await promises.readFile(args.path, 'utf8');
