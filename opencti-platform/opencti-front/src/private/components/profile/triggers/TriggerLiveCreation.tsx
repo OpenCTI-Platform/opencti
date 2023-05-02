@@ -149,7 +149,10 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const [filters, setFilters] = useState<
   Record<string, { id: string; value: string }[]>
   >({});
-  const onReset = () => handleClose && handleClose();
+  const onReset = () => {
+    handleClose?.();
+    setFilters({});
+  };
   const handleAddFilter = (
     key: string,
     id: string,
