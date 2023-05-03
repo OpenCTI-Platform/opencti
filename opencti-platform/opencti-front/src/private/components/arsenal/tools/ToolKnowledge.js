@@ -140,10 +140,10 @@ class ToolKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={tool.id}
-                relationshipTypes={['uses']}
+                relationshipTypes={['delivers', 'drops']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
-                isRelationReversed={true}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}
