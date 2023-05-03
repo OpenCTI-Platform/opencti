@@ -19660,6 +19660,7 @@ export type StixCoreObjectsDistributionParameters = {
 export enum StixCoreObjectsFilter {
   Abstract = 'abstract',
   Aliases = 'aliases',
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
