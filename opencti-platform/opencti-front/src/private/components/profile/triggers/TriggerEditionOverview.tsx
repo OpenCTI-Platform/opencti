@@ -137,7 +137,11 @@ TriggerEditionOverviewProps
         trigger.trigger_type === 'live'
           ? Yup.array().required(t('This field is required'))
           : Yup.array().nullable(),
-    outcomes: Yup.array().required(t('This field is required')),
+    outcomes: trigger.trigger_type === 'digest'
+      ? Yup.array()
+        .min(1, t('Minimum one trigger'))
+        .required(t('This field is required'))
+      : Yup.array().nullable(),
     period:
         trigger.trigger_type === 'digest'
           ? Yup.string().required(t('This field is required'))
@@ -259,8 +263,8 @@ TriggerEditionOverviewProps
   const initialValues = {
     name: trigger.name,
     description: trigger.description,
-    event_types: trigger.event_types,
-    outcomes: trigger.outcomes,
+    event_types: trigger.event_types ?? [],
+    outcomes: trigger.outcomes ?? [],
     period: trigger.period,
     trigger_ids: convertTriggers(trigger),
     day: currentTime.length > 1 ? currentTime[0] : '1',
@@ -437,8 +441,8 @@ TriggerEditionOverviewProps
           >
             <MenuItem value="f4ee7b33-006a-4b0d-b57d-411ad288653d">
               <Checkbox
-                checked={
-                  values.outcomes.indexOf(
+                checked={values.outcomes
+                  && values.outcomes.indexOf(
                     'f4ee7b33-006a-4b0d-b57d-411ad288653d',
                   ) > -1
                 }
@@ -451,8 +455,8 @@ TriggerEditionOverviewProps
             </MenuItem>
             <MenuItem value="44fcf1f4-8e31-4b31-8dbc-cd6993e1b822">
               <Checkbox
-                checked={
-                  values.outcomes.indexOf(
+                checked={values.outcomes
+                  && values.outcomes.indexOf(
                     '44fcf1f4-8e31-4b31-8dbc-cd6993e1b822',
                   ) > -1
                 }
@@ -464,7 +468,8 @@ TriggerEditionOverviewProps
               />
             </MenuItem>
             <MenuItem value="webhook" disabled={true}>
-              <Checkbox checked={values.outcomes.indexOf('webhook') > -1} />
+              <Checkbox checked={values.outcomes
+                && values.outcomes.indexOf('webhook') > -1} />
               <ListItemText primary={outcomesOptions.webhook} />
             </MenuItem>
           </Field>

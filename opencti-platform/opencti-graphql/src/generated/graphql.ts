@@ -22872,7 +22872,7 @@ export type Trigger = BasicObject & InternalObject & {
   id: Scalars['ID'];
   modified?: Maybe<Scalars['DateTime']>;
   name: Scalars['String'];
-  outcomes: Array<Scalars['StixRef']>;
+  outcomes?: Maybe<Array<Maybe<Scalars['StixRef']>>>;
   parent_types: Array<Maybe<Scalars['String']>>;
   period?: Maybe<DigestPeriod>;
   standard_id: Scalars['String'];
@@ -22921,7 +22921,7 @@ export type TriggerLiveAddInput = {
   event_types: Array<TriggerEventType>;
   filters?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
-  outcomes: Array<Scalars['StixRef']>;
+  outcomes?: InputMaybe<Array<InputMaybe<Scalars['StixRef']>>>;
 };
 
 export enum TriggerType {
@@ -32380,7 +32380,7 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   modified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  outcomes?: Resolver<Array<ResolversTypes['StixRef']>, ParentType, ContextType>;
+  outcomes?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixRef']>>>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   period?: Resolver<Maybe<ResolversTypes['DigestPeriod']>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;

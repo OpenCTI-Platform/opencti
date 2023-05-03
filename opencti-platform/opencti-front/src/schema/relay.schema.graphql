@@ -9074,7 +9074,7 @@ type Trigger implements InternalObject & BasicObject {
   trigger_type: TriggerType!
   event_types: [TriggerEventType!]
   filters: String
-  outcomes: [StixRef!]!
+  outcomes: [StixRef]
   trigger_ids: [String]
   triggers: [Trigger]
   period: DigestPeriod
@@ -9155,7 +9155,7 @@ input TriggerLiveAddInput {
   name: name_String_NotNull_minLength_1!
   description: String
   event_types: [TriggerEventType!]!
-  outcomes: [StixRef!]!
+  outcomes: [StixRef]
   filters: String
 }
 

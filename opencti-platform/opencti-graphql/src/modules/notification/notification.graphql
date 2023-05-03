@@ -41,7 +41,7 @@ type Trigger implements InternalObject & BasicObject {
     trigger_type: TriggerType! # live or digest
     event_types: [TriggerEventType!]
     filters: String
-    outcomes: [StixRef!]!
+    outcomes: [StixRef]
     trigger_ids: [String]
     triggers: [Trigger]
     period: DigestPeriod
@@ -169,7 +169,7 @@ input TriggerLiveAddInput {
     name: String! @constraint(minLength: 1)
     description: String
     event_types: [TriggerEventType!]!
-    outcomes: [StixRef!]!
+    outcomes: [StixRef]
     filters: String
 }
 

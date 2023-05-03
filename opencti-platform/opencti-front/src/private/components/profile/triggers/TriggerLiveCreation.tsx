@@ -126,7 +126,7 @@ const liveTriggerValidation = (t: (message: string) => string) => Yup.object().s
   name: Yup.string().required(t('This field is required')),
   description: Yup.string().nullable(),
   event_types: Yup.array().required(t('This field is required')),
-  outcomes: Yup.array().required(t('This field is required')),
+  outcomes: Yup.array().nullable(),
 });
 
 interface TriggerLiveAddInput {
