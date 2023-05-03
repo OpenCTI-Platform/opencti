@@ -70,12 +70,14 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
       connectionKey,
     } = this.props;
     const link = `${entityLink}/relations/${node.id}`;
-    const isReversed = node.from?.id === entityId;
-    const element = node.from?.id === entityId ? node.to : node.from;
-    // Element can be null due to marking restrictions
-    if (element === null) {
-      return <div />;
-    }
+    const isReversed = node.fromId === entityId;
+    const row = isReversed ? node.to : node.from;
+    const element = row || {
+      id: isReversed ? node.toId : node.fromId,
+      entity_type: isReversed ? node.toType : node.fromType,
+      name: 'Restricted',
+      restricted: true,
+    };
     return (
       <ListItem
         classes={{ root: classes.item }}
@@ -110,10 +112,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                   classes={{ root: classes.chipInList }}
                   style={{
                     width: 140,
-                    backgroundColor: hexToRGB(
-                      itemColor(element.entity_type),
-                      0.08,
-                    ),
+                    backgroundColor: hexToRGB(itemColor(element.entity_type), 0.08),
                     color: itemColor(element.entity_type),
                     border: `1px solid ${itemColor(element.entity_type)}`,
                   }}
@@ -131,7 +130,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.name.width }}
               >
-                {defaultValue(element)}
+                {element.restricted ? element.name : defaultValue(element)}
               </div>
               <div
                 className={classes.bodyItem}
@@ -440,6 +439,8 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               relationship_type
             }
           }
+          fromId
+          fromType
           to {
             ... on StixDomainObject {
               id
@@ -674,6 +675,8 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               relationship_type
             }
           }
+          toId
+          toType
           killChainPhases {
             edges {
               node {

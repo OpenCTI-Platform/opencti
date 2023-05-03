@@ -83,7 +83,7 @@ class StixCoreRelationshipInference extends Component {
       stixRelationship.from = { id: stixCoreRelationship.fromId, name: 'Restricted', entity_type: stixCoreRelationship.fromType, parent_types: [] };
     }
     if (isEmptyField(stixRelationship.to)) {
-      stixRelationship.to = { id: stixCoreRelationship.toId, name: 'Restricted', relationship_type: stixCoreRelationship.toType, parent_types: [] };
+      stixRelationship.to = { id: stixCoreRelationship.toId, name: 'Restricted', entity_type: stixCoreRelationship.toType, parent_types: [] };
     }
     // Complete the explanations if needed
     const explanations = inference.explanation.map((ex) => {
@@ -92,7 +92,7 @@ class StixCoreRelationshipInference extends Component {
         data.from = { id: ex.fromId, name: 'Restricted', entity_type: ex.fromType, parent_types: [] };
       }
       if (isEmptyField(ex.to)) {
-        data.to = { id: ex.toId, name: 'Restricted', relationship_type: ex.toType, parent_types: [] };
+        data.to = { id: ex.toId, name: 'Restricted', entity_type: ex.toType, parent_types: [] };
       }
       return data;
     });
