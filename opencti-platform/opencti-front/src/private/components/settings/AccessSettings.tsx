@@ -1,21 +1,19 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
+import { graphql, useFragment, useMutation } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Loader, { LoaderVariant } from '../../../components/Loader';
-import { AccessSettingsQuery } from './__generated__/AccessSettingsQuery.graphql';
-import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
-import { commitMutation } from '../../../relay/environment';
 import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/SwitchField';
 import TextField from '../../../components/TextField';
+import useAuth from '../../../utils/hooks/useAuth';
+import { AccessSettings$key } from './__generated__/AccessSettings.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -39,42 +37,32 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
+const accessSettingsFragment = graphql`
+  fragment AccessSettings on Settings {
+    id
+    password_policy_min_length
+    password_policy_min_symbols
+    password_policy_min_numbers
+    password_policy_min_words
+    password_policy_min_lowercase
+    password_policy_min_uppercase
+    platform_organization {
+      id
+      name
+    }
+    otp_mandatory
+  }
+`;
+
 export const accessSettingsFieldPatch = graphql`
   mutation AccessSettingsFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
-        platform_organization {
-          id
-          name
-        }
-        otp_mandatory
+        ...AccessSettings
       }
     }
   }
 `;
-
-const accessSettingsQuery = graphql`
-  query AccessSettingsQuery {
-    settings {
-      id
-      platform_organization {
-        id
-        name
-      }
-      otp_mandatory
-      password_policy_min_length
-      password_policy_min_symbols
-      password_policy_min_numbers
-      password_policy_min_words
-      password_policy_min_lowercase
-      password_policy_min_uppercase
-    }
-  }
-`;
-
-interface AccessSettingsComponentProps {
-  queryRef: PreloadedQuery<AccessSettingsQuery>,
-}
 
 const settingsValidation = () => Yup.object().shape({
   platform_organization: Yup.object().nullable(),
@@ -87,22 +75,15 @@ const settingsValidation = () => Yup.object().shape({
   password_policy_min_uppercase: Yup.number(),
 });
 
-const AccessSettings: FunctionComponent<AccessSettingsComponentProps> = ({ queryRef }) => {
-  const { settings } = usePreloadedQuery<AccessSettingsQuery>(accessSettingsQuery, queryRef);
+const AccessSettings: FunctionComponent = () => {
+  const { settings: rawSettings } = useAuth();
+  const settings = useFragment<AccessSettings$key>(accessSettingsFragment, rawSettings);
+  const [commit] = useMutation(accessSettingsFieldPatch);
   const classes = useStyles();
   const { t } = useFormatter();
   const handleSubmitField = (name: string, value: unknown) => {
     settingsValidation().validateAt(name, { [name]: value }).then(() => {
-      commitMutation({
-        mutation: accessSettingsFieldPatch,
-        variables: { id: settings.id, input: { key: name, value: value || '' } },
-        updater: undefined,
-        optimisticUpdater: undefined,
-        optimisticResponse: undefined,
-        onCompleted: undefined,
-        onError: undefined,
-        setSubmitting: undefined,
-      });
+      commit({ variables: { id: settings.id, input: { key: name, value: value || '' } } });
     }).catch(() => false);
   };
   const initialValues = {
@@ -118,7 +99,7 @@ const AccessSettings: FunctionComponent<AccessSettingsComponentProps> = ({ query
     <AccessesMenu />
     <Grid container={true} spacing={3}>
       <Grid item={true} xs={12}>
-          <Formik onSubmit={() => {}} enableReinitialize={true} initialValues={initialValues} validationSchema={settingsValidation()}>
+          <Formik onSubmit={() => {}} initialValues={initialValues} validationSchema={settingsValidation()}>
             {() => (
                 <Form>
                   <div>
@@ -193,15 +174,4 @@ const AccessSettings: FunctionComponent<AccessSettingsComponentProps> = ({ query
   </div>;
 };
 
-const Root = () => {
-  const queryRef = useQueryLoading<AccessSettingsQuery>(accessSettingsQuery, {});
-  return queryRef ? (
-      <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-        <AccessSettings queryRef={queryRef} />
-      </React.Suspense>
-  ) : (
-      <Loader variant={LoaderVariant.inElement} />
-  );
-};
-
-export default Root;
+export default AccessSettings;

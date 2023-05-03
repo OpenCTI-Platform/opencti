@@ -430,7 +430,7 @@ const ProfileOverviewComponent = (props) => {
           )}
         </div>
         <div className="clearfix" />
-        { external === false && <Formik
+        { !external && <Formik
           enableReinitialize={true}
           initialValues={{
             current_password: '',
