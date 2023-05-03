@@ -1,6 +1,6 @@
 import Ajv from 'ajv';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import { isJsonAttribute, schemaAttributesDefinition } from './schema-attributes';
+import { isJsonAttribute, isMultipleAttribute, schemaAttributesDefinition } from './schema-attributes';
 import { UnsupportedError, ValidationError } from '../config/errors';
 import type { BasicStoreEntityEntitySetting } from '../modules/entitySetting/entitySetting-types';
 import { isNotEmptyField } from '../database/utils';
@@ -33,6 +33,15 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
           if (!valid) {
             throw ValidationError(key, { message: 'The JSON Schema is not valid', data: validate.errors });
           }
+        }
+      }
+      // Check if multiple
+      if (isMultipleAttribute(instanceType, key)) {
+        if (value && !Array.isArray(value)) {
+          throw ValidationError(key, {
+            message: 'This attribute should be an array',
+            data: { attribute: key, entityType: instanceType }
+          });
         }
       }
     });
@@ -76,8 +85,14 @@ const validateMandatoryAttributesOnCreation = async (
 ) => {
   const validateMandatoryAttributesOnCreationFn = async () => {
     // Should have all the mandatory keys and the associated values not null
-    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (inputKeys.includes(mandatoryKey)
-        && (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (
+      inputKeys.includes(mandatoryKey)
+        && (
+          Array.isArray(input[mandatoryKey])
+            ? ((input[mandatoryKey] as []).length > 0 && (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)))
+            : isNotEmptyField(input[mandatoryKey])
+        )
+    );
 
     validateMandatoryAttributes(input, entitySetting, true, inputValidValue);
   };
@@ -94,8 +109,14 @@ const validateMandatoryAttributesOnUpdate = async (
 ) => {
   const validateMandatoryAttributesOnUpdateFn = async () => {
     // If the mandatory key is present the associated value should be not null
-    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (!inputKeys.includes(mandatoryKey)
-        || (Array.isArray(input[mandatoryKey]) ? (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)) : isNotEmptyField(input[mandatoryKey])));
+    const inputValidValue = (inputKeys: string[], mandatoryKey: string) => (
+      !inputKeys.includes(mandatoryKey)
+        || (
+          Array.isArray(input[mandatoryKey])
+            ? ((input[mandatoryKey] as []).length > 0 && (input[mandatoryKey] as []).some((i: string) => isNotEmptyField(i)))
+            : isNotEmptyField(input[mandatoryKey])
+        )
+    );
 
     validateMandatoryAttributes(input, entitySetting, false, inputValidValue);
   };
