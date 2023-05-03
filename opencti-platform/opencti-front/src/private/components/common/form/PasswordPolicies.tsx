@@ -21,6 +21,7 @@ const useStyles = makeStyles(() => ({
 const passwordPoliciesFragment = graphql`
   fragment PasswordPolicies on Settings {
     password_policy_min_length
+    password_policy_max_length
     password_policy_min_symbols
     password_policy_min_numbers
     password_policy_min_words
@@ -35,6 +36,7 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
   const { settings } = useAuth();
   const {
     password_policy_min_length,
+    password_policy_max_length,
     password_policy_min_symbols,
     password_policy_min_numbers,
     password_policy_min_words,
@@ -42,7 +44,7 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
     password_policy_min_uppercase,
   } = useFragment<PasswordPolicies$key>(passwordPoliciesFragment, settings);
   // If no specific policies, just render empty element
-  if (password_policy_min_length === 0 && password_policy_min_symbols === 0 && password_policy_min_numbers === 0
+  if (password_policy_min_length === 0 && password_policy_max_length === 0 && password_policy_min_symbols === 0 && password_policy_min_numbers === 0
       && password_policy_min_words === 0 && password_policy_min_lowercase === 0 && password_policy_min_uppercase === 0) {
     return <></>;
   }
@@ -53,6 +55,7 @@ const PasswordPolicies: FunctionComponent<{ style?: object }> = ({ style }) => {
       </AlertTitle>
       <div>
         {(password_policy_min_length ?? 0) > 0 && <div>{t('Number of chars must be greater or equals to')} {password_policy_min_length}</div>}
+        {(password_policy_max_length ?? 0) > 0 && <div>{t('Number of chars must be lower or equals to')} {password_policy_max_length}</div>}
         {(password_policy_min_symbols ?? 0) > 0 && <div>{t('Number of symbols must be greater or equals to')} {password_policy_min_symbols}</div>}
         {(password_policy_min_numbers ?? 0) > 0 && <div>{t('Number of digits must be greater or equals to')} {password_policy_min_numbers}</div>}
         {(password_policy_min_words ?? 0) > 0 && <div>{t('Number of words (split on hyphen, space) must be greater or equals to')} {password_policy_min_words}</div>}

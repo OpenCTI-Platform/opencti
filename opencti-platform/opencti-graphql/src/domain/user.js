@@ -324,8 +324,15 @@ export const assignGroupToUser = async (context, user, userId, groupName) => {
 };
 
 export const checkPasswordInlinePolicy = (context, policy, password) => {
-  const { password_policy_min_length, password_policy_min_symbols, password_policy_min_numbers } = policy;
-  const { password_policy_min_words, password_policy_min_lowercase, password_policy_min_uppercase } = policy;
+  const {
+    password_policy_min_length,
+    password_policy_max_length,
+    password_policy_min_symbols,
+    password_policy_min_numbers,
+    password_policy_min_words,
+    password_policy_min_lowercase,
+    password_policy_min_uppercase
+  } = policy;
   const errors = [];
   if (isEmptyField(password)) {
     errors.push('required');
@@ -333,6 +340,11 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
   if (password_policy_min_length && password_policy_min_length > 0) {
     if (password.length < password_policy_min_length) {
       errors.push(`size must be >= ${password_policy_min_length}`);
+    }
+  }
+  if (password_policy_max_length && password_policy_max_length > 0) {
+    if (password.length > password_policy_max_length) {
+      errors.push(`size must be <= ${password_policy_max_length}`);
     }
   }
   if (password_policy_min_symbols && password_policy_min_symbols > 0) {
@@ -346,7 +358,7 @@ export const checkPasswordInlinePolicy = (context, policy, password) => {
     }
   }
   if (password_policy_min_words && password_policy_min_words > 0) {
-    if (password.split(/[|, -]/).length < password_policy_min_words) {
+    if (password.split(/[|, _-]/).length < password_policy_min_words) {
       errors.push(`number of words must be >= ${password_policy_min_words}`);
     }
   }
@@ -369,6 +381,10 @@ export const checkPasswordFromPolicy = async (context, password) => {
   if (errors.length > 0) {
     throw FunctionalError(`Invalid password: ${errors.join(', ')}`);
   }
+};
+
+export const isPasswordPoliciesInvalid = async (context, password) => {
+  return checkPasswordFromPolicy(context, password).then(() => false).catch(() => true);
 };
 
 export const addUser = async (context, user, newUser) => {

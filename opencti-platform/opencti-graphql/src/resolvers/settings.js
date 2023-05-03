@@ -27,6 +27,7 @@ const settingsResolvers = {
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
+    password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,
     password_policy_min_symbols: (settings) => settings.password_policy_min_symbols ?? 0,
     password_policy_min_numbers: (settings) => settings.password_policy_min_numbers ?? 0,
     password_policy_min_words: (settings) => settings.password_policy_min_words ?? 0,

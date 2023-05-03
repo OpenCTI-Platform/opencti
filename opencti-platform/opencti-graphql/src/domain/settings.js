@@ -87,6 +87,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
   'platform_organization',
   'otp_mandatory',
   'password_policy_min_length',
+  'password_policy_max_length',
   'password_policy_min_symbols',
   'password_policy_min_numbers',
   'password_policy_min_words',

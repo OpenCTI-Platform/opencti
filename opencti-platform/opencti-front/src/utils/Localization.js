@@ -26,6 +26,8 @@ const i18n = {
       // Interface
       'Two factor authentication': 'Autenticación de dos factores',
       'Password security policies': 'Políticas de seguridad de contraseñas',
+      '0 equals no maximum': '0 es igual a ningún máximo',
+      'Number of chars must be lower or equals to': 'Número de caracteres debe ser menor o igual a',
       'Number of chars must be greater or equals to': 'Número de caracteres debe ser mayor o igual a',
       'Number of symbols must be greater or equals to': 'El número de símbolos debe ser mayor o igual a',
       'Number of digits must be greater or equals to': 'Número de dígitos debe ser mayor o igual a',
@@ -1851,6 +1853,8 @@ const i18n = {
       // Interface
       'Two factor authentication': 'Authentification à deux facteurs',
       'Password security policies': 'Politiques de sécurité des mots de passe',
+      '0 equals no maximum': '0 pour aucun maximum',
+      'Number of chars must be lower or equals to': 'Le nombre de caractères doit être inférieur ou égal à',
       'Number of chars must be greater or equals to': 'Le nombre de caractères doit être supérieur ou égal à',
       'Number of symbols must be greater or equals to': 'Le nombre de symboles doit être supérieur ou égal à',
       'Number of digits must be greater or equals to': 'Le nombre de chiffres doit être supérieur ou égal à',
@@ -3683,6 +3687,8 @@ const i18n = {
       // Interface
       'Two factor authentication': '二要素認証',
       'Password security policies': 'パスワード セキュリティ ポリシー',
+      '0 equals no maximum': '0 は最大値なし',
+      'Number of chars must be lower or equals to': '文字数は以下でなければなりません',
       'Number of chars must be greater or equals to': '文字数は次の値以上でなければなりません',
       'Number of symbols must be greater or equals to': 'シンボルの数は次の値以上でなければなりません',
       'Number of digits must be greater or equals to': '桁数は以上でなければなりません',
@@ -5467,6 +5473,8 @@ const i18n = {
       // Interface
       'Two factor authentication': '雙重身份驗證',
       'Password security policies': '密碼安全策略',
+      '0 equals no maximum': '0 等於沒有最大值',
+      'Number of chars must be lower or equals to': '字符數必須小於或等於',
       'Number of chars must be greater or equals to': '字符數必須大於或等於',
       'Number of symbols must be greater or equals to': '符號數必須大於或等於',
       'Number of digits must be greater or equals to': '位數必須大於或等於',

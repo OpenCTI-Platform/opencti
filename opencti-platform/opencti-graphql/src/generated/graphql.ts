@@ -19084,6 +19084,7 @@ export type Settings = BasicObject & InternalObject & {
   id: Scalars['ID'];
   otp_mandatory?: Maybe<Scalars['Boolean']>;
   parent_types: Array<Scalars['String']>;
+  password_policy_max_length?: Maybe<Scalars['Int']>;
   password_policy_min_length?: Maybe<Scalars['Int']>;
   password_policy_min_lowercase?: Maybe<Scalars['Int']>;
   password_policy_min_numbers?: Maybe<Scalars['Int']>;
@@ -31209,6 +31210,7 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<ResolversTypes['String']>, ParentType, ContextType>;
+  password_policy_max_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_length?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_lowercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_numbers?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;

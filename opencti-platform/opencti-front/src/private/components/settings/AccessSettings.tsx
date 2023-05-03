@@ -41,6 +41,7 @@ const accessSettingsFragment = graphql`
   fragment AccessSettings on Settings {
     id
     password_policy_min_length
+    password_policy_max_length
     password_policy_min_symbols
     password_policy_min_numbers
     password_policy_min_words
@@ -68,6 +69,7 @@ const settingsValidation = () => Yup.object().shape({
   platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
   password_policy_min_length: Yup.number(),
+  password_policy_max_length: Yup.number(),
   password_policy_min_symbols: Yup.number(),
   password_policy_min_numbers: Yup.number(),
   password_policy_min_words: Yup.number(),
@@ -89,11 +91,13 @@ const AccessSettings: FunctionComponent = () => {
   const initialValues = {
     platform_organization: settings.platform_organization ? { label: settings.platform_organization?.name, value: settings.platform_organization?.id } : '',
     password_policy_min_length: settings.password_policy_min_length,
+    password_policy_max_length: settings.password_policy_max_length,
     password_policy_min_symbols: settings.password_policy_min_symbols,
     password_policy_min_numbers: settings.password_policy_min_numbers,
     password_policy_min_words: settings.password_policy_min_words,
     password_policy_min_lowercase: settings.password_policy_min_lowercase,
     password_policy_min_uppercase: settings.password_policy_min_uppercase,
+    otp_mandatory: settings.otp_mandatory,
   };
   return <div className={classes.container}>
     <AccessesMenu />
@@ -133,6 +137,12 @@ const AccessSettings: FunctionComponent = () => {
                           onSubmit={(name: string, value: string) => {
                             return handleSubmitField(name, value !== '' ? value : '0');
                           }}
+                      />
+                      <Field component={TextField} type="number" variant="standard" style={{ marginTop: 20 }}
+                             name="password_policy_max_length" label={`${t('Number of chars must be lower or equals to')} (${t('0 equals no maximum')})`} fullWidth={true}
+                             onSubmit={(name: string, value: string) => {
+                               return handleSubmitField(name, value !== '' ? value : '0');
+                             }}
                       />
                       <Field component={TextField} type="number" variant="standard" style={{ marginTop: 20 }}
                              name="password_policy_min_symbols" label={t('Number of symbols must be greater or equals to')} fullWidth={true}
