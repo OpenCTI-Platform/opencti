@@ -46,8 +46,9 @@ const processNotificationEvent = async (
     return;
   }
   const { name: notification_name, trigger_type } = notification;
-  for (let outcomeIndex = 0; outcomeIndex < user.outcomes.length; outcomeIndex += 1) {
-    const outcome = user.outcomes[outcomeIndex];
+  const userOutcomes = user.outcomes ?? []; // No outcome is possible for live trigger only targeting digest
+  for (let outcomeIndex = 0; outcomeIndex < userOutcomes.length; outcomeIndex += 1) {
+    const outcome = userOutcomes[outcomeIndex];
     const { outcome_type, configuration } = outcomeMap.get(outcome) ?? {};
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {

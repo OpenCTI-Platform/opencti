@@ -10,7 +10,6 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
-  isEmptyField,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -1672,7 +1671,8 @@ export const elReplace = (indexName, documentId, documentBody) => {
   const rawSources = [];
   for (let index = 0; index < entries.length; index += 1) {
     const [key, val] = entries[index];
-    if (isEmptyField(val)) {
+    // We clean the attribute only if data is null or undefined
+    if (val === undefined || val === null) {
       rawSources.push(`ctx._source.remove('${key}')`);
     } else {
       rawSources.push(`ctx._source['${key}'] = params['${key}']`);
