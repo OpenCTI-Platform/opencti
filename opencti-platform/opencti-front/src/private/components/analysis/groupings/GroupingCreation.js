@@ -129,9 +129,9 @@ export const GroupingCreationForm = ({
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'groupingAdd');
+          updater(store, 'groupingAdd', response.groupingAdd);
         }
       },
       onError: (error) => {

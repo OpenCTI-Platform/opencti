@@ -128,9 +128,9 @@ export const ObservedDataCreationForm = ({
       variables: {
         input: adaptedValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'observedDataAdd');
+          updater(store, 'observedDataAdd', response.observedDataAdd);
         }
       },
       onError: (error) => {

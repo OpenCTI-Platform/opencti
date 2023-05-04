@@ -29,7 +29,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { Option } from '../../common/form/ReferenceField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { dayStartDate } from '../../../../utils/Time';
-import { CaseIncidentCreationCaseMutation$variables } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import { CaseIncidentCreationCaseMutation, CaseIncidentCreationCaseMutation$variables } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -106,7 +106,7 @@ interface FormikCaseIncidentAddInput {
 }
 
 interface IncidentFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
   onReset?: () => void
   onCompleted?: () => void
   defaultConfidence?: number,
@@ -123,7 +123,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     description: Yup.string().nullable(),
   };
   const caseIncidentValidator = useSchemaCreationValidation('Case-Incident', basicShape);
-  const [commit] = useMutation(caseIncidentMutation);
+  const [commit] = useMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
 
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
@@ -150,9 +150,9 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'caseIncidentAdd');
+          updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
         }
       },
       onCompleted: () => {
