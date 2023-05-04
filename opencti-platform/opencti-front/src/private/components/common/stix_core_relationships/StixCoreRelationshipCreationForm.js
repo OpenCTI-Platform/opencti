@@ -86,13 +86,11 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StixCoreRelationshipCreationForm = ({
-  fromEntity,
-  toEntity,
+  fromEntities,
+  toEntities,
   relationshipTypes,
   handleReverseRelation,
   handleResetSelection,
-  isMultipleFrom,
-  isMultipleTo,
 
   onSubmit,
   handleClose,
@@ -119,6 +117,11 @@ const StixCoreRelationshipCreationForm = ({
   };
   const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', basicShape);
 
+  const fromEntity = fromEntities[0];
+  const toEntity = toEntities[0];
+  const isMultipleFrom = fromEntities.length > 1;
+  const isMultipleTo = toEntities.length > 1;
+
   const defaultName = (entity) => truncate(
     // eslint-disable-next-line no-nested-ternary
     (entity.parent_types.includes('Stix-Cyber-Observable')
@@ -144,22 +147,8 @@ const StixCoreRelationshipCreationForm = ({
     description: '',
     killChainPhases: [],
     externalReferences: [],
-    objectMarking: defaultMarkingDefinitions
-      ? defaultMarkingDefinitions.map(
-        (n) => ({
-          label: n.definition,
-          value: n.id,
-          color: n.x_opencti_color,
-        }),
-      )
-      : [],
-    createdBy: defaultCreatedBy
-      ? {
-        label: defaultCreatedBy.name,
-        value: defaultCreatedBy.id,
-        type: defaultCreatedBy.entity_type,
-      }
-      : '',
+    objectMarking: defaultMarkingDefinitions,
+    createdBy: defaultCreatedBy,
   };
 
   return (

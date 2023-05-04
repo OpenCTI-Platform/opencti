@@ -162,6 +162,7 @@ class StixCyberObservableOverview extends Component {
                 labels={stixCyberObservable.objectLabel}
                 id={stixCyberObservable.id}
                 marginTop={20}
+                entity_type={stixCyberObservable.entity_type}
               />
             </Grid>
             <Grid item={true} xs={6}>

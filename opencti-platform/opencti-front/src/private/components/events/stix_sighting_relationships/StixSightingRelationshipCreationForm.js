@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -84,12 +83,10 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const StixSightingRelationshipCreationForm = ({
-  fromEntity,
-  toEntity,
+  fromEntities,
+  toEntities,
   handleReverseRelation,
   handleResetSelection,
-  isMultipleFrom,
-  isMultipleTo,
 
   onSubmit,
   handleClose,
@@ -119,6 +116,11 @@ const StixSightingRelationshipCreationForm = ({
   };
   const stixSightingRelationshipValidator = useSchemaCreationValidation('stix-sighting-relationship', basicShape);
 
+  const fromEntity = fromEntities[0];
+  const toEntity = toEntities[0];
+  const isMultipleFrom = fromEntities.length > 1;
+  const isMultipleTo = toEntities.length > 1;
+
   const defaultName = (entity) => truncate(
     // eslint-disable-next-line no-nested-ternary
     (entity.parent_types.includes('Stix-Cyber-Observable')
@@ -136,23 +138,8 @@ const StixSightingRelationshipCreationForm = ({
     last_seen: defaultLastSeen,
     description: '',
     externalReferences: [],
-    objectMarking: defaultMarkingDefinitions
-      ? R.map(
-        (n) => ({
-          label: n.definition,
-          value: n.id,
-          color: n.x_opencti_color,
-        }),
-        defaultMarkingDefinitions,
-      )
-      : [],
-    createdBy: defaultCreatedBy
-      ? {
-        label: defaultCreatedBy.name,
-        value: defaultCreatedBy.id,
-        type: defaultCreatedBy.entity_type,
-      }
-      : '',
+    objectMarking: defaultMarkingDefinitions,
+    createdBy: defaultCreatedBy,
     x_opencti_negative: false,
   };
 

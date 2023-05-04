@@ -105,6 +105,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
     fragment AttackPattern_attackPattern on AttackPattern {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

@@ -179,8 +179,8 @@ const IndicatorAddObservablesLinesContainer = (props) => {
       <div className={classes.container}>
         {showForm
           ? <StixCoreRelationshipCreationForm
-            fromEntity={indicator}
-            toEntity={selected}
+            fromEntities={[indicator]}
+            toEntities={[selected]}
             relationshipTypes={['based-on']}
             onSubmit={createRelation}
             handleClose={handleCloseForm}

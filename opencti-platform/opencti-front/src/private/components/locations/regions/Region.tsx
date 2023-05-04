@@ -29,6 +29,7 @@ const regionFragment = graphql`
   fragment Region_region on Region {
     id
     standard_id
+    entity_type
     x_opencti_stix_ids
     spec_version
     revoked

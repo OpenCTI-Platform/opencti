@@ -1,8 +1,6 @@
 import React from 'react';
 import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
 import { graphql } from 'react-relay';
-import inject18n from '../../../../components/i18n';
 import StixCoreObjectOrCoreRelationshipLabelsView
   from '../stix_core_objects_or_stix_relationships/StixCoreObjectOrCoreRelationshipLabelsView';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
@@ -73,10 +71,9 @@ const StixCoreObjectLabelsView = (props) => {
 };
 
 StixCoreObjectLabelsView.propTypes = {
-  classes: PropTypes.object.isRequired,
-  t: PropTypes.func,
   id: PropTypes.string,
   labels: PropTypes.object,
+  entity_type: PropTypes.string,
 };
 
-export default compose(inject18n)(StixCoreObjectLabelsView);
+export default StixCoreObjectLabelsView;

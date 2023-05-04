@@ -17,7 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, handleErrorInForm, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixCoreRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
@@ -269,14 +269,8 @@ class StixCoreRelationshipCreationFromEntity extends Component {
         R.assoc('confidence', parseInt(values.confidence, 10)),
         R.assoc('fromId', fromEntityId),
         R.assoc('toId', toEntityId),
-        R.assoc(
-          'start_time',
-          values.start_time ? parse(values.start_time).format() : null,
-        ),
-        R.assoc(
-          'stop_time',
-          values.stop_time ? parse(values.stop_time).format() : null,
-        ),
+        R.assoc('start_time', formatDate(values.start_time)),
+        R.assoc('stop_time', formatDate(values.stop_time)),
         R.assoc('createdBy', values.createdBy?.value),
         R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
         R.assoc(
@@ -514,20 +508,19 @@ class StixCoreRelationshipCreationFromEntity extends Component {
       defaultStopTime,
     } = this.props;
     const { targetEntities } = this.state;
-    const isMultiple = targetEntities.length > 1;
-    let fromEntity = sourceEntity;
-    let toEntity = targetEntities[0];
+    let fromEntities = [sourceEntity];
+    let toEntities = targetEntities;
     if (isRelationReversed) {
       // eslint-disable-next-line prefer-destructuring
-      fromEntity = targetEntities[0];
-      toEntity = sourceEntity;
+      fromEntities = targetEntities;
+      toEntities = [sourceEntity];
     }
     const relationshipTypes = R.filter(
       (n) => R.isNil(allowedRelationshipTypes)
         || allowedRelationshipTypes.length === 0
         || allowedRelationshipTypes.includes('stix-core-relationship')
         || allowedRelationshipTypes.includes(n),
-      resolveRelationsTypes(fromEntity.entity_type, toEntity.entity_type),
+      resolveRelationsTypes(fromEntities[0].entity_type, toEntities[0].entity_type),
     );
     return (
       <>
@@ -543,11 +536,9 @@ class StixCoreRelationshipCreationFromEntity extends Component {
           <Typography variant="h6">{t('Create a relationship')}</Typography>
         </div>
       <StixCoreRelationshipCreationForm
-        fromEntity={fromEntity}
-        toEntity={toEntity}
+        fromEntities={fromEntities}
+        toEntities={toEntities}
         relationshipTypes={relationshipTypes}
-        isMultipleFrom={isRelationReversed && isMultiple}
-        isMultipleTo={!isRelationReversed && isMultiple}
         handleReverseRelation={this.props.handleReverseRelation}
         handleResetSelection={this.handleResetSelection.bind(this)}
         onSubmit={this.onSubmit.bind(this)}

@@ -121,6 +121,7 @@ const Individual = createFragmentContainer(IndividualComponent, {
     fragment Individual_individual on Individual {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

@@ -8,14 +8,14 @@ import StixCoreRelationshipCreationFromEntityList
 
 class StixCyberObservableAddIndicatorsLinesContainer extends Component {
   render() {
-    const { data, stixCyberObservableIndicators, stixCyberObservable } = this.props;
+    const { data, stixCyberObservableIndicators, stixCyberObservable, indicatorParams } = this.props;
     return (
       <StixCoreRelationshipCreationFromEntityList
         entity={stixCyberObservable}
         relationshipType={'based-on'}
         availableDatas={data?.indicators}
         existingDatas={stixCyberObservableIndicators}
-        updaterOptions={ { path: 'indicators', params: { first: 200 } } }
+        updaterOptions={ { path: 'indicators', params: indicatorParams } }
         isRelationReversed={true}
       />
     );
@@ -26,6 +26,7 @@ StixCyberObservableAddIndicatorsLinesContainer.propTypes = {
   stixCyberObservable: PropTypes.object,
   stixCyberObservableIndicators: PropTypes.array,
   data: PropTypes.object,
+  indicatorParams: PropTypes.object,
 };
 
 export const stixCyberObservableAddIndicatorsLinesQuery = graphql`

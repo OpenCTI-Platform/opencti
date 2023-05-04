@@ -38,10 +38,6 @@ const StixCoreRelationshipEdition = (props) => {
     handleDelete,
     noStoreUpdate,
   } = props;
-  if (!stixCoreRelationshipId) {
-    return <></>;
-  }
-
   const classes = useStyles();
   const queryRef = useQueryLoading(
     stixCoreRelationshipEditionOverviewQuery,

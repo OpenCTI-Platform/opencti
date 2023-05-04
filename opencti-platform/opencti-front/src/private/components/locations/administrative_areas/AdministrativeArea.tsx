@@ -29,6 +29,7 @@ const administrativeAreaFragment = graphql`
     fragment AdministrativeArea_administrativeArea on AdministrativeArea {
         id
         standard_id
+      entity_type
         x_opencti_stix_ids
         spec_version
         revoked

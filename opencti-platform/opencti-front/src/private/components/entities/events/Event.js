@@ -103,6 +103,7 @@ const Event = createFragmentContainer(EventComponent, {
     fragment Event_event on Event {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

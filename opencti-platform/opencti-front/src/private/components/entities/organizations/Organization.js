@@ -116,6 +116,7 @@ const Organization = createFragmentContainer(OrganizationComponent, {
     fragment Organization_organization on Organization {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

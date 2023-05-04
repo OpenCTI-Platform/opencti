@@ -14,7 +14,7 @@ import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 
 const useStyles = makeStyles((theme) => ({
   icon: {
@@ -279,14 +279,8 @@ const StixCoreRelationshipCreationFromEntityList = ({
     };
     const finalValues = R.pipe(
       R.assoc('confidence', parseInt(input.confidence, 10)),
-      R.assoc(
-        'start_time',
-        input.start_time ? parse(input.start_time).format() : null,
-      ),
-      R.assoc(
-        'stop_time',
-        input.stop_time ? parse(input.stop_time).format() : null,
-      ),
+      R.assoc('start_time', formatDate(input.start_time)),
+      R.assoc('stop_time', formatDate(input.stop_time)),
       R.assoc('killChainPhases', R.pluck('value', input.killChainPhases)),
       R.assoc('createdBy', input.createdBy?.value),
       R.assoc('objectMarking', R.pluck('value', input.objectMarking)),
@@ -316,8 +310,8 @@ const StixCoreRelationshipCreationFromEntityList = ({
     <>
       {showForm
         ? <StixCoreRelationshipCreationForm
-          fromEntity={entity}
-          toEntity={selected}
+          fromEntities={[entity]}
+          toEntities={[selected]}
           relationshipTypes={[relationshipType]}
           onSubmit={createRelation}
           handleClose={handleCloseForm}

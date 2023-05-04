@@ -90,11 +90,15 @@ const inlineStyles = {
 };
 
 const stixCyberObservableIndicatorsPromoteMutation = graphql`
-  mutation StixCyberObservableIndicatorsPromoteMutation($id: ID!) {
+  mutation StixCyberObservableIndicatorsPromoteMutation(
+    $id: ID!
+    $first: Int!
+  ) {
     stixCyberObservableEdit(id: $id) {
       promote {
         id
         ...StixCyberObservableIndicators_stixCyberObservable
+        @arguments(first: $first)
       }
     }
   }
@@ -110,6 +114,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
       promotingStix: false,
       deleted: [],
     };
+    this.indicatorParams = { first: 200 };
   }
 
   onDelete(id) {
@@ -146,6 +151,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
     commitMutation({
       mutation: stixCyberObservableIndicatorsPromoteMutation,
       variables: {
+        ...this.indicatorParams,
         id: this.props.stixCyberObservable.id,
       },
       onCompleted: () => {
@@ -275,6 +281,7 @@ class StixCyberObservableIndicatorsComponent extends Component {
           handleClose={this.handleCloseCreate.bind(this)}
           stixCyberObservable={stixCyberObservable}
           stixCyberObservableIndicators={stixCyberObservable.indicators.edges}
+          indicatorParams={this.indicatorParams}
         />
       </div>
     );
@@ -293,12 +300,13 @@ const StixCyberObservableIndicators = createFragmentContainer(
   StixCyberObservableIndicatorsComponent,
   {
     stixCyberObservable: graphql`
-      fragment StixCyberObservableIndicators_stixCyberObservable on StixCyberObservable {
+      fragment StixCyberObservableIndicators_stixCyberObservable on StixCyberObservable
+      @argumentDefinitions(first: { type: "Int", defaultValue: 200 }) {
         id
         observable_value
         parent_types
         entity_type
-        indicators(first: 200) {
+        indicators(first: $first) {
           edges {
             node {
               id

@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { append, ascend, compose, filter, map, pathOr, pipe, prop, sortWith, union } from 'ramda';
+import { append, ascend, filter, map, pathOr, pipe, prop, sortWith, union } from 'ramda';
 import { Field, Form, Formik } from 'formik';
-import withStyles from '@mui/styles/withStyles';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
@@ -15,8 +14,9 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { Add, CancelOutlined } from '@mui/icons-material';
 import { Label } from 'mdi-material-ui';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
 import { labelsSearchQuery } from '../../settings/LabelsQuery';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import LabelCreation from '../../settings/labels/LabelCreation';
@@ -27,7 +27,7 @@ import useGranted, { KNOWLEDGE_KNUPDATE, SETTINGS_SETLABELS } from '../../../../
 import CommitMessage from '../form/CommitMessage';
 import Transition from '../../../../components/Transition';
 
-const styles = () => ({
+const useStyles = makeStyles(() => ({
   label: {
     margin: '0 7px 7px 0',
   },
@@ -43,10 +43,12 @@ const styles = () => ({
   autoCompleteIndicator: {
     display: 'none',
   },
-});
+}));
 
-const StixCoreObjectOrRelationshipLabelsView = (props) => {
-  const { classes, labels, t, marginTop, mutationRelationsAdd, mutationRelationDelete, enableReferences } = props;
+const StixCoreObjectOrCoreRelationshipLabelsView = (props) => {
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const { labels, marginTop, mutationRelationsAdd, mutationRelationDelete, enableReferences = false } = props;
 
   const isLabelManager = useGranted([SETTINGS_SETLABELS]);
 
@@ -317,13 +319,11 @@ const StixCoreObjectOrRelationshipLabelsView = (props) => {
   );
 };
 
-StixCoreObjectOrRelationshipLabelsView.propTypes = {
-  classes: PropTypes.object.isRequired,
-  t: PropTypes.func,
+StixCoreObjectOrCoreRelationshipLabelsView.propTypes = {
   id: PropTypes.string,
   labels: PropTypes.object,
   mutationRelationsAdd: PropTypes.func,
   mutationRelationDelete: PropTypes.func,
 };
 
-export default compose(inject18n, withStyles(styles))(StixCoreObjectOrRelationshipLabelsView);
+export default StixCoreObjectOrCoreRelationshipLabelsView;

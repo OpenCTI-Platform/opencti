@@ -61,13 +61,16 @@ import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation
+  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import StixNestedRefRelationshipEdition
   from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
-import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import StixNestedRefRelationshipCreation
+  from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 
 const styles = () => ({
   bottomNav: {
@@ -423,6 +426,7 @@ class CaseRftKnowledgeGraphBar extends Component {
         ? [selectedLinks[0]]
         : [selectedNodes[0]];
     }
+    const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
     return (
       <Drawer
         anchor="bottom"
@@ -862,33 +866,28 @@ class CaseRftKnowledgeGraphBar extends Component {
                   stixCyberObservableId={selectedNodes[0]?.id ?? null}
                   handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
-                <StixCoreRelationshipEdition
-                  open={openEditRelation}
-                  stixCoreRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseRelationEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
-                <StixSightingRelationshipEdition
-                  open={openEditSighting}
-                  stixSightingRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseSightingEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
-                <StixNestedRefRelationshipEdition
-                  open={openEditNested}
-                  stixCyberObservableRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseNestedEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
+                {stixCoreObjectOrRelationshipId != null
+                  && <>
+                    <StixCoreRelationshipEdition
+                      open={openEditRelation}
+                      stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseRelationEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                    <StixSightingRelationshipEdition
+                      open={openEditSighting}
+                      stixSightingRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseSightingEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                    <StixNestedRefRelationshipEdition
+                      open={openEditNested}
+                      stixCyberObservableRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseNestedEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                  </>
+                }
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>
                     <span>
@@ -920,10 +919,8 @@ class CaseRftKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={caseData.createdBy ?? null}
-                    defaultMarkingDefinitions={(
-                      caseData.objectMarking?.edges ?? []
-                    ).map((n) => n.node)}
+                    defaultCreatedBy={convertCreatedBy(caseData)}
+                    defaultMarkingDefinitions={convertMarkings(caseData)}
                   />
                 )}
                 {onAddRelation && (
@@ -991,10 +988,8 @@ class CaseRftKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={caseData.createdBy ?? null}
-                    defaultMarkingDefinitions={(
-                      caseData.objectMarking?.edges ?? []
-                    ).map((n) => n.node)}
+                    defaultCreatedBy={convertCreatedBy(caseData)}
+                    defaultMarkingDefinitions={convertMarkings(caseData)}
                   />
                 )}
                 {handleDeleteSelected && (

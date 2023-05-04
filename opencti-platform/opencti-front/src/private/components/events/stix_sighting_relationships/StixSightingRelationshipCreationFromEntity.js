@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql } from 'react-relay';
+import * as R from 'ramda';
 import { assoc, compose, pipe, pluck } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
@@ -16,10 +17,9 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
-import * as R from 'ramda';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
@@ -192,8 +192,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       assoc('attribute_count', parseInt(values.attribute_count, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
-      assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
-      assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
+      assoc('first_seen', formatDate(values.first_seen)),
+      assoc('last_seen', formatDate(values.last_seen)),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
       assoc(
@@ -450,8 +450,8 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           <Typography variant="h6">{t('Create a sighting')}</Typography>
         </div>
         <StixSightingRelationshipCreationForm
-          fromEntity={fromEntity}
-          toEntity={toEntity}
+          fromEntities={[fromEntity]}
+          toEntities={[toEntity]}
           handleResetSelection={this.handleResetSelection.bind(this)}
           onSubmit={this.onSubmit.bind(this)}
           handleClose={this.handleClose.bind(this)}

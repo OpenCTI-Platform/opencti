@@ -13,7 +13,7 @@ import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -260,14 +260,8 @@ class StixCoreRelationshipCreation extends Component {
           R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
-          R.assoc(
-            'start_time',
-            values.start_time ? parse(values.start_time).format() : null,
-          ),
-          R.assoc(
-            'stop_time',
-            values.stop_time ? parse(values.stop_time).format() : null,
-          ),
+          R.assoc('start_time', formatDate(values.start_time)),
+          R.assoc('stop_time', formatDate(values.stop_time)),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -375,11 +369,9 @@ class StixCoreRelationshipCreation extends Component {
           <Typography variant="h6">{t('Create a relationship')}</Typography>
         </div>
       <StixCoreRelationshipCreationForm
-        fromEntity={fromObjects[0]}
-        toEntity={toObjects[0]}
+        fromEntities={fromObjects}
+        toEntities={toObjects}
         relationshipTypes={relationshipTypes}
-        isMultipleFrom={fromObjects.length > 1}
-        isMultipleTo={toObjects.length > 1}
         handleReverseRelation={this.handleReverseRelation.bind(this)}
         onSubmit={this.onSubmit.bind(this)}
         handleClose={this.handleClose.bind(this)}

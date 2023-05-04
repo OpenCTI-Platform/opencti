@@ -13,7 +13,7 @@ import { ArrowRightAlt, Close } from '@mui/icons-material';
 import { commitMutation, fetchQuery } from '../../../../relay/environment';
 import inject18n, { isNone } from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
@@ -269,8 +269,8 @@ class StixSightingRelationshipCreation extends Component {
           R.assoc('attribute_count', parseInt(values.attribute_count, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
-          R.assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
-          R.assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
+          R.assoc('first_seen', formatDate(values.first_seen)),
+          R.assoc('last_seen', formatDate(values.last_seen)),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
           R.assoc(
@@ -376,10 +376,8 @@ class StixSightingRelationshipCreation extends Component {
           <Typography variant="h6">{t('Create a sighting')}</Typography>
         </div>
         <StixSightingRelationshipCreationForm
-          fromEntity={fromObjects[0]}
-          toEntity={toObjects[0]}
-          isMultipleFrom={fromObjects.length > 1}
-          isMultipleTo={toObjects.length > 1}
+          fromEntities={fromObjects}
+          toEntities={toObjects}
           handleReverseRelation={this.handleReverseSighting.bind(this)}
           onSubmit={this.onSubmit.bind(this)}
           handleClose={this.handleClose.bind(this)}

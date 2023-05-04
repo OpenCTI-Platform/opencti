@@ -8,7 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { buildDate, parse } from '../../../../utils/Time';
+import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
@@ -262,8 +262,8 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
     const inputValues = Object.entries({
       ...otherValues,
       confidence: parseInt(String(values.confidence), 10),
-      start_time: values.start_time ? parse(values.start_time).format() : null,
-      stop_time: values.stop_time ? parse(values.stop_time).format() : null,
+      start_time: formatDate(values.start_time),
+      stop_time: formatDate(values.stop_time),
       killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       createdBy: values.createdBy?.value,

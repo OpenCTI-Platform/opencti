@@ -8,7 +8,7 @@ import { Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import { buildDate, parse } from '../../../../utils/Time';
+import { buildDate, formatDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import { SubscriptionAvatars, SubscriptionFocus } from '../../../../components/Subscription';
@@ -261,8 +261,8 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
     const inputValues = Object.entries({
       ...otherValues,
       confidence: parseInt(String(values.confidence), 10),
-      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
-      last_seen: values.last_seen ? parse(values.last_seen).format() : null,
+      first_seen: formatDate(values.first_seen),
+      last_seen: formatDate(values.last_seen),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       createdBy: values.createdBy?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),

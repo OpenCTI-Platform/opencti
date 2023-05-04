@@ -17,7 +17,7 @@ import { ConnectionHandler } from 'relay-runtime';
 import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import StixCoreRelationshipCreationFromRelationStixDomainObjectsLines, {
   stixCoreRelationshipCreationFromRelationStixDomainObjectsLinesQuery,
@@ -286,18 +286,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
       R.assoc('confidence', parseInt(values.confidence, 10)),
       R.assoc('fromId', fromEntityId),
       R.assoc('toId', toEntityId),
-      R.assoc(
-        'start_time',
-        values.start_time && values.start_time.length > 0
-          ? parse(values.start_time).format()
-          : null,
-      ),
-      R.assoc(
-        'stop_time',
-        values.stop_time && values.stop_time.length > 0
-          ? parse(values.stop_time).format()
-          : null,
-      ),
+      R.assoc('start_time', formatDate(values.start_time)),
+      R.assoc('stop_time', formatDate(values.stop_time)),
       R.assoc('createdBy', values.createdBy?.value),
       R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
       R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -509,8 +499,8 @@ class StixCoreRelationshipCreationFromRelation extends Component {
           <Typography variant="h6">{t('Create a relationship')}</Typography>
         </div>
       <StixCoreRelationshipCreationForm
-        fromEntity={fromEntity}
-        toEntity={toEntity}
+        fromEntities={[fromEntity]}
+        toEntities={[toEntity]}
         relationshipTypes={relationshipTypes}
         handleResetSelection={this.handleResetSelection.bind(this)}
         onSubmit={this.onSubmit.bind(this)}

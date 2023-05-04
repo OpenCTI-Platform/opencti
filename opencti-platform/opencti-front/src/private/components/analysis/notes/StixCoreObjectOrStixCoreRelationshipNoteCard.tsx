@@ -279,7 +279,7 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             )}
           </Grid>
           <Grid item={true} xs={3}>
-            <StixCoreObjectLabelsView labels={note.objectLabel} id={note.id} />
+            <StixCoreObjectLabelsView labels={note.objectLabel} id={note.id} entity_type={note.entity_type}/>
             <Grid container={true} spacing={3}>
               <Grid item={true} xs={6}>
                 <Typography

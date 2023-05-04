@@ -56,13 +56,17 @@ import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation
+  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
-import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
-import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
+import StixNestedRefRelationshipCreation
+  from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import StixNestedRefRelationshipEdition
+  from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
 import { isStixNestedRefRelationship } from '../../../../utils/Relation';
+import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 
 const styles = () => ({
   bottomNav: {
@@ -234,10 +238,10 @@ class GroupingKnowledgeGraphBar extends Component {
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].entity_type
-          === 'stix-sighting-relationship')
+        === 'stix-sighting-relationship')
       || (this.props.numberOfSelectedNodes === 1
         && this.props.selectedNodes[0].entity_type
-          === 'stix-sighting-relationship')
+        === 'stix-sighting-relationship')
     ) {
       this.setState({ openEditSighting: true });
     } else if (
@@ -407,6 +411,7 @@ class GroupingKnowledgeGraphBar extends Component {
         ? [selectedLinks[0]]
         : [selectedNodes[0]];
     }
+    const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
     return (
       <Drawer
         anchor="bottom"
@@ -608,7 +613,7 @@ class GroupingKnowledgeGraphBar extends Component {
                     <Badge
                       badgeContent={Math.abs(
                         currentStixCoreObjectsTypes.length
-                          - stixCoreObjectsTypes.length,
+                        - stixCoreObjectsTypes.length,
                       )}
                       color="secondary"
                     >
@@ -832,33 +837,28 @@ class GroupingKnowledgeGraphBar extends Component {
                   stixCyberObservableId={selectedNodes[0]?.id ?? null}
                   handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
-                <StixCoreRelationshipEdition
-                  open={openEditRelation}
-                  stixCoreRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseRelationEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
-                <StixSightingRelationshipEdition
-                  open={openEditSighting}
-                  stixSightingRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseSightingEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
-                <StixNestedRefRelationshipEdition
-                  open={openEditNested}
-                  stixNestedRefRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseNestedEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
+                {stixCoreObjectOrRelationshipId != null
+                  && <>
+                    <StixCoreRelationshipEdition
+                      open={openEditRelation}
+                      stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseRelationEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                    <StixSightingRelationshipEdition
+                      open={openEditSighting}
+                      stixSightingRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseSightingEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                    <StixNestedRefRelationshipEdition
+                      open={openEditNested}
+                      stixNestedRefRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseNestedEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                  </>
+                }
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>
                     <span>
@@ -890,10 +890,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseRelation={this.handleReverseRelation.bind(
                       this,
                     )}
-                    defaultCreatedBy={grouping.createdBy ?? null}
-                    defaultMarkingDefinitions={(
-                      grouping.objectMarking?.edges ?? []
-                    ).map((n) => n.node)}
+                    defaultCreatedBy={convertCreatedBy(grouping)}
+                    defaultMarkingDefinitions={convertMarkings(grouping)}
                   />
                 )}
                 {onAddRelation && (
@@ -961,10 +959,8 @@ class GroupingKnowledgeGraphBar extends Component {
                     handleReverseSighting={this.handleReverseSighting.bind(
                       this,
                     )}
-                    defaultCreatedBy={grouping.createdBy ?? null}
-                    defaultMarkingDefinitions={(
-                      grouping.objectMarking?.edges ?? []
-                    ).map((n) => n.node)}
+                    defaultCreatedBy={convertCreatedBy(grouping)}
+                    defaultMarkingDefinitions={convertMarkings(grouping)}
                   />
                 )}
                 {handleDeleteSelected && (

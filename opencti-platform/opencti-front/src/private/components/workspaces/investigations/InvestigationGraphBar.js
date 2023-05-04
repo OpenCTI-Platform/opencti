@@ -326,6 +326,7 @@ class InvestigationGraphBar extends Component {
         ? [selectedLinks[0]]
         : [selectedNodes[0]];
     }
+    const stixCoreObjectOrRelationshipId = (selectedNodes[0]?.id ?? null) || (selectedLinks[0]?.id ?? null);
     return (
       <Drawer
         anchor="bottom"
@@ -547,7 +548,7 @@ class InvestigationGraphBar extends Component {
                     <Badge
                       badgeContent={Math.abs(
                         currentStixCoreObjectsTypes.length
-                          - stixCoreObjectsTypes.length,
+                        - stixCoreObjectsTypes.length,
                       )}
                       color="secondary"
                     >
@@ -767,15 +768,16 @@ class InvestigationGraphBar extends Component {
                   stixCyberObservableId={selectedNodes[0]?.id ?? null}
                   handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
-                <StixCoreRelationshipEdition
-                  open={openEditRelation}
-                  stixCoreRelationshipId={
-                    (selectedNodes[0]?.id ?? null)
-                    || (selectedLinks[0]?.id ?? null)
-                  }
-                  handleClose={this.handleCloseRelationEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
+                {stixCoreObjectOrRelationshipId != null
+                  && <>
+                    <StixCoreRelationshipEdition
+                      open={openEditRelation}
+                      stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
+                      handleClose={this.handleCloseRelationEdition.bind(this)}
+                      noStoreUpdate={true}
+                    />
+                  </>
+                }
                 <Tooltip title={t('Expand')}>
                   <span>
                     <IconButton
