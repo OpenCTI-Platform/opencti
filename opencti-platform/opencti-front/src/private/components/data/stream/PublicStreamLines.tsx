@@ -1,30 +1,24 @@
-import {
-  graphql,
-  loadQuery,
-  useFragment,
-  usePreloadedQuery,
-} from 'react-relay';
-import ListItemText from '@mui/material/ListItemText';
-import React from 'react';
-import makeStyles from '@mui/styles/makeStyles';
-import Chip from '@mui/material/Chip';
-import ListItemIcon from '@mui/material/ListItemIcon';
 import { Stream } from '@mui/icons-material';
-import ListItem from '@mui/material/ListItem';
 import { IconButton, ListItemSecondaryAction, Tooltip } from '@mui/material';
-import { OpenInNew, ContentCopy } from 'mdi-material-ui';
+import Chip from '@mui/material/Chip';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { environment } from '../../../../relay/environment';
-import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
+import makeStyles from '@mui/styles/makeStyles';
+import { ContentCopy, OpenInNew } from 'mdi-material-ui';
+import React from 'react';
+import { graphql, PreloadedQuery, useFragment, usePreloadedQuery } from 'react-relay';
+import FilterIconButton from '../../../../components/FilterIconButton';
+import { useFormatter } from '../../../../components/i18n';
+import { DataColumns } from '../../../../components/list_lines';
 import ListLines from '../../../../components/list_lines/ListLines';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
-import { StreamLineDummy } from './StreamLine';
-import { DataColumns } from '../../../../components/list_lines';
-import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
-import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import { copyToClipboard } from '../../../../utils/utils';
+import { PublicStreamLines_node$key } from './__generated__/PublicStreamLines_node.graphql';
+import { PublicStreamLinesQuery } from './__generated__/PublicStreamLinesQuery.graphql';
+import { StreamLineDummy } from './StreamLine';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   bodyItem: {
@@ -72,7 +66,7 @@ const publicStreamLinesFragment = graphql`
   }
 `;
 
-const publicStreamLinesQuery = graphql`
+export const publicStreamLinesQuery = graphql`
   query PublicStreamLinesQuery {
     streamCollections(filters: [{ key: stream_public, values: ["true"] }]) {
       edges {
@@ -84,11 +78,6 @@ const publicStreamLinesQuery = graphql`
   }
 `;
 
-const queryRef = loadQuery<PublicStreamLinesQuery>(
-  environment,
-  publicStreamLinesQuery,
-  {},
-);
 const dataColumns: DataColumns = {
   name: {
     label: 'Name',
@@ -187,7 +176,7 @@ const PublicStreamLine = ({ node }: { node: PublicStreamLines_node$key }) => {
   );
 };
 
-const PublicStreamLines = () => {
+const PublicStreamLines = ({ queryRef }: { queryRef: PreloadedQuery<PublicStreamLinesQuery> }) => {
   const { streamCollections } = usePreloadedQuery<PublicStreamLinesQuery>(
     publicStreamLinesQuery,
     queryRef,

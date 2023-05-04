@@ -1,13 +1,16 @@
-import {
-  GraphQLTaggedNode,
-  PreloadableConcreteRequest,
-  useQueryLoader,
-  UseQueryLoaderLoadQueryOptions,
-  VariablesOf,
-} from 'react-relay';
-import { OperationType } from 'relay-runtime';
-import { useEffect, useRef } from 'react';
 import { equals } from 'ramda';
+import React, { useEffect, useRef } from 'react';
+import { GraphQLTaggedNode, PreloadableConcreteRequest, PreloadedQuery, useQueryLoader, UseQueryLoaderLoadQueryOptions, VariablesOf } from 'react-relay';
+import { OperationType } from 'relay-runtime';
+import { useVocabularyCategoryQuery } from './__generated__/useVocabularyCategoryQuery.graphql';
+
+interface QueryContextType {
+  vocabularyCategoriesQueryRef?: PreloadedQuery<useVocabularyCategoryQuery>
+}
+
+export const QueryContext = React.createContext<QueryContextType>({
+  vocabularyCategoriesQueryRef: undefined,
+});
 
 const useQueryLoading = <T extends OperationType>(
   query: GraphQLTaggedNode | PreloadableConcreteRequest<T>,

@@ -1,20 +1,21 @@
 import CssBaseline from '@mui/material/CssBaseline';
 import { StyledEngineProvider } from '@mui/material/styles';
-import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
-import { loadQuery, usePreloadedQuery } from 'react-relay';
-import { ConnectedThemeProvider } from '../components/AppThemeProvider';
+import makeStyles from '@mui/styles/makeStyles';
+import React from 'react';
+import { PreloadedQuery, usePreloadedQuery } from 'react-relay';
 import { ConnectedIntlProvider } from '../components/AppIntlProvider';
-import { environment, fileUri } from '../relay/environment';
-import logo from '../static/images/logo.png';
-import { Theme } from '../components/Theme';
-import { rootPublicQuery } from './LoginRoot';
-import PublicStreamLines from '../private/components/data/stream/PublicStreamLines';
-import {
-  LoginRootPublicQuery,
-  LoginRootPublicQuery$data,
-} from './__generated__/LoginRootPublicQuery.graphql';
+import { ConnectedThemeProvider } from '../components/AppThemeProvider';
+import Loader, { LoaderVariant } from '../components/Loader';
 import Message from '../components/Message';
+import { Theme } from '../components/Theme';
+import { PublicStreamLinesQuery } from '../private/components/data/stream/__generated__/PublicStreamLinesQuery.graphql';
+import PublicStreamLines, { publicStreamLinesQuery } from '../private/components/data/stream/PublicStreamLines';
+import { fileUri } from '../relay/environment';
+import logo from '../static/images/logo.png';
+import useQueryLoading from '../utils/hooks/useQueryLoading';
+import { LoginRootPublicQuery, LoginRootPublicQuery$data } from './__generated__/LoginRootPublicQuery.graphql';
+import { rootPublicQuery } from './LoginRoot';
 
 const useStyles = makeStyles({
   container: {
@@ -39,6 +40,9 @@ const PublicRootWithStyle = ({
   const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
+
+  const queryRef = useQueryLoading<PublicStreamLinesQuery>(publicStreamLinesQuery, {});
+
   return (
     <>
       <Message />
@@ -48,18 +52,19 @@ const PublicRootWithStyle = ({
           alt="logo"
           className={classes.logo}
         />
-        <PublicStreamLines />
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <PublicStreamLines queryRef={queryRef} />
+          </React.Suspense>
+        )}
       </div>
     </>
   );
 };
 
-const queryRef = loadQuery<LoginRootPublicQuery>(
-  environment,
-  rootPublicQuery,
-  {},
-);
-const PublicRoot = () => {
+const PublicRootComponent = ({ queryRef }: { queryRef: PreloadedQuery<LoginRootPublicQuery> }) => {
   const { settings } = usePreloadedQuery<LoginRootPublicQuery>(
     rootPublicQuery,
     queryRef,
@@ -73,6 +78,21 @@ const PublicRoot = () => {
         </ConnectedIntlProvider>
       </ConnectedThemeProvider>
     </StyledEngineProvider>
+  );
+};
+
+const PublicRoot = () => {
+  const queryRef = useQueryLoading<LoginRootPublicQuery>(rootPublicQuery, {});
+  return (
+    <>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <PublicRootComponent queryRef={queryRef} />
+        </React.Suspense>
+      )}
+    </>
   );
 };
 

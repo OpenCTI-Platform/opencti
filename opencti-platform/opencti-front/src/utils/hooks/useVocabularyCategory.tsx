@@ -1,10 +1,8 @@
-import { graphql, loadQuery, usePreloadedQuery } from 'react-relay';
-import { useState } from 'react';
-import {
-  useVocabularyCategoryQuery,
-  VocabularyCategory,
-} from './__generated__/useVocabularyCategoryQuery.graphql';
-import { ApplicationError, environment } from '../../relay/environment';
+import { useContext, useState } from 'react';
+import { graphql, usePreloadedQuery } from 'react-relay';
+import { ApplicationError } from '../../relay/environment';
+import { useVocabularyCategoryQuery, VocabularyCategory } from './__generated__/useVocabularyCategoryQuery.graphql';
+import { QueryContext } from './useQueryLoading';
 
 export interface VocabularyDefinition {
   key: string;
@@ -52,17 +50,14 @@ export const vocabFragment = graphql`
     }
   }
 `;
-
-const queryRef = loadQuery<useVocabularyCategoryQuery>(
-  environment,
-  vocabCategoriesQuery,
-  {},
-);
-
 const useVocabularyCategory = () => {
+  const { vocabularyCategoriesQueryRef } = useContext(QueryContext);
+  if (!vocabularyCategoriesQueryRef) {
+    throw Error('Unable to get vocabulary categories');
+  }
   const data = usePreloadedQuery<useVocabularyCategoryQuery>(
     vocabCategoriesQuery,
-    queryRef,
+    vocabularyCategoriesQueryRef,
   );
   const vocabularyCategories = () => data.vocabularyCategories.map(({ key }) => key) as VocabularyCategory[];
   const categories = vocabularyCategories();
@@ -100,12 +95,17 @@ const useVocabularyCategory = () => {
 };
 
 export const useVocabularyCategoryAsQuery = () => {
+  const { vocabularyCategoriesQueryRef } = useContext(QueryContext);
+  if (!vocabularyCategoriesQueryRef) {
+    throw Error('Unable to get vocabulary categories');
+  }
+
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [orderAsc, setOrderAsc] = useState(true);
   const data = usePreloadedQuery<useVocabularyCategoryQuery>(
     vocabCategoriesQuery,
-    queryRef,
+    vocabularyCategoriesQueryRef,
   );
   const definitions = data.vocabularyCategories;
   const categories = definitions
