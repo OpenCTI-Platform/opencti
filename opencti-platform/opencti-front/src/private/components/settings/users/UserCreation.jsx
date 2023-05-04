@@ -13,6 +13,7 @@ import * as Yup from 'yup';
 import { graphql } from 'react-relay';
 import { ConnectionHandler } from 'relay-runtime';
 import Alert from '@mui/material/Alert';
+import MenuItem from '@mui/material/MenuItem';
 import * as R from 'ramda';
 import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
@@ -20,6 +21,9 @@ import TextField from '../../../../components/TextField';
 import MarkdownField from '../../../../components/MarkdownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
+import SelectField from '../../../../components/SelectField';
+import { UserAccountStatus } from './UserEditionOverview';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
@@ -147,6 +151,7 @@ class UserCreation extends Component {
 
   render() {
     const { t, classes } = this.props;
+    const default_account_status = UserAccountStatus.ACTIVE;
     return (
       <>
         <Fab
@@ -192,6 +197,8 @@ class UserCreation extends Component {
                 password: '',
                 confirmation: '',
                 objectOrganization: [],
+                account_status: default_account_status,
+                account_lock_after_date: null,
               }}
               validationSchema={userValidation(t)}
               onSubmit={this.onSubmit.bind(this)}
@@ -263,6 +270,28 @@ class UserCreation extends Component {
                     name="objectOrganization"
                     label="Organizations"
                     style={fieldSpacingContainerStyle}
+                  />
+                  <Field
+                    component={SelectField}
+                    variant="standard"
+                    name="account_status"
+                    label={t('Account Status')}
+                    fullWidth={true}
+                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    >
+                    <MenuItem value={UserAccountStatus.ACTIVE}>Active</MenuItem>
+                    <MenuItem value={UserAccountStatus.INACTIVE}>Inactive</MenuItem>
+                    <MenuItem value={UserAccountStatus.LOCKED}>Locked</MenuItem>
+                    <MenuItem value={UserAccountStatus.LOCKED_TRAINING}>Locked - Missing Training</MenuItem>
+                  </Field>
+                  <Field
+                    component={DateTimePickerField}
+                    name="account_lock_after_date"
+                    TextFieldProps={{
+                      label: t('Account Expire Date'),
+                      variant: 'standard',
+                      fullWidth: true,
+                    }}
                   />
                   <div className={classes.buttons}>
                     <Button

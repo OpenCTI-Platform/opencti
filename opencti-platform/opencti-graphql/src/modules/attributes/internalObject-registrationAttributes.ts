@@ -63,6 +63,9 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'password_policy_min_uppercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'enterprise_edition', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'activity_listeners_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
+    { name: 'account_inactive_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'account_locked_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'account_locked_missing_training_message', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
     { name: 'messages', type: 'json', mandatoryType: 'no', multiple: false, upsert: false, schemaDef: settingsMessages },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
@@ -99,6 +102,8 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'otp_activated', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_dashboard', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'default_time_field', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'account_status', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'account_lock_after_date', type: 'date', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_ROLE]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

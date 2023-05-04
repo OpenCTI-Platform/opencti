@@ -471,6 +471,11 @@ export const ENABLED_SYNC_MANAGER = booleanConf('sync_manager:enabled', false);
 export const ENABLED_INGESTION_MANAGER = booleanConf('ingestion_manager:enabled', false);
 export const ENABLED_RULE_ENGINE = booleanConf('rule_engine:enabled', false);
 export const ENABLED_HISTORY_MANAGER = booleanConf('history_manager:enabled', false);
+// Default settings
+export const ACCOUNT_INACTIVE_MESSAGE = nconf.get('app:account_inactive_message');
+export const ACCOUNT_LOCKED_MESSAGE = nconf.get('app:account_locked_message');
+export const ACCOUNT_LOCKED_TRAINING_MESSAGE = nconf.get('app:account_locked_missing_training_message');
+export const DEFAULT_ACCOUNT_STATUS = nconf.get('app:default_initialize_account_status') ?? 'Active';
 
 const platformState = { stopping: false };
 export const getStoppingState = () => platformState.stopping;

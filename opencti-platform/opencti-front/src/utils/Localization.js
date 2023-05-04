@@ -2063,6 +2063,10 @@ const i18n = {
         'Requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece',
       'One line confirm label next to confirm checkbox':
         'Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación',
+      'Account Status': 'Estado de la cuenta',
+      'Account Expire Date': 'Fecha de caducidad de la cuenta',
+      Locked: 'Bloqueada',
+      LockedTraining: 'Bloqueada - Entrenamiento faltante',
       OFF: 'APAGADO',
       GREEN: 'VERDE',
       RED: 'ROJO',
@@ -4145,6 +4149,10 @@ const i18n = {
         "Nécessite une acceptation pour activer le formulaire de connexion lorsqu'il est défini",
       'One line confirm label next to confirm checkbox':
         'Texte monoligne de confirmation à côté de la case à cocher de confirmation',
+      'Account Status': 'Statut du compte',
+      'Account Expire Date': "Date d'expiration du compte",
+      Locked: 'Fermé à clé',
+      LockedTraining: 'Verrouillé - Formation manquante',
       OFF: 'DÉSACTIVÉ',
       GREEN: 'VERT',
       RED: 'ROUGE',
@@ -6149,6 +6157,10 @@ const i18n = {
         '設定時にログインフォームを有効にするには同意が必要です',
       'One line confirm label next to confirm checkbox':
         '確認チェックボックスの横にある 1 行の確認ラベル',
+      'Account Status': 'アカウントのステータス',
+      'Account Expire Date': 'アカウントの有効期限',
+      Locked: 'ロックされています',
+      LockedTraining: 'ロック済み - トレーニングがありません',
       OFF: 'オフ',
       GREEN: '緑',
       RED: '赤',
@@ -8048,6 +8060,10 @@ const i18n = {
         '設置後需要接受才能啟用登錄表單',
       'One line confirm label next to confirm checkbox':
         '確認複選框旁邊的一行確認標籤',
+      'Account Status': '帐户状态',
+      'Account Expire Date': '帐户到期日',
+      Locked: '锁定',
+      LockedTraining: '锁定 - 缺少培训',
       OFF: '离开',
       GREEN: '绿色的',
       RED: '红色的',
@@ -8470,6 +8486,9 @@ const i18n = {
       'suggestion_threats-targets':
         'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
       dashboard: 'Dashboard',
+      Inactive: 'Inactive',
+      Locked: 'Locked',
+      LockedTraining: 'Locked - Missing Training',
     },
   },
 };

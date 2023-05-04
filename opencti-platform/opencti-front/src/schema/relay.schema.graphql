@@ -1144,6 +1144,9 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int
   password_policy_min_lowercase: Int
   password_policy_min_uppercase: Int
+  account_inactive_message: String
+  account_locked_message: String
+  account_locked_missing_training_message: String
   messages: [SettingsMessage!]
   editContext: [EditUserContext!]
 }
@@ -1348,7 +1351,16 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   sessions: [SessionDetail]
   default_time_field: String
+  account_status: UserAccountStatus!
+  account_lock_after_date: DateTime
   editContext: [EditUserContext!]
+}
+
+enum UserAccountStatus {
+  Active
+  Inactive
+  Locked
+  LockedTraining
 }
 
 type MeUser implements BasicObject & InternalObject {
@@ -1378,6 +1390,8 @@ type MeUser implements BasicObject & InternalObject {
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
   default_time_field: String
+  account_status: UserAccountStatus
+  account_lock_after_date: DateTime
 }
 
 type SessionDetail {
@@ -1393,7 +1407,7 @@ type UserSession {
 }
 
 input UserAddInput {
-  user_email: user_email_String_minLength_5_format_email
+  user_email: user_email_String_NotNull_minLength_5_format_email!
   name: name_String_NotNull_minLength_2!
   password: String
   firstname: String
@@ -1402,9 +1416,11 @@ input UserAddInput {
   language: String
   theme: String
   objectOrganization: [ID!]
+  account_status: UserAccountStatus = Active
+  account_lock_after_date: DateTime
 }
 
-scalar user_email_String_minLength_5_format_email
+scalar user_email_String_NotNull_minLength_5_format_email
 
 input UserLoginInput {
   email: String!

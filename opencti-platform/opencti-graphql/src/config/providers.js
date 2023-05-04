@@ -12,9 +12,10 @@ import { custom as OpenIDCustom, Issuer as OpenIDIssuer, Strategy as OpenIDStrat
 import { OAuth2Strategy as GoogleStrategy } from 'passport-google-oauth';
 import validator from 'validator';
 import { initAdmin, login, loginFromProvider } from '../domain/user';
-import conf, { logApp } from './conf';
+import conf, { DEFAULT_ACCOUNT_STATUS, logApp } from './conf';
 import { ConfigurationError } from './errors';
-import { isNotEmptyField } from '../database/utils';
+import { isNotEmptyField, INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { elRawUpdateByQuery } from '../database/engine';
 
 export const empty = R.anyPass([R.isNil, R.isEmpty]);
 
@@ -44,6 +45,66 @@ export const initializeAdminUser = async (context) => {
     // noinspection JSIgnoredPromiseFromCall
     await initAdmin(context, adminEmail, adminPassword, adminToken);
     logApp.info('[INIT] admin user initialized');
+  }
+};
+
+// Initialization user.account_status to a valid ENUM value for UserAccountStatus
+// If you are migrating from a previous version before this field user.account_status was
+// on the User object you must run this at start_up. You can disable it after your have
+// run it the first time, as new account will have the field properly set.
+// To disable set app:initialize_account_status: false in the opencti-platform/opencti-graphql/config/default.json
+// or whatever *.json you use to startup your graphql platform container.
+export const initUserAccountStatus = async () => {
+  const initAccountStatus = conf.get('app:initialize_account_status') || 0;
+  logApp.info('[INIT] User initialization to valid account_status');
+  const sourceQuery = `ctx._source.account_status = '${DEFAULT_ACCOUNT_STATUS}'`;
+  if (initAccountStatus) {
+    await elRawUpdateByQuery({
+      index: INDEX_INTERNAL_OBJECTS,
+      wait_for_completion: false,
+      body: {
+        script: {
+          source: sourceQuery,
+          lang: 'painless',
+        },
+        query: {
+          bool: {
+            must_not: [
+              {
+                term: {
+                  'account_status.keyword': 'Active'
+                }
+              },
+              {
+                term: {
+                  'account_status.keyword': 'Inactive'
+                }
+              },
+              {
+                term: {
+                  'account_status.keyword': 'Locked'
+                }
+              },
+              {
+                term: {
+                  'account_status.keyword': 'LockedTraining'
+                }
+              }
+            ],
+            must: [
+              {
+                term: {
+                  'entity_type.keyword': 'User'
+                }
+              }
+            ]
+          }
+        }
+      },
+    });
+    logApp.info('[INIT] User initialization of account_status completed');
+  } else {
+    logApp.info('[INIT] User initialization of account_status skipped due to configuration setting of initialize_account_status');
   }
 };
 

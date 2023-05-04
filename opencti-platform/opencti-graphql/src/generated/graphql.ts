@@ -12273,6 +12273,8 @@ export type MeOrganizationEdge = {
 
 export type MeUser = BasicObject & InternalObject & {
   __typename?: 'MeUser';
+  account_lock_after_date?: Maybe<Scalars['DateTime']['output']>;
+  account_status?: Maybe<UserAccountStatus>;
   allowed_marking?: Maybe<Array<MarkingDefinition>>;
   api_token: Scalars['String']['output'];
   capabilities: Array<Capability>;
@@ -21272,6 +21274,9 @@ export type SessionDetail = {
 
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
+  account_inactive_message?: Maybe<Scalars['String']['output']>;
+  account_locked_message?: Maybe<Scalars['String']['output']>;
+  account_locked_missing_training_message?: Maybe<Scalars['String']['output']>;
   activity_listeners?: Maybe<Array<Member>>;
   created_at: Scalars['DateTime']['output'];
   editContext?: Maybe<Array<EditUserContext>>;
@@ -26490,6 +26495,8 @@ export type UrlAddInput = {
 
 export type User = BasicObject & InternalObject & {
   __typename?: 'User';
+  account_lock_after_date?: Maybe<Scalars['DateTime']['output']>;
+  account_status: UserAccountStatus;
   api_token: Scalars['String']['output'];
   capabilities: Array<Maybe<Capability>>;
   created_at: Scalars['DateTime']['output'];
@@ -26750,16 +26757,25 @@ export type UserAccountAddInput = {
   user_id?: InputMaybe<Scalars['String']['input']>;
 };
 
+export enum UserAccountStatus {
+  Active = 'Active',
+  Inactive = 'Inactive',
+  Locked = 'Locked',
+  LockedTraining = 'LockedTraining'
+}
+
 export type UserAddInput = {
+  account_lock_after_date?: InputMaybe<Scalars['DateTime']['input']>;
+  account_status?: InputMaybe<UserAccountStatus>;
   description?: InputMaybe<Scalars['String']['input']>;
   firstname?: InputMaybe<Scalars['String']['input']>;
   language?: InputMaybe<Scalars['String']['input']>;
   lastname?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   objectOrganization?: InputMaybe<Array<Scalars['ID']['input']>>;
-  password?: InputMaybe<Scalars['String']['input']>;
+  password: Scalars['String']['input'];
   theme?: InputMaybe<Scalars['String']['input']>;
-  user_email?: InputMaybe<Scalars['String']['input']>;
+  user_email: Scalars['String']['input'];
 };
 
 export type UserAgent = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
@@ -29148,6 +29164,7 @@ export type ResolversTypes = ResolversObject<{
   User: ResolverTypeWrapper<Omit<User, 'groups' | 'objectOrganization'> & { groups?: Maybe<ResolversTypes['GroupConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']> }>;
   UserAccount: ResolverTypeWrapper<Omit<UserAccount, 'cases' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAccountAddInput: UserAccountAddInput;
+  UserAccountStatus: UserAccountStatus;
   UserAddInput: UserAddInput;
   UserAgent: ResolverTypeWrapper<Omit<UserAgent, 'cases' | 'containers' | 'createdBy' | 'exportFiles' | 'externalReferences' | 'groupings' | 'importFiles' | 'indicators' | 'notes' | 'objectOrganization' | 'observedData' | 'opinions' | 'pendingFiles' | 'reports' | 'stixCoreRelationships'> & { cases?: Maybe<ResolversTypes['CaseConnection']>, containers?: Maybe<ResolversTypes['ContainerConnection']>, createdBy?: Maybe<ResolversTypes['Identity']>, exportFiles?: Maybe<ResolversTypes['FileConnection']>, externalReferences?: Maybe<ResolversTypes['ExternalReferenceConnection']>, groupings?: Maybe<ResolversTypes['GroupingConnection']>, importFiles?: Maybe<ResolversTypes['FileConnection']>, indicators?: Maybe<ResolversTypes['IndicatorConnection']>, notes?: Maybe<ResolversTypes['NoteConnection']>, objectOrganization?: Maybe<ResolversTypes['OrganizationConnection']>, observedData?: Maybe<ResolversTypes['ObservedDataConnection']>, opinions?: Maybe<ResolversTypes['OpinionConnection']>, pendingFiles?: Maybe<ResolversTypes['FileConnection']>, reports?: Maybe<ResolversTypes['ReportConnection']>, stixCoreRelationships?: Maybe<ResolversTypes['StixCoreRelationshipConnection']> }>;
   UserAgentAddInput: UserAgentAddInput;
@@ -33425,6 +33442,8 @@ export type MeOrganizationEdgeResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type MeUserResolvers<ContextType = any, ParentType extends ResolversParentTypes['MeUser'] = ResolversParentTypes['MeUser']> = ResolversObject<{
+  account_lock_after_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  account_status?: Resolver<Maybe<ResolversTypes['UserAccountStatus']>, ParentType, ContextType>;
   allowed_marking?: Resolver<Maybe<Array<ResolversTypes['MarkingDefinition']>>, ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<ResolversTypes['Capability']>, ParentType, ContextType>;
@@ -35415,6 +35434,9 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
+  account_inactive_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  account_locked_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  account_locked_missing_training_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   activity_listeners?: Resolver<Maybe<Array<ResolversTypes['Member']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
@@ -36985,6 +37007,8 @@ export type UrlResolvers<ContextType = any, ParentType extends ResolversParentTy
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  account_lock_after_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  account_status?: Resolver<ResolversTypes['UserAccountStatus'], ParentType, ContextType>;
   api_token?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   capabilities?: Resolver<Array<Maybe<ResolversTypes['Capability']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

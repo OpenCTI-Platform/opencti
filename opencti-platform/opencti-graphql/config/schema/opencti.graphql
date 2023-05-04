@@ -1083,6 +1083,9 @@ type Settings implements InternalObject & BasicObject {
   password_policy_min_words: Int @auth
   password_policy_min_lowercase: Int @auth
   password_policy_min_uppercase: Int @auth
+  account_inactive_message: String
+  account_locked_message: String
+  account_locked_missing_training_message: String
   messages: [SettingsMessage!] @auth
   # Technical
   editContext: [EditUserContext!] @auth(for: [SETTINGS])
@@ -1285,8 +1288,16 @@ type User implements BasicObject & InternalObject {
   updated_at: DateTime!
   sessions: [SessionDetail] @auth(for: [SETTINGS_SETACCESSES])
   default_time_field: String
+  account_status: UserAccountStatus! @auth(for: [SETTINGS_SETACCESSES])
+  account_lock_after_date: DateTime @auth(for: [SETTINGS_SETACCESSES])
   # Technical
   editContext: [EditUserContext!]
+}
+enum UserAccountStatus {
+  Active
+  Inactive
+  Locked
+  LockedTraining
 }
 type MeUser implements BasicObject & InternalObject {
   id: ID! # internal_id
@@ -1318,6 +1329,8 @@ type MeUser implements BasicObject & InternalObject {
   default_dashboards: [Workspace!]!
   default_dashboard: Workspace
   default_time_field: String
+  account_status: UserAccountStatus
+  account_lock_after_date: DateTime
 }
 type SessionDetail {
   id: ID!
@@ -1330,15 +1343,17 @@ type UserSession {
   sessions: [SessionDetail]
 }
 input UserAddInput {
-  user_email: String @constraint(minLength: 5, format: "email")
+  user_email: String! @constraint(minLength: 5, format: "email")
   name: String! @constraint(minLength: 2)
-  password: String
+  password: String!
   firstname: String
   lastname: String
   description: String
   language: String
   theme: String
   objectOrganization: [ID!]
+  account_status: UserAccountStatus = Active
+  account_lock_after_date: DateTime
 }
 input UserLoginInput {
   email: String!

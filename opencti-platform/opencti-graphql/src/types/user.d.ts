@@ -37,6 +37,7 @@ interface AuthUser extends BasicStoreIdentifier {
   default_marking?: Array<{ entity_type: string, values: Array<StoreMarkingDefinition> }>;
   all_marking: Array<StoreMarkingDefinition>;
   api_token: string;
+  account_status: string;
 }
 
 interface AuthContext {

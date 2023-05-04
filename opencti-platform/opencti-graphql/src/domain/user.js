@@ -3,8 +3,8 @@ import { authenticator } from 'otplib';
 import * as R from 'ramda';
 import { uniq } from 'ramda';
 import { v4 as uuid } from 'uuid';
-import { BUS_TOPICS, ENABLED_DEMO_MODE, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
-import { AuthenticationFailure, ForbiddenAccess, FunctionalError } from '../config/errors';
+import conf, { BUS_TOPICS, ENABLED_DEMO_MODE, DEFAULT_ACCOUNT_STATUS, logApp, OPENCTI_SESSION, PLATFORM_VERSION } from '../config/conf';
+import { AuthenticationFailure, DatabaseError, ForbiddenAccess, FunctionalError } from '../config/errors';
 import { getEntitiesListFromCache, getEntityFromCache } from '../database/cache';
 import { elFindByIds, elLoadBy } from '../database/engine';
 import { batchListThroughGetTo, createEntity, createRelation, deleteElementById, deleteRelationsByFromAndTo, listThroughGetTo, patchAttribute, updateAttribute, updatedInputsToData, } from '../database/middleware';
@@ -36,6 +36,7 @@ import { now } from '../utils/format';
 import { addGroup } from './grant';
 import { defaultMarkingDefinitionsFromGroups, findAll as findGroups } from './group';
 import { addIndividual } from './individual';
+import { UserAccountStatus } from '../generated/graphql';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../modules/organization/organization-types';
 
 const BEARER = 'Bearer ';
@@ -422,6 +423,8 @@ export const addUser = async (context, user, newUser) => {
     R.assoc('theme', newUser.theme ? newUser.theme : 'default'),
     R.assoc('language', newUser.language ? newUser.language : 'auto'),
     R.assoc('external', newUser.external ? newUser.external : false),
+    R.assoc('account_status', newUser.account_status ? newUser.account_status : DEFAULT_ACCOUNT_STATUS),
+    R.assoc('account_lock_after_date', newUser.account_lock_after_date),
     R.dissoc('roles')
   )(newUser);
   const { element, isCreation } = await createEntity(context, user, userToCreate, ENTITY_TYPE_USER, { complete: true });
@@ -868,6 +871,8 @@ const buildSessionUser = (origin, impersonate, provider, settings) => {
     name: user.name,
     external: user.external,
     login_provider: provider,
+    account_status: user.account_status,
+    account_lock_after_date: user.account_lock_after_date,
     impersonate: impersonate !== undefined,
     groups: user.groups,
     roles: user.roles,
@@ -959,6 +964,68 @@ export const userRenewToken = async (context, user, userId) => {
   return storeLoadById(context, user, userId, ENTITY_TYPE_USER);
 };
 
+/**
+ * Get Account Status Messages from the conf/default.json file.
+ * */
+const account_status_settings = {
+  account_inactive_message: conf.get('app:account_inactive_message'),
+  account_locked_message: conf.get('app:account_locked_message'),
+  account_locked_missing_training_message: conf.get('app:account_locked_missing_training_message'),
+};
+/**
+ * Validates a user before granting authorization.
+ *
+ * @param {Object} user
+ * @param {UserAccountStatus} user.account_status
+ * @param {Object} settings
+ * @throws {DatabaseError} if the user is missing the required 'account_status' field.
+ * @throws {AuthenticationFailure} if the user has an invalid account status.
+ */
+const validateUser = (user, settings) => {
+  // Check for required account_status field
+  if (typeof user !== 'undefined' && !('account_status' in user)) {
+    throw DatabaseError('User missing account status.');
+  }
+
+  // Check for required account_status field
+  if (!(user?.account_status)) {
+    throw DatabaseError('User missing account status.');
+  }
+
+  // Check account expiration date
+  if ('account_lock_after_date' in user) {
+    let expiresOn = user.account_lock_after_date;
+    if (!(expiresOn instanceof Date)) {
+      expiresOn = new Date(user.account_lock_after_date);
+    }
+    if (expiresOn <= new Date()) {
+      throw AuthenticationFailure('User account has expired.');
+    }
+  }
+  // Validate user's account status
+  switch (user.account_status) {
+    case UserAccountStatus.Inactive:
+      throw AuthenticationFailure(
+        settings?.account_inactive_message
+        ?? 'Your account is inactive.'
+      );
+    case UserAccountStatus.Locked:
+      throw AuthenticationFailure(
+        settings?.account_locked_message
+        ?? 'Your account is locked.'
+      );
+    case UserAccountStatus.LockedTraining:
+      throw AuthenticationFailure(
+        settings?.account_locked_missing_training_message
+        ?? 'Your account is missing trainings.'
+      );
+    default:
+      if (user.account_status !== UserAccountStatus.Active) {
+        throw AuthenticationFailure('Your account is not active.');
+      }
+  }
+};
+
 export const internalAuthenticateUser = async (context, req, user, provider, token, isSessionRefresh = false) => {
   let impersonate;
   const logged = await buildCompleteUser(context, user);
@@ -985,6 +1052,7 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
       context_data: { provider }
     });
   }
+  validateUser(sessionUser, account_status_settings);
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {
     throw AuthenticationFailure('You can\'t login without an organization');
@@ -1078,6 +1146,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
   if (existingAdmin) {
     // If admin user exists, just patch the fields
     const patch = {
+      account_status: UserAccountStatus.Active,
       user_email: email,
       password: bcrypt.hashSync(password),
       api_token: tokenValue,
@@ -1089,6 +1158,7 @@ export const initAdmin = async (context, email, password, tokenValue) => {
       internal_id: OPENCTI_ADMIN_UUID,
       external: true,
       user_email: email.toLowerCase(),
+      account_status: UserAccountStatus.Active,
       name: 'admin',
       firstname: 'Admin',
       lastname: 'OpenCTI',

@@ -24,6 +24,7 @@ import {
   ENTITY_TYPE_USER
 } from '../../src/schema/internalObject';
 import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../src/modules/organization/organization-types';
+import { UserAccountStatus } from '../../src/generated/graphql';
 // endregion
 
 export const SYNC_RAW_START_REMOTE_URI = conf.get('app:sync_raw_start_remote_uri');
@@ -153,6 +154,7 @@ export const ADMIN_USER: AuthUser = {
   default_marking: [],
   origin: { referer: 'test', user_id: '88ec0c6a-13ce-5e39-b486-354fe4a7084f' },
   api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e84',
+  account_status: UserAccountStatus.Active,
 };
 const TESTING_USERS: User[] = [];
 export const USER_PARTICIPATE: User = {
@@ -415,6 +417,7 @@ export const buildStandardUser = (allowedMarkings: markingType[], allMarkings?: 
     default_marking: [],
     origin: { referer: 'test', user_id: '98ec0c6a-13ce-5e39-b486-354fe4a7084f' },
     api_token: 'd434ce02-e58e-4cac-8b4c-42bf16748e85',
+    account_status: UserAccountStatus.Active,
   };
 };
 

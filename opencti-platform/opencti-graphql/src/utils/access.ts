@@ -14,6 +14,7 @@ import type { StixCoreObject } from '../types/stix-common';
 import { STIX_ORGANIZATIONS_UNRESTRICTED } from '../schema/stixDomainObject';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
 import { telemetry } from '../config/tracing';
+import { UserAccountStatus } from '../generated/graphql';
 import type { BasicStoreSettings } from '../types/settings';
 
 export const BYPASS = 'BYPASS';
@@ -66,6 +67,7 @@ export const SYSTEM_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
+  account_status: UserAccountStatus.Active,
 };
 
 export const RETENTION_MANAGER_USER: AuthUser = {
@@ -86,6 +88,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
+  account_status: UserAccountStatus.Active,
 };
 
 export const RULE_MANAGER_USER: AuthUser = {
@@ -106,6 +109,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
+  account_status: UserAccountStatus.Active,
 };
 
 export const REDACTED_USER: AuthUser = {
@@ -126,6 +130,7 @@ export const REDACTED_USER: AuthUser = {
   default_marking: [],
   all_marking: [],
   api_token: '',
+  account_status: UserAccountStatus.Active,
 };
 
 export interface AuthorizedMember { id: string, access_right: string }

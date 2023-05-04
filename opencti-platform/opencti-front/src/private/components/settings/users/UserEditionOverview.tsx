@@ -13,6 +13,7 @@ import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { convertOrganizations } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEditionOverview_user$data } from './__generated__/UserEditionOverview_user.graphql';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const userMutationFieldPatch = graphql`
@@ -61,6 +62,19 @@ const userMutationGroupDelete = graphql`
   }
 `;
 
+export const userUserSessionsKillMutation = graphql`
+  mutation UserEditionOverviewUserSessionsKillMutation($id: ID!) {
+    userSessionsKill(id: $id)
+  }
+`;
+
+export const UserAccountStatus = {
+  ACTIVE: 'Active',
+  INACTIVE: 'Inactive',
+  LOCKED: 'Locked',
+  LOCKED_TRAINING: 'LockedTraining',
+};
+
 const userValidation = (t: (value: string) => string) => Yup.object().shape({
   name: Yup.string().required(t('This field is required')),
   user_email: Yup.string()
@@ -70,6 +84,8 @@ const userValidation = (t: (value: string) => string) => Yup.object().shape({
   lastname: Yup.string().nullable(),
   language: Yup.string().nullable(),
   description: Yup.string().nullable(),
+  account_status: Yup.string(),
+  account_lock_after_date: Yup.date().nullable(),
 });
 
 interface UserEditionOverviewComponentProps {
@@ -90,6 +106,7 @@ UserEditionOverviewComponentProps
   const [commitFieldPatch] = useMutation(userMutationFieldPatch);
   const [commitGroupAdd] = useMutation(userMutationGroupAdd);
   const [commitGroupDelete] = useMutation(userMutationGroupDelete);
+  const [commitUserSessionKill] = useMutation(userUserSessionsKillMutation);
 
   const external = user.external === true;
   const objectOrganization = convertOrganizations(user);
@@ -104,6 +121,8 @@ UserEditionOverviewComponentProps
       'api_token',
       'objectOrganization',
       'description',
+      'account_status',
+      'account_lock_after_date',
     ],
     {
       ...user,
@@ -122,7 +141,7 @@ UserEditionOverviewComponentProps
     });
   };
 
-  const handleSubmitField = (name: string, value: string) => {
+  const handleSubmitField = (name: string, value: string | Date) => {
     userValidation(t)
       .validateAt(name, { [name]: value })
       .then(() => {
@@ -134,6 +153,28 @@ UserEditionOverviewComponentProps
         });
       })
       .catch(() => false);
+
+    if (name === 'account_status') {
+      // Kill any Active sessions for the user.
+      commitUserSessionKill({
+        variables: {
+          id: user.id,
+        },
+      });
+    } else if (name === 'account_lock_after_date' && value <= new Date()) {
+      commitFieldPatch({
+        variables: {
+          id: user.id,
+          input: { key: 'account_status', value: UserAccountStatus.LOCKED },
+        },
+      });
+      // Kill any Active sessions for the user.
+      commitUserSessionKill({
+        variables: {
+          id: user.id,
+        },
+      });
+    }
   };
 
   const handleChangeObjectOrganization = (
@@ -266,6 +307,36 @@ UserEditionOverviewComponentProps
               <SubscriptionFocus context={context} fieldName="api_token" />
             }
           />
+            <Field
+              component={SelectField}
+              variant="standard"
+              name="account_status"
+              label={t('Account Status')}
+              fullWidth={true}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+              helperText={
+                <SubscriptionFocus context={context} fieldName="account_status" />
+              }
+            >
+              <MenuItem value={UserAccountStatus.ACTIVE}>{t(UserAccountStatus.ACTIVE)}</MenuItem>
+              <MenuItem value={UserAccountStatus.INACTIVE}>{t(UserAccountStatus.INACTIVE)}</MenuItem>
+              <MenuItem value={UserAccountStatus.LOCKED}>{t(UserAccountStatus.LOCKED)}</MenuItem>
+              <MenuItem value={UserAccountStatus.LOCKED_TRAINING}>{t(UserAccountStatus.LOCKED_TRAINING)}</MenuItem>
+            </Field>
+            <Field
+              component={DateTimePickerField}
+              name="account_lock_after_date"
+              TextFieldProps={{
+                label: t('Account Expire Date'),
+                variant: 'standard',
+                fullWidth: true,
+              }}
+              containerstyle={{ marginTop: 20, width: '100%' }}
+              onFocus={handleChangeFocus}
+              onChange={handleSubmitField}
+            />
           <Field
             component={MarkdownField}
             name="description"
@@ -312,7 +383,12 @@ const UserEditionOverview = createFragmentContainer(
         api_token
         otp_activated
         otp_qr
-        roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
+        account_status
+        account_lock_after_date
+        roles(
+            orderBy: $rolesOrderBy,
+            orderMode: $rolesOrderMode,
+        ) {
           id
           name
         }

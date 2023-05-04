@@ -2,7 +2,7 @@ import { getHeapStatistics } from 'node:v8';
 import nconf from 'nconf';
 import * as R from 'ramda';
 import { createEntity, loadEntity, patchAttribute, updateAttribute } from '../database/middleware';
-import conf, { BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
+import conf, { ACCOUNT_INACTIVE_MESSAGE, ACCOUNT_LOCKED_MESSAGE, ACCOUNT_LOCKED_TRAINING_MESSAGE, BUS_TOPICS, ENABLED_DEMO_MODE, getBaseUrl, PLATFORM_VERSION } from '../config/conf';
 import { delEditContext, getClusterInstances, getRedisVersion, notify, setEditContext } from '../database/redis';
 import { isRuntimeSortEnable, searchEngineVersion } from '../database/engine';
 import { getRabbitMQVersion } from '../database/rabbitmq';
@@ -66,6 +66,9 @@ export const getSettings = async (context) => {
     platform_feature_flags: [
       { id: 'RUNTIME_SORTING', enable: isRuntimeSortEnable() },
     ],
+    account_inactive_message: ACCOUNT_INACTIVE_MESSAGE,
+    account_locked_message: ACCOUNT_LOCKED_MESSAGE,
+    account_locked_missing_training_message: ACCOUNT_LOCKED_TRAINING_MESSAGE,
   };
 };
 
