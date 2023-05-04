@@ -127,6 +127,29 @@ export const convertFiltersToQueryOptions = async (context, filters, opts = {}) 
   return { types, orderMode, orderBy: [field, 'internal_id'], filters: queryFilters };
 };
 
+const isMatchNumeric = (values, operator, instanceValue) => {
+  const { id } = values.at(0) ?? {};
+  const numeric = parseInt(id, 10);
+  let found;
+  switch (operator) {
+    case 'lt':
+      found = instanceValue < numeric;
+      break;
+    case 'lte':
+      found = instanceValue <= numeric;
+      break;
+    case 'gt':
+      found = instanceValue > numeric;
+      break;
+    case 'gte':
+      found = instanceValue >= numeric;
+      break;
+    default:
+      found = instanceValue === numeric;
+  }
+  return found;
+};
+
 export const isStixMatchFilters = async (context, user, stix, filters) => {
   // We can start checking the user can access the stix (marking + segregation).
   const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stix);
@@ -197,7 +220,8 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
       // CreatedBy filtering
       if (key === CREATED_BY_FILTER) {
         const ids = values.map((v) => v.id);
-        const isCreatedByAvailable = stix.created_by_ref && ids.includes(stix.created_by_ref);
+        const createdBy = stix.created_by_ref ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.created_by_ref;
+        const isCreatedByAvailable = createdBy && ids.includes(createdBy);
         // If creator is available but must not be
         if (operator === 'not_eq' && isCreatedByAvailable) {
           return false;
@@ -277,28 +301,15 @@ export const isStixMatchFilters = async (context, user, stix, filters) => {
         }
       }
       // Numeric filtering
-      if (key === SCORE_FILTER || key === CONFIDENCE_FILTER) {
-        const { id } = values.at(0) ?? {};
-        let found = false;
-        const numeric = parseInt(id, 10);
-        const instanceValue = stix[key];
-        switch (operator) {
-          case 'lt':
-            found = instanceValue < numeric;
-            break;
-          case 'lte':
-            found = instanceValue <= numeric;
-            break;
-          case 'gt':
-            found = instanceValue > numeric;
-            break;
-          case 'gte':
-            found = instanceValue >= numeric;
-            break;
-          default:
-            found = instanceValue === numeric;
+      if (key === SCORE_FILTER) {
+        const instanceValue = stix[SCORE_FILTER] ?? stix.extensions?.[STIX_EXT_OCTI_SCO]?.score;
+        if (!isMatchNumeric(values, operator, instanceValue)) {
+          return false;
         }
-        if (!found) {
+      }
+      if (key === CONFIDENCE_FILTER) {
+        const instanceValue = stix[CONFIDENCE_FILTER];
+        if (!isMatchNumeric(values, operator, instanceValue)) {
           return false;
         }
       }
