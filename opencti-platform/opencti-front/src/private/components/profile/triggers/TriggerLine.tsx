@@ -169,7 +169,7 @@ export const TriggerLineComponent: FunctionComponent<TriggerLineProps> = ({
               className={classes.bodyItem}
               style={{ width: dataColumns.outcomes.width }}
             >
-              {data.outcomes?.length > 0
+              {data.outcomes && data.outcomes.length > 0
                 && data.outcomes
                   .map<React.ReactNode>((n) => (
                     <code>{outcomesOptions[n]}</code>
