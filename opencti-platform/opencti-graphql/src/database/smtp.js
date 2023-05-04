@@ -10,6 +10,9 @@ const smtpOptions = {
   secure: USE_SSL,
   tls: {
     rejectUnauthorized: REJECT_UNAUTHORIZED,
+    maxVersion: conf.get('smtp:tls_max_version'),
+    minVersion: conf.get('smtp:tls_min_version'),
+    ciphers: conf.get('smtp:tls_ciphers'),
   },
 };
 
