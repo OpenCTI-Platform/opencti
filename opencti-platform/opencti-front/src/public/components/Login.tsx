@@ -1,5 +1,6 @@
 import React, { FunctionComponent, useEffect, useState } from 'react';
 import Button from '@mui/material/Button';
+import { useTheme } from '@mui/styles';
 import { Facebook, Github, Google, KeyOutline } from 'mdi-material-ui';
 import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
@@ -87,7 +88,7 @@ interface LoginProps {
 
 const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
-
+  const theme = useTheme<Theme>();
   // eslint-disable-next-line max-len
   const [dimension, setDimension] = useState({
     width: window.innerWidth,
@@ -151,7 +152,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
     </div>
   );
   const loginMessage = settings.platform_login_message;
-  const loginLogo = classes.loginLogo === 'dark'
+  const loginLogo = theme.palette.mode === 'dark'
     ? settings.platform_theme_dark_logo_login
     : settings.platform_theme_light_logo_login;
   const providers = settings.platform_providers;
