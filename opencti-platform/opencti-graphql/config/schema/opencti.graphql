@@ -1966,6 +1966,7 @@ enum StixDomainObjectsFilter {
   fromId
   severity
   priority
+  revoked
 }
 input StixDomainObjectsFiltering {
   key: [StixDomainObjectsFilter!]!
@@ -4597,6 +4598,7 @@ enum IndicatorsOrdering {
   x_opencti_workflow_id
   objectMarking
   creator
+  createdBy
 }
 enum IndicatorsFilter {
   name
