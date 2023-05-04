@@ -50,6 +50,13 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'platform_language', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'platform_login_message', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'otp_mandatory', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_length', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_max_length', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_numbers', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_symbols', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_words', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_lowercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'password_policy_min_uppercase', type: 'numeric', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_MIGRATION_STATUS]: [
     { name: 'lastRun', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

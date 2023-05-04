@@ -9,6 +9,7 @@ import Button from '@mui/material/Button';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import PasswordPolicies from '../../common/form/PasswordPolicies';
 
 const styles = (theme) => ({
   buttons: {
@@ -63,14 +64,12 @@ class UserEditionPasswordComponent extends Component {
     const initialValues = { password: '', confirmation: '' };
     return (
       <div>
-        <Formik
-          enableReinitialize={true}
-          initialValues={initialValues}
+        <Formik enableReinitialize={true} initialValues={initialValues}
           validationSchema={userValidation(t)}
-          onSubmit={this.onSubmit.bind(this)}
-        >
+          onSubmit={this.onSubmit.bind(this)}>
           {({ submitForm, isSubmitting }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
+              <PasswordPolicies style={{ marginBottom: 20 }}/>
               <Field
                 component={TextField}
                 variant="standard"
@@ -89,13 +88,11 @@ class UserEditionPasswordComponent extends Component {
                 style={{ marginTop: 20 }}
               />
               <div className={classes.buttons}>
-                <Button
-                  variant="contained"
+                <Button variant="contained"
                   color="primary"
                   onClick={submitForm}
                   disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
+                  classes={{ root: classes.button }}>
                   {t('Update')}
                 </Button>
               </div>

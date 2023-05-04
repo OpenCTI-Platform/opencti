@@ -83,9 +83,20 @@ export const settingsEditContext = (context, user, settingsId, input) => {
   return storeLoadById(context, user, settingsId, ENTITY_TYPE_SETTINGS).then((settings) => notify(BUS_TOPICS.Settings.EDIT_TOPIC, settings, user));
 };
 
+const ACCESS_SETTINGS_RESTRICTED_KEYS = [
+  'platform_organization',
+  'otp_mandatory',
+  'password_policy_min_length',
+  'password_policy_max_length',
+  'password_policy_min_symbols',
+  'password_policy_min_numbers',
+  'password_policy_min_words',
+  'password_policy_min_lowercase',
+  'password_policy_min_uppercase',
+];
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
-  const data = hasSetAccessCapability ? input : input.filter((i) => i.key !== 'platform_organization' && i.key !== 'otp_mandatory');
+  const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
   const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
 };

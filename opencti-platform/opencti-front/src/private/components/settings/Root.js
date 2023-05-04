@@ -25,6 +25,7 @@ import SubTypes from './sub_types/SubTypes';
 import RootSubType from './sub_types/Root';
 import RootGroup from './groups/Root';
 import RootRole from './roles/Root';
+import AccessSettings from './AccessSettings';
 
 const Root = () => (
     <Switch>
@@ -74,6 +75,15 @@ const Root = () => (
           render={() => (
             <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
               <Roles />
+            </Security>
+          )}
+        />
+        <BoundaryRoute
+          exact
+          path="/dashboard/settings/accesses/settings"
+          render={() => (
+            <Security needs={[SETTINGS_SETACCESSES]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+              <AccessSettings />
             </Security>
           )}
         />
