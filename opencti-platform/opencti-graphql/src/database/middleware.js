@@ -399,7 +399,8 @@ const loadElementMetaDependencies = async (context, user, elements, args = {}) =
   const elementIds = workingElements.map((element) => element.internal_id);
   const relTypes = onlyMarking ? [RELATION_OBJECT_MARKING] : STIX_REF_RELATIONSHIP_TYPES;
   // Resolve all relations
-  const refArgs = { indices: [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS], fromId: elementIds };
+  const refIndices = [READ_INDEX_STIX_META_RELATIONSHIPS, READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_INFERRED_RELATIONSHIPS];
+  const refArgs = { indices: refIndices, fromId: elementIds };
   const refsRelations = await listAllRelations(context, user, relTypes, refArgs);
   const refsPerElements = R.groupBy((r) => r.fromId, refsRelations);
   // Parallel resolutions
