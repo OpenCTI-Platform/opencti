@@ -19,6 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
+import PasswordPolicies from '../../common/form/PasswordPolicies';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -237,6 +238,7 @@ class UserCreation extends Component {
                     rows={4}
                     style={{ marginTop: 20 }}
                   />
+                  <PasswordPolicies/>
                   <Field
                     component={TextField}
                     variant="standard"
@@ -256,6 +258,7 @@ class UserCreation extends Component {
                     style={{ marginTop: 20 }}
                   />
                   <ObjectOrganizationField
+                    outlined={false}
                     name="objectOrganization"
                     label="Organizations"
                     style={{ marginTop: 20, width: '100%' }}
