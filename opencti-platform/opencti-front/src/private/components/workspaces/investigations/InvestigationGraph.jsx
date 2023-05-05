@@ -1,54 +1,36 @@
-import React, { Component } from 'react';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
+import withTheme from '@mui/styles/withTheme';
+import { Field, Form, Formik } from 'formik';
 import PropTypes from 'prop-types';
 import * as R from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
-import ForceGraph3D from 'react-force-graph-3d';
-import SpriteText from 'three-spritetext';
+import React, { Component } from 'react';
 import ForceGraph2D from 'react-force-graph-2d';
+import ForceGraph3D from 'react-force-graph-3d';
+import RectangleSelection from 'react-rectangle-selection';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { withRouter } from 'react-router-dom';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
-import { withRouter } from 'react-router-dom';
-import withTheme from '@mui/styles/withTheme';
-import Dialog from '@mui/material/Dialog';
-import { Field, Form, Formik } from 'formik';
-import DialogTitle from '@mui/material/DialogTitle';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import RectangleSelection from 'react-rectangle-selection';
+import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import InvestigationGraphBar from './InvestigationGraphBar';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
-import {
-  applyFilters,
-  buildGraphData,
-  computeTimeRangeInterval,
-  computeTimeRangeValues,
-  decodeGraphData,
-  encodeGraphData,
-  linkPaint,
-  nodeAreaPaint,
-  nodePaint,
-  nodeThreePaint,
-} from '../../../../utils/Graph';
-import {
-  commitMutation,
-  fetchQuery,
-  MESSAGING$,
-} from '../../../../relay/environment';
-import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
+import SwitchField from '../../../../components/SwitchField';
+import TextField from '../../../../components/TextField';
+import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import { hexToRGB } from '../../../../utils/Colors';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { applyFilters, buildGraphData, computeTimeRangeInterval, computeTimeRangeValues, decodeGraphData, encodeGraphData, linkPaint, nodeAreaPaint, nodePaint, nodeThreePaint } from '../../../../utils/Graph';
+import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
+import LassoSelection from '../../../../utils/graph/LassoSelection';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import TypesField from '../../common/form/TypesField';
 import { workspaceMutationFieldPatch } from '../WorkspaceEditionOverview';
 import WorkspaceHeader from '../WorkspaceHeader';
-import TextField from '../../../../components/TextField';
-import SwitchField from '../../../../components/SwitchField';
-import TypesField from '../../common/form/TypesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-
-import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import { hexToRGB } from '../../../../utils/Colors';
+import { investigationAddStixCoreObjectsLinesRelationsDeleteMutation } from './InvestigationAddStixCoreObjectsLines';
+import InvestigationGraphBar from './InvestigationGraphBar';
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -871,7 +853,9 @@ class InvestigationGraphComponent extends Component {
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      selectModeFree: R.propOr(false, 'selectModeFree', params),
+      selectRectangleModeFree: R.propOr(false, 'selectRectangleModeFree', params),
+      selectModeFree: params.selectModeFree ?? false,
+      selectModeFreeReady: false,
       modeFixed: R.propOr(false, 'modeFixed', params),
       modeTree: R.propOr('', 'modeTree', params),
       displayTimeRange: R.propOr(false, 'displayTimeRange', params),
@@ -906,6 +890,7 @@ class InvestigationGraphComponent extends Component {
       prevClick: null,
       navOpen: localStorage.getItem('navOpen') === 'true',
     };
+    this.canvas = null;
   }
 
   initialize() {
@@ -931,6 +916,10 @@ class InvestigationGraphComponent extends Component {
       }
       this.initialized = true;
       this.zoomed += 1;
+      const currentCanvas = document.getElementsByTagName('canvas')[0];
+      if (!this.canvas) {
+        this.canvas = currentCanvas;
+      }
     }
   }
 
@@ -1000,8 +989,22 @@ class InvestigationGraphComponent extends Component {
     this.setState({ mode3D: !this.state.mode3D }, () => this.saveParameters());
   }
 
+  handleToggleRectangleSelectModeFree() {
+    this.setState({
+      selectRectangleModeFree: !this.state.selectRectangleModeFree,
+      selectModeFree: false,
+    }, () => {
+      this.saveParameters();
+    });
+  }
+
   handleToggleSelectModeFree() {
-    this.setState({ selectModeFree: !this.state.selectModeFree }, () => this.saveParameters());
+    this.setState({
+      selectModeFree: !this.state.selectModeFree,
+      selectRectangleModeFree: false,
+    }, () => {
+      this.saveParameters();
+    });
   }
 
   handleToggleTreeMode(modeTree) {
@@ -1540,9 +1543,8 @@ class InvestigationGraphComponent extends Component {
   }
 
   handleRectSelectMove(e, coords) {
-    if (this.state.selectModeFree) {
-      const container = document.getElementsByTagName('canvas')[0];
-      const { left, top } = container.getBoundingClientRect();
+    if (this.state.selectRectangleModeFree) {
+      const { left, top } = this.canvas.getBoundingClientRect();
       this.state.rectSelected.origin[0] = R.min(coords.origin[0], coords.target[0]) - left;
       this.state.rectSelected.origin[1] = R.min(coords.origin[1], coords.target[1]) - top;
       this.state.rectSelected.target[0] = R.max(coords.origin[0], coords.target[0]) - left;
@@ -1554,7 +1556,7 @@ class InvestigationGraphComponent extends Component {
 
   handleRectSelectUp() {
     if (
-      this.state.selectModeFree
+      this.state.selectRectangleModeFree
       && (this.state.rectSelected.origin[0]
         !== this.state.rectSelected.target[0]
         || this.state.rectSelected.origin[1] !== this.state.rectSelected.target[1])
@@ -1767,7 +1769,9 @@ class InvestigationGraphComponent extends Component {
       allMarkedBy,
       allCreatedBy,
       stixCoreObjectsTypes,
+      selectRectangleModeFree,
       selectModeFree,
+      selectModeFreeReady,
       markedBy,
       createdBy,
       graphData,
@@ -1879,16 +1883,15 @@ class InvestigationGraphComponent extends Component {
           currentModeFixed={modeFixed}
           handleZoomToFit={this.handleZoomToFit.bind(this)}
           handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
-            this,
-          )}
+          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(this)}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
-            this,
-          )}
+          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(this)}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(this)}
           stixCoreObjectsTypes={allStixCoreObjectsTypes}
           currentStixCoreObjectsTypes={stixCoreObjectsTypes}
+          currentSelectRectangleModeFree={selectRectangleModeFree}
           currentSelectModeFree={selectModeFree}
+          selectModeFreeReady={selectModeFreeReady}
           markedBy={allMarkedBy}
           currentMarkedBy={markedBy}
           createdBy={allCreatedBy}
@@ -2019,113 +2022,128 @@ class InvestigationGraphComponent extends Component {
             }
           />
         ) : (
-          <RectangleSelection
-            onSelect={(e, coords) => {
-              this.handleRectSelectMove(e, coords);
-            }}
-            onMouseUp={(e) => {
-              this.handleRectSelectUp(e);
-            }}
-            style={{
-              backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
-              borderColor: theme.palette.warning.main,
-            }}
-            disabled={!selectModeFree}
-          >
-            <ForceGraph2D
-              ref={this.graph}
+          <>
+            <LassoSelection
               width={graphWidth}
               height={graphHeight}
-              graphData={graphData}
-              onZoom={this.onZoom.bind(this)}
-              onZoomEnd={this.handleZoomEnd.bind(this)}
-              nodeRelSize={4}
-              enablePanInteraction={!selectModeFree}
-              nodeCanvasObject={(
-                node,
-                ctx, //
-              ) =>
-                // eslint-disable-next-line implicit-arrow-linebreak
-                nodePaint(
-                  {
-                    selected: theme.palette.secondary.main,
-                    inferred: theme.palette.warning.main,
-                  },
-                  node,
-                  node.color,
-                  ctx,
-                  this.selectedNodes.has(node),
-                )
-              }
-              nodePointerAreaPaint={nodeAreaPaint}
-              // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
-              // linkDirectionalParticleWidth={1}
-              // linkDirectionalParticleSpeed={() => 0.004}
-              linkCanvasObjectMode={() => 'after'}
-              linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
-              }
-              linkColor={(link) => (this.selectedLinks.has(link)
-                ? theme.palette.secondary.main
-                : theme.palette.primary.main)
-              }
-              linkDirectionalArrowLength={3}
-              linkDirectionalArrowRelPos={0.99}
-              onNodeClick={this.handleNodeClick.bind(this)}
-              onNodeRightClick={(node) => {
-                // eslint-disable-next-line no-param-reassign
-                node.fx = undefined;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = undefined;
-                this.handleDragEnd();
-                this.forceUpdate();
+              activated={selectModeFree && selectModeFreeReady}
+              graphDataNodes={graphData.nodes}
+              graph={this.graph}
+              setSelectedNodes={(nodes) => {
+                this.selectedNodes.clear();
+                Array.from(nodes).forEach((n) => this.selectedNodes.add(n));
+                this.setState({ numberOfSelectedNodes: nodes.size });
               }}
-              onNodeDrag={(node, translate) => {
-                if (this.selectedNodes.has(node)) {
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node)
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => ['x', 'y'].forEach(
-                      // eslint-disable-next-line no-param-reassign,no-return-assign
-                      (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
-                    ));
-                }
-              }}
-              onNodeDragEnd={(node) => {
-                if (this.selectedNodes.has(node)) {
-                  // finished moving a selected node
-                  [...this.selectedNodes]
-                    .filter((selNode) => selNode !== node) // don't touch node being dragged
-                    // eslint-disable-next-line no-shadow
-                    .forEach((selNode) => {
-                      ['x', 'y'].forEach(
-                        // eslint-disable-next-line no-param-reassign,no-return-assign
-                        (coord) => (selNode[`f${coord}`] = undefined),
-                      );
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fx = selNode.x;
-                      // eslint-disable-next-line no-param-reassign
-                      selNode.fy = selNode.y;
-                    });
-                }
-                // eslint-disable-next-line no-param-reassign
-                node.fx = node.x;
-                // eslint-disable-next-line no-param-reassign
-                node.fy = node.y;
-                this.handleDragEnd();
-              }}
-              onLinkClick={this.handleLinkClick.bind(this)}
-              onBackgroundClick={this.handleBackgroundClick.bind(this)}
-              cooldownTicks={modeFixed ? 0 : undefined}
-              dagMode={
-                // eslint-disable-next-line no-nested-ternary
-                modeTree === 'horizontal'
-                  ? 'lr'
-                  : modeTree === 'vertical'
-                    ? 'td'
-                    : undefined
-              }
             />
-          </RectangleSelection>
+            <RectangleSelection
+              onSelect={(e, coords) => {
+                this.handleRectSelectMove(e, coords);
+              }}
+              onMouseUp={(e) => {
+                this.handleRectSelectUp(e);
+              }}
+              style={{
+                backgroundColor: hexToRGB(theme.palette.background.accent, 0.3),
+                borderColor: theme.palette.warning.main,
+              }}
+              disabled={!selectRectangleModeFree}
+            >
+              <ForceGraph2D
+                ref={this.graph}
+                width={graphWidth}
+                height={graphHeight}
+                graphData={graphData}
+                onZoom={this.onZoom.bind(this)}
+                onZoomEnd={this.handleZoomEnd.bind(this)}
+                nodeRelSize={4}
+                enablePanInteraction={!selectRectangleModeFree && !selectModeFree}
+                nodeCanvasObject={(
+                  node,
+                  ctx, //
+                ) =>
+                  // eslint-disable-next-line implicit-arrow-linebreak
+                  nodePaint(
+                    {
+                      selected: theme.palette.secondary.main,
+                      inferred: theme.palette.warning.main,
+                    },
+                    node,
+                    node.color,
+                    ctx,
+                    this.selectedNodes.has(node),
+                  )
+                }
+                nodePointerAreaPaint={nodeAreaPaint}
+                // linkDirectionalParticles={(link) => (this.selectedLinks.has(link) ? 20 : 0)}
+                // linkDirectionalParticleWidth={1}
+                // linkDirectionalParticleSpeed={() => 0.004}
+                linkCanvasObjectMode={() => 'after'}
+                linkCanvasObject={(link, ctx) => linkPaint(link, ctx, theme.palette.text.primary)
+                }
+                linkColor={(link) => (this.selectedLinks.has(link)
+                  ? theme.palette.secondary.main
+                  : theme.palette.primary.main)
+                }
+                linkDirectionalArrowLength={3}
+                linkDirectionalArrowRelPos={0.99}
+                onNodeClick={this.handleNodeClick.bind(this)}
+                onNodeRightClick={(node) => {
+                  // eslint-disable-next-line no-param-reassign
+                  node.fx = undefined;
+                  // eslint-disable-next-line no-param-reassign
+                  node.fy = undefined;
+                  this.handleDragEnd();
+                  this.forceUpdate();
+                }}
+                onNodeDrag={(node, translate) => {
+                  if (this.selectedNodes.has(node)) {
+                    [...this.selectedNodes]
+                      .filter((selNode) => selNode !== node)
+                      // eslint-disable-next-line no-shadow
+                      .forEach((selNode) => ['x', 'y'].forEach(
+                        // eslint-disable-next-line no-param-reassign,no-return-assign
+                        (coord) => (selNode[`f${coord}`] = selNode[coord] + translate[coord]),
+                      ));
+                  }
+                }}
+                onNodeDragEnd={(node) => {
+                  if (this.selectedNodes.has(node)) {
+                    // finished moving a selected node
+                    [...this.selectedNodes]
+                      .filter((selNode) => selNode !== node) // don't touch node being dragged
+                      // eslint-disable-next-line no-shadow
+                      .forEach((selNode) => {
+                        ['x', 'y'].forEach(
+                          // eslint-disable-next-line no-param-reassign,no-return-assign
+                          (coord) => (selNode[`f${coord}`] = undefined),
+                        );
+                        // eslint-disable-next-line no-param-reassign
+                        selNode.fx = selNode.x;
+                        // eslint-disable-next-line no-param-reassign
+                        selNode.fy = selNode.y;
+                      });
+                  }
+                  // eslint-disable-next-line no-param-reassign
+                  node.fx = node.x;
+                  // eslint-disable-next-line no-param-reassign
+                  node.fy = node.y;
+                  this.handleDragEnd();
+                }}
+                onLinkClick={this.handleLinkClick.bind(this)}
+                onBackgroundClick={this.handleBackgroundClick.bind(this)}
+                cooldownTicks={modeFixed ? 0 : 100}
+                onEngineStop={() => this.setState({ selectModeFreeReady: true })}
+                dagMode={
+                  // eslint-disable-next-line no-nested-ternary
+                  modeTree === 'horizontal'
+                    ? 'lr'
+                    : modeTree === 'vertical'
+                      ? 'td'
+                      : undefined
+                }
+              />
+            </RectangleSelection>
+          </>
         )}
       </div>
     );
