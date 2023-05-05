@@ -355,7 +355,7 @@ class CaseRftKnowledgeComponent extends Component {
               />
               <FilterIconButton
                 filters={timeLineFilters}
-                handleRemoveFilter={this.handleRemoveTimeLineFilter}
+                handleRemoveFilter={this.handleRemoveTimeLineFilter.bind(this)}
               />
               <div className="clearfix" />
               <QueryRenderer
