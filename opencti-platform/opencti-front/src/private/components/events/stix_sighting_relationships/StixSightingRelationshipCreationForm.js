@@ -138,8 +138,8 @@ const StixSightingRelationshipCreationForm = ({
     last_seen: defaultLastSeen,
     description: '',
     externalReferences: [],
-    objectMarking: defaultMarkingDefinitions,
-    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    createdBy: defaultCreatedBy ?? [],
     x_opencti_negative: false,
   };
 

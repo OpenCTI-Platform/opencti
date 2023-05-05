@@ -147,8 +147,8 @@ const StixCoreRelationshipCreationForm = ({
     description: '',
     killChainPhases: [],
     externalReferences: [],
-    objectMarking: defaultMarkingDefinitions,
-    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    createdBy: defaultCreatedBy ?? [],
   };
 
   return (
