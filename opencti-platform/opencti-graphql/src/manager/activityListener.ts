@@ -42,7 +42,7 @@ const initActivityManager = () => {
   const activityReadCache = new LRU({ ttl: 60 * 60 * 1000, max: 5000 }); // Read lifetime is 1 hour
   const cleanInputData = (obj: any) => {
     const stack = [obj];
-    while (stack?.length > 0) {
+    while (stack.length > 0) {
       const currentObj = stack.pop() as any;
       Object.keys(currentObj).forEach((key) => {
         if (LOGS_SENSITIVE_FIELDS.includes(key)) {
