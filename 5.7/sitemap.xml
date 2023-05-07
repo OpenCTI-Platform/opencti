@@ -6,7 +6,17 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7/administration/parameters/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7/deployment/configuration/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/deployment/connectors/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -16,7 +26,47 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7/deployment/integrations/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7/deployment/overview/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/deployment/upgrade/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/cases-reports/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/dashboards/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/import-export/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/knowledge/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/notifications/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7/usage/platform/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
