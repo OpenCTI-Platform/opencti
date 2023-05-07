@@ -16,19 +16,23 @@ Install dependencies
 pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike
 ```
 
-Launch the local version
+## Useful commands
+
+Launch the local environment:
 ```
 $ mike serve
-INFO    -  Building documentation...
-INFO    -  Cleaning site directory
-[I 160402 15:50:43 server:271] Serving on http://127.0.0.1:8000
-[I 160402 15:50:43 handlers:58] Start watching changes
-[I 160402 15:50:43 handlers:60] Start detecting changes
+Starting server at http://localhost:8000/
 ```
 
-## Deploy the documentation
+List versions:
+```
+$ mike list
+```
+
+## Deploy a new version of the doc
 
 The documentation is deployed on Github pages trough a single command:
 ```
-$ mike deploy [version]
+$ mike delete latest
+$ mike deploy [version] latest
 ```
