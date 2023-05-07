@@ -1,72 +1,72 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
-         <loc>https://docs.opencti.io/latest/</loc>
+         <loc>https://docs.opencti.io/5.7/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/administration/parameters/</loc>
+         <loc>https://docs.opencti.io/5.7/administration/parameters/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/configuration/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/configuration/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/connectors/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/connectors/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/installation/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/installation/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/integrations/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/integrations/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/overview/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/overview/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/deployment/upgrade/</loc>
+         <loc>https://docs.opencti.io/5.7/deployment/upgrade/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/cases-reports/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/cases-reports/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/dashboards/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/dashboards/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/import-export/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/import-export/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/knowledge/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/knowledge/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/notifications/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/notifications/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/latest/usage/platform/</loc>
+         <loc>https://docs.opencti.io/5.7/usage/platform/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
     </url>
