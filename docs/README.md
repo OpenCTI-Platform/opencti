@@ -16,25 +16,28 @@ Install dependencies
 pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike mkdocs-git-committers-plugin-2 mkdocs-git-revision-date-localized-plugin
 ```
 
-## Useful commands
-
 Launch the local environment:
 ```
 $ mkdocs serve
 Starting server at http://localhost:8000/
 ```
 
-List versions:
+## Deploy the documentation
+
+### Update the source
+
+Commiting on the main branch does not impact (for now) the deployed documentation, please commit as many times as possible:
 ```
-$ mike list
+$ git commit -a -m "[docs] MESSAGE"
+$ git push
 ```
 
-Launch versionned local environment:
-```
-$ mike serve
-```
+### Deploy and update the current version
 
-## Deploy new versions of the doc
+With the right version number (eg. 5.7):
+```
+$ mike deploy --push [version]
+```
 
 ### Deploy a new stable version
 
@@ -43,9 +46,14 @@ With the right version number (eg. 5.7), update the `latest` tag:
 $ mike deploy --push --update-aliases [version] latest
 ```
 
-### Deploy new next version
+## Useful commands
 
-With the right version number (eg. 5.7), update the `next` tag:
+List versions:
 ```
-$ mike deploy --push --update-aliases [version] next
+$ mike list
+```
+
+Launch versionned local environment to see if everything is ok:
+```
+$ mike serve
 ```

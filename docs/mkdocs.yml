@@ -52,9 +52,6 @@ extra:
 
 # Plugins
 plugins:
-  - mike:
-      canonical_version: latest
-      alias_type: symlink
   - search
   - git-committers:
       repository: OpenCTI-Platform/docs
