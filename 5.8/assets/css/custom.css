@@ -1,8 +1,22 @@
+/* Color scheme */
 [data-md-color-scheme="filigran"] {
+  /* Background */
   --md-default-bg-color: #001e3c;
-  --md-default-fg-color: #ffffff;
+  
+  /* Titles */
+  --md-default-fg-color--light: #00b1ff;
+  --md-default-fg-color--lighter: #00b1ff;
+  --md-default-fg-color--lightest: #00b1ff;
+
+  /* Typeset */
+  --md-typeset-color: #ffffff;
+  --md-typeset-a-color: #00b1ff;
+
+  /* Hover */
+  --md-accent-fg-color: #00b1ff;
 }
 
+/* Header */
 .md-header, .md-tabs {
   background-color: #071a2e !important;
 }
