@@ -1,2 +1,65 @@
 site_name: OpenCTI Documentation
+site_description: Documentation about OpenCTI, the next-generation Cyber Threat Intelligence platform.
+site_author: Filigran
 site_url: https://docs.opencti.io
+copyright: © 2023 Filigran. All rights reserved
+repo_name: GitHub
+repo_url: https://github.com/OpenCTI-Platform/opencti
+
+# Theming
+theme:
+  name: material
+  logo: assets/logo.png
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - content.action.edit
+    - content.action.view
+    - content.code.annotate
+    - content.code.copy
+    - content.tooltips
+  palette:
+    scheme: filigran
+  font:
+    text: IBM Plex Sans
+    code: Roboto Mono    
+extra_css:
+  - assets/css/custom.css
+
+# Plugins
+plugins:
+  - mike:
+      # These fields are all optional; the defaults are as below...
+      alias_type: symlink
+      redirect_template: null
+      deploy_prefix: ''
+      canonical_version: null
+      version_selector: true
+      css_dir: css
+      javascript_dir: js
+
+# Page tree
+nav:
+    - Home: 'index.md'
+    - Deployment and setup:
+        - Overview: deployment/overview.md
+        - Installation: deployment/installation.md
+        - Connectors: deployment/connectors.md
+        - Configuration: deployment/configuration.md
+        - Integrations: deployment/integrations.md
+        - Upgrade: deployment/upgrade.md
+    - User guide:
+        - Platform organization: usage/platform.md
+        - Create knowledge: usage/knowledge.md
+        - Import and export: usage/import-export.md
+        - Cases and reports: usage/cases-reports.md
+        - Notifications and alerting: usage/notifications.md
+        - Custom dashboards: usage/dashboards.md
+        - Investigations: usage/investigations.md
+    - Administration:
+        - Parameters: administration/parameters.md
+        - Authentication and RBAC: administration/security.md
+        - Engines and schedulers: administration/engines.md
+    - Reference:
+        - Data model: reference/data-model.md
+        - Security: reference/security.md
