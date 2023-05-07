@@ -105,18 +105,27 @@ nav:
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
+      - Third-party: deployment/third-party.md
   - User Guide:
-    - Platform organization: usage/platform.md
-    - Create knowledge: usage/knowledge.md
-    - Import and export: usage/import-export.md
-    - Cases and reports: usage/cases-reports.md
-    - Notifications and alerting: usage/notifications.md
-    - Custom dashboards: usage/dashboards.md
-    - Investigations: usage/investigations.md
+    - Structure:
+      - Platform organization: usage/platform.md
+      - Create knowledge: usage/knowledge.md
+      - Cases and reports: usage/cases-reports.md
+      - Import and export: usage/import-export.md
+    - Main Features:
+      - Enrichment: usage/enrichment.md
+      - Notifications and alerting: usage/notifications.md
+      - Custom dashboards: usage/dashboards.md
+      - Investigations: usage/investigations.md
   - Administration:
-    - Parameters: administration/parameters.md
-    - Authentication and RBAC: administration/security.md
-    - Engines and schedulers: administration/engines.md
+    - General:
+      - Parameters: administration/parameters.md
+      - Engines and schedulers: administration/engines.md
+      - Retention policies: administration/retention.md
+    - Security:
+      - Authentication and RBAC: administration/rbac.md
+      - Data segregation: administration/segregation.md
+      - Audit and monitoring: administration/audit.md
   - Reference:
     - Data model: reference/data-model.md
     - Security: reference/security.md
