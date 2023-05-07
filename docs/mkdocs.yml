@@ -9,6 +9,7 @@ repo_url: https://github.com/OpenCTI-Platform/opencti
 # Theming
 theme:
   name: material
+  custom_dir: overrides
   logo: assets/logo.png
   features:
     - navigation.tabs
@@ -25,41 +26,42 @@ theme:
     code: Roboto Mono    
 extra_css:
   - assets/css/custom.css
+extra:
+  version:
+    provider: mike
 
 # Plugins
 plugins:
   - mike:
-      # These fields are all optional; the defaults are as below...
-      alias_type: symlink
-      redirect_template: null
-      deploy_prefix: ''
-      canonical_version: null
-      version_selector: true
-      css_dir: css
-      javascript_dir: js
+    # These fields are all optional; the defaults are as below...
+    alias_type: symlink
+    redirect_template: null
+    deploy_prefix: ''
+    canonical_version: latest
+    version_selector: true
 
 # Page tree
 nav:
-    - Home: 'index.md'
-    - Deployment and setup:
-        - Overview: deployment/overview.md
-        - Installation: deployment/installation.md
-        - Connectors: deployment/connectors.md
-        - Configuration: deployment/configuration.md
-        - Integrations: deployment/integrations.md
-        - Upgrade: deployment/upgrade.md
-    - User guide:
-        - Platform organization: usage/platform.md
-        - Create knowledge: usage/knowledge.md
-        - Import and export: usage/import-export.md
-        - Cases and reports: usage/cases-reports.md
-        - Notifications and alerting: usage/notifications.md
-        - Custom dashboards: usage/dashboards.md
-        - Investigations: usage/investigations.md
-    - Administration:
-        - Parameters: administration/parameters.md
-        - Authentication and RBAC: administration/security.md
-        - Engines and schedulers: administration/engines.md
-    - Reference:
-        - Data model: reference/data-model.md
-        - Security: reference/security.md
+  - Home: 'index.md'
+  - Deployment and setup:
+    - Overview: deployment/overview.md
+    - Installation: deployment/installation.md
+    - Connectors: deployment/connectors.md
+    - Configuration: deployment/configuration.md
+    - Integrations: deployment/integrations.md
+    - Upgrade: deployment/upgrade.md
+  - User guide:
+    - Platform organization: usage/platform.md
+    - Create knowledge: usage/knowledge.md
+    - Import and export: usage/import-export.md
+    - Cases and reports: usage/cases-reports.md
+    - Notifications and alerting: usage/notifications.md
+    - Custom dashboards: usage/dashboards.md
+    - Investigations: usage/investigations.md
+  - Administration:
+    - Parameters: administration/parameters.md
+    - Authentication and RBAC: administration/security.md
+    - Engines and schedulers: administration/engines.md
+  - Reference:
+    - Data model: reference/data-model.md
+    - Security: reference/security.md

@@ -18,7 +18,7 @@ pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike
 
 Launch the local version
 ```
-$ mkdocs serve
+$ mike serve
 INFO    -  Building documentation...
 INFO    -  Cleaning site directory
 [I 160402 15:50:43 server:271] Serving on http://127.0.0.1:8000
@@ -30,5 +30,5 @@ INFO    -  Cleaning site directory
 
 The documentation is deployed on Github pages trough a single command:
 ```
-$ mkdocs gh-deploy
+$ mike deploy [version]
 ```
