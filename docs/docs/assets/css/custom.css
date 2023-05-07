@@ -16,9 +16,9 @@
 
   /* Default color shades */
   --md-default-fg-color:               #00b1ff;
-  --md-default-fg-color--light:        #10b4ff;
-  --md-default-fg-color--lighter:      #1bb6ff;
-  --md-default-fg-color--lightest:     #23b9ff;
+  --md-default-fg-color--light:        #ffffff;
+  --md-default-fg-color--lighter:      #ffffff;
+  --md-default-fg-color--lightest:     #0082d1;
   --md-default-bg-color:               #001e3c;
   --md-default-bg-color--light:        #001830;
   --md-default-bg-color--lighter:      #021426;
@@ -101,4 +101,12 @@
 
 html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover {
     color: #00b1ff !important;
+}
+
+.middle {
+  margin: -5px 5px 0 0 !important;
+}
+
+.md-header__button.md-logo img,.md-header__button.md-logo svg {
+   height: 1.5rem;
 }

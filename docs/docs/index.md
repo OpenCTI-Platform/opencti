@@ -20,30 +20,37 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 <div class="grid cards" markdown>
 
--    __Deployement & setup__
+-   :material-rocket-launch-outline:{ .lg .middle } __Deployement & Setup__
 
-    - [:octicons-arrow-right-24: Getting started](deployment/overview)
-    - :fontawesome-brands-font-awesome: – [FontAwesome]
-    - :octicons-mark-github-16: – [Octicons]
-    - :simple-simpleicons: – [Simple Icons]
+    ---
 
--    __Deployement & setup__
+    Learn how to deploy and configure the platform as well as
+    launch connectors to get the first data in OpenCTI.
 
-    - [:octicons-arrow-right-24: Getting started](deployment/overview)
-    - :fontawesome-brands-font-awesome: – [FontAwesome]
-    - :octicons-mark-github-16: – [Octicons]
-    - :simple-simpleicons: – [Simple Icons]
+    [:octicons-arrow-right-24:{ .middle } Deploy now](deployment/overview)
 
--    __Deployement & setup__
+-   :fontawesome-regular-compass:{ .lg .middle } __User Guide__
 
-    - [:octicons-arrow-right-24: Getting started](deployment/overview)
-    - :fontawesome-brands-font-awesome: – [FontAwesome]
-    - :octicons-mark-github-16: – [Octicons]
-    - :simple-simpleicons: – [Simple Icons]
+    ---
+
+    Understand how to use the platform, explore the knowledge, import
+    and export information, create dashboard, etc.
+
+    [:octicons-arrow-right-24:{ .middle } Explore](usage/platform)
+
+-   :material-tune-vertical:{ .lg .middle } __Administration__
+
+    ---
+
+    Know how to administrate OpenCTI, create users and groups using RBAC /
+    segregation, put retention policies and custom taxonomies.
+
+    [:octicons-arrow-right-24:{ .middle } Customize](administration/parameters)
 </div>
 
 ## Latest blog posts
 
-!!! info "Need more help?"
+!!! info "Articles"
 
     All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
+

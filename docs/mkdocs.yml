@@ -16,6 +16,7 @@ theme:
     - navigation.tabs
     - navigation.path
     - navigation.footer
+    - navigation.expand
     - content.action.edit
     - content.action.view
     - content.code.annotate
@@ -52,9 +53,13 @@ extra:
 # Plugins
 plugins:
   - mike
+  - search
   - git-committers:
       repository: OpenCTI-Platform/docs
       branch: main  
+  - git-revision-date-localized:
+      enable_creation_date: true
+      type: timeago
 
 # Extensions
 markdown_extensions: 
@@ -85,18 +90,22 @@ markdown_extensions:
       emoji_generator: !!python/name:materialx.emoji.to_svg   
   - pymdownx.tasklist:
       custom_checkbox: true
+  - pymdownx.snippets:
+      url_download: true
 
 # Page tree
 nav:
   - Home: 'index.md'
-  - Deployment and setup:
-    - Overview: deployment/overview.md
-    - Installation: deployment/installation.md
-    - Connectors: deployment/connectors.md
-    - Configuration: deployment/configuration.md
-    - Integrations: deployment/integrations.md
-    - Upgrade: deployment/upgrade.md
-  - User guide:
+  - Deployment & Setup:
+    - Platform:
+      - Overview: deployment/overview.md
+      - Installation: deployment/installation.md
+      - Configuration: deployment/configuration.md
+      - Upgrade: deployment/upgrade.md
+    - Ecosystem:
+      - Connectors: deployment/connectors.md
+      - Integrations: deployment/integrations.md
+  - User Guide:
     - Platform organization: usage/platform.md
     - Create knowledge: usage/knowledge.md
     - Import and export: usage/import-export.md

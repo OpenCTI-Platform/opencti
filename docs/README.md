@@ -13,7 +13,7 @@ $ git clone git@github.com:OpenCTI-Platform/docs.git
 
 Install dependencies
 ```
-pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike mkdocs-git-committers-plugin-2
+pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike mkdocs-git-committers-plugin-2 mkdocs-git-revision-date-localized-plugin
 ```
 
 ## Useful commands
