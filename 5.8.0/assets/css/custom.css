@@ -1,0 +1,8 @@
+[data-md-color-scheme="filigran"] {
+  --md-default-bg-color: #001e3c;
+  --md-default-fg-color: #ffffff;
+}
+
+.md-header, .md-tabs {
+  background-color: #071a2e !important;
+}
