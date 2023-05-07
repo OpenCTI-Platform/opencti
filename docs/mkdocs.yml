@@ -5,6 +5,7 @@ site_url: https://docs.opencti.io
 copyright: © 2023 Filigran. All rights reserved
 repo_name: GitHub
 repo_url: https://github.com/OpenCTI-Platform/opencti
+edit_uri: https://github.com/OpenCTI-Platform/docs/blob/main/docs/
 
 # Theming
 theme:
@@ -13,7 +14,8 @@ theme:
   logo: assets/logo.png
   features:
     - navigation.tabs
-    - navigation.tabs.sticky
+    - navigation.path
+    - navigation.footer
     - content.action.edit
     - content.action.view
     - content.code.annotate
@@ -23,17 +25,66 @@ theme:
     scheme: filigran
   font:
     text: IBM Plex Sans
-    code: Roboto Mono    
+    code: Roboto Mono
+# CSS
 extra_css:
   - assets/css/custom.css
+
+# Extra
 extra:
   version:
     provider: mike
+  generator: false
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/OpenCTI-Platform
+    - icon: fontawesome/brands/medium
+      link: https://blog.filigran.io
+    - icon: fontawesome/brands/slack
+      link: https://community.filigran.io
+    - icon: fontawesome/brands/linkedin
+      link: https://linkedin.com/company/filigran
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/FiligranHQ
+    - icon: fontawesome/brands/facebook
+      link: https://facebook.com/FiligranHQ
 
 # Plugins
 plugins:
-  - mike:
-      version_selector: true
+  - mike
+  - git-committers:
+      repository: OpenCTI-Platform/docs
+      branch: main  
+
+# Extensions
+markdown_extensions: 
+  - attr_list
+  - md_in_html
+  - tables
+  - admonition   
+  - def_list
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true   
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg   
+  - pymdownx.tasklist:
+      custom_checkbox: true
 
 # Page tree
 nav:

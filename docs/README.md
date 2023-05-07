@@ -13,14 +13,14 @@ $ git clone git@github.com:OpenCTI-Platform/docs.git
 
 Install dependencies
 ```
-pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike
+pip install mkdocs mkdocs-material mkdocs-git-authors-plugin mike mkdocs-git-committers-plugin-2
 ```
 
 ## Useful commands
 
 Launch the local environment:
 ```
-$ mike serve
+$ mkdocs serve
 Starting server at http://localhost:8000/
 ```
 
@@ -29,10 +29,23 @@ List versions:
 $ mike list
 ```
 
-## Deploy a new version of the doc
-
-The documentation is deployed on Github pages trough a single command:
+Launch versionned local environment:
 ```
-$ mike delete latest
-$ mike deploy [version] latest
+$ mike serve
+```
+
+## Deploy new versions of the doc
+
+### Deploy a new stable version
+
+With the right version number (eg. 5.7), update the `latest` tag:
+```
+$ mike deploy --push --update-aliases [version] latest
+```
+
+### Deploy new next version
+
+With the right version number (eg. 5.7), update the `next` tag:
+```
+$ mike deploy --push --update-aliases [version] next
 ```
