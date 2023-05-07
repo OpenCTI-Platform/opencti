@@ -18,6 +18,8 @@
         <link rel="prev" href="../overview/">
       
       
+        <link rel="next" href="../configuration/">
+      
       
         
       
@@ -550,6 +552,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -566,6 +585,175 @@
 
       </a>
       
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Docker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Docker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-pre-requisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Pre-requisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clone the repository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configure-the-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configure the environment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configure the environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐧 Linux:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#macos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⌘ MacOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-memory-management-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Memory Management Settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-run-opencti-full-stack-including-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Run OpenCTI - Full-stack, including UI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Run OpenCTI - Full-stack, including UI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-single-node-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using single node Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-docker-swarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Docker swarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-run-opencti-infrastructure-with-uigraphql-in-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Run OpenCTI infrastructure with UI/GraphQL in development mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
     </li>
   
 
@@ -577,7 +765,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../configuration.md" class="md-nav__link">
+      <a href="../configuration/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1235,6 +1423,164 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#using-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Docker
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Using Docker">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#1-pre-requisites" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Pre-requisites
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-clone-the-repository" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Clone the repository
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-configure-the-environment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Configure the environment
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Configure the environment">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#linux" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🐧 Linux:
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#macos" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ⌘ MacOS
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-memory-management-settings" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Memory Management Settings
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-run-opencti-full-stack-including-ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Run OpenCTI - Full-stack, including UI
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Run OpenCTI - Full-stack, including UI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#using-single-node-docker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using single node Docker
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#using-docker-swarm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Using Docker swarm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-run-opencti-infrastructure-with-uigraphql-in-development-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Run OpenCTI infrastructure with UI/GraphQL in development mode
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -1336,6 +1682,276 @@
 
 
 <h1 id="installation">Installation</h1>
+<h2 id="using-docker">Using Docker</h2>
+<h3 id="introduction">Introduction</h3>
+<p>OpenCTI can be deployed using the <em>docker-compose</em> command.</p>
+<div class="admonition info">
+<p class="admonition-title">Memory management</p>
+<p>For production deployment, we advise you to deploy ElasticSearch and Redis manually in a dedicated environment and then to start the other components using Docker.</p>
+</div>
+<h2 id="1-pre-requisites">1. Pre-requisites</h2>
+<p><strong><em>*🐧 Linux:</em></strong>*</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>$<span class="w"> </span>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>docker-compose
+</span></code></pre></div>
+<p><strong>⌘ MacOS</strong></p>
+<p>Download: <a href="https://www.docker.com/products/docker-desktop">https://www.docker.com/products/docker-desktop</a></p>
+<h2 id="2-clone-the-repository">2. Clone the repository</h2>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>$<span class="w"> </span>mkdir<span class="w"> </span>-p<span class="w"> </span>/path/to/your/app<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>/path/to/your/app
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>$<span class="w"> </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/OpenCTI-Platform/docker.git
+</span><span id="__span-1-3"><a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a>$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>docker
+</span></code></pre></div>
+<h2 id="3-configure-the-environment">3. Configure the environment</h2>
+<p>Before running the <code>docker-compose</code> command, the <code>docker-compose.yml</code> file must be configured.</p>
+<p>There are two ways to do that:</p>
+<ol>
+<li>Use environment variables as it is proposed and you have an exemple in the <code>.env.sample</code> file (ie. <code>APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}</code>).</li>
+<li>Directly set the parameters in the <code>docker-compose.yml</code>.</li>
+</ol>
+<p>If setting within the environment, you can reference the methodology in the <a href="https://www.notion.so/Environment-setup-606996f36d904fcf8d434c6d0eae4a00">Environment setup on OpenCTI's Notion page</a> - located below for ease:</p>
+<h3 id="linux"><strong>🐧 Linux:</strong></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>sudo<span class="w"> </span>apt<span class="w"> </span>install<span class="w"> </span>-y<span class="w"> </span>jq
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a>
+</span><span id="__span-2-3"><a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="nb">cd</span><span class="w"> </span>~/docker
+</span><span id="__span-2-4"><a id="__codelineno-2-4" name="__codelineno-2-4" href="#__codelineno-2-4"></a><span class="o">(</span>cat<span class="w"> </span><span class="s">&lt;&lt; EOF</span>
+</span><span id="__span-2-5"><a id="__codelineno-2-5" name="__codelineno-2-5" href="#__codelineno-2-5"></a><span class="s">OPENCTI_ADMIN_EMAIL=admin@opencti.io</span>
+</span><span id="__span-2-6"><a id="__codelineno-2-6" name="__codelineno-2-6" href="#__codelineno-2-6"></a><span class="s">OPENCTI_ADMIN_PASSWORD=CHANGEMEPLEASE</span>
+</span><span id="__span-2-7"><a id="__codelineno-2-7" name="__codelineno-2-7" href="#__codelineno-2-7"></a><span class="s">OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-8"><a id="__codelineno-2-8" name="__codelineno-2-8" href="#__codelineno-2-8"></a><span class="s">MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-9"><a id="__codelineno-2-9" name="__codelineno-2-9" href="#__codelineno-2-9"></a><span class="s">MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-10"><a id="__codelineno-2-10" name="__codelineno-2-10" href="#__codelineno-2-10"></a><span class="s">RABBITMQ_DEFAULT_USER=guest</span>
+</span><span id="__span-2-11"><a id="__codelineno-2-11" name="__codelineno-2-11" href="#__codelineno-2-11"></a><span class="s">RABBITMQ_DEFAULT_PASS=guest</span>
+</span><span id="__span-2-12"><a id="__codelineno-2-12" name="__codelineno-2-12" href="#__codelineno-2-12"></a><span class="s">CONNECTOR_HISTORY_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-13"><a id="__codelineno-2-13" name="__codelineno-2-13" href="#__codelineno-2-13"></a><span class="s">CONNECTOR_EXPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-14"><a id="__codelineno-2-14" name="__codelineno-2-14" href="#__codelineno-2-14"></a><span class="s">CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-15"><a id="__codelineno-2-15" name="__codelineno-2-15" href="#__codelineno-2-15"></a><span class="s">CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-16"><a id="__codelineno-2-16" name="__codelineno-2-16" href="#__codelineno-2-16"></a><span class="s">CONNECTOR_IMPORT_REPORT_ID=$(cat /proc/sys/kernel/random/uuid)</span>
+</span><span id="__span-2-17"><a id="__codelineno-2-17" name="__codelineno-2-17" href="#__codelineno-2-17"></a><span class="s">EOF</span>
+</span><span id="__span-2-18"><a id="__codelineno-2-18" name="__codelineno-2-18" href="#__codelineno-2-18"></a><span class="w"> </span><span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>.env
+</span></code></pre></div>
+<h3 id="macos"><strong>⌘ MacOS</strong></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>brew<span class="w"> </span>install<span class="w"> </span>jq
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="nb">cd</span><span class="w"> </span>~/docker
+</span><span id="__span-3-3"><a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="w"> </span><span class="o">(</span>cat<span class="w"> </span><span class="s">&lt;&lt;EOF</span>
+</span><span id="__span-3-4"><a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="s">OPENCTI_ADMIN_EMAIL=admin@opencti.io</span>
+</span><span id="__span-3-5"><a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="s">OPENCTI_ADMIN_PASSWORD=CHANGEMEPLEASE</span>
+</span><span id="__span-3-6"><a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="s">OPENCTI_ADMIN_TOKEN=$(uuidgen)</span>
+</span><span id="__span-3-7"><a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="s">MINIO_ROOT_USER=$(uuidgen)</span>
+</span><span id="__span-3-8"><a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="s">MINIO_ROOT_PASSWORD=$(uuidgen)</span>
+</span><span id="__span-3-9"><a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="s">RABBITMQ_DEFAULT_USER=guest</span>
+</span><span id="__span-3-10"><a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a><span class="s">RABBITMQ_DEFAULT_PASS=guest</span>
+</span><span id="__span-3-11"><a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="s">CONNECTOR_HISTORY_ID=$(uuidgen)</span>
+</span><span id="__span-3-12"><a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="s">CONNECTOR_EXPORT_FILE_STIX_ID=$(uuidgen)</span>
+</span><span id="__span-3-13"><a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="s">CONNECTOR_EXPORT_FILE_CSV_ID=$(uuidgen)</span>
+</span><span id="__span-3-14"><a id="__codelineno-3-14" name="__codelineno-3-14" href="#__codelineno-3-14"></a><span class="s">CONNECTOR_IMPORT_FILE_STIX_ID=$(uuidgen)</span>
+</span><span id="__span-3-15"><a id="__codelineno-3-15" name="__codelineno-3-15" href="#__codelineno-3-15"></a><span class="s">CONNECTOR_IMPORT_REPORT_ID=$(uuidgen)</span>
+</span><span id="__span-3-16"><a id="__codelineno-3-16" name="__codelineno-3-16" href="#__codelineno-3-16"></a><span class="s">EOF</span>
+</span><span id="__span-3-17"><a id="__codelineno-3-17" name="__codelineno-3-17" href="#__codelineno-3-17"></a><span class="o">)</span><span class="w"> </span>&gt;<span class="w"> </span>.env
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-4-1"><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="nb">cd</span><span class="w"> </span>~/docker<span class="w"> </span>
+</span><span id="__span-4-2"><a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="c1"># trick to export the .env </span>
+</span><span id="__span-4-3"><a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="nb">export</span><span class="w"> </span><span class="k">$(</span>cat<span class="w"> </span>.env<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span><span class="s2">&quot;#&quot;</span><span class="w"> </span><span class="p">|</span><span class="w"> </span>xargs<span class="k">)</span>
+</span></code></pre></div>
+<h2 id="4-memory-management-settings"><strong>4. Memory Management Settings</strong></h2>
+<aside>
+💡 For additional memory management information see the Memory configuration notes section
+
+</aside>
+
+<p>As OpenCTI has a dependency on ElasticSearch, you have to set the <code>vm.max_map_count</code> before running the containers, as mentioned in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode">ElasticSearch documentation</a>.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-5-1"><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>$<span class="w"> </span>sudo<span class="w"> </span>sysctl<span class="w"> </span>-w<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
+</span></code></pre></div>
+<p>To make this parameter persistent, add the following to the end of your <code>/etc/sysctl.conf</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-6-1"><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a>$<span class="w"> </span>vm.max_map_count<span class="o">=</span><span class="m">1048575</span>
+</span></code></pre></div>
+<h2 id="5-run-opencti-full-stack-including-ui"><strong>5. Run OpenCTI - Full-stack, including UI</strong></h2>
+<h3 id="using-single-node-docker">Using single node Docker</h3>
+<h3 id="using-docker-swarm">Using Docker swarm</h3>
+<p>After changing your <code>.env</code> file run <code>docker-compose</code> in detached (<code>-d</code>) mode:</p>
+<p>In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment. </p>
+<aside>
+💡 **Top Tip:** If you are looking for a easy way to manage your docker installation and containers try [Portainer](https://documentation.portainer.io/quickstart/?hsCtaTracking=cb3a059b-7f57-4333-a92f-b06202ef8690%7C4427d7bc-1ae8-4a30-812c-d30ee496008f).
+
+</aside>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-7-1"><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="c1"># ****🐧**** Linux only</span>
+</span><span id="__span-7-2"><a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a>$<span class="w"> </span>sudo<span class="w"> </span>systemctl<span class="w"> </span>start<span class="w"> </span>docker.service
+</span><span id="__span-7-3"><a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="c1"># Run docker-compose in detached </span>
+</span><span id="__span-7-4"><a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a>$<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-8-1"><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="c1"># If your virtual machine is not a part of a Swarm cluster, please use:</span>
+</span><span id="__span-8-2"><a id="__codelineno-8-2" name="__codelineno-8-2" href="#__codelineno-8-2"></a>$<span class="w"> </span>docker<span class="w"> </span>swarm<span class="w"> </span>init
+</span></code></pre></div>
+<p>Put your environment variables in <code>/etc/environment</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-9-1"><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="c1"># If you already exported your variables to .env from above:</span>
+</span><span id="__span-9-2"><a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a>$<span class="w"> </span>sudo<span class="w"> </span>cat<span class="w"> </span>.env<span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/environment
+</span><span id="__span-9-3"><a id="__codelineno-9-3" name="__codelineno-9-3" href="#__codelineno-9-3"></a>$<span class="w"> </span>sudo<span class="w"> </span>bash<span class="w"> </span>-c<span class="w"> </span><span class="err">&#39;</span>cat<span class="w"> </span>.env<span class="w"> </span>&gt;&gt;<span class="w"> </span>/etc/environment’
+</span><span id="__span-9-4"><a id="__codelineno-9-4" name="__codelineno-9-4" href="#__codelineno-9-4"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>stack<span class="w"> </span>deploy<span class="w"> </span>--compose-file<span class="w"> </span>docker-compose.yml<span class="w"> </span>opencti
+</span></code></pre></div>
+<p>You can now go to <a href="http://localhost:8080/">http://localhost:8080</a> and log in with the credentials configured in your environment variables.</p>
+<h2 id="6-run-opencti-infrastructure-with-uigraphql-in-development-mode"><strong>6. Run OpenCTI infrastructure with UI/GraphQL in development mode</strong></h2>
+<p>In order to develop OpenCTI UI/GraphQL in the most efficient manner we have provided a <code>docker-compose.dev.yml</code> which stands up the back-end/infrastructure of OpenCTI, with the expectation that you will run the OpenCTI front-end (React/GraphQL) separately.</p>
+<p>This docker-compose exposes all necessary ports for the UI/GraphQL to attach to in order to support local development.</p>
+<p>To run the services required for local development run:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-10-1"><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose.dev.yml<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<p>To configure/run the UI/GraphQL we would direct you to the <a href="https://www.notion.so/Front-end-e4991302301b438cad9567fc9e9e3b89">Notion documentation</a></p>
+<h1 id="appendices"><strong>Appendices</strong></h1>
+<h2 id="a-how-to-update-your-docker-instances"><strong>A. How to update your docker instances</strong></h2>
+<h3 id="for-single-node-docker"><strong>For single node Docker</strong></h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-11-1"><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker-compose<span class="w"> </span>stop
+</span><span id="__span-11-2"><a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker-compose<span class="w"> </span>pull
+</span><span id="__span-11-3"><a id="__codelineno-11-3" name="__codelineno-11-3" href="#__codelineno-11-3"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<h3 id="for-docker-swarm"><strong>For Docker swarm</strong></h3>
+<p>For each of services, you have to run the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-12-1"><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>$<span class="w"> </span>sudo<span class="w"> </span>docker<span class="w"> </span>service<span class="w"> </span>update<span class="w"> </span>--force<span class="w"> </span>service_name
+</span></code></pre></div>
+<h2 id="b-how-to-deploy-behind-a-reverse-proxy"><strong>B. How to deploy behind a reverse proxy</strong></h2>
+<p>If you want to use OpenCTI behind a reverse proxy with a context path, like <code>https://myproxy.com/opencti</code>, please change the base_path configuration.</p>
+<ul>
+<li><code>APP__BASE_PATH=/opencti</code></li>
+</ul>
+<p>By default OpenCTI use websockets so don't forget to configure your proxy for this usage, an example with <code>Nginx</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-13-1"><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-13-2"><a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">    </span>proxy_cache<span class="w">               </span>off<span class="p">;</span>
+</span><span id="__span-13-3"><a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">    </span>proxy_buffering<span class="w">           </span>off<span class="p">;</span>
+</span><span id="__span-13-4"><a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">    </span>proxy_http_version<span class="w"> </span><span class="m">1</span>.1<span class="p">;</span>
+</span><span id="__span-13-5"><a id="__codelineno-13-5" name="__codelineno-13-5" href="#__codelineno-13-5"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Upgrade<span class="w"> </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+</span><span id="__span-13-6"><a id="__codelineno-13-6" name="__codelineno-13-6" href="#__codelineno-13-6"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Connection<span class="w"> </span><span class="s2">&quot;upgrade&quot;</span><span class="p">;</span>
+</span><span id="__span-13-7"><a id="__codelineno-13-7" name="__codelineno-13-7" href="#__codelineno-13-7"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Host<span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+</span><span id="__span-13-8"><a id="__codelineno-13-8" name="__codelineno-13-8" href="#__codelineno-13-8"></a><span class="w">    </span>chunked_transfer_encoding<span class="w"> </span>off<span class="p">;</span>
+</span><span id="__span-13-9"><a id="__codelineno-13-9" name="__codelineno-13-9" href="#__codelineno-13-9"></a><span class="w">    </span>proxy_pass<span class="w"> </span>http:/YOUR_UPSTREA_BACKEND<span class="p">;</span>
+</span><span id="__span-13-10"><a id="__codelineno-13-10" name="__codelineno-13-10" href="#__codelineno-13-10"></a><span class="w">  </span><span class="o">}</span>
+</span></code></pre></div>
+<h2 id="c-how-to-persist-data"><strong>C. How to persist data</strong></h2>
+<p>The default for OpenCTI data is to be persistent.</p>
+<p>If you do not wish the data to persist:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-14-1"><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>$<span class="w"> </span>mv<span class="w"> </span>docker-compose.override.no-persist.yml<span class="w"> </span>docker-compose.override.yml
+</span></code></pre></div>
+<hr />
+<h2 id="d-memory-configuration-additional-information"><strong>D. Memory configuration: additional information</strong></h2>
+<h3 id="opencti-platform">OpenCTI - Platform</h3>
+<p>OpenCTI platform is based on a NodeJS runtime, with a memory limit of <strong>8GB by default</strong>. If you encounter <code>OutOfMemory</code> exceptions, this limit could be changed:</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-15-1"><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">NODE_OPTIONS=--max-old-space-size=8096</span>
+</span></code></pre></div>
+<h3 id="opencti-workers-and-connectors">OpenCTI - Workers and connectors</h3>
+<p>OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process, we recommend to directly use Docker to do that. You can find more information in the <a href="https://docs.docker.com/compose/compose-file/">official Docker documentation</a>.</p>
+<aside>
+💡 If you do not use Docker stack, consider using the `--compatibility` option.
+
+</aside>
+
+<h3 id="elasticsearch">ElasticSearch</h3>
+<p>ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable <code>ES_JAVA_OPTS</code>.</p>
+<aside>
+💡 The minimal recommended option today is `-Xms8G -Xmx8G`
+
+</aside>
+
+<p>You can find more information in the <a href="https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html">official ElasticSearch documentation</a>.</p>
+<h3 id="redis">Redis</h3>
+<p>Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions</p>
+<aside>
+💡 With 2 million of events in the stream, the memory footprint will be around `8G`
+
+</aside>
+
+<p>You can find more information in the <a href="https://hub.docker.com/r/bitnami/redis/">Redis docker hub</a>.</p>
+<h3 id="minio">MinIO</h3>
+<p>MinIO is a small process and does not require a high amount of memory. More information are available for Linux here on the <a href="https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning">Kernel tuning guide</a>.</p>
+<h3 id="rabbitmq">RabbitMQ</h3>
+<p>The RabbitMQ memory configuration can be find in the <a href="https://www.rabbitmq.com/memory.html">RabbitMQ official documentation</a>. RabbitMQ will consumed memory until a specific threshold, therefore it should be configure along with the Docker memory limitation.</p>
+<h2 id="e-load-balancing">E. Load-balancing</h2>
+<p>Ingesting lots of data from connectors can cause the OpenCTI platform to slow down and make it difficult for analysts to use the platform properly for their work. A simple way of solving this issue is to have 2 parallel OpenCTI platform containers running at the same time and to distribute the workload between them.</p>
+<ol>
+<li>OpenCTI container #1 is the responsible go-to address for all connectors for ingesting data</li>
+<li>OpenCTI container #2 is the analysts’ UI interface for their research</li>
+</ol>
+<p>Since both OpenCTI containers are using the same backend infrastructure, both platforms are able to access the same data while balancing the workload between them.</p>
+<h2 id="f-updating-opencti-containers">F. Updating OpenCTI containers</h2>
+<p>Before applying this procedure, please update your <code>docker-compose.yml</code> file with the new version number of container images.</p>
+<h3 id="using-single-node-docker_1">Using single node Docker</h3>
+<h3 id="using-docker-swarm_1">Using Docker swarm</h3>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-16-1"><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>$<span class="w"> </span>docker-compose<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<p>For each of services, you have to run the following command:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-17-1"><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>$<span class="w"> </span>docker<span class="w"> </span>service<span class="w"> </span>update<span class="w"> </span>--force<span class="w"> </span>service_name
+</span></code></pre></div>
+<h2 id="g-deployment-behind-a-reverse-proxy">G. Deployment behind a reverse proxy</h2>
+<p>If you want to use OpenCTI behind a reverse proxy with a context path, like <code>https://myproxy.com/opencti</code>, please change the <code>base_path</code> configuration.</p>
+<div class="language-yaml highlight"><pre><span></span><code><span id="__span-18-1"><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP__BASE_PATH=/opencti</span>
+</span></code></pre></div>
+<p>By default OpenCTI use websockets and SSE so don't forget to configure your proxy for this usage, an example with <code>Nginx</code>:</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-19-1"><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a>location<span class="w"> </span>/<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-19-2"><a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a><span class="w">    </span>proxy_cache<span class="w">               </span>off<span class="p">;</span>
+</span><span id="__span-19-3"><a id="__codelineno-19-3" name="__codelineno-19-3" href="#__codelineno-19-3"></a><span class="w">    </span>proxy_buffering<span class="w">           </span>off<span class="p">;</span>
+</span><span id="__span-19-4"><a id="__codelineno-19-4" name="__codelineno-19-4" href="#__codelineno-19-4"></a><span class="w">    </span>proxy_http_version<span class="w"> </span><span class="m">1</span>.1<span class="p">;</span>
+</span><span id="__span-19-5"><a id="__codelineno-19-5" name="__codelineno-19-5" href="#__codelineno-19-5"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Upgrade<span class="w"> </span><span class="nv">$http_upgrade</span><span class="p">;</span>
+</span><span id="__span-19-6"><a id="__codelineno-19-6" name="__codelineno-19-6" href="#__codelineno-19-6"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Connection<span class="w"> </span><span class="s2">&quot;upgrade&quot;</span><span class="p">;</span>
+</span><span id="__span-19-7"><a id="__codelineno-19-7" name="__codelineno-19-7" href="#__codelineno-19-7"></a><span class="w">    </span>proxy_set_header<span class="w"> </span>Host<span class="w"> </span><span class="nv">$host</span><span class="p">;</span>
+</span><span id="__span-19-8"><a id="__codelineno-19-8" name="__codelineno-19-8" href="#__codelineno-19-8"></a><span class="w">    </span>chunked_transfer_encoding<span class="w"> </span>off<span class="p">;</span>
+</span><span id="__span-19-9"><a id="__codelineno-19-9" name="__codelineno-19-9" href="#__codelineno-19-9"></a><span class="w">    </span>proxy_pass<span class="w"> </span>http://YOUR_UPSTREAM_BACKEND<span class="p">;</span>
+</span><span id="__span-19-10"><a id="__codelineno-19-10" name="__codelineno-19-10" href="#__codelineno-19-10"></a><span class="w">  </span><span class="o">}</span>
+</span></code></pre></div>
+<h1 id="community-additions">Community Additions</h1>
+<h2 id="setup-with-caddy-server-thanks-to-sukesh-ak">Setup with Caddy Server (thanks to @<a href="https://github.com/sukesh-ak">sukesh-ak</a>)</h2>
+<p>Setup and automate <strong>FREE</strong> valid SSL for OpenCTI, using an OpenSource project called <a href="https://caddyserver.com/">Caddy Server</a> with very minimal effort.</p>
+<h3 id="about-caddy"><strong>About Caddy</strong></h3>
+<p>Caddy 2 is a powerful, enterprise-ready, open source web server with <strong>automatic HTTPS</strong> written in Go. Caddy works well as a direct install and also using Docker.</p>
+<h3 id="using-docker_1"><strong>Using Docker</strong></h3>
+<p>OpenCTI runs all its components in individual containers. For accessing the WebUI, by default it exposes opencti service on port 8080 locally.</p>
+<p>It’s easy to setup reverse proxy with FREE SSL using Caddy with very minimal effort. So lets check the steps for setting it up</p>
+<ul>
+<li>Configure DNS with A record pointing to your OpenCTI public IP address</li>
+<li>Create a base folder for config file <code>'Caddyfile'</code></li>
+<li>Create a <code>docker-compose</code> file for Caddy</li>
+<li>Create a container using <code>docker-compose run</code></li>
+</ul>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-20-1"><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="c1"># Create a DNS A/AAAA record pointing your domain to the public IP address</span>
+</span><span id="__span-20-2"><a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>$<span class="w"> </span>cti.domain.com<span class="w">  </span>A<span class="w">  </span>&lt;public-IP-address-for-OpenCTI-instance&gt;
+</span></code></pre></div>
+<p>Make sure to wait for the DNS record to complete propagation (depending on TTL). Otherwise automatic SSL creation would not work.</p>
+<p>Caddy uses 2 volumes for data (storing certificates etc) &amp; config.Create a file called <code>'Caddyfile'</code> in the local folder for configuration, which will be mapped to <code>/etc/caddy/Caddyfile</code> through docker-compose file as below.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-21-1"><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a><span class="c1"># /etc/caddy/Caddyfile</span>
+</span><span id="__span-21-2"><a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>cti.domain.com<span class="w"> </span><span class="o">{</span>
+</span><span id="__span-21-3"><a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a><span class="w">    </span>reverse_proxy<span class="w"> </span>http://opencti:8080
+</span><span id="__span-21-4"><a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a><span class="o">}</span>
+</span></code></pre></div>
+<aside>
+💡 Port 80 mapping is not necessary but it helps in automatic redirection if clients try the HTTP url.
+
+</aside>
+
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-22-1"><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a><span class="c1"># **docker-compose-caddy.yml** </span>
+</span><span id="__span-22-2"><a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a><span class="w"> </span>version:<span class="w"> </span><span class="s2">&quot;3.7&quot;</span>
+</span><span id="__span-22-3"><a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a><span class="w">    </span>services:
+</span><span id="__span-22-4"><a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a><span class="w">      </span>caddy:
+</span><span id="__span-22-5"><a id="__codelineno-22-5" name="__codelineno-22-5" href="#__codelineno-22-5"></a><span class="w">        </span>image:<span class="w"> </span>caddy
+</span><span id="__span-22-6"><a id="__codelineno-22-6" name="__codelineno-22-6" href="#__codelineno-22-6"></a><span class="w">        </span>restart:<span class="w"> </span>unless-stopped
+</span><span id="__span-22-7"><a id="__codelineno-22-7" name="__codelineno-22-7" href="#__codelineno-22-7"></a><span class="w">        </span>ports:
+</span><span id="__span-22-8"><a id="__codelineno-22-8" name="__codelineno-22-8" href="#__codelineno-22-8"></a><span class="w">          </span>-<span class="w"> </span><span class="s2">&quot;80:80&quot;</span>
+</span><span id="__span-22-9"><a id="__codelineno-22-9" name="__codelineno-22-9" href="#__codelineno-22-9"></a><span class="w">          </span>-<span class="w"> </span><span class="s2">&quot;443:443&quot;</span>
+</span><span id="__span-22-10"><a id="__codelineno-22-10" name="__codelineno-22-10" href="#__codelineno-22-10"></a><span class="w">            </span>volumes:
+</span><span id="__span-22-11"><a id="__codelineno-22-11" name="__codelineno-22-11" href="#__codelineno-22-11"></a><span class="w">          </span>-<span class="w"> </span>./Caddyfile:/etc/caddy/Caddyfile
+</span><span id="__span-22-12"><a id="__codelineno-22-12" name="__codelineno-22-12" href="#__codelineno-22-12"></a><span class="w">          </span>-<span class="w"> </span>caddy_data:/data
+</span><span id="__span-22-13"><a id="__codelineno-22-13" name="__codelineno-22-13" href="#__codelineno-22-13"></a><span class="w">          </span>-<span class="w"> </span>caddy_config:/config
+</span><span id="__span-22-14"><a id="__codelineno-22-14" name="__codelineno-22-14" href="#__codelineno-22-14"></a>
+</span><span id="__span-22-15"><a id="__codelineno-22-15" name="__codelineno-22-15" href="#__codelineno-22-15"></a>networks:
+</span><span id="__span-22-16"><a id="__codelineno-22-16" name="__codelineno-22-16" href="#__codelineno-22-16"></a><span class="w">  </span>default:
+</span><span id="__span-22-17"><a id="__codelineno-22-17" name="__codelineno-22-17" href="#__codelineno-22-17"></a><span class="w">    </span>external:<span class="w"> </span><span class="nb">true</span>
+</span><span id="__span-22-18"><a id="__codelineno-22-18" name="__codelineno-22-18" href="#__codelineno-22-18"></a><span class="w">    </span>name:<span class="w"> </span>&lt;your<span class="w"> </span>OpenCTI<span class="w"> </span>network<span class="w"> </span>name&gt;
+</span><span id="__span-22-19"><a id="__codelineno-22-19" name="__codelineno-22-19" href="#__codelineno-22-19"></a>
+</span><span id="__span-22-20"><a id="__codelineno-22-20" name="__codelineno-22-20" href="#__codelineno-22-20"></a>volumes:
+</span><span id="__span-22-21"><a id="__codelineno-22-21" name="__codelineno-22-21" href="#__codelineno-22-21"></a><span class="w">  </span>caddy_data:
+</span><span id="__span-22-22"><a id="__codelineno-22-22" name="__codelineno-22-22" href="#__codelineno-22-22"></a><span class="w">  </span>caddy_config:
+</span></code></pre></div>
+<p>Since you are running Caddy in docker, you need to make it part of OpenCTI network. Reverse proxy takes care of everything else. This also means you don't need to expose OpenCTI <code>8080</code> port outside the container. So you can remove <code>-port</code> setting in OpenCTI <code>docker-compose</code> file.</p>
+<p>Now just get it running and Caddy will request and get SSL certificate automagically for your domain.</p>
+<div class="language-bash highlight"><pre><span></span><code><span id="__span-23-1"><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a>docker-compose<span class="w"> </span>-f<span class="w"> </span>docker-compose-caddy.yml<span class="w"> </span>up<span class="w"> </span>-d
+</span></code></pre></div>
+<h3 id="resources"><strong>Resources</strong></h3>
+<p>How Caddy automatic SSL works <a href="https://caddyserver.com/docs/automatic-https">https://caddyserver.com/docs/automatic-https</a></p>
+<p>Using Caddy with Load Balancer <a href="https://caddy.community/t/load-balancing-caddy/10467">https://caddy.community/t/load-balancing-caddy/10467</a></p>
 
   
     
@@ -1351,7 +1967,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-07T17:22:28+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-07</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-07T18:03:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-07</span>
       </span>
     
     
@@ -1418,6 +2034,21 @@
             </div>
           </a>
         
+        
+          
+          <a href="../configuration/" class="md-footer__link md-footer__link--next" aria-label="Next: Configuration" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Configuration
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
         
       </nav>
     

@@ -6,6 +6,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.6/deployment/configuration/</loc>
+         <lastmod>2023-05-07</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.6/deployment/installation/</loc>
          <lastmod>2023-05-07</lastmod>
          <changefreq>daily</changefreq>
