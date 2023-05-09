@@ -66,12 +66,12 @@ export const useYupSchemaBuilder = <TNextShape extends ObjectShape>(
       .map((attrName: string) => {
         if (existingKeys.includes(attrName)) {
           const validator = (existingShape[attrName] as AnySchema)
-            .transform((v) => (!v || (Array.isArray(v) && v.length === 0) ? undefined : v))
+            .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
             .required(t('This field is required'));
           return [attrName, validator];
         }
         const validator = Yup.mixed()
-          .transform((v) => (!v || (Array.isArray(v) && v.length === 0) ? undefined : v))
+          .transform((v) => ((Array.isArray(v) && v.length === 0) ? undefined : v))
           .required(t('This field is required'));
         return [attrName, validator];
       }),

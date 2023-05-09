@@ -8712,6 +8712,7 @@ export type IndicatorsFiltering = {
 export enum IndicatorsOrdering {
   Confidence = 'confidence',
   Created = 'created',
+  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   IndicatorTypes = 'indicator_types',
@@ -20610,6 +20611,7 @@ export enum StixDomainObjectsFilter {
   Priority = 'priority',
   Published = 'published',
   ReportTypes = 'report_types',
+  Revoked = 'revoked',
   Severity = 'severity',
   ValidFrom = 'valid_from',
   ValidUntil = 'valid_until',
