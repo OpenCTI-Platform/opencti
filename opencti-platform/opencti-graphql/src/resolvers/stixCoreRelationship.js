@@ -25,7 +25,6 @@ import {
   stixCoreRelationshipsExportAsk,
   stixCoreRelationshipsExportPush,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsDistribution,
   stixCoreRelationshipsNumber,
 } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
