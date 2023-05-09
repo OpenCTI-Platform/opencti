@@ -73,8 +73,8 @@ const eventMutation = graphql`
     eventAdd(input: $input) {
       id
       name
-      entity_type
       description
+      entity_type
       parent_types
       ...EventLine_node
     }

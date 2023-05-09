@@ -80,15 +80,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const opinionCreationUserMutation = graphql`
-    mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
-        userOpinionAdd(input: $input) {
-            id
-            entity_type
-            opinion
-            explanation
-            ...OpinionLine_node
-        }
+  mutation OpinionCreationUserMutation($input: OpinionUserAddInput!) {
+    userOpinionAdd(input: $input) {
+      id
+      entity_type
+      parent_types
+      opinion
+      explanation
+      ...OpinionLine_node
     }
+  }
 `;
 
 export const opinionCreationMutation = graphql`

@@ -79,10 +79,10 @@ const caseRftMutation = graphql`
   mutation CaseRftCreationCaseMutation($input: CaseRftAddInput!) {
     caseRftAdd(input: $input) {
       id
+      entity_type
       parent_types
       name
       description
-      entity_type
       ...CaseRftLineCase_node
     }
   }

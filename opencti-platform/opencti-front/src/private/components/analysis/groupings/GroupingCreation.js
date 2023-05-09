@@ -89,8 +89,9 @@ const groupingMutation = graphql`
     groupingAdd(input: $input) {
       id
       name
-      entity_type
       description
+      entity_type
+      parent_types
       ...GroupingLine_node
     }
   }

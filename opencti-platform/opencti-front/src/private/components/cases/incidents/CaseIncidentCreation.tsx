@@ -79,10 +79,10 @@ const caseIncidentMutation = graphql`
   mutation CaseIncidentCreationCaseMutation($input: CaseIncidentAddInput!) {
     caseIncidentAdd(input: $input) {
       id
+      entity_type
       parent_types
       name
       description
-      entity_type
       response_types
       ...CaseIncidentLineCase_node
     }

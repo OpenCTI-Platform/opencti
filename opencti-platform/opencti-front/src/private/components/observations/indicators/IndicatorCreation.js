@@ -81,8 +81,9 @@ const indicatorMutation = graphql`
     indicatorAdd(input: $input) {
       id
       name
-      entity_type
       description
+      entity_type
+      parent_types
       ...IndicatorLine_node
     }
   }

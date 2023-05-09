@@ -414,7 +414,6 @@ class StixSightingRelationshipCreationFromEntity extends Component {
     const stixDomainObjectsPaginationOptions = {
       search,
       types: stixCoreObjectTypes,
-      count: 25,
       orderBy: 'created_at',
       orderMode: 'desc',
     };
@@ -425,7 +424,10 @@ class StixSightingRelationshipCreationFromEntity extends Component {
           query={
             stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery
           }
-          variables={stixDomainObjectsPaginationOptions}
+          variables={{
+            count: 25,
+            ...stixDomainObjectsPaginationOptions,
+          }}
           render={({ props }) => {
             if (props) {
               return (
