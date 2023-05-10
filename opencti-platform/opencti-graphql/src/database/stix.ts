@@ -825,6 +825,15 @@ export const stixCoreRelationshipsMapping: RelationshipMappings = {
     { name: RELATION_TARGETS, type: REL_BUILT_IN }
   ],
   // endregion
+  // region Channel
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_VULNERABILITY}`]: [
+    { name: RELATION_TARGETS, type: REL_EXTENDED }
+  ],
+  [`${ENTITY_TYPE_CHANNEL}_${ENTITY_TYPE_MALWARE}`]: [
+    { name: RELATION_DELIVERS, type: REL_BUILT_IN },
+    { name: RELATION_DROPS, type: REL_EXTENDED }
+  ],
+  // endregion
   // Observables
   // region HOSTNAME
   [`${ENTITY_HOSTNAME}_${ENTITY_HASHED_OBSERVABLE_ARTIFACT}`]: [

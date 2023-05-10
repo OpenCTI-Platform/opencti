@@ -166,10 +166,10 @@ class ChannelKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={channel.id}
-                relationshipTypes={['uses']}
+                relationshipTypes={['delivers', 'drops']}
                 stixCoreObjectTypes={['Malware']}
                 entityLink={link}
-                isRelationReversed={true}
+                isRelationReversed={false}
                 {...routeProps}
               />
             )}
@@ -180,7 +180,7 @@ class ChannelKnowledgeComponent extends Component {
             render={(routeProps) => (
               <EntityStixCoreRelationships
                 entityId={channel.id}
-                relationshipTypes={['uses']}
+                relationshipTypes={['targets']}
                 stixCoreObjectTypes={['Vulnerability']}
                 entityLink={link}
                 isRelationReversed={false}
