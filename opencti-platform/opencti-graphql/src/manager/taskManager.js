@@ -65,7 +65,13 @@ import { promoteIndicatorToObservable } from '../domain/indicator';
 import { askElementEnrichmentForConnector } from '../domain/stixCoreObject';
 import { creatorFromHistory } from '../domain/log';
 import { RELATION_GRANTED_TO, RELATION_OBJECT } from '../schema/stixRefRelationship';
-import { ACTION_TYPE_DELETE, ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, TASK_TYPE_LIST } from '../domain/task-common';
+import {
+  ACTION_TYPE_DELETE,
+  ACTION_TYPE_SHARE,
+  ACTION_TYPE_UNSHARE,
+  isTaskEnabledEntity,
+  TASK_TYPE_LIST
+} from '../domain/task-common';
 
 // Task manager responsible to execute long manual tasks
 // Each API will start is task manager.
@@ -158,7 +164,7 @@ const computeListTaskElements = async (context, user, task) => {
   for (let elementId = 0; elementId < ids.length; elementId += 1) {
     const elementToResolve = ids[elementId];
     const element = await internalLoadById(context, user, elementToResolve);
-    if (element) {
+    if (element && isTaskEnabledEntity(element.entity_type)) {
       processingElements.push({ element, next: element.id });
     }
   }

@@ -4,9 +4,9 @@ import { ENTITY_TYPE_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { SYSTEM_USER } from '../utils/access';
-import { RULE_PREFIX } from '../schema/general';
+import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask } from './task-common';
+import { checkActionValidity, createDefaultTask, isTaskEnabledEntity } from './task-common';
 
 export const MAX_TASK_ELEMENTS = 500;
 
@@ -44,7 +44,9 @@ const buildQueryFilters = async (context, rawFilters, search, taskPosition) => {
     for (let index = 0; index < adaptedFilters.length; index += 1) {
       const { key, operator, values } = adaptedFilters[index];
       if (key === TYPE_FILTER) {
-        types.push(...values.map((v) => v.id));
+        // filter types to keep only the ones that can be handled by background tasks
+        const filteredTypes = values.filter((v) => isTaskEnabledEntity(v.id)).map((v) => v.id);
+        types.push(...filteredTypes);
       } else if (key === 'elementId') {
         const nestedElement = [{ key: 'internal_id', values: values.map((v) => v.id) }];
         queryFilters.push({ key: 'connections', nested: nestedElement });
@@ -82,7 +84,7 @@ const buildQueryFilters = async (context, rawFilters, search, taskPosition) => {
   }
   // Avoid empty type which will target internal objects and relationships as well
   if (types.length === 0) {
-    types.push('Stix-Domain-Object');
+    types.push(ABSTRACT_STIX_DOMAIN_OBJECT);
   }
   return {
     types,
