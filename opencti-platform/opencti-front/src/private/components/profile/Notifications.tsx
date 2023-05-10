@@ -126,7 +126,7 @@ const Notifications: FunctionComponent = () => {
               selectAll={selectAll}
               filters={{
                 entity_type: [{ id: 'Notification', value: 'Notification' }],
-                user_id: [{ id: me?.id, value: me?.name }],
+                user_id: [{ id: me.id, value: me.name }],
               }}
             />
           </React.Suspense>
