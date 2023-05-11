@@ -90,6 +90,7 @@ export const noteCreationUserMutation = graphql`
     userNoteAdd(input: $input) {
       id
       entity_type
+      parent_types
       attribute_abstract
       content
       ...NoteLine_node

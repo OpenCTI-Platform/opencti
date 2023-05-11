@@ -78,8 +78,9 @@ const infrastructureMutation = graphql`
     infrastructureAdd(input: $input) {
       id
       name
-      entity_type
       description
+      entity_type
+      parent_types
       ...InfrastructureLine_node
     }
   }

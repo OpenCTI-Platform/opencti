@@ -69,8 +69,9 @@ const individualMutation = graphql`
     individualAdd(input: $input) {
       id
       name
-      entity_type
       description
+      entity_type
+      parent_types
       ...IndividualLine_node
     }
   }
