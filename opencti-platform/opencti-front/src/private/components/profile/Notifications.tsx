@@ -14,10 +14,12 @@ import { NotificationLineDummy } from './notifications/NotificationLine';
 import ToolBar from './notifications/ToolBar';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
+import useAuth from '../../../utils/hooks/useAuth';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-notifications';
 
 const Notifications: FunctionComponent = () => {
+  const { me } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<NotificationsLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY_DATA_SOURCES,
     {
@@ -124,6 +126,7 @@ const Notifications: FunctionComponent = () => {
               selectAll={selectAll}
               filters={{
                 entity_type: [{ id: 'Notification', value: 'Notification' }],
+                user_id: [{ id: me.id, value: me.name }],
               }}
             />
           </React.Suspense>

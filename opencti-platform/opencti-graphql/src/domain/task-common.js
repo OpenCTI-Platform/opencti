@@ -7,6 +7,8 @@ import { KNOWLEDGE_DELETE } from '../schema/general';
 import { ForbiddenAccess } from '../config/errors';
 import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
+import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
+import { isStixCoreObject } from '../schema/stixCoreObject';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const TASK_TYPE_LIST = 'LIST';
@@ -52,4 +54,8 @@ export const createListTask = async (user, input) => {
   const listTask = { ...task, actions, task_ids: ids };
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;
+};
+
+export const isTaskEnabledEntity = (entityType) => {
+  return isStixCoreObject(entityType) || entityType === ENTITY_TYPE_NOTIFICATION;
 };
