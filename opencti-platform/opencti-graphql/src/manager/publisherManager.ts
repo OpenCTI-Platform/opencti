@@ -53,7 +53,8 @@ const processNotificationEvent = async (
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
       const { notification_id, instance, type } = data[index];
-      const event = { operation: type, message: `[${instance.type}] ${(extractStixRepresentative(instance))}`, instance_id: instance.id };
+      const instanceRepresentative = await extractStixRepresentative(context, user, instance);
+      const event = { operation: type, message: `[${instance.type}] ${instanceRepresentative}`, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
         const notificationName = eventNotification.name;

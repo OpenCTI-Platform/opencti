@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { pathOr } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   EntityStixSightingRelationshipLine,
@@ -19,6 +18,7 @@ class EntityStixSightingRelationshipsLines extends Component {
       entityLink,
       paginationOptions,
       isTo,
+      data,
     } = this.props;
     return (
       <ListLinesContent
@@ -26,16 +26,8 @@ class EntityStixSightingRelationshipsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr(
-          [],
-          ['stixSightingRelationships', 'edges'],
-          this.props.data,
-        )}
-        globalCount={pathOr(
-          nbOfRowsToLoad,
-          ['stixSightingRelationships', 'pageInfo', 'globalCount'],
-          this.props.data,
-        )}
+        dataList={data?.stixSightingRelationships.edges ?? []}
+        globalCount={data?.stixSightingRelationships.pageInfo.globalCount ?? nbOfRowsToLoad}
         LineComponent={<EntityStixSightingRelationshipLine />}
         DummyLineComponent={<EntityStixSightingRelationshipLineDummy />}
         dataColumns={dataColumns}

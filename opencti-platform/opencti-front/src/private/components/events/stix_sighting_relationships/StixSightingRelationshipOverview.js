@@ -205,14 +205,20 @@ class StixSightingRelationshipContainer extends Component {
     } = this.props;
     const { from } = stixSightingRelationship;
     const { to } = stixSightingRelationship;
-    const linkFrom = from.relationship_type
-      ? `${resolveLink(from.from.entity_type)}/${
-        from.from.id
-      }/knowledge/relations`
-      : resolveLink(from.entity_type);
-    const linkTo = to.relationship_type
-      ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
-      : resolveLink(to.entity_type);
+    const fromRestricted = from === null;
+    // eslint-disable-next-line no-nested-ternary
+    const linkFrom = from
+      ? from.relationship_type
+        ? `${resolveLink(from.from.entity_type)}/${from.from.id}/knowledge/relations`
+        : resolveLink(from.entity_type)
+      : '';
+    const toRestricted = to === null;
+    // eslint-disable-next-line no-nested-ternary
+    const linkTo = to
+      ? to.relationship_type
+        ? `${resolveLink(to.from.entity_type)}/${to.from.id}/knowledge/relations`
+        : resolveLink(to.entity_type)
+      : '';
     return (
       <div className={classes.container}>
         <Grid
@@ -229,11 +235,13 @@ class StixSightingRelationshipContainer extends Component {
               variant="outlined"
               style={{ position: 'relative' }}
             >
-              <Link to={`${linkFrom}/${from.id}`}>
+              <Link to={!fromRestricted ? `${linkFrom}/${from.id}` : '#'}>
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(from.entity_type)}`,
+                    border: `2px solid ${itemColor(
+                      !fromRestricted ? from.entity_type : 'Restricted',
+                    )}`,
                     top: 20,
                     left: 20,
                   }}
@@ -241,32 +249,41 @@ class StixSightingRelationshipContainer extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(from.entity_type)}`,
+                      borderBottom: `1px solid ${itemColor(
+                        !fromRestricted ? from.entity_type : 'Restricted',
+                      )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={from.entity_type}
-                        color={itemColor(from.entity_type)}
+                        type={!fromRestricted ? from.entity_type : 'Restricted'}
+                        color={itemColor(
+                          !fromRestricted ? from.entity_type : 'Restricted',
+                        )}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {from.relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${from.entity_type}`)}
+                      {/* eslint-disable-next-line no-nested-ternary */}
+                      {!fromRestricted
+                        ? from.relationship_type
+                          ? t('Relationship')
+                          : t(`entity_${from.entity_type}`)
+                        : t('Restricted')}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(
-                        from.name
+                      {!fromRestricted
+                        ? truncate(
+                          from.name
                           || from.observable_value
                           || from.attribute_abstract
                           || from.content
                           || t(`relationship_${from.entity_type}`),
-                        50,
-                      )}
+                          50,
+                        )
+                        : t('Restricted')}
                     </span>
                   </div>
                 </div>
@@ -281,11 +298,13 @@ class StixSightingRelationshipContainer extends Component {
                   label={t('sighted in/at')}
                 />
               </div>
-              <Link to={`${linkTo}/${to.id}`}>
+              <Link to={!toRestricted ? `${linkTo}/${to.id}` : '#'}>
                 <div
                   className={classes.item}
                   style={{
-                    border: `2px solid ${itemColor(to.entity_type)}`,
+                    border: `2px solid ${itemColor(
+                      !toRestricted ? to.entity_type : 'Unknown',
+                    )}`,
                     top: 20,
                     right: 20,
                   }}
@@ -293,32 +312,41 @@ class StixSightingRelationshipContainer extends Component {
                   <div
                     className={classes.itemHeader}
                     style={{
-                      borderBottom: `1px solid ${itemColor(to.entity_type)}`,
+                      borderBottom: `1px solid ${itemColor(
+                        !toRestricted ? to.entity_type : 'Unknown',
+                      )}`,
                     }}
                   >
                     <div className={classes.icon}>
                       <ItemIcon
-                        type={to.entity_type}
-                        color={itemColor(to.entity_type)}
+                        type={!toRestricted ? to.entity_type : 'Unknown'}
+                        color={itemColor(
+                          !toRestricted ? to.entity_type : 'Unknown',
+                        )}
                         size="small"
                       />
                     </div>
                     <div className={classes.type}>
-                      {to.relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${to.entity_type}`)}
+                      {/* eslint-disable-next-line no-nested-ternary */}
+                      {!toRestricted
+                        ? to.relationship_type
+                          ? t('Relationship')
+                          : t(`entity_${to.entity_type}`)
+                        : ('Restricted')}
                     </div>
                   </div>
                   <div className={classes.content}>
                     <span className={classes.name}>
-                      {truncate(
-                        to.name
+                      {!toRestricted
+                        ? truncate(
+                          to.name
                           || to.observable_value
                           || to.attribute_abstract
                           || to.content
                           || t(`relationship_${to.entity_type}`),
-                        50,
-                      )}
+                          50,
+                        )
+                        : t('Restricted')}
                     </span>
                   </div>
                 </div>
