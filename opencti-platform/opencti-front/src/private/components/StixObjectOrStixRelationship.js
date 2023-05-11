@@ -119,15 +119,23 @@ class StixObjectOrStixRelationship extends Component {
                   stixObjectOrStixRelationship.relationship_type
                   === 'stix-sighting-relationship'
                 ) {
-                  redirectLink = !toRestricted
-                    ? `${resolveLink(
+                  if (!toRestricted) {
+                    redirectLink = `${resolveLink(
                       stixObjectOrStixRelationship.to.entity_type,
                     )}/${
                       stixObjectOrStixRelationship.to.id
-                    }/knowledge/sightings/${stixObjectOrStixRelationship.id}`
-                    : undefined;
+                    }/knowledge/sightings/${stixObjectOrStixRelationship.id}`;
+                  } else {
+                    redirectLink = !fromRestricted
+                      ? `${resolveLink(
+                        stixObjectOrStixRelationship.from.entity_type,
+                      )}/${
+                        stixObjectOrStixRelationship.from.id
+                      }/knowledge/sightings/${stixObjectOrStixRelationship.id}`
+                      : undefined;
+                  }
                 } else if (stixObjectOrStixRelationship.relationship_type) {
-                  if (stixObjectOrStixRelationship.from.relationship_type) {
+                  if (stixObjectOrStixRelationship.from?.relationship_type) {
                     redirectLink = !toRestricted
                       ? `${resolveLink(
                         stixObjectOrStixRelationship.to.entity_type,
@@ -135,12 +143,18 @@ class StixObjectOrStixRelationship extends Component {
                         stixObjectOrStixRelationship.to.id
                       }/knowledge/relations/${stixObjectOrStixRelationship.id}`
                       : undefined;
+                  } else if (!fromRestricted) {
+                    redirectLink = `${resolveLink(
+                      stixObjectOrStixRelationship.from.entity_type,
+                    )}/${
+                      stixObjectOrStixRelationship.from.id
+                    }/knowledge/relations/${stixObjectOrStixRelationship.id}`;
                   } else {
-                    redirectLink = !fromRestricted
+                    redirectLink = !toRestricted
                       ? `${resolveLink(
-                        stixObjectOrStixRelationship.from.entity_type,
+                        stixObjectOrStixRelationship.to.entity_type,
                       )}/${
-                        stixObjectOrStixRelationship.from.id
+                        stixObjectOrStixRelationship.to.id
                       }/knowledge/relations/${stixObjectOrStixRelationship.id}`
                       : undefined;
                   }
