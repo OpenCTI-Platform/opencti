@@ -75,7 +75,7 @@ $ pip install -r ./test-requirements.txt
 #### Prerequisite
 
 Your OpenCTI API should be running.
-Your conftest.py should be configured with your API url and your token.
+Your conftest.py should be configured with your API url, your token, and if applicable, your mTLS cert/key.
 
 #### Launching
 

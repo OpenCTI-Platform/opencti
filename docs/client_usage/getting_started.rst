@@ -12,9 +12,13 @@ Using the helper functions
 **************************
 
 The main class :class:`OpenCTIApiClient` contains all what you need to interact
-with the platform, you just have to initialize it. The following example shows
-how you create an indicator in OpenCTI using the python library with TLP marking
-and OpenCTI compatible date format.
+with the platform, you just have to initialize it. If your OpenCTI instance requires mTLS,
+you can specify the paths to your cert and private key in a tuple with the `cert` parameter when
+initializing the `OpenCTIApiClient`. If you need to specify a path to a CA root certificate,
+you can do so with the `ssl_verify` parameter.
+
+The following example shows how you create an indicator in OpenCTI using the python library
+with TLP marking and OpenCTI compatible date format.
 
 .. code-block:: python
 
