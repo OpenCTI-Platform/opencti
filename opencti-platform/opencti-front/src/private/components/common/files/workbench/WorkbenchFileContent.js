@@ -823,52 +823,53 @@ const WorkbenchFileContentComponent = ({
     setContainers(finalContainers);
   };
 
-  const submitDeleteObject = () => {
+  const submitDeleteObject = (obj) => {
+    const toDeleteObject = obj ?? deleteObject;
     let finalStixDomainObjects = stixDomainObjects.filter(
-      (n) => n.id !== deleteObject.id,
+      (n) => n.id !== toDeleteObject.id,
     );
     let finalStixCyberObservables = stixCyberObservables.filter(
-      (n) => n.id !== deleteObject.id,
+      (n) => n.id !== toDeleteObject.id,
     );
     let finalStixCoreRelationships = stixCoreRelationships.filter(
-      (n) => n.id !== deleteObject.id,
+      (n) => n.id !== toDeleteObject.id,
     );
-    let finalContainers = containers.filter((n) => n.id !== deleteObject.id);
-    if (deleteObject.type === 'identity') {
-      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === deleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === deleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === deleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalContainers = finalContainers.map((n) => (n.created_by_ref === deleteObject.id ? R.dissoc('created_by_ref', n) : n));
-    } else if (deleteObject.type === 'marking-definition') {
+    let finalContainers = containers.filter((n) => n.id !== toDeleteObject.id);
+    if (toDeleteObject.type === 'identity') {
+      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
+      finalContainers = finalContainers.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
+    } else if (toDeleteObject.type === 'marking-definition') {
       finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteObject.id),
+        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
         n,
       ));
       finalStixCyberObservables = finalStixCyberObservables.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteObject.id),
+        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
         n,
       ));
       finalStixCoreRelationships = finalStixCoreRelationships.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteObject.id),
+        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
         n,
       ));
       finalContainers = finalContainers.map((n) => R.assoc(
         'object_marking_refs',
-        n.object_marking_refs?.filter((o) => o !== deleteObject.id),
+        n.object_marking_refs?.filter((o) => o !== toDeleteObject.id),
         n,
       ));
     }
     // Impact
     const stixCoreRelationshipsToRemove = finalStixCoreRelationships
-      .filter((n) => n.source_ref === deleteObject.id || n.target_ref === deleteObject.id)
+      .filter((n) => n.source_ref === toDeleteObject.id || n.target_ref === toDeleteObject.id)
       .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
       (n.object_refs || []).filter(
-        (o) => o !== deleteObject.id && !stixCoreRelationshipsToRemove.includes(o),
+        (o) => o !== toDeleteObject.id && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -2646,7 +2647,7 @@ const WorkbenchFileContentComponent = ({
                 classes={{ root: classes.item }}
                 divider
                 button
-                onClick={() => handleToggleContainerSelectObject(object)}
+                onClick={(event) => handleToggleContainerSelectObject(object, event)}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -2807,7 +2808,7 @@ const WorkbenchFileContentComponent = ({
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
                   style={{ minWidth: 40 }}
-                  onClick={() => handleToggleSelectObject(object)}
+                  onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
                     edge="start"
@@ -3047,7 +3048,7 @@ const WorkbenchFileContentComponent = ({
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
                   style={{ minWidth: 40 }}
-                  onClick={() => handleToggleSelectObject(object)}
+                  onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
                     edge="start"
@@ -3296,7 +3297,7 @@ const WorkbenchFileContentComponent = ({
               <ListItemIcon
                 classes={{ root: classes.itemIcon }}
                 style={{ minWidth: 40 }}
-                onClick={() => handleToggleSelectObject(object)}
+                onClick={(event) => handleToggleSelectObject(object, event)}
               >
                 <Checkbox
                   edge="start"
@@ -3481,7 +3482,7 @@ const WorkbenchFileContentComponent = ({
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
                   style={{ minWidth: 40 }}
-                  onClick={() => handleToggleSelectObject(object)}
+                  onClick={(event) => handleToggleSelectObject(object, event)}
                 >
                   <Checkbox
                     edge="start"
