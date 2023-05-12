@@ -117,11 +117,13 @@ class OpenCTIApiClient:
         ssl_verify=False,
         proxies=None,
         json_logging=False,
+        cert=None,
     ):
         """Constructor method"""
 
         # Check configuration
         self.ssl_verify = ssl_verify
+        self.cert = cert
         self.proxies = proxies
         if url is None or len(url) == 0:
             raise ValueError("An URL must be set")
@@ -315,6 +317,7 @@ class OpenCTIApiClient:
                 files=multipart_files,
                 headers=self.request_headers,
                 verify=self.ssl_verify,
+                cert=self.cert,
                 proxies=self.proxies,
             )
         # If no
@@ -324,6 +327,7 @@ class OpenCTIApiClient:
                 json={"query": query, "variables": variables},
                 headers=self.request_headers,
                 verify=self.ssl_verify,
+                cert=self.cert,
                 proxies=self.proxies,
             )
         # Build response
