@@ -111,21 +111,6 @@ export const resolveLink = (type: string): string | null => {
   }
 };
 
-export const typesWithoutName = ['Observed-Data'];
-
-export const typesContainers = [
-  'report',
-  'note',
-  'case',
-  'opinion',
-  'observed-data',
-  'grouping',
-  'feedback',
-  'case-incident',
-  'case-rfi',
-  'case-rft',
-];
-
 export const pascalize = (str: string): string => str.replace(
   /(\w)(\w*)/g,
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),
@@ -173,213 +158,54 @@ export const resolveLocationType = (entity: Record<string, string>): string => {
   return 'Position';
 };
 
-export const ignoredAttributes = [
-  'internal_id',
-  'standard_id',
-  'x_opencti_description',
-  'x_opencti_stix_ids',
-  'entity_type',
-  'spec_version',
-  'extensions',
-  'created',
-  'modified',
-  'created_at',
-  'x_opencti_score',
-  'updated_at',
-  'observable_value',
-  'indicators',
-  'importFiles',
-  'startup_info',
-  'creator_id',
-];
-
-export const workbenchAttributes = [
-  'name',
-  'description',
-  'case_type',
-  'pattern',
-  'x_opencti_description',
-  'first_seen',
-  'last_seen',
-  'start_time',
-  'stop_time',
-  'published',
-  'content',
-];
-
-export const ignoredAttributesInFeeds = [
-  'x_opencti_stix_ids',
-  'spec_version',
-  'extensions',
-  'importFiles',
-];
-
-export const ignoredAttributesInDashboards = [
-  'spec_version',
-  'extensions',
-  'importFiles',
-  'x_opencti_graph_data',
-  'x_opencti_workflow_id',
-  'x_opencti_stix_ids',
-  'creator',
-  'created',
-  'created_at',
-  'modified',
-  'updated_at',
-  'internal_id',
-  'standard_id',
-  'published',
-];
-
-export const dateAttributes = [
-  'ctime',
-  'mtime',
-  'atime',
-  'attribute_date',
-  'validity_not_before',
-  'validity_not_after',
-  'private_key_usage_period_not_before',
-  'private_key_usage_period_not_after',
-  'start',
-  'end',
-  'created_time',
-  'modified_time',
-  'account_created',
-  'account_expires',
-  'credential_last_changed',
-  'account_first_login',
-  'account_last_login',
-  'expiration_date',
-  'publication_date',
-  'first_seen',
-  'last_seen',
-  'published',
-  'start_time',
-  'stop_time',
-];
-
-export const numberAttributes = [
-  'number',
-  'src_port',
-  'dst_port',
-  'src_byte_count',
-  'dst_byte_count',
-  'src_packets',
-  'dst_packets',
-  'pid',
-  'size',
-  'number_of_subkeys',
-  'subject_public_key_exponent',
-  'cvv',
-];
-
-export const booleanAttributes = [
-  'is_self_signed',
-  'is_multipart',
-  'is_hidden',
-  'is_active',
-  'is_disabled',
-  'is_privileged',
-  'is_service_account',
-  'can_escalate_privs',
-  'aslr_enabled',
-  'dep_enabled',
-];
-
-export const multipleAttributes = [
-  'x_opencti_additional_names',
-  'protocols',
-  'descriptions',
-];
-
-export const markdownAttributes = ['description', 'x_opencti_description'];
-
-export const typesWithOpenCTIAliases = [
-  'Course-Of-Action',
-  'Identity',
-  'Individual',
-  'Organization',
-  'Sector',
-  'Position',
-  'Administrative-Area',
-  'Location',
-  'City',
-  'Country',
-  'Region',
-  'Event',
-  'Channel',
-  'Narrative',
-];
-
-export const typesWithoutAliases = [
-  'Indicator',
-  'Vulnerability',
-  'Language',
-  'Grouping',
-  'Report',
-];
-
-// TODO replace this by a proper hook using backend information
-export const stixDomainObjectTypes = [
-  'Stix-Domain-Object',
-  'Threat-Actor',
-  'Intrusion-Set',
-  'Campaign',
-  'Incident',
-  'Malware',
-  'Tool',
-  'Attack-Pattern',
-  'Course-Of-Action',
-  'Data-Component',
-  'Data-Source',
-  'Organization',
-  'Sector',
-  'Position',
-  'Administrative-Area',
-  'Location',
-  'City',
-  'Country',
-  'Region',
-  'Event',
-  'Channel',
-  'Narrative',
-  'Indicator',
-  'Vulnerability',
-  'Language',
-  'Grouping',
-  'Report',
-  'Narrative',
-  'Channel',
-];
-
-export const stixCyberObservableTypes = [
-  'Stix-Cyber-Observable',
-  'Autonomous-System',
-  'Directory',
-  'Domain-Name',
-  'Email-Addr',
-  'Email-Message',
-  'Email-Mime-Part-Type',
-  'StixFile',
-  'X509-Certificate',
-  'IPv4-Addr',
-  'IPv6-Addr',
-  'Mac-Addr',
-  'Mutex',
-  'Network-Traffic',
-  'Process',
-  'Software',
-  'Url',
-  'User-Account',
-  'Windows-Registry-Key',
-  'Windows-Registry-Value-Type',
-  'Cryptographic-Key',
-  'Cryptocurrency-Wallet',
-  'Hostname',
-  'Text',
-  'User-Agent',
-  'Bank-Account',
-  'Phone-Number',
-  'Payment-Card',
-  'Media-Content',
-];
+const hashes = ['SHA-512', 'SHA-256', 'SHA-1', 'MD5'];
+export const hashValue = (stixCyberObservable: Record<string, never>) => {
+  if (stixCyberObservable.hashes) {
+    for (let index = 0; index < hashes.length; index += 1) {
+      const algo = hashes[index];
+      if (stixCyberObservable.hashes[algo]) {
+        return stixCyberObservable.hashes[algo];
+      }
+    }
+  }
+  return null;
+};
+// TODO for now this list is duplicated in back, think about updating it aswell
+export const observableValue = (stixCyberObservable: Record<string, never>) => {
+  switch ((stixCyberObservable.entity_type as string).toLowerCase()) {
+    case 'Autonomous-System'.toLowerCase():
+      return stixCyberObservable.name || stixCyberObservable.number || 'Unknown';
+    case 'Directory'.toLowerCase():
+      return stixCyberObservable.path || 'Unknown';
+    case 'Email-Message'.toLowerCase():
+      return stixCyberObservable.body || stixCyberObservable.subject;
+    case 'Artifact'.toLowerCase():
+      return hashValue(stixCyberObservable) || stixCyberObservable.payload_bin || stixCyberObservable.url || 'Unknown';
+    case 'StixFile'.toLowerCase():
+      return hashValue(stixCyberObservable) || stixCyberObservable.name || 'Unknown';
+    case 'X509-Certificate'.toLowerCase():
+      return hashValue(stixCyberObservable) || stixCyberObservable.subject || stixCyberObservable.issuer || 'Unknown';
+    case 'Mutex'.toLowerCase():
+      return stixCyberObservable.name || 'Unknown';
+    case 'Network-Traffic'.toLowerCase():
+      return stixCyberObservable.dst_port || 'Unknown';
+    case 'Process'.toLowerCase():
+      return stixCyberObservable.pid || stixCyberObservable.command_line || 'Unknown';
+    case 'Software'.toLowerCase():
+      return stixCyberObservable.name || 'Unknown';
+    case 'User-Account'.toLowerCase():
+      return stixCyberObservable.account_login || stixCyberObservable.user_id || 'Unknown';
+    case 'Bank-Account'.toLowerCase():
+      return stixCyberObservable.iban || stixCyberObservable.number || 'Unknown';
+    case 'Payment-Card'.toLowerCase():
+      return stixCyberObservable.card_number || stixCyberObservable.holder_name || 'Unknown';
+    case 'Windows-Registry-Key'.toLowerCase():
+      return stixCyberObservable.attribute_key || 'Unknown';
+    case 'Windows-Registry-Value-Type'.toLowerCase():
+      return stixCyberObservable.name || stixCyberObservable.data || 'Unknown';
+    case 'Media-Content'.toLowerCase():
+      return stixCyberObservable.content || stixCyberObservable.title || stixCyberObservable.url || 'Unknown';
+    default:
+      return stixCyberObservable.value || stixCyberObservable.name || 'Unknown';
+  }
+};

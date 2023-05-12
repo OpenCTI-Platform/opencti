@@ -20,7 +20,7 @@ import {
 } from '../../../../components/Subscription';
 import CreatedByField from '../form/CreatedByField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
-import { typesWithoutName } from '../../../../utils/Entity';
+import { typesWithoutName } from '../../../../utils/hooks/useAttributes';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';

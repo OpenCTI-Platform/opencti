@@ -54,12 +54,12 @@ import Select from '@mui/material/Select';
 import Tooltip from '@mui/material/Tooltip';
 import Transition from '../../../../components/Transition';
 import { useFormatter } from '../../../../components/i18n';
+import { ignoredAttributesInDashboards } from '../../../../utils/hooks/useAttributes';
 import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import { capitalizeFirstLetter, truncate } from '../../../../utils/String';
 import { QueryRenderer } from '../../../../relay/environment';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
-import { ignoredAttributesInDashboards } from '../../../../utils/Entity';
 import { isNotEmptyField } from '../../../../utils/utils';
 
 const useStyles = makeStyles((theme) => ({

@@ -26,9 +26,9 @@ import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import SwitchField from '../../../../components/SwitchField';
+import useAttributes from '../../../../utils/hooks/useAttributes';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
-import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';
@@ -171,6 +171,8 @@ const FeedCreation = (props) => {
   const [selectedTypes, setSelectedTypes] = useState([]);
   const [filters, setFilters] = useState({});
   const [feedAttributes, setFeedAttributes] = useState({ 0: {} });
+
+  const { ignoredAttributesInFeeds } = useAttributes();
 
   const handleOpen = () => {
     setOpen(true);

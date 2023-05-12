@@ -27,7 +27,7 @@ import ContainerAddStixCoreObjectsLines, {
 } from './ContainerAddStixCoreObjectsLines';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import StixCyberObservableCreation from '../../observations/stix_cyber_observables/StixCyberObservableCreation';
-import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/Entity';
+import { stixCyberObservableTypes, stixDomainObjectTypes } from '../../../../utils/hooks/useAttributes';
 
 const styles = (theme) => ({
   drawerPaper: {

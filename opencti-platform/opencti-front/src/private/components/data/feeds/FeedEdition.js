@@ -26,7 +26,7 @@ import SwitchField from '../../../../components/SwitchField';
 import { stixCyberObservablesLinesAttributesQuery } from '../../observations/stix_cyber_observables/StixCyberObservablesLines';
 import Filters from '../../common/lists/Filters';
 import { feedCreationAllTypesQuery } from './FeedCreation';
-import { ignoredAttributesInFeeds } from '../../../../utils/Entity';
+import { ignoredAttributesInFeeds } from '../../../../utils/hooks/useAttributes';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { isNotEmptyField } from '../../../../utils/utils';

@@ -85,8 +85,13 @@ const useVocabularyCategory = () => {
   const isVocabularyField = (entityType: string, field: string): boolean => {
     return fieldToCategory(entityType, field) !== undefined;
   };
+
+  const allFields = data.vocabularyCategories.flatMap((vc) => vc.fields);
+
   return {
     categories,
+    fields: allFields.map(({ key }) => key),
+    getFieldDefinition: (f: string) => allFields.find(({ key }) => f === key),
     isVocabularyField,
     fieldToCategory,
     typeToCategory,
