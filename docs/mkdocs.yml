@@ -116,6 +116,9 @@ nav:
       - Notifications and alerting: usage/notifications.md
       - Custom dashboards: usage/dashboards.md
       - Investigations: usage/investigations.md
+    - Activities:
+      - Import from documents: usage/documents.md
+      - Managing duplicates: usage/duplicates.md    
   - Administration:
     - General:
       - Parameters: administration/parameters.md
@@ -125,6 +128,12 @@ nav:
       - Authentication and RBAC: administration/rbac.md
       - Data segregation: administration/segregation.md
       - Audit and monitoring: administration/audit.md
+    - Troubleshooting: administration/troubleshooting.md
   - Reference:
     - Data model: reference/data-model.md
+    - GraphQL API: reference/api.md
+    - Events streaming: reference/streaming.md
     - Security: reference/security.md
+  - Development:
+    - Environment setup: development/environment.md
+    - Connector development: development/connector.md

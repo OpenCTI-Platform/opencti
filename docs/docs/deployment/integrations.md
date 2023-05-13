@@ -1,1 +1,1 @@
-# Intezgrations
+# Integrations
