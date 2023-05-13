@@ -3,7 +3,7 @@
 </h1>
 <p align="center">
   <a href="https://www.opencti.io" alt="Website"><img src="https://img.shields.io/badge/website-opencti.io-blue.svg" /></a>
-  <a href="https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518" alt="Documentation"><img src="https://img.shields.io/badge/Documentation-Notion-orange.svg" /></a>
+  <a href="https://docs.opencti.io" alt="Documentation"><img src="https://img.shields.io/badge/documentation-latest-orange.svg" /></a>
   <a href="https://community.filigran.io" alt="Slack"><img src="https://img.shields.io/badge/slack-3K%2B%20members-4A154B" /></a>
   <a href="https://drone.opencti.io/OpenCTI-Platform/opencti"><img src="https://drone.opencti.io/api/badges/OpenCTI-Platform/opencti/status.svg" /></a>
   <a href="https://codecov.io/gh/OpenCTI-Platform/opencti"><img src="https://codecov.io/gh/OpenCTI-Platform/opencti/graph/badge.svg" /></a>
@@ -17,7 +17,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 
 The structuration of the data is performed using a knowledge schema based on the [STIX2 standards](https://oasis-open.github.io/cti-documentation/). It has been designed as a modern web application including a [GraphQL API](https://graphql.org) and an UX oriented frontend. Also, OpenCTI can be integrated with other tools and applications such as [MISP](https://github.com/MISP/MISP), [TheHive](https://github.com/TheHive-Project/TheHive), [MITRE ATT&CK](https://github.com/mitre/cti), etc.
 
-![Screenshot](https://www.opencti.io/wp-content/uploads/2022/02/screenshot.png "Screenshot")
+![Screenshot](https://www.filigran.io/wp-content/uploads/2022/08/dashboard.png "Screenshot")
 
 ## Objective
 
@@ -25,7 +25,7 @@ The goal is to create a comprehensive tool allowing users to capitalize technica
 
 Once data has been capitalized and processed by the analysts within OpenCTI, new relations may be inferred from existing ones to facilitate the understanding and the representation of this information. This allows the user to extract and leverage meaningful knowledge from the raw data.
 
-OpenCTI not only allows [imports](https://filigran.notion.site/Import-Export-7dc143dfbb6147b0881080487ed9db33#4ffd142e88ad489abc3370ea8f738a82) but also [exports of data](https://filigran.notion.site/Import-Export-7dc143dfbb6147b0881080487ed9db33#8dfec135e334415fb18f1f169fe89804) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are currently developed to accelerate interactions between the tool and other platforms.
+OpenCTI not only allows [imports](https://docs.opencti.io/latest/usage/import-export) but also [exports of data](https://docs.opencti.io/latest/usage/import-export) under different formats (CSV, STIX2 bundles, etc.). [Connectors](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76) are currently developed to accelerate interactions between the tool and other platforms.
 
 ## Editions of the platform
 
@@ -38,7 +38,7 @@ To understand what OpenCTI Enterprise Edition brings in terms of features, just 
 
 ## Documentation and demonstration
 
-If you want to know more on OpenCTI, you can read the [documentation on the tool](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintained by the OpenCTI developers.
+If you want to know more on OpenCTI, you can read the [documentation on the tool](https://docs.opencti.io). If you wish to discover how the OpenCTI platform is working, a [demonstration instance](https://demo.opencti.io) is available and open to everyone. This instance is reset every night and is based on reference data maintained by the OpenCTI developers.
 
 ## Releases download
 
@@ -46,11 +46,12 @@ The releases are available on the [Github releases page](https://github.com/Open
 
 ## Installation
 
-All you need to install the OpenCTI platform can be found in the [official documentation](https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518). For installation, you can:
+All you need to install the OpenCTI platform can be found in the [official documentation](https://docs.opencti.io). For installation, you can:
 
-* [Use Docker](https://filigran.notion.site/Using-Docker-03d5c0592b9d4547800cc9f4ff7be2b8) (recommended)
-* [Use Terraform or Helm-Chart](https://filigran.notion.site/Using-Terraform-or-Helm-Chart-Community-Version-05e38d1046f34b998a0bd2873537f8f0) (Community Version)
-* [Install manually](https://filigran.notion.site/Manual-deployment-b911beba44234f179841582ab3894bb1)
+* [Use Docker](https://docs.opencti.io/latest/deployment/installation/#using-docker)
+* [Use Terraform](https://docs.opencti.io/latest/deployment/installation/#using-terraform)
+* [Use Helm charts](https://docs.opencti.io/latest/deployment/installation/#using-helm-charts)
+* [Install manually](https://docs.opencti.io/latest/deployment/installation/#install-manually)
 
 ## Contributing
 
@@ -68,7 +69,7 @@ To help you get you familiar with our contribution process, we have a list of [b
 
 ### Development
 
-If you want to actively help OpenCTI, we created a [dedicated documentation](https://filigran.notion.site/Environment-setup-606996f36d904fcf8d434c6d0eae4a00) about the deployment of a development environment and how to start the source code modification.
+If you want to actively help OpenCTI, we created a [dedicated documentation](https://docs.opencti.io/latest/development/environment) about the deployment of a development environment and how to start the source code modification.
 
 ## Community
 
