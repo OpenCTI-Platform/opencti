@@ -1,5 +1,8 @@
 # OpenCTI Documentation Space
 
+[![Website](https://img.shields.io/badge/website-opencti.io-blue.svg)](https://www.opencti.io)
+[![Slack Status](https://img.shields.io/badge/slack-3K%2B%20members-4A154B)](https://community.filigran.io)
+
 ## Introduction
 
 This is the main repository of the OpenCTI Documentation space. The online version is available directly on [docs.opencti.io](https://docs.opencti.io).

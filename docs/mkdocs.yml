@@ -136,4 +136,4 @@ nav:
     - Security: reference/security.md
   - Development:
     - Environment setup: development/environment.md
-    - Connector development: development/connector.md
+    - Connectors development: development/connectors.md
