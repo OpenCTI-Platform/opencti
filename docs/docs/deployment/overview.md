@@ -58,4 +58,4 @@ The connectors are third-party pieces of software (Python processes) that can pl
 
 !!! note "Clustering"
     
-    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](administration/cluster).
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](deployment/clustering).

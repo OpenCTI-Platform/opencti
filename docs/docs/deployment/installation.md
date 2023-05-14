@@ -6,6 +6,8 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
     
     For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
 
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](deployment/clustering).
+
 <div class="grid cards" markdown>
 
 -   :simple-docker:{ .lg .middle } __Use Docker__
@@ -22,7 +24,7 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
     ---
 
     Deploy dependencies and launch the platform manually using the packages
-    released in the [Github releases](https://github.com/OpenCTI-Platform/opencti/releases).
+    released in the [GitHub releases](https://github.com/OpenCTI-Platform/opencti/releases).
 
     [:octicons-arrow-right-24:{ .middle } Explore](#manual-installation)
 </div>
@@ -46,6 +48,8 @@ $ sudo apt install docker-compose
 Just download the appropriate [Docker for Desktop](https://www.docker.com/products/docker-desktop) version for your operating system.
 
 ### Clone the repository
+
+Docker helpers are available in the [Docker GitHub repository](https://github.com/OpenCTI-Platform/docker).
 
 ```bash
 $ mkdir -p /path/to/your/app && cd /path/to/your/app
@@ -245,6 +249,42 @@ $ python3 worker.py &
     You can now go to [http://localhost:4000](http://localhost:4000) and log in with the credentials configured in your `production.json` file.
 
 ## Appendix
+
+## Community contributions
+
+### Terraform
+
+<div class="grid cards" markdown>
+
+-   :material-cloud-cog:{ .lg .middle } __Multi-clouds Terraform scripts__
+
+    ---
+
+    This repository is here to provide you with a quick and easy way to deploy an OpenCTI instance in the cloud (AWS, Azure, or GCP).
+
+    [:material-github:{ .middle } GitHub Respository](https://github.com/newcontext-oss/opencti-terraform)
+
+-   :material-aws:{ .lg .middle } __AWS Advanced Terraform scripts__
+
+    ---
+
+    A Terraform deployment of OpenCTI designed to make use of native AWS Resources (where feasible). This includes AWS ECS Fargate, AWS OpenSearch, etc.
+
+    [:material-github:{ .middle } GitHub Repository](https://github.com/QinetiQ-Cyber-Intelligence/OpenCTI-Terraform)
+</div>
+
+### Helm Charts
+
+<div class="grid cards" markdown>
+
+-   :material-kubernetes:{ .lg .middle } __Kubernetes Helm Charts__
+
+    ---
+
+    OpenCTI Helm Charts (may be out of date) for Kubernetes with a global configuration file.
+
+    [:material-github:{ .middle } GitHub Repository](https://github.com/Ascend-Technologies/OpenCTI-HELM-CHART)
+</div>
 
 ### Deploy behind a reverse proxy
 

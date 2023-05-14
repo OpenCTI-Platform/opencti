@@ -118,6 +118,9 @@ nav:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
       - Third-party: deployment/third-party.md
+    - Advanced:
+      - Clustering: deployment/clustering.md
+      - Rollover policies: deployment/rollover.md
   - User Guide:
     - Structure:
       - Platform organization: usage/platform.md

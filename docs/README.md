@@ -37,14 +37,14 @@ $ git push
 
 ### Deploy and update the current version
 
-With the right version number (eg. 5.7):
+With the right version number (eg. 5.7.X):
 ```
 $ mike deploy --push [version]
 ```
 
 ### Deploy a new stable version
 
-With the right version number (eg. 5.7), update the `latest` tag:
+With the right version number (eg. 5.7.X), update the `latest` tag:
 ```
 $ mike deploy --push --update-aliases [version] latest
 ```
@@ -54,9 +54,4 @@ $ mike deploy --push --update-aliases [version] latest
 List versions:
 ```
 $ mike list
-```
-
-Launch versionned local environment to see if everything is ok:
-```
-$ mike serve
 ```
