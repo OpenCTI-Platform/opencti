@@ -35,6 +35,8 @@
   --md-code-hl-punctuation-color:      #cddc39;
   --md-code-hl-comment-color:          #3d4e66;
   --md-code-hl-variable-color:         #9ccc65;
+  --md-code-hl-name-color:             #ffb300;
+
   /* Typeset color shades */
   --md-typeset-color:                  #ffffff;
 
