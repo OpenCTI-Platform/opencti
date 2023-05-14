@@ -1,28 +1,51 @@
 # Installation
 
+All components of OpenCTI are shipped both as [Docker images](https://hub.docker.com/u/opencti) and manual [installation packages](https://github.com/OpenCTI-Platform/opencti/releases).
+
+!!! note "Production deployment"
+    
+    For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
+
+<div class="grid cards" markdown>
+
+-   :simple-docker:{ .lg .middle } __Use Docker__
+
+    ---
+
+    Deploy OpenCTI using Docker and the default `docker-compose.yml` provided
+    in the [docker](https://github.com/OpenCTI-Platform/docker).
+
+    [:octicons-arrow-right-24:{ .middle } Setup](#using-docker)
+
+-   :material-package-up:{ .lg .middle } __Manual installation__
+
+    ---
+
+    Deploy dependencies and launch the platform manually using the packages
+    released in the [Github releases](https://github.com/OpenCTI-Platform/opencti/releases).
+
+    [:octicons-arrow-right-24:{ .middle } Explore](#manual-installation)
+</div>
+
 ## Using Docker
 
 ### Introduction
 
 OpenCTI can be deployed using the *docker-compose* command.
 
-!!! info "Memory management"
+### Pre-requisites
 
-    For production deployment, we advise you to deploy ElasticSearch and Redis manually in a dedicated environment and then to start the other components using Docker.
-
-## 1. Pre-requisites
-
-****🐧 Linux:****
+**:material-linux:{ .middle } Linux**
 
 ```bash
-$ sudo apt-get install docker-compose
+$ sudo apt install docker-compose
 ```
 
-**⌘ MacOS**
+**:material-microsoft-windows:{ .middle } Windows and MacOS**
 
-Download: [https://www.docker.com/products/docker-desktop](https://www.docker.com/products/docker-desktop)
+Just download the appropriate [Docker for Desktop](https://www.docker.com/products/docker-desktop) version for your operating system.
 
-## 2. Clone the repository
+### Clone the repository
 
 ```bash
 $ mkdir -p /path/to/your/app && cd /path/to/your/app
@@ -30,26 +53,24 @@ $ git clone https://github.com/OpenCTI-Platform/docker.git
 $ cd docker
 ```
 
-## 3. Configure the environment
+### Configure the environment
 
-Before running the `docker-compose` command, the `docker-compose.yml` file must be configured.
+Before running the `docker-compose` command, the `docker-compose.yml` file should be configured. By default, the `docker-compose.yml` file is using environment variables available in the file `.env.sample`.
 
-There are two ways to do that:
+You can either rename the file `.env.sample` in `.env` and put the expected values or just fill directly the `docker-compose.yml` with the values corresponding to your environment.
 
-1. Use environment variables as it is proposed and you have an exemple in the `.env.sample` file (ie. `APP__ADMIN__EMAIL=${OPENCTI_ADMIN_EMAIL}`).
-2. Directly set the parameters in the `docker-compose.yml`.
+!!! note "Configuration static parameters"
+    
+    The complete list of available static parameters is available in the [configuration](deployment/configuration) section.
 
-If setting within the environment, you can reference the methodology in the [Environment setup on OpenCTI's Notion page](https://www.notion.so/Environment-setup-606996f36d904fcf8d434c6d0eae4a00) - located below for ease:
-
-### **🐧 Linux:**
+Here is an example to quickly generate the `.env` file under Linux, especially all the default UUIDv4:
 
 ```bash
-sudo apt install -y jq
-
-cd ~/docker
-(cat << EOF
+$ sudo apt install -y jq
+$ cd ~/docker
+$ (cat << EOF
 OPENCTI_ADMIN_EMAIL=admin@opencti.io
-OPENCTI_ADMIN_PASSWORD=CHANGEMEPLEASE
+OPENCTI_ADMIN_PASSWORD=ChangeMePlease
 OPENCTI_ADMIN_TOKEN=$(cat /proc/sys/kernel/random/uuid)
 MINIO_ROOT_USER=$(cat /proc/sys/kernel/random/uuid)
 MINIO_ROOT_PASSWORD=$(cat /proc/sys/kernel/random/uuid)
@@ -61,84 +82,65 @@ CONNECTOR_EXPORT_FILE_CSV_ID=$(cat /proc/sys/kernel/random/uuid)
 CONNECTOR_IMPORT_FILE_STIX_ID=$(cat /proc/sys/kernel/random/uuid)
 CONNECTOR_IMPORT_REPORT_ID=$(cat /proc/sys/kernel/random/uuid)
 EOF
- ) > .env
-```
-
-### **⌘ MacOS**
-
-```bash
-brew install jq
-cd ~/docker
- (cat <<EOF
-OPENCTI_ADMIN_EMAIL=admin@opencti.io
-OPENCTI_ADMIN_PASSWORD=CHANGEMEPLEASE
-OPENCTI_ADMIN_TOKEN=$(uuidgen)
-MINIO_ROOT_USER=$(uuidgen)
-MINIO_ROOT_PASSWORD=$(uuidgen)
-RABBITMQ_DEFAULT_USER=guest
-RABBITMQ_DEFAULT_PASS=guest
-CONNECTOR_HISTORY_ID=$(uuidgen)
-CONNECTOR_EXPORT_FILE_STIX_ID=$(uuidgen)
-CONNECTOR_EXPORT_FILE_CSV_ID=$(uuidgen)
-CONNECTOR_IMPORT_FILE_STIX_ID=$(uuidgen)
-CONNECTOR_IMPORT_REPORT_ID=$(uuidgen)
-EOF
 ) > .env
 ```
 
+If your `docker-compose` deployment does not support `.env` files, just export all environment variables before launching the platform:
+
 ```bash
-cd ~/docker 
-# trick to export the .env 
-export $(cat .env | grep -v "#" | xargs)
+$ export $(cat .env | grep -v "#" | xargs)
 ```
 
-## **4. Memory Management Settings**
+### Memory management settings
 
-<aside>
-💡 For additional memory management information see the Memory configuration notes section
-
-</aside>
-
-As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
+As OpenCTI has a dependency on ElasticSearch, you have to set the `vm.max_map_count` before running the containers, as mentioned in the [ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html#docker-cli-run-prod-mode).
 
 ```bash
 $ sudo sysctl -w vm.max_map_count=1048575
 ```
 
-To make this parameter persistent, add the following to the end of your `/etc/sysctl.conf`:
+To make this parameter persistent, add the following to the end of your `/etc/sysctl.conf`:
 
 ```bash
 $ vm.max_map_count=1048575
 ```
 
-## **5. Run OpenCTI - Full-stack, including UI**
+### Persist data
 
-### Using single node Docker
+The default for OpenCTI data is to be persistent.
 
-### Using Docker swarm
+In the `docker-compose.yml`, you will find at the end the list of necessary persitent volumes for the dependencies:
 
-After changing your `.env` file run `docker-compose` in detached (`-d`) mode:
+```yaml
+volumes:
+  esdata:     # ElasticSearch data
+  s3data:     # S3 bucket data
+  redisdata:  # Redis data
+  amqpdata:   # RabbitMQ data
+```
 
-In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment. 
+### Run OpenCTI
 
-<aside>
-💡 **Top Tip:** If you are looking for a easy way to manage your docker installation and containers try [Portainer](https://documentation.portainer.io/quickstart/?hsCtaTracking=cb3a059b-7f57-4333-a92f-b06202ef8690%7C4427d7bc-1ae8-4a30-812c-d30ee496008f).
+#### Using single node Docker
 
-</aside>
+After changing your `.env` file run `docker-compose` in detached (-d) mode:
 
 ```bash
-# ****🐧**** Linux only
 $ sudo systemctl start docker.service
 # Run docker-compose in detached 
 $ docker-compose up -d
 ```
+
+#### Using Docker swarm
+
+In order to have the best experience with Docker, we recommend using the Docker stack feature. In this mode you will have the capacity to easily scale your deployment. 
 
 ```bash
 # If your virtual machine is not a part of a Swarm cluster, please use:
 $ docker swarm init
 ```
 
-Put your environment variables in `/etc/environment`:
+Put your environment variables in `/etc/environment`:
 
 ```bash
 # If you already exported your variables to .env from above:
@@ -147,78 +149,127 @@ $ sudo bash -c 'cat .env >> /etc/environment’
 $ sudo docker stack deploy --compose-file docker-compose.yml opencti
 ```
 
-You can now go to [http://localhost:8080](http://localhost:8080/) and log in with the credentials configured in your environment variables.
+!!! success "Installation done"
+    
+    You can now go to [http://localhost:8080](http://localhost:8080/) and log in with the credentials configured in your environment variables.
 
-## **6. Run OpenCTI infrastructure with UI/GraphQL in development mode**
+## Manual installation
 
-In order to develop OpenCTI UI/GraphQL in the most efficient manner we have provided a `docker-compose.dev.yml` which stands up the back-end/infrastructure of OpenCTI, with the expectation that you will run the OpenCTI front-end (React/GraphQL) separately.
+### Prerequisites
 
-This docker-compose exposes all necessary ports for the UI/GraphQL to attach to in order to support local development.
+### Prepare the installation
 
-To run the services required for local development run:
+#### Installation of dependencies
 
-```bash
-$ sudo docker-compose -f docker-compose.dev.yml up -d
-```
-
-To configure/run the UI/GraphQL we would direct you to the [Notion documentation](https://www.notion.so/Front-end-e4991302301b438cad9567fc9e9e3b89)
-
-# **Appendices**
-
-## **A. How to update your docker instances**
-
-### **For single node Docker**
+You have to install all the needed dependencies for the main application and the workers. The example below is for Debian-based systems:
 
 ```bash
-$ sudo docker-compose stop
-$ sudo docker-compose pull
-$ sudo docker-compose up -d
+$ sudo apt-get install nodejs npm python3 python3-pip 
 ```
 
-### **For Docker swarm**
+#### Download the application files
 
-For each of services, you have to run the following command:
+First, you have to [download and extract the latest release file](https://github.com/OpenCTI-Platform/opencti/releases). Then select the version to install depending of your operating system: 
+
+**For Linux:**
+
+- If your OS support the libc (Ubuntu, Debian, ...) you have to install the `opencti-release_{RELEASE_VERSION}.tar.gz` version.
+- If your OS uses musl (Alpine, ...) you have to install the `opencti-release-{RELEASE_VERSION}_musl.tar.gz` version
+
+**For Windows:**
+
+We don't provide any Windows release for now. However it is still possible to check the code out, manually install the dependencies and build the software.
 
 ```bash
-$ sudo docker service update --force service_name
+$ mkdir /path/to/your/app && cd /path/to/your/app
+$ wget <https://github.com/OpenCTI-Platform/opencti/releases/download/{RELEASE_VERSION}/opencti-release-{RELEASE_VERSION}.tar.gz>
+$ tar xvfz opencti-release-{RELEASE_VERSION}.tar.gz
 ```
 
-## **B. How to deploy behind a reverse proxy**
+### Install the main platform
 
-If you want to use OpenCTI behind a reverse proxy with a context path, like `https://myproxy.com/opencti`, please change the base_path configuration.
+#### Configure the application
+
+The main application has just one JSON configuration file to change and a few Python modules to install
+
+```bash
+$ cd opencti
+$ cp config/default.json config/production.json
+```
+
+Change the *config/production.json* file according to your configuration of ElasticSearch, Redis, RabbitMQ and S3 bucket as well as default credentials (the `ADMIN_TOKEN` must be a [valid UUID](https://www.uuidgenerator.net/)).
+
+#### Install the Python modules
+
+```bash
+$ cd src/python
+$ pip3 install -r requirements.txt
+$ cd ../..
+```
+
+#### Start the application
+
+The application is just a NodeJS process, the creation of the database schema and the migration will be done at starting.
+
+```bash
+$ yarn install
+$ yarn build
+$ yarn serv
+```
+
+The default username and password are those you have put in the `config/production.json` file.
+
+### Install the worker
+
+The OpenCTI worker is used to write the data coming from the RabbitMQ messages broker.
+
+#### Configure the worker
+
+```bash
+$ cd worker
+$ pip3 install -r requirements.txt
+$ cp config.yml.sample config.yml
+```
+
+Change the *config.yml* file according to your OpenCTI token.
+
+#### Start as many workers as you need
+
+```bash
+$ python3 worker.py &
+$ python3 worker.py &
+```
+
+!!! success "Installation done"
+    
+    You can now go to [http://localhost:4000](http://localhost:4000) and log in with the credentials configured in your `production.json` file.
+
+## Appendix
+
+### Deploy behind a reverse proxy
+
+If you want to use OpenCTI behind a reverse proxy with a context path, like `https://domain.com/opencti`, please change the `base_path` static parameter.
 
 - `APP__BASE_PATH=/opencti`
 
-By default OpenCTI use websockets so don't forget to configure your proxy for this usage, an example with `Nginx`:
+By default OpenCTI use websockets so don't forget to configure your proxy for this usage, an example with `Nginx`:
 
 ```bash
 location / {
-    proxy_cache               off;
-    proxy_buffering           off;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
+    proxy_cache                 off;
+    proxy_buffering             off;
+    proxy_http_version          1.1;
+    proxy_set_header Upgrade    $http_upgrade;
     proxy_set_header Connection "upgrade";
-    proxy_set_header Host $host;
-    chunked_transfer_encoding off;
-    proxy_pass http:/YOUR_UPSTREA_BACKEND;
+    proxy_set_header Host       $host;
+    chunked_transfer_encoding   off;
+    proxy_pass                  http://YOUR_UPSTREAM_BACKEND;
   }
 ```
 
-## **C. How to persist data**
+### Additional memory information
 
-The default for OpenCTI data is to be persistent.
-
-If you do not wish the data to persist:
-
-```bash
-$ mv docker-compose.override.no-persist.yml docker-compose.override.yml
-```
-
----
-
-## **D. Memory configuration: additional information**
-
-### OpenCTI - Platform
+#### Platform
 
 OpenCTI platform is based on a NodeJS runtime, with a memory limit of **8GB by default**. If you encounter `OutOfMemory` exceptions, this limit could be changed:
 
@@ -226,172 +277,22 @@ OpenCTI platform is based on a NodeJS runtime, with a memory limit of **8GB by d
 - NODE_OPTIONS=--max-old-space-size=8096
 ```
 
-### OpenCTI - Workers and connectors
+#### Workers and connectors
 
 OpenCTI workers and connectors are Python processes. If you want to limit the memory of the process, we recommend to directly use Docker to do that. You can find more information in the [official Docker documentation](https://docs.docker.com/compose/compose-file/).
 
-<aside>
-💡 If you do not use Docker stack, consider using the `--compatibility` option.
+#### ElasticSearch
 
-</aside>
+ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`. You can find more information in the [official ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
 
-### ElasticSearch
+#### Redis
 
-ElasticSearch is also a JAVA process. In order to setup the JAVA memory allocation, you can use the environment variable `ES_JAVA_OPTS`.
+Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions which represents a memory footprint around `8 GB`. You can find more information in the [Redis docker hub](https://hub.docker.com/_/redis).
 
-<aside>
-💡 The minimal recommended option today is `-Xms8G -Xmx8G`
-
-</aside>
-
-You can find more information in the [official ElasticSearch documentation](https://www.elastic.co/guide/en/elasticsearch/reference/current/docker.html).
-
-### Redis
-
-Redis has a very small footprint on keys but will consume memory for the stream. By default the size of the stream is limited to 2 millions
-
-<aside>
-💡 With 2 million of events in the stream, the memory footprint will be around `8G`
-
-</aside>
-
-You can find more information in the [Redis docker hub](https://hub.docker.com/r/bitnami/redis/).
-
-### MinIO
+#### MinIO / S3 Bucket
 
 MinIO is a small process and does not require a high amount of memory. More information are available for Linux here on the [Kernel tuning guide](https://github.com/minio/minio/tree/master/docs/deployment/kernel-tuning).
 
-### RabbitMQ
+#### RabbitMQ
 
 The RabbitMQ memory configuration can be find in the [RabbitMQ official documentation](https://www.rabbitmq.com/memory.html). RabbitMQ will consumed memory until a specific threshold, therefore it should be configure along with the Docker memory limitation.
-
-## E. Load-balancing
-
-Ingesting lots of data from connectors can cause the OpenCTI platform to slow down and make it difficult for analysts to use the platform properly for their work. A simple way of solving this issue is to have 2 parallel OpenCTI platform containers running at the same time and to distribute the workload between them.
-
-1. OpenCTI container #1 is the responsible go-to address for all connectors for ingesting data
-2. OpenCTI container #2 is the analysts’ UI interface for their research
-
-Since both OpenCTI containers are using the same backend infrastructure, both platforms are able to access the same data while balancing the workload between them.
-
-## F. Updating OpenCTI containers
-
-Before applying this procedure, please update your `docker-compose.yml` file with the new version number of container images.
-
-### Using single node Docker
-
-### Using Docker swarm
-
-```bash
-$ docker-compose up -d
-```
-
-For each of services, you have to run the following command:
-
-```bash
-$ docker service update --force service_name
-```
-
-## G. Deployment behind a reverse proxy
-
-If you want to use OpenCTI behind a reverse proxy with a context path, like `https://myproxy.com/opencti`, please change the `base_path` configuration.
-
-```yaml
-- APP__BASE_PATH=/opencti
-```
-
-By default OpenCTI use websockets and SSE so don't forget to configure your proxy for this usage, an example with `Nginx`:
-
-```bash
-location / {
-    proxy_cache               off;
-    proxy_buffering           off;
-    proxy_http_version 1.1;
-    proxy_set_header Upgrade $http_upgrade;
-    proxy_set_header Connection "upgrade";
-    proxy_set_header Host $host;
-    chunked_transfer_encoding off;
-    proxy_pass http://YOUR_UPSTREAM_BACKEND;
-  }
-```
-
-# Community Additions
-
-## Setup with Caddy Server (thanks to @[sukesh-ak](https://github.com/sukesh-ak))
-
-Setup and automate **FREE** valid SSL for OpenCTI, using an OpenSource project called [Caddy Server](https://caddyserver.com/) with very minimal effort.
-
-### **About Caddy**
-
-Caddy 2 is a powerful, enterprise-ready, open source web server with **automatic HTTPS** written in Go. Caddy works well as a direct install and also using Docker.
-
-### **Using Docker**
-
-OpenCTI runs all its components in individual containers. For accessing the WebUI, by default it exposes opencti service on port 8080 locally.
-
-It’s easy to setup reverse proxy with FREE SSL using Caddy with very minimal effort. So lets check the steps for setting it up
-
-- Configure DNS with A record pointing to your OpenCTI public IP address
-- Create a base folder for config file `'Caddyfile'`
-- Create a `docker-compose` file for Caddy
-- Create a container using `docker-compose run`
-
-```bash
-# Create a DNS A/AAAA record pointing your domain to the public IP address
-$ cti.domain.com  A  <public-IP-address-for-OpenCTI-instance>
-```
-
-Make sure to wait for the DNS record to complete propagation (depending on TTL). Otherwise automatic SSL creation would not work.
-
-Caddy uses 2 volumes for data (storing certificates etc) & config.Create a file called `'Caddyfile'` in the local folder for configuration, which will be mapped to `/etc/caddy/Caddyfile` through docker-compose file as below.
-
-```bash
-# /etc/caddy/Caddyfile
-cti.domain.com {
-	reverse_proxy http://opencti:8080
-}
-```
-
-<aside>
-💡 Port 80 mapping is not necessary but it helps in automatic redirection if clients try the HTTP url.
-
-</aside>
-
-```bash
-# **docker-compose-caddy.yml** 
- version: "3.7"
-	services:
-	  caddy:
-	    image: caddy
-	    restart: unless-stopped
-	    ports:
-	      - "80:80"
-	      - "443:443"
-			volumes:
-	      - ./Caddyfile:/etc/caddy/Caddyfile
-	      - caddy_data:/data
-	      - caddy_config:/config
-
-networks:
-  default:
-    external: true
-    name: <your OpenCTI network name>
-    
-volumes:
-  caddy_data:
-  caddy_config:
-```
-
-Since you are running Caddy in docker, you need to make it part of OpenCTI network. Reverse proxy takes care of everything else. This also means you don't need to expose OpenCTI `8080` port outside the container. So you can remove `-port` setting in OpenCTI `docker-compose` file.
-
-Now just get it running and Caddy will request and get SSL certificate automagically for your domain.
-
-```bash
-docker-compose -f docker-compose-caddy.yml up -d
-```
-
-### **Resources**
-
-How Caddy automatic SSL works [https://caddyserver.com/docs/automatic-https](https://caddyserver.com/docs/automatic-https)
-
-Using Caddy with Load Balancer [https://caddy.community/t/load-balancing-caddy/10467](https://caddy.community/t/load-balancing-caddy/10467)

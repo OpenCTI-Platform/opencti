@@ -21,7 +21,6 @@ theme:
     - content.action.view
     - content.code.annotate
     - content.code.copy
-    - content.tooltips
     - search.highlight
   palette:
     scheme: filigran
@@ -92,9 +91,11 @@ markdown_extensions:
   - pymdownx.tabbed:
       alternate_style: true   
   - pymdownx.highlight:
+      use_pygments: true
       anchor_linenums: true
       line_spans: __span
-      pygments_lang_class: true
+      pygments_lang_class: false
+      auto_title: false
   - pymdownx.emoji:
       emoji_index: !!python/name:materialx.emoji.twemoji
       emoji_generator: !!python/name:materialx.emoji.to_svg   
@@ -111,6 +112,7 @@ nav:
       - Overview: deployment/overview.md
       - Installation: deployment/installation.md
       - Configuration: deployment/configuration.md
+      - Authentication: deployment/authentication.md
       - Upgrade: deployment/upgrade.md
     - Ecosystem:
       - Connectors: deployment/connectors.md

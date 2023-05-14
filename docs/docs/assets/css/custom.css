@@ -16,9 +16,9 @@
 
   /* Default color shades */
   --md-default-fg-color:               #00b1ff;
-  --md-default-fg-color--light:        #ffffff;
-  --md-default-fg-color--lighter:      #0082d1;
-  --md-default-fg-color--lightest:     #0082d1;
+  --md-default-fg-color--light:        #697a94;
+  --md-default-fg-color--lighter:      #3d4e66;
+  --md-default-fg-color--lightest:     #03305d;
   --md-default-bg-color:               #001e3c;
   --md-default-bg-color--light:        #001830;
   --md-default-bg-color--lighter:      #021426;
@@ -26,23 +26,15 @@
 
   /* Code color shades */
   --md-code-fg-color:                  #ffffff;
-  --md-code-bg-color:                  #001835;
+  --md-code-fg-color--light:           #1bb6ff;
+  --md-code-bg-color:                  #071a2e;
+  --md-code-bg-color--light:           #071a2e;
 
   /* Code highlighting color shades */
-  --md-code-hl-color:                  #;
-  --md-code-hl-number-color:           #;
-  --md-code-hl-special-color:          #;
-  --md-code-hl-function-color:         #;
-  --md-code-hl-constant-color:         #;
-  --md-code-hl-keyword-color:          #;
-  --md-code-hl-string-color:           #;
-  --md-code-hl-name-color:             var(--md-code-fg-color);
-  --md-code-hl-operator-color:         var(--md-default-fg-color--light);
-  --md-code-hl-punctuation-color:      var(--md-default-fg-color--light);
-  --md-code-hl-comment-color:          var(--md-default-fg-color--light);
-  --md-code-hl-generic-color:          var(--md-default-fg-color--light);
-  --md-code-hl-variable-color:         var(--md-default-fg-color--light);
-
+  --md-code-hl-operator-color:         #9ccc65;
+  --md-code-hl-punctuation-color:      #cddc39;
+  --md-code-hl-comment-color:          #3d4e66;
+  --md-code-hl-variable-color:         #9ccc65;
   /* Typeset color shades */
   --md-typeset-color:                  #ffffff;
 
