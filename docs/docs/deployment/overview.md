@@ -1,102 +1,61 @@
 # Overview
 
-Let's get started and discover the OpenCTI platform! What is OpenCTI, which technical architecture is used to run the platform and what are the hardware requirements to deploy it in production.
+Before starting the installation, let's discover how OpenCTI is working, which dependencies are needed and what are the minimal requirements to deploy it in production.
 
 ## Architecture
 
 The OpenCTI platform relies on several external databases and services in order to work.
 
-<iframe
-  width="100%"
-  height="450"
-  src="https://www.figma.com/embed?embed_host=astra&url=https://www.figma.com/file/ZjeJwkx58eu82kenRAnk1M/OpenCTI---Technology?type=whiteboard&t=W5a5STRY4FxWB4F6-1"
-  allowfullscreen
-></iframe>
+![Architecture](assets/architecture.png)
 
-### The GraphQL API
+### Platform
 
-The API is the central part of the OpenCTI platform, allowing the *clients* (including the *frontend*) to interact with the *database* and the *broker (messaging system)*. Built in NodeJS, it implements the [GraphQL](https://graphql.org/) query language. As the API is not fully documented yet, you can explore the available methods and parameters through a GraphQL playground. An example is available on the OpenCTI [demonstration instance](https://demo.opencti.io/graphql).
+The platform is the central part of the OpenCTI technological stack. It allows users to access to the user interface but also provides the [GraphQL API](https://graphql.org) used by connectors and workers to insert data. In the context of a production deployment, you may need to scale horizontally and launch multiple platforms behind a load balancer connected to the same databases (ElasticSearch, Redis, S3, RabbitMQ).
 
-### The write workers
+### Workers
 
-The workers are standalone Python processes consuming messages from the RabbitMQ broker in order to do asynchronous write queries. You can launch as many workers as you need to increase the write performances. At some point, the write performances will be limited by the throughput of the database (ElasticSearch), if you have not the expected performances with 3 or 4 workers, then is will be useless to launch more and you have to think about enhancing the hardware of the database nodes (or extend your setup to a cluster).
+The workers are standalone Python processes consuming messages from the RabbitMQ broker in order to do asynchronous write queries. You can launch as many workers as you need to increase the write performances. At some point, the write performances will be limited by the throughput of the ElasticSearch database cluster.
 
-### The connectors
+!!! note "Number of workers"
+
+    If you need to increase performances, it is better to launch more platforms to handle worker queries. The recommended setup is to have at least one platform for 3 workers (ie. 9 workers distributed over 3 platforms).
+
+### Connectors
 
 The connectors are third-party pieces of software (Python processes) that can play four different roles on the platform:
 
-You can find all currently available connector in the [OpenCTI Ecosystem](https://www.notion.so/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+| Type                 | Description                                                                                         | Examples                                                |
+| :------------------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
+| EXTERNAL_IMPORT      | Pull data from remote sources, convert it to STIX2 and insert it on the OpenCTI platform.           | MITRE Datasets, MISP, CVE, AlienVault, Mandiant, etc.   |
+| INTERNAL_ENRICHMENT  | Listen for new OpenCTI entities or users requests, pull data from remote sources to enrich.         | Shodan, DomainTools, IpInfo, etc.                       |
+| INTERNAL_IMPORT_FILE | [Extract data from files](usage/import-export) uploaded on OpenCTI trough the UI or the API.        | STIX 2.1, PDF, Text, HTML, etc.                         |
+| INTERNAL_EXPORT_FILE | [Generate export](usage/import-export) from OpenCTI data, based on a single object or a list.       | STIX 2.1, CSV, PDF, etc.                                |
+| STREAM               | Consume a platform [data stream](reference/data-stream) an _do_ something with events.              | Splunk, Elastic Security, Q-Radar, etc.                 |
+
+!!! note "List of connectors"
+    
+    You can find all currently available connector in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
 
 ## Infrastructure requirements
 
 ### Dependencies
 
-Since OpenCTI has some dependencies, you can find below the minimum configuration and amount of resources needed to launch the OpenCTI platform. 
+| Component        | CPU         | RAM          | Disk type                    | Disk space      |
+| :--------------- | :---------- | :----------- | :--------------------------- | :-------------- |
+| ElasticSearch    | 2 cores     | ≥ 8GB        | SSD                          | ≥ 16GB          |
+| Redis            | 1 core      | ≥ 1GB        | SSD                          | ≥ 16GB          |
+| RabbitMQ         | 1 core      | ≥ 512MB      | Standard                     | ≥ 2GB           |
+| S3 / MinIO       | 1 core      | ≥ 128MB      | SSD                          | ≥ 16GB          |
 
-The minimal hardware requirements for all components of the platform, including the databases, are:
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 6 cores     | 16GB      | SSD (recommanded) / Normal   | Depending of your content (> 32GB) |
-
-#### ElasticSearch
-
-ElasticSearch is also a JAVA process that needs a minimal amount of memory and CPUs.
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 2 cores     | 8GB       | SSD (recommanded) / Normal   | Depending of your content (> 16GB) |
-
-!!! info "Memory management"
-
-    In order to setup the JAVA memory allocation, you can use the environment variable ES_JAVA_OPTS. You can find more information in the official [ElasticSearch documentation](https://www.elastic.co/guide/index.html).
-
-#### MinIO
-
-MinIO has a very small footprint but depending on what you intend to store on OpenCTI, it could require disk space:
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 1 core      | 128MB     | Normal                       | Depending of your content (> 1GB)  |
-
-#### Redis
-
-Redis has a very small footprint and only needs a tiny configuration:
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 1 core      | 1GB       | Normal                       | Depending of your content (> 16GB) |
-
-!!! info "Memory management"
-
-    You can use the option --maxmemory to limit the use. You can find more information in the Redis docker hub.
-
-#### RabbitMQ
-
-RabbitMQ has a very small footprint and can store messages directly on the disk if it does not have enough memory.
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 1 core      | 512MB     | Normal                       | Depending of your content (> 1GB)  |
-
-!!! info "Memory management"
-
-    The RabbitMQ memory configuration can be found in the [RabbitMQ official documentation](https://www.rabbitmq.com/documentation.html).
 
 ### Platform
 
-#### Application
+| Component        | CPU         | RAM          | Disk type                         | Disk space      |
+| :--------------- | :---------- | :----------- | :-------------------------------- | :-------------- |
+| OpenCTI Core     | 2 cores     | ≥ 8GB        | None (stateless)                  | -               |
+| Worker(s)        | 1 core      | ≥ 128MB      | None (stateless)                  | -               |
+| Connector(s)     | 1 core      | ≥ 128MB      | None (stateless)                  | -               |
 
-OpenCTI platform is based on a NodeJS runtime, with a memory limit of **512MB by default**.
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 2 cores     | 8GB       | Normal                       | 256MB                              |
-
-#### Workers and connectors
-
-OpenCTI workers and connectors are Python processes with a very small footprint. For each connector, requirements are:
-
-| CPU         | RAM       | Disk type                    | Disk space                         |
-| :---------- | :-------- | :--------------------------- | :--------------------------------- |
-| 1 core      | 128MB     | Normal                       | 128MB                              |
+!!! note "Clustering"
+    
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](administration/cluster).
