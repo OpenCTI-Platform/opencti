@@ -1,0 +1,118 @@
+/* Color scheme */
+
+[data-md-color-scheme="filigran"] {
+  /* Primary color shades */
+  --md-primary-fg-color:               #;
+  --md-primary-fg-color--light:        #;
+  --md-primary-fg-color--dark:         #;
+  --md-primary-bg-color:               #;
+  --md-primary-bg-color--light:        #;
+
+  /* Accent color shades */
+  --md-accent-fg-color:                #1bb6ff;
+  --md-accent-fg-color--transparent:   #;
+  --md-accent-bg-color:                #;
+  --md-accent-bg-color--light:         #;
+
+  /* Default color shades */
+  --md-default-fg-color:               #00b1ff;
+  --md-default-fg-color--light:        #697a94;
+  --md-default-fg-color--lighter:      #3d4e66;
+  --md-default-fg-color--lightest:     #03305d;
+  --md-default-bg-color:               #001e3c;
+  --md-default-bg-color--light:        #001830;
+  --md-default-bg-color--lighter:      #021426;
+  --md-default-bg-color--lightest:     #000e1c;
+
+  /* Code color shades */
+  --md-code-fg-color:                  #ffffff;
+  --md-code-fg-color--light:           #1bb6ff;
+  --md-code-bg-color:                  #071a2e;
+  --md-code-bg-color--light:           #071a2e;
+
+  /* Code highlighting color shades */
+  --md-code-hl-operator-color:         #9ccc65;
+  --md-code-hl-punctuation-color:      #cddc39;
+  --md-code-hl-comment-color:          #3d4e66;
+  --md-code-hl-variable-color:         #9ccc65;
+  --md-code-hl-name-color:             #ffb300;
+
+  /* Typeset color shades */
+  --md-typeset-color:                  #ffffff;
+
+  /* Typeset `a` color shades */
+  --md-typeset-a-color:                #00b1ff;
+
+  /* Typeset `mark` color shades */
+  --md-typeset-mark-color:             #;
+
+  /* Typeset `del` and `ins` color shades */
+  --md-typeset-del-color:              #;
+  --md-typeset-ins-color:              #;
+
+  /* Typeset `kbd` color shades */
+  --md-typeset-kbd-color:              #;
+  --md-typeset-kbd-accent-color:       #;
+  --md-typeset-kbd-border-color:       #;
+
+  /* Typeset `table` color shades */
+  --md-typeset-table-color:            #0082d1;
+  --md-typeset-table-color--light:     #051629;
+
+  /* Admonition color shades */
+  --md-admonition-fg-color:            #ffffff;
+  --md-admonition-bg-color:            var(--md-default-bg-color);
+
+  /* Warning color shades */
+  --md-warning-fg-color:               #;
+  --md-warning-bg-color:               #;
+
+  /* Footer color shades */
+  --md-footer-fg-color:                #;
+  --md-footer-fg-color--light:         #;
+  --md-footer-fg-color--lighter:       #;
+  --md-footer-bg-color:                #051629;
+  --md-footer-bg-color--dark:          #000e1c;
+}
+
+/* Header */
+.md-header, .md-tabs {
+  background-color: #071a2e !important;
+}
+
+/* Cards */
+.md-typeset .grid.cards>ol>li,.md-typeset .grid.cards>ul>li,.md-typeset .grid>.card {
+  border: none !important;
+  background-color: #071a2e !important;
+  border-radius: 10px;
+}
+
+.md-typeset .grid.cards>ol>li:focus-within,.md-typeset .grid.cards>ol>li:hover,.md-typeset .grid.cards>ul>li:focus-within,.md-typeset .grid.cards>ul>li:hover,.md-typeset .grid>.card:focus-within,.md-typeset .grid>.card:hover {
+  border: none !important;
+  background-color: #071a2e !important;
+  border-radius: 10px;
+}
+
+html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover {
+    color: #00b1ff !important;
+}
+
+.middle {
+  margin: -5px 5px 0 0 !important;
+}
+
+.md-header__button.md-logo img,.md-header__button.md-logo svg {
+   height: 1.5rem;
+}
+
+.grid {
+  column-gap: 0.8rem !important;
+}
+
+.md-typeset__table {
+   min-width: 100%;
+}
+
+.md-typeset table:not([class]) {
+    display: table;
+}
