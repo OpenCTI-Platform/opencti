@@ -110,3 +110,7 @@ html .md-footer-meta.md-typeset a:focus,html .md-footer-meta.md-typeset a:hover 
 .md-header__button.md-logo img,.md-header__button.md-logo svg {
    height: 1.5rem;
 }
+
+.grid {
+  column-gap: 0.8rem !important;
+}
