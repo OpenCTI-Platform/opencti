@@ -49,9 +49,9 @@ The releases are available on the [Github releases page](https://github.com/Open
 All you need to install the OpenCTI platform can be found in the [official documentation](https://docs.opencti.io). For installation, you can:
 
 * [Use Docker](https://docs.opencti.io/latest/deployment/installation/#using-docker)
-* [Use Terraform](https://docs.opencti.io/latest/deployment/installation/#using-terraform)
-* [Use Helm charts](https://docs.opencti.io/latest/deployment/installation/#using-helm-charts)
 * [Install manually](https://docs.opencti.io/latest/deployment/installation/#install-manually)
+* [Use Terraform (community)](https://docs.opencti.io/latest/deployment/installation/#terraform)
+* [Use Helm charts (community)](https://docs.opencti.io/latest/deployment/installation/#helm-charts)
 
 ## Contributing
 
