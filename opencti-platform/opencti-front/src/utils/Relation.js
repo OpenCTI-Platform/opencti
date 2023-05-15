@@ -242,6 +242,7 @@ const relationsTypesMapping = {
   'Threat-Actor_Tool': ['uses'],
   'Threat-Actor_Vulnerability': ['targets'],
   'Threat-Actor_StixFile': ['uses'],
+  'Threat-Actor_Event': ['targets'],
   'Tool_Attack-Pattern': ['uses', 'drops', 'delivers'],
   Tool_City: ['targets'],
   Tool_Country: ['targets'],
