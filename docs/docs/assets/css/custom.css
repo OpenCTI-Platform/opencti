@@ -160,3 +160,8 @@ html::-webkit-scrollbar-thumb:hover {
 html::-webkit-scrollbar-corner {
   background-color: #01478d;
 }
+
+.glightbox img {
+  border: 1px solid #273d5f;
+  border-radius: 4.8px;
+}

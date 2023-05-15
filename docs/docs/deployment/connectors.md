@@ -2,72 +2,54 @@
 
 ## Introduction
 
-<aside>
-💡 You are looking for the available connectors? The list is in the [OpenCTI Ecosystem](https://www.notion.so/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
+!!! question "Connectors list"
+    
+    You are looking for the available connectors? The list is in the [OpenCTI Ecosystem](https://filigran.notion.site/OpenCTI-Ecosystem-868329e9fb734fca89692b2ed6087e76).
 
-</aside>
+Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export data in the platform. According to their functionality and use case, they are categorized in following classes.
 
-Connectors are the cornerstone of the OpenCTI platform and allow organizations to easily ingest, enrich or export new data on the platform. According to their functionality and use case, they are categorized in following classes:
+![Connectors](assets/connectors.png)
 
-External Import Connector
+### Import
 
-Automatically retrieve information from an external entity or service and import it into OpenCTI
+These connectors automatically retrieve information from an external organization, application or service, convert it to STIX 2.1 bundles and import it into OpenCTI using the workers.
 
-Stream Input Connector
+### Enrichment
 
-Connect to a data stream and continously ingest the retrieved information into OpenCTI. When used in combination with EDR systems like Tanium, the connector is also able to answer the originating system and turn this into a two way interaction between another system and OpenCTI.
+When a new object is created in the platform or on the user request, it is possible to trigger the internal enrichment connector to lookup and/or search the object in external organizations, applications or services. If the object is found, the connectors will generate a STIX 2.1 bundle which will increase the level of knowledge about the concerned object.
 
-Internal Enrichment Connector
+### Stream
 
-SDOs and SCOs can be enriched using external lookup services to increase the knowledge of that object in OpenCTI. An example would be a *whois* lookup for an IP address.
+These connectors connect to a platform [data stream](reference/data-stream) and continously *do* something with the received events. In most cases, they are used to consume OpenCTI data and insert them in third-party platforms such as SIEMs, XDRs, EDRS, etc. In some cases, stream connectors can also query the external system on a regular basis and act as import connector for instance to gather alerts and sightings related to CTI data and push them to OpenCTI (bi-directional).
 
-Internal Import File Connector
+### Import files
 
-Information from an uploaded file can be extracted and ingested into OpenCTI. Examples are files attached to a report or a json (STIX2) file.
+Information from an uploaded file can be extracted and ingested into OpenCTI. Examples are files attached to a report or a STIX 2.1 file.
 
-Internal Export Connector
+### Export files
 
 Information stored in OpenCTI can be extracted into different file formats like .csv or .json (STIX 2).
-
-**Those connectors should be launched with a user that has an “Administrator” role (with bypass all capabilities enabled).**
-
-![Untitled](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/385588d7-fcf7-4807-b536-b4d60e7656c7/Untitled.png)
-
-API Interactions
-
-API interactions are not connectors per definition, nonetheless they allow a script or a program to interact with OpenCTI using a client library.
-
-## Information Processing
-
-Every data the connector wants to sent to OpenCTI has to be converted into a STIX2 object, which will then be pushed via a messaging system to the OpenCTI worker. 
-
-The worker is responsible for the error and performance handling and for interacting with the OpenCTI API interface for creating or updating the respective objects.
-
-<aside>
-💡 For the moment, only a valid STIX2 bundle is supported, by we intend to support CSV and other formats in the future.
-
-</aside>
-
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6de31dd5-17b8-4897-9295-aa3a6d597695/connector_architecture.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6de31dd5-17b8-4897-9295-aa3a6d597695/connector_architecture.png)
 
 ## Connector configuration
 
 All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the `OPENCTI_URL` and the `OPENCTI_TOKEN`. In addition of these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.
 
-<aside>
-⚠️ Be careful, we advise you to use a dedicated token for each of your connector. So you have to create a specific user for each of your connector. 
+!!! warning "Connectors tokens"
+    
+    Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to **create a specific user for each of them**.
 
-**All users for connectors should have the “Connector” role except “Workers” and “internal-import-files/internal-export-files Connectors” which should run with an Administrator user.**
+    Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they imperstonate the user requesting the export to avoid data leak.
 
-You can see the user token by clicking on "Edit" on a user in the Settings / Accesses / Users panel. Please see the section *Create Connector User and Role* at the end of this page for detailed user and role creation.
+    | Type                 | Required role       | Used permissions                                                                                  
+    | :------------------- | :------------------ | :----------------------------------------------------- |
+    | EXTERNAL_IMPORT      | Connector           | Import data with the connector user.                   | 
+    | INTERNAL_ENRICHMENT  | Connector           | Enrich data with the connector user.                   |
+    | INTERNAL_IMPORT_FILE | Connector           | Import data with the connector user.                   |
+    | INTERNAL_EXPORT_FILE | Administrator       | Export data with the user who requested the export.    |
+    | STREAM               | Connector           | Consume the streams the connector user.                |
 
-</aside>
-
-Example in a `docker-compose.yml` file:
-
-Example in a `config.yml` file:
-
-```docker
+Here is an example of a connector `docker-compose.yml` file:
+```yaml
 - CONNECTOR_ID=ChangeMe
 - CONNECTOR_TYPE=EXTERNAL_IMPORT
 - CONNECTOR_NAME=MITRE ATT&CK
@@ -76,6 +58,8 @@ Example in a `config.yml` file:
 - CONNECTOR_UPDATE_EXISTING_DATA=true
 - CONNECTOR_LOG_LEVEL=info
 ```
+
+Here is an example in a connector `config.yml` file:
 
 ```yaml
 -connector:
@@ -87,6 +71,37 @@ Example in a `config.yml` file:
   update_existing_data: true
   log_level: 'info'
 ```
+
+## Networking
+
+Be aware that all connectors are reaching RabbitMQ based the RabbitMQ configuration provided by the OpenCTI platform. The connector must be able to reach RabbitMQ on the specified hostname and port. If you have a specific Docker network configuration, please be sure to adapt your `docker-compose.yml` file in such way that the connector container gets attached to the OpenCTI Network, e.g.:
+
+```yaml
+networks:
+  default:
+    external: true
+    name: opencti-docker_default
+```
+
+## Connector token
+
+### Create the user
+
+As mentionned previously, it is strongly recommended to run each connector with its own user. **The `Internal Export File` connectors should be launched with a user that belongs to a group which has an “Administrator” role (with bypass all capabilities enabled).**
+
+By default in platform, a group named "Connectors" already exists. So just create a new user with the name `[C] Name of the connector` in Settings > Security > Users.
+
+![Create user](assets/create-user.png)
+
+### Put the user in the group
+
+Just go to the user you have just created and add it to the `Connectors` group.
+
+![User groups](assets/user-groups.png)
+
+Then just get the token of the user displayed in the interface.
+
+![User token](assets/user-token.png)
 
 ## Docker activation
 
@@ -137,20 +152,6 @@ Change the configuration in the `docker-compose.yml` according to the parameters
 $ docker-compose up
 ```
 
-<aside>
-⚠️ Be careful that some connectors will try to connect to the RabbitMQ based on the RabbitMQ configuration provided for the OpenCTI platform. The connector must be able to reach RabbitMQ on the specified hostname and port. If you have a specific Docker network configuration, please be sure to adapt your `docker-compose.yml` file in such way that the connector container gets attached to the OpenCTI Network, e.g.:
-
-```yaml
-networks:
-  default:
-    external: true
-    name: opencti-docker_default
-```
-
-More details on: [https://docs.docker.com/compose/networking/#use-a-pre-existing-network](https://docs.docker.com/compose/networking/#use-a-pre-existing-network)
-
-</aside>
-
 ## Manual activation
 
 If you want to manually launch connector, you just have to install Python 3 and pip3 for dependencies:
@@ -181,54 +182,13 @@ Change the `config.yml` content according to the parameters of the platform and 
 $ python3 misp.py
 ```
 
-<aside>
-⚠️ Be careful that some connectors will try to connect to the RabbitMQ based on the RabbitMQ configuration provided for the OpenCTI platform. The connector must be able to reach RabbitMQ on the specified hostname and port.
-
-</aside>
-
 ## Connectors status
 
-The connector status can be displayed in the dedicated section. You will be able to see the statistics of the RabbitMQ queue of the connector:
+The connector status can be displayed in the dedicated section of the platform available in Data > Connectors. You will be able to see the statistics of the RabbitMQ queue of the connector:
 
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a548ee12-8d44-45f9-a013-c95e412aec1b/connectors.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/a548ee12-8d44-45f9-a013-c95e412aec1b/connectors.png)
+![Connectors](assets/connectors-status.png)
 
 <aside>
 ➡️ If you encounter problems deploying OpenCTI or connectors, you can consult the [Troubleshooting](https://www.notion.so/Troubleshooting-4927527403c64d8aac2ac2e127ff464b) page. If not, go to the next section, the [Introduction](https://www.notion.so/Introduction-31c3e69442da4d84b8d6c60aa2a86833) page.
 
 </aside>
-
-## Create Connector User and Role
-
-To have all the great history, access control and changelog features of OpenCTI you need to create a dedicated user per connector.
-
-This guide assumes OpenCTI is running at [http://localhost:8080](http://localhost:8080) please change for your real URL.
-
-**The “Internal Export File” connectors should be launched with a user that has an “Administrator” role (with bypass all capabilities enabled).**
-
-### Create a connector role
-
-Go to [http://localhost:8080/dashboard/settings/accesses/roles](http://localhost:8080/dashboard/settings/accesses/roles)
-
-Click on the red + in the bottom right corner and fill out the role details and click "CREATE".
-
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8bd076a0-5af0-4f5b-9b57-1fd5372f53be/Screenshot_2021-03-25_at_14.27.59.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/8bd076a0-5af0-4f5b-9b57-1fd5372f53be/Screenshot_2021-03-25_at_14.27.59.png)
-
-After the Role has been created you can click on the three dots on the right side of the role table entry and click on "Update".
-
-The following capabilities are necessary for all connectors to work correctly:
-
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2665c2d9-e7c7-43db-97b1-22873f8cc856/Screenshot_2021-03-25_at_16.45.28.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/2665c2d9-e7c7-43db-97b1-22873f8cc856/Screenshot_2021-03-25_at_16.45.28.png)
-
-### Create a connector user and attach role
-
-Now you can create a user per connector.
-
-Go to [http://localhost:8080/dashboard/settings/accesses/users](http://localhost:8080/dashboard/settings/accesses/users) and click the red + in the bottom right corner.
-
-**The “Internal Export File” connectors should be launched with a user that has an “Administrator” role (with bypass all capabilities enabled).**
-
-This example is creating a user for the Hygiene Connector. *Remember to use a long and complex password for every user:*
-
-![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f7a6c70a-0769-49ca-87a5-f1349578445b/Screenshot_2021-03-25_at_15.09.45.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/f7a6c70a-0769-49ca-87a5-f1349578445b/Screenshot_2021-03-25_at_15.09.45.png)
-
-Now attach the role to the freshly created user by clicking on the user. In the user detail view click on the three dots next to the user name and click "Update". In the "Roles" section click into the line and click on "Connectors" to enable the Role for the user immediately.

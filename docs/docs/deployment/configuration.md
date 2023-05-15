@@ -146,7 +146,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | minio:access_key                   | MINIO__ACCESS_KEY                               | ChangeMe                      | The S3 Service access key                                                           |
 | minio:secret_key                   | MINIO__SECRET_KEY                               | ChangeMe                      | The S3 Service secret key                                                           |
 | minio:bucket_name                  | MINIO__BUCKET_NAME                              | opencti-bucket                | The S3 bucket name (useful to change if you use AWS)                                |
-| minio:bucket_region                | MINIO__BUCKET_REGION                            | us-east-1                     | The minio bucket region if you use AWS                                              |
+| minio:bucket_region                | MINIO__BUCKET_REGION                            | us-east-1                     | The S3 bucket region if you use AWS                                                 |
 | minio:use_aws_role                 | MINIO__USE_AWS_ROLE                             | `false`                       | To use AWS role auto credentials                                                    |
 
 #### SMTP Service
