@@ -23,6 +23,48 @@ const colors = (temp) => [
   C.grey[temp],
 ];
 
+const downloadIcon = '<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall css-8prnfn-MuiButtonBase-root-MuiIconButton-root" tabindex="0" type="button" color="primary" style="cursor:pointer">'
+  + '<svg '
+  + 'class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root" '
+  + 'focusable="false" '
+  + 'aria-hidden="true" '
+  + 'viewBox="0 0 24 24" '
+  + 'data-testid="GetAppOutlinedIcon">'
+  + '<path d="M13 5v6h1.17L12 13.17 9.83 11H11V5h2m2-2H9v6H5l7 7 7-7h-4V3zm4 15H5v2h14v-2z"></path>'
+  + '</svg>'
+  + '</button>';
+
+const toolbarOptions = {
+  show: true,
+  offsetY: -35,
+  offsetX: -11,
+  tools: {
+    download: downloadIcon,
+    zoom: false,
+    zoomin: false,
+    zoomout: false,
+    pan: false,
+    reset: false,
+  },
+  export: {
+    csv: {
+      filename: undefined,
+      columnDelimiter: ',',
+      headerCategory: 'category',
+      headerValue: 'value',
+      dateFormatter(timestamp) {
+        return new Date(timestamp).toDateString();
+      },
+    },
+    svg: {
+      filename: undefined,
+    },
+    png: {
+      filename: undefined,
+    },
+  },
+};
+
 export const lineChartOptions = (
   theme,
   isTimeSeries = false,
@@ -30,14 +72,12 @@ export const lineChartOptions = (
   yFormatter = null,
   tickAmount = undefined,
   dataLabels = false,
-  legend = false,
+  legend = true,
 ) => ({
   chart: {
     type: 'line',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
   },
   theme: {
@@ -115,14 +155,12 @@ export const areaChartOptions = (
   yFormatter = null,
   tickAmount = undefined,
   isStacked = false,
-  legend = false,
+  legend = true,
 ) => ({
   chart: {
     type: 'area',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
   },
@@ -219,9 +257,7 @@ export const verticalBarsChartOptions = (
   chart: {
     type: 'bar',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
   },
@@ -314,9 +350,7 @@ export const horizontalBarsChartOptions = (
   chart: {
     type: 'bar',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked,
     events: {
@@ -343,9 +377,6 @@ export const horizontalBarsChartOptions = (
         ) { // for clickable parts of the graphs
           // eslint-disable-next-line no-param-reassign
           event.target.style.cursor = 'pointer';
-        } else {
-          // eslint-disable-next-line no-param-reassign
-          event.target.style.cursor = 'default';
         }
       },
       click: (event, chartContext, config) => {
@@ -460,9 +491,7 @@ export const radarChartOptions = (
   chart: {
     type: 'radar',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     offsetY: offset ? -20 : 0,
   },
   theme: {
@@ -543,9 +572,7 @@ export const polarAreaChartOptions = (
   chart: {
     type: 'polarArea',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
   },
   theme: {
@@ -629,9 +656,7 @@ export const donutChartOptions = (
     chart: {
       type: 'donut',
       background: 'transparent',
-      toolbar: {
-        show: false,
-      },
+      toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
     },
     theme: {
@@ -660,15 +685,12 @@ export const donutChartOptions = (
       position: legendPosition,
       fontFamily: '"IBM Plex Sans", sans-serif',
     },
-    tooltip: {
-      theme: theme.palette.mode,
-    },
     dataLabels: {
+      enabled: true,
       style: {
-        fontSize: '12px',
+        fontSize: '10px',
         fontFamily: '"IBM Plex Sans", sans-serif',
         fontWeight: 600,
-        colors: [theme.palette.text.primary],
       },
       background: {
         enabled: false,
@@ -681,7 +703,7 @@ export const donutChartOptions = (
       pie: {
         donut: {
           background: 'transparent',
-          size: '80%',
+          size: '70%',
         },
       },
     },
@@ -697,9 +719,7 @@ export const treeMapOptions = (
     chart: {
       type: 'donut',
       background: 'transparent',
-      toolbar: {
-        show: false,
-      },
+      toolbar: toolbarOptions,
       foreColor: theme.palette.text.secondary,
     },
     theme: {
@@ -767,9 +787,7 @@ export const heatMapOptions = (
   chart: {
     type: 'heatmap',
     background: 'transparent',
-    toolbar: {
-      show: false,
-    },
+    toolbar: toolbarOptions,
     foreColor: theme.palette.text.secondary,
     stacked: isStacked,
   },

@@ -334,7 +334,7 @@ const StixCoreRelationshipsDonut = ({
         variant="h4"
         gutterBottom={true}
         style={{
-          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 0 -7px',
+          margin: variant !== 'inLine' ? '0 0 10px 0' : '-10px 0 10px -7px',
         }}
       >
         {parameters.title || title || t('Relationships distribution')}
