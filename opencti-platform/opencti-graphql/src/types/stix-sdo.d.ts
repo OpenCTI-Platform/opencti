@@ -274,6 +274,7 @@ export interface StixReport extends StixContainer {
 export interface StixThreatActor extends StixDomainObject {
   name: string;
   description: string; // optional
+  x_opencti_photo_refs: Array<string>; // optional
   threat_actor_types : Array<string>; // threat-actor-type-ov - optional
   aliases: Array<string>; // optional
   first_seen: StixDate; // optional

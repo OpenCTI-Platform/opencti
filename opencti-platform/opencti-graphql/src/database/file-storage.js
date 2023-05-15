@@ -14,6 +14,9 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from './middleware-loader';
+import { storeLoadByIdWithRefs } from './middleware';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -153,6 +156,10 @@ export const loadFile = async (context, user, filename) => {
       Bucket: bucketName,
       Key: filename
     }));
+    const id = filename.match(/[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}/g);
+    const record = await storeLoadByIdWithRefs(context, user, id); // safe to call w/o type?
+    const data = record?.x_opencti_files.find((f) => f.id === filename);
+    const comment = data?.comment;
     const metaData = { ...object.Metadata, messages: [], errors: [] };
     if (metaData.labels_text) {
       metaData.labels = metaData.labels_text.split(';');
@@ -162,6 +169,7 @@ export const loadFile = async (context, user, filename) => {
       name: decodeURIComponent(object.Metadata.filename || 'unknown'),
       size: object.ContentLength,
       information: '',
+      comment,
       lastModified: object.LastModified,
       lastModifiedSinceMin: sinceNowInMinutes(object.LastModified),
       metaData,

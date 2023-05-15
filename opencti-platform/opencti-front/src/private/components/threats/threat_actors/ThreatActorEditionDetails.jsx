@@ -14,7 +14,7 @@ import { adaptFieldValue } from '../../../../utils/String';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const threatActorMutationFieldPatch = graphql`
+export const threatActorMutationFieldPatch = graphql`
   mutation ThreatActorEditionDetailsFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!

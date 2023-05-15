@@ -194,6 +194,7 @@ interface StoreRelation extends BasicStoreRelation, StoreCommon {
   [INPUT_DOMAIN_TO]: BasicStoreObject;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_KILLCHAIN]: Array<StoreKillChainPhases>;
+  x_opencti_photo_refs: Array<string>;
 }
 
 interface BasicStoreEntityEdge<T extends BasicStoreEntity> {
@@ -288,6 +289,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   secondary_motivations: Array<string>;
   personal_motivations: Array<string>;
   infrastructure_types: Array<string>;
+  x_opencti_photo_refs: Array<string>;
   threat_actor_types: Array<string>;
   tool_types: Array<string>;
   architecture_execution_envs: Array<string>;
@@ -509,6 +511,7 @@ interface StoreCyberObservable extends BasicStoreCyberObservable, StoreCommon {
   [INPUT_VALUES]: Array<StoreWindowsRegistryValueType>;
   [INPUT_LABELS]: Array<StoreLabel>;
   [INPUT_EXTERNAL_REFS]: Array<StoreExternalReferences>;
+  x_opencti_photo_refs: Array<string>;
 }
 
 interface BasicRuleEntity extends BasicStoreEntity {

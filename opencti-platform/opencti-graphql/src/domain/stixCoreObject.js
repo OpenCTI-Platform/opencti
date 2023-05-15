@@ -305,7 +305,7 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   return true;
 };
 
-export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false) => {
+export const stixCoreObjectImportPush = async (context, user, id, file, noTriggerImport = false, comment = null) => {
   let lock;
   const previous = await storeLoadByIdWithRefs(context, user, id);
   if (!previous) {
@@ -340,6 +340,7 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     }
     // Patch the updated_at to force live stream evolution
     const eventFile = storeFileConverter(user, up);
+    eventFile.comment = comment;
     const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
     await elUpdateElement({
       _index: previous._index,

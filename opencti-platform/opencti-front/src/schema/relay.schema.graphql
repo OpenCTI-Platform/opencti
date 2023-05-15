@@ -789,6 +789,7 @@ type File {
   metaData: FileMetadata
   uploadStatus: State!
   works: [Work]
+  comment: String
 }
 
 type FileEdge {
@@ -4913,6 +4914,7 @@ enum ThreatActorsFilter {
   revoked
   confidence
   creator
+  x_opencti_photo_refs
 }
 
 input ThreatActorsFiltering {
@@ -4965,6 +4967,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   name: String!
+  x_opencti_photo_refs: [String]
   description: String
   aliases: [String]
   threat_actor_types: [String]
@@ -4996,6 +4999,7 @@ input ThreatActorAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  x_opencti_photo_refs: [String]
   aliases: [String]
   threat_actor_types: [String]
   first_seen: DateTime
@@ -8049,7 +8053,7 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject
   askEnrichment(connectorId: ID!): Work
-  importPush(file: Upload!, noTriggerImport: Boolean): File
+  importPush(file: Upload!, noTriggerImport: Boolean, comment: String): File
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
   exportPush(file: Upload!): Boolean
 }

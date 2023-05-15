@@ -46,6 +46,7 @@ interface StixOpenctiExtension {
   workflow_id: string | undefined;
   assignee_ids: string[];
   creator_ids: string[];
+  x_opencti_photo_refs: Array<string>;
 }
 
 interface StixOpenctiExtensionSDO extends StixOpenctiExtension {

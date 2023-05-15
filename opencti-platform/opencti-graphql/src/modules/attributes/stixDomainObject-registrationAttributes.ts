@@ -386,6 +386,13 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
     iAliasedIds,
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'x_opencti_photo_refs',
+      type: 'string',
+      mandatoryType: 'no',
+      multiple: true,
+      upsert: false,
+      label: 'x_opencti_photo_refs'
+    },
     {
       name: 'threat_actor_types',
       type: 'string',

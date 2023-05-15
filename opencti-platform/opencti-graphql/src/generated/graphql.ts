@@ -6933,6 +6933,7 @@ export enum FeedbacksOrdering {
 
 export type File = {
   __typename?: 'File';
+  comment?: Maybe<Scalars['String']>;
   id: Scalars['ID'];
   lastModified?: Maybe<Scalars['DateTime']>;
   lastModifiedSinceMin?: Maybe<Scalars['Int']>;
@@ -20411,6 +20412,7 @@ export type StixCoreObjectEditMutationsExportPushArgs = {
 
 
 export type StixCoreObjectEditMutationsImportPushArgs = {
+  comment?: InputMaybe<Scalars['String']>;
   file: Scalars['Upload'];
   noTriggerImport?: InputMaybe<Scalars['Boolean']>;
 };
@@ -23421,6 +23423,7 @@ export type ThreatActor = BasicObject & StixCoreObject & StixDomainObject & Stix
   workflowEnabled?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
+  x_opencti_photo_refs?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_stix_ids?: Maybe<Array<Maybe<Scalars['StixId']>>>;
 };
 
@@ -23579,6 +23582,7 @@ export type ThreatActorAddInput = {
   stix_id?: InputMaybe<Scalars['StixId']>;
   threat_actor_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   update?: InputMaybe<Scalars['Boolean']>;
+  x_opencti_photo_refs?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   x_opencti_stix_ids?: InputMaybe<Array<InputMaybe<Scalars['StixId']>>>;
 };
 
@@ -23641,6 +23645,7 @@ export enum ThreatActorsFilter {
   Name = 'name',
   Revoked = 'revoked',
   UpdatedAt = 'updated_at',
+  XOpenctiPhotoRefs = 'x_opencti_photo_refs',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
 
@@ -29447,6 +29452,7 @@ export type FeedbackEdgeResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type FileResolvers<ContextType = any, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
+  comment?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   lastModified?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   lastModifiedSinceMin?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
@@ -33783,6 +33789,7 @@ export type ThreatActorResolvers<ContextType = any, ParentType extends Resolvers
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;
+  x_opencti_photo_refs?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_stix_ids?: Resolver<Maybe<Array<Maybe<ResolversTypes['StixId']>>>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

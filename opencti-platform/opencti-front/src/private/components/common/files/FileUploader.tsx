@@ -67,7 +67,7 @@ const FileUploader: FunctionComponent<FileUploaderProps> = ({
       mutation: entityId
         ? fileUploaderEntityMutation
         : fileUploaderGlobalMutation,
-      variables: { file, id: entityId },
+      variables: { file, comment: '', id: entityId },
       optimisticUpdater: () => {
         setUpload(file.name);
       },

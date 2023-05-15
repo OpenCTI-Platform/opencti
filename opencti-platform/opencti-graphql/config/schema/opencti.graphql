@@ -745,6 +745,8 @@ type File {
   metaData: FileMetadata
   uploadStatus: State!
   works: [Work]
+  # Added comment to allow file description metadata - specifically for use with Attached Photos
+  comment: String
 }
 type FileEdge {
   cursor: String!
@@ -6338,6 +6340,7 @@ enum ThreatActorsFilter {
   revoked
   confidence
   creator
+  x_opencti_photo_refs
 }
 input ThreatActorsFiltering {
   key: [ThreatActorsFilter!]!
@@ -6448,6 +6451,7 @@ type ThreatActor implements BasicObject & StixObject & StixCoreObject & StixDoma
   objectAssignee: AssigneeConnection
   # ThreatActor
   name: String!
+  x_opencti_photo_refs: [String]
   description: String
   aliases: [String]
   threat_actor_types: [String]
@@ -6479,6 +6483,7 @@ input ThreatActorAddInput {
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
   description: String
+  x_opencti_photo_refs: [String]
   aliases: [String]
   threat_actor_types: [String]
   first_seen: DateTime
@@ -12712,7 +12717,8 @@ type StixCoreObjectEditMutations {
   restrictionOrganizationAdd(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   restrictionOrganizationDelete(organizationId: ID!): StixCoreObject @auth(for: [KNOWLEDGE_KNUPDATE_KNORGARESTRICT])
   askEnrichment(connectorId: ID!): Work @auth(for: [KNOWLEDGE_KNENRICHMENT])
-  importPush(file: Upload!, noTriggerImport: Boolean): File @auth(for: [KNOWLEDGE_KNUPLOAD])
+  importPush(file: Upload!, noTriggerImport: Boolean, comment: String): File
+    @auth(for: [KNOWLEDGE_KNUPLOAD])
   exportAsk(format: String!, exportType: String!, maxMarkingDefinition: String): [File]
     @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   exportPush(file: Upload!): Boolean @auth(for: [CONNECTORAPI])

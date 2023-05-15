@@ -217,6 +217,7 @@ export const buildOCTIExtensions = (instance: StoreObject): S.StixOpenctiExtensi
     created_at: convertToStixDate(instance.created_at),
     updated_at: convertToStixDate(instance.updated_at),
     aliases: instance.x_opencti_aliases ?? [],
+    x_opencti_photo_refs: instance.x_opencti_photo_refs ?? [],
     files: (instance.x_opencti_files ?? []).map((file) => ({
       name: file.name,
       uri: `/storage/get/${file.id}`,
@@ -481,6 +482,7 @@ const convertThreatActorToStix = (instance: StoreEntity, type: string): SDO.Stix
     ...buildStixDomain(instance),
     name: instance.name,
     description: instance.description,
+    x_opencti_photo_refs: instance.x_opencti_photo_refs,
     threat_actor_types: instance.threat_actor_types,
     aliases: instance.aliases,
     first_seen: convertToStixDate(instance.first_seen),
