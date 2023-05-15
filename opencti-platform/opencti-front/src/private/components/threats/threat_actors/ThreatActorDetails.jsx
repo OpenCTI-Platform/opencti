@@ -26,6 +26,7 @@ import { Formik, Form, Field } from 'formik';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { threatActorMutationFieldPatch } from './ThreatActorEditionDetails';
+import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import inject18n from '../../../../components/i18n';
 import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
