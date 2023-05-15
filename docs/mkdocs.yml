@@ -121,6 +121,7 @@ nav:
     - Advanced:
       - Clustering: deployment/clustering.md
       - Rollover policies: deployment/rollover.md
+      - Troubleshooting: deployment/troubleshooting.md
   - User Guide:
     - Structure:
       - Platform organization: usage/platform.md
@@ -144,7 +145,6 @@ nav:
       - Authentication and RBAC: administration/rbac.md
       - Data segregation: administration/segregation.md
       - Audit and monitoring: administration/audit.md
-    - Troubleshooting: administration/troubleshooting.md
   - Reference:
     - Data model: reference/data-model.md
     - GraphQL API: reference/api.md

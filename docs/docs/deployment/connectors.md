@@ -188,7 +188,6 @@ The connector status can be displayed in the dedicated section of the platform a
 
 ![Connectors](assets/connectors-status.png)
 
-<aside>
-➡️ If you encounter problems deploying OpenCTI or connectors, you can consult the [Troubleshooting](https://www.notion.so/Troubleshooting-4927527403c64d8aac2ac2e127ff464b) page. If not, go to the next section, the [Introduction](https://www.notion.so/Introduction-31c3e69442da4d84b8d6c60aa2a86833) page.
+!!! bug "Problem"
 
-</aside>
+    If you encounter problems deploying OpenCTI or connectors, you can consult the [troubleshooting page](deployment/troubleshooting) page.
