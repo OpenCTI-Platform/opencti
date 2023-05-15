@@ -14,6 +14,8 @@ import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
+import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from './middleware-loader';
 import { storeLoadByIdWithRefs } from './middleware';
 
 // Minio configuration

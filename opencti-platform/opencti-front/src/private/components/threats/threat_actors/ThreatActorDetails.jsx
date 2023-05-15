@@ -28,6 +28,7 @@ import IconButton from '@mui/material/IconButton';
 import { threatActorMutationFieldPatch } from './ThreatActorEditionDetails';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import inject18n from '../../../../components/i18n';
+import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownField from '../../../../components/MarkdownField';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
