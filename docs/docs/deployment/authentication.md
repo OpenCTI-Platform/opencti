@@ -59,7 +59,7 @@ This strategy can be used to authenticate your user with your company LDAP and i
 }
 ```
 
-If you would like to use LDAP groups to automatically associate a role and/or group to users depending of its group.
+If you would like to use LDAP groups to automatically associate LDAP groups and OpenCTI groups/organizations:
 
 ```json
 "ldap": {
@@ -67,9 +67,13 @@ If you would like to use LDAP groups to automatically associate a role and/or gr
         ...
         "group_search_base": "cn=Groups,dc=mydomain,dc=com",
         "group_search_filter": "(member={{dn}})",
-        "groups_management": {
+        "groups_management": { // To map LDAP Groups to OpenCTI Groups
             "group_attribute": "cn",
             "groups_mapping": ["LDAP_Group_1:OpenCTI_Group_1", "LDAP_Group_2:OpenCTI_Group_2", ...]
+        },
+        "organizations_management": { // To map LDAP Groups to OpenCTI Organizations
+            "group_attribute": "cn",
+            "groups_mapping": ["LDAP_Group_1:OpenCTI_Organization_1", "LDAP_Group_2:OpenCTI_Organization_2", ...]
         }
     }
 }
@@ -120,27 +124,44 @@ Here is an example of SAML configuration using environment variables:
 - PROVIDERS__SAML__CONFIG__CERT=MIICmzCCAYMCBgF3Rt3X1zANBgkqhkiG9w0BAQsFADARMQ8w
 ```
 
-OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups (everything is tied to a group in the platform). Here is an example:
+OpenCTI support mapping SAML Roles/Groups on OpenCTI Groups. Here is an example:
 
 ```json
 "saml": {
     "config": {
         ...,
+        // Groups mapping
         "groups_management": { // To map SAML Groups to OpenCTI Groups
             "group_attributes": ["Group"],
             "groups_mapping": ["SAML_Group_1:OpenCTI_Group_1", "SAML_Group_2:OpenCTI_Group_2", ...]
         },
-        "roles_management": { // To map SAML Roles to OpenCTI Groups
-            "role_attributes": ["Role"],
-            "roles_mapping": ["SAML_Role_1:OpenCTI_Group_1", "SAML_Role_2:OpenCTI_Group_2", ...]
-        }        
+        "groups_management": { // To map SAML Roles to OpenCTI Groups
+            "group_attributes": ["Role"],
+            "groups_mapping": ["SAML_Role_1:OpenCTI_Group_1", "SAML_Role_2:OpenCTI_Group_2", ...]
+        },
+        // Organizations mapping
+        "organizations_management": { // To map SAML Groups to OpenCTI Organizations
+            "group_attributes": ["Group"],
+            "groups_mapping": ["SAML_Group_1:OpenCTI_Organization_1", "SAML_Group_2:OpenCTI_Organization_2", ...]
+        },
+        "organizations_management": { // To map SAML Roles to OpenCTI Organizations
+            "group_attributes": ["Role"],
+            "groups_mapping": ["SAML_Role_1:OpenCTI_Organization_1", "SAML_Role_2:OpenCTI_Organization_2", ...]
+        }
     }
 }
 ```
 
+Here is an example of SAML Groups mapping configuration using environment variables:
+
+```yaml
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_ATTRIBUTES=[\"Group\"]"
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \SAML_Group_2:OpenCTI_Group_2\", ...]"
+```
+
 ### Auth0 (button)
 
-This strategy allows to use [Auth0 Service](https://auth0.com) to handle the authentication and is based on [Passport - Auth0]](http://www.passportjs.org/packages/passport-auth0).
+This strategy allows to use [Auth0 Service](https://auth0.com) to handle the authentication and is based on [Passport - Auth0](http://www.passportjs.org/packages/passport-auth0).
 
 ```json
 "authzero": {
@@ -193,16 +214,28 @@ OpenCTI support mapping OpenID Roles/Groups on OpenCTI Groups (everything is tie
 "oic": {
     "config": {
         ...,
+        // Groups mapping
         "groups_management": { // To map OpenID Groups to OpenCTI Groups
-            "roles_scope": "groups",
-            "roles_path": ["groups", "realm_access.groups", "resource_access.account.groups"],
-            "roles_mapping": ["OpenID_Group_1:OpenCTI_Group_1", "OpenID_Group_2:OpenCTI_Group_2", ...]
+            "groups_scope": "groups",
+            "groups_path": ["groups", "realm_access.groups", "resource_access.account.groups"],
+            "groups_mapping": ["OpenID_Group_1:OpenCTI_Group_1", "OpenID_Group_2:OpenCTI_Group_2", ...]
         },
-        "roles_management": { // To map OpenID Roles to OpenCTI Groups
-            "roles_scope": "roles",
-            "roles_path": ["roles", "realm_access.roles", "resource_access.account.roles"],
-            "roles_mapping": ["OpenID_Role_1:OpenCTI_Group_1", "OpenID_Role_2:OpenCTI_Group_2", ...]
-        }        
+        "groups_management": { // To map OpenID Roles to OpenCTI Groups
+            "groups_scope": "roles",
+            "groups_path": ["roles", "realm_access.roles", "resource_access.account.roles"],
+            "groups_mapping": ["OpenID_Role_1:OpenCTI_Group_1", "OpenID_Role_2:OpenCTI_Group_2", ...]
+        },
+        // Organizations mapping  
+        "organizations_management": { // To map OpenID Groups to OpenCTI Organizations
+            "organizations_scope": "groups",
+            "organizations_path": ["groups", "realm_access.groups", "resource_access.account.groups"],
+            "organizations_mapping": ["OpenID_Group_1:OpenCTI_Group_1", "OpenID_Group_2:OpenCTI_Group_2", ...]
+        },
+        "organizations_management": { // To map OpenID Roles to OpenCTI Organizations
+            "organizations_scope": "roles",
+            "organizations_path": ["roles", "realm_access.roles", "resource_access.account.roles"],
+            "organizations_mapping": ["OpenID_Role_1:OpenCTI_Group_1", "OpenID_Role_2:OpenCTI_Group_2", ...]
+        },
     }
 }
 ```
@@ -210,9 +243,9 @@ OpenCTI support mapping OpenID Roles/Groups on OpenCTI Groups (everything is tie
 Here is an example of OpenID Groups mapping configuration using environment variables:
 
 ```yaml
-- "PROVIDERS__OPENID__CONFIG__ROLES_MANAGEMENT__ROLES_SCOPE=groups"
-- "PROVIDERS__OPENID__CONFIG__ROLES_MANAGEMENT__ROLES_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]"
-- "PROVIDERS__OPENID__CONFIG__ROLES_MANAGEMENT__ROLES_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]"
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_SCOPE=groups"
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_PATH=[\"groups\", \"realm_access.groups\", \"resource_access.account.groups\"]"
+- "PROVIDERS__OPENID__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"OpenID_Group_1:OpenCTI_Group_1\", \"OpenID_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
 ### Facebook (button)

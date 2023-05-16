@@ -1,6 +1,6 @@
 # Platform
 
-## ntroduction
+## Introduction
 
 The following chapter aims at giving the reader a step-by-step description of what is available on the platform and the meaning of the different tabs and entries.
 

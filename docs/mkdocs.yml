@@ -117,7 +117,7 @@ nav:
     - Ecosystem:
       - Connectors: deployment/connectors.md
       - Integrations: deployment/integrations.md
-      - Third-party: deployment/third-party.md
+      - Third-party systems: deployment/third-party.md
     - Advanced:
       - Clustering: deployment/clustering.md
       - Rollover policies: deployment/rollover.md

@@ -133,12 +133,6 @@ body {
 }
 
 *::-webkit-scrollbar-thumb {
-  background-color: #14262c;
-  border-radius: 20px;
-  border: 3px solid #2d4b5b;
-}
-
-*::-webkit-scrollbar-thumb {
   border-radius: 8px;
   background-color: #01478d;
   min-height: 24px;
