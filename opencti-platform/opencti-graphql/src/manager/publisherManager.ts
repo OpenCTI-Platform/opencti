@@ -13,7 +13,6 @@ import {
   STATIC_OUTCOMES
 } from './notificationManager';
 import type { SseEvent, StreamNotifEvent } from '../types/event';
-import { extractStixRepresentative } from '../database/stix-converter';
 import { sendMail, smtpIsAlive } from '../database/smtp';
 import { getEntityFromCache } from '../database/cache';
 import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
@@ -23,6 +22,7 @@ import type { AuthContext } from '../types/user';
 import type { StixCoreObject, StixRelationshipObject } from '../types/stix-common';
 import { now } from '../utils/format';
 import type { NotificationContentEvent } from '../modules/notification/notification-types';
+import { extractStixRepresentative } from '../database/stix-representative';
 
 const DOC_URI = 'https://filigran.notion.site/OpenCTI-Public-Knowledge-Base-d411e5e477734c59887dad3649f20518';
 const PUBLISHER_ENGINE_KEY = conf.get('publisher_manager:lock_key');
@@ -53,7 +53,8 @@ const processNotificationEvent = async (
     const generatedContent: Record<string, Array<NotificationContentEvent>> = {};
     for (let index = 0; index < data.length; index += 1) {
       const { notification_id, instance, type } = data[index];
-      const event = { operation: type, message: `[${instance.type}] ${(extractStixRepresentative(instance))}`, instance_id: instance.id };
+      const instanceRepresentative = await extractStixRepresentative(context, user, instance);
+      const event = { operation: type, message: `[${instance.type}] ${instanceRepresentative}`, instance_id: instance.id };
       const eventNotification = notificationMap.get(notification_id);
       if (eventNotification) {
         const notificationName = eventNotification.name;

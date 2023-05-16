@@ -1426,6 +1426,7 @@ const i18n = {
       'Manage a container': 'Administrar un contenedor',
       'Do you want to remove this entity?': '¿Quieres eliminar este objeto?',
       'Add context': 'Agregar contexto',
+      Restricted: 'Restringido',
       'Organizations restriction': 'Restricción de organizaciones',
       'Platform organization': 'Organización de la plataforma',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
@@ -3260,6 +3261,7 @@ const i18n = {
       'Do you want to remove this object?':
         'Souhaitez-vous retirer cet object ?',
       'Add context': 'Ajouter du contexte',
+      Restricted: 'Restreint',
       'Organizations restriction': "Restriction d'organisations",
       'Platform organization': 'Organisation de la plateforme',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
@@ -5054,6 +5056,7 @@ const i18n = {
       'Manage a container': 'コンテナを管理する',
       'Do you want to remove this object?': 'このオブジェクトを削除しますか?',
       'Add context': 'コンテキストを追加',
+      Restricted: '制限',
       'Organizations restriction': '組織の制限',
       'Platform organization': 'プラットフォーム構成',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':
@@ -6750,6 +6753,7 @@ const i18n = {
       'Manage a container': '理容器',
       'Do you want to remove this object?': '是否要删除此对象？',
       'Add context': '添加上下文',
+      Restricted: '限制',
       'Organizations restriction': '组织限制',
       'Platform organization': '平台組織',
       'When you specified the platform organization, data without any organization restriction will be accessible only for users that are part of the platform one':

@@ -313,7 +313,7 @@ class StixCoreRelationshipContainer extends Component {
                   className={classes.item}
                   style={{
                     border: `2px solid ${itemColor(
-                      !toRestricted ? to.entity_type : 'Unknown',
+                      !toRestricted ? to.entity_type : 'Restricted',
                     )}`,
                     top: 20,
                     right: 20,
@@ -323,7 +323,7 @@ class StixCoreRelationshipContainer extends Component {
                     className={classes.itemHeader}
                     style={{
                       borderBottom: `1px solid ${itemColor(
-                        !toRestricted ? to.entity_type : 'Unknown',
+                        !toRestricted ? to.entity_type : 'Restricted',
                       )}`,
                     }}
                   >
@@ -331,7 +331,7 @@ class StixCoreRelationshipContainer extends Component {
                       <ItemIcon
                         type={!toRestricted ? to.entity_type : 'Unknown'}
                         color={itemColor(
-                          !toRestricted ? to.entity_type : 'Unknown',
+                          !toRestricted ? to.entity_type : 'Restricted',
                         )}
                         size="small"
                       />
