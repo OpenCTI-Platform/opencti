@@ -15,7 +15,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
   marginTop?: number;
   isRelationship?: boolean;
-  defaultMarking: { id: string; definition: string | null }[];
+  defaultMarkings?: { id: string; definition: string | null }[];
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<
@@ -24,7 +24,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
   stixCoreObjectOrStixCoreRelationshipId,
   marginTop,
   isRelationship,
-  defaultMarking,
+  defaultMarkings,
 }) => {
   const { t } = useFormatter();
   const paginationOptions = {
@@ -74,7 +74,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
             queryRef={queryRef}
             marginTop={marginTop}
             paginationOptions={paginationOptions}
-            defaultMarking={defaultMarking}
+            defaultMarkings={defaultMarkings}
             title={title}
           />
         </React.Suspense>

@@ -285,6 +285,9 @@ const stixNestedRefRelationshipResolveTypes = graphql`
       ... on Case {
         name
       }
+      ... on MalwareAnalysis {
+        result_name
+      }
       ... on StixCyberObservable {
         observable_value
       }
@@ -453,11 +456,12 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
       openCreateEntity,
       openCreateObservable,
     } = this.state;
-    const { classes, t, entityType } = this.props;
+    const { classes, t, entityType, targetStixCoreObjectTypes } = this.props;
     const paginationOptions = {
       search,
       orderBy: search.length > 0 ? null : 'created_at',
       orderMode: search.length > 0 ? null : 'desc',
+      types: targetStixCoreObjectTypes,
     };
     return (
       <div>

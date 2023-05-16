@@ -207,6 +207,39 @@
       "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
     },
     {
+      "id": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d",
+      "type": "software",
+      "name": "Fedora",
+      "spec_version": "2.1",
+      "created": "2021-02-04T14:48:31.601Z",
+      "modified": "2021-02-04T14:48:31.601Z"
+    },
+    {
+      "id": "malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263",
+      "type": "malware-analysis",
+      "product": "Product to analyse",
+      "submitted": "2023-02-15T23:00:00.000Z",
+      "spec_version": "2.1",
+      "result_name": "Spelevo EK analysis",
+      "labels": ["ryuk", "TrickBot", "COVID-19"],
+      "created": "2021-02-04T14:48:31.601Z",
+      "modified": "2021-02-04T14:48:31.601Z",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"],
+      "operating_system_ref": "software--b0debdba-74e7-4463-ad2a-34334ee66d8d"
+    },
+    {
+      "id": "relationship--642f6fca-6c5a-495c-9419-9ee0a4a599ee",
+      "type": "relationship",
+      "spec_version": "2.1",
+      "relationship_type": "related-to",
+      "source_ref": "malware-analysis--8fd6fcd4-81a9-4937-92b8-4e1cbe68f263",
+      "target_ref": "malware--c6006dd5-31ca-45c2-8ae0-4e428e712f88",
+      "created": "2022-03-01T14:07:14.316Z",
+      "modified": "2022-03-01T14:07:14.316Z",
+      "created_by_ref": "identity--72de07e8-e6ed-4dfe-b906-1e82fae1d132",
+      "object_marking_refs": ["marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27"]
+    },
+    {
       "id": "campaign--92d46985-17a6-4610-8be8-cc70c82ed214",
       "type": "campaign",
       "spec_version": "2.1",

@@ -93,7 +93,7 @@ class OrganizationComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={organization.id}
-          defaultMarking={(organization.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(organization.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <OrganizationEdition organizationId={organization.id} />

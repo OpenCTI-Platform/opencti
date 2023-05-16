@@ -157,7 +157,7 @@ const CountryComponent = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={country.id}
-        defaultMarking={(country.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(country.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CountryEdition countryId={country.id} />

@@ -601,7 +601,7 @@ class StixSightingRelationshipContainer extends Component {
                   stixSightingRelationship.id
                 }
                 isRelationship={true}
-                defaultMarking={(
+                defaultMarkings={(
                   stixSightingRelationship.objectMarking?.edges ?? []
                 ).map((edge) => edge.node)}
               />

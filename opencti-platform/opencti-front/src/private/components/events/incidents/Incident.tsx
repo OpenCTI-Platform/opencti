@@ -159,7 +159,7 @@ const Incident = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={incident.id}
-        defaultMarking={(incident.objectMarking?.edges ?? []).map(
+        defaultMarkings={(incident.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />

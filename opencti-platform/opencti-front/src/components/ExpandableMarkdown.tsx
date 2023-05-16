@@ -7,11 +7,10 @@ import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/styles';
 import { truncate } from '../utils/String';
 import { Theme } from './Theme';
+import FieldOrEmpty from './FieldOrEmpty';
 
-export const MarkDownComponents = (
-  theme: Theme,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-): Record<string, FunctionComponent<any>> => ({
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const MarkDownComponents = (theme: Theme): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table
       style={{
@@ -45,14 +44,11 @@ export const MarkDownComponents = (
 });
 
 interface ExpandableMarkdownProps {
-  source: string | null;
-  limit: number;
+  source: string | null,
+  limit: number,
 }
 
-const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
-  source,
-  limit,
-}) => {
+const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({ source, limit }) => {
   const theme = useTheme<Theme>();
   const [expand, setExpand] = useState(false);
 
@@ -61,29 +57,28 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
 
   return (
     <span>
-      {source ? (
-        <div style={{ position: 'relative' }}>
-          {shouldBeTruncated && (
-            <div style={{ position: 'absolute', top: -32, right: 0 }}>
-              <IconButton onClick={onClick} size="large">
-                {expand ? <ExpandLess /> : <ExpandMore />}
-              </IconButton>
+        <FieldOrEmpty source={source}>
+          <div style={{ position: 'relative' }}>
+            {shouldBeTruncated && (
+                <div style={{ position: 'absolute', top: -32, right: 0 }}>
+                    <IconButton onClick={onClick} size="large">
+                        {expand ? <ExpandLess /> : <ExpandMore />}
+                    </IconButton>
+                </div>
+            )}
+              <div style={{ marginTop: 10 }}>
+              <Markdown
+                  remarkPlugins={[remarkGfm, remarkParse]}
+                  components={MarkDownComponents(theme)}
+                  className="markdown"
+              >
+                {expand ? source : truncate(source, limit)}
+              </Markdown>
             </div>
-          )}
-          <div style={{ marginTop: 10 }}>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              components={MarkDownComponents(theme)}
-              className="markdown"
-            >
-              {expand ? source : truncate(source, limit)}
-            </Markdown>
+            <div className="clearfix" />
           </div>
-          <div className="clearfix" />
-        </div>
-      ) : (
-        '-'
-      )}
+        </FieldOrEmpty>
+
     </span>
   );
 };

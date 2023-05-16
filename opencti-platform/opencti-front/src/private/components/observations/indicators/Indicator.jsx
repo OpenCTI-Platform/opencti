@@ -86,7 +86,7 @@ class IndicatorComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={indicator.id}
-          defaultMarking={(indicator.objectMarking?.edges ?? []).map(
+          defaultMarkings={(indicator.objectMarking?.edges ?? []).map(
             (edge) => edge.node,
           )}
         />

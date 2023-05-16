@@ -144,7 +144,7 @@ class StixDomainObjectsExportCreationComponent extends Component {
       variables: {
         type: this.props.exportEntityType,
         format: values.format,
-        exportType: 'full',
+        exportType: 'simple',
         maxMarkingDefinition,
         context,
         ...paginationOptions,

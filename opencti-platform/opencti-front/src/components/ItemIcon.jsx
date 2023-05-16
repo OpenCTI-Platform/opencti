@@ -153,6 +153,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Malware':
       return <Biohazard style={style} fontSize={fontSize} role="img" />;
+    case 'Malware-Analysis':
+      return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Threat-Actor':
       return <LaptopAccount style={style} fontSize={fontSize} role="img" />;
     case 'Tool':

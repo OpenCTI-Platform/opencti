@@ -152,7 +152,7 @@ const City = ({ cityData }: { cityData: City_city$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={city.id}
-        defaultMarking={(city.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(city.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <CityEdition cityId={city.id} />

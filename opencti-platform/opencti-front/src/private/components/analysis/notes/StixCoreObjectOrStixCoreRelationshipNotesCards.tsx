@@ -119,8 +119,8 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
 };
 
 const toOptions = (
-  objectMarkings: { id: string; definition: string | null }[],
-) => objectMarkings.map((objectMarking) => ({
+  objectMarkings: { id: string; definition: string | null }[] = [],
+) => (objectMarkings ?? []).map((objectMarking) => ({
   label: objectMarking.definition ?? objectMarking.id,
   value: objectMarking.id,
 }));
@@ -140,13 +140,13 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  defaultMarking: { id: string; definition: string | null }[];
+  defaultMarkings?: { id: string; definition: string | null }[];
   title: string;
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
 StixCoreObjectOrStixCoreRelationshipNotesCardsProps
-> = ({ id, marginTop, queryRef, paginationOptions, defaultMarking, title }) => {
+> = ({ id, marginTop, queryRef, paginationOptions, defaultMarkings, title }) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const basicShape = {
@@ -178,7 +178,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
     likelihood: 50,
     confidence: 75,
     note_types: [],
-    objectMarking: toOptions(defaultMarking),
+    objectMarking: toOptions(defaultMarkings),
     objectLabel: [],
   };
   const scrollToBottom = () => {

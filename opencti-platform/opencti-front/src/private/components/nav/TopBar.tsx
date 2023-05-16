@@ -78,6 +78,7 @@ import TopMenuCaseIncident from './TopMenuCaseIncident';
 import TopMenuCaseFeedback from './TopMenuCaseFeedback';
 import FeedbackCreation from '../cases/feedbacks/FeedbackCreation';
 import TopMenuCases from './TopMenuCases';
+import TopMenuMalwareAnalysis from './TopMenuMalwareAnalysis';
 import { Theme } from '../../../components/Theme';
 import {
   EXPLORE,
@@ -315,6 +316,9 @@ const TopBar: FunctionComponent<TopBarProps> = ({
           )}
           {location.pathname.includes('/dashboard/analysis/groupings/') && (
             <TopMenuGrouping />
+          )}
+          {location.pathname.includes('/dashboard/analysis/malware_analyses/') && (
+            <TopMenuMalwareAnalysis />
           )}
           {location.pathname.includes('/dashboard/analysis/notes/') && (
             <TopMenuNote />

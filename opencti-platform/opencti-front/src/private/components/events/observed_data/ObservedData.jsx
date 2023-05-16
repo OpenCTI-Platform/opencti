@@ -83,7 +83,7 @@ class ObservedDataComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={observedData.id}
-          defaultMarking={(observedData.objectMarking?.edges ?? []).map(
+          defaultMarkings={(observedData.objectMarking?.edges ?? []).map(
             (edge) => edge.node,
           )}
         />

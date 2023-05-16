@@ -82,7 +82,7 @@ class EventComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={event.id}
-          defaultMarking={(event.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(event.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <EventEdition eventId={event.id} />

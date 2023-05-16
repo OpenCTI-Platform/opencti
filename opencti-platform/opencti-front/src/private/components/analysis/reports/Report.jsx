@@ -65,7 +65,7 @@ class ReportComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={report.id}
-          defaultMarking={(report.objectMarking?.edges ?? []).map(
+          defaultMarkings={(report.objectMarking?.edges ?? []).map(
             (edge) => edge.node,
           )}
         />

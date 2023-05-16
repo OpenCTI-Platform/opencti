@@ -152,7 +152,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
             </Grid>
             <StixCoreObjectOrStixCoreRelationshipNotes
                 stixCoreObjectOrStixCoreRelationshipId={administrativeArea.id}
-                defaultMarking={(administrativeArea.objectMarking?.edges ?? []).map((edge) => edge.node)}
+                defaultMarkings={(administrativeArea.objectMarking?.edges ?? []).map((edge) => edge.node)}
             />
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
                 <AdministrativeAreaEdition administrativeAreaId={administrativeArea.id} />

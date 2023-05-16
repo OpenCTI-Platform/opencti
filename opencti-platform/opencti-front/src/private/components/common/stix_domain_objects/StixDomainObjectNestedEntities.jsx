@@ -133,7 +133,7 @@ class StixDomainObjectNestedEntities extends Component {
 
   render() {
     const { searchTerm, sortBy, orderAsc } = this.state;
-    const { entityId, t, entityType } = this.props;
+    const { entityId, t, entityType, targetStixCoreObjectTypes } = this.props;
     const paginationOptions = {
       elementId: entityId,
       search: searchTerm,
@@ -154,6 +154,7 @@ class StixDomainObjectNestedEntities extends Component {
             entityId={entityId}
             variant="inLine"
             entityType={entityType}
+            targetStixCoreObjectTypes={targetStixCoreObjectTypes}
           />
         </Security>
         <div className="clearfix" />

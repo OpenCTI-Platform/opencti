@@ -35,6 +35,7 @@ import CommitMessage from '../form/CommitMessage';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import { truncate } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { defaultValue } from '../../../../utils/Graph';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -296,13 +297,13 @@ const StixDomainObjectHeader = (props) => {
   const enableReferences = useIsEnforceReference(entityType);
   return (
     <div>
-      <Tooltip title={stixDomainObject.name}>
+      <Tooltip title={defaultValue(stixDomainObject)}>
         <Typography
           variant="h1"
           gutterBottom={true}
           classes={{ root: classes.title }}
         >
-          {truncate(stixDomainObject.name, 80)}
+          {truncate(defaultValue(stixDomainObject), 80)}
         </Typography>
       </Tooltip>
       <Security needs={[KNOWLEDGE_KNUPDATE]}>

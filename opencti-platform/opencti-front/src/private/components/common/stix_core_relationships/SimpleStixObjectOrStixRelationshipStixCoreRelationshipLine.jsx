@@ -316,6 +316,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
               description
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
               description
@@ -551,6 +554,9 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             ... on Malware {
               name
               description
+            }
+            ... on MalwareAnalysis {
+              result_name
             }
             ... on ThreatActor {
               name

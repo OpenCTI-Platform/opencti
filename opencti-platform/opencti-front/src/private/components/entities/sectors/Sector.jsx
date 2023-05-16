@@ -84,7 +84,7 @@ class SectorComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={sector.id}
-          defaultMarking={(sector.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(sector.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <SectorEdition sectorId={sector.id} />

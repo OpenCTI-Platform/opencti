@@ -106,7 +106,7 @@ const EntitySetting = ({
               !entitySetting.availableSettings.includes('platform_hidden_type')
                 ? t('This configuration is not available for this entity type')
                 : t(
-                  'This configuration hide a specific entity type across the entire platform.',
+                  'This configuration hides a specific entity type across the entire platform.',
                 )
             }
           >

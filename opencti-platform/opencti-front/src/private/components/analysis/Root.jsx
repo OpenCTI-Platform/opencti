@@ -12,6 +12,8 @@ import RootOpinion from './opinions/Root';
 import ExternalReferences from './ExternalReferences';
 import RootExternalReference from './external_references/Root';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import MalwareAnalyses from './MalwareAnalyses';
+import RootMalwareAnalysis from './malware_analyses/Root';
 
 const Root = () => {
   let redirect = null;
@@ -19,6 +21,8 @@ const Root = () => {
     redirect = 'reports';
   } else if (!useIsHiddenEntity('Grouping')) {
     redirect = 'groupings';
+  } else if (!useIsHiddenEntity('MalwareAnalysis')) {
+    redirect = 'malwareAnalyses';
   } else if (!useIsHiddenEntity('Note')) {
     redirect = 'notes';
   } else if (!useIsHiddenEntity('Opinion')) {
@@ -50,6 +54,15 @@ const Root = () => {
       <BoundaryRoute
         path="/dashboard/analysis/groupings/:groupingId"
         component={RootGrouping}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/analysis/malware_analyses"
+        component={MalwareAnalyses}
+      />
+      <BoundaryRoute
+        path="/dashboard/analysis/malware_analyses/:malwareAnalysisId"
+        component={RootMalwareAnalysis}
       />
       <BoundaryRoute
         exact

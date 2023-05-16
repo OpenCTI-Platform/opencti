@@ -374,6 +374,9 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                     opinion
                     explanation
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on ObservedData {
                   name
                   objects(first: 1) {
@@ -540,6 +543,9 @@ const StixCoreRelationshipCreationFromEntityStixDomainObjectsLines = createPagin
                         }
                         ... on Case {
                           name
+                        }
+                        ... on MalwareAnalysis {
+                          result_name
                         }
                         ... on StixCyberObservable {
                           observable_value

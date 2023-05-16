@@ -198,6 +198,7 @@ const relationsTypesMapping = {
   Malware_Tool: ['downloads', 'drops', 'uses'],
   Malware_Url: ['communicates-with'],
   Malware_Vulnerability: ['exploits', 'targets'],
+  'Malware-Analysis_Malware': ['characterizes', 'analysis-of', 'static-analysis-of', 'dynamic-analysis-of'],
   Organization_City: ['located-at'],
   Organization_Country: ['located-at'],
   Organization_Organization: ['part-of'],

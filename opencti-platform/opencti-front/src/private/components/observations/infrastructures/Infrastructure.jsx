@@ -84,7 +84,7 @@ class InfrastructureComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={infrastructure.id}
-          defaultMarking={(infrastructure.objectMarking?.edges ?? []).map(
+          defaultMarkings={(infrastructure.objectMarking?.edges ?? []).map(
             (edge) => edge.node,
           )}
         />
