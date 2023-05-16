@@ -2945,6 +2945,36 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
           ... on Incident {
             name
           }
+          ... on Report {
+              name
+          }
+          ... on Grouping {
+              name
+          }
+          ... on Opinion {
+              opinion
+          }
+          ... on Channel {
+              name
+          }
+          ... on Event {
+              name
+          }
+          ... on AdministrativeArea {
+              name
+          }
+          ... on Narrative {
+              name
+          }
+          ... on CaseIncident {
+              name
+          }
+          ... on CaseRfi {
+              name
+          }
+          ... on CaseRft {
+              name
+          }
           ... on StixCyberObservable {
             observable_value
           }
@@ -3329,6 +3359,36 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
           }
           ... on Incident {
             name
+          }
+          ... on Report {
+              name
+          }
+          ... on Grouping {
+              name
+          }
+          ... on Opinion {
+              opinion
+          }
+          ... on Channel {
+              name
+          }
+          ... on Event {
+              name
+          }
+          ... on AdministrativeArea {
+              name
+          }
+          ... on Narrative {
+              name
+          }
+          ... on CaseIncident {
+              name
+          }
+          ... on CaseRfi {
+              name
+          }
+          ... on CaseRft {
+              name
           }
           ... on StixCyberObservable {
             observable_value
