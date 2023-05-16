@@ -9,6 +9,7 @@ import { elIndex } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS } from '../database/utils';
 import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-types';
 import { isStixCoreObject } from '../schema/stixCoreObject';
+import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const TASK_TYPE_LIST = 'LIST';
@@ -57,5 +58,5 @@ export const createListTask = async (user, input) => {
 };
 
 export const isTaskEnabledEntity = (entityType) => {
-  return isStixCoreObject(entityType) || entityType === ENTITY_TYPE_NOTIFICATION;
+  return isStixCoreObject(entityType) || isStixCoreRelationship(entityType) || entityType === ENTITY_TYPE_NOTIFICATION;
 };
