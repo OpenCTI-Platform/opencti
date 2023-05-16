@@ -44,7 +44,7 @@ const stixRefRelationshipResolvers = {
     opinions: (rel, _, context) => opinionsLoader.load(rel.id, context, context.user),
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
-    datable: (rel) => isDatable(rel.fromType, rel.relationship_type)
+    datable: (rel) => isDatable(rel.fromType, rel.relationship_type),
   },
   Mutation: {
     stixRefRelationshipEdit: (_, { id }, context) => ({

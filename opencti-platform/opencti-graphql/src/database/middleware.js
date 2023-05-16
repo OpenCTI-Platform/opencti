@@ -2176,7 +2176,7 @@ const buildRelationInput = (input) => {
       });
     }
   }
-  // stix-observable-relationship
+  // stix-ref-relationship
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     relationAttributes.spec_version = STIX_SPEC_VERSION;
     relationAttributes.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
@@ -2580,7 +2580,6 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       stixIds.push(input.stix_id.toLowerCase());
     }
     data.x_opencti_stix_ids = stixIds;
-    data.spec_version = STIX_SPEC_VERSION;
     data.revoked = R.isNil(input.revoked) ? false : input.revoked;
     data.confidence = R.isNil(input.confidence) ? computeConfidenceLevel(input) : input.confidence;
     data.lang = R.isNil(input.lang) ? 'en' : input.lang;
@@ -2615,10 +2614,9 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       });
     }
   }
-  // stix-observable-relationship
+  // stix-ref-relationship
   if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
     // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
-    data.spec_version = STIX_SPEC_VERSION;
     data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
     data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     data.created = R.isNil(input.created) ? today : input.created;

@@ -24,8 +24,7 @@ import {
   stixCoreRelationshipsExportPush,
   stixCoreRelationshipsNumber,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsDistribution,
-} from '../domain/stixCoreRelationship';
+  stixCoreRelationshipsDistribution } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
@@ -84,7 +83,7 @@ const stixCoreRelationshipResolvers = {
     workflowEnabled: async (entity, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
-    },
+    }
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, context) => ({

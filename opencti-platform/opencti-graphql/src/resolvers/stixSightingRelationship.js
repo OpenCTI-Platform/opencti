@@ -2,6 +2,14 @@ import { withFilter } from 'graphql-subscriptions';
 import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
+  batchCases,
+  batchCreatedBy,
+  batchExternalReferences,
+  batchLabels,
+  batchMarkingDefinitions,
+  batchNotes,
+  batchOpinions,
+  batchReports,
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
@@ -10,19 +18,11 @@ import {
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
-  stixSightingRelationshipsNumber,
-  batchCreatedBy,
-  batchExternalReferences,
-  batchLabels,
-  batchMarkingDefinitions,
-  batchNotes,
-  batchOpinions,
-  batchReports,
-  batchCases,
+  stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { distributionRelations, timeSeriesRelations, batchLoader, stixLoadByIdStringify } from '../database/middleware';
+import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
 import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { buildRefRelationKey } from '../schema/general';
@@ -80,7 +80,7 @@ const stixSightingRelationshipResolvers = {
     workflowEnabled: async (entity, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
-    },
+    }
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({
