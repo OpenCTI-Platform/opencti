@@ -1,0 +1,3657 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Documentation about OpenCTI, the next-generation Cyber Threat Intelligence platform.">
+      
+      
+        <meta name="author" content="Filigran">
+      
+      
+        <link rel="canonical" href="https://docs.opencti.io/5.7.X/deployment/configuration/">
+      
+      
+        <link rel="prev" href="../installation/">
+      
+      
+        <link rel="next" href="../authentication/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.9+insiders-4.32.6">
+    
+    
+      
+        <title>Configuration - OpenCTI Documentation</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.938f8e87.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.df142b89.min.css">
+      
+      
+
+    
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=IBM+Plex+Sans:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"IBM Plex Sans";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../css/timeago.css">
+    
+      <link rel="stylesheet" href="../../assets/css/custom.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce((e,_)=>(e<<5)-e+_.charCodeAt(0),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+  
+
+
+  
+  
+
+
+  <script id="__analytics">function __md_analytics(){function n(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],n("js",new Date),n("config","G-DB4K9LZPDZ"),document.addEventListener("DOMContentLoaded",function(){document.forms.search&&document.forms.search.query.addEventListener("blur",function(){this.value&&n("event","search",{search_term:this.value})}),document$.subscribe(function(){var a=document.forms.feedback;if(void 0!==a)for(var e of a.querySelectorAll("[type=submit]"))e.addEventListener("click",function(e){e.preventDefault();var t=document.location.pathname,e=this.getAttribute("data-md-value");n("event","feedback",{page:t,data:e}),a.firstElementChild.disabled=!0;e=a.querySelector(".md-feedback__note [data-md-value='"+e+"']");e&&(e.hidden=!1)}),a.hidden=!1}),location$.subscribe(function(e){n("config","G-DB4K9LZPDZ",{page_path:e.pathname})})});var e=document.createElement("script");e.async=!0,e.src="https://www.googletagmanager.com/gtag/js?id=G-DB4K9LZPDZ",document.getElementById("__analytics").insertAdjacentElement("afterEnd",e)}</script>
+
+  
+    <script>"undefined"!=typeof __md_analytics&&__md_analytics()</script>
+  
+
+    
+    
+   <link href="../../assets/stylesheets/glightbox.min.css" rel="stylesheet"/><style>
+        html.glightbox-open { overflow: initial; height: 100%; }
+        .gslide-title { margin-top: 0px; user-select: text; }
+        .gslide-desc { color: #666; user-select: text; }
+        .gslide-image img { background: white; }
+        
+            .gscrollbar-fixer { padding-right: 15px; }
+            .gdesc-inner { font-size: 0.75rem; }
+            body[data-md-color-scheme="slate"] .gdesc-inner { background: var(--md-default-bg-color);}
+            body[data-md-color-scheme="slate"] .gslide-title { color: var(--md-default-fg-color);}
+            body[data-md-color-scheme="slate"] .gslide-desc { color: var(--md-default-fg-color);}
+            </style> <script src="../../assets/javascripts/glightbox.min.js"></script></head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="filigran" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+          <aside class="md-banner md-banner--warning">
+            <div class="md-banner__inner md-grid md-typeset">
+              
+  You're not viewing the latest version.
+  <a href="../../.."> 
+    <strong>Click here to go to latest.</strong>
+  </a>
+
+            </div>
+            <script>var el=document.querySelector("[data-md-component=outdated]"),outdated=__md_get("__outdated",sessionStorage);!0===outdated&&el&&(el.hidden=!1)</script>
+          </aside>
+        
+      </div>
+    
+    
+      
+
+
+<!-- Header -->
+<header class="md-header" data-md-component="header">
+  <nav
+    class="md-header__inner md-grid"
+    aria-label="Header"
+  >
+
+    <!-- Link to home -->
+    <a
+      href="../.."
+      title="OpenCTI Documentation"
+      class="md-header__button md-logo"
+      aria-label="OpenCTI Documentation"
+      data-md-component="logo"
+    >
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+
+    <!-- Button to open drawer -->
+    <label class="md-header__button md-icon" for="__drawer">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>
+    </label>
+
+    <!-- Header title -->
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Color palette -->
+    
+      
+    
+
+    <!-- Site language selector -->
+    
+
+    <!-- Button to open search modal -->
+    
+      <label class="md-header__button md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+      </label>
+
+      <!-- Search interface -->
+      <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.516 6.516 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5Z"/></svg>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12 19 6.41Z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+    
+
+    <!-- Repository information -->
+    
+      <div class="md-header__source">
+        <a href="https://github.com/OpenCTI-Platform/opencti" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+
+  <!-- Navigation tabs (sticky) -->
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../overview/" class="md-tabs__link md-tabs__link--active">
+          
+  
+  Deployment & Setup
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../usage/platform/" class="md-tabs__link">
+          
+  
+  User Guide
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../administration/parameters/" class="md-tabs__link">
+          
+  
+  Administration
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/data-model.md" class="md-tabs__link">
+          
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../development/environment/" class="md-tabs__link">
+          
+  
+  Development
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="OpenCTI Documentation" class="md-nav__button md-logo" aria-label="OpenCTI Documentation" data-md-component="logo">
+      
+  <img src="../../assets/logo.png" alt="logo">
+
+    </a>
+    OpenCTI Documentation
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/OpenCTI-Platform/opencti" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M439.55 236.05 244 40.45a28.87 28.87 0 0 0-40.81 0l-40.66 40.63 51.52 51.52c27.06-9.14 52.68 16.77 43.39 43.68l49.66 49.66c34.23-11.8 61.18 31 35.47 56.69-26.49 26.49-70.21-2.87-56-37.34L240.22 199v121.85c25.3 12.54 22.26 41.85 9.08 55a34.34 34.34 0 0 1-48.55 0c-17.57-17.6-11.07-46.91 11.25-56v-123c-20.8-8.51-24.6-30.74-18.64-45L142.57 101 8.45 235.14a28.86 28.86 0 0 0 0 40.81l195.61 195.6a28.86 28.86 0 0 0 40.8 0l194.69-194.69a28.86 28.86 0 0 0 0-40.81z"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment & Setup
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Deployment & Setup
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2_1" checked>
+        
+          <label class="md-nav__link" for="__nav_2_1" id="__nav_2_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Platform
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../overview/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Overview
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../installation/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API &amp; Frontend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API &amp; Frontend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssl-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL / TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maps-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maps &amp; references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S3 Bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smtp-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMTP Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedules-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedules &amp; Engines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#elasticsearch_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../authentication/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../upgrade/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Upgrade
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_2" >
+        
+          <label class="md-nav__link" for="__nav_2_2" id="__nav_2_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Ecosystem
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Ecosystem
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../connectors/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Connectors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../integrations/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Integrations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../third-party/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Third-party
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_2_3" >
+        
+          <label class="md-nav__link" for="__nav_2_3" id="__nav_2_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Advanced
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_2_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Advanced
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../clustering.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../rollover.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Rollover policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../troubleshooting.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Troubleshooting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User Guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_1" >
+        
+          <label class="md-nav__link" for="__nav_3_1" id="__nav_3_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Structure
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Structure
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/platform/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Platform organization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/knowledge/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Create knowledge
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/cases-reports/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Cases and reports
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/import-export/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Import and export
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_2" >
+        
+          <label class="md-nav__link" for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Main Features
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Main Features
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/enrichment.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Enrichment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/notifications/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Notifications and alerting
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/dashboards/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Custom dashboards
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/investigations.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Investigations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_3" >
+        
+          <label class="md-nav__link" for="__nav_3_3" id="__nav_3_3_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Activities
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Activities
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/documents.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Import from documents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/duplicates.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Managing duplicates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Administration
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Administration
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_1" >
+        
+          <label class="md-nav__link" for="__nav_4_1" id="__nav_4_1_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    General
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    General
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/parameters/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Parameters
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/engines.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Engines and schedulers
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/retention.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Retention policies
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4_2" >
+        
+          <label class="md-nav__link" for="__nav_4_2" id="__nav_4_2_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Security
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/rbac.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Authentication and RBAC
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/segregation.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Data segregation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../administration/audit.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Audit and monitoring
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_5" >
+        
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/data-model.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Data model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    GraphQL API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/streaming.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Events streaming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/security.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Security
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Development
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Development
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/environment/" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Environment setup
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../development/connectors.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Connectors development
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#api-frontend" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        API &amp; Frontend
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="API &amp; Frontend">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#basic-parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Basic parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ssl-tls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SSL / TLS
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#logging" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Logging
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Logging">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#audit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Audit
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#maps-references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Maps &amp; references
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#technical-customization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Technical customization
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-bucket" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S3 Bucket
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#smtp-service" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SMTP Service
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#schedules-engines" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schedules &amp; Engines
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#worker" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#elasticsearch_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+                
+
+
+
+  
+
+
+  <nav class="md-path" aria-label="Navigation" >
+    <ol class="md-path__list">
+      
+        
+  
+    <li class="md-path__item">
+      <a href="../.." class="md-path__link">
+        
+  <span class="md-ellipsis">
+    Home
+  </span>
+
+      </a>
+    </li>
+  
+
+      
+      
+        
+  
+    
+    
+      
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../overview/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Deployment & Setup
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+    
+    
+      <li class="md-path__item">
+        <a href="../overview/" class="md-path__link">
+          
+  <span class="md-ellipsis">
+    Platform
+  </span>
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ol>
+  </nav>
+
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+  
+    <a href="https://github.com/OpenCTI-Platform/docs/blob/main/docs/deployment/configuration.md" title="Edit this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M10 20H6V4h7v5h5v3.1l2-2V8l-6-6H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h4v-2m10.2-7c.1 0 .3.1.4.2l1.3 1.3c.2.2.2.6 0 .8l-1 1-2.1-2.1 1-1c.1-.1.2-.2.4-.2m0 3.9L14.1 23H12v-2.1l6.1-6.1 2.1 2.1Z"/></svg>
+    </a>
+  
+  
+    
+      
+    
+    <a href="https://github.com/OpenCTI-Platform/docs/raw/main/docs/deployment/configuration.md" title="View source of this page" class="md-content__button md-icon">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17 18c.56 0 1 .44 1 1s-.44 1-1 1-1-.44-1-1 .44-1 1-1m0-3c-2.73 0-5.06 1.66-6 4 .94 2.34 3.27 4 6 4s5.06-1.66 6-4c-.94-2.34-3.27-4-6-4m0 6.5a2.5 2.5 0 0 1-2.5-2.5 2.5 2.5 0 0 1 2.5-2.5 2.5 2.5 0 0 1 2.5 2.5 2.5 2.5 0 0 1-2.5 2.5M9.27 20H6V4h7v5h5v4.07c.7.08 1.36.25 2 .49V8l-6-6H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h4.5a8.15 8.15 0 0 1-1.23-2Z"/></svg>
+    </a>
+  
+
+
+<h1 id="configuration">Configuration</h1>
+<p>The purpose of this section is to learn how to configure OpenCTI to have it tailored for your production and development needs. </p>
+<p>Here are the configuration keys, for both containers (environment variables) and manual deployment.</p>
+<div class="admonition note">
+<p class="admonition-title">Parameters equivalence</p>
+<p>The equivalent of a config variable in environment variables is the usage of a double underscores (<code>__</code>) for a level of config.</p>
+<p>For example:
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="nt">&quot;providers&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="w">  </span><span class="nt">&quot;ldap&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+</span><span id="__span-0-3"><a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a><span class="w">    </span><span class="nt">&quot;strategy&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;LdapStrategy&quot;</span>
+</span><span id="__span-0-4"><a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a><span class="w">  </span><span class="p">}</span>
+</span><span id="__span-0-5"><a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a><span class="p">}</span>
+</span></code></pre></div></p>
+<p>will become:
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nv">PROVIDERS__LDAP__STRATEGY</span><span class="o">=</span>LdapStrategy
+</span></code></pre></div></p>
+<p>If you need to put a list of elements for the key, it must have a special formatting. Here is an example for redirect URIs for OpenID config:
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="s2">&quot;PROVIDERS__OPENID__CONFIG__REDIRECT_URIS=[\&quot;https://demo.opencti.io/auth/oic/callback\&quot;]&quot;</span>
+</span></code></pre></div></p>
+</div>
+<h2 id="platform">Platform</h2>
+<h3 id="api-frontend">API &amp; Frontend</h3>
+<h4 id="basic-parameters">Basic parameters</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:port</td>
+<td align="left">APP__PORT</td>
+<td align="left">4000</td>
+<td align="left">Listen port of the application</td>
+</tr>
+<tr>
+<td align="left">app:base_path</td>
+<td align="left">APP__BASE_PATH</td>
+<td align="left"></td>
+<td align="left">Specific URI (ie. /opencti)</td>
+</tr>
+<tr>
+<td align="left">app:base_url</td>
+<td align="left">APP__BASE_URL</td>
+<td align="left">http://localhost:4000</td>
+<td align="left">Full URL of the platform (should include the <code>base_path</code> if any)</td>
+</tr>
+<tr>
+<td align="left">app:request_timeout</td>
+<td align="left">APP__REQUEST_TIMEOUT</td>
+<td align="left">1200000</td>
+<td align="left">Request timeout, in ms (default 20 minutes)</td>
+</tr>
+<tr>
+<td align="left">app:session_timeout</td>
+<td align="left">APP__SESSION_TIMEOUT</td>
+<td align="left">1200000</td>
+<td align="left">Session timeout, in ms (default 20 minutes)</td>
+</tr>
+<tr>
+<td align="left">app:admin:email</td>
+<td align="left">APP__ADMIN__EMAIL</td>
+<td align="left">admin@opencti.io</td>
+<td align="left">Default login email of the admin user</td>
+</tr>
+<tr>
+<td align="left">app:admin:password</td>
+<td align="left">APP__ADMIN__PASSWORD</td>
+<td align="left">ChangeMe</td>
+<td align="left">Default password of the admin user</td>
+</tr>
+<tr>
+<td align="left">app:admin:token</td>
+<td align="left">APP__ADMIN__TOKEN</td>
+<td align="left">ChangeMe</td>
+<td align="left">Default token (must be a valid UUIDv4)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="ssl-tls">SSL / TLS</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:https_cert:ca</td>
+<td align="left">APP__HTTPS_CERT__CA</td>
+<td align="left">Empty list []</td>
+<td align="left">Certificate authority paths, only if the client uses a self-signed certificate.</td>
+</tr>
+<tr>
+<td align="left">app:https_cert:key</td>
+<td align="left">APP__HTTPS_CERT__KEY</td>
+<td align="left"></td>
+<td align="left">Certificate key path</td>
+</tr>
+<tr>
+<td align="left">app:https_cert:crt</td>
+<td align="left">APP__HTTPS_CERT__CRT</td>
+<td align="left"></td>
+<td align="left">Certificate crt path</td>
+</tr>
+<tr>
+<td align="left">app:https_cert:reject_unauthorized</td>
+<td align="left">APP__HTTPS_CERT__REJECT_UNAUTHORIZED</td>
+<td align="left"></td>
+<td align="left">If not false, the server certificate is verified against the list of supplied CAs</td>
+</tr>
+</tbody>
+</table>
+<h4 id="logging">Logging</h4>
+<h5 id="errors">Errors</h5>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:app_logs:logs_level</td>
+<td align="left">APP__APP_LOGS__LOGS_LEVEL</td>
+<td align="left">info</td>
+<td align="left">The application log level</td>
+</tr>
+<tr>
+<td align="left">app:app_logs:logs_files</td>
+<td align="left">APP__APP_LOGS__LOGS_FILES</td>
+<td align="left"><code>true</code></td>
+<td align="left">If application logs is logged into files</td>
+</tr>
+<tr>
+<td align="left">app:app_logs:logs_console</td>
+<td align="left">APP__APP_LOGS__LOGS_CONSOLE</td>
+<td align="left"><code>true</code></td>
+<td align="left">If application logs is logged to console (useful for containers)</td>
+</tr>
+<tr>
+<td align="left">app:app_logs:logs_max_files</td>
+<td align="left">APP__APP_LOGS__LOGS_MAX_FILES</td>
+<td align="left">7</td>
+<td align="left">Maximum number of daily files in logs</td>
+</tr>
+<tr>
+<td align="left">app:app_logs:logs_directory</td>
+<td align="left">APP__APP_LOGS__LOGS_DIRECTORY</td>
+<td align="left">./logs</td>
+<td align="left">File logs directory</td>
+</tr>
+</tbody>
+</table>
+<h5 id="audit">Audit</h5>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:audit_logs:logs_files</td>
+<td align="left">APP__AUDIT_LOGS__LOGS_FILES</td>
+<td align="left"><code>true</code></td>
+<td align="left">If audit logs is logged into files</td>
+</tr>
+<tr>
+<td align="left">app:audit_logs:logs_console</td>
+<td align="left">APP__AUDIT_LOGS__LOGS_CONSOLE</td>
+<td align="left"><code>true</code></td>
+<td align="left">If audit logs is logged to console (useful for containers)</td>
+</tr>
+<tr>
+<td align="left">app:audit_logs:logs_max_files</td>
+<td align="left">APP__AUDIT_LOGS__LOGS_MAX_FILES</td>
+<td align="left">7</td>
+<td align="left">Maximum number of daily files in logs</td>
+</tr>
+<tr>
+<td align="left">app:audit_logs:logs_directory</td>
+<td align="left">APP__AUDIT_LOGS__LOGS_DIRECTORY</td>
+<td align="left">./logs</td>
+<td align="left">Audit logs directory</td>
+</tr>
+</tbody>
+</table>
+<h4 id="maps-references">Maps &amp; references</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:map_tile_server_dark</td>
+<td align="left">APP__MAP_TILE_SERVER_DARK</td>
+<td align="left">https://map.opencti.io/styles/luatix-dark/{z}/{x}/{y}.png</td>
+<td>The address of the OpenStreetMap provider with dark theme style</td>
+</tr>
+<tr>
+<td align="left">app:map_tile_server_light</td>
+<td align="left">APP__MAP_TILE_SERVER_LIGHT</td>
+<td align="left">https://map.opencti.io/styles/luatix-light/{z}/{x}/{y}.png</td>
+<td>The address of the OpenStreetMap provider with light theme style</td>
+</tr>
+<tr>
+<td align="left">app:reference_attachment</td>
+<td align="left">APP__REFERENCE_ATTACHMENT</td>
+<td align="left"><code>false</code></td>
+<td>External reference mandatory attachment</td>
+</tr>
+</tbody>
+</table>
+<h4 id="technical-customization">Technical customization</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">app:graphql:playground:enabled</td>
+<td align="left">APP__GRAPHQL__PLAYGROUND__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable the playground on /graphql</td>
+</tr>
+<tr>
+<td align="left">app:graphql:playground:force_disabled_introspection</td>
+<td align="left">APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION</td>
+<td align="left"><code>false</code></td>
+<td align="left">Introspection is allowed to auth users but can be disabled in needed</td>
+</tr>
+<tr>
+<td align="left">app:concurrency:retry_count</td>
+<td align="left">APP__CONCURRENCY__RETRY_COUNT</td>
+<td align="left">200</td>
+<td align="left">Number of try to get the lock to work an element (create/update/merge, ...)</td>
+</tr>
+<tr>
+<td align="left">app:concurrency:retry_delay</td>
+<td align="left">APP__CONCURRENCY__RETRY_DELAY</td>
+<td align="left">100</td>
+<td align="left">Delay between 2 lock retry (in milliseconds)</td>
+</tr>
+<tr>
+<td align="left">app:concurrency:retry_jitter</td>
+<td align="left">APP__CONCURRENCY__RETRY_JITTER</td>
+<td align="left">50</td>
+<td align="left">Random jitter to prevent concurrent retry  (in milliseconds)</td>
+</tr>
+<tr>
+<td align="left">app:concurrency:max_ttl</td>
+<td align="left">APP__CONCURRENCY__MAX_TTL</td>
+<td align="left">30000</td>
+<td align="left">Global maximum time for lock retry (in milliseconds)</td>
+</tr>
+</tbody>
+</table>
+<h3 id="dependencies">Dependencies</h3>
+<h4 id="elasticsearch">ElasticSearch</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">elasticsearch:url</td>
+<td align="left">ELASTICSEARCH__URL</td>
+<td align="left">http://localhost:9200</td>
+<td align="left">URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs)</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:username</td>
+<td align="left">ELASTICSEARCH__USERNAME</td>
+<td align="left"></td>
+<td align="left">Username can be put in the URL or with this parameter</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:password</td>
+<td align="left">ELASTICSEARCH__PASSWORD</td>
+<td align="left"></td>
+<td align="left">Password can be put in the URL or with this parameter</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:index_prefix</td>
+<td align="left">ELASTICSEARCH__INDEX_PREFIX</td>
+<td align="left">opencti</td>
+<td align="left">Prefix for the indices</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:ssl:reject_unauthorized</td>
+<td align="left">ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable TLS certificate check</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:ssl:ca</td>
+<td align="left">ELASTICSEARCH__SSL__CA</td>
+<td align="left"></td>
+<td align="left">Custom certificate path</td>
+</tr>
+<tr>
+<td align="left">elasticsearch:ssl:ca_plain</td>
+<td align="left">ELASTICSEARCH__SSL__CA_PLAIN</td>
+<td align="left"></td>
+<td align="left">Custom certificate (plain texc)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="redis">Redis</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">redis:mode</td>
+<td align="left">REDIS__MODE</td>
+<td align="left">single</td>
+<td align="left">Connect to redis "single" or "cluster"</td>
+</tr>
+<tr>
+<td align="left">redis:namespace</td>
+<td align="left">REDIS__NAMESPACE</td>
+<td align="left"></td>
+<td align="left">Namespace (to use as prefix)</td>
+</tr>
+<tr>
+<td align="left">redis:hostname</td>
+<td align="left">REDIS__HOSTNAME</td>
+<td align="left">localhost</td>
+<td align="left">Hostname of the Redis Server</td>
+</tr>
+<tr>
+<td align="left">redis:hostnames</td>
+<td align="left">REDIS__HOSTNAMES</td>
+<td align="left"></td>
+<td align="left">Hostnames definition for Redis cluster mode: a list of host/port objects.</td>
+</tr>
+<tr>
+<td align="left">redis:port</td>
+<td align="left">REDIS__PORT</td>
+<td align="left">6379</td>
+<td align="left">Port of the Redis Server</td>
+</tr>
+<tr>
+<td align="left">redis:use_ssl</td>
+<td align="left">REDIS__USE_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Is the Redis Server has TLS enabled</td>
+</tr>
+<tr>
+<td align="left">redis:username</td>
+<td align="left">REDIS__USERNAME</td>
+<td align="left"></td>
+<td align="left">Username of the Redis Server</td>
+</tr>
+<tr>
+<td align="left">redis:password</td>
+<td align="left">REDIS__PASSWORD</td>
+<td align="left"></td>
+<td align="left">Password of the Redis Server</td>
+</tr>
+<tr>
+<td align="left">redis:ca</td>
+<td align="left">REDIS__CA</td>
+<td align="left"></td>
+<td align="left">Path of the CA certificate</td>
+</tr>
+<tr>
+<td align="left">redis:trimming</td>
+<td align="left">REDIS__TRIMMING</td>
+<td align="left">2000000</td>
+<td align="left">Number of elements to maintain in the stream. (0 = unlimited)</td>
+</tr>
+</tbody>
+</table>
+<h4 id="rabbitmq">RabbitMQ</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">rabbitmq:hostname</td>
+<td align="left">RABBITMQ__HOSTNAME</td>
+<td align="left">localhost</td>
+<td align="left">Hostname of the RabbitMQ server</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:port</td>
+<td align="left">RABBITMQ__PORT</td>
+<td align="left">5672</td>
+<td align="left">Port of the RabbitMQ server</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl</td>
+<td align="left">RABBITMQ__USE_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Use TLS connection</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:port_management</td>
+<td align="left">RABBITMQ__PORT_MANAGEMENT</td>
+<td align="left">15672</td>
+<td align="left">Port of the RabbitMQ Management Plugin</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:management_ssl</td>
+<td align="left">RABBITMQ__MANAGEMENT_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Is the Management Plugin has TLS enabled</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:username</td>
+<td align="left">RABBITMQ__USERNAME</td>
+<td align="left">guest</td>
+<td align="left">RabbitMQ user</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:password</td>
+<td align="left">RABBITMQ__PASSWORD</td>
+<td align="left">guest</td>
+<td align="left">RabbitMQ password</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:queue_type</td>
+<td align="left">RABBITMQ__QUEUE_TYPE</td>
+<td align="left">"classic"</td>
+<td align="left">RabbitMQ Queue Type ("classic" or "quorum"</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:ca</td>
+<td align="left">RABBITMQ__CA</td>
+<td align="left">Empty list []</td>
+<td align="left">Custom CA certificates files</td>
+</tr>
+</tbody>
+</table>
+<h4 id="s3-bucket">S3 Bucket</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">minio:endpoint</td>
+<td align="left">MINIO__ENDPOINT</td>
+<td align="left">localhost</td>
+<td align="left">Hostname of the S3 Service</td>
+</tr>
+<tr>
+<td align="left">minio:port</td>
+<td align="left">MINIO__PORT</td>
+<td align="left">9000</td>
+<td align="left">Port of the S3 Service</td>
+</tr>
+<tr>
+<td align="left">minio:use_ssl</td>
+<td align="left">MINIO__USE_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Is the S3 Service has TLS enabled</td>
+</tr>
+<tr>
+<td align="left">minio:access_key</td>
+<td align="left">MINIO__ACCESS_KEY</td>
+<td align="left">ChangeMe</td>
+<td align="left">The S3 Service access key</td>
+</tr>
+<tr>
+<td align="left">minio:secret_key</td>
+<td align="left">MINIO__SECRET_KEY</td>
+<td align="left">ChangeMe</td>
+<td align="left">The S3 Service secret key</td>
+</tr>
+<tr>
+<td align="left">minio:bucket_name</td>
+<td align="left">MINIO__BUCKET_NAME</td>
+<td align="left">opencti-bucket</td>
+<td align="left">The S3 bucket name (useful to change if you use AWS)</td>
+</tr>
+<tr>
+<td align="left">minio:bucket_region</td>
+<td align="left">MINIO__BUCKET_REGION</td>
+<td align="left">us-east-1</td>
+<td align="left">The S3 bucket region if you use AWS</td>
+</tr>
+<tr>
+<td align="left">minio:use_aws_role</td>
+<td align="left">MINIO__USE_AWS_ROLE</td>
+<td align="left"><code>false</code></td>
+<td align="left">To use AWS role auto credentials</td>
+</tr>
+</tbody>
+</table>
+<h4 id="smtp-service">SMTP Service</h4>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">smtp:hostname</td>
+<td align="left">SMTP__HOSTNAME</td>
+<td align="left"></td>
+<td align="left">SMTP Server hostname</td>
+</tr>
+<tr>
+<td align="left">smtp:port</td>
+<td align="left">SMTP__PORT</td>
+<td align="left">9000</td>
+<td align="left">SMTP Port (25 or 465 for TLS)</td>
+</tr>
+<tr>
+<td align="left">smtp:use_ssl</td>
+<td align="left">SMTP__USE_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">SMTP over TLS</td>
+</tr>
+<tr>
+<td align="left">smtp:reject_unauthorized</td>
+<td align="left">SMTP__REJECT_UNAUTHORIZED</td>
+<td align="left"><code>false</code></td>
+<td align="left">Enable TLS certificate check</td>
+</tr>
+<tr>
+<td align="left">smtp:username</td>
+<td align="left">SMTP__USERNAME</td>
+<td align="left"></td>
+<td align="left">SMTP Username if authentication is needed</td>
+</tr>
+<tr>
+<td align="left">smtp:password</td>
+<td align="left">SMTP__PASSWORD</td>
+<td align="left"></td>
+<td align="left">SMTP Password if authentication is needed</td>
+</tr>
+<tr>
+<td align="left">smtp:from_email</td>
+<td align="left">SMTP__FROM_EMAIL</td>
+<td align="left">notifications@opencti.io</td>
+<td align="left">Sender email address</td>
+</tr>
+</tbody>
+</table>
+<h3 id="schedules-engines">Schedules &amp; Engines</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">rule_engine:enabled</td>
+<td align="left">RULE_ENGINE__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the rule engine</td>
+</tr>
+<tr>
+<td align="left">rule_engine:lock_key</td>
+<td align="left">RULE_ENGINE__LOCK_KEY</td>
+<td align="left">rule_engine_lock</td>
+<td align="left">Lock key of the engine in Redis</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">history_manager:enabled</td>
+<td align="left">HISTORY_MANAGER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the history manager</td>
+</tr>
+<tr>
+<td align="left">history_manager:lock_key</td>
+<td align="left">HISTORY_MANAGER__LOCK_KEY</td>
+<td align="left">history_manager_lock</td>
+<td align="left">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">task_scheduler:enabled</td>
+<td align="left">TASK_SCHEDULER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the task scheduler</td>
+</tr>
+<tr>
+<td align="left">task_scheduler:lock_key</td>
+<td align="left">TASK_SCHEDULER__LOCK_KEY</td>
+<td align="left">task_manager_lock</td>
+<td align="left">Lock key for the scheduler in Redis</td>
+</tr>
+<tr>
+<td align="left">task_scheduler:interval</td>
+<td align="left">TASK_SCHEDULER__INTERVAL</td>
+<td align="left">10000</td>
+<td align="left">Interval to check new task to do (in ms)</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">sync_manager:enabled</td>
+<td align="left">SYNC_MANAGER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the sync manager</td>
+</tr>
+<tr>
+<td align="left">sync_manager:lock_key</td>
+<td align="left">SYNC_MANAGER__LOCK_KEY</td>
+<td align="left">sync_manager_lock</td>
+<td align="left">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td align="left">sync_manager:interval</td>
+<td align="left">SYNC_MANAGER__INTERVAL</td>
+<td align="left">10000</td>
+<td align="left">Interval to check new sync feeds to consume (in ms)</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">expiration_scheduler:enabled</td>
+<td align="left">EXPIRATION_SCHEDULER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the scheduler</td>
+</tr>
+<tr>
+<td align="left">expiration_scheduler:lock_key</td>
+<td align="left">EXPIRATION_SCHEDULER__LOCK_KEY</td>
+<td align="left">expired_manager_lock</td>
+<td align="left">Lock key for the scheduler in Redis</td>
+</tr>
+<tr>
+<td align="left">expiration_scheduler:interval</td>
+<td align="left">EXPIRATION_SCHEDULER__INTERVAL</td>
+<td align="left">300000</td>
+<td align="left">Interval to check expired indicators</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">retention_manager:enabled</td>
+<td align="left">RETENTION_MANAGER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the manager</td>
+</tr>
+<tr>
+<td align="left">retention_manager:lock_key</td>
+<td align="left">RETENTION_MANAGER__LOCK_KEY</td>
+<td align="left">retention_manager_lock</td>
+<td align="left">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td align="left">retention_manager:interval</td>
+<td align="left">RETENTION_MANAGER__INTERVAL</td>
+<td align="left">60000</td>
+<td align="left">Interval to check items to be deleted</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">notification_manager:enabled</td>
+<td align="left">NOTIFICATION_MANAGER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the notification manager</td>
+</tr>
+<tr>
+<td align="left">notification_manager:lock_key</td>
+<td align="left">NOTIFICATION_MANAGER__LOCK_KEY</td>
+<td align="left">notification_manager_lock</td>
+<td align="left">Lock key for the manager in Redis</td>
+</tr>
+<tr>
+<td align="left">notification_manager:interval</td>
+<td align="left">NOTIFICATION_MANAGER__INTERVAL</td>
+<td align="left">10000</td>
+<td align="left">Sender email address</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">publisher_manager:enabled</td>
+<td align="left">PUBLISHER_MANAGER__ENABLED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Enable/disable the publisher manager</td>
+</tr>
+<tr>
+<td align="left">publisher_manager:lock_key</td>
+<td align="left">PUBLISHER_MANAGER__LOCK_KEY</td>
+<td align="left">publisher_manager_lock</td>
+<td align="left">Sender email address</td>
+</tr>
+<tr>
+<td align="left">publisher_manager:interval</td>
+<td align="left">PUBLISHER_MANAGER__INTERVAL</td>
+<td align="left">10000</td>
+<td align="left">Sender email address</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition note">
+<p class="admonition-title">Default file</p>
+<p>It is possible to check all default parameters implemented in the platform in the <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json"><code>default.json</code> file</a>.</p>
+</div>
+<h2 id="worker">Worker</h2>
+<p>The Python worker can be configured manually using the configuration file <code>config.yml</code> or through environment variables.</p>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">opencti:url</td>
+<td align="left">OPENCTI_URL</td>
+<td align="left"></td>
+<td align="left">The URL of the OpenCTI platform</td>
+</tr>
+<tr>
+<td align="left">opencti:token</td>
+<td align="left">OPENCTI_TOKEN</td>
+<td align="left"></td>
+<td align="left">A token of an administrator account with bypass capability</td>
+</tr>
+<tr>
+<td align="left">worker:log_level</td>
+<td align="left">WORKER_LOG_LEVEL</td>
+<td align="left">info</td>
+<td align="left">The log level (error, warning, info or debug)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="elasticsearch_1">ElasticSearch</h2>
+<p>If you want to adapt the memory consumption of ElasticSearch, you can use theses options:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Add the followiung environment variable:</span>
+</span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s2">&quot;ES_JAVA_OPTS=-Xms8g -Xmx8g&quot;</span>
+</span></code></pre></div>
+<p>This can be done in configuration file in the <code>jvm.conf</code> file.</p>
+
+  
+    
+  
+  
+    
+  
+
+
+  <aside class="md-source-file">
+    
+      <span class="md-source-file__fact">
+        <span class="md-icon" title="Last update">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
+        </span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-15T00:06:36+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-15</span>
+      </span>
+    
+    
+      <span class="md-source-file__fact">
+        <span class="md-icon" title="Created">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M14.47 15.08 11 13V7h1.5v5.25l3.08 1.83c-.41.28-.79.62-1.11 1m-1.39 4.84c-.36.05-.71.08-1.08.08-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8c0 .37-.03.72-.08 1.08.69.1 1.33.32 1.92.64.1-.56.16-1.13.16-1.72 0-5.5-4.5-10-10-10S2 6.5 2 12s4.47 10 10 10c.59 0 1.16-.06 1.72-.16-.32-.59-.54-1.23-.64-1.92M18 15v3h-3v2h3v3h2v-3h3v-2h-3v-3h-2Z"/></svg>
+        </span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-07T18:03:33+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-07</span>
+      </span>
+    
+    
+    
+      <span class="md-source-file__fact">
+        <span class="md-icon" title="Contributors">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 2A10 10 0 0 0 2 12c0 4.42 2.87 8.17 6.84 9.5.5.08.66-.23.66-.5v-1.69c-2.77.6-3.36-1.34-3.36-1.34-.46-1.16-1.11-1.47-1.11-1.47-.91-.62.07-.6.07-.6 1 .07 1.53 1.03 1.53 1.03.87 1.52 2.34 1.07 2.91.83.09-.65.35-1.09.63-1.34-2.22-.25-4.55-1.11-4.55-4.92 0-1.11.38-2 1.03-2.71-.1-.25-.45-1.29.1-2.64 0 0 .84-.27 2.75 1.02.79-.22 1.65-.33 2.5-.33.85 0 1.71.11 2.5.33 1.91-1.29 2.75-1.02 2.75-1.02.55 1.35.2 2.39.1 2.64.65.71 1.03 1.6 1.03 2.71 0 3.82-2.34 4.66-4.57 4.91.36.31.69.92.69 1.85V21c0 .27.16.59.67.5C19.14 20.16 22 16.42 22 12A10 10 0 0 0 12 2Z"/></svg>
+        </span>
+        <span>GitHub</span>
+        <nav>
+          
+            <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
+              
+              <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+            </a>
+          
+          
+          
+        </nav>
+      </span>
+    
+  </aside>
+
+
+  
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../installation/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Installation" rel="prev">
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                Installation
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../authentication/" class="md-footer__link md-footer__link--next" aria-label="Next: Authentication" rel="next">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Authentication
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11H4Z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      © 2023 Filigran. All rights reserved
+    </div>
+  
+  
+</div>
+      
+        <div class="md-social">
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://github.com/OpenCTI-Platform" target="_blank" rel="noopener" title="github.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 496 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M165.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6zm-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3zm44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9zM244.8 8C106.1 8 0 113.3 0 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C428.2 457.8 496 362.9 496 252 496 113.3 383.5 8 244.8 8zM97.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1zm-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7zm32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1zm-11.4-14.7c-1.6 1-1.6 3.6 0 5.9 1.6 2.3 4.3 3.3 5.6 2.3 1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://blog.filigran.io" target="_blank" rel="noopener" title="blog.filigran.io" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M180.5 74.262C80.813 74.262 0 155.633 0 256s80.819 181.738 180.5 181.738S361 356.373 361 256 280.191 74.262 180.5 74.262Zm288.25 10.646c-49.845 0-90.245 76.619-90.245 171.095s40.406 171.1 90.251 171.1 90.251-76.619 90.251-171.1H559c0-94.503-40.4-171.095-90.248-171.095Zm139.506 17.821c-17.526 0-31.735 68.628-31.735 153.274s14.2 153.274 31.735 153.274S640 340.631 640 256c0-84.649-14.215-153.271-31.742-153.271Z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://community.filigran.io" target="_blank" rel="noopener" title="community.filigran.io" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M94.12 315.1c0 25.9-21.16 47.06-47.06 47.06S0 341 0 315.1c0-25.9 21.16-47.06 47.06-47.06h47.06v47.06zm23.72 0c0-25.9 21.16-47.06 47.06-47.06s47.06 21.16 47.06 47.06v117.84c0 25.9-21.16 47.06-47.06 47.06s-47.06-21.16-47.06-47.06V315.1zm47.06-188.98c-25.9 0-47.06-21.16-47.06-47.06S139 32 164.9 32s47.06 21.16 47.06 47.06v47.06H164.9zm0 23.72c25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06H47.06C21.16 243.96 0 222.8 0 196.9s21.16-47.06 47.06-47.06H164.9zm188.98 47.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06s-21.16 47.06-47.06 47.06h-47.06V196.9zm-23.72 0c0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06V79.06c0-25.9 21.16-47.06 47.06-47.06 25.9 0 47.06 21.16 47.06 47.06V196.9zM283.1 385.88c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06-25.9 0-47.06-21.16-47.06-47.06v-47.06h47.06zm0-23.72c-25.9 0-47.06-21.16-47.06-47.06 0-25.9 21.16-47.06 47.06-47.06h117.84c25.9 0 47.06 21.16 47.06 47.06 0 25.9-21.16 47.06-47.06 47.06H283.1z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://linkedin.com/company/filigran" target="_blank" rel="noopener" title="linkedin.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3zM135.4 416H69V202.2h66.5V416zm-33.2-243c-21.3 0-38.5-17.3-38.5-38.5S80.9 96 102.2 96c21.2 0 38.5 17.3 38.5 38.5 0 21.3-17.2 38.5-38.5 38.5zm282.1 243h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9V416z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://twitter.com/FiligranHQ" target="_blank" rel="noopener" title="twitter.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M459.37 151.716c.325 4.548.325 9.097.325 13.645 0 138.72-105.583 298.558-298.558 298.558-59.452 0-114.68-17.219-161.137-47.106 8.447.974 16.568 1.299 25.34 1.299 49.055 0 94.213-16.568 130.274-44.832-46.132-.975-84.792-31.188-98.112-72.772 6.498.974 12.995 1.624 19.818 1.624 9.421 0 18.843-1.3 27.614-3.573-48.081-9.747-84.143-51.98-84.143-102.985v-1.299c13.969 7.797 30.214 12.67 47.431 13.319-28.264-18.843-46.781-51.005-46.781-87.391 0-19.492 5.197-37.36 14.294-52.954 51.655 63.675 129.3 105.258 216.365 109.807-1.624-7.797-2.599-15.918-2.599-24.04 0-57.828 46.782-104.934 104.934-104.934 30.213 0 57.502 12.67 76.67 33.137 23.715-4.548 46.456-13.32 66.599-25.34-7.798 24.366-24.366 44.833-46.132 57.827 21.117-2.273 41.584-8.122 60.426-16.243-14.292 20.791-32.161 39.308-52.628 54.253z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+      
+      
+    
+    <a href="https://facebook.com/FiligranHQ" target="_blank" rel="noopener" title="facebook.com" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2023 Fonticons, Inc.--><path d="M504 256C504 119 393 8 256 8S8 119 8 256c0 123.78 90.69 226.38 209.25 245V327.69h-63V256h63v-54.64c0-62.15 37-96.48 93.67-96.48 27.14 0 55.52 4.84 55.52 4.84v61h-31.28c-30.8 0-40.41 19.12-40.41 38.73V256h68.78l-11 71.69h-57.78V501C413.31 482.38 504 379.78 504 256z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.tabs", "navigation.path", "navigation.footer", "navigation.expand", "content.action.edit", "content.action.view", "content.code.annotate", "content.code.copy", "search.highlight"], "search": "../../assets/javascripts/workers/search.6c7302c4.min.js", "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.2047e101.min.js"></script>
+      
+        <script src="../../js/timeago.min.js"></script>
+      
+        <script src="../../js/timeago_mkdocs_material.js"></script>
+      
+    
+  <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
+</html>
