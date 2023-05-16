@@ -12,7 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { APP_BASE_PATH } from '../../../../relay/environment';
 import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes } from '../../../../utils/Entity';
+import { dateAttributes, ignoredAttributes } from '../../../../utils/hooks/useAttributes';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';

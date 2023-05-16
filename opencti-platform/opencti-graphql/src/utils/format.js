@@ -73,6 +73,7 @@ export const hashValue = (stixCyberObservable) => {
   }
   return null;
 };
+// TODO for now this list is duplicated in Front, think about updating it aswell
 export const observableValue = (stixCyberObservable) => {
   switch (stixCyberObservable.entity_type) {
     case ENTITY_AUTONOMOUS_SYSTEM:

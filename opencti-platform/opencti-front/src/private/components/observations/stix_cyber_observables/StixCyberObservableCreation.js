@@ -55,7 +55,7 @@ import {
   ignoredAttributes,
   multipleAttributes,
   numberAttributes,
-} from '../../../../utils/Entity';
+} from '../../../../utils/hooks/useAttributes';
 import ArtifactField from '../../common/form/ArtifactField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
