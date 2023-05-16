@@ -261,7 +261,7 @@ const relationsTypesMapping = {
   Channel_Country: ['targets'],
   Channel_Individual: ['targets', 'belongs-to'],
   Channel_Infrastructure: ['targets', 'uses'],
-  Channel_Malware: ['delivers', 'drops'],
+  Channel_Malware: ['uses', 'delivers', 'drops'],
   Channel_Organization: ['targets', 'belongs-to'],
   Channel_Position: ['targets'],
   Channel_Region: ['targets'],
