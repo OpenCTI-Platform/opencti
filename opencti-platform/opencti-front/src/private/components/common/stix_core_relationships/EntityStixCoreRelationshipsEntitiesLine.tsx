@@ -194,6 +194,15 @@ const entityStixCoreRelationshipsEntitiesFragment = graphql`
     ... on DataSource {
       name
     }
+    ... on CaseIncident {
+        name
+    }
+    ... on CaseRfi {
+        name
+    }
+    ... on CaseRft {
+        name
+    }
     ... on StixCyberObservable {
       observable_value
     }
