@@ -12,6 +12,7 @@ import { schemaRelationsRefDefinition } from '../schema/schema-relationsRef';
 import { findById as findStixObjectOrStixRelationshipById } from './stixObjectOrStixRelationship';
 import { elCount } from '../database/engine';
 import { READ_INDEX_STIX_CYBER_OBSERVABLE_RELATIONSHIPS, READ_INDEX_STIX_META_RELATIONSHIPS } from '../database/utils';
+import { STIX_SPEC_VERSION } from '../database/stix';
 
 // Query
 
@@ -46,6 +47,10 @@ export const schemaRefRelationships = async (context, user, id, toType) => {
 export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
 };
+
+export function lazyLoadSpecVersion({ spec_version }) {
+  return spec_version ?? STIX_SPEC_VERSION;
+}
 
 // Mutation
 

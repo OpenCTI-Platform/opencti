@@ -5,6 +5,7 @@ import {
   findById,
   findNested,
   isDatable,
+  lazyLoadSpecVersion,
   schemaRefRelationships,
   stixRefRelationshipCleanContext,
   stixRefRelationshipDelete,
@@ -20,7 +21,6 @@ import { batchLoader, distributionRelations } from '../database/middleware';
 import { elBatchIds } from '../database/engine';
 import { batchNotes, batchOpinions, batchReports } from '../domain/stixCoreRelationship';
 import { batchCreators } from '../domain/user';
-import { STIX_SPEC_VERSION } from '../database/stix';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const notesLoader = batchLoader(batchNotes);
@@ -46,7 +46,7 @@ const stixRefRelationshipResolvers = {
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
     datable: (rel) => isDatable(rel.fromType, rel.relationship_type),
-    spec_version: (rel) => { return rel.spec_version ?? STIX_SPEC_VERSION; }
+    spec_version: lazyLoadSpecVersion,
   },
   Mutation: {
     stixRefRelationshipEdit: (_, { id }, context) => ({

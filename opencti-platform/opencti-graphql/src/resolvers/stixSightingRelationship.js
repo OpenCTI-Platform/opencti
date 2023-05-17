@@ -1,5 +1,5 @@
-import {withFilter} from 'graphql-subscriptions';
-import {BUS_TOPICS} from '../config/conf';
+import { withFilter } from 'graphql-subscriptions';
+import { BUS_TOPICS } from '../config/conf';
 import {
   addStixSightingRelationship,
   batchCases,
@@ -20,17 +20,17 @@ import {
   stixSightingRelationshipEditField,
   stixSightingRelationshipsNumber,
 } from '../domain/stixSightingRelationship';
-import {fetchEditContext, pubSubAsyncIterator} from '../database/redis';
+import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import {batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations} from '../database/middleware';
-import {RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING} from '../schema/stixRefRelationship';
-import {STIX_SIGHTING_RELATIONSHIP} from '../schema/stixSightingRelationship';
-import {buildRefRelationKey} from '../schema/general';
-import {elBatchIds} from '../database/engine';
-import {findById as findStatusById, getTypeStatuses} from '../domain/status';
-import {addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction} from '../domain/stix';
-import {batchCreators} from '../domain/user';
-import { STIX_SPEC_VERSION } from '../database/stix';
+import { batchLoader, distributionRelations, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
+import { RELATION_CREATED_BY, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../schema/stixRefRelationship';
+import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
+import { buildRefRelationKey } from '../schema/general';
+import { elBatchIds } from '../database/engine';
+import { findById as findStatusById, getTypeStatuses } from '../domain/status';
+import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { batchCreators } from '../domain/user';
+import { lazyLoadSpecVersion } from '../domain/stixSightingRelationship';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
@@ -82,7 +82,7 @@ const stixSightingRelationshipResolvers = {
       const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
     },
-    spec_version: (rel) => { return rel.spec_version ?? STIX_SPEC_VERSION; }
+    spec_version: lazyLoadSpecVersion,
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({

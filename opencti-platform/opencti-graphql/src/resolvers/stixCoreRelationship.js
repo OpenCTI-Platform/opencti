@@ -25,7 +25,7 @@ import {
   stixCoreRelationshipsNumber,
   stixCoreRelationshipsMultiTimeSeries,
   stixCoreRelationshipsDistribution,
-} from '../domain/stixCoreRelationship';
+  lazyLoadSpecVersion } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
@@ -36,7 +36,6 @@ import { filesListing } from '../database/file-storage';
 import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
-import { STIX_SPEC_VERSION } from '../database/stix';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -86,7 +85,7 @@ const stixCoreRelationshipResolvers = {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
     },
-    spec_version: (rel) => { return rel.spec_version ?? STIX_SPEC_VERSION; }
+    spec_version: lazyLoadSpecVersion,
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, context) => ({

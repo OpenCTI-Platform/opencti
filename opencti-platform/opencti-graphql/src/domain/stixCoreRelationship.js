@@ -54,6 +54,7 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRelation
 } from './stixObjectOrStixRelationship';
+import { STIX_SPEC_VERSION } from '../database/stix';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, R.propOr(ABSTRACT_STIX_CORE_RELATIONSHIP, 'relationship_type', args), args);
@@ -62,6 +63,10 @@ export const findAll = async (context, user, args) => {
 export const findById = (context, user, stixCoreRelationshipId) => {
   return storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP);
 };
+
+export function lazyLoadSpecVersion({ spec_version }) {
+  return spec_version ?? STIX_SPEC_VERSION;
+}
 
 // region stats
 export const stixCoreRelationshipsDistribution = async (context, user, args) => {
