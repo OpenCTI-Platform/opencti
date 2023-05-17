@@ -48,9 +48,7 @@ export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
 };
 
-export function lazyLoadSpecVersion({ spec_version }) {
-  return spec_version ?? STIX_SPEC_VERSION;
-}
+export const lazyLoadSpecVersion = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
 
 // Mutation
 

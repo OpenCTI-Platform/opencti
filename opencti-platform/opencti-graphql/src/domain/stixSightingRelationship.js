@@ -46,9 +46,8 @@ export const findById = (context, user, stixSightingRelationshipId) => {
   return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
 
-export function lazyLoadSpecVersion({ spec_version }) {
-  return spec_version ?? STIX_SPEC_VERSION;
-}
+export const lazyLoadSpecVersion = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
+
 export const stixSightingRelationshipsNumber = (context, user, args) => ({
   count: elCount(context, user, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
   total: elCount(
