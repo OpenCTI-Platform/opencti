@@ -19,6 +19,7 @@ import {
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
   stixSightingRelationshipsNumber,
+  lazyLoadSpecVersion
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -30,7 +31,6 @@ import { elBatchIds } from '../database/engine';
 import { findById as findStatusById, getTypeStatuses } from '../domain/status';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
 import { batchCreators } from '../domain/user';
-import { lazyLoadSpecVersion } from '../domain/stixSightingRelationship';
 
 const createdByLoader = batchLoader(batchCreatedBy);
 const markingDefinitionsLoader = batchLoader(batchMarkingDefinitions);
