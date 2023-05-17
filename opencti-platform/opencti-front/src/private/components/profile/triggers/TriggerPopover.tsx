@@ -74,7 +74,7 @@ const TriggerPopover = ({
         id,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_myTriggers', paginationOptions, id);
+        deleteNode(store, 'Pagination_triggers', paginationOptions, id);
       },
       onCompleted: () => {
         setDeleting(false);

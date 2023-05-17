@@ -7824,8 +7824,7 @@ type Query {
   narrative(id: String!): Narrative
   narratives(first: Int, after: ID, orderBy: NarrativesOrdering, orderMode: OrderingMode, filters: [NarrativesFiltering!], filterMode: FilterMode, search: String): NarrativeConnection
   trigger(id: String!): Trigger
-  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, search: String): TriggerConnection
-  myTriggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, search: String): TriggerConnection
+  triggers(first: Int, after: ID, orderBy: TriggersOrdering, orderMode: OrderingMode, filters: [TriggersFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): TriggerConnection
   notification(id: String!): Notification
   notifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
   myNotifications(first: Int, after: ID, orderBy: NotificationsOrdering, orderMode: OrderingMode, filters: [NotificationsFiltering!], filterMode: FilterMode, search: String): NotificationConnection
@@ -9157,6 +9156,7 @@ enum TriggerFilter {
   trigger_type
   created
   event_types
+  user_ids
 }
 
 input TriggersFiltering {
@@ -9192,6 +9192,7 @@ type Trigger implements InternalObject & BasicObject {
   triggers: [Trigger]
   period: DigestPeriod
   trigger_time: String
+  authorizedMembers: [MemberAccess!]!
 }
 
 type TriggerConnection {
@@ -9270,6 +9271,7 @@ input TriggerLiveAddInput {
   event_types: [TriggerEventType!]!
   outcomes: [StixRef!]!
   filters: String
+  recipients: [String!]
 }
 
 scalar name_String_NotNull_minLength_1
@@ -9281,6 +9283,7 @@ input TriggerDigestAddInput {
   period: DigestPeriod!
   trigger_time: String
   outcomes: [StixRef!]!
+  recipients: [String!]
 }
 
 type NotificationCount {

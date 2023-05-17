@@ -63,7 +63,7 @@ describe('Group resolver standard behavior', () => {
   });
   it('should list groups', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.groups.edges.length).toEqual(5);
+    expect(queryResult.data.groups.edges.length).toEqual(6);
   });
   it('should update group', async () => {
     const UPDATE_QUERY = gql`

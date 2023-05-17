@@ -14,6 +14,7 @@ enum TriggerFilter {
     trigger_type
     created
     event_types
+    user_ids
 }
 input TriggersFiltering {
     key: [TriggerFilter!]!
@@ -46,6 +47,7 @@ type Trigger implements InternalObject & BasicObject {
     triggers: [Trigger]
     period: DigestPeriod
     trigger_time: String
+    authorizedMembers: [MemberAccess!]!
 }
 
 type TriggerConnection {
@@ -123,15 +125,7 @@ type Query {
         orderMode: OrderingMode
         filters: [TriggersFiltering!]
         filterMode: FilterMode
-        search: String
-    ): TriggerConnection @auth(for: [SETTINGS_SETACCESSES])
-    myTriggers(
-        first: Int
-        after: ID
-        orderBy: TriggersOrdering
-        orderMode: OrderingMode
-        filters: [TriggersFiltering!]
-        filterMode: FilterMode
+        adminBypassUserAccess: Boolean
         search: String
     ): TriggerConnection @auth
     # Notifications
@@ -171,6 +165,7 @@ input TriggerLiveAddInput {
     event_types: [TriggerEventType!]!
     outcomes: [StixRef!]!
     filters: String
+    recipients: [String!]
 }
 
 input TriggerDigestAddInput {
@@ -180,6 +175,7 @@ input TriggerDigestAddInput {
     period: DigestPeriod!
     trigger_time: String
     outcomes: [StixRef!]!
+    recipients: [String!]
 }
 
 type Mutation {

@@ -162,7 +162,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should list users', async () => {
     const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.users.edges.length).toEqual(4);
+    expect(queryResult.data.users.edges.length).toEqual(5);
   });
   it('should update user', async () => {
     const UPDATE_QUERY = gql`
@@ -442,9 +442,9 @@ describe('User resolver standard behavior', () => {
 describe('User list members query behavior', () => {
   it('Should user lists all members', async () => {
     const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY, variables: { first: 20 } });
-    expect(queryResult.data.members.edges.length).toEqual(12);
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(3);
-    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(4);
+    expect(queryResult.data.members.edges.length).toEqual(14);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(4);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(5);
     expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(5);
   });
 });

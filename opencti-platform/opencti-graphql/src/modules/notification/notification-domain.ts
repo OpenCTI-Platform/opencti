@@ -1,10 +1,5 @@
 import type { AuthContext, AuthUser } from '../../types/user';
-import {
-  createEntity,
-  deleteElementById,
-  patchAttribute,
-  updateAttribute
-} from '../../database/middleware';
+import { createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
@@ -12,15 +7,16 @@ import type {
   QueryNotificationsArgs,
   QueryTriggersArgs,
   TriggerDigestAddInput,
-  TriggerLiveAddInput
+  TriggerLiveAddInput,
+  TriggerType
 } from '../../generated/graphql';
 import {
   internalFindByIds,
+  internalLoadById,
   listEntitiesPaginated,
   storeLoadById,
 } from '../../database/middleware-loader';
 import {
-  BasicStoreEntityLiveTrigger,
   BasicStoreEntityNotification,
   BasicStoreEntityTrigger,
   ENTITY_TYPE_NOTIFICATION,
@@ -32,38 +28,53 @@ import { now } from '../../utils/format';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { publishUserAction } from '../../listener/UserActionListener';
+import {
+  isUserHasCapability,
+  MEMBER_ACCESS_RIGHT_ADMIN,
+  SETTINGS_SET_ACCESSES,
+} from '../../utils/access';
+import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
+import { ENTITY_TYPE_USER } from '../../schema/internalObject';
+import { TriggerFilter } from '../../generated/graphql';
 
 // Outcomes
 
 // Triggers
-export const addLiveTrigger = async (context: AuthContext, user: AuthUser, input: TriggerLiveAddInput): Promise<BasicStoreEntityLiveTrigger> => {
-  const defaultOpts = { trigger_type: 'live', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
-  const liveTrigger = { ...input, ...defaultOpts };
-  const created = await createEntity(context, user, liveTrigger, ENTITY_TYPE_TRIGGER);
+export const addTrigger = async (
+  context: AuthContext,
+  user: AuthUser,
+  triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
+  type: TriggerType
+): Promise<BasicStoreEntityTrigger> => {
+  let recipientId = user.id;
+  if (triggerInput.recipients && triggerInput.recipients.length > 0) {
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+      throw ForbiddenAccess();
+    }
+    if (triggerInput.recipients.length > 1) {
+      throw UnsupportedError(`Cannot create ${type} trigger for more than one recipient`);
+    }
+    [recipientId] = triggerInput.recipients;
+    const recipientUser = await internalLoadById(context, user, recipientId, { type: ENTITY_TYPE_USER });
+    if (!recipientUser) {
+      throw UnsupportedError('Recipient user not found');
+    }
+  }
+  const authorizedMembers = [{ id: recipientId, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, user_ids: [recipientId], group_ids: [], created: now(), updated: now() };
+  const trigger = { ...triggerInput, ...defaultOpts };
+  const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
     event_access: 'extended',
-    message: `creates trigger \`${created.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
+    message: `creates ${type} trigger \`${created.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
-export const addDigestTrigger = async (context: AuthContext, user: AuthUser, input: TriggerDigestAddInput) => {
-  const defaultOpts = { trigger_type: 'digest', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
-  const digestTrigger = { ...input, ...defaultOpts };
-  const created = await createEntity(context, user, digestTrigger, ENTITY_TYPE_TRIGGER);
-  await publishUserAction({
-    user,
-    event_type: 'mutation',
-    event_scope: 'create',
-    event_access: 'extended',
-    message: `creates trigger \`${created.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
-  });
-  return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
-};
+
 export const triggerGet = (context: AuthContext, user: AuthUser, triggerId: string): BasicStoreEntityTrigger => {
   return storeLoadById(context, user, triggerId, ENTITY_TYPE_TRIGGER) as unknown as BasicStoreEntityTrigger;
 };
@@ -90,12 +101,10 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
   return triggerId;
 };
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
-  return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], opts);
-};
-
-export const myTriggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
-  const queryFilters = [...(opts.filters || []), { key: 'user_ids', values: [user.id] }];
-  const queryArgs = { ...opts, filters: queryFilters };
+  let queryArgs = { ...opts };
+  if (opts.filters?.some((f) => f.key.includes(TriggerFilter.UserIds))) {
+    queryArgs = { ...queryArgs, adminBypassUserAccess: true };
+  }
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
 };
 

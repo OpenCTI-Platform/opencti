@@ -123,8 +123,8 @@ export const lineChartOptions = (
 export const areaChartOptions = (
   theme,
   isTimeSeries = false,
-  xFormatter = null,
-  yFormatter = null,
+  xFormatter = (value) => value,
+  yFormatter = (value) => value,
   tickAmount = undefined,
   isStacked = false,
   legend = true,

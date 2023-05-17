@@ -16,6 +16,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   user_ids: string[]
   group_ids: string[]
   trigger_ids: string[]
+  authorized_members: Array<{ id: string, access_right: string }>;
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {
@@ -38,6 +39,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   outcomes: string[]
   user_ids: string[]
   group_ids: string[]
+  authorized_members: Array<{ id: string, access_right: string }>;
 }
 
 export interface StixTrigger extends StixObject {

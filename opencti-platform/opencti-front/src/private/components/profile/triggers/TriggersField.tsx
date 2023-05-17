@@ -12,9 +12,10 @@ import {
   TriggerType,
 } from './__generated__/TriggersQueriesSearchQuery.graphql';
 import { triggersQueriesSearchQuery } from './TriggersQueries';
-import { TriggerCreationLiveMutation$data } from './__generated__/TriggerCreationLiveMutation.graphql';
-import TriggerLiveCreation from './TriggerLiveCreation';
+
 import { TriggersLinesPaginationQuery$variables } from './__generated__/TriggersLinesPaginationQuery.graphql';
+import TriggerLiveCreation from './TriggerLiveCreation';
+import { TriggerLiveCreationMutation$data } from './__generated__/TriggerLiveCreationMutation.graphql';
 
 const useStyles = makeStyles(() => ({
   icon: {
@@ -64,6 +65,7 @@ interface TriggersFieldProps {
   }[];
   helpertext?: string;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
+  recipientId?: string;
 }
 
 interface Option {
@@ -81,6 +83,7 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   values,
   helpertext,
   paginationOptions,
+  recipientId,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -104,12 +107,12 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
     fetchQuery(triggersQueriesSearchQuery, {
       search: event && event.target.value,
-      filters: [{ key: 'trigger_type', values: ['live'] }],
+      filters: [{ key: 'trigger_type', values: ['live'] }, { key: 'user_ids', values: [recipientId] }],
     })
       .toPromise()
       .then((data) => {
         const newTriggersEdges = ((data as TriggersQueriesSearchQuery$data)
-          ?.myTriggers?.edges ?? []) as {
+          ?.triggers?.edges ?? []) as {
           node: {
             created: string | null;
             description: string | null;
@@ -166,11 +169,11 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
       />
       <TriggerLiveCreation
         contextual={true}
-        hideSpeedDial={true}
         open={triggerCreation}
         handleClose={handleCloseTriggerCreation}
         paginationOptions={paginationOptions}
-        creationCallback={(data: TriggerCreationLiveMutation$data) => {
+        recipientId={recipientId}
+        creationCallback={(data: TriggerLiveCreationMutation$data) => {
           const newTrigger = data.triggerLiveAdd;
           if (newTrigger) {
             const entity = { id: newTrigger.id, name: newTrigger.name };

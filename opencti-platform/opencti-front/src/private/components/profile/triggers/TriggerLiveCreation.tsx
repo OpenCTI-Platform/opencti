@@ -31,10 +31,10 @@ import Filters from '../../common/lists/Filters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import SelectField from '../../../../components/SelectField';
 import {
-  TriggerLiveCreationLiveMutation,
-  TriggerLiveCreationLiveMutation$data,
+  TriggerLiveCreationMutation,
+  TriggerLiveCreationMutation$data,
   TriggerEventType,
-} from './__generated__/TriggerLiveCreationLiveMutation.graphql';
+} from './__generated__/TriggerLiveCreationMutation.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
@@ -51,25 +51,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   dialogActions: {
     padding: '0 17px 20px 0',
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 1100,
-  },
-  speedDialButton: {
-    backgroundColor: theme.palette.secondary.main,
-    color: '#ffffff',
-    '&:hover': {
-      backgroundColor: theme.palette.secondary.main,
-    },
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
@@ -88,11 +69,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     left: 5,
     color: 'inherit',
   },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
-  },
   container: {
     padding: '10px 20px 20px 20px',
   },
@@ -101,19 +77,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-interface TriggerLiveCreationProps {
-  contextual?: boolean;
-  hideSpeedDial?: boolean;
-  open?: boolean;
-  handleClose?: () => void;
-  inputValue?: string;
-  paginationOptions?: TriggersLinesPaginationQuery$variables;
-  creationCallback?: (data: TriggerLiveCreationLiveMutation$data) => void;
-}
-
 // region live
-const triggerLiveAddMutation = graphql`
-  mutation TriggerLiveCreationLiveMutation($input: TriggerLiveAddInput!) {
+const triggerLiveCreationMutation = graphql`
+  mutation TriggerLiveCreationMutation($input: TriggerLiveAddInput!) {
     triggerLiveAdd(input: $input) {
       id
       name
@@ -135,6 +101,17 @@ interface TriggerLiveAddInput {
   description: string;
   event_types: Array<TriggerEventType>;
   outcomes: string[];
+  recipients: string[];
+}
+
+interface TriggerLiveCreationProps {
+  contextual?: boolean;
+  open?: boolean;
+  handleClose?: () => void;
+  inputValue?: string;
+  recipientId?: string;
+  paginationOptions?: TriggersLinesPaginationQuery$variables;
+  creationCallback?: (data: TriggerLiveCreationMutation$data) => void;
 }
 
 const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
@@ -144,6 +121,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   open,
   handleClose,
   creationCallback,
+  recipientId,
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -182,14 +160,15 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
   const handleRemoveFilter = (key: string) => {
     setFilters(R.dissoc(key, filters));
   };
-  const [commitLive] = useMutation<TriggerLiveCreationLiveMutation>(
-    triggerLiveAddMutation,
+  const [commitLive] = useMutation<TriggerLiveCreationMutation>(
+    triggerLiveCreationMutation,
   );
   const liveInitialValues: TriggerLiveAddInput = {
     name: inputValue || '',
     description: '',
     event_types: ['create'],
     outcomes: [],
+    recipients: recipientId ? [recipientId] : [],
   };
   const eventTypesOptions: Record<string, string> = {
     create: t('Creation'),
@@ -212,6 +191,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
       outcomes: values.outcomes,
       description: values.description,
       filters: jsonFilters,
+      recipients: values.recipients,
     };
     commitLive({
       variables: {
@@ -221,7 +201,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         if (paginationOptions) {
           insertNode(
             store,
-            'Pagination_myTriggers',
+            'Pagination_triggers',
             paginationOptions,
             'triggerLiveAdd',
           );
@@ -380,6 +360,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
           availableRelationFilterTypes={undefined}
         />
       </div>
+      <div className="clearfix" />
       <FilterIconButton
         filters={filters}
         handleRemoveFilter={handleRemoveFilter}

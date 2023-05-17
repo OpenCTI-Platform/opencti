@@ -17,8 +17,8 @@ interface TriggerLinesProps {
   queryRef: PreloadedQuery<TriggersLinesPaginationQuery>;
   dataColumns: DataColumns;
   paginationOptions?: TriggersLinesPaginationQuery$variables;
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  onLabelClick: (
+  setNumberOfElements?: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick?: (
     k: string,
     id: string,
     value: Record<string, unknown>,
@@ -58,14 +58,14 @@ const triggersLinesFragment = graphql`
     filters: { type: "[TriggersFiltering!]" }
   )
   @refetchable(queryName: "TriggersLinesRefetchQuery") {
-    myTriggers(
+    triggers(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_myTriggers") {
+    ) @connection(key: "Pagination_triggers") {
       edges {
         node {
           id
@@ -97,7 +97,7 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
     linesQuery: triggersLinesQuery,
     linesFragment: triggersLinesFragment,
     queryRef,
-    nodePath: ['myTriggers', 'pageInfo', 'globalCount'],
+    nodePath: ['triggers', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -106,8 +106,8 @@ const TriggersLines: FunctionComponent<TriggerLinesProps> = ({
       isLoading={isLoadingMore}
       loadMore={loadMore}
       hasMore={hasMore}
-      dataList={data?.myTriggers?.edges ?? []}
-      globalCount={data?.myTriggers?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      dataList={data?.triggers?.edges ?? []}
+      globalCount={data?.triggers?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={TriggerLineComponent}
       DummyLineComponent={TriggerLineDummy}
       dataColumns={dataColumns}

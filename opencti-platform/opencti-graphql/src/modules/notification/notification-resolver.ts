@@ -1,8 +1,8 @@
 import { withFilter } from 'graphql-subscriptions';
 import type { Resolvers } from '../../generated/graphql';
+import { TriggerType } from '../../generated/graphql';
 import {
-  addDigestTrigger,
-  addLiveTrigger,
+  addTrigger,
   myNotificationsFind,
   myUnreadNotificationsCount,
   notificationDelete,
@@ -13,19 +13,18 @@ import {
   triggerEdit,
   triggerGet,
   triggersFind,
-  myTriggersFind,
   triggersGet,
 } from './notification-domain';
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
+import { getAuthorizedMembers } from '../../domain/authorizedMembers';
 
 const notificationResolvers: Resolvers = {
   Query: {
     // Triggers
     trigger: (_, { id }, context) => triggerGet(context, context.user, id),
     triggers: (_, args, context) => triggersFind(context, context.user, args),
-    myTriggers: (_, args, context) => myTriggersFind(context, context.user, args),
     // Notifications
     notification: (_, { id }, context) => notificationGet(context, context.user, id),
     notifications: (_, args, context) => notificationsFind(context, context.user, args),
@@ -33,13 +32,14 @@ const notificationResolvers: Resolvers = {
     myUnreadNotificationsCount: (_, __, context) => myUnreadNotificationsCount(context, context.user),
   },
   Trigger: {
+    authorizedMembers: (trigger, _, context) => getAuthorizedMembers(context, context.user, trigger),
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
   },
   Mutation: {
     triggerFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),
     triggerDelete: (_, { id }, context) => triggerDelete(context, context.user, id),
-    triggerLiveAdd: (_, { input }, context) => addLiveTrigger(context, context.user, input),
-    triggerDigestAdd: (_, { input }, context) => addDigestTrigger(context, context.user, input),
+    triggerLiveAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Live),
+    triggerDigestAdd: (_, { input }, context) => addTrigger(context, context.user, input, TriggerType.Digest),
     notificationDelete: (_, { id }, context) => notificationDelete(context, context.user, id),
     notificationMarkRead: (_, { id, read }, context) => notificationEditRead(context, context.user, id, read),
   },
