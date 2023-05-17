@@ -30,6 +30,7 @@ import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentsCardsAndLinesPaginationQuery$variables } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -99,6 +100,7 @@ interface IncidentAddInput {
   objectLabel: Option[];
   objectAssignee: Option[];
   externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface IncidentCreationProps {
@@ -151,6 +153,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         ({ value }) => value,
       ),
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -188,6 +193,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         objectAssignee: [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={incidentValidator}
       onSubmit={onSubmit}
@@ -264,6 +270,15 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

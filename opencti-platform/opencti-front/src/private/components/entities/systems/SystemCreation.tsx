@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,25 +7,31 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { parse } from '../../../../utils/Time';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  SystemCreationMutation,
+  SystemCreationMutation$variables,
+} from './__generated__/SystemCreationMutation.graphql';
+import { SystemsLinesPaginationQuery$variables } from './__generated__/SystemsLinesPaginationQuery.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -68,66 +74,89 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const eventMutation = graphql`
-  mutation EventCreationMutation($input: EventAddInput!) {
-    eventAdd(input: $input) {
+const systemMutation = graphql`
+  mutation SystemCreationMutation($input: SystemAddInput!) {
+    systemAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...EventLine_node
+      ...SystemLine_node
     }
   }
 `;
 
-export const EventCreationForm = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface SystemAddInput {
+  name: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface SystemFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    event_types: Yup.array().nullable(),
-    start_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .nullable(),
-    stop_time: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('start_time'), "The end date can't be before start date")
-      .nullable(),
   };
-  const eventValidator = useSchemaCreationValidation('Event', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc(
-        'start_time',
-        values.start_time ? parse(values.start_time).format() : null,
-      ),
-      R.assoc(
-        'stop_time',
-        values.stop_time ? parse(values.stop_time).format() : null,
-      ),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: eventMutation,
+  const systemValidator = useSchemaCreationValidation('System', basicShape);
+
+  const initialValues: SystemAddInput = {
+    name: '',
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<SystemCreationMutation>(systemMutation);
+
+  const onSubmit: FormikConfig<SystemAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: SystemCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'eventAdd');
+          updater(store, 'systemAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -138,20 +167,12 @@ export const EventCreationForm = ({ updater, onReset, onCompleted,
     });
   };
 
-  return <Formik initialValues={{
-    name: '',
-    description: '',
-    event_types: [],
-    start_time: null,
-    stop_time: null,
-    createdBy: defaultCreatedBy ?? '',
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-  }}
-      validationSchema={eventValidator}
+  return <Formik
+      initialValues={initialValues}
+      validationSchema={systemValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
+      onReset={onReset}
+  >
     {({
       submitForm,
       handleReset,
@@ -166,15 +187,7 @@ export const EventCreationForm = ({ updater, onReset, onCompleted,
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={['Event']}
-          />
-          <OpenVocabField
-              label={t('Event types')}
-              type="event-type-ov"
-              name="event_types"
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
-              onChange={(name, value) => setFieldValue(name, value)}
+              detectDuplicate={['User']}
           />
           <Field
               component={MarkDownField}
@@ -182,28 +195,8 @@ export const EventCreationForm = ({ updater, onReset, onCompleted,
               label={t('Description')}
               fullWidth={true}
               multiline={true}
-              rows={4}
+              rows="4"
               style={{ marginTop: 20 }}
-          />
-          <Field
-              component={DateTimePickerField}
-              name="start_time"
-              TextFieldProps={{
-                label: t('Start date'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
-          />
-          <Field
-              component={DateTimePickerField}
-              name="stop_time"
-              TextFieldProps={{
-                label: t('End date'),
-                variant: 'standard',
-                fullWidth: true,
-                style: { marginTop: 20 },
-              }}
           />
           <CreatedByField
               name="createdBy"
@@ -225,6 +218,15 @@ export const EventCreationForm = ({ updater, onReset, onCompleted,
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -250,58 +252,52 @@ export const EventCreationForm = ({ updater, onReset, onCompleted,
   </Formik>;
 };
 
-const EventCreation = ({ paginationOptions }) => {
+const SystemCreation = ({ paginationOptions }: { paginationOptions: SystemsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_events',
+    'Pagination_systems',
     paginationOptions,
-    'eventAdd',
+    'systemAdd',
   );
 
   return (
-    <div>
-      <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
-        <Add />
-      </Fab>
-      <Drawer
-        open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary">
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create an event')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <EventCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
-          />
-        </div>
-      </Drawer>
-    </div>
+      <div>
+        <Fab onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}>
+          <Add />
+        </Fab>
+        <Drawer open={open}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={handleClose}>
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose}
+              size="large"
+              color="primary"
+            >
+              <Close fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Create a system')}</Typography>
+          </div>
+          <div className={classes.container}>
+            <SystemCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
+          </div>
+        </Drawer>
+      </div>
   );
 };
 
-export default EventCreation;
+export default SystemCreation;

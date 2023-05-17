@@ -18,6 +18,7 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
+import { SimpleFileUpload } from "formik-mui";
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -278,6 +279,9 @@ class StixSightingRelationshipCreation extends Component {
             R.pluck('value', values.externalReferences),
           ),
         )(values);
+        if (values.file) {
+          finalValues.file = values.file;
+        }
         commitMutation({
           mutation: stixSightingRelationshipCreationMutation,
           variables: {

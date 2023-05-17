@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -9,12 +9,14 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { assoc, pipe, pluck } from 'ramda';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -24,8 +26,17 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  CourseOfActionCreationMutation,
+  CourseOfActionCreationMutation$variables,
+} from './__generated__/CourseOfActionCreationMutation.graphql';
+import {
+  CoursesOfActionLinesPaginationQuery$variables,
+} from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -90,8 +101,39 @@ const courseOfActionMutation = graphql`
   }
 `;
 
-export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface CourseOfActionAddInput {
+  name: string
+  description: string
+  confidence: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface CourseOfActionFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
+  display?: boolean;
+  contextual?: boolean;
+  onReset?: () => void;
+  inputValue?: string;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormProps> = ({
+  updater,
+  onReset,
+  inputValue,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  defaultConfidence,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -99,15 +141,34 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
     description: Yup.string().nullable(),
   };
   const courseOfActionValidator = useSchemaCreationValidation('Course-Of-Action', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
-      assoc('externalReferences', pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: courseOfActionMutation,
+
+  const initialValues: CourseOfActionAddInput = {
+    name: inputValue ?? '',
+    description: '',
+    confidence: defaultConfidence ?? 75,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<CourseOfActionCreationMutation>(courseOfActionMutation);
+
+  const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: CourseOfActionCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
@@ -120,7 +181,6 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -132,14 +192,7 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
   };
 
   return <Formik
-        initialValues={{
-          name: inputValue ?? '',
-          description: '',
-          createdBy: defaultCreatedBy ?? '',
-          objectMarking: defaultMarkingDefinitions ?? [],
-          objectLabel: [],
-          externalReferences: [],
-        }}
+        initialValues={initialValues}
         validationSchema={courseOfActionValidator}
         onSubmit={onSubmit}
         onReset={onReset}>
@@ -189,6 +242,15 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                 />
+                <Field
+                  component={SimpleFileUpload}
+                  name="file"
+                  label={t('Associated file')}
+                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                  InputProps={{ fullWidth: true, variant: 'standard' }}
+                  fullWidth={true}
+                />
                 <div className={classes.buttons}>
                     <Button
                         variant="contained"
@@ -213,14 +275,19 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
     </Formik>;
 };
 
-const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputValue }) => {
+const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
+  paginationOptions,
+  contextual,
+  display,
+  inputValue,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_coursesOfAction',
     paginationOptions,

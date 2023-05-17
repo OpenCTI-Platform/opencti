@@ -25,6 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -98,6 +99,7 @@ interface RegionAddInput {
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
+  file: File | undefined
 }
 
 interface RegionFormProps {
@@ -126,6 +128,9 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -152,6 +157,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
         objectMarking: defaultMarkingDefinitions ?? [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={regionValidator}
       onSubmit={onSubmit}
@@ -207,6 +213,15 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

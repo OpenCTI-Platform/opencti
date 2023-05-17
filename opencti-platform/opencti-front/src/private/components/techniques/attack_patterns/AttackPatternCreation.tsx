@@ -1,34 +1,42 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
-import { evolve, path, pluck } from 'ramda';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
+import * as Yup from 'yup';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
+import { useFormatter } from '../../../../components/i18n';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
-import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
-import { insertNode } from '../../../../utils/store';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  AttackPatternCreationMutation,
+  AttackPatternCreationMutation$variables,
+} from './__generated__/AttackPatternCreationMutation.graphql';
+import {
+  AttackPatternsLinesPaginationQuery$variables,
+} from './__generated__/AttackPatternsLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -71,73 +79,115 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const observedDataCreationMutation = graphql`
-  mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
-    observedDataAdd(input: $input) {
+const attackPatternMutation = graphql`
+  mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
+    attackPatternAdd(input: $input) {
       id
       name
       entity_type
       parent_types
-      ...ObservedDataLine_node
+      description
+      isSubAttackPattern
+      x_mitre_id
+      subAttackPatterns {
+        edges {
+          node {
+            id
+            name
+            description
+            x_mitre_id
+          }
+        }
+      }
     }
   }
 `;
 
-export const ObservedDataCreationForm = ({
+interface AttackPatternAddInput {
+  name: string
+  description: string
+  x_mitre_id: string
+  confidence: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  killChainPhases: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface AttackPatternFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps> = ({
   updater,
   onReset,
   onCompleted,
-  defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    objects: Yup.array(),
-    first_observed: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
-    last_observed: Yup.date()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .required(t('This field is required')),
-    number_observed: Yup.number().required(t('This field is required')),
-    confidence: Yup.number().nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_mitre_id: Yup.string().nullable(),
   };
-  const observedDataValidator = useSchemaCreationValidation(
-    'Observed-Data',
+  const attackPatternValidator = useSchemaCreationValidation(
+    'Attack-Pattern',
     basicShape,
   );
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = evolve(
-      {
-        first_observed: () => parse(values.first_observed).format(),
-        last_observed: () => parse(values.last_observed).format(),
-        number_observed: () => parseInt(values.number_observed, 10),
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-        externalReferences: pluck('value'),
-        objects: pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: observedDataCreationMutation,
+
+  const initialValues = {
+    name: '',
+    x_mitre_id: '',
+    description: '',
+    confidence: defaultConfidence ?? 75,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    killChainPhases: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<AttackPatternCreationMutation>(attackPatternMutation);
+
+  const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: AttackPatternCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      x_mitre_id: values.x_mitre_id,
+      confidence: parseInt(String(values.confidence), 10),
+      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
-      updater: (store, response) => {
+      updater: (store) => {
         if (updater) {
-          updater(store, 'observedDataAdd', response.observedDataAdd);
+          updater(store, 'attackPatternAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -147,64 +197,43 @@ export const ObservedDataCreationForm = ({
       },
     });
   };
-
   return (
     <Formik
-      initialValues={{
-        objects: [],
-        first_observed: dayStartDate(),
-        last_observed: dayStartDate(),
-        number_observed: 1,
-        confidence: defaultConfidence ?? 75,
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={observedDataValidator}
+      initialValues={initialValues}
+      validationSchema={attackPatternValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
-          <StixCoreObjectsField
-            name="objects"
-            style={{ width: '100%' }}
-            setFieldValue={setFieldValue}
-            values={values.objects}
-          />
           <Field
-            component={DateTimePickerField}
-            name="first_observed"
-            TextFieldProps={{
-              label: t('First observed'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="last_observed"
-            TextFieldProps={{
-              label: t('Last observed'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Attack-Pattern']}
           />
           <Field
             component={TextField}
             variant="standard"
-            name="number_observed"
-            type="number"
-            label={t('Number observed')}
+            name="x_mitre_id"
+            label={t('External ID')}
             fullWidth={true}
             style={{ marginTop: 20 }}
           />
-          <ConfidenceField
-            entityType="Observed-Data"
-            containerStyle={fieldSpacingContainerStyle}
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
@@ -226,6 +255,15 @@ export const ObservedDataCreationForm = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -252,20 +290,18 @@ export const ObservedDataCreationForm = ({
   );
 };
 
-const ObservedDataCreation = ({ paginationOptions }) => {
+const AttackPatternCreation = ({ paginationOptions }: { paginationOptions: AttackPatternsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_observedDatas',
+    'Pagination_attackPatterns',
     paginationOptions,
-    'observedDataAdd',
+    'attackPatternAdd',
   );
 
   return (
@@ -296,10 +332,10 @@ const ObservedDataCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an observed data')}</Typography>
+          <Typography variant="h6">{t('Create an attack pattern')}</Typography>
         </div>
         <div className={classes.container}>
-          <ObservedDataCreationForm
+          <AttackPatternCreationForm
             updater={updater}
             onCompleted={() => handleClose()}
             onReset={onReset}
@@ -310,4 +346,4 @@ const ObservedDataCreation = ({ paginationOptions }) => {
   );
 };
 
-export default ObservedDataCreation;
+export default AttackPatternCreation;

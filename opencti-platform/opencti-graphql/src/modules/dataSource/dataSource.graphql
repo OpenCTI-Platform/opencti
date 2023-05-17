@@ -197,6 +197,7 @@ input DataSourceAddInput {
     x_mitre_platforms: [String!]
     collection_layers: [String!]
     dataComponents: [String]
+    file: Upload
 }
 
 type Mutation {

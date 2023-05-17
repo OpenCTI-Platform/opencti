@@ -25,6 +25,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -98,6 +99,7 @@ interface CountryAddInput {
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
+  file: File | undefined
 }
 
 interface CountryFormProps {
@@ -126,6 +128,9 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
       R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
       R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
     )(values);
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -153,6 +158,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
         objectMarking: defaultMarkingDefinitions ?? [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={countryValidator}
       onSubmit={onSubmit}
@@ -208,6 +214,15 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

@@ -1,36 +1,42 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
+import * as Yup from 'yup';
+import { graphql, useMutation } from 'react-relay';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import * as R from 'ramda';
-import * as Yup from 'yup';
-import { graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from '../../../../components/i18n';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
+import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import MarkDownField from '../../../../components/MarkDownField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { dayStartDate, parse } from '../../../../utils/Time';
 import ConfidenceField from '../../common/form/ConfidenceField';
-import { parse } from '../../../../utils/Time';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import StixCoreObjectsField from '../../common/form/StixCoreObjectsField';
 import { insertNode } from '../../../../utils/store';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  ObservedDataCreationMutation,
+  ObservedDataCreationMutation$variables,
+} from './__generated__/ObservedDataCreationMutation.graphql';
+import { ObservedDatasLinesPaginationQuery$variables } from './__generated__/ObservedDatasLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -73,20 +79,41 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const infrastructureMutation = graphql`
-  mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
-    infrastructureAdd(input: $input) {
+const observedDataCreationMutation = graphql`
+  mutation ObservedDataCreationMutation($input: ObservedDataAddInput!) {
+    observedDataAdd(input: $input) {
       id
       name
-      description
       entity_type
       parent_types
-      ...InfrastructureLine_node
+      ...ObservedDataLine_node
     }
   }
 `;
 
-export const InfrastructureCreationForm = ({
+interface ObservedDataAddInput {
+  objects: { value: string }[]
+  first_observed: Date
+  last_observed: Date
+  number_observed: number
+  confidence: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined,
+}
+
+interface ObservedDataFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -97,56 +124,64 @@ export const InfrastructureCreationForm = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    infrastructure_types: Yup.array().nullable(),
+    objects: Yup.array(),
+    first_observed: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    last_observed: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    number_observed: Yup.number().required(t('This field is required')),
     confidence: Yup.number().nullable(),
-    first_seen: Yup.date()
-      .nullable()
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    last_seen: Yup.date()
-      .nullable()
-      .min(
-        Yup.ref('first_seen'),
-        "The last seen date can't be before first seen date",
-      )
-      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
   };
-  const infrastructureValidator = useSchemaCreationValidation(
-    'Infrastructure',
+  const observedDataValidator = useSchemaCreationValidation(
+    'Observed-Data',
     basicShape,
   );
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-        first_seen: values.first_seen
-          ? parse(values.first_seen).format()
-          : null,
-        last_seen: values.first_seen ? parse(values.last_seen).format() : null,
-        killChainPhases: R.pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: infrastructureMutation,
+
+  const initialValues: ObservedDataAddInput = {
+    objects: [],
+    first_observed: dayStartDate(),
+    last_observed: dayStartDate(),
+    number_observed: 1,
+    confidence: defaultConfidence ?? 75,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<ObservedDataCreationMutation>(observedDataCreationMutation);
+
+  const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: ObservedDataCreationMutation$variables['input'] = {
+      objects: values.objects.map((v) => v.value),
+      first_observed: parse(values.first_observed).format(),
+      last_observed: parse(values.last_observed).format(),
+      number_observed: parseInt(String(values.number_observed), 10),
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'infrastructureAdd');
+          updater(store, 'observedDataAdd', response.observedDataAdd);
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -159,77 +194,51 @@ export const InfrastructureCreationForm = ({
 
   return (
     <Formik
-      initialValues={{
-        name: '',
-        infrastructure_types: [],
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        first_seen: null,
-        last_seen: null,
-        killChainPhases: [],
-      }}
-      validationSchema={infrastructureValidator}
+      initialValues={initialValues}
+      validationSchema={observedDataValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
       {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
+          <StixCoreObjectsField
+            name="objects"
+            style={{ width: '100%' }}
+            setFieldValue={setFieldValue}
+            values={values.objects}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="first_observed"
+            TextFieldProps={{
+              label: t('First observed'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="last_observed"
+            TextFieldProps={{
+              label: t('Last observed'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
+          />
           <Field
             component={TextField}
             variant="standard"
-            name="name"
-            label={t('Name')}
+            name="number_observed"
+            type="number"
+            label={t('Number observed')}
             fullWidth={true}
-            detectDuplicate={['Infrastructure']}
-          />
-          <OpenVocabField
-            label={t('Infrastructure types')}
-            type="infrastructure-type-ov"
-            name="infrastructure_types"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-            onChange={(name, value) => setFieldValue(name, value)}
+            style={{ marginTop: 20 }}
           />
           <ConfidenceField
-            entityType="Infrastructure"
-            containerStyle={{ width: '100%', marginTop: 20 }}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="first_seen"
-            TextFieldProps={{
-              label: t('First seen'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="last_seen"
-            TextFieldProps={{
-              label: t('Last seen'),
-              variant: 'standard',
-              fullWidth: true,
-              style: { marginTop: 20 },
-            }}
-          />
-          <KillChainPhasesField
-            name="killChainPhases"
-            style={fieldSpacingContainerStyle}
-          />
-          <Field
-            component={MarkDownField}
-            name="description"
-            label={t('Description')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
+            entityType="Observed-Data"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
@@ -251,6 +260,15 @@ export const InfrastructureCreationForm = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -277,7 +295,7 @@ export const InfrastructureCreationForm = ({
   );
 };
 
-const InfrastructureCreation = ({ paginationOptions }) => {
+const ObservedDataCreation = ({ paginationOptions }: { paginationOptions: ObservedDatasLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -286,11 +304,11 @@ const InfrastructureCreation = ({ paginationOptions }) => {
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_infrastructures',
+    'Pagination_observedDatas',
     paginationOptions,
-    'infrastructureAdd',
+    'observedDataAdd',
   );
 
   return (
@@ -306,8 +324,8 @@ const InfrastructureCreation = ({ paginationOptions }) => {
       <Drawer
         open={open}
         anchor="right"
-        sx={{ zIndex: 1202 }}
         elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
@@ -321,10 +339,10 @@ const InfrastructureCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an infrastructure')}</Typography>
+          <Typography variant="h6">{t('Create an observed data')}</Typography>
         </div>
         <div className={classes.container}>
-          <InfrastructureCreationForm
+          <ObservedDataCreationForm
             updater={updater}
             onCompleted={() => handleClose()}
             onReset={onReset}
@@ -335,4 +353,4 @@ const InfrastructureCreation = ({ paginationOptions }) => {
   );
 };
 
-export default InfrastructureCreation;
+export default ObservedDataCreation;

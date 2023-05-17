@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Field, Form, Formik } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { Form, Formik, Field } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -7,30 +7,40 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from '../../../../components/i18n';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
+import CreatedByField from '../../common/form/CreatedByField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { useFormatter } from '../../../../components/i18n';
+import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { insertNode } from '../../../../utils/store';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  GroupingCreationMutation,
+  GroupingCreationMutation$variables,
+} from './__generated__/GroupingCreationMutation.graphql';
+import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
+    overflow: 'auto',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -67,60 +77,114 @@ const useStyles = makeStyles((theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
+  icon: {
+    paddingTop: 4,
+    display: 'inline-block',
+    color: theme.palette.primary.main,
+  },
+  text: {
+    display: 'inline-block',
+    flexGrow: 1,
+    marginLeft: 10,
+  },
+  autoCompleteIndicator: {
+    display: 'none',
+  },
 }));
 
-const campaignMutation = graphql`
-  mutation CampaignCreationMutation($input: CampaignAddInput!) {
-    campaignAdd(input: $input) {
+const groupingMutation = graphql`
+  mutation GroupingCreationMutation($input: GroupingAddInput!) {
+    groupingAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...CampaignCard_node
+      ...GroupingLine_node
     }
   }
 `;
 
-export const CampaignCreationForm = ({
+interface GroupingAddInput {
+  name: string
+  confidence: number
+  context: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface GroupingFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   updater,
   onReset,
   onCompleted,
+  defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number().nullable(),
+    context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const campaignValidator = useSchemaCreationValidation('Campaign', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: campaignMutation,
+  const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
+
+  const initialValues: GroupingAddInput = {
+    name: '',
+    confidence: defaultConfidence ?? 75,
+    context: '',
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
+
+  const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: GroupingCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      context: values.context,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'campaignAdd');
+          updater(store, 'groupingAdd', response.groupingAdd);
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -130,18 +194,11 @@ export const CampaignCreationForm = ({
       },
     });
   };
+
   return (
     <Formik
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={campaignValidator}
+      initialValues={initialValues}
+      validationSchema={groupingValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -153,16 +210,18 @@ export const CampaignCreationForm = ({
             name="name"
             label={t('Name')}
             fullWidth={true}
-            detectDuplicate={[
-              'Threat-Actor',
-              'Intrusion-Set',
-              'Campaign',
-              'Malware',
-            ]}
           />
           <ConfidenceField
-            entityType="Campaign"
+            entityType="Grouping"
             containerStyle={fieldSpacingContainerStyle}
+          />
+          <OpenVocabField
+            label={t('Context')}
+            type="grouping-context-ov"
+            name="context"
+            multiple={false}
+            containerStyle={fieldSpacingContainerStyle}
+            onChange={setFieldValue}
           />
           <Field
             component={MarkDownField}
@@ -194,6 +253,15 @@ export const CampaignCreationForm = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -219,18 +287,21 @@ export const CampaignCreationForm = ({
   );
 };
 
-const CampaignCreation = ({ paginationOptions }) => {
+const GroupingCreation = ({ paginationOptions }: { paginationOptions: GroupingsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const handleOpen = () => setOpen(true);
-  const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-  const updater = (store) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
+  const onReset = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_groupings',
+    paginationOptions,
+    'groupingAdd',
+  );
   return (
     <div>
       <Fab
-        onClick={handleOpen}
+        onClick={() => setOpen(true)}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
@@ -243,24 +314,24 @@ const CampaignCreation = ({ paginationOptions }) => {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}
+        onClose={() => setOpen(false)}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={handleClose}
+            onClick={() => setOpen(false)}
             size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a campaign')}</Typography>
+          <Typography variant="h6">{t('Create a grouping')}</Typography>
         </div>
         <div className={classes.container}>
-          <CampaignCreationForm
+          <GroupingCreationForm
             updater={updater}
-            onCompleted={() => handleClose()}
+            onCompleted={onReset}
             onReset={onReset}
           />
         </div>
@@ -269,4 +340,4 @@ const CampaignCreation = ({ paginationOptions }) => {
   );
 };
 
-export default CampaignCreation;
+export default GroupingCreation;

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Form, Formik, Field } from 'formik';
+import React, { FunctionComponent, useState } from 'react';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -7,32 +7,36 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
+import { useFormatter } from '../../../../components/i18n';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { useFormatter } from '../../../../components/i18n';
-import { insertNode } from '../../../../utils/store';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
+import { ThreatActorsLinesPaginationQuery$variables } from './__generated__/ThreatActorsLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
+import { ThreatActorCreationMutation, ThreatActorCreationMutation$variables } from './__generated__/ThreatActorCreationMutation.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
     position: 'fixed',
-    overflow: 'auto',
     transition: theme.transitions.create('width', {
       easing: theme.transitions.easing.sharp,
       duration: theme.transitions.duration.enteringScreen,
@@ -69,35 +73,43 @@ const useStyles = makeStyles((theme) => ({
   container: {
     padding: '10px 20px 20px 20px',
   },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-    color: theme.palette.primary.main,
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
-  autoCompleteIndicator: {
-    display: 'none',
-  },
 }));
 
-const groupingMutation = graphql`
-  mutation GroupingCreationMutation($input: GroupingAddInput!) {
-    groupingAdd(input: $input) {
+const threatActorMutation = graphql`
+  mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
+    threatActorAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...GroupingLine_node
+      ...ThreatActorCard_node
     }
   }
 `;
 
-export const GroupingCreationForm = ({
+interface ThreatActorAddInput {
+  name: string
+  threat_actor_types: string[]
+  confidence: number
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[],
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface ThreatActorFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -108,38 +120,57 @@ export const GroupingCreationForm = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
+    name: Yup.string().required(t('This field is required')),
+    threat_actor_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
-    context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: groupingMutation,
+  const threatActorValidator = useSchemaCreationValidation(
+    'Threat-Actor',
+    basicShape,
+  );
+
+  const initialValues: ThreatActorAddInput = {
+    name: '',
+    threat_actor_types: [],
+    confidence: defaultConfidence ?? 75,
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
+
+  const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: ThreatActorCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      threat_actor_types: values.threat_actor_types,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
-        input: adaptedValues,
+        input: finalValues,
       },
-      updater: (store, response) => {
+      updater: (store) => {
         if (updater) {
-          updater(store, 'groupingAdd', response.groupingAdd);
+          updater(store, 'threatActorAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -149,20 +180,10 @@ export const GroupingCreationForm = ({
       },
     });
   };
-
   return (
     <Formik
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        context: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={groupingValidator}
+      initialValues={initialValues}
+      validationSchema={threatActorValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -174,18 +195,24 @@ export const GroupingCreationForm = ({
             name="name"
             label={t('Name')}
             fullWidth={true}
-          />
-          <ConfidenceField
-            entityType="Grouping"
-            containerStyle={fieldSpacingContainerStyle}
+            detectDuplicate={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+            ]}
           />
           <OpenVocabField
-            label={t('Context')}
-            type="grouping-context-ov"
-            name="context"
-            multiple={false}
-            containerStyle={fieldSpacingContainerStyle}
+            type="threat-actor-type-ov"
+            name="threat_actor_types"
+            label={t('Threat actor types')}
+            multiple={true}
+            containerStyle={{ width: '100%', marginTop: 20 }}
             onChange={setFieldValue}
+          />
+          <ConfidenceField
+            entityType="Threat-Actor"
+            containerStyle={{ width: '100%', marginTop: 20 }}
           />
           <Field
             component={MarkDownField}
@@ -217,6 +244,15 @@ export const GroupingCreationForm = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -242,16 +278,22 @@ export const GroupingCreationForm = ({
   );
 };
 
-const GroupingCreation = ({ paginationOptions }) => {
+const ThreatActorCreation = ({ paginationOptions }: { paginationOptions: ThreatActorsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-  const onReset = () => setOpen(false);
-  const updater = (store) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
+  const handleOpen = () => setOpen(true);
+  const handleClose = () => setOpen(false);
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_threatActors',
+    paginationOptions,
+    'threatActorAdd',
+  );
   return (
     <div>
       <Fab
-        onClick={() => setOpen(true)}
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
         className={classes.createButton}
@@ -264,25 +306,25 @@ const GroupingCreation = ({ paginationOptions }) => {
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
+        onClose={handleClose}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={() => setOpen(false)}
+            onClick={handleClose}
             size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a grouping')}</Typography>
+          <Typography variant="h6">{t('Create a threat actor')}</Typography>
         </div>
         <div className={classes.container}>
-          <GroupingCreationForm
+          <ThreatActorCreationForm
             updater={updater}
-            onCompleted={onReset}
-            onReset={onReset}
+            onCompleted={handleClose}
+            onReset={handleClose}
           />
         </div>
       </Drawer>
@@ -290,4 +332,4 @@ const GroupingCreation = ({ paginationOptions }) => {
   );
 };
 
-export default GroupingCreation;
+export default ThreatActorCreation;

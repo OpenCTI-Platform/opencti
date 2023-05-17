@@ -2258,6 +2258,7 @@ input AttackPatternAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Campaigns
@@ -2437,6 +2438,7 @@ input CampaignAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Containers
@@ -2807,6 +2809,7 @@ input NoteAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 input NoteUserAddInput {
   stix_id: String
@@ -3026,6 +3029,7 @@ input ObservedDataAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Opinions
@@ -3224,6 +3228,7 @@ input OpinionAddInput {
   modified: DateTime
   update: Boolean
   clientMutationId: String
+  file: Upload
 }
 input OpinionUserAddInput {
   stix_id: String
@@ -3446,6 +3451,7 @@ input ReportAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## CoursesOfAction
@@ -3620,6 +3626,7 @@ input CourseOfActionAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Identities
@@ -3982,6 +3989,7 @@ input IndividualAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Organizations
@@ -4186,6 +4194,7 @@ input OrganizationAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Sectors
@@ -4366,6 +4375,7 @@ input SectorAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Systems
@@ -4543,6 +4553,7 @@ input SystemAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Indicators
@@ -4713,7 +4724,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
-  x_mitre_platforms: [String!]
+  x_mitre_platforms: [String]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
   # Technical
@@ -4757,6 +4768,7 @@ input IndicatorAddInput {
   clientMutationId: String
   update: Boolean
   createObservables: Boolean
+  file: Upload
 }
 
 ############## Infrastructures
@@ -4943,6 +4955,7 @@ input InfrastructureAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## IntrusionSets
@@ -5126,6 +5139,7 @@ input IntrusionSetAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Locations
@@ -5480,6 +5494,7 @@ input PositionAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Cities
@@ -5659,6 +5674,7 @@ input CityAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Countries
@@ -5834,6 +5850,7 @@ input CountryAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ################ Regions
@@ -6009,6 +6026,7 @@ input RegionAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Malware
@@ -6202,6 +6220,7 @@ input MalwareAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## ThreatActors
@@ -6394,6 +6413,7 @@ input ThreatActorAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Tools
@@ -6565,6 +6585,7 @@ input ToolAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Vulnerabilities
@@ -6751,6 +6772,7 @@ input VulnerabilityAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## Incident
@@ -6940,6 +6962,7 @@ input IncidentAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ######## STIX CYBER OBSERVABLES ENTITIES
@@ -7199,6 +7222,7 @@ input AutonomousSystemAddInput {
   number: Int!
   name: String
   rir: String
+  file: Upload
 }
 type Directory implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7312,6 +7336,7 @@ input DirectoryAddInput {
   ctime: DateTime
   mtime: DateTime
   atime: DateTime
+  file: Upload
 }
 type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7417,6 +7442,7 @@ type DomainName implements BasicObject & StixObject & StixCoreObject & StixCyber
 }
 input DomainNameAddInput {
   value: String!
+  file: Upload
 }
 type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7524,6 +7550,7 @@ type EmailAddr implements BasicObject & StixObject & StixCoreObject & StixCyberO
 input EmailAddrAddInput {
   value: String
   display_name: String
+  file: Upload
 }
 type EmailMessage implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7641,6 +7668,7 @@ input EmailMessageAddInput {
   subject: String
   received_lines: [String]
   body: String
+  file: Upload
 }
 type EmailMimePartType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -7750,6 +7778,7 @@ input EmailMimePartTypeAddInput {
   body: String
   content_type: String
   content_disposition: String
+  file: Upload
 }
 ############## HashedObservable
 input HashInput {
@@ -7986,6 +8015,7 @@ input ArtifactAddInput {
   encryption_algorithm: String
   decryption_key: String
   x_opencti_additional_names: [String]
+  file: Upload
 }
 type StixFile implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -8113,6 +8143,7 @@ input StixFileAddInput {
   atime: DateTime
   x_opencti_additional_names: [String]
   obsContent: ID
+  file: Upload
 }
 type X509Certificate implements BasicObject & StixObject & StixCoreObject & StixCyberObservable & HashedObservable {
   id: ID! # internal_id
@@ -8275,6 +8306,7 @@ input X509CertificateAddInput {
   private_key_usage_period_not_after: DateTime
   certificate_policies: String
   policy_mappings: String
+  file: Upload
 }
 type IPv4Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8383,6 +8415,7 @@ input IPv4AddrAddInput {
   value: String
   belongsTo: [String]
   resolvesTo: [String]
+  file: Upload
 }
 type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8489,6 +8522,7 @@ type IPv6Addr implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input IPv6AddrAddInput {
   value: String
+  file: Upload
 }
 type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8594,6 +8628,7 @@ type MacAddr implements BasicObject & StixObject & StixCoreObject & StixCyberObs
 }
 input MacAddrAddInput {
   value: String
+  file: Upload
 }
 type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8699,6 +8734,7 @@ type Mutex implements BasicObject & StixObject & StixCoreObject & StixCyberObser
 }
 input MutexAddInput {
   name: String
+  file: Upload
 }
 type NetworkTraffic implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8823,6 +8859,7 @@ input NetworkTrafficAddInput {
   dst_byte_count: Int
   src_packets: Int
   dst_packets: Int
+  file: Upload
 }
 type Process implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -8974,6 +9011,7 @@ input ProcessAddInput {
   serviceDlls: [String] # service_dll_refs
   service_type: String # windows-service-type-enum
   service_status: String # windows-service-status-enum
+  file: Upload
 }
 type Software implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9090,6 +9128,7 @@ input SoftwareAddInput {
   languages: [String]
   vendor: String
   version: String
+  file: Upload
 }
 type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9195,6 +9234,7 @@ type Url implements BasicObject & StixObject & StixCoreObject & StixCyberObserva
 }
 input UrlAddInput {
   value: String
+  file: Upload
 }
 type UserAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9327,6 +9367,7 @@ input UserAccountAddInput {
   credential_last_changed: DateTime
   account_first_login: DateTime
   account_last_login: DateTime
+  file: Upload
 }
 type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9435,6 +9476,7 @@ type WindowsRegistryKey implements BasicObject & StixObject & StixCoreObject & S
 input WindowsRegistryKeyAddInput {
   attribute_key: String
   modified_time: DateTime
+  file: Upload
   number_of_subkeys: Int
 }
 type WindowsRegistryValueType implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
@@ -9545,6 +9587,7 @@ input WindowsRegistryValueTypeAddInput {
   name: String
   data: String
   data_type: String
+  file: Upload
 }
 type CryptographicKey implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9650,6 +9693,7 @@ type CryptographicKey implements BasicObject & StixObject & StixCoreObject & Sti
 }
 input CryptographicKeyAddInput {
   value: String
+  file: Upload
 }
 type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9755,6 +9799,7 @@ type CryptocurrencyWallet implements BasicObject & StixObject & StixCoreObject &
 }
 input CryptocurrencyWalletAddInput {
   value: String
+  file: Upload
 }
 type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9860,6 +9905,7 @@ type Hostname implements BasicObject & StixObject & StixCoreObject & StixCyberOb
 }
 input HostnameAddInput {
   value: String
+  file: Upload
 }
 type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -9965,6 +10011,7 @@ type Text implements BasicObject & StixObject & StixCoreObject & StixCyberObserv
 }
 input TextAddInput {
   value: String
+  file: Upload
 }
 type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -10070,6 +10117,7 @@ type UserAgent implements BasicObject & StixObject & StixCoreObject & StixCyberO
 }
 input UserAgentAddInput {
   value: String
+  file: Upload
 }
 type BankAccount implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -10180,6 +10228,7 @@ input BankAccountAddInput {
   iban: String
   bic: String
   account_number: String
+  file: Upload
 }
 type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -10285,6 +10334,7 @@ type PhoneNumber implements BasicObject & StixObject & StixCoreObject & StixCybe
 }
 input PhoneNumberAddInput {
   value: String
+  file: Upload
 }
 type PaymentCard implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -10396,6 +10446,7 @@ input PaymentCardAddInput {
   expiration_date: DateTime
   cvv: Int
   holder_name: String
+  file: Upload
 }
 type MediaContent implements BasicObject & StixObject & StixCoreObject & StixCyberObservable {
   id: ID! # internal_id
@@ -10510,6 +10561,7 @@ input MediaContentAddInput {
   media_category: String
   url: String!
   publication_date: DateTime
+  file: Upload
 }
 ###### RELATIONSHIPS
 
@@ -11187,6 +11239,7 @@ input StixSightingRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 ############## StixRefRelationships
@@ -11283,6 +11336,7 @@ input StixRefRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 input StixRefRelationshipsAddInput {
   relationship_type: String!

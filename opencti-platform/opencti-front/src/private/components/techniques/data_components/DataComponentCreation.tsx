@@ -28,6 +28,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -102,6 +104,7 @@ interface DataComponentAddInput {
   objectLabel: Option[],
   externalReferences: Option[],
   confidence: number
+  file: File | undefined
 }
 
 interface DataComponentFormProps {
@@ -132,6 +135,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     objectLabel: [],
     externalReferences: [],
     confidence: defaultConfidence ?? 75,
+    file: undefined,
   };
   const [commit] = useMutation(dataComponentMutation);
   const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
@@ -142,7 +146,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       resetForm,
     }: FormikHelpers<DataComponentAddInput>,
   ) => {
-    const finalValues = {
+    const finalValues: DataComponentCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
@@ -151,6 +155,9 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       externalReferences: values.externalReferences.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
     };
+    if (values.file) {
+      finalValues.file = values.file
+    }
     commit({
       variables: {
         input: finalValues,
@@ -240,6 +247,15 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
               }}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

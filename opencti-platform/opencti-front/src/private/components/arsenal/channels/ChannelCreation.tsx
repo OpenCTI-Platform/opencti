@@ -1,5 +1,4 @@
-import React, { useState } from 'react';
-import * as R from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -8,10 +7,13 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -23,8 +25,15 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  ChannelCreationMutation,
+  ChannelCreationMutation$variables,
+} from './__generated__/ChannelCreationMutation.graphql';
+import { ChannelsLinesPaginationQuery$variables } from './__generated__/ChannelsLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -93,7 +102,28 @@ const channelMutation = graphql`
   }
 `;
 
-export const ChannelCreationForm = ({
+interface ChannelAddInput {
+  name: string
+  channel_types: string[]
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  confidence: number
+  file: File | undefined
+}
+
+interface ChannelFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   updater, onReset, onCompleted,
   defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions,
 }) => {
@@ -107,16 +137,35 @@ export const ChannelCreationForm = ({
   };
   const channelValidator = useSchemaCreationValidation('Channel', basicShape);
 
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: channelMutation,
+  const initialValues: ChannelAddInput = {
+    name: '',
+    channel_types: [],
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    confidence: defaultConfidence ?? 75,
+    file: undefined,
+  };
+
+  const [commit] = useMutation<ChannelCreationMutation>(channelMutation);
+
+  const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: ChannelCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      channel_types: values.channel_types,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
@@ -129,7 +178,6 @@ export const ChannelCreationForm = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -141,16 +189,7 @@ export const ChannelCreationForm = ({
   };
 
   return <Formik
-    initialValues={{
-      name: '',
-      channel_types: [],
-      description: '',
-      createdBy: defaultCreatedBy ?? '',
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      confidence: defaultConfidence ?? 75,
-    }}
+    initialValues={initialValues}
     validationSchema={channelValidator}
     onSubmit={onSubmit}
     onReset={onReset}>
@@ -224,6 +263,15 @@ export const ChannelCreationForm = ({
           setFieldValue={setFieldValue}
           values={values.externalReferences}
         />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
         <div className={classes.buttons}>
           <Button
             variant="contained"
@@ -248,7 +296,7 @@ export const ChannelCreationForm = ({
   </Formik>;
 };
 
-const ChannelCreation = ({ paginationOptions }) => {
+const ChannelCreation = ({ paginationOptions }: { paginationOptions: ChannelsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -256,7 +304,7 @@ const ChannelCreation = ({ paginationOptions }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
     'Pagination_channels',
     paginationOptions,

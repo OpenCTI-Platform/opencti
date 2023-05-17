@@ -27,6 +27,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -95,6 +96,7 @@ interface AdministrativeAreaAddInput {
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
+  file: File | undefined
 }
 
 interface AdministrativeAreaFormProps {
@@ -131,6 +133,9 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -159,6 +164,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
         objectMarking: defaultMarkingDefinitions ?? [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={administrativeAreaValidator}
       onSubmit={onSubmit}
@@ -225,6 +231,15 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

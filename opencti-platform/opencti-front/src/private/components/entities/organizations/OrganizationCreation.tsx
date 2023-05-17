@@ -1,18 +1,22 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
+import MenuItem from '@mui/material/MenuItem';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
+import SelectField from '../../../../components/SelectField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -20,9 +24,16 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  OrganizationCreationMutation,
+  OrganizationCreationMutation$variables,
+} from './__generated__/OrganizationCreationMutation.graphql';
+import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -65,50 +76,97 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const individualMutation = graphql`
-  mutation IndividualCreationMutation($input: IndividualAddInput!) {
-    individualAdd(input: $input) {
+const organizationMutation = graphql`
+  mutation OrganizationCreationMutation($input: OrganizationAddInput!) {
+    organizationAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...IndividualLine_node
+      ...OrganizationLine_node
     }
   }
 `;
 
-export const IndividualCreationForm = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface OrganizationAddInput {
+  name: string
+  description: string
+  x_opencti_reliability: undefined | null
+  x_opencti_organization_type: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface OrganizationFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
+    x_opencti_organization_type: Yup.string().nullable(),
+    x_opencti_reliability: Yup.string().nullable(),
   };
-  const individualValidator = useSchemaCreationValidation('Individual', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: individualMutation,
+  const organizationValidator = useSchemaCreationValidation('Organization', basicShape);
+
+  const initialValues: OrganizationAddInput = {
+    name: '',
+    description: '',
+    x_opencti_reliability: undefined,
+    x_opencti_organization_type: 'other',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<OrganizationCreationMutation>(organizationMutation);
+
+  const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: OrganizationCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      x_opencti_reliability: values.x_opencti_reliability,
+      x_opencti_organization_type: values.x_opencti_organization_type,
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'individualAdd');
+          updater(store, 'organizationAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -120,15 +178,8 @@ export const IndividualCreationForm = ({ updater, onReset, onCompleted,
   };
 
   return <Formik
-      initialValues={{
-        name: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={individualValidator}
+      initialValues={initialValues}
+      validationSchema={organizationValidator}
       onSubmit={onSubmit}
       onReset={onReset}>
     {({
@@ -145,7 +196,7 @@ export const IndividualCreationForm = ({ updater, onReset, onCompleted,
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={['User']}
+              detectDuplicate={['Organization']}
           />
           <Field
               component={MarkDownField}
@@ -156,6 +207,36 @@ export const IndividualCreationForm = ({ updater, onReset, onCompleted,
               rows="4"
               style={{ marginTop: 20 }}
           />
+          { /* TODO Improve customization (vocab with letter range) 2662 */}
+          <Field
+              component={SelectField}
+              variant="standard"
+              name="x_opencti_organization_type"
+              label={t('Organization type')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+          >
+            <MenuItem value="constituent">{t('Constituent')}</MenuItem>
+            <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
+            <MenuItem value="partner">{t('Partner')}</MenuItem>
+            <MenuItem value="vendor">{t('Vendor')}</MenuItem>
+            <MenuItem value="other">{t('Other')}</MenuItem>
+          </Field>
+          <Field
+              component={SelectField}
+              variant="standard"
+              name="x_opencti_reliability"
+              label={t('Reliability')}
+              fullWidth={true}
+              containerstyle={fieldSpacingContainerStyle}
+          >
+            <MenuItem value="A">{t('reliability_A')}</MenuItem>
+            <MenuItem value="B">{t('reliability_B')}</MenuItem>
+            <MenuItem value="C">{t('reliability_C')}</MenuItem>
+            <MenuItem value="D">{t('reliability_D')}</MenuItem>
+            <MenuItem value="E">{t('reliability_E')}</MenuItem>
+            <MenuItem value="F">{t('reliability_F')}</MenuItem>
+          </Field>
           <CreatedByField
               name="createdBy"
               style={fieldSpacingContainerStyle}
@@ -176,6 +257,15 @@ export const IndividualCreationForm = ({ updater, onReset, onCompleted,
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -201,7 +291,7 @@ export const IndividualCreationForm = ({ updater, onReset, onCompleted,
   </Formik>;
 };
 
-const IndividualCreation = ({ paginationOptions }) => {
+const OrganizationCreation = ({ paginationOptions }: { paginationOptions: OrganizationsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -210,11 +300,11 @@ const IndividualCreation = ({ paginationOptions }) => {
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_individuals',
+    'Pagination_organizations',
     paginationOptions,
-    'individualAdd',
+    'organizationAdd',
   );
 
   return (
@@ -232,18 +322,17 @@ const IndividualCreation = ({ paginationOptions }) => {
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}>
         <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
+          <IconButton aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
             color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a individual')}</Typography>
+          <Typography variant="h6">{t('Create an organization')}</Typography>
         </div>
         <div className={classes.container}>
-          <IndividualCreationForm
+          <OrganizationCreationForm
               updater={updater}
               onCompleted={() => handleClose()}
               onReset={onReset}
@@ -254,4 +343,4 @@ const IndividualCreation = ({ paginationOptions }) => {
   );
 };
 
-export default IndividualCreation;
+export default OrganizationCreation;

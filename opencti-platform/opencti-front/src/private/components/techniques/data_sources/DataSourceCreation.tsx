@@ -30,6 +30,8 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { DataSourceCreationMutation$variables } from './__generated__/DataSourceCreationMutation.graphql';
+import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,6 +108,7 @@ interface DataSourceAddInput {
   confidence: number;
   x_mitre_platforms: string[];
   collection_layers: string[];
+  file: File | undefined
 }
 
 interface DataSourceCreationProps {
@@ -145,13 +148,14 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     confidence: defaultConfidence ?? 75,
     x_mitre_platforms: [],
     collection_layers: [],
+    file: undefined,
   };
   const [commit] = useMutation(dataSourceMutation);
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
   ) => {
-    const finalValues = {
+    const finalValues: DataSourceCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
@@ -162,6 +166,9 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
       x_mitre_platforms: values.x_mitre_platforms,
       collection_layers: values.collection_layers,
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -251,6 +258,15 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
               }}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <OpenVocabField
               label={t('Platforms')}

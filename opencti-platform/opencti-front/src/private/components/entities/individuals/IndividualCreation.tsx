@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,22 +7,31 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { insertNode } from '../../../../utils/store';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  IndividualCreationMutation,
+  IndividualCreationMutation$variables,
+} from './__generated__/IndividualCreationMutation.graphql';
+import { IndividualsLinesPaginationQuery$variables } from './__generated__/IndividualsLinesPaginationQuery.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -65,60 +74,89 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const positionMutation = graphql`
-  mutation PositionCreationMutation($input: PositionAddInput!) {
-    positionAdd(input: $input) {
+const individualMutation = graphql`
+  mutation IndividualCreationMutation($input: IndividualAddInput!) {
+    individualAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...PositionLine_node
+      ...IndividualLine_node
     }
   }
 `;
 
-export const PositionCreationForm = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface IndividualAddInput {
+  name: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface IndividualFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    latitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    longitude: Yup.number()
-      .typeError(t('This field must be a number'))
-      .nullable(),
-    street_address: Yup.string().nullable().max(1000, t('The value is too long')),
-    postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-  const positionValidator = useSchemaCreationValidation('Position', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('latitude', parseFloat(values.latitude)),
-      R.assoc('longitude', parseFloat(values.longitude)),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: positionMutation,
+  const individualValidator = useSchemaCreationValidation('Individual', basicShape);
+
+  const initialValues: IndividualAddInput = {
+    name: '',
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<IndividualCreationMutation>(individualMutation);
+
+  const onSubmit: FormikConfig<IndividualAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const finalValues: IndividualCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+    };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
+    commit({
       variables: {
         input: finalValues,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'positionAdd');
+          updater(store, 'individualAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -130,19 +168,8 @@ export const PositionCreationForm = ({ updater, onReset, onCompleted,
   };
 
   return <Formik
-      initialValues={{
-        name: '',
-        description: '',
-        latitude: '',
-        longitude: '',
-        street_address: '',
-        postal_code: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={positionValidator}
+      initialValues={initialValues}
+      validationSchema={individualValidator}
       onSubmit={onSubmit}
       onReset={onReset}>
     {({
@@ -159,7 +186,7 @@ export const PositionCreationForm = ({ updater, onReset, onCompleted,
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={['Position']}
+              detectDuplicate={['User']}
           />
           <Field
               component={MarkDownField}
@@ -167,38 +194,7 @@ export const PositionCreationForm = ({ updater, onReset, onCompleted,
               label={t('Description')}
               fullWidth={true}
               multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-          />
-          <Field
-              component={TextField}
-              variant="standard"
-              name="longitude"
-              label={t('Longitude')}fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="street_address"
-                    label={t('Street address')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <Field
-                    component={TextField}
-                    variant="standard"
-                    name="postal_code"
-                    label={t('Postal code')}
-              fullWidth={true}
+              rows="4"
               style={{ marginTop: 20 }}
           />
           <CreatedByField
@@ -221,6 +217,15 @@ export const PositionCreationForm = ({ updater, onReset, onCompleted,
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -246,7 +251,7 @@ export const PositionCreationForm = ({ updater, onReset, onCompleted,
   </Formik>;
 };
 
-const PositionCreation = ({ paginationOptions }) => {
+const IndividualCreation = ({ paginationOptions }: { paginationOptions: IndividualsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -255,47 +260,48 @@ const PositionCreation = ({ paginationOptions }) => {
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_positions',
+    'Pagination_individuals',
     paginationOptions,
-    'positionAdd',
+    'individualAdd',
   );
 
   return (
-      <div>
-        <Fab onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}>
-          <Add />
-        </Fab>
-        <Drawer open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
-          <div className={classes.header}>
-            <IconButton aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary">
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a position')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <PositionCreationForm
-                updater={updater}
-                onCompleted={() => handleClose()}
-                onReset={onReset}
-            />
-          </div>
-        </Drawer>
-      </div>
+    <div>
+      <Fab onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}>
+        <Add />
+      </Fab>
+      <Drawer open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary">
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a individual')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <IndividualCreationForm
+              updater={updater}
+              onCompleted={() => handleClose()}
+              onReset={onReset}
+          />
+        </div>
+      </Drawer>
+    </div>
   );
 };
 
-export default PositionCreation;
+export default IndividualCreation;
