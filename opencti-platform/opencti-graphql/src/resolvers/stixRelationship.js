@@ -1,5 +1,5 @@
 import { includes } from 'ramda';
-import { findAll, findById, lazyLoadSpecVersion, stixRelationshipDelete } from '../domain/stixRelationship';
+import { findAll, findById, getSpecVersionOrDefault, stixRelationshipDelete } from '../domain/stixRelationship';
 import { ABSTRACT_STIX_CORE_RELATIONSHIP, } from '../schema/general';
 import { STIX_SIGHTING_RELATIONSHIP } from '../schema/stixSightingRelationship';
 import { STIX_REF_RELATIONSHIP_TYPES } from '../schema/stixRefRelationship';
@@ -24,7 +24,7 @@ const stixRelationshipResolvers = {
       /* istanbul ignore next */
       return 'Unknown';
     },
-    spec_version: lazyLoadSpecVersion
+    spec_version: getSpecVersionOrDefault
   },
   Mutation: {
     stixRelationshipEdit: (_, { id }, context) => ({

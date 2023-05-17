@@ -17,4 +17,4 @@ export const stixRelationshipDelete = async (context, user, stixRelationshipId) 
   return stixRelationshipId;
 };
 
-export const lazyLoadSpecVersion = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
+export const getSpecVersionOrDefault = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
