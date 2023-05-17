@@ -21141,6 +21141,7 @@ export type StixRelationship = {
   id: Scalars['ID'];
   is_inferred: Scalars['Boolean'];
   parent_types: Array<Maybe<Scalars['String']>>;
+  spec_version: Scalars['String'];
   standard_id: Scalars['String'];
   to?: Maybe<StixObjectOrStixRelationship>;
   toRole?: Maybe<Scalars['String']>;
@@ -31830,6 +31831,7 @@ export type StixRelationshipResolvers<ContextType = any, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   is_inferred?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
+  spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to?: Resolver<Maybe<ResolversTypes['StixObjectOrStixRelationship']>, ParentType, ContextType>;
   toRole?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
