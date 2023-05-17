@@ -123,33 +123,58 @@ nav:
       - Rollover policies: deployment/rollover.md
       - Troubleshooting: deployment/troubleshooting.md
   - User Guide:
-    - Structure:
-      - Platform organization: usage/platform.md
-      - Create knowledge: usage/knowledge.md
-      - Cases and reports: usage/cases-reports.md
-      - Import and export: usage/import-export.md
-    - Main Features:
+    - Introduction: usage/introduction.md
+    - Foundations:
+      - Data model: usage/data-model.md
+      - Nested objects: usage/nested.md
+      - Containers: usage/containers.md
+      - Deduplication: usage/deduplication.md
+    - Explore knowledge:
+      - Overview: usage/overview.md
+      - Search for knowledge: usage/searching.md
+      - Explore by entity types: usage/exploring.md
+      - Pivot and investigate: usage/pivoting.md
+    - Create knowledge:
+      - Import data with connectors: usage/import-connectors.md
+      - Import data manually: usage/import-manually.md
+      - Manual creations: usage/manual-creation.md
+      - Analyst workbench: usage/workbench.md
+    - Manipulate knowledge:
       - Enrichment: usage/enrichment.md
+      - Inferences and reasoning: usage/inferences.md
       - Notifications and alerting: usage/notifications.md
       - Custom dashboards: usage/dashboards.md
-      - Investigations: usage/investigations.md
-    - Activities:
-      - Import from documents: usage/documents.md
-      - Managing duplicates: usage/duplicates.md    
+      - Workflows and assignation: usage/workflows.md
   - Administration:
-    - General:
-      - Parameters: administration/parameters.md
-      - Engines and schedulers: administration/engines.md
+    - Introduction: administration/introduction.md
+    - Data management:
+      - Custom taxonomies: administration/ontologies.md
       - Retention policies: administration/retention.md
-    - Security:
+      - Merging and de-duplication: administration/merging.md    
+    - Settings:
+      - Parameters: administration/parameters.md
+      - Reasoning engine: administration/reasoning.md
+      - Indicators lifecycle: administration/indicators.md
+      - Customize entities: administration/entities.md
+    - Security and traceability:
       - Authentication and RBAC: administration/rbac.md
       - Data segregation: administration/segregation.md
+      - Sourcing knowledge: administration/sourcing.md
       - Audit and monitoring: administration/audit.md
   - Reference:
-    - Data model: reference/data-model.md
-    - GraphQL API: reference/api.md
-    - Events streaming: reference/streaming.md
+    - Data:
+      - Data model: reference/data-model.md
+      - Taxonomy: reference/taxonomy.md
+      - Knowledge graph: reference/graph.md
+    - APIs and feeds:
+      - GraphQL API: reference/api.md
+      - Events streaming: reference/streaming.md
+      - TAXII and CSV: reference/taxii.md
     - Security: reference/security.md
   - Development:
-    - Environment setup: development/environment.md
-    - Connectors development: development/connectors.md
+    - APIs and libraries:
+      - Use the GraphQL API: development/api-usage.md
+      - Python library: development/python.md
+    - Contributing:
+      - Environment setup: development/environment.md
+      - Develop a connector: development/connectors.md
