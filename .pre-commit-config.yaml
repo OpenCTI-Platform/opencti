@@ -1,28 +1,71 @@
 ---
 repos:
   - repo: https://github.com/PyCQA/isort
-    rev: 5.10.1
+    rev: 5.12.0
     hooks:
       - id: isort
         args:
           - "--profile"
           - "black"
   - repo: https://github.com/psf/black
-    rev: 22.1.0
+    rev: 23.3.0
     hooks:
       - id: black
-  - repo: https://github.com/adrienverge/yamllint
-    rev: v1.26.3
+  # - repo: https://github.com/adrienverge/yamllint
+  #   rev: v1.31.0
+  #   hooks:
+  #     - id: yamllint
+  - repo: https://github.com/pre-commit/mirrors-eslint
+    rev: 'ec8e518'  # Use the sha / tag you want to point at ec8e518 == 8.41.0
     hooks:
-      - id: yamllint
+    -   id: eslint
+        additional_dependencies:
+        -   eslint@8.41.0
+        -   eslint-plugin-jsx-a11y@6.7.1
+        -   eslint-plugin-react@7.32.2
+        -   eslint-plugin-react-hooks@4.6.0
+        files: \.[jt]sx?$  # *.js, *.jsx, *.ts and *.tsx
+        types: [file]
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.4.0
     hooks:
       - id: check-ast
       - id: check-json
       - id: check-toml
       - id: check-xml
       - id: check-yaml
+      # Excludes added so you can run against all files versus only changed files in your commit and not impact
+      # files which you do not control or are not essential to be linted:
+      #    pre-commit run --all-files
       - id: end-of-file-fixer
+        exclude: |
+          (?x)^(
+                .circleci/(.*)|
+                .devcontainer/(.*)|
+                .github/(.*)|
+                yarn.lock|
+                LICENSE|
+                (.*)/requirements.txt|
+                opencti-platform/.dockerignore|
+                opencti-platform/opencti-graphql/static/(.*)|
+                opencti-platform/opencti-front/src/static/(.*)|
+                opencti-platform/opencti-front/packages/(.*)
+          )$
       - id: requirements-txt-fixer
+      # Excludes added so you can run against all files versus only changed files in your commit and not impact
+      # files which you do not control or are not essential to be linted:
+      #    pre-commit run --all-files
       - id: trailing-whitespace
+        exclude: |
+          (?x)^(
+                .circleci/config.yml|
+                .devcontainer/(.*)|
+                .github/(.*)|
+                yarn.lock|
+                LICENSE|
+                (.*)/requirements.txt|
+                opencti-platform/.dockerignore|
+                opencti-platform/opencti-graphql/static/(.*)|
+                opencti-platform/opencti-front/src/static/(.*)|
+                opencti-platform/opencti-front/packages/(.*)
+          )$
