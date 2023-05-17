@@ -5,7 +5,6 @@ import {
   findById,
   findNested,
   isDatable,
-  lazyLoadSpecVersion,
   schemaRefRelationships,
   stixRefRelationshipCleanContext,
   stixRefRelationshipDelete,

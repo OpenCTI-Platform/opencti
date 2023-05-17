@@ -24,8 +24,7 @@ import {
   stixCoreRelationshipsExportPush,
   stixCoreRelationshipsNumber,
   stixCoreRelationshipsMultiTimeSeries,
-  stixCoreRelationshipsDistribution,
-  lazyLoadSpecVersion } from '../domain/stixCoreRelationship';
+  stixCoreRelationshipsDistribution } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { batchLoader, stixLoadByIdStringify, timeSeriesRelations } from '../database/middleware';
