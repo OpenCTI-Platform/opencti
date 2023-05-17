@@ -48,8 +48,6 @@ export const isDatable = (entityType, relationshipType) => {
   return schemaRelationsRefDefinition.isDatable(entityType, relationshipType);
 };
 
-export const lazyLoadSpecVersion = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
-
 // Mutation
 
 export const addStixRefRelationship = async (context, user, stixRefRelationship) => {

@@ -84,8 +84,7 @@ const stixCoreRelationshipResolvers = {
     workflowEnabled: async (entity, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, ABSTRACT_STIX_CORE_RELATIONSHIP);
       return statusesEdges.edges.length > 0;
-    },
-    spec_version: lazyLoadSpecVersion,
+    }
   },
   Mutation: {
     stixCoreRelationshipEdit: (_, { id }, context) => ({

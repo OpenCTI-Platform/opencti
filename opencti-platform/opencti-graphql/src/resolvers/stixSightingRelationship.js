@@ -18,8 +18,7 @@ import {
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
-  stixSightingRelationshipsNumber,
-  lazyLoadSpecVersion
+  stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -81,8 +80,7 @@ const stixSightingRelationshipResolvers = {
     workflowEnabled: async (entity, _, context) => {
       const statusesEdges = await getTypeStatuses(context, context.user, entity.entity_type);
       return statusesEdges.edges.length > 0;
-    },
-    spec_version: lazyLoadSpecVersion,
+    }
   },
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({

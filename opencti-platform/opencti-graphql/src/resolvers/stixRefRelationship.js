@@ -46,7 +46,6 @@ const stixRefRelationshipResolvers = {
     creators: (rel, _, context) => creatorsLoader.load(rel.creator_id, context, context.user),
     editContext: (rel) => fetchEditContext(rel.id),
     datable: (rel) => isDatable(rel.fromType, rel.relationship_type),
-    spec_version: lazyLoadSpecVersion,
   },
   Mutation: {
     stixRefRelationshipEdit: (_, { id }, context) => ({

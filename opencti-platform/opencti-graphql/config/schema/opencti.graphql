@@ -10922,6 +10922,7 @@ interface StixRelationship {
   from: StixObjectOrStixRelationship
   to: StixObjectOrStixRelationship
   x_opencti_inferences: [Inference]
+  spec_version: String!
   # Technical
   creators: [Creator!]
 }

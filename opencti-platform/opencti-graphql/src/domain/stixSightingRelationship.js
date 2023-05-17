@@ -36,7 +36,6 @@ import {
   stixObjectOrRelationshipAddRefRelation,
   stixObjectOrRelationshipDeleteRelation
 } from './stixObjectOrStixRelationship';
-import { STIX_SPEC_VERSION } from '../database/stix';
 
 export const findAll = async (context, user, args) => {
   return listRelations(context, user, STIX_SIGHTING_RELATIONSHIP, args);
@@ -45,8 +44,6 @@ export const findAll = async (context, user, args) => {
 export const findById = (context, user, stixSightingRelationshipId) => {
   return storeLoadById(context, user, stixSightingRelationshipId, STIX_SIGHTING_RELATIONSHIP);
 };
-
-export const lazyLoadSpecVersion = ({ spec_version }) => spec_version ?? STIX_SPEC_VERSION;
 
 export const stixSightingRelationshipsNumber = (context, user, args) => ({
   count: elCount(context, user, READ_INDEX_STIX_SIGHTING_RELATIONSHIPS, assoc('types', [STIX_SIGHTING_RELATIONSHIP], args)),
