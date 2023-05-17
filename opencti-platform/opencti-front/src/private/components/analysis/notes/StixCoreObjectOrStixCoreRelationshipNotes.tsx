@@ -6,7 +6,10 @@ import { NotesFilter } from './__generated__/NotesLinesPaginationQuery.graphql';
 import StixCoreObjectOrStixCoreRelationshipNotesCards, {
   stixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
 } from './StixCoreObjectOrStixCoreRelationshipNotesCards';
-import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import {
+  NotesOrdering, OrderingMode,
+  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
 
 interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
@@ -26,6 +29,8 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
   const { t } = useFormatter();
   const paginationOptions = {
     count: 200,
+    orderBy: 'created' as NotesOrdering,
+    orderMode: 'desc' as OrderingMode,
     filters: [
       {
         key: ['objectContains' as NotesFilter],

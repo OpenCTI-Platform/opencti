@@ -65,10 +65,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
 export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
   query StixCoreObjectOrStixCoreRelationshipNotesCardsQuery(
     $count: Int!
+    $orderBy: NotesOrdering
+    $orderMode: OrderingMode
     $filters: [NotesFiltering!]
   ) {
     ...StixCoreObjectOrStixCoreRelationshipNotesCards_data
-      @arguments(count: $count, filters: $filters)
+      @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
   }
 `;
 
@@ -76,9 +78,11 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
   fragment StixCoreObjectOrStixCoreRelationshipNotesCards_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
+    orderBy: { type: "NotesOrdering" }
+    orderMode: { type: "OrderingMode" }
     filters: { type: "[NotesFiltering!]" }
   ) {
-    notes(first: $count, filters: $filters)
+    notes(first: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
       @connection(key: "Pagination_notes") {
       edges {
         node {
