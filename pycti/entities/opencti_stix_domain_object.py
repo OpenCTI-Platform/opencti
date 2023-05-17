@@ -153,11 +153,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
@@ -174,11 +176,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
@@ -195,11 +199,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
@@ -217,11 +223,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
@@ -238,11 +246,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
@@ -471,11 +481,13 @@ class StixDomainObject:
                         node {
                             ... on BasicObject {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
                             ... on BasicRelationship {
                                 id
+                                parent_types
                                 entity_type
                                 standard_id
                             }
