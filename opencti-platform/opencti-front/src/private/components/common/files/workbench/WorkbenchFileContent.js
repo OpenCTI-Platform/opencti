@@ -2932,7 +2932,7 @@ const WorkbenchFileContentComponent = ({
           })}
         </List>
         <Fab
-          onClick={() => handleOpenEntity.bind(null, null)}
+          onClick={() => handleOpenEntity(null, null)}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
@@ -2940,7 +2940,7 @@ const WorkbenchFileContentComponent = ({
           <Add />
         </Fab>
         <Drawer
-          open={entityStep}
+          open={entityStep != null}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
@@ -3614,7 +3614,7 @@ const WorkbenchFileContentComponent = ({
           <Add />
         </Fab>
         <Drawer
-          open={containerStep}
+          open={containerStep != null}
           anchor="right"
           sx={{ zIndex: 1202 }}
           elevation={1}
