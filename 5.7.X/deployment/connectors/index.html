@@ -1320,7 +1320,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/data-model.md" class="md-nav__link">
+      <a href="../../usage/data-model/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -1642,7 +1642,7 @@
   <span class="md-ellipsis">
     
   
-    Import data with connectors
+    Import with connectors
   
 
     
@@ -1662,13 +1662,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/import-manually.md" class="md-nav__link">
+      <a href="../../usage/import-files.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Import data manually
+    Import from files
   
 
     
@@ -1905,6 +1905,138 @@
     
   
     Workflows and assignation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3_6" >
+        
+          <label class="md-nav__link" for="__nav_3_6" id="__nav_3_6_label" tabindex="0">
+            
+  
+  <span class="md-ellipsis">
+    
+  
+    Sharing and exports
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Sharing and exports
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/export-structured.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Export in structured format
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/export-documents.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Export in documents
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../usage/feeds.md" class="md-nav__link">
+        
+  
+  <span class="md-ellipsis">
+    
+  
+    Native feeds
   
 
     
@@ -2347,13 +2479,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/rbac.md" class="md-nav__link">
+      <a href="../../administration/users.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Authentication and RBAC
+    Users and RBAC
   
 
     
@@ -3412,7 +3544,7 @@
 <p>All connectors have to be able to access to the OpenCTI API. To allow this connection, they have 2 mandatory configuration parameters, the <code>OPENCTI_URL</code> and the <code>OPENCTI_TOKEN</code>. In addition of these 2 parameters, connectors have other mandatory parameters that need to be set in order to get them work.</p>
 <div class="admonition warning">
 <p class="admonition-title">Connectors tokens</p>
-<p>Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to <strong>create a specific user for each of them</strong>.</p>
+<p>Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to <a href="administration/users"><strong>create a specific user for each of them</strong></a>.</p>
 <p>Also, if all connectors users can run in with a user belonging to the <code>Connectors</code> group (with the <code>Connector</code> role), the <code>Internal Export Files</code> should be run with a user who is Administrator (with bypass capability) because they imperstonate the user requesting the export to avoid data leak.</p>
 <table>
 <thead>
@@ -3560,7 +3692,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-15T00:10:08+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-15</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-18T22:50:38+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-18</span>
       </span>
     
     
