@@ -1,6 +1,6 @@
 # Upgrade
 
-Depending on your [installation mode](deployment/installation), upgrade path may change.
+Depending on your [installation mode](installation.md), upgrade path may change.
 
 !!! note "Migrations"
     

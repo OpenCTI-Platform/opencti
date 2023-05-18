@@ -65,7 +65,7 @@ You can either rename the file `.env.sample` in `.env` and put the expected valu
 
 !!! note "Configuration static parameters"
     
-    The complete list of available static parameters is available in the [configuration](deployment/configuration) section.
+    The complete list of available static parameters is available in the [configuration](configuration.md) section.
 
 Here is an example to quickly generate the `.env` file under Linux, especially all the default UUIDv4:
 

@@ -156,7 +156,7 @@ Here is an example of SAML Groups mapping configuration using environment variab
 
 ```yaml
 - "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_ATTRIBUTES=[\"Group\"]"
-- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \SAML_Group_2:OpenCTI_Group_2\", ...]"
+- "PROVIDERS__SAML__CONFIG__GROUPS_MANAGEMENT__GROUPS_MAPPING=[\"SAML_Group_1:OpenCTI_Group_1\", \"SAML_Group_2:OpenCTI_Group_2\", ...]"
 ```
 
 ### Auth0 (button)

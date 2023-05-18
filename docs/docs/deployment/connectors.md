@@ -36,7 +36,7 @@ All connectors have to be able to access to the OpenCTI API. To allow this conne
 
 !!! warning "Connectors tokens"
     
-    Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to **create a specific user for each of them**.
+    Be careful, we strongly recommend to use a dedicated token for each connector running in the platform. So you have to [**create a specific user for each of them**](administration/users).
 
     Also, if all connectors users can run in with a user belonging to the `Connectors` group (with the `Connector` role), the `Internal Export Files` should be run with a user who is Administrator (with bypass capability) because they imperstonate the user requesting the export to avoid data leak.
 

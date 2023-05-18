@@ -135,8 +135,8 @@ nav:
       - Explore by entity types: usage/exploring.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
-      - Import data with connectors: usage/import-connectors.md
-      - Import data manually: usage/import-manually.md
+      - Import with connectors: usage/import-connectors.md
+      - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Analyst workbench: usage/workbench.md
     - Manipulate knowledge:
@@ -145,6 +145,10 @@ nav:
       - Notifications and alerting: usage/notifications.md
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md
+    - Sharing and exports:
+      - Export in structured format: usage/export-structured.md
+      - Export in documents: usage/export-documents.md
+      - Native feeds: usage/feeds.md
   - Administration:
     - Introduction: administration/introduction.md
     - Data management:
@@ -157,7 +161,7 @@ nav:
       - Indicators lifecycle: administration/indicators.md
       - Customize entities: administration/entities.md
     - Security and traceability:
-      - Authentication and RBAC: administration/rbac.md
+      - Users and RBAC: administration/users.md
       - Data segregation: administration/segregation.md
       - Sourcing knowledge: administration/sourcing.md
       - Audit and monitoring: administration/audit.md
