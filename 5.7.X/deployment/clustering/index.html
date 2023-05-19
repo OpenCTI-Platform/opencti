@@ -15,7 +15,7 @@
         <link rel="canonical" href="https://docs.opencti.io/5.7.X/deployment/clustering/">
       
       
-        <link rel="prev" href="../third-party/">
+        <link rel="prev" href="../resources/">
       
       
         <link rel="next" href="../rollover/">
@@ -789,13 +789,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../third-party/" class="md-nav__link">
+      <a href="../resources/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Third-party systems
+    Other resources
   
 
     
@@ -878,6 +878,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Clustering
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -893,6 +910,153 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High level architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-bucket-minio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S3 bucket / MinIO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managers-and-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managers and schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1406,13 +1570,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/import-connectors.md" class="md-nav__link">
+      <a href="../../usage/import-automated.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Import with connectors
+    Automated import
   
 
     
@@ -2990,6 +3154,142 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#introduction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Introduction
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#high-level-architecture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        High level architecture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Configuration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Configuration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#dependencies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Dependencies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#elasticsearch" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ElasticSearch
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#redis" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Redis
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#rabbitmq" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RabbitMQ
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#s3-bucket-minio" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        S3 bucket / MinIO
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Platform">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#managers-and-schedulers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Managers and schedulers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3091,7 +3391,54 @@
 
 
 <h1 id="clustering">Clustering</h1>
-<p><em>Under construction</em></p>
+<h2 id="introduction">Introduction</h2>
+<p>The OpenCTI platform technological stack has been designed to be able to scale horizontally. All dependencies such as Elastic or Redis can be deployed in cluster mode and performances can be drastically increased by deploying multiple platform and worker instances.</p>
+<h2 id="high-level-architecture">High level architecture</h2>
+<p>Here is the high level architecture for customers and Filigran cloud platform to ensure both high availability and throughput.</p>
+<p><a class="glightbox" href="../assets/cluster.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Cluster" src="../assets/cluster.png" /></a></p>
+<h2 id="configuration">Configuration</h2>
+<h3 id="dependencies">Dependencies</h3>
+<h4 id="elasticsearch">ElasticSearch</h4>
+<p>In the ElasticSearch configuration of OpenCTI, it is possible to declare all nodes.</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;ELASTICSEARCH__URL=[\&quot;https://user:pass@node1:9200\&quot;,</span><span class="nv"> </span><span class="s">\&quot;https://user:pass@node2:9200\&quot;,</span><span class="nv"> </span><span class="s">...]&quot;</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Compatibility</p>
+<p>OpenCTI is also compatible with OpenSearch and AWS / GCP / Azure native search services based on the ElasticSearch query language.</p>
+</div>
+<h4 id="redis">Redis</h4>
+<p>Redis should be turned to cluster mode:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">REDIS__MODE=cluster</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;REDIS__HOSTNAMES=[\&quot;node1:6379\&quot;,</span><span class="nv"> </span><span class="s">\&quot;node2:6379\&quot;,</span><span class="nv"> </span><span class="s">...]&quot;</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Compatibility</p>
+<p>OpenCTI is also compatible with ElastiCache, MemoryStore and AWS / GCP / Azure native services based on the Redis protocol.</p>
+</div>
+<h4 id="rabbitmq">RabbitMQ</h4>
+<p>For the RabbitMQ cluster, you will need a TCP load balancer on top of the nodes since the configuration does not support multi-nodes for now:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">RABBITMQ__HOSTNAME=load-balancer-rabbitmq</span>
+</span></code></pre></div>
+<div class="admonition note">
+<p class="admonition-title">Compatibility</p>
+<p>OpenCTI is also compatible with Amazon MQ, CloudAMQP and AWS / GCP / Azure native services based on the AMQP protocol.</p>
+</div>
+<h4 id="s3-bucket-minio">S3 bucket / MinIO</h4>
+<p>MinIO is an open source server able to serve S3 buckets. It can be deployed in cluster mode and is compatible with several storage backend. OpenCTI is compatible with any tool following the S3 standard.</p>
+<h2 id="platform">Platform</h2>
+<p>As showed on the schema, best practices for cluster mode and to avoid any congestion in the technological stack are:</p>
+<ul>
+<li>Deploy platform(s) dedicated to end users and connectors registration</li>
+<li>Deploy platform(s) dedicated to workers / ingestion process<ul>
+<li>We recommend 3 to 4 workers maxiumum by OpenCTI instance.</li>
+<li>The ingestion platforms will never be accessed directly by end users.</li>
+</ul>
+</li>
+</ul>
+<p>When enabling clustering, the number of nodes is displayed in Settings &gt; Parameters.</p>
+<p><a class="glightbox" href="../assets/cluster-mode.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Cluster mode" src="../assets/cluster-mode.png" /></a></p>
+<h3 id="managers-and-schedulers">Managers and schedulers</h3>
+<p>Also, since some managers like the rule engine, the task manager and the notification manager can take some resources in the OpenCTI NodeJS process, it is highly recommended to disable them in the frontend cluster. OpenCTI automatically handle the distribution and the launching of the engines across all nodes in the cluster except where they are explicitely <a href="../configuration/#schedules-engines">disabled in the configuration</a>.</p>
 
   
     
@@ -3107,7 +3454,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-16T23:21:31+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-16</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-19T10:48:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-19</span>
       </span>
     
     
@@ -3162,7 +3509,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../third-party/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Third-party systems" rel="prev">
+          <a href="../resources/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Other resources" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -3171,7 +3518,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Third-party systems
+                Other resources
               </div>
             </div>
           </a>
