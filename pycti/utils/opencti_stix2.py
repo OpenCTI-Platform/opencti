@@ -43,7 +43,7 @@ class OpenCTIStix2:
     def __init__(self, opencti):
         self.opencti = opencti
         self.stix2_update = OpenCTIStix2Update(opencti)
-        self.mapping_cache = LRUCache(maxsize=10000)
+        self.mapping_cache = LRUCache(maxsize=50000)
 
     ######### UTILS
     # region utils
