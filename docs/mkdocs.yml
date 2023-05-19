@@ -120,7 +120,7 @@ nav:
       - Other resources: deployment/resources.md
     - Advanced:
       - Clustering: deployment/clustering.md
-      - Rollover policies: deployment/rollover.md
+      - Indices and rollover: deployment/rollover.md
       - Troubleshooting: deployment/troubleshooting.md
   - User Guide:
     - Introduction: usage/introduction.md
