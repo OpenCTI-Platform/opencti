@@ -10,7 +10,7 @@ from typing import Any, Dict, List, Optional, Union
 import datefinder
 import dateutil.parser
 import pytz
-from cachetools import TTLCache
+from cachetools import LRUCache
 
 from pycti.api import LOGGER as API_LOGGER
 from pycti.entities.opencti_identity import Identity
@@ -43,7 +43,7 @@ class OpenCTIStix2:
     def __init__(self, opencti):
         self.opencti = opencti
         self.stix2_update = OpenCTIStix2Update(opencti)
-        self.mapping_cache = TTLCache(maxsize=10000, ttl=3600)
+        self.mapping_cache = LRUCache(maxsize=10000)
 
     ######### UTILS
     # region utils
