@@ -101,9 +101,9 @@ steps:
 
 services:
   - name: redis
-    image: redis:7.0.9
+    image: redis:7.0.11
   - name: elastic
-    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.2
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.7.1
     environment:
       discovery.type: single-node
       xpack.security.enabled: false
