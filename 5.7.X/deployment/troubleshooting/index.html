@@ -901,7 +901,7 @@
   <span class="md-ellipsis">
     
   
-    Rollover policies
+    Indices and rollover
   
 
     
@@ -979,6 +979,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#finding-the-relevant-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the relevant logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Finding the relevant logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#common-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -986,6 +1036,45 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Common errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ingestion-technical-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingestion technical errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingestion-functional-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingestion functional errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3044,6 +3133,56 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#finding-the-relevant-logs" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Finding the relevant logs
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Finding the relevant logs">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#platform" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Platform
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connectors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connectors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#workers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Workers
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#common-errors" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -3051,6 +3190,45 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Common errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ingestion-technical-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingestion technical errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ingestion-functional-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Ingestion functional errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dependencies-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dependencies errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3158,12 +3336,35 @@
 
 <h1 id="troubleshooting">Troubleshooting</h1>
 <p>This page aims to explains the typical errors you can have with your OpenCTI platform.</p>
+<h2 id="finding-the-relevant-logs">Finding the relevant logs</h2>
+<p>It is highly recommended to monitor the error logs of the platforms, workers and connectors. All the components have log outputs in an understandable JSON format. It necessary, it is always possible to increase the log level. In production, it is recommended to have the log level set to <code>error</code>.</p>
+<h3 id="platform">Platform</h3>
+<p>Here are some useful parameters for platform logging:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-0-1"><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP__APP_LOGS__LOGS_LEVEL=[error|warning|info|debug]</span>
+</span><span id="__span-0-2"><a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">APP__APP_LOGS__LOGS_CONSOLE=true</span><span class="w"> </span><span class="c1"># Output in the container console</span>
+</span></code></pre></div>
+<h3 id="connectors">Connectors</h3>
+<p>All connectors support the same set of parameters to manage the log level and outputs:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-1-1"><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENCTI_JSON_LOGGING=true</span><span class="w"> </span><span class="c1"># Enable / disable JSON logging</span>
+</span><span id="__span-1-2"><a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">CONNECTOR_LOG_LEVEL=info=[error|warning|info|debug]</span>
+</span></code></pre></div>
+<h3 id="workers">Workers</h3>
+<p>The workers can have more or less verbose outputs:</p>
+<div class="highlight"><pre><span></span><code><span id="__span-2-1"><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">OPENCTI_JSON_LOGGING=true</span><span class="w"> </span><span class="c1"># Enable / disable JSON logging</span>
+</span><span id="__span-2-2"><a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="p p-Indicator">-</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">WORKER_LOG_LEVEL=[error|warning|info|debug]</span>
+</span></code></pre></div>
 <h2 id="common-errors">Common errors</h2>
-<p><strong>Missing reference to handle creation</strong></p>
+<h3 id="ingestion-technical-errors">Ingestion technical errors</h3>
+<div class="admonition warning">
+<p class="admonition-title">Missing reference to handle creation</p>
 <p>After 5 retries, if an element required to create another element is missing, the platform raises an exception. It usually comes from a connector that generates inconsistent STIX 2.1 bundles.</p>
-<p><strong>Cant upsert entity. Too many entities resolved</strong></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Cant upsert entity. Too many entities resolved</p>
 <p>OpenCTI received an entity which is matching too many other entities in the platform. In this condition we cannot take a decision. We need to dig into the data bundle to identify why he match too much entities and fix the data in the bundle / or the platform according to what you expect.</p>
-<p><strong>Execution timeout, too many concurrent call on the same entities</strong></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Execution timeout, too many concurrent call on the same entities</p>
 <p>The platform supports multi workers and multiple parallel creation but different parameters can lead to some locking timeout in the execution. </p>
 <ul>
 <li>Throughput capacity of your ElasticSearch</li>
@@ -3172,12 +3373,21 @@
 <li>Merging capacity of OpenCTI</li>
 </ul>
 <p>If you have this kind of error, limit the number of workers deployed. Try to find the right balance of the number of workers, connectors and elasticsearch sizing.</p>
-<p><strong>Indicator of type yara is not correctly formatted</strong></p>
+</div>
+<h3 id="ingestion-functional-errors">Ingestion functional errors</h3>
+<div class="admonition warning">
+<p class="admonition-title">Indicator of type yara is not correctly formatted</p>
 <p>OpenCTI check the validity of the indicator rule.</p>
-<p><strong>Observable of type IPv4-Addr is not correctly formatted</strong></p>
-<p>OpenCTI check the validity of the oversable value</p>
-<p><strong>TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark, index has read-only-allow-delete block</strong></p>
+</div>
+<div class="admonition warning">
+<p class="admonition-title">Observable of type IPv4-Addr is not correctly formatted</p>
+<p>OpenCTI check the validity of the oversable value.</p>
+</div>
+<h3 id="dependencies-errors">Dependencies errors</h3>
+<div class="admonition warning">
+<p class="admonition-title">TOO_MANY_REQUESTS/12/disk usage exceeded flood-stage watermark...</p>
 <p>Disk full, no space left on the device for ElasticSearch.</p>
+</div>
 
   
     
@@ -3193,7 +3403,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-16T23:21:31+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-16</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-19T11:20:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-19</span>
       </span>
     
     
@@ -3248,7 +3458,7 @@
       <nav class="md-footer__inner md-grid" aria-label="Footer" >
         
           
-          <a href="../rollover/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Rollover policies" rel="prev">
+          <a href="../rollover/" class="md-footer__link md-footer__link--prev" aria-label="Previous: Indices and rollover" rel="prev">
             <div class="md-footer__button md-icon">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11h12Z"/></svg>
             </div>
@@ -3257,7 +3467,7 @@
                 Previous
               </span>
               <div class="md-ellipsis">
-                Rollover policies
+                Indices and rollover
               </div>
             </div>
           </a>
