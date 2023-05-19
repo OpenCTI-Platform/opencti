@@ -1,3 +1,5 @@
 # Rollover policies
 
-*Under construction*
+## Introduction
+
+ElasticSearch and OpenSearch both support rollover policies on indices. 

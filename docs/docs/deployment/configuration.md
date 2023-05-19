@@ -133,7 +133,7 @@ Here are the configuration keys, for both containers (environment variables) and
 | rabbitmq:management_ssl            | RABBITMQ__MANAGEMENT_SSL                       | `false`                       | Is the Management Plugin has TLS enabled                                            |
 | rabbitmq:username                  | RABBITMQ__USERNAME                             | guest                         | RabbitMQ user                                                                       |
 | rabbitmq:password                  | RABBITMQ__PASSWORD                             | guest                         | RabbitMQ password                                                                   |
-| rabbitmq:queue_type                | RABBITMQ__QUEUE_TYPE                           | "classic"                     | RabbitMQ Queue Type ("classic" or "quorum"                                          |
+| rabbitmq:queue_type                | RABBITMQ__QUEUE_TYPE                           | "classic"                     | RabbitMQ Queue Type ("classic" or "quorum")                                         |
 | rabbitmq:ca                        | RABBITMQ__CA                                   | Empty list []                 | Custom CA certificates files                                                        |
 
 #### S3 Bucket
