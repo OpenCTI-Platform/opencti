@@ -197,17 +197,17 @@ const stixCoreRelationshipsHorizontalBarsDistributionQuery = graphql`
           name
         }
         ... on Report {
-            name
+          name
         }
         ... on Grouping {
-            name
+          name
         }
         ... on Note {
-            attribute_abstract
-            content
+          attribute_abstract
+          content
         }
         ... on Opinion {
-            opinion
+          opinion
         }
       }
     }
@@ -235,6 +235,7 @@ const StixCoreRelationshipsHorizontalBars = ({
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
+    let dataSelectionDateAttribute = null;
     let dataSelectionRelationshipType = null;
     let dataSelectionFromId = null;
     let dataSelectionToId = null;
@@ -244,6 +245,9 @@ const StixCoreRelationshipsHorizontalBars = ({
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       finalFilters = convertFilters(selection.filters);
+      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+        ? selection.date_attribute
+        : 'created_at';
       dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
         ?.values || null;
       dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
@@ -272,7 +276,7 @@ const StixCoreRelationshipsHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute,
+      dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: 10,
       filters: finalFilters,
       isTo: selection.isTo,
@@ -298,12 +302,12 @@ const StixCoreRelationshipsHorizontalBars = ({
               ),
             }));
             const chartData = [{ name: t('Number of relationships'), data }];
-            const redirectionUtils = (finalField === 'internal_id') ? props.stixCoreRelationshipsDistribution.map(
-              (n) => ({
+            const redirectionUtils = finalField === 'internal_id'
+              ? props.stixCoreRelationshipsDistribution.map((n) => ({
                 id: n.label,
                 entity_type: n.entity.entity_type,
-              }),
-            ) : null;
+              }))
+              : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

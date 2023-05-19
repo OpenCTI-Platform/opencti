@@ -66,6 +66,9 @@ const StixCoreRelationshipsMultiAreaChart = ({
   const renderContent = () => {
     const timeSeriesParameters = dataSelection.map((selection) => {
       const filters = convertFilters(selection.filters);
+      const dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+        ? selection.date_attribute
+        : 'created_at';
       const dataSelectionRelationshipType = R.head(filters.filter((n) => n.key === 'relationship_type'))?.values
         || null;
       const dataSelectionFromId = R.head(filters.filter((n) => n.key === 'fromId'))?.values || null;
@@ -87,10 +90,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
         relationship_type: dataSelectionRelationshipType,
         fromTypes: dataSelectionFromTypes,
         toTypes: dataSelectionToTypes,
-        field:
-          selection.date_attribute && selection.date_attribute.length > 0
-            ? selection.date_attribute
-            : 'created_at',
+        field: dataSelectionDateAttribute,
         filters: finalFilters,
       };
     });

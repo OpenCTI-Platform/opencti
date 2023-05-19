@@ -247,17 +247,17 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
                 definition
               }
               ... on Report {
-                  name
+                name
               }
               ... on Grouping {
-                  name
+                name
               }
               ... on Note {
-                  attribute_abstract
-                  content
+                attribute_abstract
+                content
               }
               ... on Opinion {
-                  opinion
+                opinion
               }
             }
           }
@@ -377,17 +377,17 @@ const stixCoreRelationshipsMultiHorizontalBarsWithRelationshipsDistributionQuery
           name
         }
         ... on Report {
-            name
+          name
         }
         ... on Grouping {
-            name
+          name
         }
         ... on Note {
-            attribute_abstract
-            content
+          attribute_abstract
+          content
         }
         ... on Opinion {
-            opinion
+          opinion
         }
       }
     }
@@ -605,17 +605,17 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
                 definition
               }
               ... on Report {
-                  name
+                name
               }
               ... on Grouping {
-                  name
+                name
               }
               ... on Note {
-                  attribute_abstract
-                  content
+                attribute_abstract
+                content
               }
               ... on Opinion {
-                  opinion
+                opinion
               }
             }
           }
@@ -732,17 +732,17 @@ const stixCoreRelationshipsMultiHorizontalBarsWithEntitiesDistributionQuery = gr
           definition
         }
         ... on Report {
-            name
+          name
         }
         ... on Grouping {
-            name
+          name
         }
         ... on Note {
-            attribute_abstract
-            content
+          attribute_abstract
+          content
         }
         ... on Opinion {
-            opinion
+          opinion
         }
       }
     }
@@ -770,6 +770,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
   const renderContent = () => {
     let finalFilters = [];
     let selection = {};
+    let dataSelectionDateAttribute = null;
     let dataSelectionRelationshipType = null;
     let dataSelectionFromId = null;
     let dataSelectionToId = null;
@@ -789,6 +790,9 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       // eslint-disable-next-line prefer-destructuring
       selection = dataSelection[0];
       finalFilters = convertFilters(selection.filters);
+      dataSelectionDateAttribute = selection.date_attribute && selection.date_attribute.length > 0
+        ? selection.date_attribute
+        : 'created_at';
       dataSelectionRelationshipType = R.head(finalFilters.filter((n) => n.key === 'relationship_type'))
         ?.values || null;
       dataSelectionFromId = R.head(finalFilters.filter((n) => n.key === 'fromId'))?.values || null;
@@ -855,7 +859,7 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
       operation: 'count',
       startDate,
       endDate,
-      dateAttribute,
+      dateAttribute: dateAttribute || dataSelectionDateAttribute,
       limit: 10,
       filters: finalFilters,
       isTo: selection.isTo,
@@ -979,28 +983,39 @@ const StixCoreRelationshipsMultiHorizontalBars = ({
               };
             });
             let subSectionIdsOrder = [];
-            if (finalField === 'internal_id' && finalSubDistributionField === 'internal_id') { // find subbars orders for entity subbars redirection
+            if (
+              finalField === 'internal_id'
+              && finalSubDistributionField === 'internal_id'
+            ) {
+              // find subbars orders for entity subbars redirection
               for (const distrib of props.stixCoreRelationshipsDistribution) {
                 for (const subDistrib of distrib.entity[key]) {
-                  subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0) + subDistrib.value;
+                  subSectionIdsOrder[subDistrib.label] = (subSectionIdsOrder[subDistrib.label] || 0)
+                    + subDistrib.value;
                 }
               }
-              subSectionIdsOrder = R.take(15, Object.entries(subSectionIdsOrder).sort(([, a], [, b]) => b - a).map((k) => k[0]));
+              subSectionIdsOrder = R.take(
+                15,
+                Object.entries(subSectionIdsOrder)
+                  .sort(([, a], [, b]) => b - a)
+                  .map((k) => k[0]),
+              );
             }
-            const redirectionUtils = (finalField === 'internal_id')
-              ? props.stixCoreRelationshipsDistribution.map(
-                (n) => ({
-                  id: n.label,
-                  entity_type: n.entity.entity_type,
-                  series: subSectionIdsOrder.map((subSectionId) => {
-                    const [entity] = n.entity[key].filter((e) => e.label === subSectionId);
-                    return {
-                      id: subSectionId,
-                      entity_type: entity ? entity.entity.entity_type : null,
-                    };
-                  }),
+            const redirectionUtils = finalField === 'internal_id'
+              ? props.stixCoreRelationshipsDistribution.map((n) => ({
+                id: n.label,
+                entity_type: n.entity.entity_type,
+                series: subSectionIdsOrder.map((subSectionId) => {
+                  const [entity] = n.entity[key].filter(
+                    (e) => e.label === subSectionId,
+                  );
+                  return {
+                    id: subSectionId,
+                    entity_type: entity ? entity.entity.entity_type : null,
+                  };
                 }),
-              ) : null;
+              }))
+              : null;
             return (
               <Chart
                 options={horizontalBarsChartOptions(

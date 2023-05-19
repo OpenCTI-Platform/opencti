@@ -1096,6 +1096,16 @@ const WidgetConfig = ({ widget, onComplete, closeMenu }) => {
                         <MenuItem value="modified">
                           modified ({t('Functional date')})
                         </MenuItem>
+                        {getCurrentIsRelationships() && (
+                          <MenuItem value="start_time">
+                            start_time ({t('Functional date')})
+                          </MenuItem>
+                        )}
+                        {getCurrentIsRelationships() && (
+                          <MenuItem value="stop_time">
+                            stop_time ({t('Functional date')})
+                          </MenuItem>
+                        )}
                       </Select>
                     </FormControl>
                   </div>
