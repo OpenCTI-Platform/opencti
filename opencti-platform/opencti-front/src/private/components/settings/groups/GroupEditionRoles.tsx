@@ -88,7 +88,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
   const [commitAddRole] = useMutation(groupEditionAddRoles);
   const [commitRemoveRole] = useMutation(groupEditionRemoveRoles);
 
-  const handleToggle = (roleId?: string, groupRole?: { id: string }, event?: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (roleId?: string, groupRole?: { id?: string }, event?: React.ChangeEvent<HTMLInputElement>) => {
     if (event?.target.checked) {
       commitAddRole({
         variables: {

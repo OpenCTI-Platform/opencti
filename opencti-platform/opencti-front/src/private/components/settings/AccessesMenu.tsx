@@ -4,7 +4,7 @@ import {
   GroupOutlined,
   PermIdentityOutlined,
   ReceiptOutlined,
-  SettingsOutlined,
+  LocalPoliceOutlined,
   Security as SecurityIcon,
 } from '@mui/icons-material';
 import NavToolbarMenu, { MenuEntry } from '../common/menus/NavToolbarMenu';
@@ -37,10 +37,10 @@ const SettingsMenu: FunctionComponent = () => {
       icon: <ReceiptOutlined fontSize="medium" />,
     },
   ];
-  const settingEntry = {
-    path: '/dashboard/settings/accesses/settings',
-    label: 'Settings',
-    icon: <SettingsOutlined fontSize="medium" />,
+  const policiesEntry = {
+    path: '/dashboard/settings/accesses/policies',
+    label: 'Policies',
+    icon: <LocalPoliceOutlined fontSize="medium" />,
   };
   const markingEntries: MenuEntry[] = [
     {
@@ -54,7 +54,13 @@ const SettingsMenu: FunctionComponent = () => {
   if (setAccess) {
     return (
       <Security needs={[SETTINGS_SETACCESSES]}>
-        <NavToolbarMenu entries={setMarkings ? [...entries, ...markingEntries, settingEntry] : entries}/>
+        <NavToolbarMenu
+          entries={
+            setMarkings
+              ? [...entries, ...markingEntries, policiesEntry]
+              : [...entries, policiesEntry]
+          }
+        />
       </Security>
     );
   }

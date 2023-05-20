@@ -137,14 +137,14 @@ ContainerStixCyberObservablesComponentProps
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
     filters: convertFilters(
       filters,
-    ) as StixObjectOrStixRelationshipsFiltering[],
+    ) as unknown as StixObjectOrStixRelationshipsFiltering[],
   };
   const exportPaginationOptions = {
     ...rawPaginationOptions,
     types: types && types.length > 0 ? types : ['Stix-Cyber-Observable'],
     filters: convertFilters(
       toolbarFilters,
-    ) as StixObjectOrStixRelationshipsFiltering[],
+    ) as unknown as StixObjectOrStixRelationshipsFiltering[],
   };
 
   let numberOfSelectedElements = Object.keys(selectedElements).length;

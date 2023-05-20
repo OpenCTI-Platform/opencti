@@ -4,7 +4,7 @@ import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
 import { Close } from '@mui/icons-material';
-import { CloudRefresh } from 'mdi-material-ui';
+import { CloudRefreshOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -71,7 +71,7 @@ class StixCoreObjectEnrichment extends Component {
             value="enrich"
             size="small"
           >
-            <CloudRefresh fontSize="small" color="primary" />
+            <CloudRefreshOutline fontSize="small" color="primary" />
           </ToggleButton>
         </Tooltip>
         <Drawer

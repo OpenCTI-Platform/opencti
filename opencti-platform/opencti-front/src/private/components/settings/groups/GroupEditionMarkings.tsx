@@ -66,7 +66,7 @@ const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_
   const [commitAdd] = useMutation(groupMutationRelationAdd);
   const [commitDelete] = useMutation(groupMutationRelationDelete);
 
-  const handleToggle = (markingDefinitionId: string, groupMarkingDefinition: { id : string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleToggle = (markingDefinitionId: string, groupMarkingDefinition: { id?: string } | undefined, event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
       commitAdd({
         variables: {

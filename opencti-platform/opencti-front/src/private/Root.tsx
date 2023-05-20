@@ -39,7 +39,7 @@ const rootPrivateQuery = graphql`
       ...AppThemeProvider_settings
       ...AppIntlProvider_settings
       ...PasswordPolicies
-      ...AccessSettings
+      ...Policies
     }
     about {
       version
@@ -56,7 +56,9 @@ const Root = () => {
   // TODO : Use the hook useHelper when all project is pure function //
   const platformModuleHelpers = platformModuleHelper(settings);
   return (
-    <UserContext.Provider value={{ me, settings, entitySettings, platformModuleHelpers }}>
+    <UserContext.Provider
+      value={{ me, settings, entitySettings, platformModuleHelpers }}
+    >
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>

@@ -197,7 +197,7 @@ const StixSightingRelationships = () => {
     toId: toSightingId,
     filters: convertFilters(
       newFilters,
-    ) as StixSightingRelationshipsFiltering[],
+    ) as unknown as StixSightingRelationshipsFiltering[],
   };
   return (
     <ExportContextProvider>
