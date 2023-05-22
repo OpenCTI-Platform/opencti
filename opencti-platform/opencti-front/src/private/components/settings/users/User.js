@@ -403,7 +403,9 @@ class UserComponent extends Component {
                         key={organization.id}
                         dense={true}
                         divider={true}
-                        button={false}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/entities/organizations/${organization.id}`}
                       >
                         <ListItemIcon>
                           <AccountBalanceOutlined color="primary" />
