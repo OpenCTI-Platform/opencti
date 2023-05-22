@@ -1,14 +1,14 @@
-import React, { FunctionComponent, useState } from 'react';
+import { Edit } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import { Edit } from '@mui/icons-material';
-import { useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent, useState } from 'react';
+import { useMutation } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
+import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
 import { caseRfiEditionOverviewFocus } from './CaseRfiEditionOverview';
 
 const useStyles = makeStyles<Theme>((theme) => ({

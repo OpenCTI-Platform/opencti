@@ -1,12 +1,12 @@
-import caseTypeDefs from './case.graphql';
-import convertCaseToStix from './case-converter';
-import { NAME_FIELD, normalizeName } from '../../schema/identifier';
-import caseResolvers from './case-resolvers';
-import { ENTITY_TYPE_CONTAINER_CASE, StixCase, StoreEntityCase } from './case-types';
 import { ENTITY_TYPE_CONTAINER } from '../../schema/general';
+import { NAME_FIELD, normalizeName } from '../../schema/identifier';
 import type { ModuleDefinition } from '../../schema/module';
 import { registerDefinition } from '../../schema/module';
 import { objectOrganization } from '../../schema/stixRefRelationship';
+import convertCaseToStix from './case-converter';
+import caseResolvers from './case-resolvers';
+import { ENTITY_TYPE_CONTAINER_CASE, StixCase, StoreEntityCase } from './case-types';
+import caseTypeDefs from './case.graphql';
 
 const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   type: {
@@ -32,6 +32,7 @@ const CASE_DEFINITION: ModuleDefinition<StoreEntityCase, StixCase> = {
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
+    { name: 'caseTemplate', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   relations: [],
   relationsRefs: [objectOrganization],

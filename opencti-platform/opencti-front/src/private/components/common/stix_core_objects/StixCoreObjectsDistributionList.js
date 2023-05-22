@@ -211,6 +211,9 @@ const stixCoreObjectsDistributionListDistributionQuery = graphql`
         ... on Case {
           name
         }
+        ... on CaseTask {
+          name
+        }
         ... on StixCyberObservable {
           observable_value
         }

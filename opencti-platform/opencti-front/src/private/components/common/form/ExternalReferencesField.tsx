@@ -1,23 +1,20 @@
-import React, { FunctionComponent, useState } from 'react';
-import { append, union } from 'ramda';
-import { Field } from 'formik';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
 import makeStyles from '@mui/styles/makeStyles';
-import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { Field } from 'formik';
+import { append, union } from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import { externalReferencesQueriesSearchQuery } from '../../analysis/external_references/ExternalReferencesQueries';
-import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
-import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
-import { Option } from './ReferenceField';
-import {
-  ExternalReferencesQueriesSearchQuery$data,
-  ExternalReferencesQueriesSearchQuery$variables,
-} from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
-import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
-import { insertNode } from '../../../../utils/store';
 import ItemIcon from '../../../../components/ItemIcon';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import { insertNode } from '../../../../utils/store';
+import { truncate } from '../../../../utils/String';
+import { ExternalReferenceCreationMutation$data } from '../../analysis/external_references/__generated__/ExternalReferenceCreationMutation.graphql';
+import { ExternalReferencesQueriesSearchQuery$data, ExternalReferencesQueriesSearchQuery$variables } from '../../analysis/external_references/__generated__/ExternalReferencesQueriesSearchQuery.graphql';
+import { externalReferenceLinesMutationRelationAdd } from '../../analysis/external_references/AddExternalReferencesLines';
+import ExternalReferenceCreation from '../../analysis/external_references/ExternalReferenceCreation';
+import { externalReferencesQueriesSearchQuery } from '../../analysis/external_references/ExternalReferencesQueries';
+import { Option } from './ReferenceField';
 
 const useStyles = makeStyles(() => ({
   icon: {

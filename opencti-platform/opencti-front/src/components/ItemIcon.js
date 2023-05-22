@@ -32,6 +32,8 @@ import {
   MapOutlined,
   RouterOutlined,
   PowerSettingsNewOutlined,
+  AssignmentOutlined,
+  CasesOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -177,6 +179,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <WorkOutline style={style} fontSize={fontSize} role="img" />;
     case 'Case-Incident':
       return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Case-Template':
+      return <CasesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Feedback':
       return (
         <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />
@@ -191,6 +195,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
           role="img"
         />
       );
+    case 'Case-Task':
+      return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

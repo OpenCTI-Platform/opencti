@@ -1,35 +1,36 @@
-import React, { FunctionComponent, useState } from 'react';
+import { Add, Close } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { SimpleFileUpload } from 'formik-mui';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import Fab from '@mui/material/Fab';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
+import { dayStartDate } from '../../../../utils/Time';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { Option } from '../../common/form/ReferenceField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { dayStartDate } from '../../../../utils/Time';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
-import { CaseRftCreationCaseMutation$variables } from './__generated__/CaseRftCreationCaseMutation.graphql';
+import { Option } from '../../common/form/ReferenceField';
+import { CaseRftAddInput } from './__generated__/CaseRftCreationCaseMutation.graphql';
 import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -94,14 +95,15 @@ interface FormikCaseRftAddInput {
   description: string
   file: File | undefined
   createdBy: Option | undefined
-  objectMarking: { value: string }[]
-  objectAssignee: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
   created: Date;
   takedown_types: string[]
   severity: string
   priority: string
+  caseTemplates?: Option[]
 }
 
 interface CaseRftFormProps {
@@ -128,13 +130,14 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: CaseRftCreationCaseMutation$variables['input'] = {
+    const finalValues: CaseRftAddInput = {
       name: values.name,
       description: values.description,
       created: values.created,
       takedown_types: values.takedown_types,
       severity: values.severity,
       priority: values.priority,
+      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
@@ -171,6 +174,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
       description: '',
       created: dayStartDate(),
       takedown_types: [],
+      caseTemplates: [],
       severity: '',
       priority: '',
       createdBy: defaultCreatedBy ?? undefined,
@@ -229,6 +233,10 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
           type="case_priority_ov"
           name="priority"
           onChange={(name, value) => setFieldValue(name, value)}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <CaseTemplateField
+          onChange={setFieldValue}
           containerStyle={fieldSpacingContainerStyle}
         />
         <ConfidenceField

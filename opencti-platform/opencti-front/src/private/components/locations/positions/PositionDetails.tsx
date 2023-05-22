@@ -142,8 +142,8 @@ const PositionDetails: FunctionComponent<PositionDetailsProps> = ({ position, qu
   PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
   PositionDetails_positionRelationships$key
   >({
-    linesQuery: positionDetailsLocationRelationshipsLinesQuery,
-    linesFragment: positionDetailsRelationshipsFragment,
+    queryDef: positionDetailsLocationRelationshipsLinesQuery,
+    fragmentDef: positionDetailsRelationshipsFragment,
     queryRef,
   });
 

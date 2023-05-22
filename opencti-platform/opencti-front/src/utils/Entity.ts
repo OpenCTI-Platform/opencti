@@ -72,6 +72,8 @@ export const resolveLink = (type: string): string | null => {
       return '/dashboard/cases/rfis';
     case 'Case-Rft':
       return '/dashboard/cases/rfts';
+    case 'Case-Task':
+      return '/dashboard/cases';
     case 'User':
     case 'Creator':
     case 'Assignee':

@@ -3,31 +3,31 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React, { useMemo } from 'react';
-import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { graphql, usePreloadedQuery, useSubscription } from 'react-relay';
+import { Redirect, Route, Switch, useParams } from 'react-router-dom';
 import { GraphQLSubscriptionConfig } from 'relay-runtime';
-import TopBar from '../../nav/TopBar';
 import ErrorNotFound from '../../../../components/ErrorNotFound';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useAuth from '../../../../utils/hooks/useAuth';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
-import CaseIncident from './CaseIncident';
-import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
-import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
 import ContainerHeader from '../../common/containers/ContainerHeader';
-import CaseIncidentPopover from './CaseIncidentPopover';
-import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
-import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import ContainerStixCyberObservables from '../../common/containers/ContainerStixCyberObservables';
+import ContainerStixDomainObjects from '../../common/containers/ContainerStixDomainObjects';
 import StixCoreObjectFilesAndHistory from '../../common/stix_core_objects/StixCoreObjectFilesAndHistory';
-import IncidentKnowledge from './IncidentKnowledge';
+import StixDomainObjectContent from '../../common/stix_domain_objects/StixDomainObjectContent';
+import TopBar from '../../nav/TopBar';
 import { RootIncidentCaseQuery } from './__generated__/RootIncidentCaseQuery.graphql';
+import { RootIncidentQuery } from './__generated__/RootIncidentQuery.graphql';
+import { RootIncidentSubscription } from './__generated__/RootIncidentSubscription.graphql';
+import CaseIncident from './CaseIncident';
+import CaseIncidentPopover from './CaseIncidentPopover';
+import IncidentKnowledge from './IncidentKnowledge';
 
 const subscription = graphql`
   subscription RootIncidentCaseSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on CaseIncident {
-        ...CaseIncident_case
+      ... on Case {
+        ...CaseUtils_case
       }
       ...FileImportViewer_entity
       ...FileExportViewer_entity
@@ -42,7 +42,7 @@ const caseIncidentQuery = graphql`
     caseIncident(id: $id) {
       id
       name
-      ...CaseIncident_case
+      ...CaseUtils_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity

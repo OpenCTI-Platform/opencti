@@ -23,6 +23,7 @@ import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
 import type { RelationRefDefinition } from '../../schema/relationRef-definition';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
+import { ENTITY_TYPE_CONTAINER_CASE_TASK } from '../case/case-task/case-task-types';
 
 export type typeAvailableSetting = boolean | string;
 
@@ -62,6 +63,7 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
+  [ENTITY_TYPE_CONTAINER_CASE_TASK]: [],
 };
 
 const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());

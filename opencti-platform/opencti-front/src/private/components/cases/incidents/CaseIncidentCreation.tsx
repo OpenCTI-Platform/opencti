@@ -1,35 +1,36 @@
-import React, { FunctionComponent, useState } from 'react';
+import { Add, Close } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Drawer from '@mui/material/Drawer';
+import Fab from '@mui/material/Fab';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import { Field, Form, Formik } from 'formik';
 import { SimpleFileUpload } from 'formik-mui';
-import Drawer from '@mui/material/Drawer';
-import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
-import IconButton from '@mui/material/IconButton';
-import { Add, Close } from '@mui/icons-material';
-import * as Yup from 'yup';
-import { graphql, useMutation } from 'react-relay';
-import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
-import Fab from '@mui/material/Fab';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import * as Yup from 'yup';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
+import TextField from '../../../../components/TextField';
 import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import OpenVocabField from '../../common/form/OpenVocabField';
+import { dayStartDate } from '../../../../utils/Time';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { dayStartDate } from '../../../../utils/Time';
-import { CaseIncidentCreationCaseMutation, CaseIncidentCreationCaseMutation$variables } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
+import { CaseIncidentAddInput, CaseIncidentCreationCaseMutation } from './__generated__/CaseIncidentCreationCaseMutation.graphql';
 import { CaseIncidentsLinesCasesPaginationQuery$variables } from './__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -97,12 +98,13 @@ interface FormikCaseIncidentAddInput {
   description: string
   file: File | undefined
   createdBy: Option | undefined
-  objectMarking: { value: string }[]
-  objectAssignee: { value: string }[]
-  objectLabel: { value: string }[]
-  externalReferences: { value: string }[]
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
   created: Date;
   response_types: string[]
+  caseTemplates?: Option[]
 }
 
 interface IncidentFormProps {
@@ -114,8 +116,14 @@ interface IncidentFormProps {
   defaultMarkingDefinitions?: { value: string, label: string }[]
 }
 
-export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -129,13 +137,14 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: CaseIncidentCreationCaseMutation$variables['input'] = {
+    const finalValues: CaseIncidentAddInput = {
       name: values.name,
       description: values.description,
       created: values.created,
       severity: values.severity,
       priority: values.priority,
       response_types: values.response_types,
+      caseTemplates: values.caseTemplates?.map(({ value }) => value),
       confidence: parseInt(String(values.confidence), 10),
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectMarking: values.objectMarking.map(({ value }) => value),
@@ -166,24 +175,25 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
   };
 
   return <Formik<FormikCaseIncidentAddInput>
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        severity: '',
-        response_types: [],
-        created: dayStartDate(),
-        priority: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
-      validationSchema={caseIncidentValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={{
+      name: '',
+      confidence: defaultConfidence ?? 75,
+      description: '',
+      severity: '',
+      caseTemplates: [],
+      response_types: [],
+      created: dayStartDate(),
+      priority: '',
+      createdBy: defaultCreatedBy ?? undefined,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    }}
+    validationSchema={caseIncidentValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -191,114 +201,118 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['CaseIncident']}
-              style={{ marginBottom: '20px' }}
-          />
-          <Field
-            component={DateTimePickerField}
-            name="created"
-            TextFieldProps={{
-              label: t('Incident date'),
-              variant: 'standard',
-              fullWidth: true,
-            }}
-          />
-          <OpenVocabField
-              label={t('Severity')}
-              type="case_severity_ov"
-              name="severity"
-              onChange={setFieldValue}
-              containerStyle={fieldSpacingContainerStyle}
-          />
-          <OpenVocabField
-              label={t('Priority')}
-              type="case_priority_ov"
-              name="priority"
-              onChange={setFieldValue}
-              containerStyle={fieldSpacingContainerStyle}
-          />
-          <OpenVocabField
-              label={t('Incident type')}
-              type="incident_response_types_ov"
-              name="response_types"
-              multiple
-              onChange={setFieldValue}
-              containerStyle={fieldSpacingContainerStyle}
-          />
-          <ConfidenceField
-              entityType="Case-Incident"
-              containerStyle={fieldSpacingContainerStyle}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={fieldSpacingContainerStyle}
-          />
-          <ObjectAssigneeField
-              name="objectAssignee"
-              style={fieldSpacingContainerStyle}
-          />
-          <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-              component={SimpleFileUpload}
-              name="file"
-              label={t('Associated file')}
-              FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-              InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-              InputProps={{ fullWidth: true, variant: 'standard' }}
-              fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['CaseIncident']}
+          style={{ marginBottom: '20px' }}
+        />
+        <Field
+          component={DateTimePickerField}
+          name="created"
+          TextFieldProps={{
+            label: t('Incident date'),
+            variant: 'standard',
+            fullWidth: true,
+          }}
+        />
+        <OpenVocabField
+          label={t('Severity')}
+          type="case_severity_ov"
+          name="severity"
+          onChange={setFieldValue}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <OpenVocabField
+          label={t('Priority')}
+          type="case_priority_ov"
+          name="priority"
+          onChange={setFieldValue}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <OpenVocabField
+          label={t('Incident type')}
+          type="incident_response_types_ov"
+          name="response_types"
+          multiple
+          onChange={setFieldValue}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <CaseTemplateField
+          onChange={setFieldValue}
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <ConfidenceField
+          entityType="Case-Incident"
+          containerStyle={fieldSpacingContainerStyle}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={fieldSpacingContainerStyle}
+        />
+        <ObjectAssigneeField
+          name="objectAssignee"
+          style={fieldSpacingContainerStyle}
+        />
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+          InputProps={{ fullWidth: true, variant: 'standard' }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
+          >
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
@@ -319,34 +333,39 @@ const CaseIncidentCreation = ({ paginationOptions }: { paginationOptions: CaseIn
 
   return (
     <div>
-      <Fab onClick={handleOpen}
+      <Fab
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a case incident')}</Typography>
         </div>
         <div className={classes.container}>
           <CaseIncidentCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

@@ -68,8 +68,8 @@ const SubTypeWorkflowStatusEdit: FunctionComponent<StatusEditionProps> = ({
   SubTypeWorkflowStatusEditQuery,
   SubTypeWorkflowStatusEdit_subType$key
   >({
-    linesQuery: statusEditQuery,
-    linesFragment: statusEditFragment,
+    queryDef: statusEditQuery,
+    fragmentDef: statusEditFragment,
     queryRef,
     nodePath: 'status',
   });

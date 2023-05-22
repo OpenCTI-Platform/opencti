@@ -1,27 +1,28 @@
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
-import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
-import { adaptFieldValue } from '../../../../utils/String';
-import TextField from '../../../../components/TextField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import MarkDownField from '../../../../components/MarkDownField';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import CommitMessage from '../../common/form/CommitMessage';
-import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useFormatter } from '../../../../components/i18n';
+import MarkDownField from '../../../../components/MarkDownField';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import TextField from '../../../../components/TextField';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { Option } from '../../common/form/ReferenceField';
+import StatusField from '../../common/form/StatusField';
+import { CaseTasksFiltering } from '../__generated__/CaseTasksRefetch.graphql';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
 
 export const caseIncidentMutationFieldPatch = graphql`
@@ -38,7 +39,7 @@ export const caseIncidentMutationFieldPatch = graphql`
       references: $references
     ) {
       ...CaseIncidentEditionOverview_case
-      ...CaseIncident_case
+      ...CaseUtils_case
     }
   }
 `;
@@ -140,15 +141,14 @@ const caseIncidentMutationRelationDelete = graphql`
 `;
 
 interface CaseIncidentEditionOverviewProps {
-  caseRef: CaseIncidentEditionOverview_case$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
-  enableReferences?: boolean;
-  handleClose: () => void;
+  caseRef: CaseIncidentEditionOverview_case$key
+  context: ReadonlyArray<{
+    readonly focusOn: string | null
+    readonly name: string
+  }> | null
+  enableReferences?: boolean
+  handleClose: () => void
+  tasksPaginationOptions?: { filters: CaseTasksFiltering[] }
 }
 
 interface CaseIncidentEditionFormValues {
@@ -160,9 +160,12 @@ interface CaseIncidentEditionFormValues {
   references: ExternalReferencesValues | undefined
 }
 
-const CaseIncidentEditionOverviewComponent: FunctionComponent<
-CaseIncidentEditionOverviewProps
-> = ({ caseRef, context, enableReferences = false, handleClose }) => {
+const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverviewProps> = ({
+  caseRef,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t } = useFormatter();
   const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
 
@@ -214,7 +217,7 @@ CaseIncidentEditionOverviewProps
   const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
-      if (name === 'x_opencti_workflow_id') {
+      if (['x_opencti_workflow_id'].includes(name)) {
         finalValue = (value as Option).value;
       }
       caseIncidentValidator
@@ -245,9 +248,12 @@ CaseIncidentEditionOverviewProps
     references: [],
   };
   return (
-    <Formik enableReinitialize={true} initialValues={initialValues as never}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues as never}
       validationSchema={caseIncidentValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -282,6 +288,7 @@ CaseIncidentEditionOverviewProps
                 <SubscriptionFocus context={context} fieldName="created" />
               ),
             }}
+            containerStyle={fieldSpacingContainerStyle}
           />
           <OpenVocabField
             label={t('Case severity')}
@@ -380,14 +387,14 @@ CaseIncidentEditionOverviewProps
             onChange={editor.changeMarking}
           />
           {enableReferences && (
-              <CommitMessage
-                  submitForm={submitForm}
-                  disabled={isSubmitting || !isValid || !dirty}
-                  setFieldValue={setFieldValue}
-                  open={false}
-                  values={values.references}
-                  id={caseData.id}
-              />
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={caseData.id}
+            />
           )}
         </Form>
       )}
@@ -395,4 +402,4 @@ CaseIncidentEditionOverviewProps
   );
 };
 
-export default CaseIncidentEditionOverviewComponent;
+export default CaseIncidentEditionOverview;

@@ -114,9 +114,6 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
     types: [String]
     viaTypes: [String]
   ): ContainerConnection
-  # Cases
-  name: String!
-  description: String
   # Technical
   creators: [Creator!]
   toStix: String
@@ -128,6 +125,10 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   jobs(first: Int): [Work]
   status: Status
   workflowEnabled: Boolean
+  # Cases
+  name: String!
+  description: String
+  tasks: CaseTaskConnection!
 }
 
 # Ordering
@@ -202,4 +203,5 @@ type Mutation {
   caseFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): Case @auth(for: [KNOWLEDGE_KNUPDATE])
   caseContextPatch(id: ID!, input: EditContext!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
   caseContextClean(id: ID!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseSetTemplate(id: ID!, caseTemplatesId: [ID!]!): Case @auth(for: [KNOWLEDGE_KNUPDATE])
 }

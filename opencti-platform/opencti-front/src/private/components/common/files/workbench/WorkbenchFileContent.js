@@ -3902,6 +3902,9 @@ const WorkbenchFileContent = createFragmentContainer(
             ... on Case {
               name
             }
+            ... on CaseTask {
+              name
+            }
             ... on StixCyberObservable {
               observable_value
             }

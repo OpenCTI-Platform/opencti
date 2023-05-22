@@ -247,6 +247,10 @@ const stixCoreObjectsListQuery = graphql`
           ... on Case {
             name
           }
+          ... on CaseTask {
+            name
+            description
+          }
           ... on StixCyberObservable {
             observable_value
           }

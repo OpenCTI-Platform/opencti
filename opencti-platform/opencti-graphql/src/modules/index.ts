@@ -36,5 +36,7 @@ import './case/feedback/feedback';
 import './case/case-incident/case-incident';
 import './case/case-rfi/case-rfi';
 import './case/case-rft/case-rft';
+import './case/case-template/case-template';
+import './case/case-task/case-task';
 import './entitySetting/entitySetting';
 // endregion

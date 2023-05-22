@@ -9,6 +9,7 @@ import { now } from '../../../utils/format';
 import { userAddIndividual, userSessionRefresh } from '../../../domain/user';
 import { isEmptyField } from '../../../database/utils';
 import type { DomainFindById } from '../../../domain/domainTypes';
+import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseRfi } from './case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from './case-rfi-types';
 import type { CaseRfiAddInput } from '../../../generated/graphql';
@@ -35,6 +36,9 @@ export const addCaseRfi = async (context: AuthContext, user: AuthUser, caseRfiAd
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_RFI);
+  if (caseToCreate.caseTemplates) {
+    await Promise.all(caseToCreate.caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 

@@ -219,6 +219,9 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             name
             created
           }
+          ... on CaseTask {
+            name
+          }
           createdBy {
             ... on Identity {
               id

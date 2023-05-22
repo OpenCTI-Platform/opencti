@@ -131,6 +131,9 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
             name
             created
           }
+          ... on CaseTask {
+            name
+          }
           createdBy {
             ... on Identity {
               id
@@ -316,6 +319,9 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
                     name
                   }
                   ... on Case {
+                    name
+                  }
+                  ... on CaseTask {
                     name
                   }
                   ... on StixCyberObservable {

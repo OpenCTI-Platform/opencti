@@ -264,6 +264,9 @@ export const containerHeaderObjectsQuery = graphql`
             ... on Case {
               name
             }
+            ... on CaseTask {
+              name
+            }
             ... on Feedback {
               name
             }
@@ -866,6 +869,9 @@ export default createFragmentContainer(ContainerHeader, {
         name
       }
       ... on Feedback {
+        name
+      }
+      ... on CaseTask {
         name
       }
       ... on CaseIncident {

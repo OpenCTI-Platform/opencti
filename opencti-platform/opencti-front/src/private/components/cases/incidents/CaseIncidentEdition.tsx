@@ -1,17 +1,15 @@
-import React, { FunctionComponent, useState } from 'react';
+import { Edit } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Fab from '@mui/material/Fab';
-import { Edit } from '@mui/icons-material';
-import { useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import React, { FunctionComponent, useState } from 'react';
+import { useMutation } from 'react-relay';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import { caseIncidentEditionOverviewFocus } from './CaseIncidentEditionOverview';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import CaseIncidentEditionContainer, {
-  caseIncidentEditionQuery,
-} from './CaseIncidentEditionContainer';
 import { CaseIncidentEditionContainerCaseQuery } from './__generated__/CaseIncidentEditionContainerCaseQuery.graphql';
+import CaseIncidentEditionContainer, { caseIncidentEditionQuery } from './CaseIncidentEditionContainer';
+import { caseIncidentEditionOverviewFocus } from './CaseIncidentEditionOverview';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   editButton: {

@@ -1529,7 +1529,7 @@ input LabelsFiltering {
 }
 type LabelConnection {
   pageInfo: PageInfo!
-  edges: [LabelEdge]
+  edges: [LabelEdge!]!
 }
 type LabelEdge {
   cursor: String!
@@ -10719,6 +10719,8 @@ union StixObjectOrStixRelationshipOrCreator =
   | CaseRfi
   | CaseRft
   | Feedback
+  | CaseTemplate
+  | CaseTask
   | EntitySetting
   | Creator
 union StixObjectOrStixRelationship =
@@ -10793,6 +10795,8 @@ union StixObjectOrStixRelationship =
   | CaseRfi
   | CaseRft
   | Feedback
+  | CaseTemplate
+  | CaseTask
   | EntitySetting
 union StixCoreObjectOrStixCoreRelationship =
     #### Stix Core Objects
@@ -10861,6 +10865,8 @@ union StixCoreObjectOrStixCoreRelationship =
   | CaseRfi
   | CaseRft
   | Feedback
+  | CaseTemplate
+  | CaseTask
   | EntitySetting
 
 enum StixRelationshipsOrdering {

@@ -346,7 +346,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate everything', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { first: 1000 });
     expect(data).not.toBeNull();
-    expect(data.edges.length).toEqual(409);
+    expect(data.edges.length).toEqual(410);
     const filterBaseTypes = R.uniq(R.map((e) => e.node.base_type, data.edges));
     expect(filterBaseTypes.length).toEqual(1);
     expect(R.head(filterBaseTypes)).toEqual('ENTITY');
@@ -419,7 +419,7 @@ describe('Elasticsearch pagination', () => {
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { filters, first: 1000 });
-    expect(data.edges.length).toEqual(402);
+    expect(data.edges.length).toEqual(403);
   });
   it('should entity paginate with field exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: ['EXISTS'] }];

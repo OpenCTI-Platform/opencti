@@ -1,25 +1,25 @@
-import React, { FunctionComponent, useState } from 'react';
-import { graphql, useFragment } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
+import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
+import Button from '@mui/material/Button';
+import Chip from '@mui/material/Chip';
 import Grid from '@mui/material/Grid';
-import makeStyles from '@mui/styles/makeStyles';
 import List from '@mui/material/List';
-import * as R from 'ramda';
 import ListItem from '@mui/material/ListItem';
-import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Button from '@mui/material/Button';
-import { ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
-import ItemIcon from '../../../../components/ItemIcon';
-import { useFormatter } from '../../../../components/i18n';
+import Paper from '@mui/material/Paper';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import * as R from 'ramda';
+import React, { FunctionComponent, useState } from 'react';
+import { graphql, useFragment } from 'react-relay';
+import { Link } from 'react-router-dom';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import { useFormatter } from '../../../../components/i18n';
+import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { Theme } from '../../../../components/Theme';
-import { CaseRftDetails_case$data, CaseRftDetails_case$key } from './__generated__/CaseRftDetails_case.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
+import { Theme } from '../../../../components/Theme';
+import { CaseRftDetails_case$key } from './__generated__/CaseRftDetails_case.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -175,7 +175,7 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
   const { t, fsd } = useFormatter();
   const classes = useStyles();
   const [expanded, setExpanded] = useState(false);
-  const data: CaseRftDetails_case$data = useFragment(
+  const data = useFragment(
     CaseRftDetailsFragment,
     caseRftData,
   );
@@ -195,11 +195,11 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
             {
               takedownTypes.length > 0
                 ? takedownTypes.map((takedownType) => (
-              <Chip
-                key={takedownType}
-                classes={{ root: classes.chip }}
-                label={takedownType}
-              />
+                  <Chip
+                    key={takedownType}
+                    classes={{ root: classes.chip }}
+                    label={takedownType}
+                  />
                 )) : '-'}
           </Grid>
           <Grid item={true} xs={6}>
@@ -245,40 +245,40 @@ const CaseRftDetails: FunctionComponent<CaseRftDetailsProps> = ({
               .map((relatedContainerEdge) => {
                 const relatedContainer = relatedContainerEdge?.node;
                 return (
-                <ListItem
-                  key={data.id}
-                  dense={true}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  component={Link}
-                  to={`/dashboard/cases/rfts/${relatedContainer?.id}`}
-                >
-                  <ListItemIcon>
-                    <ItemIcon type={relatedContainer?.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div className={classes.itemText}>
-                        {relatedContainer?.name}
-                      </div>
-                    }
-                  />
-                  <div className={classes.itemAuthor}>
-                    {R.pathOr('', ['createdBy', 'name'], relatedContainer)}
-                  </div>
-                  <div className={classes.itemDate}>
-                    {fsd(relatedContainer?.created)}
-                  </div>
-                  <div className={classes.itemMarking}>
-                    <ItemMarkings
-                      variant="inList"
-                      markingDefinitionsEdges={
-                        relatedContainer?.objectMarking?.edges ?? []
+                  <ListItem
+                    key={data.id}
+                    dense={true}
+                    classes={{ root: classes.item }}
+                    divider={true}
+                    component={Link}
+                    to={`/dashboard/cases/rfts/${relatedContainer?.id}`}
+                  >
+                    <ListItemIcon>
+                      <ItemIcon type={relatedContainer?.entity_type} />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={
+                        <div className={classes.itemText}>
+                          {relatedContainer?.name}
+                        </div>
                       }
-                      limit={1}
                     />
-                  </div>
-                </ListItem>
+                    <div className={classes.itemAuthor}>
+                      {relatedContainer?.createdBy?.name ?? ''}
+                    </div>
+                    <div className={classes.itemDate}>
+                      {fsd(relatedContainer?.created)}
+                    </div>
+                    <div className={classes.itemMarking}>
+                      <ItemMarkings
+                        variant="inList"
+                        markingDefinitionsEdges={
+                          relatedContainer?.objectMarking?.edges ?? []
+                        }
+                        limit={1}
+                      />
+                    </div>
+                  </ListItem>
                 );
               }) : '-'}
         </List>

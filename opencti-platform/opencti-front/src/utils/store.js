@@ -1,6 +1,6 @@
-import { ConnectionHandler } from 'relay-runtime';
 import * as R from 'ramda';
 import { filter } from 'ramda';
+import { ConnectionHandler } from 'relay-runtime';
 
 export const isNodeInConnection = (payload, conn) => {
   const records = conn.getLinkedRecords('edges');

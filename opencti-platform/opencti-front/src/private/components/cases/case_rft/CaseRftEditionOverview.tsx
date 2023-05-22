@@ -1,27 +1,27 @@
+import { Field, Form, Formik } from 'formik';
+import { FormikConfig } from 'formik/dist/types';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import { FormikConfig } from 'formik/dist/types';
-import { useFormatter } from '../../../../components/i18n';
-import { SubscriptionFocus } from '../../../../components/Subscription';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
-import StatusField from '../../common/form/StatusField';
-import { Option } from '../../common/form/ReferenceField';
-import { adaptFieldValue } from '../../../../utils/String';
-import TextField from '../../../../components/TextField';
-import OpenVocabField from '../../common/form/OpenVocabField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import MarkDownField from '../../../../components/MarkDownField';
-import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import CommitMessage from '../../common/form/CommitMessage';
-import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
+import { useFormatter } from '../../../../components/i18n';
+import MarkDownField from '../../../../components/MarkDownField';
+import { SubscriptionFocus } from '../../../../components/Subscription';
+import TextField from '../../../../components/TextField';
+import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
+import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { adaptFieldValue } from '../../../../utils/String';
+import CommitMessage from '../../common/form/CommitMessage';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import CreatedByField from '../../common/form/CreatedByField';
+import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
+import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
+import ObjectMarkingField from '../../common/form/ObjectMarkingField';
+import OpenVocabField from '../../common/form/OpenVocabField';
+import { Option } from '../../common/form/ReferenceField';
+import StatusField from '../../common/form/StatusField';
 import { CaseRftEditionOverview_case$key } from './__generated__/CaseRftEditionOverview_case.graphql';
 
 export const caseRftMutationFieldPatch = graphql`
@@ -38,7 +38,7 @@ export const caseRftMutationFieldPatch = graphql`
       references: $references
     ) {
       ...CaseRftEditionOverview_case
-      ...CaseRft_case
+      ...CaseUtils_case
     }
   }
 `;
@@ -139,15 +139,13 @@ const caseRftMutationRelationDelete = graphql`
 `;
 
 interface CaseRftEditionOverviewProps {
-  caseRef: CaseRftEditionOverview_case$key;
-  context:
-  | readonly ({
-    readonly focusOn: string | null;
-    readonly name: string;
-  } | null)[]
-  | null;
-  enableReferences?: boolean;
-  handleClose: () => void;
+  caseRef: CaseRftEditionOverview_case$key
+  context: ReadonlyArray<{
+    readonly focusOn: string | null
+    readonly name: string
+  }> | null
+  enableReferences?: boolean
+  handleClose: () => void
 }
 
 interface CaseRftEditionFormValues {
@@ -159,9 +157,12 @@ interface CaseRftEditionFormValues {
   references: ExternalReferencesValues | undefined
 }
 
-const CaseRftEditionOverviewComponent: FunctionComponent<
-CaseRftEditionOverviewProps
-> = ({ caseRef, context, enableReferences = false, handleClose }) => {
+const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = ({
+  caseRef,
+  context,
+  enableReferences = false,
+  handleClose,
+}) => {
   const { t } = useFormatter();
   const caseData = useFragment(caseRftEditionOverviewFragment, caseRef);
 
@@ -213,7 +214,7 @@ CaseRftEditionOverviewProps
   const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
-      if (name === 'x_opencti_workflow_id') {
+      if (['x_opencti_workflow_id'].includes(name)) {
         finalValue = (value as Option).value;
       }
       caseValidator
@@ -244,9 +245,12 @@ CaseRftEditionOverviewProps
     references: [],
   };
   return (
-    <Formik enableReinitialize={true} initialValues={initialValues as never}
-            validationSchema={caseValidator}
-            onSubmit={onSubmit}>
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues as never}
+      validationSchema={caseValidator}
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,
@@ -395,4 +399,4 @@ CaseRftEditionOverviewProps
   );
 };
 
-export default CaseRftEditionOverviewComponent;
+export default CaseRftEditionOverview;

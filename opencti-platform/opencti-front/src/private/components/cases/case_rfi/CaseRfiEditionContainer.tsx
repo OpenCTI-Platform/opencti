@@ -1,13 +1,13 @@
+import { Close } from '@mui/icons-material';
+import IconButton from '@mui/material/IconButton';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, PreloadedQuery, usePreloadedQuery } from 'react-relay';
-import Typography from '@mui/material/Typography';
-import IconButton from '@mui/material/IconButton';
-import { Close } from '@mui/icons-material';
-import makeStyles from '@mui/styles/makeStyles';
+import ErrorNotFound from '../../../../components/ErrorNotFound';
+import { useFormatter } from '../../../../components/i18n';
 import { SubscriptionAvatars } from '../../../../components/Subscription';
 import { Theme } from '../../../../components/Theme';
-import { useFormatter } from '../../../../components/i18n';
-import ErrorNotFound from '../../../../components/ErrorNotFound';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
 import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
 import CaseRfiEditionOverview from './CaseRfiEditionOverview';
@@ -42,8 +42,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseRfiEditionContainerProps {
-  queryRef: PreloadedQuery<CaseRfiEditionContainerCaseQuery>;
-  handleClose: () => void;
+  queryRef: PreloadedQuery<CaseRfiEditionContainerCaseQuery>
+  handleClose: () => void
 }
 
 export const caseRfiEditionQuery = graphql`

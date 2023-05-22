@@ -262,6 +262,9 @@ const caseRfiKnowledgeGraphStixCoreObjectQuery = graphql`
       ... on CaseRft {
         name
       }
+      ... on CaseTask {
+        name
+      }
       ... on Narrative {
         name
       }
@@ -1813,6 +1816,9 @@ const CaseRfiKnowledgeGraph = createFragmentContainer(
                 name
               }
               ... on CaseRft {
+                name
+              }
+              ... on CaseTask {
                 name
               }
               ... on Feedback {

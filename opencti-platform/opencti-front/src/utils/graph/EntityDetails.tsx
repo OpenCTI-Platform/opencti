@@ -251,6 +251,9 @@ const entityDetailsQuery = graphql`
       ... on Case {
         name
       }
+      ... on CaseTask {
+        name
+      }
       ... on Channel {
           name
       }

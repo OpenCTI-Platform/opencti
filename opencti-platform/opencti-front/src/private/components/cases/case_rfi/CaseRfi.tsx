@@ -1,19 +1,25 @@
-import React, { FunctionComponent } from 'react';
-import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import ContainerHeader from '../../common/containers/ContainerHeader';
-import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import Security from '../../../../utils/Security';
+import React, { FunctionComponent } from 'react';
+import { useFragment } from 'react-relay';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import { convertMarkings } from '../../../../utils/edition';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
+import Security from '../../../../utils/Security';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
-import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
+import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
-import CaseRfiEdition from './CaseRfiEdition';
-import { CaseRfi_case$key } from './__generated__/CaseRfi_case.graphql';
-import CaseRfiPopover from './CaseRfiPopover';
+import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
+import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
+import { CaseTasksFilter, CaseTasksLinesQuery } from '../__generated__/CaseTasksLinesQuery.graphql';
+import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
+import CaseTasksLines, { caseTasksLinesQuery } from '../CaseTasksLines';
+import { caseFragment } from '../CaseUtils';
 import CaseRfiDetails from './CaseRfiDetails';
+import CaseRfiEdition from './CaseRfiEdition';
+import CaseRfiPopover from './CaseRfiPopover';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -24,82 +30,25 @@ const useStyles = makeStyles(() => ({
   },
 }));
 
-const caseRfiFragment = graphql`
-  fragment CaseRfi_case on CaseRfi {
-    id
-    name
-    standard_id
-    entity_type
-    x_opencti_stix_ids
-    created
-    modified
-    created_at
-    revoked
-    description
-    confidence
-    createdBy {
-      ... on Identity {
-        id
-        name
-        entity_type
-      }
-    }
-    creators {
-      id
-      name
-    }
-    objectMarking {
-      edges {
-        node {
-          id
-          definition_type
-          definition
-          x_opencti_order
-          x_opencti_color
-        }
-      }
-    }
-    objectLabel {
-      edges {
-        node {
-          id
-          value
-          color
-        }
-      }
-    }
-    objectAssignee {
-      edges {
-        node {
-          id
-          name
-          entity_type
-        }
-      }
-    }
-    x_opencti_stix_ids
-    status {
-      id
-      order
-      template {
-        name
-        color
-      }
-    }
-    workflowEnabled
-    ...CaseRfiDetails_case
-    ...ContainerHeader_container
-    ...ContainerStixObjectsOrStixRelationships_container
-  }
-`;
-
 interface CaseRfiProps {
-  data: CaseRfi_case$key;
+  data: CaseUtils_case$key;
 }
 
 const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const classes = useStyles();
-  const caseRfiData = useFragment(caseRfiFragment, data);
+  const caseRfiData = useFragment(caseFragment, data);
+
+  const tasksFilters = {
+    filters: [{
+      key: ['objectContains' as CaseTasksFilter],
+      values: [caseRfiData.id],
+    }],
+  };
+  const paginationOptions = {
+    count: 25,
+    filters: tasksFilters.filters,
+  };
+  const queryRef = useQueryLoading<CaseTasksLinesQuery>(caseTasksLinesQuery, paginationOptions);
 
   return (
     <div className={classes.container}>
@@ -124,6 +73,28 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
           />
         </Grid>
       </Grid>
+      {queryRef && (
+        <React.Suspense
+          fallback={<Loader variant={LoaderVariant.inElement} />}
+        >
+          <Grid
+            container={true}
+            spacing={3}
+            classes={{ container: classes.gridContainer }}
+            style={{ marginTop: 25 }}
+          >
+            <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+              <CaseTasksLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                caseId={caseRfiData.id}
+                tasksFilters={tasksFilters}
+                defaultMarkings={convertMarkings(caseRfiData)}
+              />
+            </Grid>
+          </Grid>
+        </React.Suspense>
+      )}
       <Grid
         container={true}
         spacing={3}
@@ -157,7 +128,9 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRfiEdition caseId={caseRfiData.id} />
+        <CaseRfiEdition
+          caseId={caseRfiData.id}
+        />
       </Security>
     </div>
   );

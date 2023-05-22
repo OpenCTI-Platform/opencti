@@ -8,6 +8,7 @@ import { notify } from '../../../database/redis';
 import { now } from '../../../utils/format';
 import { userAddIndividual } from '../../../domain/user';
 import { isEmptyField } from '../../../database/utils';
+import { upsertTemplateForCase } from '../case-domain';
 import type { BasicStoreEntityCaseIncident } from './case-incident-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from './case-incident-types';
 import type { DomainFindById } from '../../../domain/domainTypes';
@@ -34,6 +35,9 @@ export const addCaseIncident = async (context: AuthContext, user: AuthUser, case
     caseToCreate = { ...caseToCreate, createdBy: individualId };
   }
   const created = await createEntity(context, user, caseToCreate, ENTITY_TYPE_CONTAINER_CASE_INCIDENT);
+  if (caseToCreate.caseTemplates) {
+    await Promise.all(caseToCreate.caseTemplates.map((caseTemplate) => upsertTemplateForCase(context, user, created.id, caseTemplate)));
+  }
   return notify(BUS_TOPICS[ABSTRACT_STIX_DOMAIN_OBJECT].ADDED_TOPIC, created, user);
 };
 
