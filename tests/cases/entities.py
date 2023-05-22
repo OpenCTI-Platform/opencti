@@ -155,6 +155,10 @@ class EntityTestCases:
     def case_case_rft(api_client):
         return CaseRftTest(api_client)
 
+    @staticmethod
+    def case_case_task(api_client):
+        return CaseTaskTest(api_client)
+
 
 class EntityTest:
     def __init__(self, api_client):
@@ -1004,3 +1008,15 @@ class CaseRftTest(EntityTest):
 
     def own_class(self):
         return self.api_client.case_rft
+
+
+class CaseTaskTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "name": "Case Task",
+            "description": "Test",
+            "created": "2023-04-19T08:01:50.924Z",
+        }
+
+    def own_class(self):
+        return self.api_client.case_task

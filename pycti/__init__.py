@@ -14,6 +14,7 @@ from .entities.opencti_campaign import Campaign
 from .entities.opencti_case_incident import CaseIncident
 from .entities.opencti_case_rfi import CaseRfi
 from .entities.opencti_case_rft import CaseRft
+from .entities.opencti_case_task import CaseTask
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_data_component import DataComponent
 from .entities.opencti_data_source import DataSource
@@ -61,6 +62,7 @@ __all__ = [
     "CaseIncident",
     "CaseRfi",
     "CaseRft",
+    "CaseTask",
     "ConnectorType",
     "CourseOfAction",
     "DataComponent",
