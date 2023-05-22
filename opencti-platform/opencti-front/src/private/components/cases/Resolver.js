@@ -23,6 +23,7 @@ export const resolverCaseQuery = graphql`
           edges {
             node {
               ... on Case {
+                entity_type
                 id
               }
             }
@@ -32,6 +33,32 @@ export const resolverCaseQuery = graphql`
     }
   }
 `;
+
+const resolvePathRecursively = (caseEntity) => {
+  let url = '';
+  switch (caseEntity.entity_type) {
+    case 'Case-Task':
+      if (caseEntity.objects?.edges?.at(0)?.node) {
+        url = resolvePathRecursively(caseEntity.objects.edges.at(0).node);
+      }
+      break;
+    case 'Feedback':
+      url = `/dashboard/cases/feedbacks/${caseEntity.id}`;
+      break;
+    case 'Case-Incident':
+      url = `/dashboard/cases/incidents/${caseEntity.id}`;
+      break;
+    case 'Case-Rfi':
+      url = `/dashboard/cases/rfis/${caseEntity.id}`;
+      break;
+    case 'Case-Rft':
+      url = `/dashboard/cases/rfts/${caseEntity.id}`;
+      break;
+    default:
+      break;
+  }
+  return url;
+};
 
 const Resolver = () => {
   const classes = useStyles();
@@ -44,19 +71,9 @@ const Resolver = () => {
         render={({ props }) => {
           if (props) {
             if (props.container) {
-              let redirectLink;
               const { container: caseEntity } = props;
-              if (caseEntity.entity_type === 'Case-Task' && caseEntity.objects?.edges?.at(0)?.node?.id) {
-                redirectLink = `/dashboard/cases/${caseEntity.objects.edges.at(0).node.id}`;
-              } else if (caseEntity.entity_type === 'Feedback') {
-                redirectLink = `/dashboard/cases/feedbacks/${caseEntity.id}`;
-              } else if (caseEntity.entity_type === 'Case-Incident') {
-                redirectLink = `/dashboard/cases/incidents/${caseEntity.id}`;
-              } else if (caseEntity.entity_type === 'Case-Rfi') {
-                redirectLink = `/dashboard/cases/rfis/${caseEntity.id}`;
-              } else if (caseEntity.entity_type === 'Case-Rft') {
-                redirectLink = `/dashboard/cases/rfts/${caseEntity.id}`;
-              } else {
+              const redirectLink = resolvePathRecursively(caseEntity);
+              if (!redirectLink) {
                 return <ErrorNotFound />;
               }
               return (
