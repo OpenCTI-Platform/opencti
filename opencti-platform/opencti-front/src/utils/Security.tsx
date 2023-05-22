@@ -16,6 +16,7 @@ export const CAPABILITY_INFORMATION = {
 interface SecurityProps {
   children: ReactElement;
   needs: string[];
+  hasAccess?: boolean;
   matchAll?: boolean;
   placeholder?: ReactElement;
 }
@@ -54,11 +55,12 @@ export const granted = (
 const Security: FunctionComponent<SecurityProps> = ({
   needs,
   matchAll = false,
+  hasAccess = true,
   children,
   placeholder = <span />,
 }) => {
   const isGranted = useGranted(needs, matchAll);
-  return isGranted ? children : placeholder;
+  return isGranted && hasAccess ? children : placeholder;
 };
 
 export const CollaborativeSecurity: FunctionComponent<DataSecurityProps> = ({

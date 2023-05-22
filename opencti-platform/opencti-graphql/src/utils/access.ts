@@ -22,6 +22,12 @@ export const ROLE_ADMINISTRATOR = 'Administrator';
 const RETENTION_MANAGER_USER_UUID = '82ed2c6c-eb27-498e-b904-4f2abc04e05f';
 export const RULE_MANAGER_USER_UUID = 'f9d7b43f-b208-4c56-8637-375a1ce84943';
 
+export const MEMBER_ACCESS_ALL = 'ALL';
+export const MEMBER_ACCESS_RIGHT_ADMIN = 'admin';
+export const MEMBER_ACCESS_RIGHT_EDIT = 'edit';
+export const MEMBER_ACCESS_RIGHT_VIEW = 'view';
+const MEMBER_ACCESS_RIGHTS = [MEMBER_ACCESS_RIGHT_VIEW, MEMBER_ACCESS_RIGHT_EDIT, MEMBER_ACCESS_RIGHT_ADMIN];
+
 export const SYSTEM_USER: AuthUser = {
   id: OPENCTI_SYSTEM_UUID,
   internal_id: OPENCTI_SYSTEM_UUID,
@@ -210,4 +216,58 @@ export const isUserCanAccessStixElement = async (context: AuthContext, user: Aut
   }
   // If no platform organization is set, user can access empty sharing and dedicated sharing
   return elementOrganizations.length === 0 || elementOrganizations.some((r) => userOrganizations.includes(r));
+};
+
+// region member access
+
+// returns all user member access ids : his id, his organizations ids (and parent organizations), his groups ids
+export const computeUserMemberAccessIds = (user: AuthUser) => {
+  const memberAccessIds = [user.id];
+  if (user.allowed_organizations) {
+    const userOrganizationsIds = user.allowed_organizations.map((org) => org.internal_id);
+    memberAccessIds.push(...userOrganizationsIds);
+  }
+  if (user.groups) {
+    const userGroupsIds = user.groups.map((group) => group.internal_id);
+    memberAccessIds.push(...userGroupsIds);
+  }
+  return memberAccessIds;
+};
+
+// user access methods
+export const getUserAccessRight = (user: AuthUser, element: any) => {
+  if (isBypassUser(user) || !element.authorized_members) { // no restricted user access on element
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  const accessMembers = [...element.authorized_members];
+  const userMemberAccessIds = computeUserMemberAccessIds(user);
+  const foundAccessMembers = accessMembers.filter((u) => u.id === MEMBER_ACCESS_ALL || userMemberAccessIds.includes(u.id));
+  if (!foundAccessMembers.length) { // user has no access
+    return null;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_ADMIN)) {
+    return MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  if (foundAccessMembers.some((m) => m.access_right === MEMBER_ACCESS_RIGHT_EDIT)) {
+    return MEMBER_ACCESS_RIGHT_EDIT;
+  }
+  return MEMBER_ACCESS_RIGHT_VIEW;
+};
+// ensure that user can access the element (operation: edit / delete / manage-access)
+export const validateUserAccessOperation = (user: AuthUser, element: any, operation: 'edit' | 'delete' | 'manage-access') => {
+  const userAccessRight = getUserAccessRight(user, element);
+  if (!userAccessRight) { // user has no access
+    return false;
+  }
+  if (operation === 'edit') {
+    return userAccessRight === MEMBER_ACCESS_RIGHT_EDIT || userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  if (operation === 'delete' || operation === 'manage-access') {
+    return userAccessRight === MEMBER_ACCESS_RIGHT_ADMIN;
+  }
+  return true;
+};
+
+export const isValidMemberAccessRight = (accessRight: string) => {
+  return accessRight && MEMBER_ACCESS_RIGHTS.includes(accessRight);
 };

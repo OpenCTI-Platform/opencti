@@ -1,13 +1,10 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import {
-  DashboardCustomizeOutlined,
-  TravelExploreOutlined,
-} from '@mui/icons-material';
+import { DashboardCustomizeOutlined, KeyboardArrowRightOutlined, TravelExploreOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
@@ -15,7 +12,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import MoreVert from '@mui/icons-material/MoreVert';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../components/i18n';
-import WorkspacePopover from './WorkspacePopover';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -91,6 +87,12 @@ const WorkspaceLineComponent = ({ dataColumns, node }) => {
             </div>
             <div
               className={classes.bodyItem}
+              style={{ width: dataColumns.creator.width }}
+            >
+              {node.owner?.name}
+            </div>
+            <div
+              className={classes.bodyItem}
               style={{ width: dataColumns.created_at.width }}
             >
               {fd(node.created_at)}
@@ -105,7 +107,7 @@ const WorkspaceLineComponent = ({ dataColumns, node }) => {
         }
       />
       <ListItemSecondaryAction>
-        <WorkspacePopover id={node.id} type={node.type} />
+        <KeyboardArrowRightOutlined />
       </ListItemSecondaryAction>
     </ListItem>
   );
@@ -123,6 +125,7 @@ export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
       owner {
         id
         name
+        entity_type  
       }
     }
   `,

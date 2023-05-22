@@ -12,7 +12,7 @@ import ListLines from '../../../components/list_lines/ListLines';
 import WorkspacesLines, { workspacesLinesQuery } from './WorkspacesLines';
 import WorkspaceCreation from './WorkspaceCreation';
 import Security from '../../../utils/Security';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
+import { EXPLORE_EXUPDATE } from '../../../utils/hooks/useGranted';
 
 class Investigations extends Component {
   constructor(props) {
@@ -66,6 +66,11 @@ class Investigations extends Component {
         width: '25%',
         isSortable: false,
       },
+      creator: {
+        label: 'Creator',
+        width: '10%',
+        isSortable: true,
+      },
       created_at: {
         label: 'Creation date',
         width: '15%',
@@ -117,7 +122,7 @@ class Investigations extends Component {
     return (
       <div>
         {view === 'lines' ? this.renderLines(paginationOptions) : ''}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        <Security needs={[EXPLORE_EXUPDATE]}>
           <WorkspaceCreation
             paginationOptions={paginationOptions}
             type="investigation"

@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, testContext } from '../../utils/testQuery';
+import { ADMIN_USER, editorQuery, queryAsAdmin, testContext } from '../../utils/testQuery';
 import { generateStandardId } from '../../../src/schema/identifier';
-import { ENTITY_TYPE_CAPABILITY } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../../src/schema/internalObject';
+import { ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../../../src/schema/stixDomainObject';
 import { elLoadById } from '../../../src/database/engine';
 
 const LIST_QUERY = gql`
@@ -69,6 +70,26 @@ const READ_QUERY = gql`
         description
       }
       api_token
+    }
+  }
+`;
+
+const LIST_MEMBERS_QUERY = gql`
+  query members(
+    $first: Int
+    $search: String
+  ) {
+    members(
+      first: $first
+      search: $search
+    ) {
+      edges {
+        node {
+          id
+          name
+          entity_type
+        }
+      }
     }
   }
 `;
@@ -415,5 +436,15 @@ describe('User resolver standard behavior', () => {
     const queryResult = await queryAsAdmin({ query: READ_QUERY, variables: { id: userStandardId } });
     expect(queryResult).not.toBeNull();
     expect(queryResult.data.user).toBeNull();
+  });
+});
+
+describe('User list members query behavior', () => {
+  it('Should user lists all members', async () => {
+    const queryResult = await editorQuery({ query: LIST_MEMBERS_QUERY, variables: { first: 20 } });
+    expect(queryResult.data.members.edges.length).toEqual(12);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_USER).length).toEqual(3);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_GROUP).length).toEqual(4);
+    expect(queryResult.data.members.edges.filter(({ node: { entity_type } }) => entity_type === ENTITY_TYPE_IDENTITY_ORGANIZATION).length).toEqual(5);
   });
 });

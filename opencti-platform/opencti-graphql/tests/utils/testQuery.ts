@@ -85,10 +85,10 @@ const ROLE_PARTICIPATE: Role = {
   capabilities: ['KNOWLEDGE_KNPARTICIPATE']
 };
 export const ROLE_EDITOR: Role = {
-  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge and edit/delete' }),
-  name: 'Access knowledge and edit/delete',
-  description: 'Knowledge edit/delete',
-  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE']
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration and edit/delete' }),
+  name: 'Access knowledge/exploration and edit/delete',
+  description: 'Knowledge/exploration edit/delete',
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE']
 };
 // Groups
 interface Group { id: string, name: string, markings: string[], roles: Role[] }
@@ -285,6 +285,26 @@ export const createTestUsers = async () => {
     const user = TESTING_USERS[index];
     await createUser(user);
   }
+};
+// Search for test users
+const USERS_SEARCH_QUERY = `
+  query usersTestSearchQuery($search: String) {
+    users(search: $search) {
+      edges {
+        node {
+          user_email
+          id
+        }
+      }
+    }
+  }
+`;
+export const getUserIdByEmail = async (email: string) => {
+  const { data } = await adminQuery(USERS_SEARCH_QUERY, { search: `"${email}"` });
+  if (!data?.users.edges.length) {
+    return null;
+  }
+  return data.users.edges[0].node.id;
 };
 // endregion
 

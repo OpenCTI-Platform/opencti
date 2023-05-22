@@ -19,7 +19,6 @@ import {
   ENTITY_TYPE_TASK,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_USER,
-  ENTITY_TYPE_WORKSPACE
 } from '../../schema/internalObject';
 
 const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
@@ -116,16 +115,6 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'connector_state', type: 'json', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_state_reset', type: 'boolean', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'connector_user_id', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-  ],
-  [ENTITY_TYPE_WORKSPACE]: [
-    { name: 'identifier', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },
-    { name: 'description', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'manifest', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'owner', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
-    { name: 'type', type: 'string', mandatoryType: 'internal', multiple: false, upsert: false },
-    { name: 'tags', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
-    { name: 'graph_data', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
   ],
   [ENTITY_TYPE_TAXII_COLLECTION]: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: false },

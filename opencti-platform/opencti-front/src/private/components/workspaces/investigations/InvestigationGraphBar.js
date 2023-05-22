@@ -59,6 +59,8 @@ import { parseDomain } from '../../../../utils/Graph';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
+import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const styles = () => ({
   bottomNav: {
@@ -724,6 +726,9 @@ class InvestigationGraphBar extends Component {
               </div>
             </div>
             {workspace && (
+            <Security
+              needs={[EXPLORE_EXUPDATE]}
+              hasAccess={workspace.currentUserAccessRight === 'admin' || workspace.currentUserAccessRight === 'edit'}>
               <div
                 style={{
                   float: 'right',
@@ -864,6 +869,7 @@ class InvestigationGraphBar extends Component {
                   </DialogActions>
                 </Dialog>
               </div>
+            </Security>
             )}
           </div>
           <div className="clearfix" />
