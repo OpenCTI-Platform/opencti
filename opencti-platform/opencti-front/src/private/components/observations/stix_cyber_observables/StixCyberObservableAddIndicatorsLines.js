@@ -1,188 +1,32 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle } from '@mui/icons-material';
-import { ConnectionHandler } from 'relay-runtime';
-import { commitMutation } from '../../../../relay/environment';
-import ItemIcon from '../../../../components/ItemIcon';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-
-const styles = (theme) => ({
-  container: {
-    padding: '20px 0 20px 0',
-  },
-  heading: {
-    fontSize: theme.typography.pxToRem(15),
-    flexBasis: '33.33%',
-    flexShrink: 0,
-  },
-  secondaryHeading: {
-    fontSize: theme.typography.pxToRem(15),
-    color: theme.palette.text.secondary,
-  },
-  expansionPanelContent: {
-    padding: 0,
-  },
-  list: {
-    width: '100%',
-  },
-  listItem: {
-    width: '100M',
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-});
-
-export const stixCyberObservableMutationRelationAdd = graphql`
-  mutation StixCyberObservableAddIndicatorsLinesRelationAddMutation(
-    $input: StixCoreRelationshipAddInput!
-  ) {
-    stixCoreRelationshipAdd(input: $input) {
-      id
-      to {
-        ...StixCyberObservableIndicators_stixCyberObservable
-      }
-    }
-  }
-`;
-
-export const stixCyberObservableMutationRelationDelete = graphql`
-  mutation StixCyberObservableAddIndicatorsLinesRelationDeleteMutation(
-    $fromId: StixRef!
-    $toId: StixRef!
-    $relationship_type: String!
-  ) {
-    stixCoreRelationshipDelete(
-      fromId: $fromId
-      toId: $toId
-      relationship_type: $relationship_type
-    )
-  }
-`;
+import StixCoreRelationshipCreationFromEntityList
+  from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 class StixCyberObservableAddIndicatorsLinesContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expandedPanels: {} };
-  }
-
-  toggleIndicator(indicator) {
-    const { stixCyberObservableId, stixCyberObservableIndicators } = this.props;
-    const stixCyberObservableIndicatorsIds = map(
-      (n) => n.node.id,
-      stixCyberObservableIndicators,
-    );
-    const alreadyAdded = stixCyberObservableIndicatorsIds.includes(
-      indicator.id,
-    );
-    if (alreadyAdded) {
-      commitMutation({
-        mutation: stixCyberObservableMutationRelationDelete,
-        variables: {
-          fromId: indicator.id,
-          toId: stixCyberObservableId,
-          relationship_type: 'based-on',
-        },
-        updater: (store) => {
-          const conn = ConnectionHandler.getConnection(
-            store.get(stixCyberObservableId),
-            'Pagination_indicators',
-          );
-          ConnectionHandler.deleteNode(conn, indicator.id);
-        },
-      });
-    } else {
-      const input = {
-        fromId: indicator.id,
-        toId: stixCyberObservableId,
-        relationship_type: 'based-on',
-      };
-      commitMutation({
-        mutation: stixCyberObservableMutationRelationAdd,
-        variables: { input },
-      });
-    }
-  }
-
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
-    });
-  }
-
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
-    }
-    if (numberOfEntities === 1) {
-      return true;
-    }
-    return numberOfTypes === 1;
-  }
-
   render() {
-    const { t, classes, data, stixCyberObservableIndicators } = this.props;
-    const stixCyberObservableIndicatorsIds = map(
-      (n) => n.node.id,
-      stixCyberObservableIndicators,
-    );
-    const indicatorsNodes = map((n) => n.node, data.indicators.edges);
+    const { data, stixCyberObservableIndicators, stixCyberObservable, indicatorParams } = this.props;
     return (
-      <div className={classes.container}>
-        {indicatorsNodes.length > 0 ? (
-          <List classes={{ root: classes.list }}>
-            {indicatorsNodes.map((indicator) => {
-              const alreadyAdded = stixCyberObservableIndicatorsIds.includes(
-                indicator.id,
-              );
-              return (
-                <ListItem
-                  key={indicator.id}
-                  classes={{ root: classes.menuItem }}
-                  divider={true}
-                  button={true}
-                  onClick={this.toggleIndicator.bind(this, indicator)}
-                >
-                  <ListItemIcon>
-                    {alreadyAdded ? (
-                      <CheckCircle classes={{ root: classes.icon }} />
-                    ) : (
-                      <ItemIcon type="Indicator" />
-                    )}
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={indicator.name}
-                    secondary={indicator.description || indicator.pattern}
-                  />
-                </ListItem>
-              );
-            })}
-          </List>
-        ) : (
-          <div style={{ paddingLeft: 20 }}>
-            {t('No entities were found for this search.')}
-          </div>
-        )}
-      </div>
+      <StixCoreRelationshipCreationFromEntityList
+        entity={stixCyberObservable}
+        relationshipType={'based-on'}
+        availableDatas={data?.indicators}
+        existingDatas={stixCyberObservableIndicators}
+        updaterOptions={ { path: 'indicators', params: indicatorParams } }
+        isRelationReversed={true}
+      />
     );
   }
 }
 
 StixCyberObservableAddIndicatorsLinesContainer.propTypes = {
-  stixCyberObservableId: PropTypes.string,
+  stixCyberObservable: PropTypes.object,
   stixCyberObservableIndicators: PropTypes.array,
   data: PropTypes.object,
-  limit: PropTypes.number,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
+  indicatorParams: PropTypes.object,
 };
 
 export const stixCyberObservableAddIndicatorsLinesQuery = graphql`
@@ -227,6 +71,7 @@ const StixCyberObservableAddIndicatorsLines = createPaginationContainer(
             node {
               id
               entity_type
+              parent_types
               name
               pattern
               description
@@ -259,7 +104,4 @@ const StixCyberObservableAddIndicatorsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixCyberObservableAddIndicatorsLines);
+export default compose(inject18n)(StixCyberObservableAddIndicatorsLines);

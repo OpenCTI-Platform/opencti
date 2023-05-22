@@ -13,12 +13,13 @@ import {
   findAll,
   findById,
   stixSightingRelationshipAddRelation,
+  stixSightingRelationshipAddRelations,
   stixSightingRelationshipCleanContext,
   stixSightingRelationshipDelete,
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
-  stixSightingRelationshipsNumber
+  stixSightingRelationshipsNumber,
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
@@ -85,11 +86,13 @@ const stixSightingRelationshipResolvers = {
   Mutation: {
     stixSightingRelationshipEdit: (_, { id }, context) => ({
       delete: () => stixSightingRelationshipDelete(context, context.user, id),
-      fieldPatch: ({ input }) => stixSightingRelationshipEditField(context, context.user, id, input),
+      fieldPatch: ({ input, commitMessage, references }) => stixSightingRelationshipEditField(context, context.user, id, input, { commitMessage, references }),
       contextPatch: ({ input }) => stixSightingRelationshipEditContext(context, context.user, id, input),
       contextClean: () => stixSightingRelationshipCleanContext(context, context.user, id),
       relationAdd: ({ input }) => stixSightingRelationshipAddRelation(context, context.user, id, input),
-      relationDelete: ({ toId, relationship_type: relationshipType }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType),
+      relationsAdd: ({ input, commitMessage, references }) => stixSightingRelationshipAddRelations(context, context.user, id, input, { commitMessage, references }),
+      // eslint-disable-next-line max-len
+      relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixSightingRelationshipDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       restrictionOrganizationAdd: ({ organizationId }) => addOrganizationRestriction(context, context.user, id, organizationId),
       restrictionOrganizationDelete: ({ organizationId }) => removeOrganizationRestriction(context, context.user, id, organizationId),
     }),

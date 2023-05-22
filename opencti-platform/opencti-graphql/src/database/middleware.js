@@ -2700,11 +2700,13 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     const errorData = { from: input.fromId, relationshipType };
     throw UnsupportedError('Relation cant be created with the same source and target', { error: errorData });
   }
+
   const entitySetting = await getEntitySettingFromCache(context, relationshipType);
   await validateEntityAndRelationCreation(context, user, input, relationshipType, entitySetting, opts);
   // We need to check existing dependencies
   const resolvedInput = await inputResolveRefs(context, user, input, relationshipType);
   const { from, to } = resolvedInput;
+
   // Check consistency
   await checkRelationConsistency(context, user, relationshipType, from, to);
   // In some case from and to can be resolved to the same element (because of automatic merging)
@@ -2801,23 +2803,36 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
       // In case on embedded relationship creation, we need to dispatch
       // an update of the from entity that host this embedded ref.
       if (isStixRefRelationship(relationshipType)) {
+        const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
+        const references = await Promise.all(referencesPromises);
+        if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
+          throw FunctionalError('Cant find element references for commit', {
+            id: input.fromId,
+            references: opts.references
+          });
+        }
+
         const previous = resolvedInput.from; // Complete resolution done by the input resolver
         const targetElement = { ...resolvedInput.to, i_relation: resolvedInput };
         const instance = R.clone(previous);
         const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, relationshipType);
+        let inputs;
         if (isSingleRelationsRef(instance.entity_type, relationshipType)) {
-          const inputs = [{ key, value: [targetElement] }];
-          const message = generateUpdateMessage(instance.entity_type, inputs);
+          inputs = [{ key, value: [targetElement] }];
           // Generate the new version of the from
           instance[key] = targetElement;
-          event = await storeUpdateEvent(context, user, previous, instance, message, opts);
         } else {
-          const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
-          const message = generateUpdateMessage(instance.entity_type, inputs);
+          inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_ADD }];
           // Generate the new version of the from
           instance[key] = [...(instance[key] ?? []), targetElement];
-          event = await storeUpdateEvent(context, user, previous, instance, message, opts);
         }
+        const message = generateUpdateMessage(instance.entity_type, inputs);
+        const isContainCommitReferences = opts.references && opts.references.length > 0;
+        const commit = isContainCommitReferences ? {
+          message: opts.commitMessage,
+          external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+        } : undefined;
+        event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       } else {
         const createdRelation = { ...resolvedInput, ...dataRel.element };
         event = await storeCreateRelationEvent(context, user, createdRelation, opts);
@@ -2836,8 +2851,8 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
     if (lock) await lock.unlock();
   }
 };
-export const createRelation = async (context, user, input) => {
-  const data = await createRelationRaw(context, user, input);
+export const createRelation = async (context, user, input, opts = {}) => {
+  const data = await createRelationRaw(context, user, input, opts);
   return data.element;
 };
 export const createInferredRelation = async (context, input, ruleContent, opts = {}) => {
@@ -2866,12 +2881,12 @@ export const createInferredRelation = async (context, input, ruleContent, opts =
   return createRelationRaw(context, RULE_MANAGER_USER, inputRelation, args);
 };
 /* istanbul ignore next */
-export const createRelations = async (context, user, inputs) => {
+export const createRelations = async (context, user, inputs, opts = {}) => {
   const createdRelations = [];
   // Relations cannot be created in parallel. (Concurrent indexing on same key)
   // Could be improved by grouping and indexing in one shot.
   for (let i = 0; i < inputs.length; i += 1) {
-    const relation = await createRelation(context, user, inputs[i]);
+    const relation = await createRelation(context, user, inputs[i], opts);
     createdRelations.push(relation);
   }
   return createdRelations;
@@ -3202,27 +3217,40 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
     // Try to get the lock in redis
     lock = await lockResource(participantIds);
     if (isStixRefRelationship(element.entity_type)) {
+      const referencesPromises = opts.references ? internalFindByIds(context, user, opts.references, { type: ENTITY_TYPE_EXTERNAL_REFERENCE }) : Promise.resolve([]);
+      const references = await Promise.all(referencesPromises);
+      if ((opts.references ?? []).length > 0 && references.length !== (opts.references ?? []).length) {
+        throw FunctionalError('Cant find element references for commit', {
+          id: element.fromId,
+          references: opts.references
+        });
+      }
+
       const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
       const instance = R.clone(previous);
       const key = schemaRelationsRefDefinition.convertDatabaseNameToInputName(instance.entity_type, element.entity_type);
-      let message;
+      let inputs;
       if (isSingleRelationsRef(instance.entity_type, element.entity_type)) {
-        const inputs = [{ key, value: [] }];
-        message = generateUpdateMessage(instance.entity_type, inputs);
+        inputs = [{ key, value: [] }];
         instance[key] = undefined; // Generate the new version of the from
       } else {
-        const inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_REMOVE }];
-        message = generateUpdateMessage(instance.entity_type, inputs);
+        inputs = [{ key, value: [targetElement], operation: UPDATE_OPERATION_REMOVE }];
         // To prevent to many patch operations, removed key must be put at the end
         const withoutElementDeleted = (previous[key] ?? []).filter((e) => e.internal_id !== targetElement.internal_id);
         previous[key] = [...withoutElementDeleted, targetElement];
         // Generate the new version of the from
         instance[key] = withoutElementDeleted;
       }
+      const message = generateUpdateMessage(instance.entity_type, inputs);
+      const isContainCommitReferences = opts.references && opts.references.length > 0;
+      const commit = isContainCommitReferences ? {
+        message: opts.commitMessage,
+        external_references: references.map((ref) => convertExternalReferenceToStix(ref))
+      } : undefined;
+      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
       const taskPromise = createContainerSharingTask(context, ACTION_TYPE_UNSHARE, element);
       const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
-      const eventPromise = storeUpdateEvent(context, user, previous, instance, message, opts);
       const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
       event = updateEvent;
     } else {
@@ -3337,7 +3365,7 @@ export const deleteRelationsByFromAndTo = async (context, user, fromId, toId, re
   const relationsToDelete = await elFindByFromAndTo(context, user, fromThing.internal_id, toThing.internal_id, relationshipType);
   for (let i = 0; i < relationsToDelete.length; i += 1) {
     const r = relationsToDelete[i];
-    await deleteElementById(context, user, r.internal_id, r.entity_type);
+    await deleteElementById(context, user, r.internal_id, r.entity_type, opts);
   }
   return true;
 };

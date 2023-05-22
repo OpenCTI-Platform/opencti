@@ -33,6 +33,7 @@ class CourseOfActionComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Course-Of-Action'}
           stixDomainObject={courseOfAction}
           PopoverComponent={<CourseOfActionPopover />}
           isOpenctiAlias={true}
@@ -103,6 +104,7 @@ const CourseOfAction = createFragmentContainer(CourseOfActionComponent, {
     fragment CourseOfAction_courseOfAction on CourseOfAction {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

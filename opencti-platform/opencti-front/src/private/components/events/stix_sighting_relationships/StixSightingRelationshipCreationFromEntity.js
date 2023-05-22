@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Form, Formik, Field } from 'formik';
 import { graphql } from 'react-relay';
-import { assoc, compose, includes, pipe, pluck } from 'ramda';
-import * as Yup from 'yup';
+import * as R from 'ramda';
+import { assoc, compose, pipe, pluck } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import { Add, ArrowRightAlt, Close } from '@mui/icons-material';
+import { Add, Close } from '@mui/icons-material';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -21,10 +19,7 @@ import Alert from '@mui/material/Alert';
 import Skeleton from '@mui/material/Skeleton';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
-import { itemColor } from '../../../../utils/Colors';
-import { dayStartDate, parse } from '../../../../utils/Time';
-import ItemIcon from '../../../../components/ItemIcon';
-import TextField from '../../../../components/TextField';
+import { dayStartDate, formatDate } from '../../../../utils/Time';
 import StixSightingRelationshipCreationFromEntityStixDomainObjectsLines, {
   stixSightingRelationshipCreationFromEntityStixDomainObjectsLinesQuery,
 } from './StixSightingRelationshipCreationFromEntityStixDomainObjectsLines';
@@ -33,14 +28,7 @@ import StixSightingRelationshipCreationFromEntityStixCyberObservablesLines, {
 } from './StixSightingRelationshipCreationFromEntityStixCyberObservablesLines';
 import StixDomainObjectCreation from '../../common/stix_domain_objects/StixDomainObjectCreation';
 import SearchInput from '../../../../components/SearchInput';
-import { truncate } from '../../../../utils/String';
-import CreatedByField from '../../common/form/CreatedByField';
-import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import SwitchField from '../../../../components/SwitchField';
-import MarkDownField from '../../../../components/MarkDownField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -79,101 +67,6 @@ const styles = (theme) => ({
     padding: 0,
     height: '100%',
     width: '100%',
-  },
-  placeholder: {
-    display: 'inline-block',
-    height: '1em',
-    backgroundColor: theme.palette.grey[700],
-  },
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-  containerRelation: {
-    padding: '10px 20px 20px 20px',
-  },
-  item: {
-    position: 'absolute',
-    width: 180,
-    height: 80,
-    borderRadius: 10,
-  },
-  itemHeader: {
-    padding: '10px 0 10px 0',
-  },
-  icon: {
-    position: 'absolute',
-    top: 8,
-    left: 5,
-    fontSize: 8,
-  },
-  type: {
-    width: '100%',
-    textAlign: 'center',
-    color: theme.palette.text.primary,
-    fontSize: 11,
-  },
-  content: {
-    width: '100%',
-    height: 40,
-    maxHeight: 40,
-    lineHeight: '40px',
-    color: theme.palette.text.primary,
-    textAlign: 'center',
-  },
-  name: {
-    display: 'inline-block',
-    lineHeight: 1,
-    fontSize: 12,
-    verticalAlign: 'middle',
-  },
-  relation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-    marginBottom: 10,
-  },
-  relationCreation: {
-    position: 'relative',
-    height: 100,
-    transition: 'background-color 0.1s ease',
-    cursor: 'pointer',
-    '&:hover': {
-      background: 'rgba(0, 0, 0, 0.1)',
-    },
-    padding: 10,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
-  },
-  middle: {
-    margin: '0 auto',
-    width: 200,
-    textAlign: 'center',
-    padding: 0,
-    color: theme.palette.text.primary,
-  },
-  buttonBack: {
-    marginTop: 20,
-    textAlign: 'left',
-    float: 'left',
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-    float: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
-  },
-  info: {
-    paddingTop: 10,
   },
 });
 
@@ -260,25 +153,6 @@ const stixSightingRelationshipCreationFromEntityMutation = graphql`
   }
 `;
 
-const stixSightingRelationshipValidation = (t) => Yup.object().shape({
-  attribute_count: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  confidence: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  description: Yup.string().nullable(),
-  x_opencti_negative: Yup.boolean(),
-});
-
 const sharedUpdater = (store, userId, paginationOptions, newEdge) => {
   const userProxy = store.get(userId);
   const conn = ConnectionHandler.getConnection(
@@ -318,10 +192,14 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       assoc('attribute_count', parseInt(values.attribute_count, 10)),
       assoc('fromId', fromEntityId),
       assoc('toId', toEntityId),
-      assoc('first_seen', values.first_seen ? parse(values.first_seen).format() : null),
-      assoc('last_seen', values.first_seen ? parse(values.last_seen).format() : null),
+      assoc('first_seen', formatDate(values.first_seen)),
+      assoc('last_seen', formatDate(values.last_seen)),
       assoc('createdBy', values.createdBy?.value),
       assoc('objectMarking', pluck('value', values.objectMarking)),
+      assoc(
+        'externalReferences',
+        R.pluck('value', values.externalReferences),
+      ),
     )(values);
     commitMutation({
       mutation: stixSightingRelationshipCreationFromEntityMutation,
@@ -558,247 +436,28 @@ class StixSightingRelationshipCreationFromEntity extends Component {
       fromEntity = targetEntity;
       toEntity = sourceEntity;
     }
-    const initialValues = {
-      confidence: 75,
-      attribute_count: 1,
-      first_seen: dayStartDate(),
-      last_seen: dayStartDate(),
-      description: '',
-      objectMarking: [],
-      createdBy: '',
-      x_opencti_negative: false,
-    };
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={stixSightingRelationshipValidation(t)}
-        onSubmit={this.onSubmit.bind(this)}
-        onReset={this.handleClose.bind(this)}
-      >
-        {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
-          <Form>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleClose.bind(this)}
-                size="large"
-              >
-                <Close fontSize="small" color="primary" />
-              </IconButton>
-              <Typography variant="h6">{t('Create a sighting')}</Typography>
-            </div>
-            <div className={classes.containerRelation}>
-              <div className={classes.relationCreate}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(fromEntity.entity_type)}`,
-                    top: 10,
-                    left: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        fromEntity.entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={fromEntity.entity_type}
-                        color={itemColor(fromEntity.entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {includes(
-                        'Stix-Cyber-Observable',
-                        fromEntity.parent_types,
-                      )
-                        ? t(`entity_${fromEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            fromEntity.entity_type === 'stix_relation'
-                              || fromEntity.entity_type === 'stix-relation'
-                              ? fromEntity.parent_types[0]
-                              : fromEntity.entity_type
-                          }`,
-                        )}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {truncate(
-                        /* eslint-disable-next-line no-nested-ternary */
-                        includes(
-                          'Stix-Cyber-Observable',
-                          fromEntity.parent_types,
-                        )
-                          ? fromEntity.observable_value
-                          : fromEntity.entity_type === 'stix_relation'
-                            || fromEntity.entity_type === 'stix-relation'
-                            ? `${fromEntity.from.name} ${String.fromCharCode(
-                              8594,
-                            )} ${fromEntity.to.name}`
-                            : fromEntity.name,
-                        20,
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.middle} style={{ paddingTop: 25 }}>
-                  <ArrowRightAlt fontSize="large" />
-                </div>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(toEntity.entity_type)}`,
-                    top: 10,
-                    right: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        toEntity.entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={toEntity.entity_type}
-                        color={itemColor(toEntity.entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {includes('Stix-Cyber-Observable', toEntity.parent_types)
-                        ? t(`entity_${toEntity.entity_type}`)
-                        : t(
-                          `entity_${
-                            toEntity.entity_type === 'stix_relation'
-                              || toEntity.entity_type === 'stix-relation'
-                              ? toEntity.parent_types[0]
-                              : toEntity.entity_type
-                          }`,
-                        )}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {truncate(
-                        /* eslint-disable-next-line no-nested-ternary */
-                        includes('Stix-Cyber-Observable', toEntity.parent_types)
-                          ? toEntity.observable_value
-                          : toEntity.entity_type === 'stix_relation'
-                            || toEntity.entity_type === 'stix-relation'
-                            ? `${toEntity.from.name} ${String.fromCharCode(
-                              8594,
-                            )} ${toEntity.to.name}`
-                            : toEntity.name,
-                        20,
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Field
-                component={TextField}
-                variant="standard"
-                name="attribute_count"
-                label={t('Count')}
-                fullWidth={true}
-                type="number"
-                style={{ marginTop: 20 }}
-              />
-              <ConfidenceField
-                name="confidence"
-                label={t('Confidence level')}
-                fullWidth={true}
-                containerStyle={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="first_seen"
-                TextFieldProps={{
-                  label: t('First seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="last_seen"
-                TextFieldProps={{
-                  label: t('Last seen'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={MarkDownField}
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-              />
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
-                setFieldValue={setFieldValue}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <Field
-                component={SwitchField}
-                type="checkbox"
-                name="x_opencti_negative"
-                label={t('False positive')}
-                containerstyle={{ marginTop: 20 }}
-              />
-              <div className={classes.buttonBack}>
-                <Button
-                  variant="contained"
-                  onClick={this.handleResetSelection.bind(this)}
-                  disabled={isSubmitting}
-                >
-                  {t('Back')}
-                </Button>
-              </div>
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={handleReset}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Create')}
-                </Button>
-              </div>
-            </div>
-          </Form>
-        )}
-      </Formik>
+      <>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={this.handleClose.bind(this)}
+            size="large"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a sighting')}</Typography>
+        </div>
+        <StixSightingRelationshipCreationForm
+          fromEntities={[fromEntity]}
+          toEntities={[toEntity]}
+          handleResetSelection={this.handleResetSelection.bind(this)}
+          onSubmit={this.onSubmit.bind(this)}
+          handleClose={this.handleClose.bind(this)}
+          defaultFirstSeen={dayStartDate()}
+          defaultLastSeen={dayStartDate()} />
+      </>
     );
   }
 

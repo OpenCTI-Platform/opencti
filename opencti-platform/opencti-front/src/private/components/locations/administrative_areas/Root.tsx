@@ -110,6 +110,7 @@ const RootAdministrativeAreaComponent = ({
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Administrative-Area'}
                   disableSharing={true}
                   stixDomainObject={administrativeArea}
                   PopoverComponent={AdministrativeAreaPopover}
@@ -127,6 +128,7 @@ const RootAdministrativeAreaComponent = ({
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Administrative-Area'}
                   disableSharing={true}
                   stixDomainObject={administrativeArea}
                   PopoverComponent={AdministrativeAreaPopover}
@@ -147,6 +149,7 @@ const RootAdministrativeAreaComponent = ({
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Administrative-Area'}
                   disableSharing={true}
                   stixDomainObject={administrativeArea}
                   PopoverComponent={AdministrativeAreaPopover}
@@ -167,6 +170,7 @@ const RootAdministrativeAreaComponent = ({
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'Administrative-Area'}
                   disableSharing={true}
                   stixDomainObject={administrativeArea}
                   PopoverComponent={AdministrativeAreaPopover}

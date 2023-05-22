@@ -98,10 +98,14 @@ const DataComponentAttackPatterns = createFragmentContainer(
     dataComponent: graphql`
       fragment DataComponentAttackPatterns_dataComponent on DataComponent {
         id
+        name
+        parent_types
+        entity_type
         attackPatterns {
           edges {
             node {
               id
+              parent_types
               name
               description
             }

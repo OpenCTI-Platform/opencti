@@ -61,5 +61,3 @@ export const isDatedInternalObject = (type: string) => DATED_INTERNAL_OBJECTS.in
 export const isHistoryObject = (type: string) => HISTORY_OBJECTS.includes(type);
 
 schemaTypesDefinition.register(ABSTRACT_INTERNAL_OBJECT, INTERNAL_OBJECTS);
-
-export const registerInternalObject = (type: string) => schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, type);

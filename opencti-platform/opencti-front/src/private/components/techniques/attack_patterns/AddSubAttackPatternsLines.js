@@ -1,39 +1,9 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, head, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import { CheckCircle } from '@mui/icons-material';
-import { LockPattern } from 'mdi-material-ui';
-import { truncate } from '../../../../utils/String';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { compose } from 'ramda';
 import inject18n from '../../../../components/i18n';
-import { commitMutation } from '../../../../relay/environment';
-
-const styles = (theme) => ({
-  avatar: {
-    width: 24,
-    height: 24,
-  },
-  icon: {
-    color: theme.palette.primary.main,
-  },
-});
-
-const addSubAttackPatternsLinesMutationRelationAdd = graphql`
-  mutation AddSubAttackPatternsLinesRelationAddMutation(
-    $input: StixCoreRelationshipAddInput
-  ) {
-    stixCoreRelationshipAdd(input: $input) {
-      to {
-        ...AttackPatternSubAttackPatterns_attackPattern
-      }
-    }
-  }
-`;
+import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 
 export const addSubAttackPatternsMutationRelationDelete = graphql`
   mutation AddSubAttackPatternsLinesRelationDeleteMutation(
@@ -50,104 +20,25 @@ export const addSubAttackPatternsMutationRelationDelete = graphql`
 `;
 
 class AddSubAttackPatternsLinesContainer extends Component {
-  toggleSubAttackPattern(subAttackPattern) {
-    const { attackPatternId, attackPatternSubAttackPatterns } = this.props;
-    const attackPatternSubAttackPatternsIds = map(
-      (n) => n.node.id,
-      attackPatternSubAttackPatterns,
-    );
-    const alreadyAdded = attackPatternSubAttackPatternsIds.includes(
-      subAttackPattern.id,
-    );
-
-    if (alreadyAdded) {
-      const existingSubAttackPattern = head(
-        filter(
-          (n) => n.node.id === subAttackPattern.id,
-          attackPatternSubAttackPatterns,
-        ),
-      );
-      commitMutation({
-        mutation: addSubAttackPatternsMutationRelationDelete,
-        variables: {
-          fromId: existingSubAttackPattern.node.id,
-          toId: attackPatternId,
-          relationship_type: 'subtechnique-of',
-        },
-        updater: (store) => {
-          const node = store.get(this.props.attackPatternId);
-          const subAttackPatterns = node.getLinkedRecord('subAttackPatterns');
-          const edges = subAttackPatterns.getLinkedRecords('edges');
-          const newEdges = filter(
-            (n) => n.getLinkedRecord('node').getValue('id')
-              !== existingSubAttackPattern.node.id,
-            edges,
-          );
-          subAttackPatterns.setLinkedRecords(newEdges, 'edges');
-        },
-      });
-    } else {
-      const input = {
-        relationship_type: 'subtechnique-of',
-        fromId: subAttackPattern.id,
-        toId: attackPatternId,
-      };
-      commitMutation({
-        mutation: addSubAttackPatternsLinesMutationRelationAdd,
-        variables: { input },
-      });
-    }
-  }
-
   render() {
-    const { classes, data, attackPatternSubAttackPatterns } = this.props;
-    const attackPatternSubAttackPatternsIds = map(
-      (n) => n.node.id,
-      attackPatternSubAttackPatterns,
-    );
+    const { data, attackPatternSubAttackPatterns, attackPattern } = this.props;
     return (
-      <List>
-        {data.attackPatterns.edges.map((attackPatternNode) => {
-          const attackPattern = attackPatternNode.node;
-          const alreadyAdded = attackPatternSubAttackPatternsIds.includes(
-            attackPattern.id,
-          );
-          return (
-            <ListItem
-              key={attackPattern.id}
-              classes={{ root: classes.menuItem }}
-              divider={true}
-              button={true}
-              onClick={this.toggleSubAttackPattern.bind(this, attackPattern)}
-            >
-              <ListItemIcon>
-                {alreadyAdded ? (
-                  <CheckCircle classes={{ root: classes.icon }} />
-                ) : (
-                  <LockPattern />
-                )}
-              </ListItemIcon>
-              <ListItemText
-                primary={`${
-                  attackPattern.x_mitre_id
-                    ? `${attackPattern.x_mitre_id} - `
-                    : ''
-                }${attackPattern.name}`}
-                secondary={truncate(attackPattern.description, 120)}
-              />
-            </ListItem>
-          );
-        })}
-      </List>
+      <StixCoreRelationshipCreationFromEntityList
+        entity={attackPattern}
+        relationshipType={'subtechnique-of'}
+        availableDatas={data?.attackPatterns}
+        existingDatas={attackPatternSubAttackPatterns}
+        updaterOptions={ { path: 'subAttackPatterns' } }
+        isRelationReversed={true}
+      />
     );
   }
 }
 
 AddSubAttackPatternsLinesContainer.propTypes = {
-  attackPatternId: PropTypes.string,
+  attackPattern: PropTypes.object,
   attackPatternSubAttackPatterns: PropTypes.array,
   data: PropTypes.object,
-  classes: PropTypes.object,
 };
 
 export const addSubAttackPatternsLinesQuery = graphql`
@@ -176,6 +67,8 @@ const AddSubAttackPatternsLines = createPaginationContainer(
           edges {
             node {
               id
+              entity_type
+              parent_types
               name
               description
               x_mitre_id
@@ -208,7 +101,4 @@ const AddSubAttackPatternsLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(AddSubAttackPatternsLines);
+export default compose(inject18n)(AddSubAttackPatternsLines);

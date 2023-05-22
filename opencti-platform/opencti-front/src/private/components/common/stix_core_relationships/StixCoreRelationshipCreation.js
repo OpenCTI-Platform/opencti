@@ -1,55 +1,29 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { Formik, Form, Field } from 'formik';
 import { graphql } from 'react-relay';
 import * as R from 'ramda';
-import * as Yup from 'yup';
 import withTheme from '@mui/styles/withTheme';
 import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
-import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import MenuItem from '@mui/material/MenuItem';
 import Tooltip from '@mui/material/Tooltip';
 import CircularProgress from '@mui/material/CircularProgress';
-import { Close, ArrowRightAlt } from '@mui/icons-material';
-import { fetchQuery, commitMutation } from '../../../../relay/environment';
-import inject18n, { isNone } from '../../../../components/i18n';
+import { ArrowRightAlt, Close } from '@mui/icons-material';
+import { commitMutation, fetchQuery } from '../../../../relay/environment';
+import inject18n from '../../../../components/i18n';
 import { itemColor } from '../../../../utils/Colors';
-import { parse } from '../../../../utils/Time';
+import { formatDate } from '../../../../utils/Time';
 import { resolveRelationsTypes } from '../../../../utils/Relation';
 import ItemIcon from '../../../../components/ItemIcon';
-import MarkDownField from '../../../../components/MarkDownField';
-import SelectField from '../../../../components/SelectField';
 import { truncate } from '../../../../utils/String';
-import KillChainPhasesField from '../form/KillChainPhasesField';
-import CreatedByField from '../form/CreatedByField';
-import ObjectMarkingField from '../form/ObjectMarkingField';
-import ConfidenceField from '../form/ConfidenceField';
-import { ExternalReferencesField } from '../form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
 
 const styles = (theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-
     padding: 0,
-  },
-  createButton: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
-  },
-  buttons: {
-    marginTop: 20,
-    textAlign: 'right',
-  },
-  button: {
-    marginLeft: theme.spacing(2),
   },
   header: {
     backgroundColor: theme.palette.background.nav,
@@ -60,11 +34,6 @@ const styles = (theme) => ({
     top: 12,
     left: 5,
     color: 'inherit',
-  },
-  importButton: {
-    position: 'absolute',
-    top: 15,
-    right: 20,
   },
   container: {
     padding: '10px 20px 20px 20px',
@@ -124,10 +93,6 @@ const styles = (theme) => ({
       background: 'rgba(0, 0, 0, 0.1)',
     },
     padding: 10,
-  },
-  relationCreate: {
-    position: 'relative',
-    height: 100,
   },
   middle: {
     margin: '0 auto',
@@ -279,22 +244,6 @@ export const stixCoreRelationshipCreationMutation = graphql`
   }
 `;
 
-const stixCoreRelationshipValidation = (t) => Yup.object().shape({
-  relationship_type: Yup.string().required(t('This field is required')),
-  confidence: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number')),
-  start_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  stop_time: Yup.date()
-    .nullable()
-    .default(null)
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  description: Yup.string().nullable(),
-});
-
 class StixCoreRelationshipCreation extends Component {
   constructor(props) {
     super(props);
@@ -311,14 +260,8 @@ class StixCoreRelationshipCreation extends Component {
           R.assoc('confidence', parseInt(values.confidence, 10)),
           R.assoc('fromId', fromObject.id),
           R.assoc('toId', toObject.id),
-          R.assoc(
-            'start_time',
-            values.start_time ? parse(values.start_time).format() : null,
-          ),
-          R.assoc(
-            'stop_time',
-            values.stop_time ? parse(values.stop_time).format() : null,
-          ),
+          R.assoc('start_time', formatDate(values.start_time)),
+          R.assoc('stop_time', formatDate(values.stop_time)),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
@@ -412,252 +355,33 @@ class StixCoreRelationshipCreation extends Component {
       fromObjects[0].entity_type,
       toObjects[0].entity_type,
     );
-    // eslint-disable-next-line no-nested-ternary
-    const defaultRelationshipType = R.head(relationshipTypes)
-      ? R.head(relationshipTypes)
-      : relationshipTypes.includes('related-to')
-        ? 'related-to'
-        : '';
-    const defaultConfidence = confidence || 15;
-    const defaultStartTime = !isNone(startTime) ? startTime : null;
-    const defaultEndTime = !isNone(stopTime) ? stopTime : null;
-    const initialValues = {
-      relationship_type: defaultRelationshipType,
-      confidence: defaultConfidence,
-      start_time: defaultStartTime,
-      stop_time: defaultEndTime,
-      description: '',
-      killChainPhases: [],
-      externalReferences: [],
-      createdBy: defaultCreatedBy
-        ? {
-          label: defaultCreatedBy.name,
-          value: defaultCreatedBy.id,
-          type: defaultCreatedBy.entity_type,
-        }
-        : '',
-      objectMarking: defaultMarkingDefinitions
-        ? R.map(
-          (n) => ({
-            label: n.definition,
-            value: n.id,
-            color: n.x_opencti_color,
-          }),
-          defaultMarkingDefinitions,
-        )
-        : [],
-    };
     return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={stixCoreRelationshipValidation(t)}
+      <>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={this.handleClose.bind(this)}
+            size="large"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a relationship')}</Typography>
+        </div>
+      <StixCoreRelationshipCreationForm
+        fromEntities={fromObjects}
+        toEntities={toObjects}
+        relationshipTypes={relationshipTypes}
+        handleReverseRelation={this.handleReverseRelation.bind(this)}
         onSubmit={this.onSubmit.bind(this)}
-      >
-        {({ submitForm, isSubmitting, setFieldValue }) => (
-          <Form>
-            <div className={classes.header}>
-              <IconButton
-                aria-label="Close"
-                className={classes.closeButton}
-                onClick={this.handleClose.bind(this)}
-                size="large"
-              >
-                <Close fontSize="small" color="primary" />
-              </IconButton>
-              <Typography variant="h6">{t('Create a relationship')}</Typography>
-            </div>
-            <div className={classes.container}>
-              <div className={classes.relationCreate}>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(
-                      fromObjects[0].entity_type,
-                    )}`,
-                    top: 10,
-                    left: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        fromObjects[0].entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={fromObjects[0].entity_type}
-                        color={itemColor(fromObjects[0].entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {fromObjects[0].relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${fromObjects[0].entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {fromObjects[0].relationship_type ? (
-                        t(`relationship_${fromObjects[0].relationship_type}`)
-                      ) : fromObjects.length > 1 ? (
-                        <em>{t('Multiple entities selected')}</em>
-                      ) : (
-                        truncate(fromObjects[0].name, 20)
-                      )}
-                    </span>
-                  </div>
-                </div>
-                <div className={classes.middle} style={{ paddingTop: 25 }}>
-                  <ArrowRightAlt fontSize="large" />
-                  <br />
-                  <Button
-                    variant="outlined"
-                    onClick={this.handleReverseRelation.bind(this)}
-                    color="secondary"
-                    size="small"
-                  >
-                    {t('Reverse')}
-                  </Button>
-                </div>
-                <div
-                  className={classes.item}
-                  style={{
-                    border: `2px solid ${itemColor(toObjects[0].entity_type)}`,
-                    top: 10,
-                    right: 0,
-                  }}
-                >
-                  <div
-                    className={classes.itemHeader}
-                    style={{
-                      borderBottom: `1px solid ${itemColor(
-                        toObjects[0].entity_type,
-                      )}`,
-                    }}
-                  >
-                    <div className={classes.icon}>
-                      <ItemIcon
-                        type={toObjects[0].entity_type}
-                        color={itemColor(toObjects[0].entity_type)}
-                        size="small"
-                      />
-                    </div>
-                    <div className={classes.type}>
-                      {toObjects[0].relationship_type
-                        ? t('Relationship')
-                        : t(`entity_${toObjects[0].entity_type}`)}
-                    </div>
-                  </div>
-                  <div className={classes.content}>
-                    <span className={classes.name}>
-                      {/* eslint-disable-next-line no-nested-ternary */}
-                      {toObjects[0].relationship_type ? (
-                        t(`relationship_${toObjects[0].relationship_type}`)
-                      ) : toObjects.length > 1 ? (
-                        <em>{t('Multiple entities selected')}</em>
-                      ) : (
-                        truncate(toObjects[0].name, 20)
-                      )}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <Field
-                component={SelectField}
-                variant="standard"
-                name="relationship_type"
-                label={t('Relationship type')}
-                fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
-              >
-                {R.map(
-                  (type) => (
-                    <MenuItem key={type} value={type}>
-                      {t(`relationship_${type}`)}
-                    </MenuItem>
-                  ),
-                  relationshipTypes,
-                )}
-              </Field>
-              <ConfidenceField
-                entityType="stix-core-relationship"
-                containerStyle={fieldSpacingContainerStyle}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="start_time"
-                TextFieldProps={{
-                  label: t('Start time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={DateTimePickerField}
-                name="stop_time"
-                TextFieldProps={{
-                  label: t('Stop time'),
-                  variant: 'standard',
-                  fullWidth: true,
-                  style: { marginTop: 20 },
-                }}
-              />
-              <Field
-                component={MarkDownField}
-                name="description"
-                label={t('Description')}
-                fullWidth={true}
-                multiline={true}
-                rows="4"
-                style={{ marginTop: 20 }}
-              />
-              <KillChainPhasesField
-                name="killChainPhases"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <CreatedByField
-                name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
-                setFieldValue={setFieldValue}
-              />
-              <ObjectMarkingField
-                name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <ExternalReferencesField
-                name="externalReferences"
-                style={{ marginTop: 20, width: '100%' }}
-              />
-              <div className={classes.buttons}>
-                <Button
-                  variant="contained"
-                  onClick={this.handleClose.bind(this)}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Cancel')}
-                </Button>
-                <Button
-                  variant="contained"
-                  color="secondary"
-                  onClick={submitForm}
-                  disabled={isSubmitting}
-                  classes={{ root: classes.button }}
-                >
-                  {t('Create')}
-                </Button>
-              </div>
-            </div>
-          </Form>
-        )}
-      </Formik>
+        handleClose={this.handleClose.bind(this)}
+        defaultConfidence={confidence}
+        defaultStartTime={startTime}
+        defaultStopTime={stopTime}
+        defaultCreatedBy={defaultCreatedBy}
+        defaultMarkingDefinitions={defaultMarkingDefinitions}
+      />
+      </>
     );
   }
 

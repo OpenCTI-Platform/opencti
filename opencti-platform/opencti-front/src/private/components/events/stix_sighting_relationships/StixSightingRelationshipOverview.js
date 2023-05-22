@@ -28,7 +28,8 @@ import { commitMutation } from '../../../../relay/environment';
 import { stixSightingRelationshipEditionFocus } from './StixSightingRelationshipEditionOverview';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import StixSightingRelationshipInference from './StixSightingRelationshipInference';
-import StixSightingRelationshipExternalReferences from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
+import StixSightingRelationshipExternalReferences
+  from '../../analysis/external_references/StixSightingRelationshipExternalReferences';
 import StixSightingRelationshipLatestHistory from './StixSightingRelationshipLatestHistory';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -37,7 +38,10 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixSightingRelationshipSharing from './StixSightingRelationshipSharing';
 import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixCoreObjectOrStixRelationshipLastContainers
+  from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
+import StixSightingRelationshipLabelsView
+  from './StixSightingRelationshipLabelsView';
 
 const styles = (theme) => ({
   container: {
@@ -498,6 +502,11 @@ class StixSightingRelationshipContainer extends Component {
                   <ItemStatus
                     status={stixSightingRelationship.status}
                     disabled={!stixSightingRelationship.workflowEnabled}
+                  />
+                  <StixSightingRelationshipLabelsView
+                    labels={stixSightingRelationship.objectLabel}
+                    id={stixSightingRelationship.id}
+                    marginTop={20}
                   />
                   <Typography
                     variant="h3"
@@ -2685,6 +2694,15 @@ const StixSightingRelationshipOverview = createFragmentContainer(
               definition
               x_opencti_order
               x_opencti_color
+            }
+          }
+        }
+        objectLabel {
+          edges {
+            node {
+              id
+              value
+              color
             }
           }
         }

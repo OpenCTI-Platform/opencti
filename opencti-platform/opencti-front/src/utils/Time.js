@@ -15,6 +15,12 @@ export const buildDate = (date) => {
 };
 
 export const parse = (date) => moment(date);
+export const formatDate = (date) => {
+  if (isNone(date)) {
+    return null;
+  }
+  return parse(date).format();
+};
 
 export const dayStartDate = (date = null, fromStart = true) => {
   let start = new Date();

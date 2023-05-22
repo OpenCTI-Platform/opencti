@@ -227,6 +227,7 @@ class StixDomainObjectOverview extends Component {
                 labels={stixDomainObject.objectLabel}
                 id={stixDomainObject.id}
                 marginTop={20}
+                entity_type={stixDomainObject.entity_type}
               />
               <Typography
                 variant="h3"

@@ -13,6 +13,7 @@ export const convertStatus = (t, element) => ((element?.status?.template?.name ?
 export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => ({
   label: n.node.definition,
   value: n.node.id,
+  color: n.node.x_opencti_color,
 }));
 
 export const convertTriggers = (element) => (element?.triggers ?? []).map((n) => ({
@@ -45,4 +46,8 @@ export const convertExternalReferences = (element) => (element?.externalReferenc
 
 export const convertCreatedBy = (element) => (isEmptyField(element?.createdBy)
   ? ''
-  : { label: element.createdBy.name, value: element.createdBy.id });
+  : {
+    label: element.createdBy.name,
+    value: element.createdBy.id,
+    type: element.createdBy.entity_type,
+  });

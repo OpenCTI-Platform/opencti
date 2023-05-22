@@ -105,6 +105,7 @@ const Sector = createFragmentContainer(SectorComponent, {
     fragment Sector_sector on Sector {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

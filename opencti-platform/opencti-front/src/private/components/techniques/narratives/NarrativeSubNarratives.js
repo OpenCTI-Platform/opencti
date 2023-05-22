@@ -50,7 +50,7 @@ class NarrativeSubNarrativesComponent extends Component {
         </Typography>
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AddSubNarrative
-            narrativeId={narrative.id}
+            narrative={narrative}
             narrativeSubNarratives={narrative.subNarratives.edges}
           />
         </Security>
@@ -105,10 +105,14 @@ const NarrativeSubNarratives = createFragmentContainer(
     narrative: graphql`
       fragment NarrativeSubNarratives_narrative on Narrative {
         id
+        name
+        parent_types
+        entity_type
         subNarratives {
           edges {
             node {
               id
+              parent_types
               name
               description
             }

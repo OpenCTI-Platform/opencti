@@ -29,6 +29,7 @@ const administrativeAreaFragment = graphql`
     fragment AdministrativeArea_administrativeArea on AdministrativeArea {
         id
         standard_id
+      entity_type
         x_opencti_stix_ids
         spec_version
         revoked
@@ -92,6 +93,7 @@ const AdministrativeArea = ({ administrativeAreaData }: { administrativeAreaData
   return (
         <div className={classes.container}>
             <StixDomainObjectHeader
+                entityType={'Administrative-Area'}
                 disableSharing={true}
                 stixDomainObject={administrativeArea}
                 isOpenctiAlias={true}

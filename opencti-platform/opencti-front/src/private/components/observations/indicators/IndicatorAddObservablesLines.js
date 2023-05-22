@@ -1,8 +1,7 @@
-import React, { Component } from 'react';
+import React, { useState } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, keys, groupBy, assoc, compose } from 'ramda';
-import withStyles from '@mui/styles/withStyles';
+import { createPaginationContainer, graphql, useMutation } from 'react-relay';
+import { assoc, groupBy, keys, map, pipe, pluck } from 'ramda';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import AccordionSummary from '@mui/material/AccordionSummary';
@@ -11,13 +10,17 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { ExpandMore, CheckCircle } from '@mui/icons-material';
-import { ConnectionHandler } from 'relay-runtime';
+import { CheckCircle, ExpandMore } from '@mui/icons-material';
+import makeStyles from '@mui/styles/makeStyles';
 import { commitMutation } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
-import inject18n from '../../../../components/i18n';
+import { useFormatter } from '../../../../components/i18n';
+import StixCoreRelationshipCreationForm from '../../common/stix_core_relationships/StixCoreRelationshipCreationForm';
+import { deleteNodeFromEdge } from '../../../../utils/store';
+import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { parse } from '../../../../utils/Time';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   container: {
     padding: '20px 0 20px 0',
   },
@@ -42,7 +45,7 @@ const styles = (theme) => ({
   icon: {
     color: theme.palette.primary.main,
   },
-});
+}));
 
 export const indicatorMutationRelationAdd = graphql`
   mutation IndicatorAddObservablesLinesRelationAddMutation(
@@ -71,143 +74,184 @@ export const indicatorMutationRelationDelete = graphql`
   }
 `;
 
-class IndicatorAddObservablesLinesContainer extends Component {
-  constructor(props) {
-    super(props);
-    this.state = { expandedPanels: {} };
-  }
+const IndicatorAddObservablesLinesContainer = (props) => {
+  const { indicator, indicatorObservables, data } = props;
+  const classes = useStyles();
+  const { t } = useFormatter();
 
-  toggleStixCyberObservable(stixCyberObservable) {
-    const { indicatorId, indicatorObservables } = this.props;
-    const indicatorObservablesIds = map((n) => n.node.id, indicatorObservables);
-    const alreadyAdded = indicatorObservablesIds.includes(
-      stixCyberObservable.id,
-    );
+  const [commitRelationAdd] = useMutation(indicatorMutationRelationAdd);
+  const [commitRelationDelete] = useMutation(indicatorMutationRelationDelete);
+
+  const enableReferences = useIsEnforceReference('stix-core-relationship');
+  const [expandedPanels, setExpandedPanels] = useState({});
+  const [showForm, setShowForm] = useState(false);
+  const [selected, setSelected] = useState(null);
+
+  const handleOpenForm = () => {
+    setShowForm(true);
+  };
+  const handleCloseForm = () => {
+    setShowForm(false);
+  };
+
+  const toggleStixCyberObservable = (stixCyberObservable, alreadyAdded) => {
+    const input = {
+      fromId: indicator.id,
+      toId: stixCyberObservable.id,
+      relationship_type: 'based-on',
+    };
+    // Delete
     if (alreadyAdded) {
-      commitMutation({
-        mutation: indicatorMutationRelationDelete,
-        variables: {
-          fromId: indicatorId,
-          toId: stixCyberObservable.id,
-          relationship_type: 'based-on',
-        },
-        updater: (store) => {
-          const conn = ConnectionHandler.getConnection(
-            store.get(indicatorId),
-            'Pagination_observables',
-          );
-          ConnectionHandler.deleteNode(conn, stixCyberObservable.id);
-        },
+      commitRelationDelete({
+        variables: { ...input },
+        updater: (store) => deleteNodeFromEdge(store, 'observables', indicator.id, stixCyberObservable.id, { first: 200 }),
       });
+      // Add with references
+    } else if (enableReferences) {
+      handleOpenForm();
+      setSelected(stixCyberObservable);
+      // Add
     } else {
-      const input = {
-        fromId: indicatorId,
-        toId: stixCyberObservable.id,
-        relationship_type: 'based-on',
-      };
-      commitMutation({
-        mutation: indicatorMutationRelationAdd,
+      commitRelationAdd({
         variables: { input },
       });
     }
-  }
+  };
 
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
+  const createRelation = (values) => {
+    const input = {
+      ...values,
+      fromId: indicator.id,
+      toId: selected.id,
+      relationship_type: 'based-on',
+    };
+    const finalValues = pipe(
+      assoc('confidence', parseInt(input.confidence, 10)),
+      assoc(
+        'start_time',
+        input.start_time ? parse(input.start_time).format() : null,
+      ),
+      assoc(
+        'stop_time',
+        input.stop_time ? parse(input.stop_time).format() : null,
+      ),
+      assoc('killChainPhases', pluck('value', input.killChainPhases)),
+      assoc('createdBy', input.createdBy?.value),
+      assoc('objectMarking', pluck('value', input.objectMarking)),
+      assoc(
+        'externalReferences',
+        pluck('value', input.externalReferences),
+      ),
+    )(input);
+    commitMutation({
+      mutation: indicatorMutationRelationAdd,
+      variables: { input: finalValues },
     });
-  }
+    handleCloseForm();
+  };
 
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
+  const handleChangePanel = (panelKey, expanded) => {
+    setExpandedPanels(assoc(panelKey, !expanded, expandedPanels));
+  };
+
+  const isExpanded = (type, numberOfEntities, numberOfTypes) => {
+    if (expandedPanels[type] !== undefined) {
+      return expandedPanels[type];
     }
     if (numberOfEntities === 1) {
       return true;
     }
     return numberOfTypes === 1;
-  }
+  };
 
-  render() {
-    const { t, classes, data, indicatorObservables } = this.props;
-    const indicatorObservablesIds = map((n) => n.node.id, indicatorObservables);
-    const stixCyberObservablesNodes = map(
-      (n) => n.node,
-      data.stixCyberObservables.edges,
-    );
-    const byType = groupBy(
-      (stixCyberObservable) => stixCyberObservable.entity_type,
-    );
-    const stixCyberObservables = byType(stixCyberObservablesNodes);
-    const stixCyberObservablesTypes = keys(stixCyberObservables);
+  const indicatorObservablesIds = map((n) => n.node.id, indicatorObservables);
+  const stixCyberObservablesNodes = map(
+    (n) => n.node,
+    data.stixCyberObservables.edges,
+  );
+  const byType = groupBy(
+    (stixCyberObservable) => stixCyberObservable.entity_type,
+  );
+  const stixCyberObservables = byType(stixCyberObservablesNodes);
+  const stixCyberObservablesTypes = keys(stixCyberObservables);
 
-    return (
+  return (
       <div className={classes.container}>
+        {showForm
+          ? <StixCoreRelationshipCreationForm
+            fromEntities={[indicator]}
+            toEntities={[selected]}
+            relationshipTypes={['based-on']}
+            onSubmit={createRelation}
+            handleClose={handleCloseForm}
+          />
+          : <>
         {stixCyberObservablesTypes.length > 0 ? (
-          stixCyberObservablesTypes.map((type) => (
-            <Accordion
-              key={type}
-              expanded={this.isExpanded(
-                type,
-                stixCyberObservables[type].length,
-                stixCyberObservablesTypes.length,
-              )}
-              onChange={this.handleChangePanel.bind(this, type)}
-              elevation={3}
-            >
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
-                </Typography>
-                <Typography className={classes.secondaryHeading}>
-                  {stixCyberObservables[type].length} {t('entitie(s)')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
+          stixCyberObservablesTypes.map((type) => {
+            const expanded = isExpanded(
+              type,
+              stixCyberObservables[type].length,
+              stixCyberObservablesTypes.length,
+            );
+            return (
+              <Accordion
+                key={type}
+                expanded={expanded}
+                onChange={() => handleChangePanel(type, expanded)}
+                elevation={3}
               >
-                <List classes={{ root: classes.list }}>
-                  {stixCyberObservables[type].map((stixCyberObservable) => {
-                    const alreadyAdded = indicatorObservablesIds.includes(
-                      stixCyberObservable.id,
-                    );
-                    return (
-                      <ListItem
-                        key={stixCyberObservable.id}
-                        classes={{ root: classes.menuItem }}
-                        divider={true}
-                        button={true}
-                        onClick={this.toggleStixCyberObservable.bind(
-                          this,
-                          stixCyberObservable,
-                        )}
-                      >
-                        <ListItemIcon>
-                          {alreadyAdded ? (
-                            <CheckCircle classes={{ root: classes.icon }} />
-                          ) : (
-                            <ItemIcon type={type} />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={stixCyberObservable.observable_value}
-                        />
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))
+                <AccordionSummary expandIcon={<ExpandMore />}>
+                  <Typography className={classes.heading}>
+                    {t(`entity_${type}`)}
+                  </Typography>
+                  <Typography className={classes.secondaryHeading}>
+                    {stixCyberObservables[type].length} {t('entitie(s)')}
+                  </Typography>
+                </AccordionSummary>
+                <AccordionDetails
+                  classes={{ root: classes.expansionPanelContent }}
+                >
+                  <List classes={{ root: classes.list }}>
+                    {stixCyberObservables[type].map((stixCyberObservable) => {
+                      const alreadyAdded = indicatorObservablesIds.includes(
+                        stixCyberObservable.id,
+                      );
+                      return (
+                        <ListItem
+                          key={stixCyberObservable.id}
+                          classes={{ root: classes.menuItem }}
+                          divider={true}
+                          button={true}
+                          onClick={() => toggleStixCyberObservable(stixCyberObservable, alreadyAdded)}
+                        >
+                          <ListItemIcon>
+                            {alreadyAdded ? (
+                              <CheckCircle classes={{ root: classes.icon }} />
+                            ) : (
+                              <ItemIcon type={type} />
+                            )}
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={stixCyberObservable.observable_value}
+                          />
+                        </ListItem>
+                      );
+                    })}
+                  </List>
+                </AccordionDetails>
+              </Accordion>
+            );
+          })
         ) : (
           <div style={{ paddingLeft: 20 }}>
             {t('No entities were found for this search.')}
           </div>
         )}
+          </>
+        }
       </div>
-    );
-  }
-}
+  );
+};
 
 IndicatorAddObservablesLinesContainer.propTypes = {
   indicatorId: PropTypes.string,
@@ -265,6 +309,7 @@ const IndicatorAddObservablesLines = createPaginationContainer(
             node {
               id
               entity_type
+              parent_types
               observable_value
             }
           }
@@ -295,7 +340,4 @@ const IndicatorAddObservablesLines = createPaginationContainer(
   },
 );
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(IndicatorAddObservablesLines);
+export default IndicatorAddObservablesLines;

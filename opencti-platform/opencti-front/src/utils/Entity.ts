@@ -111,6 +111,20 @@ export const resolveLink = (type: string): string | null => {
   }
 };
 
+export const computeLink = (node: { id: string, entity_type: string, relationship_type: string, from: { entity_type: string, id: string } }): string | null => {
+  if (!node) return null;
+
+  let redirectLink;
+  if (node.relationship_type === 'stix-sighting-relationship') {
+    redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/sightings/${node.id}`;
+  } else if (node.relationship_type) {
+    redirectLink = `${resolveLink(node.from.entity_type)}/${node.from.id}/knowledge/relations/${node.id}`;
+  } else {
+    redirectLink = `${resolveLink(node.entity_type)}/${node.id}`;
+  }
+  return redirectLink;
+};
+
 export const pascalize = (str: string): string => str.replace(
   /(\w)(\w*)/g,
   (g0, g1, g2) => g1.toUpperCase() + g2.toLowerCase(),

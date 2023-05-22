@@ -25,7 +25,6 @@ import { registerEntityValidator } from './validator-register';
 import type { Resolvers } from '../generated/graphql';
 import { schemaRelationsRefDefinition } from './schema-relationsRef';
 import { registerStixDomainAliased, resolveAliasesField } from './stixDomainObject';
-import { registerInternalObject } from './internalObject';
 import { registerModelIdentifier } from './identifier';
 import type { StixObject } from '../types/stix-common';
 import type { RelationRefDefinition } from './relationRef-definition';
@@ -99,7 +98,6 @@ export const registerDefinition = <T extends StoreEntity, Z extends StixObject>(
         break;
       case ABSTRACT_INTERNAL_OBJECT:
         schemaTypesDefinition.add(ABSTRACT_INTERNAL_OBJECT, definition.type.name);
-        registerInternalObject(definition.type.name);
         break;
       default:
         throw UnsupportedError('Unsupported category');

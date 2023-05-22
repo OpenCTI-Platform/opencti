@@ -29,6 +29,7 @@ export const countryFragment = graphql`
   fragment Country_country on Country {
     id
     standard_id
+    entity_type
     x_opencti_stix_ids
     spec_version
     revoked

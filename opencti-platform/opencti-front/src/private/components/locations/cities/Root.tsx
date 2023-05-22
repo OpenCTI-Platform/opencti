@@ -116,6 +116,7 @@ const RootCityComponent = ({ queryRef, cityId, link }) => {
             render={(routeProps) => (
               <React.Fragment>
                 <StixDomainObjectHeader
+                  entityType={'City'}
                   disableSharing={true}
                   stixDomainObject={city}
                   PopoverComponent={CityPopover}

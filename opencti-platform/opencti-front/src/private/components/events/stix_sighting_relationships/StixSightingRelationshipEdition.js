@@ -1,15 +1,14 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import { compose } from 'ramda';
+import React from 'react';
 import { graphql } from 'react-relay';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
-import inject18n from '../../../../components/i18n';
-import { QueryRenderer } from '../../../../relay/environment';
-import StixSightingRelationshipEditionOverview from './StixSightingRelationshipEditionOverview';
-import Loader from '../../../../components/Loader';
+import makeStyles from '@mui/styles/makeStyles';
+import StixSightingRelationshipEditionOverview, {
+  stixSightingRelationshipEditionOverviewQuery,
+} from './StixSightingRelationshipEditionOverview';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
+import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '30%',
@@ -21,15 +20,7 @@ const styles = (theme) => ({
     }),
     padding: 0,
   },
-});
-
-const stixSightingRelationshipEditionQuery = graphql`
-  query StixSightingRelationshipEditionQuery($id: String!) {
-    stixSightingRelationship(id: $id) {
-      ...StixSightingRelationshipEditionOverview_stixSightingRelationship
-    }
-  }
-`;
+}));
 
 export const stixSightingRelationshipEditionDeleteMutation = graphql`
   mutation StixSightingRelationshipEditionDeleteMutation($id: ID!) {
@@ -39,73 +30,54 @@ export const stixSightingRelationshipEditionDeleteMutation = graphql`
   }
 `;
 
-class StixSightingRelationshipEdition extends Component {
-  render() {
-    const {
-      classes,
-      stixSightingRelationshipId,
-      stixDomainObject,
-      open,
-      handleClose,
-      handleDelete,
-      inferred,
-      noStoreUpdate,
-    } = this.props;
-    return (
+const StixSightingRelationshipEdition = (props) => {
+  const {
+    stixSightingRelationshipId,
+    open,
+    handleClose,
+    handleDelete,
+    inferred,
+    noStoreUpdate,
+  } = props;
+  if (!stixSightingRelationshipId) {
+    return <></>;
+  }
+
+  const classes = useStyles();
+  const queryRef = useQueryLoading(
+    stixSightingRelationshipEditionOverviewQuery,
+    { id: stixSightingRelationshipId },
+  );
+
+  return (
       <Drawer
         open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose.bind(this)}
+        onClose={handleClose}
       >
-        {stixSightingRelationshipId ? (
-          <QueryRenderer
-            query={stixSightingRelationshipEditionQuery}
-            variables={{ id: stixSightingRelationshipId }}
-            render={({ props }) => {
-              if (props) {
-                return (
-                  <StixSightingRelationshipEditionOverview
-                    stixDomainObject={stixDomainObject}
-                    stixSightingRelationship={props.stixSightingRelationship}
-                    handleClose={handleClose.bind(this)}
-                    handleDelete={
-                      typeof handleDelete === 'function'
-                        ? handleDelete.bind(this)
-                        : null
-                    }
-                    inferred={inferred}
-                    noStoreUpdate={noStoreUpdate}
-                  />
-                );
+
+        {queryRef && (
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
+            <StixSightingRelationshipEditionOverview
+              queryRef={queryRef}
+              handleClose={handleClose}
+              handleDelete={
+                typeof handleDelete === 'function'
+                  ? handleDelete
+                  : null
               }
-              return <Loader variant="inElement" />;
-            }}
-          />
-        ) : (
-          <div> &nbsp; </div>
+              inferred={inferred}
+              noStoreUpdate={noStoreUpdate}
+            />
+          </React.Suspense>
         )}
       </Drawer>
-    );
-  }
-}
-
-StixSightingRelationshipEdition.propTypes = {
-  stixSightingRelationshipId: PropTypes.string,
-  stixDomainObject: PropTypes.object,
-  open: PropTypes.bool,
-  handleClose: PropTypes.func,
-  handleDelete: PropTypes.func,
-  classes: PropTypes.object,
-  theme: PropTypes.object,
-  t: PropTypes.func,
-  inferred: PropTypes.bool,
-  noStoreUpdate: PropTypes.bool,
+  );
 };
 
-export default compose(
-  inject18n,
-  withStyles(styles),
-)(StixSightingRelationshipEdition);
+export default StixSightingRelationshipEdition;

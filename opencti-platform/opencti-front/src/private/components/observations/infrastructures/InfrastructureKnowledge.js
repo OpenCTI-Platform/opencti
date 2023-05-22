@@ -28,6 +28,7 @@ class InfrastructureKnowledgeComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Infrastructure'}
           stixDomainObject={infrastructure}
           PopoverComponent={<InfrastructurePopover />}
         />

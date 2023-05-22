@@ -2,27 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import {
-  green,
-  pink,
-  deepOrange,
-  deepPurple,
-  yellow,
-  indigo,
-  teal,
-  red,
-} from '@mui/material/colors';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
-  EditOutlined,
-  LinkOutlined,
-  LinkOffOutlined,
-  HelpOutlined,
   DeleteOutlined,
+  EditOutlined,
+  HelpOutlined,
+  LanguageOutlined,
+  LinkOffOutlined,
+  LinkOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -35,7 +27,12 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
 import inject18n from '../../../../components/i18n';
+import { truncate } from '../../../../utils/String';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -326,6 +323,76 @@ class StixSightingRelationshipHistoryLineComponent extends Component {
                 </Markdown>
               </div>
             </Tooltip>
+            {node.context_data.external_references
+              && node.context_data.external_references.length > 0 && (
+                <List>
+                  {node.context_data.external_references.map(
+                    (externalReference) => {
+                      const externalReferenceId = externalReference.external_id
+                        ? `(${externalReference.external_id})`
+                        : '';
+                      let externalReferenceSecondary = '';
+                      if (
+                        externalReference.url
+                        && externalReference.url.length > 0
+                      ) {
+                        externalReferenceSecondary = externalReference.url;
+                      } else if (
+                        externalReference.description
+                        && externalReference.description.length > 0
+                      ) {
+                        externalReferenceSecondary = externalReference.description;
+                      }
+                      if (externalReference.url) {
+                        return (
+                          <ListItem
+                            key={externalReference.id}
+                            dense={true}
+                            divider={true}
+                            button={true}
+                            onClick={this.handleOpenExternalLink.bind(
+                              this,
+                              externalReference.url,
+                            )}
+                          >
+                            <ListItemIcon>
+                              <LanguageOutlined />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={`${externalReference.source_name} ${externalReferenceId}`}
+                              secondary={truncate(
+                                externalReferenceSecondary,
+                                90,
+                              )}
+                            />
+                          </ListItem>
+                        );
+                      }
+                      return (
+                        <ListItem
+                          key={externalReference.id}
+                          dense={true}
+                          divider={true}
+                          button={false}
+                        >
+                          <ListItemIcon>
+                            <Avatar classes={{ root: classes.avatar }}>
+                              {externalReference.source_name.substring(0, 1)}
+                            </Avatar>
+                          </ListItemIcon>
+                          <ListItemText
+                            primary={`${externalReference.source_name} ${externalReferenceId}`}
+                            secondary={truncate(
+                              externalReference.description,
+                              120,
+                            )}
+                          />
+                        </ListItem>
+                      );
+                    },
+                  )}
+                </List>
+            )}
           </Paper>
         </div>
         <div className={classes.line} />

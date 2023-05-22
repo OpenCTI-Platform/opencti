@@ -50,7 +50,7 @@ import { askEntityExport, askListExport, exportTransformFilters } from './stix';
 import { now, observableValue } from '../utils/format';
 import {
   stixObjectOrRelationshipAddRefRelation,
-  stixObjectOrRelationshipDeleteRelation
+  stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
 
 export const findById = (context, user, stixCyberObservableId) => {
@@ -226,7 +226,7 @@ export const stixCyberObservableAddRelation = async (context, user, stixCyberObs
   return stixObjectOrRelationshipAddRefRelation(context, user, stixCyberObservableId, input, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 export const stixCyberObservableDeleteRelation = async (context, user, stixCyberObservableId, toId, relationshipType) => {
-  return stixObjectOrRelationshipDeleteRelation(context, user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_CYBER_OBSERVABLE);
+  return stixObjectOrRelationshipDeleteRefRelation(context, user, stixCyberObservableId, toId, relationshipType, ABSTRACT_STIX_CYBER_OBSERVABLE);
 };
 // endregion
 

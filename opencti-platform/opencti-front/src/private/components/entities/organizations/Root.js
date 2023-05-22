@@ -198,6 +198,7 @@ class RootOrganization extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Organization'}
                             disableSharing={true}
                             stixDomainObject={props.organization}
                             PopoverComponent={<OrganizationPopover />}

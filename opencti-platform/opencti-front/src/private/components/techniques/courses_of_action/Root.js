@@ -112,6 +112,7 @@ class RootCourseOfAction extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Course-Of-Action'}
                             stixDomainObject={props.courseOfAction}
                             PopoverComponent={<CourseOfActionPopover />}
                           />
@@ -131,6 +132,7 @@ class RootCourseOfAction extends Component {
                       render={(routeProps) => (
                         <React.Fragment>
                           <StixDomainObjectHeader
+                            entityType={'Course-Of-Action'}
                             stixDomainObject={props.courseOfAction}
                             PopoverComponent={<CourseOfActionPopover />}
                           />

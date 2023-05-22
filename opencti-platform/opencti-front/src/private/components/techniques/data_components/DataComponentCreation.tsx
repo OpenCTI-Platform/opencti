@@ -10,8 +10,9 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
-import { Dialog } from '@mui/material';
+import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import DialogTitle from '@mui/material/DialogTitle';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -323,8 +324,11 @@ const DataComponentCreation: FunctionComponent<{
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
+        <DialogTitle>{t('Create a data component')}</DialogTitle>
+        <DialogContent>
         <DataComponentCreationForm inputValue={inputValue} updater={updater}
                                    onCompleted={handleClose} onReset={handleClose}/>
+        </DialogContent>
       </Dialog>
     </div>
   );

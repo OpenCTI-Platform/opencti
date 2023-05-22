@@ -207,6 +207,34 @@ describe('stixSightingRelationship resolver standard behavior', () => {
     });
     expect(queryResult.data.stixSightingRelationshipEdit.relationDelete.objectMarking.edges.length).toEqual(0);
   });
+  it('should add multiple relation in stixSightingRelationship', async () => {
+    const RELATIONS_ADD_QUERY = gql`
+      mutation stixSightingRelationshipEdit($id: ID!, $input: StixRefRelationshipsAddInput!) {
+        stixSightingRelationshipEdit(id: $id) {
+          relationsAdd(input: $input) {
+            objectMarking {
+              edges {
+                node {
+                  id
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: RELATIONS_ADD_QUERY,
+      variables: {
+        id: stixSightingRelationshipInternalId,
+        input: {
+          toIds: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+          relationship_type: 'object-marking',
+        },
+      },
+    });
+    expect(queryResult.data.stixSightingRelationshipEdit.relationsAdd.objectMarking.edges.length).toEqual(1);
+  });
   it('should stixSightingRelationship deleted', async () => {
     const DELETE_QUERY = gql`
       mutation stixSightingRelationshipDelete($id: ID!) {

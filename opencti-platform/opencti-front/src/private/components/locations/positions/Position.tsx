@@ -129,6 +129,7 @@ const Position = createFragmentContainer(PositionComponent, {
     fragment Position_position on Position {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

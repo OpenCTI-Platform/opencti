@@ -33,6 +33,7 @@ class AttackPatternComponent extends Component {
     return (
       <div className={classes.container}>
         <StixDomainObjectHeader
+          entityType={'Attack-Pattern'}
           stixDomainObject={attackPattern}
           PopoverComponent={<AttackPatternPopover />}
         />
@@ -104,6 +105,7 @@ const AttackPattern = createFragmentContainer(AttackPatternComponent, {
     fragment AttackPattern_attackPattern on AttackPattern {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

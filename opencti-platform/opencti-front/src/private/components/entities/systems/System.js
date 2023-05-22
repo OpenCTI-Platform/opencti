@@ -114,6 +114,7 @@ const System = createFragmentContainer(SystemComponent, {
     fragment System_system on System {
       id
       standard_id
+      entity_type
       x_opencti_stix_ids
       spec_version
       revoked

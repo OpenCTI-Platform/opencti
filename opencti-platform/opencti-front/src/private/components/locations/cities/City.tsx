@@ -29,6 +29,7 @@ const cityFragment = graphql`
   fragment City_city on City {
     id
     standard_id
+    entity_type
     x_opencti_stix_ids
     spec_version
     revoked
