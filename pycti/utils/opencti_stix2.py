@@ -775,6 +775,7 @@ class OpenCTIStix2:
             "grouping": self.opencti.grouping.import_from_stix2,
             "case-rfi": self.opencti.case_rfi.import_from_stix2,
             "case-rft": self.opencti.case_rft.import_from_stix2,
+            "case-task": self.opencti.case_task.import_from_stix2,
             "case-incident": self.opencti.case_incident.import_from_stix2,
             "feedback": self.opencti.feedback.import_from_stix2,
             "course-of-action": self.opencti.course_of_action.import_from_stix2,
@@ -1540,6 +1541,11 @@ class OpenCTIStix2:
                     and "stix-ref-relationship" not in entity_object["parent_types"]
                 ):
                     entity["object_refs"].append(entity_object["standard_id"])
+                elif (
+                    entity["type"] == "case-task"
+                    and "stix-ref-relationship" not in entity_object["parent_types"]
+                ):
+                    entity["object_refs"].append(entity_object["standard_id"])
         if "objects" in entity:
             del entity["objects"]
             del entity["objectsIds"]
@@ -1767,6 +1773,7 @@ class OpenCTIStix2:
                 "Feedback": self.opencti.feedback.read,
                 "Case-Rfi": self.opencti.case_rfi.read,
                 "Case-Rft": self.opencti.case_rft.read,
+                "Case-Task": self.opencti.case_task.read,
                 "Course-Of-Action": self.opencti.course_of_action.read,
                 "Data-Component": self.opencti.data_component.read,
                 "Data-Source": self.opencti.data_source.read,
@@ -1929,6 +1936,7 @@ class OpenCTIStix2:
             "Feedback": self.opencti.feedback.read,
             "Case-Rfi": self.opencti.case_rfi.read,
             "Case-Rft": self.opencti.case_rft.read,
+            "Case-Task": self.opencti.case_task.read,
             "Course-Of-Action": self.opencti.course_of_action.read,
             "Data-Component": self.opencti.data_component.read,
             "Data-Source": self.opencti.data_source.read,
@@ -2064,6 +2072,7 @@ class OpenCTIStix2:
             "Feedback": self.opencti.feedback.list,
             "Case-Rfi": self.opencti.case_rfi.list,
             "Case-Rft": self.opencti.case_rft.list,
+            "Case-Task": self.opencti.case_task.list,
             "Course-Of-Action": self.opencti.course_of_action.list,
             "Data-Component": self.opencti.data_component.list,
             "Data-Source": self.opencti.data_source.list,
