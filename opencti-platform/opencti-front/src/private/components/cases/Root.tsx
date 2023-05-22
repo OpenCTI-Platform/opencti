@@ -3,18 +3,18 @@
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
 import React from 'react';
-import { Switch, Redirect } from 'react-router-dom';
+import { Redirect, Switch } from 'react-router-dom';
+import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import { BoundaryRoute } from '../Error';
-import Resolver from './Resolver';
-import CaseIncidents from './CaseIncidents';
-import RootIncident from './incidents/Root';
-import Feedbacks from './Feedbacks';
-import RootFeedback from './feedbacks/Root';
 import RootCaseRfi from './case_rfi/Root';
+import RootCaseRft from './case_rft/Root';
+import CaseIncidents from './CaseIncidents';
 import CaseRfis from './CaseRfis';
 import CaseRfts from './CaseRfts';
-import RootCaseRft from './case_rft/Root';
-import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
+import Feedbacks from './Feedbacks';
+import RootFeedback from './feedbacks/Root';
+import RootIncident from './incidents/Root';
+import Resolver from './Resolver';
 
 const Root = () => {
   let redirect: string | null = null;
@@ -34,11 +34,6 @@ const Root = () => {
       exact
       path="/dashboard/cases"
       render={() => <Redirect to={`/dashboard/cases/${redirect}`} />}
-    />
-    <BoundaryRoute
-      exact
-      path="/dashboard/cases/:caseId"
-      component={Resolver}
     />
     <BoundaryRoute
       exact
