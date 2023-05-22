@@ -256,6 +256,7 @@ export const ReportLine = createFragmentContainer(ReportLineComponent, {
         }
       }
       workflowEnabled
+      created_at
     }
   `,
 });

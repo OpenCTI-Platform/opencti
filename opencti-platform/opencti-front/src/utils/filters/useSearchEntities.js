@@ -464,6 +464,28 @@ const useSearchEntities = ({
             unionSetEntities('objectContains', objectContainsEntities);
           });
         break;
+      case 'indicates':
+        fetchQuery(filtersStixCoreObjectsSearchQuery, {
+          types: (searchScope && searchScope.indicates) || [
+            'Stix-Core-Object',
+          ],
+          search: event.target.value !== 0 ? event.target.value : '',
+          count: 50,
+        })
+          .toPromise()
+          .then((data) => {
+            const indicatesEntities = R.pipe(
+              R.pathOr([], ['stixCoreObjects', 'edges']),
+              R.map((n) => ({
+                label: defaultValue(n.node),
+                value: n.node.id,
+                type: n.node.entity_type,
+                parentTypes: n.node.parent_types,
+              })),
+            )(data);
+            unionSetEntities('indicates', indicatesEntities);
+          });
+        break;
       case 'markedBy':
         fetchQuery(markingDefinitionsLinesSearchQuery, {
           search: event.target.value !== 0 ? event.target.value : '',

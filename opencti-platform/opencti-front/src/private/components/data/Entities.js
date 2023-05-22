@@ -302,6 +302,8 @@ class Entities extends Component {
                 'creator',
                 'created_start_date',
                 'created_end_date',
+                'created_at_start_date',
+                'created_at_end_date',
               ]}
             >
               <QueryRenderer

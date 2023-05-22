@@ -179,8 +179,9 @@ const Reports: FunctionComponent<ReportsProps> = ({
             'confidence',
             'published_start_date',
             'published_end_date',
+            'created_at_start_date',
+            'created_at_end_date',
             'objectContains',
-
           ]}
         >
           {queryRef && (
