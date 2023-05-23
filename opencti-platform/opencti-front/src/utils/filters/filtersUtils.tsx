@@ -46,6 +46,8 @@ export const EqFilters = [
   'creator',
   'x_opencti_negative',
   'source',
+  'objectContains',
+  'indicates',
 ];
 const uniqFilters = [
   'revoked',
