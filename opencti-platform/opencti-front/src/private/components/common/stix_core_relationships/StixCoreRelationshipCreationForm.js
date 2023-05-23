@@ -91,10 +91,8 @@ const StixCoreRelationshipCreationForm = ({
   relationshipTypes,
   handleReverseRelation,
   handleResetSelection,
-
   onSubmit,
   handleClose,
-
   defaultConfidence,
   defaultStartTime,
   defaultStopTime,
@@ -148,7 +146,7 @@ const StixCoreRelationshipCreationForm = ({
     killChainPhases: [],
     externalReferences: [],
     objectMarking: defaultMarkingDefinitions ?? [],
-    createdBy: defaultCreatedBy ?? [],
+    createdBy: defaultCreatedBy ?? '',
   };
 
   return (
