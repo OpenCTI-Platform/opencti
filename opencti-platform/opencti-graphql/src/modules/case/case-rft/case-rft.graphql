@@ -235,9 +235,4 @@ input CaseRftAddInput {
 type Mutation {
   caseRftAdd(input: CaseRftAddInput!): CaseRft @auth
   caseRftDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  caseRftRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRftRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseRft @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRftFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): CaseRft @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRftContextPatch(id: ID!, input: EditContext!): CaseRft @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseRftContextClean(id: ID!): CaseRft @auth(for: [KNOWLEDGE_KNUPDATE])
 }

@@ -180,6 +180,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
     caseIncidentData,
   );
   const expandable = (data.relatedContainers?.edges ?? []).length > 5;
+  const responseTypes = (data.response_types ?? []);
   return (
     <div style={{ height: '100%' }}>
       <Typography variant="h4" gutterBottom={true}>
@@ -213,13 +214,14 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Response type')}
             </Typography>
-            {(data.response_types ?? []).map((responseType) => (
+            {responseTypes.length > 0
+              ? (data.response_types ?? []).map((responseType) => (
                 <Chip
                   key={responseType}
                   classes={{ root: classes.chip }}
                   label={responseType}
                 />
-            ))}
+              )) : '-'}
           </Grid>
           <Grid item={true} xs={12}>
             <Typography variant="h3" gutterBottom={true}>
@@ -234,13 +236,14 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           {t('Related cases')}
         </Typography>
         <List>
-          {R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
-            .filter(
-              (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
-            )
-            .map((relatedContainerEdge) => {
-              const relatedContainer = relatedContainerEdge?.node;
-              return (
+          {expandable
+            ? R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
+              .filter(
+                (relatedContainerEdge) => relatedContainerEdge?.node?.id !== data.id,
+              )
+              .map((relatedContainerEdge) => {
+                const relatedContainer = relatedContainerEdge?.node;
+                return (
                 <ListItem
                   key={data.id}
                   dense={true}
@@ -275,8 +278,8 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
                     />
                   </div>
                 </ListItem>
-              );
-            })}
+                );
+              }) : '-'}
         </List>
         {expandable && (
           <Button

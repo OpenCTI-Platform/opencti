@@ -392,6 +392,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             ... on Incident {
               name
             }
+            ... on CaseIncident {
+              name
+            }
+            ... on CaseRfi {
+              name
+            }
+            ... on CaseRft {
+              name
+            }
             ... on StixCoreRelationship {
               id
               relationship_type
@@ -478,6 +487,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                   name
                 }
                 ... on Incident {
+                  name
+                }
+                ... on CaseIncident {
+                  name
+                }
+                ... on CaseRfi {
+                  name
+                }
+                ... on CaseRft {
                   name
                 }
                 ... on StixCyberObservable {
@@ -716,6 +734,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Incident {
                       name
                     }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -790,6 +817,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       name
                     }
                     ... on Incident {
+                      name
+                    }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
                       name
                     }
                     ... on ObservedData {
@@ -1015,6 +1051,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                   name
                 }
                 ... on Incident {
+                  name
+                }
+                ... on CaseIncident {
+                  name
+                }
+                ... on CaseRfi {
+                  name
+                }
+                ... on CaseRft {
                   name
                 }
                 ... on StixCyberObservable {
@@ -1248,6 +1293,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Incident {
                       name
                     }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -1471,6 +1525,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       name
                     }
                     ... on Incident {
+                      name
+                    }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
                       name
                     }
                     ... on StixCyberObservable {
@@ -1705,6 +1768,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 ... on Incident {
                   name
                 }
+                ... on CaseIncident {
+                  name
+                }
+                ... on CaseRfi {
+                  name
+                }
+                ... on CaseRft {
+                  name
+                }
                 ... on StixCyberObservable {
                   observable_value
                 }
@@ -1937,6 +2009,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Incident {
                       name
                     }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
+                      name
+                    }
                   }
                   to {
                     ... on BasicObject {
@@ -2011,6 +2092,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       name
                     }
                     ... on Incident {
+                      name
+                    }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
                       name
                     }
                     ... on ObservedData {
@@ -2236,6 +2326,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                   name
                 }
                 ... on Incident {
+                  name
+                }
+                ... on CaseIncident {
+                  name
+                }
+                ... on CaseRfi {
+                  name
+                }
+                ... on CaseRft {
                   name
                 }
                 ... on StixCyberObservable {
@@ -2469,6 +2568,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                     ... on Incident {
                       name
                     }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
+                      name
+                    }
                     ... on StixCyberObservable {
                       observable_value
                     }
@@ -2692,6 +2800,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                       name
                     }
                     ... on Incident {
+                      name
+                    }
+                    ... on CaseIncident {
+                      name
+                    }
+                    ... on CaseRfi {
+                      name
+                    }
+                    ... on CaseRft {
                       name
                     }
                     ... on StixCyberObservable {
@@ -3204,6 +3321,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Incident {
                 name
               }
+              ... on CaseIncident {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
+                name
+              }
             }
             to {
               ... on BasicObject {
@@ -3278,6 +3404,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 name
               }
               ... on Incident {
+                name
+              }
+              ... on CaseIncident {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
                 name
               }
             }
@@ -3612,6 +3747,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
               ... on Incident {
                 name
               }
+              ... on CaseIncident {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
+                name
+              }
               ... on StixCyberObservable {
                 observable_value
               }
@@ -3682,6 +3826,15 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
                 name
               }
               ... on Incident {
+                name
+              }
+              ... on CaseIncident {
+                name
+              }
+              ... on CaseRfi {
+                name
+              }
+              ... on CaseRft {
                 name
               }
               ... on StixCyberObservable {

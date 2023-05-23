@@ -1,7 +1,7 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
-import { stixDomainObjectAddRelation, stixDomainObjectCleanContext, stixDomainObjectDelete, stixDomainObjectDeleteRelation, stixDomainObjectEditContext, stixDomainObjectEditField } from '../../../domain/stixDomainObject';
+import { stixDomainObjectDelete } from '../../../domain/stixDomainObject';
 import { addCaseRfi, caseRfiContainsStixObjectOrStixRelationship, findAll, findById } from './case-rfi-domain';
 
 const caseRfiResolvers: Resolvers = {
@@ -28,21 +28,6 @@ const caseRfiResolvers: Resolvers = {
     },
     caseRfiDelete: (_, { id }, context) => {
       return stixDomainObjectDelete(context, context.user, id);
-    },
-    caseRfiRelationAdd: (_, { id, input }, context) => {
-      return stixDomainObjectAddRelation(context, context.user, id, input);
-    },
-    caseRfiRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
-      return stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType);
-    },
-    caseRfiFieldPatch: (_, { id, input, commitMessage, references }, context) => {
-      return stixDomainObjectEditField(context, context.user, id, input, { commitMessage, references });
-    },
-    caseRfiContextPatch: (_, { id, input }, context) => {
-      return stixDomainObjectEditContext(context, context.user, id, input);
-    },
-    caseRfiContextClean: (_, { id }, context) => {
-      return stixDomainObjectCleanContext(context, context.user, id);
     },
   }
 };

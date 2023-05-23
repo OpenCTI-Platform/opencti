@@ -11582,33 +11582,13 @@ export type Mutation = {
   bookmarkDelete?: Maybe<Scalars['ID']>;
   campaignAdd?: Maybe<Campaign>;
   campaignEdit?: Maybe<CampaignEditMutations>;
-  caseContextClean?: Maybe<Case>;
-  caseContextPatch?: Maybe<Case>;
   caseDelete?: Maybe<Scalars['ID']>;
-  caseFieldPatch?: Maybe<Case>;
   caseIncidentAdd?: Maybe<CaseIncident>;
-  caseIncidentContextClean?: Maybe<CaseIncident>;
-  caseIncidentContextPatch?: Maybe<CaseIncident>;
   caseIncidentDelete?: Maybe<Scalars['ID']>;
-  caseIncidentFieldPatch?: Maybe<CaseIncident>;
-  caseIncidentRelationAdd?: Maybe<StixRefRelationship>;
-  caseIncidentRelationDelete?: Maybe<CaseIncident>;
-  caseRelationAdd?: Maybe<StixRefRelationship>;
-  caseRelationDelete?: Maybe<Case>;
   caseRfiAdd?: Maybe<CaseRfi>;
-  caseRfiContextClean?: Maybe<CaseRfi>;
-  caseRfiContextPatch?: Maybe<CaseRfi>;
   caseRfiDelete?: Maybe<Scalars['ID']>;
-  caseRfiFieldPatch?: Maybe<CaseRfi>;
-  caseRfiRelationAdd?: Maybe<StixRefRelationship>;
-  caseRfiRelationDelete?: Maybe<CaseRfi>;
   caseRftAdd?: Maybe<CaseRft>;
-  caseRftContextClean?: Maybe<CaseRft>;
-  caseRftContextPatch?: Maybe<CaseRft>;
   caseRftDelete?: Maybe<Scalars['ID']>;
-  caseRftFieldPatch?: Maybe<CaseRft>;
-  caseRftRelationAdd?: Maybe<StixRefRelationship>;
-  caseRftRelationDelete?: Maybe<CaseRft>;
   caseSetTemplate?: Maybe<Case>;
   caseTaskAdd?: Maybe<CaseTask>;
   caseTaskDelete?: Maybe<Scalars['ID']>;
@@ -11663,12 +11643,7 @@ export type Mutation = {
   feedDelete: Scalars['ID'];
   feedEdit: Feed;
   feedbackAdd?: Maybe<Feedback>;
-  feedbackContextClean?: Maybe<Feedback>;
-  feedbackContextPatch?: Maybe<Feedback>;
   feedbackDelete?: Maybe<Scalars['ID']>;
-  feedbackFieldPatch?: Maybe<Feedback>;
-  feedbackRelationAdd?: Maybe<StixRefRelationship>;
-  feedbackRelationDelete?: Maybe<Feedback>;
   groupAdd?: Maybe<Group>;
   groupEdit?: Maybe<GroupEditMutations>;
   groupingAdd?: Maybe<Grouping>;
@@ -11922,27 +11897,8 @@ export type MutationCampaignEditArgs = {
 };
 
 
-export type MutationCaseContextCleanArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCaseContextPatchArgs = {
-  id: Scalars['ID'];
-  input: EditContext;
-};
-
-
 export type MutationCaseDeleteArgs = {
   id: Scalars['ID'];
-};
-
-
-export type MutationCaseFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -11951,53 +11907,8 @@ export type MutationCaseIncidentAddArgs = {
 };
 
 
-export type MutationCaseIncidentContextCleanArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCaseIncidentContextPatchArgs = {
-  id: Scalars['ID'];
-  input: EditContext;
-};
-
-
 export type MutationCaseIncidentDeleteArgs = {
   id: Scalars['ID'];
-};
-
-
-export type MutationCaseIncidentFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MutationCaseIncidentRelationAddArgs = {
-  id: Scalars['ID'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationCaseIncidentRelationDeleteArgs = {
-  id: Scalars['ID'];
-  relationship_type: Scalars['String'];
-  toId: Scalars['StixRef'];
-};
-
-
-export type MutationCaseRelationAddArgs = {
-  id: Scalars['ID'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationCaseRelationDeleteArgs = {
-  id: Scalars['ID'];
-  relationship_type: Scalars['String'];
-  toId: Scalars['StixRef'];
 };
 
 
@@ -12006,40 +11917,8 @@ export type MutationCaseRfiAddArgs = {
 };
 
 
-export type MutationCaseRfiContextCleanArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCaseRfiContextPatchArgs = {
-  id: Scalars['ID'];
-  input: EditContext;
-};
-
-
 export type MutationCaseRfiDeleteArgs = {
   id: Scalars['ID'];
-};
-
-
-export type MutationCaseRfiFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MutationCaseRfiRelationAddArgs = {
-  id: Scalars['ID'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationCaseRfiRelationDeleteArgs = {
-  id: Scalars['ID'];
-  relationship_type: Scalars['String'];
-  toId: Scalars['StixRef'];
 };
 
 
@@ -12048,40 +11927,8 @@ export type MutationCaseRftAddArgs = {
 };
 
 
-export type MutationCaseRftContextCleanArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCaseRftContextPatchArgs = {
-  id: Scalars['ID'];
-  input: EditContext;
-};
-
-
 export type MutationCaseRftDeleteArgs = {
   id: Scalars['ID'];
-};
-
-
-export type MutationCaseRftFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MutationCaseRftRelationAddArgs = {
-  id: Scalars['ID'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationCaseRftRelationDeleteArgs = {
-  id: Scalars['ID'];
-  relationship_type: Scalars['String'];
-  toId: Scalars['StixRef'];
 };
 
 
@@ -12396,40 +12243,8 @@ export type MutationFeedbackAddArgs = {
 };
 
 
-export type MutationFeedbackContextCleanArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationFeedbackContextPatchArgs = {
-  id: Scalars['ID'];
-  input: EditContext;
-};
-
-
 export type MutationFeedbackDeleteArgs = {
   id: Scalars['ID'];
-};
-
-
-export type MutationFeedbackFieldPatchArgs = {
-  commitMessage?: InputMaybe<Scalars['String']>;
-  id: Scalars['ID'];
-  input: Array<InputMaybe<EditInput>>;
-  references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-};
-
-
-export type MutationFeedbackRelationAddArgs = {
-  id: Scalars['ID'];
-  input: StixRefRelationshipAddInput;
-};
-
-
-export type MutationFeedbackRelationDeleteArgs = {
-  id: Scalars['ID'];
-  relationship_type: Scalars['String'];
-  toId: Scalars['StixRef'];
 };
 
 
@@ -30211,33 +30026,13 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   bookmarkDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationBookmarkDeleteArgs, 'id'>>;
   campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<MutationCampaignAddArgs>>;
   campaignEdit?: Resolver<Maybe<ResolversTypes['CampaignEditMutations']>, ParentType, ContextType, RequireFields<MutationCampaignEditArgs, 'id'>>;
-  caseContextClean?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseContextCleanArgs, 'id'>>;
-  caseContextPatch?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseContextPatchArgs, 'id' | 'input'>>;
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
-  caseFieldPatch?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseFieldPatchArgs, 'id' | 'input'>>;
   caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
-  caseIncidentContextClean?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentContextCleanArgs, 'id'>>;
-  caseIncidentContextPatch?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentContextPatchArgs, 'id' | 'input'>>;
   caseIncidentDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseIncidentDeleteArgs, 'id'>>;
-  caseIncidentFieldPatch?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentFieldPatchArgs, 'id' | 'input'>>;
-  caseIncidentRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationAddArgs, 'id' | 'input'>>;
-  caseIncidentRelationDelete?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  caseRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRelationAddArgs, 'id' | 'input'>>;
-  caseRelationDelete?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseRfiAdd?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiAddArgs, 'input'>>;
-  caseRfiContextClean?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiContextCleanArgs, 'id'>>;
-  caseRfiContextPatch?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiContextPatchArgs, 'id' | 'input'>>;
   caseRfiDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRfiDeleteArgs, 'id'>>;
-  caseRfiFieldPatch?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiFieldPatchArgs, 'id' | 'input'>>;
-  caseRfiRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRfiRelationAddArgs, 'id' | 'input'>>;
-  caseRfiRelationDelete?: Resolver<Maybe<ResolversTypes['CaseRfi']>, ParentType, ContextType, RequireFields<MutationCaseRfiRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseRftAdd?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftAddArgs, 'input'>>;
-  caseRftContextClean?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftContextCleanArgs, 'id'>>;
-  caseRftContextPatch?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftContextPatchArgs, 'id' | 'input'>>;
   caseRftDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseRftDeleteArgs, 'id'>>;
-  caseRftFieldPatch?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftFieldPatchArgs, 'id' | 'input'>>;
-  caseRftRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseRftRelationAddArgs, 'id' | 'input'>>;
-  caseRftRelationDelete?: Resolver<Maybe<ResolversTypes['CaseRft']>, ParentType, ContextType, RequireFields<MutationCaseRftRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseSetTemplate?: Resolver<Maybe<ResolversTypes['Case']>, ParentType, ContextType, RequireFields<MutationCaseSetTemplateArgs, 'caseTemplatesId' | 'id'>>;
   caseTaskAdd?: Resolver<Maybe<ResolversTypes['CaseTask']>, ParentType, ContextType, RequireFields<MutationCaseTaskAddArgs, 'input'>>;
   caseTaskDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTaskDeleteArgs, 'id'>>;
@@ -30292,12 +30087,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   feedDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationFeedDeleteArgs, 'id'>>;
   feedEdit?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<MutationFeedEditArgs, 'id' | 'input'>>;
   feedbackAdd?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackAddArgs, 'input'>>;
-  feedbackContextClean?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackContextCleanArgs, 'id'>>;
-  feedbackContextPatch?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackContextPatchArgs, 'id' | 'input'>>;
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
-  feedbackFieldPatch?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackFieldPatchArgs, 'id' | 'input'>>;
-  feedbackRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationFeedbackRelationAddArgs, 'id' | 'input'>>;
-  feedbackRelationDelete?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<MutationGroupAddArgs>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;

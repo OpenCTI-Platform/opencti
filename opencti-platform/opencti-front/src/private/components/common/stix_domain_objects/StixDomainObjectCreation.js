@@ -49,6 +49,8 @@ import { CaseIncidentCreationForm } from '../../cases/incidents/CaseIncidentCrea
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
+import { CaseRfiCreationForm } from '../../cases/case_rfi/CaseRfiCreation';
+import { CaseRftCreationForm } from '../../cases/case_rft/CaseRftCreation';
 
 export const stixDomainObjectCreationAllTypesQuery = graphql`
   query StixDomainObjectCreationAllTypesQuery {
@@ -68,8 +70,6 @@ const UNSUPPORTED_TYPES = [
   'Note',
   'Opinion',
   'Feedback',
-  'Case-Rfi',
-  'Case-Rft',
 ]; // Language as no ui, note and opinion are not useful
 const IDENTITY_ENTITIES = [
   'Sector',
@@ -90,6 +90,8 @@ const CONTAINER_ENTITIES = [
   'Grouping',
   'Case-Incident',
   'Observed-Data',
+  'Case-Rfi',
+  'Case-Rft',
 ];
 
 const useStyles = makeStyles((theme) => ({
@@ -255,6 +257,28 @@ const StixDomainPanel = ({
       // Default to Incident case type
       return (
         <CaseIncidentCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    if (type === 'Case-Rfi') {
+      return (
+        <CaseRfiCreationForm
+          defaultConfidence={confidence}
+          defaultCreatedBy={baseCreatedBy}
+          defaultMarkingDefinitions={baseMarkingDefinitions}
+          onReset={onClose}
+          updater={creationUpdater}
+        />
+      );
+    }
+    if (type === 'Case-Rft') {
+      return (
+        <CaseRftCreationForm
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}

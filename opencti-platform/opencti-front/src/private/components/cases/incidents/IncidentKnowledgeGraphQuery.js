@@ -5,20 +5,22 @@ export const incidentKnowledgeGraphtMutationRelationAddMutation = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    caseIncidentRelationAdd(id: $id, input: $input) {
-      id
-      entity_type
-      parent_types
-      to {
-        ... on BasicObject {
-          id
-          entity_type
-          parent_types
-        }
-        ... on BasicRelationship {
-          id
-          entity_type
-          parent_types
+    stixDomainObjectEdit(id: $id) {
+      relationAdd(input: $input) {
+        id
+        entity_type
+        parent_types
+        to {
+          ... on BasicObject {
+            id
+            entity_type
+            parent_types
+          }
+          ... on BasicRelationship {
+            id
+            entity_type
+            parent_types
+          }
         }
       }
     }
@@ -31,12 +33,13 @@ export const incidentKnowledgeGraphMutationRelationDeleteMutation = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    caseIncidentRelationDelete(
-      id: $id
-      toId: $toId
-      relationship_type: $relationship_type
-    ) {
-      id
+    stixDomainObjectEdit(id: $id) {
+      relationDelete(
+        toId: $toId
+        relationship_type: $relationship_type
+      ) {
+        id
+      }
     }
   }
 `;

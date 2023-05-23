@@ -96,9 +96,13 @@ describe('Case resolver standard behavior', () => {
   it('should update case', async () => {
     const UPDATE_QUERY = gql`
       mutation CaseEdit($id: ID!, $input: [EditInput]!) {
-        caseFieldPatch(id: $id, input: $input) {
-          id
-          name
+        stixDomainObjectEdit(id: $id) {
+          fieldPatch(input: $input) {
+            id
+            ... on Case {
+              name
+            }
+          }
         }
       }
     `;
@@ -106,13 +110,15 @@ describe('Case resolver standard behavior', () => {
       query: UPDATE_QUERY,
       variables: { id: caseInternalId, input: { key: 'name', value: ['Case - test'] } },
     });
-    expect(queryResult.data.caseFieldPatch.name).toEqual('Case - test');
+    expect(queryResult.data.stixDomainObjectEdit.fieldPatch.name).toEqual('Case - test');
   });
   it('should context patch case', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation CaseEdit($id: ID!, $input: EditContext!) {
-        caseContextPatch(id: $id,  input: $input) {
-          id
+        stixDomainObjectEdit(id: $id) {
+          contextPatch(input: $input) {
+            id
+          }
         }
       }
     `;
@@ -120,13 +126,15 @@ describe('Case resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: caseInternalId, input: { focusOn: 'description' } },
     });
-    expect(queryResult.data.caseContextPatch.id).toEqual(caseInternalId);
+    expect(queryResult.data.stixDomainObjectEdit.contextPatch.id).toEqual(caseInternalId);
   });
   it('should context clean case', async () => {
     const CONTEXT_PATCH_QUERY = gql`
       mutation CaseEdit($id: ID!, $input: EditContext!) {
-        caseContextPatch(id: $id,  input: $input) {
-          id
+        stixDomainObjectEdit(id: $id) {
+          contextPatch(input: $input) {
+            id
+          }
         }
       }
     `;
@@ -134,7 +142,7 @@ describe('Case resolver standard behavior', () => {
       query: CONTEXT_PATCH_QUERY,
       variables: { id: caseInternalId, input: { focusOn: '' } },
     });
-    expect(queryResult.data.caseContextPatch.id).toEqual(caseInternalId);
+    expect(queryResult.data.stixDomainObjectEdit.contextPatch.id).toEqual(caseInternalId);
   });
   it('should case deleted', async () => {
     const DELETE_QUERY = gql`
