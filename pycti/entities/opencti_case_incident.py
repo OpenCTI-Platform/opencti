@@ -4,6 +4,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import LOGGER
+
 
 class CaseIncident:
     def __init__(self, opencti):
@@ -538,8 +540,10 @@ class CaseIncident:
             )
             query = """
                mutation CaseIncidentEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
-                    caseIncidentRelationAdd(id: $id, input: $input) {
-                        id
+                    stixDomainObjectEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                     }
                }
             """
@@ -585,8 +589,10 @@ class CaseIncident:
             )
             query = """
                mutation CaseIncidentEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                    caseIncidentRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
-                        id
+                    stixDomainObjectEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
                     }
                }
             """
@@ -673,3 +679,19 @@ class CaseIncident:
             self.opencti.log(
                 "error", "[opencti_caseIncident] Missing parameters: stixObject"
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            LOGGER.info("Deleting Case Incident {%s}.", id)
+            query = """
+                 mutation CaseIncidentDelete($id: ID!) {
+                     stixDomainObjectEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            LOGGER.error("[opencti_case_incident] Missing parameters: id")
+            return None

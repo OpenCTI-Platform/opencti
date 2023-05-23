@@ -4,6 +4,8 @@ import uuid
 from dateutil.parser import parse
 from stix2.canonicalization.Canonicalize import canonicalize
 
+from pycti.entities import LOGGER
+
 
 class CaseRft:
     def __init__(self, opencti):
@@ -529,7 +531,7 @@ class CaseRft:
             )
             query = """
                mutation CaseRftEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput) {
-                   caseRftEdit(id: $id) {
+                   stixDomainObjectEdit(id: $id) {
                         relationAdd(input: $input) {
                             id
                         }
@@ -578,7 +580,7 @@ class CaseRft:
             )
             query = """
                mutation CaseRftEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                   caseRftEdit(id: $id) {
+                   stixDomainObjectEdit(id: $id) {
                         relationDelete(toId: $toId, relationship_type: $relationship_type) {
                             id
                         }
@@ -666,3 +668,19 @@ class CaseRft:
             self.opencti.log(
                 "error", "[opencti_caseRft] Missing parameters: stixObject"
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            LOGGER.info("Deleting Case RFT {%s}.", id)
+            query = """
+                 mutation CaseRFTDelete($id: ID!) {
+                     stixDomainObjectEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            LOGGER.error("[opencti_case_rft] Missing parameters: id")
+            return None

@@ -959,6 +959,12 @@ class FeedbackTest(EntityTest):
             "description": "Feedback Test",
         }
 
+    def update_data(self) -> Dict[str, Union[str, int]]:
+        return {
+            "name": "Feedback 1",
+            "description": "Test",
+        }
+
     def own_class(self):
         return self.api_client.feedback
 

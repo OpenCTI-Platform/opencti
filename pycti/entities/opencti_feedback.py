@@ -516,16 +516,20 @@ class Feedback:
         if id is not None and input is not None:
             query = """
                         mutation FeedbackEdit($id: ID!, $input: [EditInput]!) {
-                           feedbackFieldPatch(id: $id, input: $input) {
-                                id
-                                standard_id
-                                entity_type
+                           stixDomainObjectEdit(id: $id) {
+                                fieldPatch(input: $input) {
+                                    id
+                                    ... on Feedback {
+                                        name
+                                        description 
+                                    }
+                               }
                            }
                         }
                     """
             result = self.opencti.query(query, {"id": id, "input": input})
             return self.opencti.process_multiple_fields(
-                result["data"]["feedbackFieldPatch"]
+                result["data"]["stixDomainObjectEdit"]["fieldPatch"]
             )
         else:
             LOGGER.error("[opencti_feedback] Missing parameters: id and key and value")
@@ -555,8 +559,10 @@ class Feedback:
             )
             query = """
                mutation FeedbackEditRelationAdd($id: ID!, $input: StixRefRelationshipAddInput!) {
-                    feedbackRelationAdd(id: $id, input: $input) {
-                        id
+                    stixDomainObjectEdit(id: $id) {
+                        relationAdd(input: $input) {
+                            id
+                        }
                     }
                }
             """
@@ -602,8 +608,10 @@ class Feedback:
             )
             query = """
                mutation FeedbackEditRelationDelete($id: ID!, $toId: StixRef!, $relationship_type: String!) {
-                    feedbackRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
-                        id
+                    stixDomainObjectEdit(id: $id) {
+                        relationDelete(toId: $toId, relationship_type: $relationship_type) {
+                            id
+                        }
                     }
                }
             """
@@ -686,3 +694,19 @@ class Feedback:
             self.opencti.log(
                 "error", "[opencti_feedback] Missing parameters: stixObject"
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            LOGGER.info("Deleting Feedback {%s}.", id)
+            query = """
+                 mutation FeedbackDelete($id: ID!) {
+                     stixDomainObjectEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            LOGGER.error("[opencti_feedback] Missing parameters: id")
+            return None

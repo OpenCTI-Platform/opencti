@@ -637,3 +637,19 @@ class CaseTask:
             self.opencti.log(
                 "error", "[opencti_caseTask] Missing parameters: stixObject"
             )
+
+    def delete(self, **kwargs):
+        id = kwargs.get("id", None)
+        if id is not None:
+            LOGGER.info("Deleting Case Task {%s}.", id)
+            query = """
+                 mutation CaseTaskDelete($id: ID!) {
+                     stixDomainObjectEdit(id: $id) {
+                         delete
+                     }
+                 }
+             """
+            self.opencti.query(query, {"id": id})
+        else:
+            LOGGER.error("[opencti_case_task] Missing parameters: id")
+            return None
