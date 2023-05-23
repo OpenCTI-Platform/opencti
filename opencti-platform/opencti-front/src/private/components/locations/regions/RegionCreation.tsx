@@ -10,8 +10,8 @@ import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
 import { FormikConfig } from 'formik/dist/types';
-import * as R from 'ramda';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -25,7 +25,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { SimpleFileUpload } from 'formik-mui';
+import { RegionCreationMutation$variables } from './__generated__/RegionCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -122,12 +122,14 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
   const [commit] = useMutation(regionMutation);
 
   const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
+    const finalValues: RegionCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      objectMarking: values.objectMarking.map(({ value }) => value),
+      objectLabel: values.objectLabel.map(({ value }) => value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      createdBy: values.createdBy?.value,
+    };
     if (values.file) {
       finalValues.file = values.file;
     }

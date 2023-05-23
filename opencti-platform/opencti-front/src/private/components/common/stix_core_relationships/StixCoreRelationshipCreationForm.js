@@ -6,6 +6,7 @@ import makeStyles from '@mui/styles/makeStyles';
 import Button from '@mui/material/Button';
 import * as Yup from 'yup';
 import * as R from 'ramda';
+import { SimpleFileUpload } from 'formik-mui';
 import SelectField from '../../../../components/SelectField';
 import ConfidenceField from '../form/ConfidenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -147,6 +148,7 @@ const StixCoreRelationshipCreationForm = ({
     externalReferences: [],
     objectMarking: defaultMarkingDefinitions ?? [],
     createdBy: defaultCreatedBy ?? '',
+    file: undefined,
   };
 
   return (
@@ -316,6 +318,15 @@ const StixCoreRelationshipCreationForm = ({
               name="externalReferences"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
+            />
+            <Field
+              component={SimpleFileUpload}
+              name="file"
+              label={t('Associated file')}
+              FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+              InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+              InputProps={{ fullWidth: true, variant: 'standard' }}
+              fullWidth={true}
             />
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>

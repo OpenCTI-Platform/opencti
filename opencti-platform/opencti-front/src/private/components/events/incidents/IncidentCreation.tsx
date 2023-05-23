@@ -12,6 +12,7 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -30,7 +31,6 @@ import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import { IncidentsCardsAndLinesPaginationQuery$variables } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {

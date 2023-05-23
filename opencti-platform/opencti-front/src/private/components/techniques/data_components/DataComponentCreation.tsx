@@ -13,6 +13,7 @@ import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { Dialog, DialogContent } from '@mui/material';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import DialogTitle from '@mui/material/DialogTitle';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -29,7 +30,6 @@ import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
-import { SimpleFileUpload } from 'formik-mui';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -156,7 +156,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       confidence: parseInt(String(values.confidence), 10),
     };
     if (values.file) {
-      finalValues.file = values.file
+      finalValues.file = values.file;
     }
     commit({
       variables: {

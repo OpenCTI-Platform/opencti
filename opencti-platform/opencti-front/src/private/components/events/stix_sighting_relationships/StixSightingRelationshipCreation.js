@@ -18,7 +18,6 @@ import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
 import { defaultValue } from '../../../../utils/Graph';
 import StixSightingRelationshipCreationForm from './StixSightingRelationshipCreationForm';
-import { SimpleFileUpload } from "formik-mui";
 
 const styles = (theme) => ({
   drawerPaper: {

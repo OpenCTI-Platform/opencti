@@ -31,7 +31,6 @@ import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
-import { OpinionCreationUserMutation$variables } from './__generated__/OpinionCreationUserMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -118,7 +117,6 @@ interface OpinionAddInput {
   externalReferences: { value: string }[];
   file: File | undefined
 }
-
 
 interface OpinionCreationProps {
   paginationOptions: OpinionsLinesPaginationQuery$variables;

@@ -4,6 +4,7 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
+import { SimpleFileUpload } from 'formik-mui';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
@@ -87,10 +88,8 @@ const StixSightingRelationshipCreationForm = ({
   toEntities,
   handleReverseRelation,
   handleResetSelection,
-
   onSubmit,
   handleClose,
-
   defaultConfidence,
   defaultFirstSeen,
   defaultLastSeen,
@@ -139,8 +138,9 @@ const StixSightingRelationshipCreationForm = ({
     description: '',
     externalReferences: [],
     objectMarking: defaultMarkingDefinitions ?? [],
-    createdBy: defaultCreatedBy ?? [],
+    createdBy: defaultCreatedBy ?? '',
     x_opencti_negative: false,
+    file: undefined,
   };
 
   return (
@@ -303,6 +303,15 @@ const StixSightingRelationshipCreationForm = ({
               name="externalReferences"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
+            />
+            <Field
+              component={SimpleFileUpload}
+              name="file"
+              label={t('Associated file')}
+              FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+              InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+              InputProps={{ fullWidth: true, variant: 'standard' }}
+              fullWidth={true}
             />
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>

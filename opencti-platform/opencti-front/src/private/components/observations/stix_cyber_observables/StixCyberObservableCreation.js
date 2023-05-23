@@ -31,6 +31,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
 import {
   commitMutation,
   handleErrorInForm,
@@ -62,7 +63,6 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { insertNode } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
-import { SimpleFileUpload } from "formik-mui";
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
