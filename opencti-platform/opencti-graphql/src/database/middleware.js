@@ -509,7 +509,9 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
 };
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
-  return elements.map((instance) => convertStoreToStix(instance));
+  // As stix load by ids doesn't respect the ordering we need to remap the result
+  const elementMap = new Map(elements.map((instance) => [instance.internal_id, instance]));
+  return ids.map((id) => convertStoreToStix(elementMap.get(id)));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);
