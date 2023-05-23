@@ -3686,7 +3686,7 @@ const WorkbenchFileContentComponent = ({
       {currentTab === 2 && renderRelationships()}
       {currentTab === 3 && renderContainers()}
       <Dialog
-        open={deleteObject}
+        open={!!deleteObject}
         PaperProps={{ elevation: 1 }}
         keepMounted
         TransitionComponent={Transition}
@@ -3703,7 +3703,7 @@ const WorkbenchFileContentComponent = ({
           </Button>
           <Button
             color="secondary"
-            onClick={submitDeleteObject}
+            onClick={() => submitDeleteObject()}
           >
             {t('Remove')}
           </Button>
