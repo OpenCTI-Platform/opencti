@@ -19,8 +19,8 @@ import { isNone, useFormatter } from '../../../../components/i18n';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
-import { truncate } from '../../../../utils/String';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { defaultValue } from '../../../../utils/Graph';
 
 const useStyles = makeStyles((theme) => ({
   containerRelation: {
@@ -121,16 +121,6 @@ const StixCoreRelationshipCreationForm = ({
   const isMultipleFrom = fromEntities.length > 1;
   const isMultipleTo = toEntities.length > 1;
 
-  const defaultName = (entity) => truncate(
-    // eslint-disable-next-line no-nested-ternary
-    (entity.parent_types.includes('Stix-Cyber-Observable')
-      ? entity.observable_value
-      : entity.entity_type === 'stix_relation'
-        ? `${entity.from.name} ${String.fromCharCode(8594)} ${entity.to.name}`
-        : entity.name),
-    20,
-  );
-
   // eslint-disable-next-line no-nested-ternary
   const defaultRelationshipType = R.head(relationshipTypes)
     ? R.head(relationshipTypes)
@@ -193,7 +183,7 @@ const StixCoreRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleFrom
                       ? (<em>{t('Multiple entities selected')}</em>)
-                      : (defaultName(fromEntity))}
+                      : (defaultValue(fromEntity))}
                   </span>
                 </div>
               </div>
@@ -242,7 +232,7 @@ const StixCoreRelationshipCreationForm = ({
                   <span className={classes.name}>
                     {isMultipleTo
                       ? (<em>{t('Multiple entities selected')}</em>)
-                      : (defaultName(toEntity))}
+                      : (defaultValue(toEntity))}
                   </span>
                 </div>
               </div>
