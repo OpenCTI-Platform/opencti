@@ -3087,7 +3087,7 @@ const i18n = {
       'confidence scale configuration has been successfully updated':
         "La configuration de l'échelle de confiance a été mise à jour avec succès",
       'Add Tick': 'Ajouter un marqueur',
-      'Response type': 'Type de réponse',
+      'Incident response type': 'Type de réponse à incident',
       'Related cases': 'Cas connexes',
       'Request for information type': 'Type de demande d\'informations',
       'Request for takedown type': 'Type de demande de retrait',

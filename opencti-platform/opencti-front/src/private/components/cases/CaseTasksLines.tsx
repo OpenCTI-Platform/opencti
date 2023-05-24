@@ -1,4 +1,4 @@
-import { Add, Close, ContentPasteGo } from '@mui/icons-material';
+import { Add, Close, ContentPasteGoOutlined } from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -20,7 +20,10 @@ import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPag
 import CaseTemplateField from '../common/form/CaseTemplateField';
 import { Option } from '../common/form/ReferenceField';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import {
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from './__generated__/CaseTasksLinesQuery.graphql';
 import { CaseTasksFiltering } from './__generated__/CaseTasksRefetch.graphql';
 import CaseTaskCreation from './case_task/CaseTaskCreation';
 import CaseTasksLineTitles from './case_task/CaseTasksLineTitles';
@@ -47,6 +50,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   createButton: {
     float: 'left',
+    marginTop: -15,
+  },
+  applyButton: {
+    float: 'right',
     marginTop: -15,
   },
   header: {
@@ -100,7 +107,7 @@ export const caseTasksLinesQuery = graphql`
     $cursor: ID
   ) {
     ...CaseTasksLines_data
-    @arguments(count: $count, filters: $filters, cursor: $cursor)
+      @arguments(count: $count, filters: $filters, cursor: $cursor)
   }
 `;
 
@@ -108,15 +115,12 @@ const caseTasksLinesFragment = graphql`
   fragment CaseTasksLines_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
-    filters: { type: "[CaseTasksFiltering!]",  }
+    filters: { type: "[CaseTasksFiltering!]" }
     cursor: { type: "ID" }
-  ) @refetchable(queryName: "CaseTasksRefetch") {
-    caseTasks(
-      first: $count,
-      filters: $filters
-      after: $cursor
-    )
-    @connection(key: "Pagination_caseTasks") {
+  )
+  @refetchable(queryName: "CaseTasksRefetch") {
+    caseTasks(first: $count, filters: $filters, after: $cursor)
+      @connection(key: "Pagination_caseTasks") {
       edges {
         node {
           ...CaseTasksLine_data
@@ -127,11 +131,11 @@ const caseTasksLinesFragment = graphql`
 `;
 
 interface CaseTasksLinesProps {
-  caseId: string
-  queryRef: PreloadedQuery<CaseTasksLinesQuery>
-  paginationOptions: CaseTasksLinesQuery$variables
-  tasksFilters: { filters: CaseTasksFiltering[] }
-  defaultMarkings?: Option[]
+  caseId: string;
+  queryRef: PreloadedQuery<CaseTasksLinesQuery>;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  tasksFilters: { filters: CaseTasksFiltering[] };
+  defaultMarkings?: Option[];
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
@@ -145,24 +149,24 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const [openCaseTemplate, setOpenCaseTemplate] = useState(false);
-
   const handleOpen = () => setOpen(true);
-
   const handleClose = () => setOpen(false);
-
   const [commit] = useMutation(caseSetTemplateQuery);
-
-  const {
-    data,
-  } = usePreloadedPaginationFragment<CaseTasksLinesQuery, CaseTasksLines_data$key>({
+  const { data } = usePreloadedPaginationFragment<
+  CaseTasksLinesQuery,
+  CaseTasksLines_data$key
+  >({
     queryRef,
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,
   });
-
   return (
     <div style={{ height: '100%' }}>
-      <Typography variant="h4" gutterBottom={true} style={{ float: 'left', paddingBottom: '11px' }}>
+      <Typography
+        variant="h4"
+        gutterBottom={true}
+        style={{ float: 'left', paddingBottom: '11px' }}
+      >
         {t('Tasks')}
       </Typography>
       <Tooltip title={t('Add a task to this container')}>
@@ -179,13 +183,13 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       <>
         <Tooltip title={t('Apply a new case template')}>
           <IconButton
-            color="secondary"
-            aria-label="ContentPasteGo"
+            color="primary"
+            aria-label="Apply"
             onClick={() => setOpenCaseTemplate(true)}
-            classes={{ root: classes.createButton }}
+            classes={{ root: classes.applyButton }}
             size="large"
           >
-            <ContentPasteGo fontSize="small" />
+            <ContentPasteGoOutlined fontSize="small" />
           </IconButton>
         </Tooltip>
         <Dialog
@@ -200,11 +204,15 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 commit({
                   variables: {
                     id: caseId,
-                    caseTemplatesId: values.caseTemplates.map(({ value }) => value),
-                    connections: [generateConnectionId({
-                      key: 'Pagination_caseTasks',
-                      params: tasksFilters,
-                    })],
+                    caseTemplatesId: values.caseTemplates.map(
+                      ({ value }) => value,
+                    ),
+                    connections: [
+                      generateConnectionId({
+                        key: 'Pagination_caseTasks',
+                        params: tasksFilters,
+                      }),
+                    ],
                   },
                   onCompleted: () => {
                     setSubmitting(false);
@@ -285,7 +293,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         {data.caseTasks && data.caseTasks.edges.length > 0 ? (
           <div>
             <CaseTasksLineTitles />
-            <List>
+            <List style={{ paddingTop: 0 }}>
               {data.caseTasks.edges.map(({ node }) => {
                 return (
                   <CaseTasksLine
@@ -300,9 +308,9 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           </div>
         ) : (
           <div className={classes.emptyContainer}>
-              <span className={classes.emptySpan}>
-                {t('No tasks has been found.')}
-              </span>
+            <span className={classes.emptySpan}>
+              {t('No tasks has been found.')}
+            </span>
           </div>
         )}
       </Paper>

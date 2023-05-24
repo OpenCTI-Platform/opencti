@@ -21,7 +21,7 @@ import StixCoreObjectLabels from '../stix_core_objects/StixCoreObjectLabels';
 
 const useStyles = makeStyles((theme) => ({
   item: {
-    paddingLeft: 10,
+    paddingLeft: 15,
     height: 50,
   },
   itemIcon: {
@@ -97,7 +97,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
           <div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width }}
+              style={{ width: dataColumns.entity_type.width, marginRight: 10 }}
             >
               <Chip
                 classes={{ root: classes.chipInList }}
@@ -295,6 +295,9 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         }
         ... on Case {
           name
+        }
+        ... on Note {
+          attribute_abstract
         }
         ... on StixCyberObservable {
           observable_value

@@ -129,7 +129,7 @@ const CaseIncidentDetailsFragment = graphql`
       first: 10
       orderBy: created
       orderMode: desc
-      types: ["Case-Incident"]
+      types: ["Case"]
       viaTypes: ["Indicator", "Stix-Cyber-Observable"]
     ) {
       edges {
@@ -212,7 +212,7 @@ const CaseIncidentDetails: FunctionComponent<CaseIncidentDetailsProps> = ({
           </Grid>
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Response type')}
+              {t('Incident response type')}
             </Typography>
             {responseTypes.length > 0
               ? (data.response_types ?? []).map((responseType) => (

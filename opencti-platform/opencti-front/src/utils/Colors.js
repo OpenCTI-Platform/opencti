@@ -55,6 +55,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#107a6e';
       }
       return '#44a49d';
+    case 'Case-Task':
+      if (dark) {
+        return '#303f9f';
+      }
+      return '#3f51b5';
     case 'Campaign':
       if (dark) {
         return '#4a148c';

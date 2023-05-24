@@ -14,7 +14,10 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { CaseTasksFilter, CaseTasksLinesQuery } from '../__generated__/CaseTasksLinesQuery.graphql';
+import {
+  CaseTasksFilter,
+  CaseTasksLinesQuery,
+} from '../__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
@@ -43,16 +46,21 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
   const caseIncidentData = useFragment(caseFragment, data);
 
   const tasksFilters = {
-    filters: [{
-      key: ['objectContains' as CaseTasksFilter],
-      values: [caseIncidentData.id],
-    }],
+    filters: [
+      {
+        key: ['objectContains' as CaseTasksFilter],
+        values: [caseIncidentData.id],
+      },
+    ],
   };
   const paginationOptions = {
     count: 25,
     filters: tasksFilters.filters,
   };
-  const queryRef = useQueryLoading<CaseTasksLinesQuery>(caseTasksLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<CaseTasksLinesQuery>(
+    caseTasksLinesQuery,
+    paginationOptions,
+  );
 
   return (
     <div className={classes.container}>
@@ -84,33 +92,10 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         style={{ marginTop: 25 }}
       >
         <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseIncidentData}
-            types={['Incident', 'stix-sighting-relationship']}
-            title={t('Incidents & alerts')}
-          />
-        </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
-          <ContainerStixObjectsOrStixRelationships
-            isSupportParticipation={false}
-            container={caseIncidentData}
-            types={['Stix-Cyber-Observable']}
-            title={t('Observables')}
-          />
-        </Grid>
-      </Grid>
-      {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+          {queryRef && (
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <CaseTasksLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -118,10 +103,18 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
                 tasksFilters={tasksFilters}
                 defaultMarkings={convertMarkings(caseIncidentData)}
               />
-            </Grid>
-          </Grid>
-        </React.Suspense>
-      )}
+            </React.Suspense>
+          )}
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseIncidentData}
+            types={['Incident', 'stix-sighting-relationship']}
+            title={t('Incidents & alerts')}
+          />
+        </Grid>
+      </Grid>
       <Grid
         container={true}
         spacing={3}
@@ -132,8 +125,8 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
-            title={t('Attack patterns')}
-            types={['Attack-Pattern']}
+            types={['Stix-Cyber-Observable']}
+            title={t('Observables')}
           />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
@@ -146,6 +139,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
               'Campaign',
               'Malware',
               'Tool',
+              'Attack-Pattern',
               'Identity',
               'Location',
             ]}
@@ -175,9 +169,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseIncidentEdition
-          caseId={caseIncidentData.id}
-        />
+        <CaseIncidentEdition caseId={caseIncidentData.id} />
       </Security>
     </div>
   );

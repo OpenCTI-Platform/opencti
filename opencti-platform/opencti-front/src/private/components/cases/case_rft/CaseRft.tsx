@@ -40,16 +40,21 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
   const caseRftData = useFragment(caseFragment, data);
 
   const tasksFilters = {
-    filters: [{
-      key: ['objectContains' as CaseTasksFilter],
-      values: [caseRftData.id],
-    }],
+    filters: [
+      {
+        key: ['objectContains' as CaseTasksFilter],
+        values: [caseRftData.id],
+      },
+    ],
   };
   const paginationOptions = {
     count: 25,
     filters: tasksFilters.filters,
   };
-  const queryRef = useQueryLoading<CaseTasksLinesQuery>(caseTasksLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<CaseTasksLinesQuery>(
+    caseTasksLinesQuery,
+    paginationOptions,
+  );
   return (
     <div className={classes.container}>
       <ContainerHeader
@@ -73,17 +78,17 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
           />
         </Grid>
       </Grid>
-      {queryRef && (
-        <React.Suspense
-          fallback={<Loader variant={LoaderVariant.inElement} />}
-        >
-          <Grid
-            container={true}
-            spacing={3}
-            classes={{ container: classes.gridContainer }}
-            style={{ marginTop: 25 }}
-          >
-            <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          {queryRef && (
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <CaseTasksLines
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
@@ -91,17 +96,10 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
                 tasksFilters={tasksFilters}
                 defaultMarkings={convertMarkings(caseRftData)}
               />
-            </Grid>
-          </Grid>
-        </React.Suspense>
-      )}
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+            </React.Suspense>
+          )}
+        </Grid>
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
@@ -128,9 +126,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <CaseRftEdition
-          caseId={caseRftData.id}
-        />
+        <CaseRftEdition caseId={caseRftData.id} />
       </Security>
     </div>
   );

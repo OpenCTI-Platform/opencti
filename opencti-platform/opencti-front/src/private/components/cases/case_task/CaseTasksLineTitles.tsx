@@ -10,7 +10,6 @@ const useStyles = makeStyles(() => ({
   item: {
     paddingLeft: 10,
     textTransform: 'uppercase',
-    borderBottom: '1px solid rgba(255, 255, 255, 0.12)',
   },
   headerItem: {
     float: 'left',

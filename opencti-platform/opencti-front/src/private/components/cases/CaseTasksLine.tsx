@@ -10,7 +10,10 @@ import ItemStatus from '../../../components/ItemStatus';
 import { DataColumns } from '../../../components/list_lines';
 import { Theme } from '../../../components/Theme';
 import StixCoreObjectLabels from '../common/stix_core_objects/StixCoreObjectLabels';
-import { CaseTasksLine_data$data, CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
+import {
+  CaseTasksLine_data$data,
+  CaseTasksLine_data$key,
+} from './__generated__/CaseTasksLine_data.graphql';
 import CaseTasksPopover from './case_task/CaseTasksPopover';
 import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
@@ -61,10 +64,7 @@ const dataColumns: DataColumns = {
     width: '20%',
     isSortable: true,
     render: (task: CaseTasksLine_data$data) => (
-      <StixCoreObjectLabels
-        variant="inList"
-        labels={task.objectLabel}
-      />
+      <StixCoreObjectLabels variant="inList" labels={task.objectLabel} />
     ),
   },
   x_opencti_workflow_id: {
@@ -82,7 +82,7 @@ const dataColumns: DataColumns = {
 };
 
 const CaseTaskFragment = graphql`
-  fragment CaseTasksLine_data on CaseTask{
+  fragment CaseTasksLine_data on CaseTask {
     id
     name
     dueDate
@@ -125,38 +125,40 @@ const CaseTaskFragment = graphql`
 `;
 
 interface CaseTasksLineProps {
-  data: CaseTasksLine_data$key
-  paginationOptions: CaseTasksLinesQuery$variables
-  caseId: string
+  data: CaseTasksLine_data$key;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  caseId: string;
 }
 
-const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ data, paginationOptions, caseId }) => {
+const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
+  data,
+  paginationOptions,
+  caseId,
+}) => {
   const classes = useStyles();
   const { fldt } = useFormatter();
 
   const task = useFragment(CaseTaskFragment, data);
 
   return (
-    <ListItem
-      classes={{ root: classes.item }}
-      divider={true}
-    >
+    <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type={'Case-Task'}></ItemIcon>
+        <ItemIcon type='Case-Task'></ItemIcon>
       </ListItemIcon>
-      <ListItemText primary={
-        <div>
-          {Object.values(dataColumns).map((value) => (
-            <div
-              key={value.label}
-              className={classes.bodyItem}
-              style={{ width: value.width }}
-            >
-              {value.render?.(task, { fldt })}
-            </div>
-          ))}
-        </div>
-      }
+      <ListItemText
+        primary={
+          <div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.bodyItem}
+                style={{ width: value.width }}
+              >
+                {value.render?.(task, { fldt })}
+              </div>
+            ))}
+          </div>
+        }
       />
       <ListItemIcon classes={{ root: classes.goIcon }}>
         <CaseTasksPopover

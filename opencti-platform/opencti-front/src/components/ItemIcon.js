@@ -34,7 +34,7 @@ import {
   MapOutlined,
   RouterOutlined,
   PowerSettingsNewOutlined,
-  AssignmentOutlined,
+  TaskAltOutlined,
   CasesOutlined,
 } from '@mui/icons-material';
 import {
@@ -202,7 +202,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
         />
       );
     case 'Case-Task':
-      return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
+      return <TaskAltOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Stix-Cyber-Observable':
     case 'Autonomous-System':
     case 'Directory':

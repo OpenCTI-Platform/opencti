@@ -7,6 +7,8 @@ import Chip from '@mui/material/Chip';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
+import ToggleButton from '@mui/material/ToggleButton';
 import MUITextField from '@mui/material/TextField';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import Select from '@mui/material/Select';
@@ -42,8 +44,8 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   manageAccess: {
+    margin: '-8px 0 0 0',
     float: 'right',
-    margin: '-10px 0 0 -8px',
   },
   export: {
     float: 'right',
@@ -146,10 +148,7 @@ const WorkspaceHeader = ({
       >
         {workspace.name}
       </Typography>
-      <Security
-        needs={[EXPLORE_EXUPDATE]}
-        hasAccess={userCanEdit}
-      >
+      <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
         <div className={classes.popover}>
           <WorkspacePopover workspace={workspace} />
         </div>
@@ -282,20 +281,19 @@ const WorkspaceHeader = ({
           adjust={adjust}
         />
       </div>
-      <Security
-        needs={[EXPLORE_EXUPDATE]}
-        hasAccess={userCanManage}
-      >
+      <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanManage}>
         <div className={classes.manageAccess}>
           <Tooltip title={t('Manage access')}>
-            <IconButton
-              color="secondary"
-              aria-label="Label"
-              onClick={handleOpenManageAccess}
-              size="large"
-            >
-              <LockPersonOutlined fontSize="small" color="warning"/>
-            </IconButton>
+            <ToggleButtonGroup size="small" color="warning" exclusive={true}>
+              <ToggleButton
+                aria-label="Label"
+                onClick={handleOpenManageAccess}
+                size="small"
+                value="manage-access"
+              >
+                <LockPersonOutlined fontSize="small" color="warning" />
+              </ToggleButton>
+            </ToggleButtonGroup>
           </Tooltip>
           <WorkspaceManageAccessDialog
             workspaceId={workspace.id}
@@ -317,10 +315,7 @@ const WorkspaceHeader = ({
               />
           ),
         )}
-        <Security
-          needs={[EXPLORE_EXUPDATE]}
-          hasAccess={userCanEdit}
-        >
+        <Security needs={[EXPLORE_EXUPDATE]} hasAccess={userCanEdit}>
           {tags.length > 5 ? (
             <Button
               color="primary"
@@ -332,35 +327,41 @@ const WorkspaceHeader = ({
               &nbsp;&nbsp;{t('More')}
             </Button>
           ) : (
-            <IconButton
-              style={{ float: 'left', marginTop: -5 }}
-              color={openTag ? 'primary' : 'secondary'}
-              aria-tag="Tag"
-              onClick={() => setOpenTag(!openTag)}
-              size="large"
-            >
-              {openTag ? <Close fontSize="small" /> : <Add fontSize="small" />}
-            </IconButton>
+            <Tooltip title={t('Add tag')}>
+              <IconButton
+                style={{ float: 'left', marginTop: -5 }}
+                color={openTag ? 'primary' : 'secondary'}
+                aria-tag="Tag"
+                onClick={() => setOpenTag(!openTag)}
+                size="large"
+              >
+                {openTag ? (
+                  <Close fontSize="small" />
+                ) : (
+                  <Add fontSize="small" />
+                )}
+              </IconButton>
+            </Tooltip>
           )}
           <Slide
-              direction="left"
-              in={openTag}
-              mountOnEnter={true}
-              unmountOnExit={true}
+            direction="left"
+            in={openTag}
+            mountOnEnter={true}
+            unmountOnExit={true}
           >
             <div style={{ float: 'left', marginTop: -5 }}>
               <Formik
-                  initialValues={{ new_tag: '' }}
-                  onSubmit={onSubmitCreateTag}
+                initialValues={{ new_tag: '' }}
+                onSubmit={onSubmitCreateTag}
               >
                 <Form style={{ float: 'right' }}>
                   <Field
-                      component={TextField}
-                      variant="standard"
-                      name="new_tag"
-                      autoFocus={true}
-                      placeholder={t('New tag')}
-                      className={classes.tagsInput}
+                    component={TextField}
+                    variant="standard"
+                    name="new_tag"
+                    autoFocus={true}
+                    placeholder={t('New tag')}
+                    className={classes.tagsInput}
                   />
                 </Form>
               </Formik>
