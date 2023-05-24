@@ -8800,7 +8800,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   valid_from?: Maybe<Scalars['DateTime']>;
   valid_until?: Maybe<Scalars['DateTime']>;
   workflowEnabled?: Maybe<Scalars['Boolean']>;
-  x_mitre_platforms?: Maybe<Array<Scalars['String']>>;
+  x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_detection?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -20237,6 +20237,7 @@ export type StixCoreRelationshipAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   fromId: Scalars['StixRef'];
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -29213,7 +29214,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

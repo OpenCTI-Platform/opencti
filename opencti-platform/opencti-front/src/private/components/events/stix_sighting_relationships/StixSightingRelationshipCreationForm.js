@@ -140,7 +140,6 @@ const StixSightingRelationshipCreationForm = ({
     objectMarking: defaultMarkingDefinitions ?? [],
     createdBy: defaultCreatedBy ?? '',
     x_opencti_negative: false,
-    file: undefined,
   };
 
   return (
@@ -303,15 +302,6 @@ const StixSightingRelationshipCreationForm = ({
               name="externalReferences"
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
-            />
-            <Field
-              component={SimpleFileUpload}
-              name="file"
-              label={t('Associated file')}
-              FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-              InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-              InputProps={{ fullWidth: true, variant: 'standard' }}
-              fullWidth={true}
             />
             {typeof handleResetSelection === 'function' && (
               <div className={classes.buttonBack}>

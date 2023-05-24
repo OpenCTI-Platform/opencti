@@ -3773,7 +3773,7 @@ type Indicator implements BasicObject & StixObject & StixCoreObject & StixDomain
   x_opencti_score: Int
   x_opencti_detection: Boolean
   x_opencti_main_observable_type: String
-  x_mitre_platforms: [String!]
+  x_mitre_platforms: [String]
   killChainPhases: KillChainPhaseConnection
   observables(first: Int): StixCyberObservableConnection
   creators: [Creator!]
@@ -7339,6 +7339,7 @@ input StixCoreRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
+  file: Upload
 }
 
 enum StixSightingRelationshipsOrdering {

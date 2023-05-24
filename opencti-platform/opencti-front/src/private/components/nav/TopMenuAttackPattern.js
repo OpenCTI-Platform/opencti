@@ -7,6 +7,8 @@ import Button from '@mui/material/Button';
 import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import { LockPattern } from 'mdi-material-ui';
 import inject18n from '../../../components/i18n';
+import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPLOAD } from "../../../utils/hooks/useGranted";
+import Security from "../../../utils/Security";
 
 const styles = (theme) => ({
   buttonHome: {
@@ -142,6 +144,28 @@ class TopMenuAttackPattern extends Component {
         >
           {t('Indicators')}
         </Button>
+        <Security needs={[KNOWLEDGE_KNUPLOAD, KNOWLEDGE_KNGETEXPORT]}>
+          <Button
+            component={Link}
+            to={`/dashboard/techniques/attack_patterns/${attackPatternId}/files`}
+            variant={
+              location.pathname
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/files`
+                ? 'contained'
+                : 'text'
+            }
+            size="small"
+            color={
+              location.pathname
+              === `/dashboard/techniques/attack_patterns/${attackPatternId}/files`
+                ? 'secondary'
+                : 'primary'
+            }
+            classes={{ root: classes.button }}
+          >
+            {t('Data')}
+          </Button>
+        </Security>
         <Button
           component={Link}
           to={`/dashboard/techniques/attack_patterns/${attackPatternId}/history`}

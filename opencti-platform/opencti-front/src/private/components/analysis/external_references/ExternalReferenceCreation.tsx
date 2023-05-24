@@ -151,7 +151,6 @@ ExternalReferenceCreationProps
     values,
     { setSubmitting, setErrors, resetForm },
   ) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     if (dryrun && onCreate) {
       onCreate(values, true);
       handleClose();
@@ -160,7 +159,7 @@ ExternalReferenceCreationProps
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: finalValues,
+        input: values,
       },
       updater: (store: RecordSourceSelectorProxy) => insertNode(
         store,
@@ -187,7 +186,6 @@ ExternalReferenceCreationProps
   };
 
   const onSubmitContextual: FormikConfig<ExternalReferenceAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = values.file.length === 0 ? R.dissoc('file', values) : values;
     if (dryrun && creationCallback && handleCloseContextual) {
       creationCallback({
         externalReferenceAdd: values,
@@ -198,7 +196,7 @@ ExternalReferenceCreationProps
     commitMutation({
       mutation: externalReferenceCreationMutation,
       variables: {
-        input: finalValues,
+        input: values,
       },
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
@@ -271,13 +269,13 @@ ExternalReferenceCreationProps
                 external_id: '',
                 url: '',
                 description: '',
-                file: '',
+                file: undefined,
               }}
               validationSchema={externalReferenceValidation(t)}
               onSubmit={onSubmit}
               onReset={onResetClassic}
             >
-              {({ submitForm, handleReset, isSubmitting, setFieldValue }) => (
+              {({ submitForm, handleReset, isSubmitting }) => (
                 <Form style={{ margin: '20px 0 20px 0' }}>
                   <Field
                     component={TextField}
