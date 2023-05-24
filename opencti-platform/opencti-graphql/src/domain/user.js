@@ -16,7 +16,13 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllRelations,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -55,6 +61,8 @@ import {
   isBypassUser,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
+  KNOWLEDGE_UPDATE,
+  KNOWLEDGE_UPDATE_ASSIGN,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER
 } from '../utils/access';
@@ -62,6 +70,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
+import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -137,6 +146,24 @@ export const findById = async (context, user, userId) => {
 
 export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
+};
+
+export const findCreators = (context, user, args) => {
+  const { onlyUsed = false, entityType = null } = args;
+  if (!onlyUsed && isUserHasCapability(user, KNOWLEDGE_UPDATE)) {
+    return findAll(context, user, args);
+  }
+  const types = entityType ? [entityType] : [];
+  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types });
+};
+
+export const findAssignees = (context, user, args) => {
+  const { onlyUsed = false, entityType = null } = args;
+  if (!onlyUsed && isUserHasCapability(user, KNOWLEDGE_UPDATE_ASSIGN)) {
+    return findAll(context, user, args);
+  }
+  const types = entityType ? [entityType] : [];
+  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types });
 };
 
 export const findAllMembers = (context, user, args) => {

@@ -1,11 +1,18 @@
 import * as R from 'ramda';
-import { offsetToCursor, READ_DATA_INDICES, READ_ENTITIES_INDICES, READ_RELATIONSHIPS_INDICES } from './utils';
-import { elCount, elFindByIds, elLoadById, elPaginate } from './engine';
+import {
+  buildPagination,
+  offsetToCursor,
+  READ_DATA_INDICES,
+  READ_ENTITIES_INDICES,
+  READ_RELATIONSHIPS_INDICES
+} from './utils';
+import { elAggregationsList, elCount, elFindByIds, elLoadById, elPaginate } from './engine';
 import { buildRefRelationKey } from '../schema/general';
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreCommon, BasicStoreEntity, BasicStoreObject, StoreEntityConnection, StoreProxyRelation } from '../types/store';
 import { FunctionalError, UnsupportedError } from '../config/errors';
 import type { FilterMode, InputMaybe, OrderingMode } from '../generated/graphql';
+import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
 
 const MAX_SEARCH_SIZE = 5000;
 
@@ -373,6 +380,21 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   return builtFilters;
 };
 
+const entitiesAggregations = [
+  { name: CREATOR_FILTER, field: 'creator_id.keyword' },
+  { name: ASSIGNEE_FILTER, field: 'rel_object-assignee.internal_id.keyword' }
+];
+export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthUser, filter: string, type: string, args = {}) => {
+  const aggregation = entitiesAggregations.find((agg) => agg.name === filter);
+  if (!aggregation) {
+    throw FunctionalError(`filter ${filter} is not supported as an aggregation.`);
+  }
+  const aggregationsList = await elAggregationsList(context, user, READ_ENTITIES_INDICES, [aggregation], args);
+  const values = aggregationsList.find((agg) => agg.name === filter)?.values ?? [];
+  const nodeElements = values.map((val: { value: string, label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
+  return buildPagination(0, null, nodeElements, nodeElements.length);
+};
+
 export const listEntities: InternalListEntities = async (context, user, entityTypes, args = {}) => {
   const { indices = READ_ENTITIES_INDICES } = args;
   // TODO Reactivate this test after global migration to typescript
@@ -408,7 +430,7 @@ export const internalFindByIds = async <T extends BasicStoreObject>(
   context: AuthContext,
   user: AuthUser,
   ids: string[],
-  args?: { type?: string, baseData?: boolean } & Record<string, string | boolean>
+  args?: { type?: string, baseData?: boolean, baseFields?: string[] } & Record<string, string | string[] | boolean>
 ) => {
   return await elFindByIds(context, user, ids, args) as unknown as T[];
 };

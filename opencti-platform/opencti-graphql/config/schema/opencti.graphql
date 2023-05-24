@@ -38,6 +38,7 @@ enum Capabilities {
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
   KNOWLEDGE_KNPARTICIPATE
+  KNOWLEDGE_KNUPDATE_KNASSIGN
   KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPLOAD
@@ -11446,9 +11447,9 @@ type Query {
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
-  creators(first: Int, search: String): CreatorConnection @auth(for: [KNOWLEDGE])
-  assignees(first: Int, search: String): AssigneeConnection @auth(for: [KNOWLEDGE])
-  members(first: Int, search: String): MemberConnection @auth(for: [KNOWLEDGE])
+  creators(first: Int, search: String, entityType: String, onlyUsed: Boolean): CreatorConnection @auth(for: [KNOWLEDGE])
+  assignees(first: Int, search: String, entityType: String, onlyUsed: Boolean): AssigneeConnection @auth(for: [KNOWLEDGE])
+  members(first: Int, search: String): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE])
   users(
     first: Int
     after: ID

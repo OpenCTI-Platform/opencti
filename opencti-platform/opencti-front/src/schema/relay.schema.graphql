@@ -32,6 +32,7 @@ enum Capabilities {
   KNOWLEDGE
   KNOWLEDGE_KNUPDATE
   KNOWLEDGE_KNPARTICIPATE
+  KNOWLEDGE_KNUPDATE_KNASSIGN
   KNOWLEDGE_KNUPDATE_KNDELETE
   KNOWLEDGE_KNUPDATE_KNORGARESTRICT
   KNOWLEDGE_KNUPLOAD
@@ -7611,8 +7612,8 @@ type Query {
   me: MeUser!
   otpGeneration: OtpElement
   user(id: String!): User
-  creators(first: Int, search: String): CreatorConnection
-  assignees(first: Int, search: String): AssigneeConnection
+  creators(first: Int, search: String, entityType: String, onlyUsed: Boolean): CreatorConnection
+  assignees(first: Int, search: String, entityType: String, onlyUsed: Boolean): AssigneeConnection
   members(first: Int, search: String): MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]

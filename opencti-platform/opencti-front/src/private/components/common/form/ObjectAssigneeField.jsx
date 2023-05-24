@@ -9,12 +9,14 @@ import { fetchQuery } from '../../../../relay/environment';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
+import { KNOWLEDGE_KNUPDATE_KNASSIGN } from '../../../../utils/hooks/useGranted';
+import Security from '../../../../utils/Security';
 
 const SEARCH$ = new Subject().pipe(debounce(() => timer(1500)));
 
 export const objectAssigneeFieldAssigneesSearchQuery = graphql`
-  query ObjectAssigneeFieldAssigneesSearchQuery($search: String, $first: Int) {
-    assignees(search: $search, first: $first) {
+  query ObjectAssigneeFieldAssigneesSearchQuery($search: String, $first: Int, $entityType: String, $onlyUsed: Boolean) {
+    assignees(search: $search, first: $first, entityType: $entityType, onlyUsed: $onlyUsed) {
       edges {
         node {
           id
@@ -101,34 +103,36 @@ class ObjectAssigneeField extends Component {
   render() {
     const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
     return (
-      <div>
-        <Field
-          component={AutocompleteField}
-          style={style}
-          name={name}
-          disabled={disabled}
-          multiple={true}
-          textfieldprops={{
-            variant: 'standard',
-            label: t('Assignee(s)'),
-            helperText: helpertext,
-            onFocus: this.searchAssignees.bind(this),
-          }}
-          noOptionsText={t('No available options')}
-          options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
-          onInputChange={this.handleSearch.bind(this)}
-          onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
-          renderOption={(props, option) => (
-            <li {...props}>
-              <div className={classes.icon}>
-                <ItemIcon type={option.type} />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-            </li>
-          )}
-          classes={{ clearIndicator: classes.autoCompleteIndicator }}
-        />
-      </div>
+        <Security needs={[KNOWLEDGE_KNUPDATE_KNASSIGN]}>
+          <div>
+            <Field
+              component={AutocompleteField}
+              style={style}
+              name={name}
+              disabled={disabled}
+              multiple={true}
+              textfieldprops={{
+                variant: 'standard',
+                label: t('Assignee(s)'),
+                helperText: helpertext,
+                onFocus: this.searchAssignees.bind(this),
+              }}
+              noOptionsText={t('No available options')}
+              options={this.state.assignees.sort((a, b) => a.label.localeCompare(b.label))}
+              onInputChange={this.handleSearch.bind(this)}
+              onChange={typeof onChange === 'function' ? onChange.bind(this) : null}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={option.type} />
+                  </div>
+                  <div className={classes.text}>{option.label}</div>
+                </li>
+              )}
+              classes={{ clearIndicator: classes.autoCompleteIndicator }}
+            />
+          </div>
+        </Security>
     );
   }
 }

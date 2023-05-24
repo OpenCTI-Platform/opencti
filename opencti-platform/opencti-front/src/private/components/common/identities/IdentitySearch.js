@@ -24,8 +24,8 @@ export const identitySearchIdentitiesSearchQuery = graphql`
 `;
 
 export const identitySearchCreatorsSearchQuery = graphql`
-  query IdentitySearchCreatorsSearchQuery($search: String, $first: Int) {
-    creators(search: $search, first: $first) {
+  query IdentitySearchCreatorsSearchQuery($search: String, $first: Int, $entityType: String, $onlyUsed: Boolean) {
+    creators(search: $search, first: $first, entityType: $entityType, onlyUsed: $onlyUsed) {
       edges {
         node {
           id

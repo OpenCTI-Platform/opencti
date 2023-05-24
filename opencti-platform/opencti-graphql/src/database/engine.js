@@ -838,7 +838,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, baseData = false } = opts;
+  const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -856,13 +856,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if (isStixObjectAliased(type) || forceAliases) {
       elementTypes.push(INTERNAL_IDS_ALIASES);
     }
-    for (let i = 0; i < workingIds.length; i += 1) {
-      const id = workingIds[i];
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const term = { [`${elementType}.keyword`]: id };
-        idsTermsPerType.push({ term });
-      }
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const terms = { [`${elementType}.keyword`]: workingIds };
+      idsTermsPerType.push({ terms });
     }
     const should = {
       bool: {
@@ -901,7 +898,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source: baseData ? BASE_FIELDS : true,
+      _source: baseData ? baseFields : true,
       body,
     };
     logApp.debug('[SEARCH] elInternalLoadById', { query });
@@ -1062,13 +1059,10 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (ids.length > 0) {
     const idsTermsPerType = [];
     const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    for (let i = 0; i < ids.length; i += 1) {
-      const id = ids[i];
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const term = { [`${elementType}.keyword`]: id };
-        idsTermsPerType.push({ term });
-      }
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const terms = { [`${elementType}.keyword`]: ids };
+      idsTermsPerType.push({ terms });
     }
     mustFilters.push({ bool: { should: idsTermsPerType, minimum_should_match: 1 } });
   }
@@ -1506,6 +1500,64 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       throw DatabaseError('[SEARCH] Fail processing AggregationRelationsCount', { error: e });
     });
 };
+
+export const elAggregationsList = async (context, user, indexName, aggregations = [], options = {}) => {
+  const { types = [], resolveByIds = true } = options;
+  if (aggregations) {
+    let queryAggs = {};
+    aggregations.forEach((agg) => {
+      const aggregation = {
+        [agg.name]: {
+          terms: {
+            field: agg.field,
+            size: 500,
+          }
+        }
+      };
+      queryAggs = { ...queryAggs, ...aggregation };
+    });
+    const body = {
+      aggs: queryAggs,
+      size: 0
+    };
+    if (types.length) {
+      // handle options for entity context (entity types)
+      const searchBody = await elQueryBodyBuilder(context, user, options);
+      if (searchBody.query) {
+        body.query = searchBody.query;
+      }
+    }
+    const query = {
+      index: indexName,
+      ignore_throttled: ES_IGNORE_THROTTLED,
+      track_total_hits: true,
+      _source: false,
+      body,
+    };
+    const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
+    const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+      throw DatabaseError('[SEARCH] Aggregations list fail', { error: err, query });
+    });
+    const aggsMap = Object.keys(data.aggregations);
+    const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b) => b.key))));
+    const aggsElements = resolveByIds
+      ? await elFindByIds(context, user, aggsValues, { baseData: true, baseFields: ['internal_id', 'name', 'entity_type'] })
+      : [];
+    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: element.name })));
+    const aggregationsResult = data.aggregations ? aggsMap.map((agg) => {
+      const values = data.aggregations[agg].buckets
+        ?.map((b) => ({ label: resolveByIds ? aggsElementsCache[b.key] ?? null : b.key, value: b.key }))
+        ?.filter((v) => !!v.label);
+      return {
+        name: agg,
+        values,
+      };
+    }) : [];
+    return aggregationsResult;
+  }
+  return [];
+};
+
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, first = 200 } = options;

@@ -1548,6 +1548,7 @@ export enum Capabilities {
   KnowledgeKngetexportKnaskexport = 'KNOWLEDGE_KNGETEXPORT_KNASKEXPORT',
   KnowledgeKnparticipate = 'KNOWLEDGE_KNPARTICIPATE',
   KnowledgeKnupdate = 'KNOWLEDGE_KNUPDATE',
+  KnowledgeKnupdateKnassign = 'KNOWLEDGE_KNUPDATE_KNASSIGN',
   KnowledgeKnupdateKndelete = 'KNOWLEDGE_KNUPDATE_KNDELETE',
   KnowledgeKnupdateKnorgarestrict = 'KNOWLEDGE_KNUPDATE_KNORGARESTRICT',
   KnowledgeKnupload = 'KNOWLEDGE_KNUPLOAD',
@@ -16674,7 +16675,9 @@ export type QueryAdministrativeAreasArgs = {
 
 
 export type QueryAssigneesArgs = {
+  entityType?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
+  onlyUsed?: InputMaybe<Scalars['Boolean']>;
   search?: InputMaybe<Scalars['String']>;
 };
 
@@ -16958,7 +16961,9 @@ export type QueryCoursesOfActionArgs = {
 
 
 export type QueryCreatorsArgs = {
+  entityType?: InputMaybe<Scalars['String']>;
   first?: InputMaybe<Scalars['Int']>;
+  onlyUsed?: InputMaybe<Scalars['Boolean']>;
   search?: InputMaybe<Scalars['String']>;
 };
 

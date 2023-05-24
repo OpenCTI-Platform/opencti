@@ -179,6 +179,7 @@ class ListLines extends Component {
       redirectionMode,
       parametersWithPadding,
     } = this.props;
+    const searchContext = { entityType: exportEntityType };
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
@@ -211,6 +212,7 @@ class ListLines extends Component {
                 )}
                 {availableFilterKeys && availableFilterKeys.length > 0 && (
                   <Filters
+                    searchContext={searchContext}
                     availableFilterKeys={availableFilterKeys}
                     handleAddFilter={handleAddFilter}
                     availableEntityTypes={availableEntityTypes}

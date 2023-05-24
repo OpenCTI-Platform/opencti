@@ -88,6 +88,7 @@ class ListCards extends Component {
       numberOfElements,
       availableFilterKeys,
     } = this.props;
+    const searchContext = { entityType: exportEntityType };
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     return (
       <div className={classes.container}>
@@ -100,7 +101,11 @@ class ListCards extends Component {
             />
           </div>
           {availableFilterKeys && availableFilterKeys.length > 0 && (
-            <Filters availableFilterKeys={availableFilterKeys} handleAddFilter={handleAddFilter}/>
+            <Filters
+              availableFilterKeys={availableFilterKeys}
+              handleAddFilter={handleAddFilter}
+              searchContext={searchContext}
+            />
           )}
           <InputLabel
             classes={{ root: classes.sortFieldLabel }}
