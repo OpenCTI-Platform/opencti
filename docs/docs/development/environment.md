@@ -45,7 +45,7 @@ Clone the latest version of the dev docker compose and start
 ```bash
 $ git clone https://github.com/OpenCTI-Platform/docker.git
 $ cd docker
-$ docker-compose -f ./docker-compose-dev.yml up -d
+$ docker-compose -f ./docker-compose.dev.yml up -d
 ```
 
 # Clone the project
