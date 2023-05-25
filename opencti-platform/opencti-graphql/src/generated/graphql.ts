@@ -7116,6 +7116,12 @@ export type Group = BasicObject & InternalObject & {
   updated_at?: Maybe<Scalars['DateTime']>;
 };
 
+
+export type GroupRolesArgs = {
+  orderBy?: InputMaybe<RolesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
 export type GroupAddInput = {
   auto_new_marking?: InputMaybe<Scalars['Boolean']>;
   clientMutationId?: InputMaybe<Scalars['String']>;
@@ -23578,6 +23584,24 @@ export type User = BasicObject & InternalObject & {
   user_email: Scalars['String'];
 };
 
+
+export type UserGroupsArgs = {
+  orderBy?: InputMaybe<GroupsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
+
+export type UserObjectOrganizationArgs = {
+  orderBy?: InputMaybe<GroupsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
+
+export type UserRolesArgs = {
+  orderBy?: InputMaybe<RolesOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+};
+
 export type UserAccount = BasicObject & StixCoreObject & StixCyberObservable & StixObject & {
   __typename?: 'UserAccount';
   account_created?: Maybe<Scalars['DateTime']>;
@@ -28747,7 +28771,7 @@ export type GroupResolvers<ContextType = any, ParentType extends ResolversParent
   members?: Resolver<Maybe<ResolversTypes['UserConnection']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Role']>>>, ParentType, ContextType>;
+  roles?: Resolver<Maybe<Array<Maybe<ResolversTypes['Role']>>>, ParentType, ContextType, Partial<GroupRolesArgs>>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   updated_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -33035,18 +33059,18 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   external?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   firstname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType>;
+  groups?: Resolver<Maybe<ResolversTypes['GroupConnection']>, ParentType, ContextType, Partial<UserGroupsArgs>>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   individual_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   language?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   lastname?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType>;
+  objectOrganization?: Resolver<Maybe<ResolversTypes['OrganizationConnection']>, ParentType, ContextType, Partial<UserObjectOrganizationArgs>>;
   otp_activated?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   otp_qr?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
-  roles?: Resolver<Array<Maybe<ResolversTypes['Role']>>, ParentType, ContextType>;
+  roles?: Resolver<Array<Maybe<ResolversTypes['Role']>>, ParentType, ContextType, Partial<UserRolesArgs>>;
   sessions?: Resolver<Maybe<Array<Maybe<ResolversTypes['SessionDetail']>>>, ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   theme?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

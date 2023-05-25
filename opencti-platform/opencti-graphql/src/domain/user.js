@@ -166,11 +166,12 @@ export const batchOrganizations = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
-export const batchRolesForGroups = async (context, user, groupId) => {
-  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+export const batchRolesForGroups = async (context, user, groupId, opts = {}) => {
+  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { ...opts, paginate: false });
 };
 
-export const batchRolesForUsers = async (context, user, userIds) => {
+export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
+  const { orderBy = null, orderMode = null } = opts;
   // Get all groups for users
   const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = [];
@@ -204,7 +205,18 @@ export const batchRolesForUsers = async (context, user, userIds) => {
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
     const idRoles = groups.map((g) => groupWithRoles[g] ?? []).flat();
-    return idRoles.map((r) => rolesMap[r]);
+    let roleValues = idRoles.map((r) => rolesMap[r]);
+    // sort roles
+    if (orderBy && orderMode) {
+      const unsortableRoles = roleValues.filter((n) => isEmptyField(n[orderBy]));
+      const sortedRoles = roleValues // sort sorted edges
+        .filter((n) => isNotEmptyField(n[orderBy]))
+        .sort((a, b) => (orderMode === 'asc'
+          ? (a[orderBy].toString()).localeCompare(b[orderBy].toString())
+          : (b[orderBy].toString()).localeCompare(a[orderBy].toString())));
+      roleValues = sortedRoles.concat(unsortableRoles); // add unsortable edges (empty fields) at the end
+    }
+    return roleValues;
   });
 };
 

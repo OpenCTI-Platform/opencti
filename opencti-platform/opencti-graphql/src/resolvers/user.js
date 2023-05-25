@@ -76,9 +76,9 @@ const userResolvers = {
     bookmarks: (_, { types }, context) => bookmarks(context, context.user, types),
   },
   User: {
-    roles: (current, _, context) => rolesUsersLoader.load(current.id, context, context.user),
-    groups: (current, _, context) => groupsLoader.load(current.id, context, context.user),
-    objectOrganization: (current, _, context) => organizationsLoader.load(current.id, context, context.user, { withInferences: false }),
+    roles: (current, args, context) => rolesUsersLoader.load(current.id, context, context.user, args),
+    groups: (current, args, context) => groupsLoader.load(current.id, context, context.user, args),
+    objectOrganization: (current, args, context) => organizationsLoader.load(current.id, context, context.user, { ...args, withInferences: false }),
     editContext: (current) => fetchEditContext(current.id),
     sessions: (current) => findUserSessions(current.id),
   },
@@ -93,7 +93,7 @@ const userResolvers = {
     capabilities: (role, _, context) => rolesCapabilitiesLoader.load(role.id, context, context.user),
   },
   Group: {
-    roles: (group, _, context) => rolesGroupsLoader.load(group.id, context, context.user),
+    roles: (group, args, context) => rolesGroupsLoader.load(group.id, context, context.user, args),
   },
   Mutation: {
     otpActivation: (_, { input }, context) => otpUserActivation(context, context.user, input),

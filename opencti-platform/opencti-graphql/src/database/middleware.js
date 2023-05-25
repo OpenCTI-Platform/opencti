@@ -266,9 +266,41 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 // endregion
 
 // region bulk loading method
+const orderItems = (element, orderBy, orderMode, paginate, flattenElement = false) => {
+  if (paginate) {
+    const unsortableEdges = element.filter((n) => isEmptyField(n.node[orderBy]));
+    const sortedEdges = element // sort sorted edges
+      .filter((n) => isNotEmptyField(n.node[orderBy]))
+      .sort((a, b) => (orderMode === 'asc'
+        ? (a.node[orderBy].toString()).localeCompare(b.node[orderBy].toString())
+        : (b.node[orderBy].toString()).localeCompare(a.node[orderBy].toString())));
+    return sortedEdges.concat(unsortableEdges); // add unsortable edges (empty fields) at the end
+  }
+  if (flattenElement) {
+    const unsortableEdges = element.filter((n) => isEmptyField(n[orderBy]));
+    const sortedEdges = element // sort sorted edges
+      .filter((n) => isNotEmptyField(n[orderBy]))
+      .sort((a, b) => (orderMode === 'asc'
+        ? (a[orderBy].toString()).localeCompare(b[orderBy].toString())
+        : (b[orderBy].toString()).localeCompare(a[orderBy].toString())));
+    return sortedEdges.concat(unsortableEdges); // add unsortable edges (empty fields) at the end
+  }
+  const sortedElements = element // sort sorted edges
+    .map((el) => {
+      const unsortableItems = el.filter((n) => isEmptyField(n[orderBy]));
+      const sortedItems = el
+        .filter((n) => isNotEmptyField(n[orderBy]))
+        .sort((a, b) => (orderMode === 'asc'
+          ? (a[orderBy].toString()).localeCompare(b[orderBy].toString())
+          : (b[orderBy].toString()).localeCompare(a[orderBy].toString())));
+      return sortedItems.concat(unsortableItems);
+    });
+  return sortedElements; // add unsortable edges (empty fields) at the end
+};
+
 // Listing handle
 const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
-  const { paginate = true, withInferences = true, batched = true, first = null } = opts;
+  const { paginate = true, withInferences = true, batched = true, first = null, orderBy = null, orderMode = null } = opts;
   const opposite = sourceSide === 'from' ? 'to' : 'from';
   // USING ELASTIC
   const ids = Array.isArray(sources) ? sources : [sources];
@@ -313,6 +345,10 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
           .filter((n) => isNotEmptyField(n))
           .map((n) => ({ node: n }));
       }
+      // sort edges
+      if (orderBy && orderMode) {
+        edges = orderItems(edges, orderBy, orderMode, true);
+      }
       return buildPagination(0, null, edges, edges.length);
     });
   }
@@ -326,9 +362,9 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
       .filter((n) => isNotEmptyField(n));
   });
   if (batched) {
-    return elements;
+    return (orderBy && orderMode) ? orderItems(elements, orderBy, orderMode, false) : elements;
   }
-  return R.flatten(elements);
+  return (orderBy && orderMode) ? orderItems(R.flatten(elements), orderBy, orderMode, false, true) : R.flatten(elements);
 };
 export const batchListThroughGetFrom = async (context, user, sources, relationType, targetEntityType, opts = {}) => {
   return batchListThrough(context, user, sources, 'to', relationType, targetEntityType, opts);
