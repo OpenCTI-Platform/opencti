@@ -1,4 +1,4 @@
-// Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.10.1
+// Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.13.0
 // jshint ignore: start
 import antlr4 from 'antlr4';
 

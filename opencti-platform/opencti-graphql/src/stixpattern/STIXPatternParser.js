@@ -1,4 +1,4 @@
-// Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.10.1
+// Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.13.0
 // jshint ignore: start
 import antlr4 from 'antlr4';
 import STIXPatternListener from './STIXPatternListener.js';
@@ -80,7 +80,7 @@ const atn = new antlr4.atn.ATNDeserializer().deserialize(serializedATN);
 
 const decisionsToDFA = atn.decisionToState.map( (ds, index) => new antlr4.dfa.DFA(ds, index) );
 
-const sharedContextCache = new antlr4.PredictionContextCache();
+const sharedContextCache = new antlr4.atn.PredictionContextCache();
 
 export default class STIXPatternParser extends antlr4.Parser {
 
@@ -121,10 +121,6 @@ export default class STIXPatternParser extends antlr4.Parser {
         this.ruleNames = STIXPatternParser.ruleNames;
         this.literalNames = STIXPatternParser.literalNames;
         this.symbolicNames = STIXPatternParser.symbolicNames;
-    }
-
-    get atn() {
-        return atn;
     }
 
     sempred(localctx, ruleIndex, predIndex) {
@@ -422,7 +418,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	        this.state = 81;
 	        this._errHandler.sync(this);
 	        switch(this._input.LA(1)) {
-	        case STIXPatternParser.LBRACK:
+	        case 44:
 	            localctx = new ObservationExpressionSimpleContext(this, localctx);
 	            this._ctx = localctx;
 	            _prevctx = localctx;
@@ -434,7 +430,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 75;
 	            this.match(STIXPatternParser.RBRACK);
 	            break;
-	        case STIXPatternParser.LPAREN:
+	        case 42:
 	            localctx = new ObservationExpressionCompoundContext(this, localctx);
 	            this._ctx = localctx;
 	            _prevctx = localctx;
@@ -631,7 +627,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	propTest() {
 	    let localctx = new PropTestContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 14, STIXPatternParser.RULE_propTest);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.state = 171;
 	        this._errHandler.sync(this);
@@ -645,14 +641,14 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 118;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 117;
 	                this.match(STIXPatternParser.NOT);
 	            }
 
 	            this.state = 120;
 	            _la = this._input.LA(1);
-	            if(!(_la===STIXPatternParser.EQ || _la===STIXPatternParser.NEQ)) {
+	            if(!(_la===31 || _la===32)) {
 	            this._errHandler.recoverInline(this);
 	            }
 	            else {
@@ -671,14 +667,14 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 125;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 124;
 	                this.match(STIXPatternParser.NOT);
 	            }
 
 	            this.state = 127;
 	            _la = this._input.LA(1);
-	            if(!(((((_la - 33)) & ~0x1f) == 0 && ((1 << (_la - 33)) & ((1 << (STIXPatternParser.LT - 33)) | (1 << (STIXPatternParser.LE - 33)) | (1 << (STIXPatternParser.GT - 33)) | (1 << (STIXPatternParser.GE - 33)))) !== 0))) {
+	            if(!(((((_la - 33)) & ~0x1f) === 0 && ((1 << (_la - 33)) & 15) !== 0))) {
 	            this._errHandler.recoverInline(this);
 	            }
 	            else {
@@ -697,7 +693,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 132;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 131;
 	                this.match(STIXPatternParser.NOT);
 	            }
@@ -716,7 +712,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 139;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 138;
 	                this.match(STIXPatternParser.NOT);
 	            }
@@ -735,7 +731,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 146;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 145;
 	                this.match(STIXPatternParser.NOT);
 	            }
@@ -754,7 +750,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 153;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 152;
 	                this.match(STIXPatternParser.NOT);
 	            }
@@ -773,7 +769,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 160;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            if(_la===STIXPatternParser.NOT) {
+	            if(_la===12) {
 	                this.state = 159;
 	                this.match(STIXPatternParser.NOT);
 	            }
@@ -853,14 +849,14 @@ export default class STIXPatternParser extends antlr4.Parser {
 	withinQualifier() {
 	    let localctx = new WithinQualifierContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 18, STIXPatternParser.RULE_withinQualifier);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.enterOuterAlt(localctx, 1);
 	        this.state = 178;
 	        this.match(STIXPatternParser.WITHIN);
 	        this.state = 179;
 	        _la = this._input.LA(1);
-	        if(!(_la===STIXPatternParser.IntPosLiteral || _la===STIXPatternParser.FloatPosLiteral)) {
+	        if(!(_la===2 || _la===4)) {
 	        this._errHandler.recoverInline(this);
 	        }
 	        else {
@@ -950,12 +946,12 @@ export default class STIXPatternParser extends antlr4.Parser {
 	objectType() {
 	    let localctx = new ObjectTypeContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 24, STIXPatternParser.RULE_objectType);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.enterOuterAlt(localctx, 1);
 	        this.state = 192;
 	        _la = this._input.LA(1);
-	        if(!(_la===STIXPatternParser.IdentifierWithoutHyphen || _la===STIXPatternParser.IdentifierWithHyphen)) {
+	        if(!(_la===29 || _la===30)) {
 	        this._errHandler.recoverInline(this);
 	        }
 	        else {
@@ -981,12 +977,12 @@ export default class STIXPatternParser extends antlr4.Parser {
 	firstPathComponent() {
 	    let localctx = new FirstPathComponentContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 26, STIXPatternParser.RULE_firstPathComponent);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.enterOuterAlt(localctx, 1);
 	        this.state = 194;
 	        _la = this._input.LA(1);
-	        if(!(_la===STIXPatternParser.StringLiteral || _la===STIXPatternParser.IdentifierWithoutHyphen)) {
+	        if(!(_la===7 || _la===29)) {
 	        this._errHandler.recoverInline(this);
 	        }
 	        else {
@@ -1018,13 +1014,13 @@ export default class STIXPatternParser extends antlr4.Parser {
 	    let _prevctx = localctx;
 	    const _startState = 28;
 	    this.enterRecursionRule(localctx, 28, STIXPatternParser.RULE_objectPathComponent, _p);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.enterOuterAlt(localctx, 1);
 	        this.state = 202;
 	        this._errHandler.sync(this);
 	        switch(this._input.LA(1)) {
-	        case STIXPatternParser.DOT:
+	        case 39:
 	            localctx = new KeyPathStepContext(this, localctx);
 	            this._ctx = localctx;
 	            _prevctx = localctx;
@@ -1033,7 +1029,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.match(STIXPatternParser.DOT);
 	            this.state = 198;
 	            _la = this._input.LA(1);
-	            if(!(_la===STIXPatternParser.StringLiteral || _la===STIXPatternParser.IdentifierWithoutHyphen)) {
+	            if(!(_la===7 || _la===29)) {
 	            this._errHandler.recoverInline(this);
 	            }
 	            else {
@@ -1041,7 +1037,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	                this.consume();
 	            }
 	            break;
-	        case STIXPatternParser.LBRACK:
+	        case 44:
 	            localctx = new IndexPathStepContext(this, localctx);
 	            this._ctx = localctx;
 	            _prevctx = localctx;
@@ -1049,7 +1045,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.match(STIXPatternParser.LBRACK);
 	            this.state = 200;
 	            _la = this._input.LA(1);
-	            if(!(_la===STIXPatternParser.IntNegLiteral || _la===STIXPatternParser.IntPosLiteral || _la===STIXPatternParser.ASTERISK)) {
+	            if(!(_la===1 || _la===2 || _la===50)) {
 	            this._errHandler.recoverInline(this);
 	            }
 	            else {
@@ -1105,7 +1101,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	setLiteral() {
 	    let localctx = new SetLiteralContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 30, STIXPatternParser.RULE_setLiteral);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.state = 224;
 	        this._errHandler.sync(this);
@@ -1128,7 +1124,7 @@ export default class STIXPatternParser extends antlr4.Parser {
 	            this.state = 219;
 	            this._errHandler.sync(this);
 	            _la = this._input.LA(1);
-	            while(_la===STIXPatternParser.COMMA) {
+	            while(_la===40) {
 	                this.state = 215;
 	                this.match(STIXPatternParser.COMMA);
 	                this.state = 216;
@@ -1165,19 +1161,19 @@ export default class STIXPatternParser extends antlr4.Parser {
 	        this.state = 228;
 	        this._errHandler.sync(this);
 	        switch(this._input.LA(1)) {
-	        case STIXPatternParser.IntNegLiteral:
-	        case STIXPatternParser.IntPosLiteral:
-	        case STIXPatternParser.FloatNegLiteral:
-	        case STIXPatternParser.FloatPosLiteral:
-	        case STIXPatternParser.HexLiteral:
-	        case STIXPatternParser.BinaryLiteral:
-	        case STIXPatternParser.StringLiteral:
-	        case STIXPatternParser.TimestampLiteral:
+	        case 1:
+	        case 2:
+	        case 3:
+	        case 4:
+	        case 5:
+	        case 6:
+	        case 7:
+	        case 9:
 	            this.enterOuterAlt(localctx, 1);
 	            this.state = 226;
 	            this.orderableLiteral();
 	            break;
-	        case STIXPatternParser.BoolLiteral:
+	        case 8:
 	            this.enterOuterAlt(localctx, 2);
 	            this.state = 227;
 	            this.match(STIXPatternParser.BoolLiteral);
@@ -1204,12 +1200,12 @@ export default class STIXPatternParser extends antlr4.Parser {
 	orderableLiteral() {
 	    let localctx = new OrderableLiteralContext(this, this._ctx, this.state);
 	    this.enterRule(localctx, 34, STIXPatternParser.RULE_orderableLiteral);
-	    var _la = 0; // Token type
+	    var _la = 0;
 	    try {
 	        this.enterOuterAlt(localctx, 1);
 	        this.state = 230;
 	        _la = this._input.LA(1);
-	        if(!((((_la) & ~0x1f) == 0 && ((1 << _la) & ((1 << STIXPatternParser.IntNegLiteral) | (1 << STIXPatternParser.IntPosLiteral) | (1 << STIXPatternParser.FloatNegLiteral) | (1 << STIXPatternParser.FloatPosLiteral) | (1 << STIXPatternParser.HexLiteral) | (1 << STIXPatternParser.BinaryLiteral) | (1 << STIXPatternParser.StringLiteral) | (1 << STIXPatternParser.TimestampLiteral))) !== 0))) {
+	        if(!((((_la) & ~0x1f) === 0 && ((1 << _la) & 766) !== 0))) {
 	        this._errHandler.recoverInline(this);
 	        }
 	        else {
