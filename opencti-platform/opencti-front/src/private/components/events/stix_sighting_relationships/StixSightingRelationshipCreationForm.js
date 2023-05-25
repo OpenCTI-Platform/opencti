@@ -4,7 +4,6 @@ import Button from '@mui/material/Button';
 import { Field, Form, Formik } from 'formik';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
-import { SimpleFileUpload } from 'formik-mui';
 import { itemColor } from '../../../../utils/Colors';
 import ItemIcon from '../../../../components/ItemIcon';
 import { truncate } from '../../../../utils/String';
