@@ -7238,7 +7238,7 @@ __metadata:
 
 "eventsource@patch:eventsource@2.0.2#./patch/eventsource-2.0.2.patch::locator=opencti-graphql%40workspace%3A.":
   version: 2.0.2
-  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=3e3291&locator=opencti-graphql%40workspace%3A."
+  resolution: "eventsource@patch:eventsource@npm%3A2.0.2#./patch/eventsource-2.0.2.patch::version=2.0.2&hash=524b62&locator=opencti-graphql%40workspace%3A."
   checksum: c7ab06fe2364ff95220e3c3e82d74e6fda8e512c12cbb3ad3c1d068470731197cda759780dd7af6b7ffb155f1d4c383e6755a0a91729dc2b7b7579cfd74dc39c
   languageName: node
   linkType: hard
@@ -7699,7 +7699,7 @@ __metadata:
 
 "fsevents@patch:fsevents@~2.3.2#~builtin<compat/fsevents>":
   version: 2.3.2
-  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=18f3a7"
+  resolution: "fsevents@patch:fsevents@npm%3A2.3.2#~builtin<compat/fsevents>::version=2.3.2&hash=df0bf1"
   dependencies:
     node-gyp: latest
   conditions: os=darwin
@@ -9165,7 +9165,7 @@ __metadata:
 
 "ldap-filter@patch:ldap-filter@0.3.3#./patch/ldap-filter-0.3.3.patch::locator=opencti-graphql%40workspace%3A.":
   version: 0.3.3
-  resolution: "ldap-filter@patch:ldap-filter@npm%3A0.3.3#./patch/ldap-filter-0.3.3.patch::version=0.3.3&hash=7e16c8&locator=opencti-graphql%40workspace%3A."
+  resolution: "ldap-filter@patch:ldap-filter@npm%3A0.3.3#./patch/ldap-filter-0.3.3.patch::version=0.3.3&hash=37280b&locator=opencti-graphql%40workspace%3A."
   dependencies:
     assert-plus: ^1.0.0
   checksum: ef79d9cdde7832af827cafd5d451eba815646b30fc03c3690ec27534aa07f54fe359b05fd815643e032442176d0bc1882f2d513055c93cbf8d2eabeccbabba9c
@@ -9830,7 +9830,7 @@ __metadata:
 
 "nconf@patch:nconf@0.12.0#./patch/nconf-0.12.0.patch::locator=opencti-graphql%40workspace%3A.":
   version: 0.12.0
-  resolution: "nconf@patch:nconf@npm%3A0.12.0#./patch/nconf-0.12.0.patch::version=0.12.0&hash=f3135d&locator=opencti-graphql%40workspace%3A."
+  resolution: "nconf@patch:nconf@npm%3A0.12.0#./patch/nconf-0.12.0.patch::version=0.12.0&hash=86f137&locator=opencti-graphql%40workspace%3A."
   dependencies:
     async: ^3.0.0
     ini: ^2.0.0
@@ -9891,7 +9891,7 @@ __metadata:
 
 "node-calls-python@patch:node-calls-python@1.7.7#./patch/node-calls-python-1.7.7.patch::locator=opencti-graphql%40workspace%3A.":
   version: 1.7.7
-  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.7.7#./patch/node-calls-python-1.7.7.patch::version=1.7.7&hash=719dfd&locator=opencti-graphql%40workspace%3A."
+  resolution: "node-calls-python@patch:node-calls-python@npm%3A1.7.7#./patch/node-calls-python-1.7.7.patch::version=1.7.7&hash=5402a7&locator=opencti-graphql%40workspace%3A."
   dependencies:
     node-gyp: latest
   checksum: 06d08479705982c795f281b15517c9ec9d4d7bf77892f66571170f526c39b8c700c8e1d24f9ed78d86ca8a2e096f815ea11276e142abf656ba4927e6e6e98a06
@@ -11217,7 +11217,7 @@ __metadata:
 
 "resolve@patch:resolve@^1.22.1#~builtin<compat/resolve>":
   version: 1.22.3
-  resolution: "resolve@patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A1.22.3#~builtin<compat/resolve>::version=1.22.3&hash=c3c19d"
   dependencies:
     is-core-module: ^2.12.0
     path-parse: ^1.0.7
@@ -11230,7 +11230,7 @@ __metadata:
 
 "resolve@patch:resolve@^2.0.0-next.4#~builtin<compat/resolve>":
   version: 2.0.0-next.4
-  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.4#~builtin<compat/resolve>::version=2.0.0-next.4&hash=07638b"
+  resolution: "resolve@patch:resolve@npm%3A2.0.0-next.4#~builtin<compat/resolve>::version=2.0.0-next.4&hash=c3c19d"
   dependencies:
     is-core-module: ^2.9.0
     path-parse: ^1.0.7
@@ -12330,11 +12330,11 @@ __metadata:
 
 "typescript@patch:typescript@4.9.5#~builtin<compat/typescript>":
   version: 4.9.5
-  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=bda367"
+  resolution: "typescript@patch:typescript@npm%3A4.9.5#~builtin<compat/typescript>::version=4.9.5&hash=289587"
   bin:
     tsc: bin/tsc
     tsserver: bin/tsserver
-  checksum: 2eee5c37cad4390385db5db5a8e81470e42e8f1401b0358d7390095d6f681b410f2c4a0c496c6ff9ebd775423c7785cdace7bcdad76c7bee283df3d9718c0f20
+  checksum: 1f8f3b6aaea19f0f67cba79057674ba580438a7db55057eb89cc06950483c5d632115c14077f6663ea76fd09fce3c190e6414bb98582ec80aa5a4eaf345d5b68
   languageName: node
   linkType: hard
 
