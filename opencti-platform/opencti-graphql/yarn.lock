@@ -4939,10 +4939,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"antlr4@npm:4.11.0":
-  version: 4.11.0
-  resolution: "antlr4@npm:4.11.0"
-  checksum: 640240640d5fd8fff4f494a20eb8e733ccc96a7e887f34e3ab534b258e2b8fa600cea8b2bea656fa9dac6022b07fc9d6fb2b825da43824c570559bf0fd5b4725
+"antlr4@npm:4.13.0":
+  version: 4.13.0
+  resolution: "antlr4@npm:4.13.0"
+  checksum: 9fc5d8bf2d3be7e35e372ef70acd015e9e593ff7482dafd9780185eb63e156958b137a6e4af1792eda71adc7c3b09f9087d2d7794b903c1a65f58800907e7beb
   languageName: node
   linkType: hard
 
@@ -10249,7 +10249,7 @@ __metadata:
     "@vitest/coverage-istanbul": 0.31.1
     ajv: 8.12.0
     amqplib: 0.10.3
-    antlr4: 4.11.0
+    antlr4: 4.13.0
     apollo-errors: 1.9.0
     apollo-server-core: 3.12.0
     apollo-server-express: 3.12.0
