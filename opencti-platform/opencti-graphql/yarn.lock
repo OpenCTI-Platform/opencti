@@ -10323,7 +10323,7 @@ __metadata:
     passport-saml: 3.2.4
     prom-client: 14.2.0
     python-shell: 5.0.0
-    ramda: 0.28.0
+    ramda: 0.29.0
     redlock: 5.0.0-beta.2
     sanitize-filename: 1.6.3
     semver: 7.5.1
@@ -10988,10 +10988,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ramda@npm:0.28.0":
-  version: 0.28.0
-  resolution: "ramda@npm:0.28.0"
-  checksum: 44ea6e5010bba70151b6a92d8114a91915e8b5a16105cce65fae58c9d7386b812c429645e35f21141d7087568550ce383bc10ee1a65cdec951f4b69ea457e6a4
+"ramda@npm:0.29.0":
+  version: 0.29.0
+  resolution: "ramda@npm:0.29.0"
+  checksum: 9ab26c06eb7545cbb7eebcf75526d6ee2fcaae19e338f165b2bf32772121e7b28192d6664d1ba222ff76188ba26ab307342d66e805dbb02c860560adc4d5dd57
   languageName: node
   linkType: hard
 
