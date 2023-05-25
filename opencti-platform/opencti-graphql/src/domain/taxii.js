@@ -62,19 +62,10 @@ export const taxiiCollectionEditContext = async (context, user, collectionId, in
 const prepareManifestElement = async (data) => {
   return {
     id: data.standard_id,
-    date_added: data.created_at,
+    date_added: data.updated_at,
     version: data.updated_at,
     media_type: STIX_MEDIA_TYPE,
   };
-};
-export const collectionCount = async (context, taxiiCollection, user) => {
-  const { filters } = taxiiCollection;
-  const data = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
-    first: 1, // We only need to fetch 1 to get the global count
-    types: [ENTITY_TYPE_TAXII_COLLECTION],
-    filters,
-  });
-  return data.pageInfo.globalCount;
 };
 
 const collectionQuery = async (context, user, collectionId, args) => {
