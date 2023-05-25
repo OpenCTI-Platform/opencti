@@ -3,7 +3,7 @@ import { batchListThroughGetFrom, batchListThroughGetTo, createEntity } from '..
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../../schema/general';
-import type { NarrativeAddInput, QueryNarrativesArgs } from '../../generated/graphql';
+import type { Narrative, NarrativeAddInput, QueryNarrativesArgs } from '../../generated/graphql';
 import { listEntitiesPaginated, storeLoadById } from '../../database/middleware-loader';
 import { BasicStoreEntityNarrative, ENTITY_TYPE_NARRATIVE } from './narrative-types';
 import { RELATION_SUBNARRATIVE_OF } from '../../schema/stixCoreRelationship';
@@ -38,5 +38,5 @@ export const batchIsSubNarrative = async (context: AuthContext, user: AuthUser, 
     ENTITY_TYPE_NARRATIVE,
     { paginate: false }
   );
-  return batchNarratives.map((b) => b.length > 0);
+  return batchNarratives.map((b: Narrative[]) => b.length > 0);
 };
