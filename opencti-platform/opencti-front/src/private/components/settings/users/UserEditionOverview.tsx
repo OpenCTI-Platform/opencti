@@ -287,7 +287,13 @@ const UserEditionOverview = createFragmentContainer(
   UserEditionOverviewComponent,
   {
     user: graphql`
-      fragment UserEditionOverview_user on User {
+      fragment UserEditionOverview_user on User
+      @argumentDefinitions(
+          rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+          rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+          organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+          organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         id
         name
         description
@@ -300,11 +306,17 @@ const UserEditionOverview = createFragmentContainer(
         api_token
         otp_activated
         otp_qr
-        roles {
+        roles(
+            orderBy: $rolesOrderBy,
+            orderMode: $rolesOrderMode,
+        ) {
           id
           name
         }
-        objectOrganization {
+        objectOrganization(
+            orderBy: $organizationsOrderBy,
+            orderMode: $organizationsOrderMode,
+        ) {
           edges {
             node {
               id

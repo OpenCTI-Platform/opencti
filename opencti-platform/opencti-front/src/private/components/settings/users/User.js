@@ -396,7 +396,7 @@ class UserComponent extends Component {
                         divider={true}
                         button={true}
                         component={Link}
-                        to={`/dashboard/entities/organizations/${organization.id}`}
+                        to={`/dashboard/entities/organizations/${organizationEdge.node.id}`}
                       >
                         <ListItemIcon>
                           <AccountBalanceOutlined color="primary" />
@@ -644,11 +644,27 @@ UserComponent.propTypes = {
 };
 
 export const userQuery = graphql`
-  query UserQuery($id: String!) {
+  query UserQuery(
+      $id: String!
+      $rolesOrderBy: RolesOrdering
+      $rolesOrderMode: OrderingMode
+      $groupsOrderBy: GroupsOrdering
+      $groupsOrderMode: OrderingMode
+      $organizationsOrderBy: OrganizationsOrdering
+      $organizationsOrderMode: OrderingMode
+  ) {
     user(id: $id) {
       id
       name
       ...User_user
+      @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;
@@ -657,7 +673,15 @@ const User = createRefetchContainer(
   UserComponent,
   {
     user: graphql`
-      fragment User_user on User {
+      fragment User_user on User
+      @argumentDefinitions(
+          rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+          rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+          groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+          groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+          organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+          organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
         id
         name
         description
@@ -668,7 +692,10 @@ const User = createRefetchContainer(
         language
         api_token
         otp_activated
-        roles {
+        roles(
+            orderBy: $rolesOrderBy,
+            orderMode: $rolesOrderMode,
+        ) {
           id
           name
           description
@@ -677,7 +704,10 @@ const User = createRefetchContainer(
           id
           name
         }
-        groups {
+        groups(
+            orderBy: $groupsOrderBy,
+            orderMode: $groupsOrderMode,
+        ) {
           edges {
             node {
               id
@@ -687,7 +717,10 @@ const User = createRefetchContainer(
           }
         }
         default_hidden_types
-        objectOrganization {
+        objectOrganization(
+            orderBy: $organizationsOrderBy,
+            orderMode: $organizationsOrderMode,
+        ) {
           edges {
             node {
               id

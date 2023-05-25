@@ -23592,7 +23592,7 @@ export type UserGroupsArgs = {
 
 
 export type UserObjectOrganizationArgs = {
-  orderBy?: InputMaybe<GroupsOrdering>;
+  orderBy?: InputMaybe<OrganizationsOrdering>;
   orderMode?: InputMaybe<OrderingMode>;
 };
 

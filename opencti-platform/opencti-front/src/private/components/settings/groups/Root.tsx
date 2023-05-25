@@ -24,12 +24,24 @@ const subscription = graphql`
 `;
 
 const groupQuery = graphql`
-    query RootGroupQuery($id: String!) {
+    query RootGroupQuery(
+        $id: String!
+        $rolesOrderBy: RolesOrdering
+        $rolesOrderMode: OrderingMode
+    ) {
         group(id: $id) {
             id
             name
             ...Group_group
+            @arguments(
+                rolesOrderBy: $rolesOrderBy
+                rolesOrderMode: $rolesOrderMode
+            )
             ...GroupEditionContainer_group
+            @arguments(
+                rolesOrderBy: $rolesOrderBy
+                rolesOrderMode: $rolesOrderMode
+            )
         }
     }
 `;
@@ -72,7 +84,7 @@ const RootGroupComponent: FunctionComponent<RootGroupComponentProps> = ({ queryR
 
 const RootGroup = () => {
   const { groupId } = useParams() as { groupId: string };
-  const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, { id: groupId });
+  const queryRef = useQueryLoading<RootGroupQuery>(groupQuery, { id: groupId, rolesOrderBy: 'name', rolesOrderMode: 'asc' });
   return (
     <div>
       <TopBar />

@@ -1153,7 +1153,7 @@ type User implements BasicObject & InternalObject {
     orderMode: OrderingMode
   ): GroupConnection @auth(for: [SETTINGS_SETACCESSES])
   objectOrganization(
-    orderBy: GroupsOrdering
+    orderBy: OrganizationsOrdering
     orderMode: OrderingMode
   ): OrganizationConnection @auth(for: [SETTINGS_SETACCESSES])
   created_at: DateTime!

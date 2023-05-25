@@ -140,9 +140,16 @@ UserEditionGroupsComponent.propTypes = {
 
 const UserEditionGroups = createFragmentContainer(UserEditionGroupsComponent, {
   user: graphql`
-    fragment UserEditionGroups_user on User {
+    fragment UserEditionGroups_user on User
+    @argumentDefinitions(
+        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+    ) {
       id
-      groups {
+      groups(
+          orderBy: $groupsOrderBy,
+          orderMode: $groupsOrderMode,
+      ) {
         edges {
           node {
             id
