@@ -1,6 +1,5 @@
 import React from 'react';
 import { createFragmentContainer, graphql, useMutation } from 'react-relay';
-import { find, propEq } from 'ramda';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -104,9 +103,7 @@ const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_
             return (
               <List className={classes.root}>
                 {markingDefinitions.map((markingDefinition) => {
-                  const groupMarkingDefinition = find(
-                    propEq('id', markingDefinition.id),
-                  )(groupMarkingDefinitions);
+                  const groupMarkingDefinition = groupMarkingDefinitions.find((g) => g.id === markingDefinition.id);
                   return (
                     <ListItem key={markingDefinition.id} divider={true}>
                       <ListItemIcon color="primary">
