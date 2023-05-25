@@ -3,5 +3,9 @@
   "extends": [
     "config:base"
   ],
+  "labels": [
+    "dependencies",
+    "filigran team"
+  ],
   "prConcurrentLimit": 2
 }
