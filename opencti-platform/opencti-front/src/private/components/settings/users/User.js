@@ -246,14 +246,6 @@ class UserComponent extends Component {
 
   render() {
     const { classes, theme, user, t, fsd, nsdt } = this.props;
-    const orderedRoles = R.uniq(user.roles ?? [])
-      .sort((a, b) => a.name.localeCompare(b.name));
-    const orderedGroups = user.groups.edges
-      .map((n) => n.node)
-      .sort((a, b) => a.name.localeCompare(b.name));
-    const orderedOrganizations = user.objectOrganization.edges
-      .map((n) => n.node)
-      .sort((a, b) => a.name.localeCompare(b.name));
     const orderedSessions = R.sort(
       (a, b) => timestamp(a.created) - timestamp(b.created),
       user.sessions,
@@ -351,7 +343,8 @@ class UserComponent extends Component {
                     {t('Roles')}
                   </Typography>
                   <List>
-                    {orderedRoles
+                    {R.uniq(user.roles ?? [])
+                      .sort((a, b) => a.name.localeCompare(b.name))
                       .map((role) => (
                         <ListItem
                           key={role.id}
@@ -374,23 +367,21 @@ class UserComponent extends Component {
                     {t('Groups')}
                   </Typography>
                   <List>
-                    {orderedGroups
-                      .map((group) => (
-                        <ListItem
-                          key={group.id}
-                          dense={true}
-                          divider={true}
-                          button={true}
-                          component={Link}
-                          to={`/dashboard/settings/accesses/groups/${group.id}`}
-                        >
-                          <ListItemIcon>
-                            <GroupOutlined color="primary" />
-                          </ListItemIcon>
-                          <ListItemText primary={group.name} />
-                        </ListItem>
-                      ))
-                    }
+                    {user.groups.edges.map((groupEdge) => (
+                      <ListItem
+                        key={groupEdge.node.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/groups/${groupEdge.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <GroupOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={groupEdge.node.name} />
+                      </ListItem>
+                    ))}
                   </List>
                 </Grid>
                 <Grid item={true} xs={6}>
@@ -398,9 +389,9 @@ class UserComponent extends Component {
                     {t('Organizations')}
                   </Typography>
                   <List>
-                    {orderedOrganizations.map((organization) => (
+                    {user.objectOrganization.edges.map((organizationEdge) => (
                       <ListItem
-                        key={organization.id}
+                        key={organizationEdge.node.id}
                         dense={true}
                         divider={true}
                         button={true}
@@ -410,7 +401,7 @@ class UserComponent extends Component {
                         <ListItemIcon>
                           <AccountBalanceOutlined color="primary" />
                         </ListItemIcon>
-                        <ListItemText primary={organization.name} />
+                        <ListItemText primary={organizationEdge.node.name} />
                       </ListItem>
                     ))}
                   </List>
