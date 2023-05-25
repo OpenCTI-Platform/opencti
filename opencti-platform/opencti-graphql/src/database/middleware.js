@@ -17,7 +17,9 @@ import {
 } from '../config/errors';
 import {
   buildPagination,
-  computeAverage, extractEntityRepresentative,
+  computeAverage,
+  extractEntityRepresentative,
+  extractIdsFromStoreObject,
   fillTimeSeries,
   generateCreateMessage,
   generateUpdateMessage,
@@ -129,7 +131,8 @@ import {
   STIX_REF_RELATIONSHIP_TYPES
 } from '../schema/stixRefRelationship';
 import {
-  ENTITY_TYPE_HISTORY, ENTITY_TYPE_STATUS,
+  ENTITY_TYPE_HISTORY,
+  ENTITY_TYPE_STATUS,
   ENTITY_TYPE_USER,
   isDatedInternalObject,
   isInternalObject,
@@ -510,8 +513,9 @@ export const stixLoadById = async (context, user, id, opts = {}) => {
 export const stixLoadByIds = async (context, user, ids, opts = {}) => {
   const elements = await storeLoadByIdsWithRefs(context, user, ids, opts);
   // As stix load by ids doesn't respect the ordering we need to remap the result
-  const elementMap = new Map(elements.map((instance) => [instance.internal_id, instance]));
-  return ids.map((id) => convertStoreToStix(elementMap.get(id)));
+  const loadedInstancesMap = new Map(elements.map((i) => ({ instance: i, ids: extractIdsFromStoreObject(i) }))
+    .flat().map((o) => o.ids.map((id) => [id, o.instance])).flat());
+  return ids.map((id) => loadedInstancesMap.get(id)).filter((i) => isNotEmptyField(i)).map((e) => convertStoreToStix(e));
 };
 export const stixLoadByIdStringify = async (context, user, id) => {
   const data = await stixLoadById(context, user, id);

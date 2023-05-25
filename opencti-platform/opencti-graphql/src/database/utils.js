@@ -382,3 +382,11 @@ export const wait = (ms) => {
 };
 
 export const waitInSec = (sec) => wait(sec * 1000);
+
+export const extractIdsFromStoreObject = (instance) => {
+  const ids = [instance.internal_id, ...(instance.x_opencti_stix_ids ?? [])];
+  if (instance.standard_id) {
+    ids.push(instance.standard_id);
+  }
+  return ids;
+};
