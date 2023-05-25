@@ -204,7 +204,7 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   const rolesMap = R.mergeAll(roles.map((r) => ({ [r.id]: r })));
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
-    const idRoles = groups.map((g) => groupWithRoles[g] ?? []).flat();
+    const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
     let roleValues = idRoles.map((r) => rolesMap[r]);
     // sort roles
     if (orderBy && orderMode) {

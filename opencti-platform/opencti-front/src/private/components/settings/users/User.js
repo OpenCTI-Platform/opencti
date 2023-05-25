@@ -343,8 +343,7 @@ class UserComponent extends Component {
                     {t('Roles')}
                   </Typography>
                   <List>
-                    {R.uniq(user.roles ?? [])
-                      .sort((a, b) => a.name.localeCompare(b.name))
+                    {(user.roles ?? [])
                       .map((role) => (
                         <ListItem
                           key={role.id}
