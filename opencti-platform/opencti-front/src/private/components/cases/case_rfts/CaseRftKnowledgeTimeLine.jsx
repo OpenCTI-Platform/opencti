@@ -1,5 +1,5 @@
 import React from 'react';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import Timeline from '@mui/lab/Timeline';
 import TimelineItem from '@mui/lab/TimelineItem';
@@ -11,13 +11,12 @@ import TimelineConnector from '@mui/lab/TimelineConnector';
 import TimelineContent from '@mui/lab/TimelineContent';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Markdown from 'react-markdown';
 import { defaultSecondaryValue, defaultValue } from '../../../../utils/Graph';
 import ItemIcon from '../../../../components/ItemIcon';
 import { resolveLink } from '../../../../utils/Entity';
 import { useFormatter } from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
 import { itemColor } from '../../../../utils/Colors';
+import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
 
 export const caseRftKnowledgeTimeLineQuery = graphql`
   query CaseRftKnowledgeTimeLineCaseQuery(
@@ -108,9 +107,10 @@ const CaseRftKnowledgeTimeLineComponent = ({
                 <Paper variant="outlined" className={classes.paper}>
                   <Typography variant="h2">{defaultValue(node)}</Typography>
                   <div style={{ marginTop: -5, color: '#a8a8a8' }}>
-                    <Markdown>
-                      {truncate(defaultSecondaryValue(node), 150)}
-                    </Markdown>
+                    <MarkdownWithRedirectionWarning
+                      content={defaultSecondaryValue(node)}
+                      limit={150}
+                    />
                   </div>
                 </Paper>
               </TimelineContent>

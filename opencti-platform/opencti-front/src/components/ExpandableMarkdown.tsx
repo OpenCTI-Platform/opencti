@@ -1,7 +1,4 @@
 import React, { FunctionComponent, useState } from 'react';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { useTheme } from '@mui/styles';
@@ -53,7 +50,6 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({
   source,
   limit,
 }) => {
-  const theme = useTheme<Theme>();
   const [expand, setExpand] = useState(false);
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;

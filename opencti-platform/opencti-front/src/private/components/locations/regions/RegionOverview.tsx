@@ -4,15 +4,13 @@
 import React, { FunctionComponent } from 'react';
 import { propOr } from 'ramda';
 import { graphql, useFragment } from 'react-relay';
-import Markdown from 'react-markdown';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import makeStyles from '@mui/styles/makeStyles';
 import ItemAuthor from '../../../../components/ItemAuthor';
 import { RegionOverview_region$key } from './__generated__/RegionOverview_region.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -82,13 +80,7 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({ regionRef }) =
         >
           {t('Description')}
         </Typography>
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkParse]}
-          parserOptions={{ commonmark: true }}
-          className="markdown"
-        >
-          {region.description}
-        </Markdown>
+        <ExpandableMarkdown source={region.description} limit={400} />
       </Paper>
     </div>
   );

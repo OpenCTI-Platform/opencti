@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
-import Markdown from 'react-markdown';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import remarkGfm from 'remark-gfm';
@@ -9,6 +8,7 @@ import remarkParse from 'remark-parse';
 import remarkFlexibleMarkers from 'remark-flexible-markers';
 import * as R from 'ramda';
 import { useFormatter } from './i18n';
+import MarkdownWithRedirectionWarning from './MarkdownWithRedirectionWarning';
 
 const MarkDownField = (props) => {
   const {

@@ -1,15 +1,13 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose, propOr } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import Markdown from 'react-markdown';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ItemAuthor from '../../../../components/ItemAuthor';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {
@@ -57,13 +55,7 @@ class PositionOverviewComponent extends Component {
           >
             {t('Description')}
           </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {position.description}
-          </Markdown>
+          <ExpandableMarkdown source={position.description} limit={400} />
         </Paper>
       </div>
     );

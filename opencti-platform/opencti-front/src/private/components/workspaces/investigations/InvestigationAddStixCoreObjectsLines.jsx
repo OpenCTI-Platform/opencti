@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import { graphql, createPaginationContainer } from 'react-relay';
-import { map, filter, keys, groupBy, assoc, compose, append } from 'ramda';
+import { createPaginationContainer, graphql } from 'react-relay';
+import { append, assoc, compose, filter, groupBy, keys, map } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -11,14 +11,12 @@ import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
-import { ExpandMore, CheckCircle } from '@mui/icons-material';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
+import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import MarkdownWithRedirectionWarning from '../../../../components/MarkdownWithRedirectionWarning';
 
 const styles = (theme) => ({
   investigation: {
@@ -259,17 +257,13 @@ class InvestigationAddStixCoreObjectsLinesInvestigation extends Component {
                             )}`
                           }`}
                           secondary={
-                            <Markdown
-                              remarkPlugins={[remarkGfm, remarkParse]}
-                              parserOptions={{ commonmark: true }}
-                              className="markdown"
-                            >
-                              {truncate(
-                                stixCoreObject.description
-                                  || fd(stixCoreObject.created_at),
-                                200,
-                              )}
-                            </Markdown>
+                            <MarkdownWithRedirectionWarning
+                              content={stixCoreObject.description
+                                || fd(stixCoreObject.created_at)}
+                              limit={200}
+                              remarkGfmPlugin={true}
+                              commonmark={true}
+                            ></MarkdownWithRedirectionWarning>
                           }
                         />
                       </ListItem>
