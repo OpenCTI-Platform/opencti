@@ -9,13 +9,12 @@ import type { AuthContext, AuthUser } from '../types/user';
 import { getAttributesConfiguration } from '../modules/entitySetting/entitySetting-utils';
 import { externalReferences } from './stixRefRelationship';
 import { telemetry } from '../config/tracing';
-import type { AttributeDefinition } from './attribute-definition';
 
 const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 
-const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>) => {
+const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>, update = false) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     const inputEntries = Object.entries(input);
@@ -34,6 +33,9 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
           if (!valid) {
             throw ValidationError(key, { message: 'The JSON Schema is not valid', data: validate.errors });
           }
+        }
+        if (attribute.update === false && update) {
+          throw ValidationError('update', 'You cannot update this attribute');
         }
       }
     });
@@ -151,7 +153,7 @@ export const validateInputUpdate = async (
       inputs = input;
     }
     // Generic validator
-    await validateFormatSchemaAttributes(context, user, instanceType, inputs);
+    await validateFormatSchemaAttributes(context, user, instanceType, inputs, true);
     await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
@@ -160,29 +162,8 @@ export const validateInputUpdate = async (
       if (!validate) {
         throw UnsupportedError('The input is not valid', { inputs });
       }
-    };
-  };
-
-  const validateUpdatableAttribute = () => {
-    const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
-    const inputEntries = Object.entries(input);
-    inputEntries.forEach(([key, value]) => {
-      const attribute = availableAttributes.get(key);
-      const updateAttribute = attribute.update;
-      if (updateAttribute === false) {
-        throw ValidationError('update', 'You cannot update this attribute');
-      }
     }
   };
-  // create a validateUpdatableAttribute
-  // récupère lattribut update
-  // on check is on a bien un attribut update.
-  // Si update attribute présent -> On update sur les attributs if updatable => on valide
-  // if !updatable => throw validation error
-
-  // Sur chaque input on itère sur toute les clés de l'input pour voir si la clé 'update' est a false si oui on throw une erreur
-
-
   return telemetry(context, user, 'UPDATE VALIDATION', {
     [SemanticAttributes.DB_NAME]: 'validation',
     [SemanticAttributes.DB_OPERATION]: 'update',
