@@ -25,6 +25,7 @@ describe('App', () => {
           lastname: 'OpenCTI',
           language: 'auto',
           theme: 'default',
+          external: true,
           userSubscriptions: {
             edges: [],
           },
