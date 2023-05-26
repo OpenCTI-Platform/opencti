@@ -30,7 +30,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import { CaseRfiAddInput } from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
 import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -107,7 +107,7 @@ interface FormikCaseRfiAddInput {
 }
 
 interface CaseRfiFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
   onReset?: () => void
   onCompleted?: () => void
   defaultConfidence?: number,
@@ -130,7 +130,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     description: Yup.string().nullable(),
   };
   const caseRfiValidator = useSchemaCreationValidation('Case-Rfi', basicShape);
-  const [commit] = useMutation(caseRfiMutation);
+  const [commit] = useMutation<CaseRfiCreationCaseMutation>(caseRfiMutation);
 
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
@@ -158,9 +158,9 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       variables: {
         input: finalValues,
       },
-      updater: (store) => {
+      updater: (store, response) => {
         if (updater) {
-          updater(store, 'caseRfiAdd');
+          updater(store, 'caseRfiAdd', response.caseRfiAdd);
         }
       },
       onCompleted: () => {
