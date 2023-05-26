@@ -2,7 +2,7 @@
 name: Bug report
 about: Create a bug report to help us improve OpenCTI
 title: ''
-labels: ''
+labels: 'bug'
 assignees: ''
 
 ---
