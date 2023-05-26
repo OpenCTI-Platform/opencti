@@ -293,28 +293,28 @@ const StixCoreRelationshipCreationForm = ({
               fullWidth={true}
               multiline={true}
               rows="4"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
             />
             {hasKillChainPhase(values.relationship_type) ? (
               <KillChainPhasesField
                 name="killChainPhases"
-                containerStyle={fieldSpacingContainerStyle}
+                style={fieldSpacingContainerStyle}
               />
             ) : (
               ''
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
             />
             <ExternalReferencesField
               name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             {typeof handleResetSelection === 'function' && (
