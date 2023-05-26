@@ -138,14 +138,17 @@ const entityDetailsQuery = graphql`
       ... on AttackPattern {
         name
         x_mitre_id
+        description
       }
       ... on Campaign {
         name
+        description
         first_seen
         last_seen
       }
       ... on CourseOfAction {
         name
+        description
       }
       ... on Note {
         attribute_abstract
@@ -160,6 +163,7 @@ const entityDetailsQuery = graphql`
       ... on Report {
         name
         published
+        description
       }
       ... on Grouping {
         name
@@ -229,9 +233,11 @@ const entityDetailsQuery = graphql`
       }
       ... on Tool {
         name
+        description
       }
       ... on Vulnerability {
         name
+        description
       }
       ... on Incident {
         name
@@ -247,24 +253,31 @@ const entityDetailsQuery = graphql`
       }
       ... on Event {
         name
+        description
       }
       ... on Case {
         name
+        description
       }
       ... on CaseTask {
         name
+        description
       }
       ... on Channel {
           name
+          description
       }
       ... on Narrative {
         name
+        description
       }
       ... on DataComponent {
         name
+        description
       }
       ... on DataSource {
         name
+        description
       }
       ... on Language {
         name
