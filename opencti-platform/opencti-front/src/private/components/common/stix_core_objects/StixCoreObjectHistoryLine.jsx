@@ -328,6 +328,8 @@ class StixCoreObjectHistoryLineComponent extends Component {
                 <Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
                   parserOptions={{ commonmark: true }}
+                  disallowedElements={['a']} // disable link redirection
+                  unwrapDisallowed={true}
                   className="markdown"
                 >
                   {`\`${node.user.name}\` ${node.context_data.message}`}
@@ -338,6 +340,8 @@ class StixCoreObjectHistoryLineComponent extends Component {
                 <Markdown
                   remarkPlugins={[remarkGfm, remarkParse]}
                   parserOptions={{ commonmark: true }}
+                  disallowedElements={['a']} // disable link redirection
+                  unwrapDisallowed={true}
                   className="markdown"
                 >
                   {`\`${node.user.name}\` ${node.context_data.message}`}
@@ -428,6 +432,8 @@ class StixCoreObjectHistoryLineComponent extends Component {
             <Markdown
               remarkPlugins={[remarkGfm, remarkParse]}
               parserOptions={{ commonmark: true }}
+              disallowedElements={['a']} // disable link redirection
+              unwrapDisallowed={true}
               className="markdown"
             >
               {node.context_data.commit}

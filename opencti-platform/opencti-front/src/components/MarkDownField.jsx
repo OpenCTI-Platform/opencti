@@ -59,6 +59,8 @@ const MarkDownField = (props) => {
             <Markdown
               remarkPlugins={[remarkGfm, remarkParse]}
               parserOptions={{ commonmark: true }}
+              disallowedElements={['a']} // disable link redirection
+              unwrapDisallowed={true}
             >
               {markdown}
             </Markdown>,

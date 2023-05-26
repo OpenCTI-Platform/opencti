@@ -450,6 +450,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                 <Markdown
                                   remarkPlugins={[remarkGfm, remarkParse]}
                                   parserOptions={{ commonmark: true }}
+                                  disallowedElements={['a']} // disable link redirection
+                                  unwrapDisallowed={true}
                                   className="markdown"
                                 >
                                   {stixCoreRelationship.description}
@@ -586,6 +588,8 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                               parserOptions={{
                                                 commonmark: true,
                                               }}
+                                              disallowedElements={['a']} // disable link redirection
+                                              unwrapDisallowed={true}
                                               className="markdown"
                                             >
                                               {stixCoreRelationship.description}

@@ -123,7 +123,7 @@ class ThreatActorCardComponent extends Component {
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
-                disallowedTypes={['link', 'linkReference']}
+                disallowedElements={['a']} // disable link redirection
                 unwrapDisallowed={true}
               >
                 {node.description}

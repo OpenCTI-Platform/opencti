@@ -339,6 +339,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                               <Markdown
                                 remarkPlugins={[remarkGfm, remarkParse]}
                                 parserOptions={{ commonmark: true }}
+                                disallowedElements={['a']} // disable link redirection
+                                unwrapDisallowed={true}
                                 className="markdown"
                               >
                                 {stixCoreRelationship.description}
@@ -469,6 +471,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                             remarkParse,
                                           ]}
                                           parserOptions={{ commonmark: true }}
+                                          disallowedElements={['a']} // disable link redirection
+                                          unwrapDisallowed={true}
                                           className="markdown"
                                         >
                                           {stixCoreRelationship.description}
@@ -581,6 +585,8 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                                   parserOptions={{
                                                     commonmark: true,
                                                   }}
+                                                  disallowedElements={['a']} // disable link redirection
+                                                  unwrapDisallowed={true}
                                                   className="markdown"
                                                 >
                                                   {
