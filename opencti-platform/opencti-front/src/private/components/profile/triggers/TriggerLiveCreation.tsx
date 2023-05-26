@@ -36,6 +36,7 @@ import {
   TriggerEventType,
 } from './__generated__/TriggerLiveCreationLiveMutation.graphql';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -274,7 +275,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         onChange={(name: string, value: string[]) => setFieldValue('event_types', value)
         }
         inputProps={{ name: 'event_types', id: 'event_types' }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={fieldSpacingContainerStyle}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (
@@ -306,7 +307,7 @@ const TriggerLiveCreation: FunctionComponent<TriggerLiveCreationProps> = ({
         onChange={(name: string, value: string[]) => setFieldValue('outcomes', value)
         }
         inputProps={{ name: 'outcomes', id: 'outcomes' }}
-        containerstyle={{ marginTop: 20, width: '100%' }}
+        containerstyle={fieldSpacingContainerStyle}
         renderValue={(selected: Array<string>) => (
           <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
             {selected.map((value) => (

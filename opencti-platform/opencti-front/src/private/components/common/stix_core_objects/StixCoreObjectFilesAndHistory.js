@@ -36,6 +36,7 @@ import Loader from '../../../../components/Loader';
 import StixCoreObjectHistory from './StixCoreObjectHistory';
 import FileExternalReferencesViewer from '../files/FileExternalReferencesViewer';
 import WorkbenchFileViewer from '../files/workbench/WorkbenchFileViewer';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = () => ({
   container: {
@@ -359,7 +360,7 @@ const StixCoreObjectFilesAndHistory = ({
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerstyle={fieldSpacingContainerStyle}
                           >
                             <MenuItem value="simple">
                               {t('Simple export (just the entity)')}
@@ -374,7 +375,7 @@ const StixCoreObjectFilesAndHistory = ({
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerstyle={fieldSpacingContainerStyle}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
                             {map(

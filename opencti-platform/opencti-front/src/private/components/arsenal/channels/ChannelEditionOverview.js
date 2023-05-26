@@ -238,7 +238,7 @@ const ChannelEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -247,7 +247,7 @@ const ChannelEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus
                 context={context}

@@ -206,7 +206,7 @@ const FeedbackCreation: FunctionComponent<{
                   component={SimpleFileUpload}
                   name="file"
                   label={t('Associated file')}
-                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                  FormControlProps={{ style: fieldSpacingContainerStyle }}
                   InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                   InputProps={{ fullWidth: true, variant: 'standard' }}
                   fullWidth={true}

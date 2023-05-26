@@ -224,7 +224,7 @@ const ToolEditionOverviewComponent = (props) => {
             />
             <KillChainPhasesField
               name="killChainPhases"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="killChainPhases" />
@@ -246,7 +246,7 @@ const ToolEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -255,7 +255,7 @@ const ToolEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

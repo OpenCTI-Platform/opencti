@@ -18,6 +18,7 @@ import { RegionEditionOverview_region$key } from './__generated__/RegionEditionO
 import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const regionMutationFieldPatch = graphql`
   mutation RegionEditionOverviewFieldPatchMutation(
@@ -281,7 +282,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
           )}
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -290,7 +291,7 @@ const RegionEditionOverviewComponent: FunctionComponent<RegionEdititionOverviewP
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }

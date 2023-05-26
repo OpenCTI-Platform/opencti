@@ -45,6 +45,7 @@ import WorkspaceHeader from '../WorkspaceHeader';
 import TextField from '../../../../components/TextField';
 import SwitchField from '../../../../components/SwitchField';
 import TypesField from '../../common/form/TypesField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import { hexToRGB } from '../../../../utils/Colors';
@@ -1833,7 +1834,7 @@ class InvestigationGraphComponent extends Component {
                     label={t('All types of relationship')}
                     fullWidth={true}
                     multiple={true}
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={TextField}

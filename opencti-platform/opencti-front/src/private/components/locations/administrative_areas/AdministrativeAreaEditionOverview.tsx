@@ -19,6 +19,7 @@ import {
 } from './__generated__/AdministrativeAreaEditionOverview_administrativeArea.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const administrativeAreaMutationFieldPatch = graphql`
     mutation AdministrativeAreaEditionOverviewFieldPatchMutation(
@@ -279,14 +280,14 @@ const AdministrativeAreaEditionOverview: FunctionComponent<AdministrativeAreaEdi
                     )}
                     <CreatedByField
                         name="createdBy"
-                        style={{ marginTop: 20, width: '100%' }}
+                        style={fieldSpacingContainerStyle}
                         setFieldValue={setFieldValue}
                         helpertext={<SubscriptionFocus context={context} fieldName="createdBy"/>}
                         onChange={editor.changeCreated}
                     />
                     <ObjectMarkingField
                         name="objectMarking"
-                        style={{ marginTop: 20, width: '100%' }}
+                        style={fieldSpacingContainerStyle}
                         helpertext={<SubscriptionFocus context={context} fieldname="objectMarking"/>}
                         onChange={editor.changeMarking}
                     />

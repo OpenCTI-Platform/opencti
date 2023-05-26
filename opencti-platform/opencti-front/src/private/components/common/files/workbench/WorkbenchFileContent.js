@@ -59,6 +59,7 @@ import { stixDomainObjectsLinesSearchQuery } from '../../stix_domain_objects/Sti
 import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
+import { fieldSpacingContainerStyle } from '../../../../../utils/field';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -1623,24 +1624,24 @@ const WorkbenchFileContentComponent = ({
                     </div>
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       dryrun
                     />
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                       dryrun
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                       dryrun
@@ -2059,22 +2060,22 @@ const WorkbenchFileContentComponent = ({
                     </div>
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                     />
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
@@ -2323,22 +2324,22 @@ const WorkbenchFileContentComponent = ({
                     </div>
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                     />
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
@@ -2507,22 +2508,22 @@ const WorkbenchFileContentComponent = ({
                     </div>
                     <CreatedByField
                       name="createdBy"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                     />
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />

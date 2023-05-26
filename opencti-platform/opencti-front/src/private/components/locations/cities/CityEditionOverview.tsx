@@ -17,6 +17,7 @@ import { Option } from '../../common/form/ReferenceField';
 import { CityEditionOverview_city$key } from './__generated__/CityEditionOverview_city.graphql';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const cityMutationFieldPatch = graphql`
   mutation CityEditionOverviewFieldPatchMutation(
@@ -298,7 +299,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
           )}
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -307,7 +308,7 @@ const CityEditionOverview: FunctionComponent<CityEditionOverviewProps> = ({ city
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus
                 context={context}

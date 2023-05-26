@@ -21,6 +21,7 @@ import { commitMutation } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import SelectField from '../../../../components/SelectField';
 import MarkDownField from '../../../../components/MarkDownField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -215,7 +216,7 @@ class LocationCreation extends Component {
                       name: 'type',
                       id: 'type',
                     }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
                     <MenuItem value="Region">{t('Region')}</MenuItem>
                     <MenuItem value="Country">{t('Country')}</MenuItem>
@@ -297,7 +298,7 @@ class LocationCreation extends Component {
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
                     {!onlyAuthors && (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>

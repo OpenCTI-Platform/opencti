@@ -32,6 +32,7 @@ import { convertOrganizations } from '../../../utils/edition';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { OTP_CODE_SIZE } from '../../../public/components/OtpActivation';
 import PasswordPolicies from '../common/form/PasswordPolicies';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
 
 const styles = () => ({
   container: {
@@ -325,7 +326,7 @@ const ProfileOverviewComponent = (props) => {
                 name="objectOrganization"
                 label="Organizations"
                 disabled={true}
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 outlined={false}
               />
               <Field
@@ -356,7 +357,7 @@ const ProfileOverviewComponent = (props) => {
                   name: 'theme',
                   id: 'theme',
                 }}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
                 <MenuItem value="default">{t('Default')}</MenuItem>
@@ -373,7 +374,7 @@ const ProfileOverviewComponent = (props) => {
                   name: 'language',
                   id: 'language',
                 }}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerstyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               >
                 <MenuItem value="auto">

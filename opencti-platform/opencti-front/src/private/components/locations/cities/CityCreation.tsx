@@ -24,6 +24,7 @@ import { CityCreationMutation$variables } from './__generated__/CityCreationMuta
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -200,22 +201,22 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
           />
           <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
           />
           <ObjectLabelField
               name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
           />
           <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
               name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
           />

@@ -18,6 +18,7 @@ import CommitMessage from '../../common/form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const countryMutationFieldPatch = graphql`
   mutation CountryEditionOverviewFieldPatchMutation(
@@ -278,7 +279,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -287,7 +288,7 @@ const CountryEditionOverviewComponent: FunctionComponent<CountryEditionOverviewP
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

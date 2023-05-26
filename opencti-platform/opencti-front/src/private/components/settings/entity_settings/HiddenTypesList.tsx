@@ -13,6 +13,7 @@ import { RoleEditionOverview_role$data } from '../roles/__generated__/RoleEditio
 import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 import HiddenInRoles from './HiddenInRoles';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 export const hiddenTypesListRoleMutationFieldPatch = graphql`
   mutation HiddenTypesListRoleEditionOverviewFieldPatchMutation(
@@ -236,7 +237,7 @@ const HiddenTypesList: FunctionComponent<HiddenTypesListProps> = ({ role }) => {
       label={role ? t('Default hidden entity types') : t('Hidden entity types')}
       fullWidth={true}
       multiple={true}
-      containerstyle={{ marginTop: 20, width: '100%' }}
+      containerstyle={fieldSpacingContainerStyle}
       value={entitySettingsEntityType}
       onChange={(_: string, values: string[]) => (role ? handleChangeIfRole(values) : handleChangeGlobal(values))}
       renderValue={(selected: string[]) => (

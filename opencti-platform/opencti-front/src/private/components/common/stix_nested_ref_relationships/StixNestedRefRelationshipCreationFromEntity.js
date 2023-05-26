@@ -40,6 +40,7 @@ import { defaultValue } from '../../../../utils/Graph';
 import StixDomainObjectCreation from '../stix_domain_objects/StixDomainObjectCreation';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { onlyLinkedTo } from '../../../../utils/Relation';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -720,7 +721,7 @@ class StixNestedRefRelationshipCreationFromEntity extends Component {
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerstyle={fieldSpacingContainerStyle}
               >
                 {R.map(
                   (type) => (

@@ -242,26 +242,26 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
           />
           <ObjectLabelField
             name="objectLabel"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.objectLabel}
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
             name="externalReferences"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />

@@ -24,6 +24,7 @@ import Filters from '../../common/lists/Filters';
 import GroupField from '../../common/form/GroupField';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -254,7 +255,7 @@ const StreamCollectionCreation = (props) => {
                   <GroupField
                     name="groups"
                     helpertext={t('Let the field empty to grant all users')}
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                 )}
                 <div style={{ marginTop: 35 }}>

@@ -267,7 +267,7 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
@@ -291,7 +291,7 @@ const ReportEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -300,7 +300,7 @@ const ReportEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }

@@ -23,6 +23,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -175,22 +176,22 @@ export const NarrativeCreationForm = ({ updater, onReset, inputValue, onComplete
                 />
                 <CreatedByField
                     name="createdBy"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                 />
                 <ObjectLabelField
                     name="objectLabel"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.objectLabel}
                 />
                 <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                 />
                 <ExternalReferencesField
                     name="externalReferences"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                 />

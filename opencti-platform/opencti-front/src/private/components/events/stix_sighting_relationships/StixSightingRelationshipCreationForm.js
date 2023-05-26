@@ -285,12 +285,12 @@ const StixSightingRelationshipCreationForm = ({
             />
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
             />
             <Field
               component={SwitchField}
@@ -301,7 +301,7 @@ const StixSightingRelationshipCreationForm = ({
             />
             <ExternalReferencesField
               name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
             />
             {typeof handleResetSelection === 'function' && (

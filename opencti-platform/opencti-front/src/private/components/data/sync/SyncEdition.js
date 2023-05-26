@@ -29,6 +29,7 @@ import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { buildDate } from '../../../../utils/Time';
 import CreatorField from '../../common/form/CreatorField';
 import { isNotEmptyField } from '../../../../utils/utils';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -275,7 +276,7 @@ const SyncEditionContainer = ({ handleClose, synchronizer }) => {
               <CreatorField
                 name={'user_id'}
                 label={t('User responsible for data creation (empty = System)')}
-                containerStyle={{ marginTop: 20, width: '100%' }}
+                containerStyle={fieldSpacingContainerStyle}
                 onChange={handleSubmitField}
               />
               <Field

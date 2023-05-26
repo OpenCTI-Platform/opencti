@@ -350,7 +350,7 @@ const CaseRftEditionOverview: FunctionComponent<CaseRftEditionOverviewProps> = (
           />
           <ObjectAssigneeField
             name="objectAssignee"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectAssignee" />
             }
