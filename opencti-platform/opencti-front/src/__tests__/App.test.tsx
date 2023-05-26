@@ -37,6 +37,7 @@ describe('App', () => {
       Settings() {
         return {
           platform_modules: [],
+          otp_mandatory: false,
         };
       },
     });
