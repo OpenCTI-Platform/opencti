@@ -14,7 +14,7 @@ const ajv = new Ajv();
 
 // -- VALIDATE ATTRIBUTE AVAILABILITY AND FORMAT --
 
-const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>, update = false) => {
+const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUser, instanceType: string, input: Record<string, unknown>) => {
   const validateFormatSchemaAttributesFn = async () => {
     const availableAttributes = schemaAttributesDefinition.getAttributes(instanceType);
     const inputEntries = Object.entries(input);
@@ -33,9 +33,6 @@ const validateFormatSchemaAttributes = async (context: AuthContext, user: AuthUs
           if (!valid) {
             throw ValidationError(key, { message: 'The JSON Schema is not valid', data: validate.errors });
           }
-        }
-        if (attribute.update === false && update) {
-          throw ValidationError('update', 'You cannot update this attribute');
         }
       }
     });
@@ -108,6 +105,13 @@ const validateMandatoryAttributesOnUpdate = async (
   }, validateMandatoryAttributesOnUpdateFn);
 };
 
+/* const validateUpdatableAttribute = () => {
+  if (attribute.update === false) {
+    throw ValidationError('update', 'You cannot update this attribute');
+  }
+
+} */
+
 export const validateInputCreation = async (
   context: AuthContext,
   user: AuthUser,
@@ -153,8 +157,15 @@ export const validateInputUpdate = async (
       inputs = input;
     }
     // Generic validator
-    await validateFormatSchemaAttributes(context, user, instanceType, inputs, true);
+    await validateFormatSchemaAttributes(context, user, instanceType, inputs);
     await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
+    // validateUpdatableAttribute()
+    Object.entries(input).forEach(([key]) => {
+      const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
+      if (attribute?.update === false) {
+        throw ValidationError('update', 'blbablablabla');
+      }
+    });
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {
