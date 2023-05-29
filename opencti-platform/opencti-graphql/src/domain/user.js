@@ -250,7 +250,7 @@ export const getCapabilities = async (context, userId, userRoles, isUserPlatform
   const roleIds = userRoles.map((r) => r.id);
   const capabilities = R.uniq(await listThroughGetTo(context, SYSTEM_USER, roleIds, RELATION_HAS_CAPABILITY, ENTITY_TYPE_CAPABILITY));
   // Force push the bypass for default admin
-  const withoutBypass = capabilities.find((c) => c.name === BYPASS) === undefined;
+  const withoutBypass = !capabilities.some((c) => c.name === BYPASS);
   if (userId === OPENCTI_ADMIN_UUID && withoutBypass) {
     const id = generateStandardId(ENTITY_TYPE_CAPABILITY, { name: BYPASS });
     capabilities.push({ id, standard_id: id, internal_id: id, name: BYPASS });
