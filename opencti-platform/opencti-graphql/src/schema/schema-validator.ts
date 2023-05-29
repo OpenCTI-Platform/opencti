@@ -135,7 +135,7 @@ const validateUpdatableAttribute = (instanceType: string, input: Record<string, 
   Object.entries(input).forEach(([key]) => {
     const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
     if (attribute?.update === false) {
-      throw ValidationError('file', { message: 'You cannot update a file attribute' });
+      throw ValidationError(attribute, { message: `You cannot update ${attribute} attribute` });
     }
   });
 };
