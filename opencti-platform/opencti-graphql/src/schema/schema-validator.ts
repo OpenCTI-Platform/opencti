@@ -105,13 +105,6 @@ const validateMandatoryAttributesOnUpdate = async (
   }, validateMandatoryAttributesOnUpdateFn);
 };
 
-/* const validateUpdatableAttribute = () => {
-  if (attribute.update === false) {
-    throw ValidationError('update', 'You cannot update this attribute');
-  }
-
-} */
-
 export const validateInputCreation = async (
   context: AuthContext,
   user: AuthUser,
@@ -159,11 +152,11 @@ export const validateInputUpdate = async (
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, inputs);
     await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
-    // validateUpdatableAttribute()
+    // Updatable attributes validation
     Object.entries(input).forEach(([key]) => {
       const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
       if (attribute?.update === false) {
-        throw ValidationError('update', 'blbablablabla');
+        throw ValidationError('update', 'You cannot update this attribute');
       }
     });
     // Functional validator
