@@ -68,7 +68,7 @@ describe('Attribute resolver standard behavior', () => {
       variables: { elementType: ENTITY_TYPE_VULNERABILITY }
     });
     attributes = queryResult.data.schemaAttributes.edges.map((edgeNode) => edgeNode.node);
-    expect(attributes.length).toEqual(25);
+    expect(attributes.length).toEqual(26);
     expect(attributes.map((node) => node.value).includes('x_opencti_stix_ids')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('revoked')).toBeTruthy(); // Inherit attribute
     expect(attributes.map((node) => node.value).includes('description')).toBeTruthy(); // Direct attribute
