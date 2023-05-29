@@ -23,6 +23,7 @@ import TriggersField from './TriggersField';
 import TimePickerField from '../../../../components/TimePickerField';
 import { dayStartDate, parse } from '../../../../utils/Time';
 import FilterIconButton from '../../../../components/FilterIconButton';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const triggerMutationFieldPatch = graphql`
   mutation TriggerEditionOverviewFieldPatchMutation(
@@ -317,7 +318,7 @@ TriggerEditionOverviewProps
               onChange={(name: string, value: string[]) => handleSubmitField('event_types', value)
               }
               inputProps={{ name: 'event_types', id: 'event_types' }}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               renderValue={(selected: Array<string>) => (
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                   {selected.map((value) => (
@@ -345,7 +346,7 @@ TriggerEditionOverviewProps
               name="trigger_ids"
               setFieldValue={setFieldValue}
               values={values.trigger_ids}
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               onChange={handleSubmitTriggers}
               paginationOptions={paginationOptions}
             />
@@ -357,7 +358,7 @@ TriggerEditionOverviewProps
               name="period"
               label={t('Period')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               onChange={handleSubmitField}
             >
               <MenuItem value="hour">{t('hour')}</MenuItem>
@@ -373,7 +374,7 @@ TriggerEditionOverviewProps
               name="day"
               label={t('Week day')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               onChange={handleSubmitDay}
             >
               <MenuItem value="1">{t('Monday')}</MenuItem>
@@ -392,7 +393,7 @@ TriggerEditionOverviewProps
               name="day"
               label={t('Month day')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               onChange={handleSubmitDay}
             >
               {Array.from(Array(31).keys()).map((idx) => (
@@ -426,7 +427,7 @@ TriggerEditionOverviewProps
             onChange={(name: string, value: string[]) => handleSubmitField('outcomes', value)
             }
             inputProps={{ name: 'outcomes', id: 'outcomes' }}
-            containerstyle={{ marginTop: 20, width: '100%' }}
+            containerstyle={fieldSpacingContainerStyle}
             renderValue={(selected: Array<string>) => (
               <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                 {selected.map((value) => (

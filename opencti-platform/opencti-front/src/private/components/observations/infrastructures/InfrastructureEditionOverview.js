@@ -290,7 +290,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
           />
           <KillChainPhasesField
             name="killChainPhases"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus
@@ -332,7 +332,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
           )}
           <CreatedByField
             name="createdBy"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             helpertext={
               <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -341,7 +341,7 @@ const InfrastructureEditionOverviewComponent = (props) => {
           />
           <ObjectMarkingField
             name="objectMarking"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             helpertext={
               <SubscriptionFocus context={context} fieldname="objectMarking" />
             }

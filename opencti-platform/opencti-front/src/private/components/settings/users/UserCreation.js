@@ -20,6 +20,7 @@ import TextField from '../../../../components/TextField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import PasswordPolicies from '../../common/form/PasswordPolicies';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -261,7 +262,7 @@ class UserCreation extends Component {
                     outlined={false}
                     name="objectOrganization"
                     label="Organizations"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <div className={classes.buttons}>
                     <Button

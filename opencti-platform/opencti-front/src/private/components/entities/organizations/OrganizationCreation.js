@@ -22,6 +22,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -168,7 +169,7 @@ export const OrganizationCreationForm = ({ updater, onReset, onCompleted,
               name="x_opencti_organization_type"
               label={t('Organization type')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
           >
             <MenuItem value="constituent">{t('Constituent')}</MenuItem>
             <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
@@ -182,7 +183,7 @@ export const OrganizationCreationForm = ({ updater, onReset, onCompleted,
               name="x_opencti_reliability"
               label={t('Reliability')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
           >
             <MenuItem value="A">{t('reliability_A')}</MenuItem>
             <MenuItem value="B">{t('reliability_B')}</MenuItem>
@@ -193,22 +194,22 @@ export const OrganizationCreationForm = ({ updater, onReset, onCompleted,
           </Field>
           <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
           />
           <ObjectLabelField
               name="objectLabel"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.objectLabel}
           />
           <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
               name="externalReferences"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
           />

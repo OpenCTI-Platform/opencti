@@ -13,6 +13,7 @@ import ObjectOrganizationField from '../../common/form/ObjectOrganizationField';
 import { convertOrganizations } from '../../../../utils/edition';
 import { useFormatter } from '../../../../components/i18n';
 import { UserEditionOverview_user$data } from './__generated__/UserEditionOverview_user.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const userMutationFieldPatch = graphql`
   mutation UserEditionOverviewFieldPatchMutation(
@@ -224,7 +225,7 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
               name="language"
               label={t('Language')}
               fullWidth={true}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               onFocus={handleChangeFocus}
               onSubmit={handleSubmitField}
               helpertext={
@@ -241,7 +242,7 @@ const UserEditionOverviewComponent: FunctionComponent<UserEditionOverviewCompone
               name="objectOrganization"
               label="Organizations"
               onChange={handleChangeObjectOrganization}
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               outlined={false}
             />
             <Field

@@ -32,6 +32,7 @@ import { insertNode } from '../../../../utils/store';
 import CreatorField from '../../common/form/CreatorField';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import EnrichedTooltip from '../../../../components/EnrichedTooltip';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   drawerPaper: {
@@ -311,7 +312,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       label={t('Remote OpenCTI URL')}
                       fullWidth={true}
                       disabled={streams.length > 0}
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     <Field
                       component={TextField}
@@ -320,7 +321,7 @@ const SyncCreation = ({ paginationOptions }) => {
                       label={t('Remote OpenCTI token')}
                       fullWidth={true}
                       disabled={streams.length > 0}
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                     {streams.length > 0 && (
                       <Field
@@ -329,7 +330,7 @@ const SyncCreation = ({ paginationOptions }) => {
                         name="stream_id"
                         label={t('Remote OpenCTI stream ID')}
                         inputProps={{ name: 'stream_id', id: 'stream_id' }}
-                        containerstyle={{ marginTop: 20, width: '100%' }}
+                        containerstyle={fieldSpacingContainerStyle}
                         renderValue={(value) => streams
                           .filter((stream) => stream.value === value)
                           .at(0).name
@@ -407,7 +408,7 @@ const SyncCreation = ({ paginationOptions }) => {
                     label={t(
                       'User responsible for data creation (empty = System)',
                     )}
-                    containerStyle={{ marginTop: 20, width: '100%' }}
+                    containerStyle={fieldSpacingContainerStyle}
                   />
                   <Field
                     component={DateTimePickerField}

@@ -35,6 +35,7 @@ import { markingDefinitionsLinesSearchQuery } from '../../settings/marking_defin
 import Loader from '../../../../components/Loader';
 import FileExternalReferencesViewer from './FileExternalReferencesViewer';
 import WorkbenchFileViewer from './workbench/WorkbenchFileViewer';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = () => ({
   container: {
@@ -347,7 +348,7 @@ const FileManager = ({
                             name="type"
                             label={t('Export type')}
                             fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerstyle={fieldSpacingContainerStyle}
                           >
                             <MenuItem value="simple">
                               {t('Simple export (just the entity)')}
@@ -362,7 +363,7 @@ const FileManager = ({
                             name="maxMarkingDefinition"
                             label={t('Max marking definition level')}
                             fullWidth={true}
-                            containerstyle={{ marginTop: 20, width: '100%' }}
+                            containerstyle={fieldSpacingContainerStyle}
                           >
                             <MenuItem value="none">{t('None')}</MenuItem>
                             {map(

@@ -24,6 +24,7 @@ import { typesWithoutName } from '../../../../utils/hooks/useAttributes';
 import CommitMessage from '../form/CommitMessage';
 import { adaptFieldValue } from '../../../../utils/String';
 import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -412,7 +413,7 @@ const StixDomainObjectEditionContainer = (props) => {
               )}
               <CreatedByField
                 name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
                   <SubscriptionFocus
@@ -424,7 +425,7 @@ const StixDomainObjectEditionContainer = (props) => {
               />
               <ObjectMarkingField
                 name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus
                     context={editContext}

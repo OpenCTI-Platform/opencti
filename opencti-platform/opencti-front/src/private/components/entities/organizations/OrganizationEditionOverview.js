@@ -17,6 +17,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const organizationMutationFieldPatch = graphql`
   mutation OrganizationEditionOverviewFieldPatchMutation(
@@ -237,7 +238,7 @@ const OrganizationEditionOverviewComponent = (props) => {
                 name: 'x_opencti_organization_type',
                 id: 'x_opencti_organization_type',
               }}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="x_opencti_organization_type" />
               }
@@ -260,7 +261,7 @@ const OrganizationEditionOverviewComponent = (props) => {
                 name: 'x_opencti_reliability',
                 id: 'x_opencti_reliability',
               }}
-              containerstyle={{ marginTop: 20, width: '100%' }}
+              containerstyle={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="x_opencti_reliability" />
               }
@@ -287,7 +288,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -296,7 +297,7 @@ const OrganizationEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

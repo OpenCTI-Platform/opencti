@@ -31,6 +31,7 @@ import {
   ExternalReferenceAddInput,
   ExternalReferenceCreationMutation$data,
 } from './__generated__/ExternalReferenceCreationMutation.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -307,7 +308,7 @@ ExternalReferenceCreationProps
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      FormControlProps={{ style: fieldSpacingContainerStyle }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{
                         classes: { fullWidth: true, variant: 'standard' },
@@ -424,7 +425,7 @@ ExternalReferenceCreationProps
                       component={SimpleFileUpload}
                       name="file"
                       label={t('Associated file')}
-                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      FormControlProps={{ style: fieldSpacingContainerStyle }}
                       InputLabelProps={{ fullWidth: true, variant: 'standard' }}
                       InputProps={{ classes: { fullWidth: true, variant: 'standard' },
                         onChange: (event: React.ChangeEvent<HTMLInputElement>) => {

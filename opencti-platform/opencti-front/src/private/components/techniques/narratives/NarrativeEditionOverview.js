@@ -15,6 +15,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const narrativeMutationFieldPatch = graphql`
   mutation NarrativeEditionOverviewFieldPatchMutation(
@@ -212,7 +213,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -221,7 +222,7 @@ const NarrativeEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

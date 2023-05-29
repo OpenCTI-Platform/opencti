@@ -33,6 +33,7 @@ import {
 } from './__generated__/StixCoreRelationshipEditionOverview_stixCoreRelationship.graphql';
 import { Option } from '../form/ReferenceField';
 import { Theme } from '../../../../components/Theme';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -375,7 +376,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
               />
               <KillChainPhasesField
                 name="killChainPhases"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldName="killChainPhases" />
@@ -397,7 +398,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
               )}
               <CreatedByField
                 name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldName="createdBy" />
@@ -406,7 +407,7 @@ const StixCoreRelationshipEditionOverviewComponent: FunctionComponent<Omit<StixC
               />
               <ObjectMarkingField
                 name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldname="objectMarking" />
                 }

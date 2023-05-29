@@ -15,6 +15,7 @@ import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../ut
 import StatusField from '../../common/form/StatusField';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const sectorMutationFieldPatch = graphql`
   mutation SectorEditionOverviewFieldPatchMutation(
@@ -216,7 +217,7 @@ const SectorEditionOverviewComponent = (props) => {
             )}
             <CreatedByField
               name="createdBy"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               helpertext={
                 <SubscriptionFocus context={context} fieldName="createdBy" />
@@ -225,7 +226,7 @@ const SectorEditionOverviewComponent = (props) => {
             />
             <ObjectMarkingField
               name="objectMarking"
-              style={{ marginTop: 20, width: '100%' }}
+              style={fieldSpacingContainerStyle}
               helpertext={
                 <SubscriptionFocus context={context} fieldname="objectMarking" />
               }

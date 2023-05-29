@@ -324,7 +324,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                   />
                   <ObjectMarkingField
                     name="objectMarking"
-                    style={{ marginTop: 20, width: '100%' }}
+                    style={fieldSpacingContainerStyle}
                   />
                   <div className={classes.buttons}>
                     <Button

@@ -26,6 +26,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import ObjectLabelField from '../form/ObjectLabelField';
 import ObjectMarkingField from '../form/ObjectMarkingField';
 import { ExternalReferencesField } from '../form/ExternalReferencesField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -222,7 +223,7 @@ class IdentityCreation extends Component {
                       name: 'type',
                       id: 'type',
                     }}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
                     <MenuItem value="Sector">{t('Sector')}</MenuItem>
                     <MenuItem value="Organization">
@@ -234,7 +235,7 @@ class IdentityCreation extends Component {
                   {!dryrun && (
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
@@ -242,13 +243,13 @@ class IdentityCreation extends Component {
                   {!dryrun && (
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                   )}
                   {!dryrun && (
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />
@@ -338,7 +339,7 @@ class IdentityCreation extends Component {
                     name="type"
                     label={t('Entity type')}
                     fullWidth={true}
-                    containerstyle={{ marginTop: 20, width: '100%' }}
+                    containerstyle={fieldSpacingContainerStyle}
                   >
                     {!onlyAuthors && (
                       <MenuItem value="Sector">{t('Sector')}</MenuItem>
@@ -354,7 +355,7 @@ class IdentityCreation extends Component {
                   {!dryrun && (
                     <ObjectLabelField
                       name="objectLabel"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.objectLabel}
                     />
@@ -362,13 +363,13 @@ class IdentityCreation extends Component {
                   {!dryrun && (
                     <ObjectMarkingField
                       name="objectMarking"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                     />
                   )}
                   {!dryrun && (
                     <ExternalReferencesField
                       name="externalReferences"
-                      style={{ marginTop: 20, width: '100%' }}
+                      style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
                     />

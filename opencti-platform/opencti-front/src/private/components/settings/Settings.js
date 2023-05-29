@@ -24,6 +24,7 @@ import Loader from '../../../components/Loader';
 import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
+import { fieldSpacingContainerStyle } from '../../../utils/field';
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -348,7 +349,7 @@ const Settings = () => {
                               name="platform_theme"
                               label={t('Theme')}
                               fullWidth={true}
-                              containerstyle={{ marginTop: 20, width: '100%' }}
+                              containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={<SubscriptionFocus context={editContext} fieldName="platform_theme"/>}>
@@ -360,7 +361,7 @@ const Settings = () => {
                               name="platform_language"
                               label={t('Language')}
                               fullWidth={true}
-                              containerstyle={{ marginTop: 20, width: '100%' }}
+                              containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
                               onChange={(name, value) => handleSubmitField(id, name, value)}
                               helpertext={<SubscriptionFocus context={editContext} fieldName="platform_language"/>}>

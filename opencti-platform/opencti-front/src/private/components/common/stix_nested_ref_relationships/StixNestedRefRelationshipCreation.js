@@ -538,7 +538,7 @@ class StixNestedRefRelationshipCreation extends Component {
                 name="relationship_type"
                 label={t('Relationship type')}
                 fullWidth={true}
-                containerstyle={{ marginTop: 20, width: '100%' }}
+                containerstyle={fieldSpacingContainerStyle}
               >
                 {R.map(
                   (type) => (
@@ -574,7 +574,7 @@ class StixNestedRefRelationshipCreation extends Component {
               />
               <ObjectMarkingField
                 name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
               />
               <div className={classes.buttons}>
                 <Button

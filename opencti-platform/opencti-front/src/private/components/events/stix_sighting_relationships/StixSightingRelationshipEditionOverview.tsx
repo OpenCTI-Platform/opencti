@@ -405,7 +405,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               )}
               <CreatedByField
                 name="createdBy"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 setFieldValue={setFieldValue}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldName="createdBy" />
@@ -415,7 +415,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
               />
               <ObjectMarkingField
                 name="objectMarking"
-                style={{ marginTop: 20, width: '100%' }}
+                style={fieldSpacingContainerStyle}
                 helpertext={
                   <SubscriptionFocus context={editContext} fieldname="objectMarking" />
                 }

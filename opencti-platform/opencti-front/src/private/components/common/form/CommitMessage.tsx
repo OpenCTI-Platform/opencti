@@ -12,6 +12,7 @@ import type { ExternalReferencesValues } from './ExternalReferencesField';
 import { ExternalReferencesField } from './ExternalReferencesField';
 import { BYPASSREFERENCE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles(() => ({
   flex: {
@@ -91,7 +92,7 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
         <DialogContent>
           <ExternalReferencesField
             name="references"
-            style={{ marginTop: 20, width: '100%' }}
+            style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values}
             id={id}
