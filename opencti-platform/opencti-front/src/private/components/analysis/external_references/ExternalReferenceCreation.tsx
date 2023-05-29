@@ -313,9 +313,9 @@ ExternalReferenceCreationProps
                         classes: { fullWidth: true, variant: 'standard' },
                         onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
                           const fileName = event.target.value.split('\\').pop();
+                          setFieldValue('file', event.currentTarget.files?.[0]);
                           const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
-                          if (!externalIdValue && fileName) {
-                            setFieldValue('file', event.currentTarget.files?.[0]);
+                          if (!externalIdValue) {
                             setFieldValue('external_id', fileName);
                           }
                         },
@@ -430,8 +430,8 @@ ExternalReferenceCreationProps
                         onChange: (event: React.ChangeEvent<HTMLInputElement>) => {
                           const fileName = event.target.value.split('\\').pop();
                           const externalIdValue = (document.getElementById('external_id') as HTMLInputElement).value;
+                          setFieldValue('file', event.currentTarget.files?.[0]);
                           if (!externalIdValue && fileName) {
-                            setFieldValue('file', event.currentTarget.files?.[0]);
                             setFieldValue('external_id', fileName);
                           }
                         },
