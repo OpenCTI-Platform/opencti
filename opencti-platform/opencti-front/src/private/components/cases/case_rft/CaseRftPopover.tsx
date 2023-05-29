@@ -152,7 +152,7 @@ const CaseRftPopover = ({ id }: { id: string }) => {
           >
             <CaseRftEditionContainer
               queryRef={queryRef}
-              handleClose={handleClose}
+              handleClose={handleCloseEdit}
             />
           </React.Suspense>
         )}

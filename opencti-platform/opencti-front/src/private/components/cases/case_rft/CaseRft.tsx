@@ -13,14 +13,16 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { CaseTasksLinesQuery } from '../__generated__/CaseTasksLinesQuery.graphql';
-import { CaseTasksFilter } from '../__generated__/CaseTasksRefetch.graphql';
+import { CaseTasksFilter,
+  CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
-import CaseTasksLines, { caseTasksLinesQuery } from '../CaseTasksLines';
+import CaseTasksLines, { caseTasksLinesQuery } from '../case_task/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRftDetails from './CaseRftDetails';
 import CaseRftEdition from './CaseRftEdition';
 import CaseRftPopover from './CaseRftPopover';
+import { useFormatter } from '../../../../components/i18n';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -37,6 +39,7 @@ interface CaseRftProps {
 
 const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
   const classes = useStyles();
+  const { t } = useFormatter();
   const caseRftData = useFragment(caseFragment, data);
 
   const tasksFilters = {
@@ -47,10 +50,23 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
       },
     ],
   };
-  const paginationOptions = {
-    count: 25,
-    filters: tasksFilters.filters,
-  };
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseRftData.id}-caseTask`;
+
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
+    LOCAL_STORAGE_KEY_CASE_TASKS,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+    },
+    tasksFilters.filters,
+  );
+
+  const {
+    sortBy,
+    orderAsc,
+  } = viewStorage;
+
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
     paginationOptions,
@@ -61,7 +77,6 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         container={caseRftData}
         PopoverComponent={<CaseRftPopover id={caseRftData.id} />}
         enableSuggestions={false}
-        disableSharing={true}
       />
       <Grid
         container={true}
@@ -84,7 +99,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
         classes={{ container: classes.gridContainer }}
         style={{ marginTop: 25 }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -93,11 +108,28 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
                 caseId={caseRftData.id}
-                tasksFilters={tasksFilters}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                handleSort={helpers.handleSort}
                 defaultMarkings={convertMarkings(caseRftData)}
               />
             </React.Suspense>
           )}
+        </Grid>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseRftData}
+            types={['Incident', 'stix-sighting-relationship', 'Report']}
+            title={t('Origin of the Case')}
+          />
         </Grid>
         <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships

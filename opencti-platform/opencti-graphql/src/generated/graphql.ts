@@ -2930,6 +2930,7 @@ export type CaseTasksFiltering = {
 };
 
 export enum CaseTasksOrdering {
+  AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
   Context = 'context',
   Created = 'created',
@@ -2940,7 +2941,6 @@ export enum CaseTasksOrdering {
   DueDate = 'dueDate',
   Modified = 'modified',
   Name = 'name',
-  Rating = 'rating',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'
 }
@@ -11993,7 +11993,7 @@ export type Mutation = {
   caseTaskDelete?: Maybe<Scalars['ID']>;
   caseTaskFieldPatch?: Maybe<CaseTask>;
   caseTaskRelationAdd?: Maybe<StixRefRelationship>;
-  caseTaskRelationDelete?: Maybe<Channel>;
+  caseTaskRelationDelete?: Maybe<CaseTask>;
   caseTemplateAdd?: Maybe<CaseTemplate>;
   caseTemplateDelete?: Maybe<Scalars['ID']>;
   caseTemplateFieldPatch?: Maybe<CaseTemplate>;
@@ -30782,7 +30782,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseTaskDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTaskDeleteArgs, 'id'>>;
   caseTaskFieldPatch?: Resolver<Maybe<ResolversTypes['CaseTask']>, ParentType, ContextType, RequireFields<MutationCaseTaskFieldPatchArgs, 'id' | 'input'>>;
   caseTaskRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseTaskRelationAddArgs, 'id' | 'input'>>;
-  caseTaskRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationCaseTaskRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  caseTaskRelationDelete?: Resolver<Maybe<ResolversTypes['CaseTask']>, ParentType, ContextType, RequireFields<MutationCaseTaskRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseTemplateAdd?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateAddArgs, 'input'>>;
   caseTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTemplateDeleteArgs, 'id'>>;
   caseTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateFieldPatchArgs, 'id' | 'input'>>;

@@ -14,7 +14,8 @@ import CaseRfts from './CaseRfts';
 import Feedbacks from './Feedbacks';
 import RootFeedback from './feedbacks/Root';
 import RootIncident from './case_incident/Root';
-import Resolver from './Resolver';
+import Tasks from './Tasks';
+import RootTask from './case_task/Root';
 
 const Root = () => {
   let redirect: string | null = null;
@@ -26,6 +27,8 @@ const Root = () => {
     redirect = 'rfts';
   } else if (!useIsHiddenEntity('Feedback')) {
     redirect = 'feedbacks';
+  } else if (!useIsHiddenEntity('Task')) {
+    redirect = 'tasks';
   }
 
   return (
@@ -64,16 +67,21 @@ const Root = () => {
     />
     <BoundaryRoute
       exact
+      path="/dashboard/cases/tasks"
+      component={Tasks}
+    />
+    <BoundaryRoute
+      path="/dashboard/cases/tasks/:caseId"
+      component={RootTask}
+    />
+    <BoundaryRoute
+      exact
       path="/dashboard/cases/feedbacks"
       component={Feedbacks}
     />
     <BoundaryRoute
       path="/dashboard/cases/feedbacks/:caseId"
       component={RootFeedback}
-    />
-    <BoundaryRoute
-      path="/dashboard/cases/resolver/:caseId"
-      component={Resolver}
     />
   </Switch>
   );

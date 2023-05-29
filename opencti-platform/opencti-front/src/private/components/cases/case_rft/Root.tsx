@@ -127,7 +127,7 @@ const RootCaseRftComponent = ({ queryRef, caseId }) => {
               path="/dashboard/cases/rfts/:caseId/knowledge"
               render={() => (
                 <Redirect
-                  to={`/dashboard/cases/rfts/${caseId}/knowledge/graph`}
+                  to={`/dashboard/cases/rfts/${caseId}/knowledge/timeline`}
                 />
               )}
             />

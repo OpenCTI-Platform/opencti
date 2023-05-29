@@ -21,8 +21,8 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import CaseRfiEditionContainer, { caseRfiEditionQuery } from './CaseRfiEditionContainer';
-import { CaseRfiEditionContainerCaseQuery } from './__generated__/CaseRfiEditionContainerCaseQuery.graphql';
+import TasksEditionContainer, { tasksEditionQuery } from './TasksEditionContainer';
+import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -41,13 +41,13 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const caseRfiPopoverDeletionMutation = graphql`
-  mutation CaseRfiPopoverCaseDeletionMutation($id: ID!) {
-    caseRfiDelete(id: $id)
+const tasksPopoverDeletionMutation = graphql`
+  mutation TasksPopoverDeletionMutation($id: ID!) {
+    caseTaskDelete(id: $id)
   }
 `;
 
-const CaseRfiPopover = ({ id }: { id: string }) => {
+const TaskPopover = ({ id }: { id: string }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 
@@ -56,9 +56,9 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
-  const [commit] = useMutation(caseRfiPopoverDeletionMutation);
-  const queryRef = useQueryLoading<CaseRfiEditionContainerCaseQuery>(
-    caseRfiEditionQuery,
+  const [commit] = useMutation(tasksPopoverDeletionMutation);
+  const queryRef = useQueryLoading<TasksEditionContainerQuery>(
+    tasksEditionQuery,
     { id },
   );
 
@@ -96,7 +96,7 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/cases/rfis');
+        navigate('/dashboard/cases/tasks');
       },
     });
   };
@@ -126,7 +126,7 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this request for information case ?')}
+            {t('Do you want to delete this case task ?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
@@ -150,7 +150,7 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
           <React.Suspense
             fallback={<Loader variant={LoaderVariant.inElement} />}
           >
-            <CaseRfiEditionContainer
+            <TasksEditionContainer
               queryRef={queryRef}
               handleClose={handleCloseEdit}
             />
@@ -161,4 +161,4 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
   );
 };
 
-export default CaseRfiPopover;
+export default TaskPopover;

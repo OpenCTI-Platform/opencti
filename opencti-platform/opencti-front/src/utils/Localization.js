@@ -405,6 +405,7 @@ const i18n = {
       'Update a synchronizer': 'Actualizar un sincronizador',
       'Create an incident response': 'Crear una respuesta a incidentes',
       'Update an incident response': 'Actualizar la respuesta a un incidente',
+      'Origin of the Case': 'Origen del Caso',
       'Create a feedback': 'Crear un comentario',
       'Update a feedback': 'Actualizar un comentario',
       'Submit a feedback': 'Enviar un comentario',
@@ -412,6 +413,8 @@ const i18n = {
         '¿Desea eliminar este incidente de caso?',
       'Do you want to delete this feedback ?':
         '¿Quieres eliminar este comentario?',
+      'Do you want to delete this case task ?':
+        '¿Desea eliminar esta tarea de caso?',
       'Do you want to delete this request for information case ?':
         '¿Desea eliminar este caso de solicitud de información?',
       'Do you want to delete this request for takedown case ?':
@@ -428,6 +431,11 @@ const i18n = {
       'Create a task': 'Crear una tarea',
       'Update a task': 'Actualizar una tarea',
       'Add a task to this container': 'Agregar una tarea a este contenedor',
+      'Incident response': 'Respuesta al incidente',
+      'Requests for information': 'Solicitudes de información',
+      'Requests for takedown': 'Solicitudes de eliminación',
+      'Case Tasks': 'Tareas',
+      Feedbacks: 'Comentarios',
       Tasks: 'Tareas',
       takedown_types: 'tipos derribados',
       information_types: 'tipos de información',
@@ -1184,6 +1192,7 @@ const i18n = {
       'Last month': 'Último mes',
       'Last 6 months': 'Últimos 6 meses',
       'Last year': 'Último año',
+      Cases: 'Casos',
       Analysis: 'Análisis',
       Events: 'Eventos',
       Arsenal: 'Arsenal',
@@ -2359,6 +2368,7 @@ const i18n = {
       'Update a synchronizer': 'Modifier un synchroniseur',
       'Create an incident response': 'Créer une réponse à incident',
       'Update an incident response': 'Mettre à jour une réponse à incident',
+      'Origin of the Case': 'Origine de l\'affaire',
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
@@ -2366,6 +2376,8 @@ const i18n = {
         "Voulez-vous supprimer ce cas d'incident ?",
       'Do you want to delete this feedback ?':
         'Voulez-vous supprimer ce commentaire ?',
+      'Do you want to delete this case task ?':
+        'Voulez-vous supprimer cette tâche ?',
       'Do you want to delete this request for information case ?':
         "Voulez-vous supprimer ce dossier de demande d'information ?",
       'Do you want to delete this request for takedown case ?':
@@ -2382,6 +2394,10 @@ const i18n = {
       'Create a task': 'Créer une tâche',
       'Update a task': 'Mettre à jour une tâche',
       'Add a task to this container': 'Ajouter une tâche à ce conteneur',
+      'Incident response': 'Réponse aux incidents',
+      'Requests for information': 'Demandes d\'informations',
+      'Requests for takedown': 'Demandes de retrait',
+      Feedbacks: 'Commentaires',
       Tasks: 'Tâches',
       takedown_types: 'types de retraits',
       information_types: "types d'informations",
@@ -3132,6 +3148,7 @@ const i18n = {
       'Last year': 'Dernière année',
       Analysis: 'Analyses',
       Events: 'Evénements',
+      Cases: 'Cas',
       Arsenal: 'Arsenal',
       Evidences: '',
       Pattern: 'Motif',
@@ -3149,7 +3166,7 @@ const i18n = {
       References: 'Références',
       'Case priority': 'Priorité',
       'Case severity': 'Sévérité',
-      'Case Task': 'Tâche de cas',
+      'Case Task': 'Tâche',
       'Due Date': "Date d'échéance",
       'Apply case templates': 'Appliquer des modèles de cas',
       'Create a case template': 'Créer un nouveau modèle de cas',
@@ -3199,6 +3216,7 @@ const i18n = {
       'Request For Takedown Date': 'Date de la demande de Retrait',
       'Information type': "Type d'informations",
       'Takedown type': 'Type de retrait',
+      'Case Tasks': 'Tâches',
       Ticks: 'Marqueurs',
       Likelihood: 'Probabilité',
       'Relation type': 'Type de relation',
@@ -4274,6 +4292,7 @@ const i18n = {
       'Update a synchronizer': '同期処理を更新',
       'Create an incident response': 'ケース インシデントの作成',
       'Update an incident response': 'ケース インシデントの更新',
+      'Origin of the Case': '事件の発端',
       'Create a feedback': 'フィードバックを作成する',
       'Update a feedback': 'フィードバックを更新する',
       'Submit a feedback': 'フィードバックを送信する',
@@ -4281,6 +4300,8 @@ const i18n = {
         'このケース インシデントを削除しますか?',
       'Do you want to delete this feedback ?':
         'このフィードバックを削除しますか?',
+      'Do you want to delete this case task ?':
+        'このケースタスクを削除しますか?',
       'Do you want to delete this request for information case ?':
         'この情報要求のケースを削除しますか?',
       'Do you want to delete this request for takedown case ?':
@@ -4295,6 +4316,11 @@ const i18n = {
       'Create a task': 'タスクを作成する',
       'Update a task': 'タスクを更新する',
       'Add a task to this container': 'このコンテナにタスクを追加',
+      'Incident response': 'インシデント対応',
+      'Requests for information': '情報提供のリクエスト',
+      'Requests for takedown': '削除のリクエスト',
+      'Case Tasks': 'ケースタスク',
+      Feedbacks: 'フィードバック',
       Tasks: 'タスク',
       takedown_types: 'テイクダウンの種類',
       information_types: '情報の種類',
@@ -5038,6 +5064,7 @@ const i18n = {
       'Last year': '過去1年間',
       Analysis: '分析',
       Events: 'イベント',
+      Cases: '事例',
       Arsenal: '武器庫',
       Evidences: 'エビデンス',
       Pattern: 'パターン',
@@ -6095,11 +6122,14 @@ const i18n = {
       'Update a synchronizer': '更新一个同步器',
       'Create an incident response': '创建个案事件',
       'Update an incident response': '更新案例事件',
+      'Origin of the Case': '案源',
       'Create a feedback': '创建反馈',
       'Update a feedback': '更新一个反馈',
       'Submit a feedback': '提交反馈',
       'Do you want to delete this case incident ?': '是否要删除此案例事件？',
       'Do you want to delete this feedback ?': '要删除此反馈吗？',
+      'Do you want to delete this case task ?':
+        '您要删除此案例任务吗？',
       'Do you want to delete this request for information case ?':
         '是否要删除此信息案例请求？',
       'Do you want to delete this request for takedown case ?':
@@ -6114,6 +6144,11 @@ const i18n = {
       'Create a task': '创建任务',
       'Update a task': '更新任务',
       'Add a task to this container': '向此容器添加任务',
+      'Incident response': '事件响应',
+      'Requests for information': '索取资料',
+      'Requests for takedown': '删除请求',
+      'Case Tasks': '个案任务',
+      Feedbacks: '反馈',
       Tasks: '任务',
       takedown_types: '删除类型',
       information_types: '信息类型',
@@ -6822,6 +6857,7 @@ const i18n = {
       'Last year': '最近1年',
       Analysis: '分析',
       Events: '事件',
+      Cases: '案例',
       Arsenal: '武器库',
       Evidences: '证据',
       Pattern: '模式',

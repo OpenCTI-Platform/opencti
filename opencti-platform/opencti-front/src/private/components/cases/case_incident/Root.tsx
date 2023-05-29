@@ -129,7 +129,7 @@ const RootCaseIncidentComponent = ({ queryRef, caseId }) => {
               path="/dashboard/cases/incidents/:caseId/knowledge"
               render={() => (
                 <Redirect
-                  to={`/dashboard/cases/incidents/${caseId}/knowledge/graph`}
+                  to={`/dashboard/cases/incidents/${caseId}/knowledge/timeline`}
                 />
               )}
             />

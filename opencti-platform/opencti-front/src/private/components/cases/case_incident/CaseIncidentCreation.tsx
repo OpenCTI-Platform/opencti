@@ -233,7 +233,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             name="name"
             label={t('Name')}
             fullWidth={true}
-            detectDuplicate={['CaseIncident']}
+            detectDuplicate={['Case-Incident']}
             style={{ marginBottom: '20px' }}
           />
           <Field

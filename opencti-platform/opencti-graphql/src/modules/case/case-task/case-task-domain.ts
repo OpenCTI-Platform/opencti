@@ -31,7 +31,7 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: EntityOption
 };
 
 export const caseTaskAdd = async (context: AuthContext, user: AuthUser, input: CaseTaskAddInput) => {
-  const newInput = { ...input, useAsTemplate: !!input?.useAsTemplate };
+  const newInput = { ...input, useAsTemplate: !!input.useAsTemplate };
   const created = await createEntity(context, user, newInput, ENTITY_TYPE_CONTAINER_CASE_TASK);
   await publishUserAction({
     user,

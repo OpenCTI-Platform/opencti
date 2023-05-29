@@ -14,8 +14,8 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
-import { CaseTasksLine_data$data } from '../__generated__/CaseTasksLine_data.graphql';
 import { caseEditionOverviewFocus, caseMutationFieldPatch, caseMutationRelationAdd, caseMutationRelationDelete } from '../CaseUtils';
+import { CaseTasksLine_data$data } from './__generated__/CaseTasksLine_data.graphql';
 
 const CaseTaskEdition = ({ task }: { task: CaseTasksLine_data$data }) => {
   const { t } = useFormatter();

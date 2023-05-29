@@ -16,14 +16,15 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import {
   CaseTasksFilter,
-  CaseTasksLinesQuery,
-} from '../__generated__/CaseTasksLinesQuery.graphql';
+  CaseTasksLinesQuery, CaseTasksLinesQuery$variables,
+} from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
-import CaseTasksLines, { caseTasksLinesQuery } from '../CaseTasksLines';
+import CaseTasksLines, { caseTasksLinesQuery } from '../case_task/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseIncidentDetails from './CaseIncidentDetails';
 import CaseIncidentEdition from './CaseIncidentEdition';
 import CaseIncidentPopover from './CaseIncidentPopover';
+import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -53,10 +54,24 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       },
     ],
   };
-  const paginationOptions = {
-    count: 25,
-    filters: tasksFilters.filters,
-  };
+
+  const LOCAL_STORAGE_KEY_CASE_TASKS = `view-cases-${caseIncidentData.id}-caseTask`;
+
+  const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<CaseTasksLinesQuery$variables>(
+    LOCAL_STORAGE_KEY_CASE_TASKS,
+    {
+      searchTerm: '',
+      sortBy: 'name',
+      orderAsc: true,
+    },
+    tasksFilters.filters,
+  );
+
+  const {
+    sortBy,
+    orderAsc,
+  } = viewStorage;
+
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
     paginationOptions,
@@ -68,7 +83,6 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         container={caseIncidentData}
         PopoverComponent={<CaseIncidentPopover id={caseIncidentData.id} />}
         enableSuggestions={false}
-        disableSharing={true}
       />
       <Grid
         container={true}
@@ -91,7 +105,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
         classes={{ container: classes.gridContainer }}
         style={{ marginTop: 25 }}
       >
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -100,18 +114,27 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
                 queryRef={queryRef}
                 paginationOptions={paginationOptions}
                 caseId={caseIncidentData.id}
-                tasksFilters={tasksFilters}
+                sortBy={sortBy}
+                orderAsc={orderAsc}
+                handleSort={helpers.handleSort}
                 defaultMarkings={convertMarkings(caseIncidentData)}
               />
             </React.Suspense>
           )}
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+      </Grid>
+      <Grid
+        container={true}
+        spacing={3}
+        classes={{ container: classes.gridContainer }}
+        style={{ marginTop: 25 }}
+      >
+        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
-            types={['Incident', 'stix-sighting-relationship']}
-            title={t('Incidents & alerts')}
+            types={['Incident', 'stix-sighting-relationship', 'Report']}
+            title={t('Origin of the Case')}
           />
         </Grid>
       </Grid>

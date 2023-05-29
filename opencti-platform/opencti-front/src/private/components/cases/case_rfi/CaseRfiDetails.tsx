@@ -92,6 +92,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
     width: 110,
     paddingRight: 20,
   },
+  relatedContainers: {
+    paddingTop: 0,
+  },
 }));
 
 const CaseRfiDetailsFragment = graphql`
@@ -235,7 +238,7 @@ const CaseRfiDetails: FunctionComponent<CaseRfiDetailsProps> = ({
         <Typography variant="h3" gutterBottom={true}>
           {t('Related cases')}
         </Typography>
-        <List>
+        <List classes={{ root: classes.relatedContainers }}>
           {expandable
             ? R.take(expanded ? 200 : 5, data.relatedContainers?.edges ?? [])
               .filter(

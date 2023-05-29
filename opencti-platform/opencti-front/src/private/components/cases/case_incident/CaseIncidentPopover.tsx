@@ -152,7 +152,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
           >
             <CaseIncidentEditionContainer
               queryRef={queryRef}
-              handleClose={handleClose}
+              handleClose={handleCloseEdit}
             />
           </React.Suspense>
         )}

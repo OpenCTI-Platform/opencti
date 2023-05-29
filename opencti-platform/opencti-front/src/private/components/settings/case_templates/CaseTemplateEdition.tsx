@@ -6,7 +6,7 @@ import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { Field, Formik } from 'formik';
 import * as R from 'ramda';
-import React, { FunctionComponent } from 'react';
+import React, { FunctionComponent, useRef } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
@@ -116,11 +116,13 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
   const [commitDeleteTask] = useMutation(caseTemplateDeleteTask);
   const [commitFieldPatch] = useMutation(caseTemplateFieldPatch);
 
-  const existingTasks = caseTemplate.tasks.edges.map(({ node }) => ({ value: node.id, label: node.name }));
-
+  const existingTasks = useRef<Option[] | undefined>();
+  if (!existingTasks.current) {
+    existingTasks.current = caseTemplate.tasks.edges.map(({ node }) => ({ value: node.id, label: node.name }));
+  }
   const submitTaskEdition = (values: Option[]) => {
-    const added = R.difference(values, existingTasks).at(0);
-    const removed = R.difference(existingTasks, values).at(0);
+    const added = R.difference(values, (existingTasks.current ?? [])).at(0);
+    const removed = R.difference((existingTasks.current ?? []), values).at(0);
     if (added?.value) {
       const input = {
         toId: caseTemplate.id,
@@ -154,6 +156,7 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
         ),
       });
     }
+    existingTasks.current = values;
   };
 
   const handleSubmitField = (name: string, value: string) => {
@@ -202,9 +205,10 @@ const CaseTemplateEdition: FunctionComponent<CaseTemplateEditionProps> = ({
           <Formik
             initialValues={{
               ...caseTemplate,
-              tasks: existingTasks,
+              tasks: existingTasks.current,
             }}
-            onSubmit={() => {}}
+            onSubmit={() => {
+            }}
             validationSchema={caseTemplateValidation(t)}
           >
             {({ values: currentValues, setFieldValue }) => (

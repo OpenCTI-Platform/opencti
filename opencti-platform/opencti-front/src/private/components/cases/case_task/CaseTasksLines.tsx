@@ -5,7 +5,6 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
 import Paper from '@mui/material/Paper';
 import Tooltip from '@mui/material/Tooltip';
 import Typography from '@mui/material/Typography';
@@ -13,23 +12,24 @@ import makeStyles from '@mui/styles/makeStyles';
 import { Form, Formik } from 'formik';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, PreloadedQuery, useMutation } from 'react-relay';
-import { useFormatter } from '../../../components/i18n';
-import { Theme } from '../../../components/Theme';
-import { handleErrorInForm } from '../../../relay/environment';
-import usePreloadedPaginationFragment from '../../../utils/hooks/usePreloadedPaginationFragment';
-import CaseTemplateField from '../common/form/CaseTemplateField';
-import { Option } from '../common/form/ReferenceField';
-import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
+import { useFormatter } from '../../../../components/i18n';
+import { Theme } from '../../../../components/Theme';
+import { handleErrorInForm } from '../../../../relay/environment';
+import usePreloadedPaginationFragment from '../../../../utils/hooks/usePreloadedPaginationFragment';
+import CaseTemplateField from '../../common/form/CaseTemplateField';
+import { Option } from '../../common/form/ReferenceField';
+import CaseTaskCreation from './CaseTaskCreation';
+import { caseSetTemplateQuery, generateConnectionId } from '../CaseUtils';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import ListLines from '../../../../components/list_lines/ListLines';
+import CaseTasksLine from './CaseTasksLine';
+import { tasksDataColumns } from './TasksLine';
 import {
+  CaseTasksFiltering,
   CaseTasksLinesQuery,
   CaseTasksLinesQuery$variables,
 } from './__generated__/CaseTasksLinesQuery.graphql';
-import { CaseTasksFiltering } from './__generated__/CaseTasksRefetch.graphql';
-import CaseTaskCreation from './case_task/CaseTaskCreation';
-import CaseTasksLineTitles from './case_task/CaseTasksLineTitles';
-import CaseTasksLine from './CaseTasksLine';
-import { caseSetTemplateQuery, generateConnectionId } from './CaseUtils';
-import Transition from '../../../components/Transition';
+import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -48,6 +48,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     margin: '-5px 0 0 0',
     padding: 0,
     borderRadius: 6,
+    overflowY: 'inherit',
   },
   createButton: {
     float: 'left',
@@ -87,18 +88,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
   button: {
     marginLeft: theme.spacing(2),
   },
-  emptyContainer: {
-    display: 'table',
-    height: '100%',
-    width: '100%',
-    paddingTop: 15,
-    paddingBottom: 15,
-  },
-  emptySpan: {
-    display: 'table-cell',
-    verticalAlign: 'middle',
-    textAlign: 'center',
-  },
 }));
 
 export const caseTasksLinesQuery = graphql`
@@ -106,9 +95,17 @@ export const caseTasksLinesQuery = graphql`
     $count: Int
     $filters: [CaseTasksFiltering!]
     $cursor: ID
+    $orderBy: CaseTasksOrdering
+    $orderMode: OrderingMode
   ) {
     ...CaseTasksLines_data
-      @arguments(count: $count, filters: $filters, cursor: $cursor)
+      @arguments(
+        count: $count, 
+        filters: $filters, 
+        cursor: $cursor, 
+        orderBy: $orderBy, 
+        orderMode: $orderMode
+      )
   }
 `;
 
@@ -118,9 +115,17 @@ const caseTasksLinesFragment = graphql`
     count: { type: "Int", defaultValue: 25 }
     filters: { type: "[CaseTasksFiltering!]" }
     cursor: { type: "ID" }
+    orderBy: { type: "CaseTasksOrdering" }
+    orderMode: { type: "OrderingMode", defaultValue: desc }
   )
   @refetchable(queryName: "CaseTasksRefetch") {
-    caseTasks(first: $count, filters: $filters, after: $cursor)
+    caseTasks(
+      first: $count, 
+      filters: $filters, 
+      after: $cursor, 
+      orderBy: $orderBy, 
+      orderMode: $orderMode
+    )
       @connection(key: "Pagination_caseTasks") {
       edges {
         node {
@@ -135,16 +140,20 @@ interface CaseTasksLinesProps {
   caseId: string;
   queryRef: PreloadedQuery<CaseTasksLinesQuery>;
   paginationOptions: CaseTasksLinesQuery$variables;
-  tasksFilters: { filters: CaseTasksFiltering[] };
   defaultMarkings?: Option[];
+  sortBy: string | undefined
+  orderAsc: boolean | undefined
+  handleSort?: (field: string, order: boolean) => void
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
   caseId,
   queryRef,
   paginationOptions,
-  tasksFilters,
   defaultMarkings,
+  sortBy,
+  orderAsc,
+  handleSort,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -161,6 +170,9 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
     linesQuery: caseTasksLinesQuery,
     linesFragment: caseTasksLinesFragment,
   });
+
+  const { count: _, ...tasksFilters } = paginationOptions;
+
   return (
     <div style={{ height: '100%' }}>
       <Typography
@@ -295,27 +307,21 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       </Drawer>
       <div className="clearfix" />
       <Paper classes={{ root: classes.paper }} variant="outlined">
-        {data.caseTasks && data.caseTasks.edges.length > 0 ? (
-          <List style={{ paddingTop: 0 }}>
-            <CaseTasksLineTitles />
-            {data.caseTasks.edges.map(({ node }) => {
-              return (
-                <CaseTasksLine
-                  key={JSON.stringify(node)}
-                  data={node}
-                  paginationOptions={paginationOptions}
-                  caseId={caseId}
-                />
-              );
-            })}
-          </List>
-        ) : (
-          <div className={classes.emptyContainer}>
-            <span className={classes.emptySpan}>
-              {t('No tasks has been found.')}
-            </span>
-          </div>
-        )}
+        <ListLines
+          sortBy={sortBy}
+          orderAsc={orderAsc}
+          handleSort={handleSort}
+          dataColumns={tasksDataColumns}
+          noPadding={true}
+          inline
+        >
+          <ListLinesContent
+            dataColumns={tasksDataColumns}
+            dataList={data?.caseTasks?.edges ?? []}
+            LineComponent={CaseTasksLine}
+            isLoading={() => false}
+          />
+        </ListLines>
       </Paper>
     </div>
   );

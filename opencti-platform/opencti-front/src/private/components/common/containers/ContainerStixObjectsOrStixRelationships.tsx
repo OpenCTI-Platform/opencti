@@ -76,7 +76,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
     },
     objectLabel: {
       label: 'Labels',
-      width: '15%',
+      width: '12%',
       isSortable: false,
     },
     created_at: {

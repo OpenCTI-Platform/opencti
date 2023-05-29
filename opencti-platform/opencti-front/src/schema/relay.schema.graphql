@@ -8551,7 +8551,7 @@ type Mutation {
   caseTaskDelete(id: ID!): ID
   caseTaskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTask
   caseTaskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseTaskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel
+  caseTaskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTask
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDelete(id: ID!): ID
@@ -10484,7 +10484,6 @@ enum CaseTasksOrdering {
   created
   modified
   context
-  rating
   created_at
   updated_at
   creator
@@ -10492,6 +10491,7 @@ enum CaseTasksOrdering {
   x_opencti_workflow_id
   confidence
   dueDate
+  assigneeTo
 }
 
 enum CaseTasksFilter {

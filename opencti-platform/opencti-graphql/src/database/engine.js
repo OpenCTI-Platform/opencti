@@ -714,6 +714,32 @@ export const RUNTIME_ATTRIBUTES = {
       return R.mergeAll(identities.map((i) => ({ [i.internal_id]: i.definition })));
     },
   },
+  assigneeTo: {
+    field: 'assigneeTo.keyword',
+    type: 'keyword',
+    getSource: async () => `
+        if (doc.containsKey('rel_object-assignee.internal_id')) {
+          def assigneeId = doc['rel_object-assignee.internal_id.keyword'];
+          if (assigneeId.size() >= 1) {
+            def assigneeName = params[assigneeId[0]].toLowerCase();
+            emit(assigneeName != null ? assigneeName : 'unknown')
+          } else {
+              emit('unknown')
+            }
+        } else {
+          emit('unknown')
+        }
+    `,
+    getParams: async (context, user) => {
+      // eslint-disable-next-line no-use-before-define
+      const users = await elPaginate(context, user, READ_INDEX_INTERNAL_OBJECTS, {
+        types: [ENTITY_TYPE_USER],
+        first: MAX_SEARCH_SIZE,
+        connectionFormat: false,
+      });
+      return R.mergeAll(users.map((i) => ({ [i.internal_id]: i.name.replace(/[&/\\#,+[\]()$~%.'":*?<>{}]/g, '') })));
+    },
+  },
 };
 
 // region relation reconstruction

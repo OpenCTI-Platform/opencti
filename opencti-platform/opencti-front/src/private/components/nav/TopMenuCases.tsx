@@ -6,6 +6,7 @@ import {
   BriefcaseSearchOutline,
   BriefcaseRemoveOutline,
   BriefcaseEditOutline,
+  TaskAltOutlined,
 } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
@@ -88,6 +89,25 @@ const TopMenuCases = () => {
         >
           <BriefcaseRemoveOutline className={classes.icon} fontSize="small" />
           {t('Requests for takedown')}
+        </Button>
+      )}
+      {!useIsHiddenEntity('Case-Task') && (
+        <Button
+          component={Link}
+          to="/dashboard/cases/tasks"
+          variant={
+            location.pathname === '/dashboard/cases/tasks' ? 'contained' : 'text'
+          }
+          size="small"
+          color={
+            location.pathname === '/dashboard/cases/tasks'
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <TaskAltOutlined className={classes.icon} fontSize="small" />
+          {t('Case Tasks')}
         </Button>
       )}
       {!useIsHiddenEntity('Feedback') && (

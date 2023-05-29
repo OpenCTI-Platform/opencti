@@ -60,7 +60,7 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CONTAINER_NOTE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_OPINION]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
   [ENTITY_TYPE_CONTAINER_CASE]: ['attributes_configuration', 'platform_entity_files_ref', 'platform_hidden_type'],
-  [ENTITY_TYPE_CONTAINER_CASE_TASK]: [],
+  [ENTITY_TYPE_CONTAINER_CASE_TASK]: ['platform_hidden_type'],
 };
 
 export const getAvailableSettings = (targetType: string) => {

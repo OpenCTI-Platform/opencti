@@ -73,7 +73,7 @@ export const resolveLink = (type: string): string | null => {
     case 'Case-Rft':
       return '/dashboard/cases/rfts';
     case 'Case-Task':
-      return '/dashboard/cases/resolver';
+      return '/dashboard/cases/tasks';
     case 'Malware-Analysis':
       return '/dashboard/analysis/malware_analyses';
     case 'User':

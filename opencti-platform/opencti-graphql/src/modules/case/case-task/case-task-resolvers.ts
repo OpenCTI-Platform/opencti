@@ -1,6 +1,12 @@
 import type { Resolvers } from '../../../generated/graphql';
 import { buildRefRelationKey } from '../../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../../../schema/stixRefRelationship';
 import {
   caseTaskAdd,
   caseTaskAddRelation,
@@ -22,6 +28,7 @@ const caseTaskResolvers: Resolvers = {
   },
   CaseTasksFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
+    assigneeTo: buildRefRelationKey(RELATION_OBJECT_ASSIGNEE),
     markedBy: buildRefRelationKey(RELATION_OBJECT_MARKING),
     labelledBy: buildRefRelationKey(RELATION_OBJECT_LABEL),
     objectContains: buildRefRelationKey(RELATION_OBJECT, '*')

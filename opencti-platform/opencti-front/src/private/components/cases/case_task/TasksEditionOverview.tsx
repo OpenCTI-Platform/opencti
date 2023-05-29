@@ -13,40 +13,35 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
-import CommitMessage from '../../common/form/CommitMessage';
-import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
-import { ExternalReferencesValues } from '../../common/form/ExternalReferencesField';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
-import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
-import { CaseTasksFiltering } from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
+import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
+import { buildDate, formatDate } from '../../../../utils/Time';
+import { CaseTasksFiltering } from './__generated__/CaseTasksRefetch.graphql';
 
-export const caseIncidentMutationFieldPatch = graphql`
-  mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
+export const tasksMutationFieldPatch = graphql`
+  mutation TasksEditionOverviewFieldPatchMutation(
     $id: ID!
     $input: [EditInput]!
     $commitMessage: String
-    $references: [String]
   ) {
     stixDomainObjectEdit(id: $id) {
       fieldPatch(
         input: $input
         commitMessage: $commitMessage
-        references: $references
       ) {
-        ...CaseIncidentEditionOverview_case
-        ...CaseUtils_case
+        ...TasksEditionOverview_task
+        ...Tasks_tasks
       }
     }
   }
 `;
 
-export const caseIncidentEditionOverviewFocus = graphql`
-  mutation CaseIncidentEditionOverviewCaseFocusMutation(
+export const tasksEditionOverviewFocus = graphql`
+  mutation TasksEditionOverviewFocusMutation(
     $id: ID!
     $input: EditContext!
   ) {
@@ -58,18 +53,13 @@ export const caseIncidentEditionOverviewFocus = graphql`
   }
 `;
 
-const caseIncidentEditionOverviewFragment = graphql`
-  fragment CaseIncidentEditionOverview_case on CaseIncident {
+const tasksEditionOverviewFragment = graphql`
+  fragment TasksEditionOverview_task on CaseTask {
     id
     name
-    severity
-    priority
-    revoked
     description
-    rating
-    confidence
     created
-    response_types
+    dueDate
     creators {
       id
       name
@@ -114,23 +104,23 @@ const caseIncidentEditionOverviewFragment = graphql`
   }
 `;
 
-const caseIncidentMutationRelationAdd = graphql`
-  mutation CaseIncidentEditionOverviewCaseRelationAddMutation(
+const tasksMutationRelationAdd = graphql`
+  mutation TasksEditionOverviewRelationAddMutation(
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
     stixDomainObjectEdit(id: $id) {
       relationAdd(input: $input) {
         from {
-          ...CaseIncidentEditionOverview_case
+          ...TasksEditionOverview_task
         }
       }
     }
   }
 `;
 
-const caseIncidentMutationRelationDelete = graphql`
-  mutation CaseIncidentEditionOverviewCaseRelationDeleteMutation(
+const tasksMutationRelationDelete = graphql`
+  mutation TasksEditionOverviewRelationDeleteMutation(
     $id: ID!
     $toId: StixRef!
     $relationship_type: String!
@@ -140,14 +130,14 @@ const caseIncidentMutationRelationDelete = graphql`
         toId: $toId
         relationship_type: $relationship_type
       ) {
-        ...CaseIncidentEditionOverview_case
+        ...TasksEditionOverview_task
       }
     }
   }
 `;
 
-interface CaseIncidentEditionOverviewProps {
-  caseRef: CaseIncidentEditionOverview_case$key
+interface TasksEditionOverviewProps {
+  taskRef: TasksEditionOverview_task$key
   context: ReadonlyArray<{
     readonly focusOn: string | null
     readonly name: string
@@ -157,61 +147,57 @@ interface CaseIncidentEditionOverviewProps {
   tasksPaginationOptions?: { filters: CaseTasksFiltering[] }
 }
 
-interface CaseIncidentEditionFormValues {
+interface TasksEditionFormValues {
+  name: string
+  description: string | null
+  dueDate: Date | null
   message?: string
   createdBy?: Option
   objectMarking?: Option[]
   objectAssignee?: Option[]
   x_opencti_workflow_id: Option
-  references: ExternalReferencesValues | undefined
 }
 
-const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverviewProps> = ({
-  caseRef,
+const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
+  taskRef,
   context,
   enableReferences = false,
   handleClose,
 }) => {
   const { t } = useFormatter();
-  const caseData = useFragment(caseIncidentEditionOverviewFragment, caseRef);
+  const taskData = useFragment(tasksEditionOverviewFragment, taskRef);
 
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
-    severity: Yup.string().nullable(),
-    priority: Yup.string().nullable(),
-    response_types: Yup.array(),
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
-    rating: Yup.number().nullable(),
-    confidence: Yup.number().nullable(),
   };
-  const caseIncidentValidator = useSchemaEditionValidation('Case-Incident', basicShape);
+  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
 
   const queries = {
-    fieldPatch: caseIncidentMutationFieldPatch,
-    relationAdd: caseIncidentMutationRelationAdd,
-    relationDelete: caseIncidentMutationRelationDelete,
-    editionFocus: caseIncidentEditionOverviewFocus,
+    fieldPatch: tasksMutationFieldPatch,
+    relationAdd: tasksMutationRelationAdd,
+    relationDelete: tasksMutationRelationDelete,
+    editionFocus: tasksEditionOverviewFocus,
   };
-  const editor = useFormEditor(caseData, enableReferences, queries, caseIncidentValidator);
+  const editor = useFormEditor(taskData, enableReferences, queries, taskValidator);
 
-  const onSubmit: FormikConfig<CaseIncidentEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
-    const { message, references, ...otherValues } = values;
+  const onSubmit: FormikConfig<TasksEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+    const { message, ...otherValues } = values;
     const commitMessage = message ?? '';
-    const commitReferences = (references ?? []).map(({ value }) => value);
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
+      dueDate: formatDate(values.dueDate),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
     }).map(([key, value]) => ({ key, value: adaptFieldValue(value) }));
     editor.fieldPatch({
       variables: {
-        id: caseData.id,
+        id: taskData.id,
         input: inputValues,
         commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
-        references: commitReferences,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -220,53 +206,24 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[] | null) => {
-    if (!enableReferences) {
-      let finalValue: unknown = value as string;
-      if (['x_opencti_workflow_id'].includes(name)) {
-        finalValue = (value as Option).value;
-      }
-      caseIncidentValidator
-        .validateAt(name, { [name]: value })
-        .then(() => {
-          editor.fieldPatch({
-            variables: {
-              id: caseData.id,
-              input: { key: name, value: finalValue || '' },
-            },
-          });
-        })
-        .catch(() => false);
-    }
-  };
-  const initialValues = {
-    name: caseData.name,
-    description: caseData.description,
-    priority: caseData.priority,
-    created: caseData.created,
-    severity: caseData.severity,
-    response_types: caseData.response_types ?? [],
-    confidence: caseData.confidence,
-    createdBy: convertCreatedBy(caseData),
-    objectMarking: convertMarkings(caseData),
-    objectAssignee: convertAssignees(caseData),
-    x_opencti_workflow_id: convertStatus(t, caseData) as Option,
-    references: [],
+  const initialValues: TasksEditionFormValues = {
+    name: taskData.name,
+    description: taskData.description,
+    dueDate: buildDate(taskData.dueDate),
+    createdBy: convertCreatedBy(taskData) as Option,
+    objectMarking: convertMarkings(taskData),
+    objectAssignee: convertAssignees(taskData),
+    x_opencti_workflow_id: convertStatus(t, taskData) as Option,
   };
   return (
     <Formik
       enableReinitialize={true}
       initialValues={initialValues as never}
-      validationSchema={caseIncidentValidator}
+      validationSchema={taskValidator}
       onSubmit={onSubmit}
     >
       {({
-        submitForm,
-        isSubmitting,
         setFieldValue,
-        values,
-        isValid,
-        dirty,
       }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
@@ -280,63 +237,22 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             helperText={
               <SubscriptionFocus context={context} fieldName="name" />
             }
-            style={{ marginBottom: '20px' }}
+            style={{ marginBottom: 10 }}
           />
           <Field
             component={DateTimePickerField}
-            name="created"
+            name="dueDate"
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             TextFieldProps={{
-              label: t('Incident date'),
+              label: t('Due Date'),
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="created" />
+                <SubscriptionFocus context={context} fieldName="dueDate" />
               ),
             }}
             containerStyle={fieldSpacingContainerStyle}
-          />
-          <OpenVocabField
-            label={t('Case severity')}
-            type="case_severity_ov"
-            name="severity"
-            onSubmit={handleSubmitField}
-            onChange={setFieldValue}
-            variant="edit"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            editContext={context}
-          />
-          <OpenVocabField
-            label={t('Case priority')}
-            type="case_priority_ov"
-            name="priority"
-            onSubmit={handleSubmitField}
-            onChange={setFieldValue}
-            variant="edit"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-            editContext={context}
-          />
-          <OpenVocabField
-            label={t('Response type')}
-            type="incident_response_types_ov"
-            name="response_types"
-            onSubmit={handleSubmitField}
-            onChange={setFieldValue}
-            variant="edit"
-            containerStyle={fieldSpacingContainerStyle}
-            multiple
-            editContext={context}
-          />
-          <ConfidenceField
-            onFocus={editor.changeFocus}
-            onSubmit={editor.changeField}
-            entityType="Case-Incident"
-            containerStyle={fieldSpacingContainerStyle}
-            editContext={context}
-            variant="edit"
           />
           <Field
             component={MarkDownField}
@@ -360,10 +276,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             }
             onChange={editor.changeAssignee}
           />
-          {caseData.workflowEnabled && (
+          {taskData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Case-Incident"
+              type="Case-Task"
               onFocus={editor.changeFocus}
               onChange={editor.changeField}
               setFieldValue={setFieldValue}
@@ -393,20 +309,10 @@ const CaseIncidentEditionOverview: FunctionComponent<CaseIncidentEditionOverview
             }
             onChange={editor.changeMarking}
           />
-          {enableReferences && (
-            <CommitMessage
-              submitForm={submitForm}
-              disabled={isSubmitting || !isValid || !dirty}
-              setFieldValue={setFieldValue}
-              open={false}
-              values={values.references}
-              id={caseData.id}
-            />
-          )}
         </Form>
       )}
     </Formik>
   );
 };
 
-export default CaseIncidentEditionOverview;
+export default TasksEditionOverview;

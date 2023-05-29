@@ -191,42 +191,44 @@ class ListLines extends Component {
                 noPadding ? classes.containerNoPadding : classes.container
               }
             >
-              <div
-                className={
-                  parametersWithPadding
-                    ? classes.parametersWithPadding
-                    : classes.parameters
-                }
-              >
-                {typeof handleSearch === 'function' && (
-                  <div style={{ float: 'left', marginRight: 20 }}>
-                    <SearchInput
-                      variant={searchVariant || 'small'}
-                      onSubmit={handleSearch.bind(this)}
-                      keyword={keyword}
-                    />
-                  </div>
-                )}
-                {extraFields}
+              {!this.props.inline && (
+                <div
+                  className={
+                    parametersWithPadding
+                      ? classes.parametersWithPadding
+                      : classes.parameters
+                  }
+                >
+                  {typeof handleSearch === 'function' && (
+                    <div style={{ float: 'left', marginRight: 20 }}>
+                      <SearchInput
+                        variant={searchVariant || 'small'}
+                        onSubmit={handleSearch.bind(this)}
+                        keyword={keyword}
+                      />
+                    </div>
+                  )}
+                  {extraFields}
                 {availableFilterKeys && availableFilterKeys.length > 0 && (
-                  <Filters
+                    <Filters
                     searchContext={{ entityTypes: exportEntityType ? [exportEntityType] : [] }}
+                      availableFilterKeys={availableFilterKeys}
+                      handleAddFilter={handleAddFilter}
+                      availableEntityTypes={availableEntityTypes}
+                      availableRelationshipTypes={availableRelationshipTypes}
+                      availableRelationFilterTypes={availableRelationFilterTypes}
+                    />
+                  )}
+                  {(!availableFilterKeys || availableFilterKeys.length === 0)
+                    && !noHeaders
+                    && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
+                  <FilterIconButton
                     availableFilterKeys={availableFilterKeys}
-                    handleAddFilter={handleAddFilter}
-                    availableEntityTypes={availableEntityTypes}
-                    availableRelationshipTypes={availableRelationshipTypes}
-                    availableRelationFilterTypes={availableRelationFilterTypes}
+                    filters={filters}
+                    handleRemoveFilter={handleRemoveFilter}
                   />
-                )}
-                {(!availableFilterKeys || availableFilterKeys.length === 0)
-                  && !noHeaders
-                  && !noFilters && <div style={{ height: 38 }}> &nbsp; </div>}
-                <FilterIconButton
-                  availableFilterKeys={availableFilterKeys}
-                  filters={filters}
-                  handleRemoveFilter={handleRemoveFilter}
-                />
-              </div>
+                </div>
+              )}
               <div className={classes.views}>
                 <div style={{ float: 'right', marginTop: -20 }}>
                   {numberOfElements && (
@@ -612,6 +614,7 @@ ListLines.propTypes = {
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,
   parametersWithPadding: PropTypes.bool,
+  inline: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

@@ -4,7 +4,7 @@ export const FiltersVariant = {
 };
 
 export type BackendFilters = {
-  key: string;
+  key: string | string[];
   values: string[];
   operator?: string;
   filterMode?: string;

@@ -138,6 +138,7 @@ const LeftBar = () => {
     'Feedback',
     'Case-Rfi',
     'Case-Rft',
+    'Case-Task',
   );
   const hideArsenal = useIsHiddenEntities(
     'Malware',
