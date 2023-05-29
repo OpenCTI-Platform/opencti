@@ -113,7 +113,6 @@ const WorkbenchFileViewer = createRefetchContainer(
               id
               ...WorkbenchFileLine_file
               metaData {
-                entity_id
                 mimetype
               }
             }
