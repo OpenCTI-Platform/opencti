@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createFragmentContainer, graphql } from 'react-relay';
-import { compose, find, propEq } from 'ramda';
+import { compose } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -94,7 +94,7 @@ class UserEditionGroupsComponent extends Component {
               return (
                 <List className={classes.root}>
                   {groups.map((group) => {
-                    const userGroup = find(propEq('id', group.id))(userGroups);
+                    const userGroup = userGroups.find((g) => g.id === group.id);
                     return (
                       <ListItem key={group.id} divider={true}>
                         <ListItemIcon color="primary">

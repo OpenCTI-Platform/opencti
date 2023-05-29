@@ -1,6 +1,5 @@
 import React, { FunctionComponent } from 'react';
 import { createFragmentContainer, graphql, useMutation, usePreloadedQuery } from 'react-relay';
-import { find, propEq } from 'ramda';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
@@ -113,7 +112,7 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
   return (
     <List className={classes.root}>
       {rolesData.sort((roleA, roleB) => roleA.name.localeCompare(roleB.name)).map((role) => {
-        const groupRole = find(propEq('id', role.id))(groupRoles);
+        const groupRole = groupRoles.find((g) => g.id === role.id);
         return (
           <ListItem key={group.id} divider={true}>
             <ListItemIcon color="primary">

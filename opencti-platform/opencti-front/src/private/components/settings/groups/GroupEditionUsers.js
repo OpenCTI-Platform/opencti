@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { graphql, createFragmentContainer } from 'react-relay';
-import { compose, find, map, pathOr, pipe, propEq } from 'ramda';
+import { compose, map, pathOr, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -99,7 +99,7 @@ class GroupEditionUsersComponent extends Component {
               return (
                 <List dense={true} className={classes.root}>
                   {users.map((user) => {
-                    const groupUser = find(propEq('id', user.id))(groupUsers);
+                    const groupUser = groupUsers.find((g) => g.id === user.id);
                     return (
                       <ListItem key={group.id} divider={true}>
                         <ListItemIcon color="primary">
