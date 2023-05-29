@@ -131,6 +131,15 @@ export const validateInputCreation = async (
   }, validateInputCreationFn);
 };
 
+const validateUpdatableAttribute = (instanceType: string, input: Record<string, unknown>) => {
+  Object.entries(input).forEach(([key]) => {
+    const attribute = schemaAttributesDefinition.getAttribute(instanceType, key);
+    if (attribute?.update === false) {
+      throw ValidationError(attribute.name, { message: `You cannot update ${attribute.name} attribute` });
+    }
+  });
+};
+
 export const validateInputUpdate = async (
   context: AuthContext,
   user: AuthUser,
@@ -152,6 +161,7 @@ export const validateInputUpdate = async (
     // Generic validator
     await validateFormatSchemaAttributes(context, user, instanceType, inputs);
     await validateMandatoryAttributesOnUpdate(context, user, inputs, entitySetting);
+    validateUpdatableAttribute(instanceType, inputs);
     // Functional validator
     const validator = getEntityValidatorUpdate(instanceType);
     if (validator) {

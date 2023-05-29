@@ -3,7 +3,8 @@ import {
   created,
   modified,
   specVersion,
-  xOpenctiStixIds
+  xOpenctiStixIds,
+  files
 } from '../../schema/attribute-definition';
 import { schemaAttributesDefinition } from '../../schema/schema-attributes';
 import { ABSTRACT_STIX_OBJECT } from '../../schema/general';
@@ -13,5 +14,6 @@ const stixObjectAttributes: Array<AttributeDefinition> = [
   specVersion,
   created,
   modified,
+  files,
 ];
 schemaAttributesDefinition.registerAttributes(ABSTRACT_STIX_OBJECT, stixObjectAttributes);

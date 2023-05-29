@@ -2470,9 +2470,13 @@ const upsertElementRaw = async (context, user, element, type, updatePatch) => {
   if (!isEmptyField(updatePatch.file)) {
     const meta = { entity_id: element.internal_id };
     const file = await upload(context, user, `import/${element.entity_type}/${element.internal_id}`, updatePatch.file, meta);
-    const ins = { key: 'x_opencti_files', value: [storeFileConverter(user, file)], operation: UPDATE_OPERATION_ADD };
-    impactedInputs.push(ins);
-    patchInputs.push(ins);
+    const convertedFile = storeFileConverter(user, file);
+    // The patch for message generation is just an add
+    const filePatch = { key: 'x_opencti_files', value: [convertedFile], operation: UPDATE_OPERATION_ADD };
+    patchInputs.push(filePatch);
+    // The impact in the database is the completion of the files
+    const fileImpact = { key: 'x_opencti_files', value: [...(element.x_opencti_files ?? []), convertedFile] };
+    impactedInputs.push(fileImpact);
   }
   // region upsert refs
   const createdTargets = [];

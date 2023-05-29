@@ -7,6 +7,7 @@ export interface AttributeDefinition {
   mandatoryType: MandatoryType
   multiple: boolean
   upsert: boolean
+  update?: boolean
   label?: string
   description?: string
   scalable?: boolean
@@ -48,6 +49,15 @@ export const iAliasedIds: AttributeDefinition = {
   mandatoryType: 'no',
   multiple: true,
   upsert: false,
+};
+
+export const files: AttributeDefinition = {
+  name: 'x_opencti_files',
+  type: 'string',
+  mandatoryType: 'no',
+  multiple: true,
+  upsert: false,
+  update: false,
 };
 
 // -- ENTITY TYPE --
