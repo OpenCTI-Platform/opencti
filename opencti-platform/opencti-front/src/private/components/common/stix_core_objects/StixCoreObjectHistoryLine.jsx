@@ -33,7 +33,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -43,6 +43,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

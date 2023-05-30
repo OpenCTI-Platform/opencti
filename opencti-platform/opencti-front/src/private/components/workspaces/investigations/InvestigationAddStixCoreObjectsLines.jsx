@@ -13,12 +13,13 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { ExpandMore, CheckCircle } from '@mui/icons-material';
 import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   investigation: {

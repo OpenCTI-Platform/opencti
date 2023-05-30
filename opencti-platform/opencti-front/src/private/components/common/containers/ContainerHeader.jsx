@@ -25,7 +25,6 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
@@ -41,7 +40,7 @@ import {
 } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
-import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
+import { MarkDownComponents, remarkGfm } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {

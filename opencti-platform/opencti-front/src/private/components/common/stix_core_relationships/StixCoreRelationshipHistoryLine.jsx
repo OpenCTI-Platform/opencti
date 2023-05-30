@@ -27,7 +27,7 @@ import {
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -43,6 +43,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />

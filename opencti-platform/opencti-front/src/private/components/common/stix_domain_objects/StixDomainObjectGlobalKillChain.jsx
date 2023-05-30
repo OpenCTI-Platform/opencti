@@ -14,7 +14,7 @@ import Collapse from '@mui/material/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 import { graphql, createRefetchContainer } from 'react-relay';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -23,6 +23,7 @@ import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   itemIcon: {

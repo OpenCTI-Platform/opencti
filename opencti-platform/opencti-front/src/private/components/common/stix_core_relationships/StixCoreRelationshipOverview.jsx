@@ -11,7 +11,7 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
@@ -48,6 +48,7 @@ import StixCoreObjectOrStixRelationshipLastContainers
   from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   container: {

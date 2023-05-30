@@ -7,10 +7,10 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ExpandableMarkdown, { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {

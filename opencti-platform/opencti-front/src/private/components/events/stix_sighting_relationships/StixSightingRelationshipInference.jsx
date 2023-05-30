@@ -8,7 +8,7 @@ import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
 import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import {
@@ -19,6 +19,7 @@ import {
 } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = () => ({
   container: {

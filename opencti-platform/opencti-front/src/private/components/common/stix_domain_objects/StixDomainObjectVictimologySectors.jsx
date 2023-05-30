@@ -20,7 +20,7 @@ import {
 } from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
 import { graphql, createRefetchContainer } from 'react-relay';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -44,6 +44,7 @@ import {
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   container: {

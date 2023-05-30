@@ -9,7 +9,7 @@ import CardContent from '@mui/material/CardContent';
 import Avatar from '@mui/material/Avatar';
 import { Fire } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
-import remarkGfm from 'remark-gfm';
+
 import makeStyles from '@mui/styles/makeStyles';
 import remarkParse from 'remark-parse';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -17,6 +17,7 @@ import { itemColor } from '../../../../utils/Colors';
 import { Theme } from '../../../../components/Theme';
 import { IncidentCard_node$key } from './__generated__/IncidentCard_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {

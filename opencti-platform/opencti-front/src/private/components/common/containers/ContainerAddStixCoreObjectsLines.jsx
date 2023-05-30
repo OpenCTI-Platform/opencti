@@ -23,7 +23,7 @@ import Typography from '@mui/material/Typography';
 import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
 import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
@@ -34,6 +34,7 @@ import {
   reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   container: {

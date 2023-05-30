@@ -13,13 +13,14 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   container: {

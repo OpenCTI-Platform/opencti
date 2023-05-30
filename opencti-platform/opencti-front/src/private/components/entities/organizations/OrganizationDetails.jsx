@@ -8,11 +8,11 @@ import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import ExpandableMarkdown, { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {

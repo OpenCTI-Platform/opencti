@@ -17,7 +17,7 @@ import {
   LocalPlayOutlined,
   Flag,
 } from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
@@ -27,6 +27,7 @@ import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRela
 import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import { remarkGfm } from "../../../../components/ExpandableMarkdown";
 
 const styles = (theme) => ({
   container: {

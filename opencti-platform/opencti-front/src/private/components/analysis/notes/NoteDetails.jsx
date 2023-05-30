@@ -7,11 +7,12 @@ import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
 import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
+
 import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   paper: {
