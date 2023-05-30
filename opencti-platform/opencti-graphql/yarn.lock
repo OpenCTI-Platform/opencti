@@ -2531,9 +2531,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@escape.tech/graphql-armor@npm:1.7.3":
-  version: 1.7.3
-  resolution: "@escape.tech/graphql-armor@npm:1.7.3"
+"@escape.tech/graphql-armor@npm:1.8.2":
+  version: 1.8.2
+  resolution: "@escape.tech/graphql-armor@npm:1.8.2"
   dependencies:
     "@apollo/server": ^4.0.0
     "@envelop/core": ^3.0.0
@@ -2552,7 +2552,7 @@ __metadata:
       optional: true
     "@escape.tech/graphql-armor-types":
       optional: true
-  checksum: 1bf2bf1f151f60b7a1ada486d896e4f7370e36e48f1db554662943f66179a1f309a9e635f702d09e39bfdb627fc6b0ceba02ec0c3419dc42958b75af493c182c
+  checksum: d1662f594b3ae5acba6277b98739efd9f1eb8b80a57d9303dcfa404bbd24663318843f37998d491e47fe0d94e44b27324aa32f258d0e863d5c3e2511b27c08e1
   languageName: node
   linkType: hard
 
@@ -10210,7 +10210,7 @@ __metadata:
     "@aws-sdk/lib-storage": 3.341.0
     "@aws-sdk/property-provider": 3.341.0
     "@elastic/elasticsearch": 8.8.0
-    "@escape.tech/graphql-armor": 1.7.3
+    "@escape.tech/graphql-armor": 1.8.2
     "@graphql-codegen/cli": 3.3.1
     "@graphql-codegen/client-preset": 3.0.1
     "@graphql-codegen/introspection": 3.0.1
