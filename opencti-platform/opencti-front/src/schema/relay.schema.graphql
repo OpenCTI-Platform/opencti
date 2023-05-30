@@ -10679,12 +10679,15 @@ enum MalwareAnalysesFilter {
   updated_at
   objectMarking
   objectLabel
+  labelledBy
+  markedBy
   x_opencti_workflow_id
   confidence
   result_name
   product
   operatingSystem
   submitted
+  creator
 }
 
 input MalwareAnalysesFiltering {
