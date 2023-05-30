@@ -273,10 +273,7 @@ class StixSightingRelationshipCreation extends Component {
           R.assoc('last_seen', formatDate(values.last_seen)),
           R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-          R.assoc(
-            'externalReferences',
-            R.pluck('value', values.externalReferences),
-          ),
+          R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
         )(values);
         commitMutation({
           mutation: stixSightingRelationshipCreationMutation,
