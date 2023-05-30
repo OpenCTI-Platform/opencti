@@ -6,7 +6,7 @@ orbs:
 jobs:
   ensure_formatting:
     docker:
-      - image: cimg/python:3.10
+      - image: cimg/python:3.11
     working_directory: ~/repo
     steps:
       - checkout
@@ -51,7 +51,7 @@ jobs:
   build:
     working_directory: ~/opencti-client
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:3.11
     steps:
       - checkout
       - run:
@@ -85,7 +85,7 @@ jobs:
   deploy:
     working_directory: ~/opencti-client
     docker:
-      - image: cimg/python:3.9
+      - image: cimg/python:3.11
     steps:
       - checkout
       - attach_workspace:
