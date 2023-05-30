@@ -20237,7 +20237,6 @@ export type StixCoreRelationshipAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  file?: InputMaybe<Scalars['Upload']>;
   fromId: Scalars['StixRef'];
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -21684,7 +21683,6 @@ export type StixSightingRelationshipAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
-  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   fromId: Scalars['StixRef'];
   last_seen?: InputMaybe<Scalars['DateTime']>;

@@ -11119,7 +11119,6 @@ input StixCoreRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-  file: Upload
 }
 
 ############## StixSightingRelationships
@@ -11240,7 +11239,6 @@ input StixSightingRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-  file: Upload
 }
 
 ############## StixRefRelationships

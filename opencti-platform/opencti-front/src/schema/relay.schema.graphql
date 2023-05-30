@@ -7339,7 +7339,6 @@ input StixCoreRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-  file: Upload
 }
 
 enum StixSightingRelationshipsOrdering {
@@ -7461,7 +7460,6 @@ input StixSightingRelationshipAddInput {
   modified: DateTime
   clientMutationId: String
   update: Boolean
-  file: Upload
 }
 
 enum StixRefRelationshipsOrdering {
