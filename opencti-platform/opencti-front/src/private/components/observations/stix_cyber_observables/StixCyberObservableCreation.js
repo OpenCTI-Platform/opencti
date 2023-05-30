@@ -31,6 +31,7 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
 import {
   commitMutation,
   handleErrorInForm,
@@ -340,6 +341,9 @@ const StixCyberObservableCreation = ({
         obsContent: values.obsContent?.value,
       },
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commitMutation({
       mutation: stixCyberObservableMutation,
       variables: finalValues,
@@ -421,6 +425,7 @@ const StixCyberObservableCreation = ({
               objectLabel: [],
               externalReferences: [],
               createIndicator: false,
+              file: undefined,
             };
             const attributes = pipe(
               map((n) => n.node),
@@ -615,6 +620,15 @@ const StixCyberObservableCreation = ({
                       style={fieldSpacingContainerStyle}
                       setFieldValue={setFieldValue}
                       values={values.externalReferences}
+                    />
+                    <Field
+                      component={SimpleFileUpload}
+                      name="file"
+                      label={t('Associated file')}
+                      FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                      InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                      InputProps={{ fullWidth: true, variant: 'standard' }}
+                      fullWidth={true}
                     />
                     <Field
                       component={SwitchField}

@@ -1,31 +1,40 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
-import Dialog from '@mui/material/Dialog';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { assoc, pipe, pluck } from 'ramda';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  NarrativeCreationMutation,
+  NarrativeCreationMutation$variables,
+} from './__generated__/NarrativeCreationMutation.graphql';
+import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -35,9 +44,6 @@ const useStyles = makeStyles((theme) => ({
       duration: theme.transitions.duration.enteringScreen,
     }),
     padding: 0,
-  },
-  dialogActions: {
-    padding: '0 17px 20px 0',
   },
   createButton: {
     position: 'fixed',
@@ -77,50 +83,106 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const courseOfActionMutation = graphql`
-  mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
-    courseOfActionAdd(input: $input) {
-        id
-        name
-        description
-        entity_type
-        parent_types
-        ...CourseOfActionLine_node
+const narrativeMutation = graphql`
+  mutation NarrativeCreationMutation($input: NarrativeAddInput!) {
+    narrativeAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
+      parent_types
+      isSubNarrative
+      subNarratives {
+        edges {
+          node {
+            id
+            name
+            description
+          }
+        }
+      }
     }
   }
 `;
 
-export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface NarrativeAddInput {
+  name: string
+  description: string
+  confidence: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface NarrativeFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  paginationOptions?: NarrativesLinesPaginationQuery$variables;
+  display?: boolean;
+  contextual?: boolean;
+  onReset?: () => void;
+  inputValue?: string;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
+  updater,
+  onReset,
+  inputValue,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  defaultConfidence,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const courseOfActionValidator = useSchemaCreationValidation('Course-Of-Action', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
-      assoc('externalReferences', pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: courseOfActionMutation,
+  const narrativeValidator = useSchemaCreationValidation('Narrative', basicShape);
+
+  const initialValues: NarrativeAddInput = {
+    name: inputValue ?? '',
+    description: '',
+    confidence: defaultConfidence ?? 75,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<NarrativeCreationMutation>(narrativeMutation);
+
+  const onSubmit: FormikConfig<NarrativeAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: NarrativeCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'courseOfActionAdd');
+          updater(store, 'narrativeAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -132,17 +194,10 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
   };
 
   return <Formik
-        initialValues={{
-          name: inputValue ?? '',
-          description: '',
-          createdBy: defaultCreatedBy ?? '',
-          objectMarking: defaultMarkingDefinitions ?? [],
-          objectLabel: [],
-          externalReferences: [],
-        }}
-        validationSchema={courseOfActionValidator}
-        onSubmit={onSubmit}
-        onReset={onReset}>
+      initialValues={initialValues}
+      validationSchema={narrativeValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}>
         {({
           submitForm,
           handleReset,
@@ -157,7 +212,7 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
                     name="name"
                     label={t('Name')}
                     fullWidth={true}
-                    detectDuplicate={['Course-Of-Action']}
+                    detectDuplicate={['Narrative']}
                 />
                 <Field
                     component={MarkDownField}
@@ -189,13 +244,21 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
                     setFieldValue={setFieldValue}
                     values={values.externalReferences}
                 />
+                <Field
+                  component={SimpleFileUpload}
+                  name="file"
+                  label={t('Associated file')}
+                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+                  InputProps={{ fullWidth: true, variant: 'standard' }}
+                  fullWidth={true}
+                />
                 <div className={classes.buttons}>
                     <Button
                         variant="contained"
                         onClick={handleReset}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                    >
+                        classes={{ root: classes.button }}>
                         {t('Cancel')}
                     </Button>
                     <Button
@@ -203,8 +266,7 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
                         color="secondary"
                         onClick={submitForm}
                         disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                    >
+                        classes={{ root: classes.button }}>
                         {t('Create')}
                     </Button>
                 </div>
@@ -213,18 +275,23 @@ export const CourseOfActionCreationForm = ({ updater, onReset, inputValue, onCom
     </Formik>;
 };
 
-const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputValue }) => {
+const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
+  paginationOptions,
+  contextual,
+  inputValue,
+  display,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_coursesOfAction',
+    'Pagination_narratives',
     paginationOptions,
-    'courseOfActionAdd',
+    'narrativeAdd',
   );
 
   const renderClassic = () => {
@@ -233,12 +300,12 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
         <Fab onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}
-        >
+          className={classes.createButton}>
           <Add />
         </Fab>
         <Drawer open={open}
-          anchor="right" elevation={1}
+          anchor="right"
+          elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
           onClose={handleClose}>
@@ -252,12 +319,10 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
             >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">
-              {t('Create a course of action')}
-            </Typography>
+            <Typography variant="h6">{t('Create a narrative')}</Typography>
           </div>
           <div className={classes.container}>
-              <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
+              <NarrativeCreationForm inputValue={inputValue} updater={updater}
                                      onCompleted={handleClose} onReset={handleClose}/>
           </div>
         </Drawer>
@@ -269,14 +334,15 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
         <Fab onClick={handleOpen}
-          color="secondary" aria-label="Add"
+          color="secondary"
+          aria-label="Add"
           className={classes.createButtonContextual}>
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-            <DialogTitle>{t('Create a course of action')}</DialogTitle>
+            <DialogTitle>{t('Create a narrative')}</DialogTitle>
             <DialogContent>
-                <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
+                <NarrativeCreationForm inputValue={inputValue} updater={updater}
                                        onCompleted={handleClose} onReset={handleClose}/>
             </DialogContent>
         </Dialog>
@@ -290,4 +356,4 @@ const CourseOfActionCreation = ({ paginationOptions, contextual, display, inputV
   return renderClassic();
 };
 
-export default CourseOfActionCreation;
+export default NarrativeCreation;

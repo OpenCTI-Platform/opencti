@@ -87,10 +87,8 @@ const StixSightingRelationshipCreationForm = ({
   toEntities,
   handleReverseRelation,
   handleResetSelection,
-
   onSubmit,
   handleClose,
-
   defaultConfidence,
   defaultFirstSeen,
   defaultLastSeen,
@@ -139,7 +137,7 @@ const StixSightingRelationshipCreationForm = ({
     description: '',
     externalReferences: [],
     objectMarking: defaultMarkingDefinitions ?? [],
-    createdBy: defaultCreatedBy ?? [],
+    createdBy: defaultCreatedBy ?? '',
     x_opencti_negative: false,
   };
 

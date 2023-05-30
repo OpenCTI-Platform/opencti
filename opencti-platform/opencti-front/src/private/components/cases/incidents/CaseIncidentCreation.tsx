@@ -137,7 +137,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: CaseIncidentAddInput = {
+    const input: CaseIncidentAddInput = {
       name: values.name,
       description: values.description,
       created: values.created,
@@ -151,13 +151,11 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {

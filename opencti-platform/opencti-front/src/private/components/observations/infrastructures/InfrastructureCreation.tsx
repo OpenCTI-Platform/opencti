@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -6,30 +6,41 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import * as R from 'ramda';
-import { evolve, path, pluck } from 'ramda';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import {
+  handleErrorInForm,
+} from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import TypesField from '../TypesField';
-import SwitchField from '../../../../components/SwitchField';
 import MarkDownField from '../../../../components/MarkDownField';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
-import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import DateTimePickerField from '../../../../components/DateTimePickerField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import OpenVocabField from '../../common/form/OpenVocabField';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ConfidenceField from '../../common/form/ConfidenceField';
+import { parse } from '../../../../utils/Time';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  InfrastructureCreationMutation,
+  InfrastructureCreationMutation$variables,
+} from './__generated__/InfrastructureCreationMutation.graphql';
+import {
+  InfrastructuresLinesPaginationQuery$variables,
+} from './__generated__/InfrastructuresLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -43,11 +54,7 @@ const useStyles = makeStyles((theme) => ({
   createButton: {
     position: 'fixed',
     bottom: 30,
-    right: 280,
-    transition: theme.transitions.create('right', {
-      easing: theme.transitions.easing.sharp,
-      duration: theme.transitions.duration.enteringScreen,
-    }),
+    right: 30,
   },
   buttons: {
     marginTop: 20,
@@ -76,20 +83,44 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const indicatorMutation = graphql`
-  mutation IndicatorCreationMutation($input: IndicatorAddInput!) {
-    indicatorAdd(input: $input) {
+const infrastructureMutation = graphql`
+  mutation InfrastructureCreationMutation($input: InfrastructureAddInput!) {
+    infrastructureAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      ...IndicatorLine_node
+      ...InfrastructureLine_node
     }
   }
 `;
 
-export const IndicatorCreationForm = ({
+interface InfrastructureAddInput {
+  name: string
+  infrastructure_types: string[]
+  confidence: number
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  first_seen: Date | null
+  last_seen: Date | null
+  killChainPhases: Option[]
+  file: File | undefined
+}
+
+interface InfrastructureFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -101,61 +132,70 @@ export const IndicatorCreationForm = ({
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
-    indicator_types: Yup.array().nullable(),
+    description: Yup.string().nullable(),
+    infrastructure_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
-    pattern: Yup.string().required(t('This field is required')),
-    pattern_type: Yup.string().required(t('This field is required')),
-    x_opencti_main_observable_type: Yup.string().required(
-      t('This field is required'),
-    ),
-    valid_from: Yup.date()
+    first_seen: Yup.date()
       .nullable()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    valid_until: Yup.date()
+    last_seen: Yup.date()
       .nullable()
       .min(
-        Yup.ref('valid_from'),
-        "The valid until date can't be before valid from date",
+        Yup.ref('first_seen'),
+        "The last seen date can't be before first seen date",
       )
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-    x_mitre_platforms: Yup.array().nullable(),
-    x_opencti_score: Yup.number().nullable(),
-    description: Yup.string().nullable(),
-    x_opencti_detection: Yup.boolean().nullable(),
-    createObservables: Yup.boolean().nullable(),
   };
-  const indicatorValidator = useSchemaCreationValidation(
-    'Indicator',
+  const infrastructureValidator = useSchemaCreationValidation(
+    'Infrastructure',
     basicShape,
   );
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        killChainPhases: pluck('value'),
-        createdBy: path(['value']),
-        objectMarking: pluck('value'),
-        objectLabel: pluck('value'),
-        externalReferences: pluck('value'),
-        x_opencti_score: () => parseInt(values.x_opencti_score, 10),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: indicatorMutation,
+
+  const initialValues: InfrastructureAddInput = {
+    name: '',
+    infrastructure_types: [],
+    confidence: defaultConfidence ?? 75,
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    first_seen: null,
+    last_seen: null,
+    killChainPhases: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<InfrastructureCreationMutation>(infrastructureMutation);
+
+  const onSubmit: FormikConfig<InfrastructureAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: InfrastructureCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      infrastructure_types: values.infrastructure_types,
+      confidence: parseInt(String(values.confidence), 10),
+      first_seen: values.first_seen ? parse(values.first_seen).format() : null,
+      last_seen: values.first_seen ? parse(values.last_seen).format() : null,
+      killChainPhases: (values.killChainPhases ?? []).map(({ value }) => value),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: adaptedValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'indicatorAdd');
+          updater(store, 'infrastructureAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -168,26 +208,8 @@ export const IndicatorCreationForm = ({
 
   return (
     <Formik
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        indicator_types: [],
-        pattern: '',
-        pattern_type: '',
-        x_opencti_main_observable_type: '',
-        x_mitre_platforms: [],
-        valid_from: null,
-        valid_until: null,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        killChainPhases: [],
-        objectLabel: [],
-        externalReferences: [],
-        x_opencti_detection: false,
-        x_opencti_score: 50,
-      }}
-      validationSchema={indicatorValidator}
+      initialValues={initialValues}
+      validationSchema={infrastructureValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -199,48 +221,25 @@ export const IndicatorCreationForm = ({
             name="name"
             label={t('Name')}
             fullWidth={true}
+            detectDuplicate={['Infrastructure']}
           />
           <OpenVocabField
-            label={t('Indicator types')}
-            type="indicator-type-ov"
-            name="indicator_types"
-            multiple={true}
+            label={t('Infrastructure types')}
+            type="infrastructure-type-ov"
+            name="infrastructure_types"
             containerStyle={fieldSpacingContainerStyle}
-            onChange={(n, v) => setFieldValue(n, v)}
+            multiple={true}
+            onChange={(name, value) => setFieldValue(name, value)}
           />
           <ConfidenceField
-            entityType="Indicator"
-            containerStyle={fieldSpacingContainerStyle}
-          />
-          <OpenVocabField
-            label={t('Pattern type')}
-            type="pattern_type_ov"
-            name="pattern_type"
-            onChange={(name, value) => setFieldValue(name, value)}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={false}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="pattern"
-            label={t('Pattern')}
-            fullWidth={true}
-            multiline={true}
-            rows="4"
-            style={{ marginTop: 20 }}
-            detectDuplicate={['Indicator']}
-          />
-          <TypesField
-            name="x_opencti_main_observable_type"
-            label={t('Main observable type')}
-            containerstyle={fieldSpacingContainerStyle}
+            entityType="Infrastructure"
+            containerStyle={{ width: '100%', marginTop: 20 }}
           />
           <Field
             component={DateTimePickerField}
-            name="valid_from"
+            name="first_seen"
             TextFieldProps={{
-              label: t('Valid from'),
+              label: t('First seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
@@ -248,30 +247,17 @@ export const IndicatorCreationForm = ({
           />
           <Field
             component={DateTimePickerField}
-            name="valid_until"
+            name="last_seen"
             TextFieldProps={{
-              label: t('Valid until'),
+              label: t('Last seen'),
               variant: 'standard',
               fullWidth: true,
               style: { marginTop: 20 },
             }}
           />
-          <OpenVocabField
-            label={t('Platforms')}
-            type="platforms_ov"
-            name="x_mitre_platforms"
-            onChange={(name, value) => setFieldValue(name, value)}
-            containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-          />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="x_opencti_score"
-            label={t('Score')}
-            type="number"
-            fullWidth={true}
-            style={{ marginTop: 20 }}
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={fieldSpacingContainerStyle}
           />
           <Field
             component={MarkDownField}
@@ -281,10 +267,6 @@ export const IndicatorCreationForm = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
-          />
-          <KillChainPhasesField
-            name="killChainPhases"
-            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
@@ -308,20 +290,13 @@ export const IndicatorCreationForm = ({
             values={values.externalReferences}
           />
           <Field
-            component={SwitchField}
-            type="checkbox"
-            name="x_opencti_detection"
-            label={t('Detection')}
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
             fullWidth={true}
-            containerstyle={{ marginTop: 20 }}
-          />
-          <Field
-            component={SwitchField}
-            type="checkbox"
-            name="createObservables"
-            label={t('Create observables from this indicator')}
-            fullWidth={true}
-            containerstyle={{ marginTop: 10 }}
           />
           <div className={classes.buttons}>
             <Button
@@ -348,20 +323,20 @@ export const IndicatorCreationForm = ({
   );
 };
 
-const IndicatorCreation = ({ paginationOptions }) => {
-  const { t } = useFormatter();
+const InfrastructureCreation = ({ paginationOptions }: { paginationOptions: InfrastructuresLinesPaginationQuery$variables }) => {
   const classes = useStyles();
+  const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
-  const paginationOptionsUpdater = R.dissoc('indicatorTypes', R.dissoc('observableTypes', paginationOptions));
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_indicators',
-    paginationOptionsUpdater,
-    'indicatorAdd',
+    'Pagination_infrastructures',
+    paginationOptions,
+    'infrastructureAdd',
   );
 
   return (
@@ -392,10 +367,10 @@ const IndicatorCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an indicator')}</Typography>
+          <Typography variant="h6">{t('Create an infrastructure')}</Typography>
         </div>
         <div className={classes.container}>
-          <IndicatorCreationForm
+          <InfrastructureCreationForm
             updater={updater}
             onCompleted={() => handleClose()}
             onReset={onReset}
@@ -406,4 +381,4 @@ const IndicatorCreation = ({ paginationOptions }) => {
   );
 };
 
-export default IndicatorCreation;
+export default InfrastructureCreation;

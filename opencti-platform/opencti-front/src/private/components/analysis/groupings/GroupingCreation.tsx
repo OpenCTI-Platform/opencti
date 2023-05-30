@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Form, Formik, Field } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,11 +7,12 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -26,8 +27,15 @@ import { useFormatter } from '../../../../components/i18n';
 import { insertNode } from '../../../../utils/store';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  GroupingCreationMutation,
+  GroupingCreationMutation$variables,
+} from './__generated__/GroupingCreationMutation.graphql';
+import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -97,7 +105,28 @@ const groupingMutation = graphql`
   }
 `;
 
-export const GroupingCreationForm = ({
+interface GroupingAddInput {
+  name: string
+  confidence: number
+  context: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface GroupingFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -114,21 +143,36 @@ export const GroupingCreationForm = ({
     description: Yup.string().nullable(),
   };
   const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        objectMarking: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: groupingMutation,
+
+  const initialValues: GroupingAddInput = {
+    name: '',
+    confidence: defaultConfidence ?? 75,
+    context: '',
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
+
+  const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: GroupingCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      context: values.context,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: adaptedValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {
@@ -139,7 +183,6 @@ export const GroupingCreationForm = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -152,16 +195,7 @@ export const GroupingCreationForm = ({
 
   return (
     <Formik
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        context: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
+      initialValues={initialValues}
       validationSchema={groupingValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -217,6 +251,15 @@ export const GroupingCreationForm = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -242,12 +285,17 @@ export const GroupingCreationForm = ({
   );
 };
 
-const GroupingCreation = ({ paginationOptions }) => {
+const GroupingCreation = ({ paginationOptions }: { paginationOptions: GroupingsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const onReset = () => setOpen(false);
-  const updater = (store) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_groupings',
+    paginationOptions,
+    'groupingAdd',
+  );
   return (
     <div>
       <Fab

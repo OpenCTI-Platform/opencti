@@ -11,6 +11,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -91,6 +92,7 @@ interface CityAddInput {
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
+  file: File | undefined
 }
 
 interface CityFormProps {
@@ -115,7 +117,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
   const [commit] = useMutation(cityMutation);
 
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues: CityCreationMutation$variables['input'] = {
+    const input: CityCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       latitude: parseFloat(values.latitude),
@@ -124,10 +126,11 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
@@ -154,6 +157,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
         objectMarking: defaultMarkingDefinitions ?? [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={cityValidator}
       onSubmit={onSubmit}
@@ -219,6 +223,15 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

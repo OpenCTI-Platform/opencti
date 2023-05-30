@@ -11,6 +11,7 @@ import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig, FormikHelpers } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { handleErrorInForm } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
@@ -29,6 +30,7 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
+import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -113,6 +115,7 @@ interface OpinionAddInput {
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
+  file: File | undefined
 }
 
 interface OpinionCreationProps {
@@ -156,6 +159,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
+    file: undefined,
   };
 
   const [commit] = useMutation(opinionCreationMutation);
@@ -163,7 +167,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const finalValues = {
+    const input: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -171,10 +175,11 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
@@ -246,6 +251,15 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -299,6 +313,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
+    file: undefined,
   };
 
   const [commit] = useMutation(opinionCreationUserMutation);
@@ -306,7 +321,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const finalValues = {
+    const finalValues: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -315,6 +330,9 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
     };
+    if (values.file) {
+      finalValues.file = values.file;
+    }
     commit({
       variables: {
         input: finalValues,
@@ -383,6 +401,15 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

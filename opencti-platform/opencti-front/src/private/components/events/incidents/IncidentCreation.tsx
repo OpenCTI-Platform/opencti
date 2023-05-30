@@ -12,6 +12,7 @@ import * as R from 'ramda';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -99,6 +100,7 @@ interface IncidentAddInput {
   objectLabel: Option[];
   objectAssignee: Option[];
   externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface IncidentCreationProps {
@@ -140,20 +142,19 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     const cleanedValues = isEmptyField(values.severity)
       ? R.dissoc('severity', values)
       : values;
-    const finalValues = {
+    const input = {
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
-      externalReferences: cleanedValues.externalReferences.map(
-        ({ value }) => value,
-      ),
+      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
@@ -188,6 +189,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
         objectAssignee: [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={incidentValidator}
       onSubmit={onSubmit}
@@ -264,6 +266,15 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

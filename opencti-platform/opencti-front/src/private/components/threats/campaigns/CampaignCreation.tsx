@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -6,27 +6,35 @@ import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import { assoc, pipe, pluck } from 'ramda';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
+import ConfidenceField from '../../common/form/ConfidenceField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import {
+  CampaignCreationMutation,
+  CampaignCreationMutation$variables,
+} from './__generated__/CampaignCreationMutation.graphql';
+import { CampaignsLinesPaginationQuery$variables } from './__generated__/CampaignsLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -69,71 +77,93 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const attackPatternMutation = graphql`
-  mutation AttackPatternCreationMutation($input: AttackPatternAddInput!) {
-    attackPatternAdd(input: $input) {
+const campaignMutation = graphql`
+  mutation CampaignCreationMutation($input: CampaignAddInput!) {
+    campaignAdd(input: $input) {
       id
       name
+      description
       entity_type
       parent_types
-      description
-      isSubAttackPattern
-      x_mitre_id
-      subAttackPatterns {
-        edges {
-          node {
-            id
-            name
-            description
-            x_mitre_id
-          }
-        }
-      }
+      ...CampaignCard_node
     }
   }
 `;
 
-export const AttackPatternCreationForm = ({
+interface CampaignAddInput {
+  name: string
+  description: string
+  confidence: number
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface CampaignFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   updater,
   onReset,
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    x_mitre_id: Yup.string().nullable(),
   };
-  const attackPatternValidator = useSchemaCreationValidation(
-    'Attack-Pattern',
-    basicShape,
-  );
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = pipe(
-      assoc('createdBy', values.createdBy?.value),
-      assoc('objectMarking', pluck('value', values.objectMarking)),
-      assoc('killChainPhases', pluck('value', values.killChainPhases)),
-      assoc('objectLabel', pluck('value', values.objectLabel)),
-      assoc('externalReferences', pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: attackPatternMutation,
+  const campaignValidator = useSchemaCreationValidation('Campaign', basicShape);
+
+  const initialValues = {
+    name: '',
+    confidence: defaultConfidence ?? 75,
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<CampaignCreationMutation>(campaignMutation);
+
+  const onSubmit: FormikConfig<CampaignAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: CampaignCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'attackPatternAdd');
+          updater(store, 'campaignAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -145,17 +175,8 @@ export const AttackPatternCreationForm = ({
   };
   return (
     <Formik
-      initialValues={{
-        name: '',
-        x_mitre_id: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        killChainPhases: [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={attackPatternValidator}
+      initialValues={initialValues}
+      validationSchema={campaignValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -167,15 +188,16 @@ export const AttackPatternCreationForm = ({
             name="name"
             label={t('Name')}
             fullWidth={true}
-            detectDuplicate={['Attack-Pattern']}
+            detectDuplicate={[
+              'Threat-Actor',
+              'Intrusion-Set',
+              'Campaign',
+              'Malware',
+            ]}
           />
-          <Field
-            component={TextField}
-            variant="standard"
-            name="x_mitre_id"
-            label={t('External ID')}
-            fullWidth={true}
-            style={{ marginTop: 20 }}
+          <ConfidenceField
+            entityType="Campaign"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
             component={MarkDownField}
@@ -185,10 +207,6 @@ export const AttackPatternCreationForm = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
-          />
-          <KillChainPhasesField
-            name="killChainPhases"
-            style={fieldSpacingContainerStyle}
           />
           <CreatedByField
             name="createdBy"
@@ -210,6 +228,15 @@ export const AttackPatternCreationForm = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -236,20 +263,14 @@ export const AttackPatternCreationForm = ({
   );
 };
 
-const AttackPatternCreation = ({ paginationOptions }) => {
+const CampaignCreation = ({ paginationOptions }: { paginationOptions: CampaignsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const updater = (store) => insertNode(
-    store,
-    'Pagination_attackPatterns',
-    paginationOptions,
-    'attackPatternAdd',
-  );
-
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_campaigns', paginationOptions, 'campaignAdd');
   return (
     <div>
       <Fab
@@ -278,10 +299,10 @@ const AttackPatternCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an attack pattern')}</Typography>
+          <Typography variant="h6">{t('Create a campaign')}</Typography>
         </div>
         <div className={classes.container}>
-          <AttackPatternCreationForm
+          <CampaignCreationForm
             updater={updater}
             onCompleted={() => handleClose()}
             onReset={onReset}
@@ -292,4 +313,4 @@ const AttackPatternCreation = ({ paginationOptions }) => {
   );
 };
 
-export default AttackPatternCreation;
+export default CampaignCreation;

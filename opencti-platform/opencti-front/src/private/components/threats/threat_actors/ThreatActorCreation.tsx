@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,26 +7,32 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
-import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
+import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Option } from '../../common/form/ReferenceField';
+import { ThreatActorsLinesPaginationQuery$variables } from './__generated__/ThreatActorsLinesPaginationQuery.graphql';
+import { Theme } from '../../../../components/Theme';
+import { ThreatActorCreationMutation, ThreatActorCreationMutation$variables } from './__generated__/ThreatActorCreationMutation.graphql';
+import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -69,20 +75,41 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const intrusionSetMutation = graphql`
-  mutation IntrusionSetCreationMutation($input: IntrusionSetAddInput!) {
-    intrusionSetAdd(input: $input) {
+const threatActorMutation = graphql`
+  mutation ThreatActorCreationMutation($input: ThreatActorAddInput!) {
+    threatActorAdd(input: $input) {
       id
       name
+      description
       entity_type
       parent_types
-      description
-      ...IntrusionSetCard_node
+      ...ThreatActorCard_node
     }
   }
 `;
 
-export const IntrusionSetCreationForm = ({
+interface ThreatActorAddInput {
+  name: string
+  threat_actor_types: string[]
+  confidence: number
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[],
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface ThreatActorFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -93,37 +120,55 @@ export const IntrusionSetCreationForm = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    confidence: Yup.number(),
+    name: Yup.string().required(t('This field is required')),
+    threat_actor_types: Yup.array().nullable(),
+    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const intrusionSetValidator = useSchemaCreationValidation(
-    'Intrusion-Set',
+  const threatActorValidator = useSchemaCreationValidation(
+    'Threat-Actor',
     basicShape,
   );
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: intrusionSetMutation,
+
+  const initialValues: ThreatActorAddInput = {
+    name: '',
+    threat_actor_types: [],
+    confidence: defaultConfidence ?? 75,
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
+
+  const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: ThreatActorCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      threat_actor_types: values.threat_actor_types,
+      confidence: parseInt(String(values.confidence), 10),
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'intrusionSetAdd');
+          updater(store, 'threatActorAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -135,16 +180,8 @@ export const IntrusionSetCreationForm = ({
   };
   return (
     <Formik
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
-      validationSchema={intrusionSetValidator}
+      initialValues={initialValues}
+      validationSchema={threatActorValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
@@ -163,9 +200,17 @@ export const IntrusionSetCreationForm = ({
               'Malware',
             ]}
           />
+          <OpenVocabField
+            type="threat-actor-type-ov"
+            name="threat_actor_types"
+            label={t('Threat actor types')}
+            multiple={true}
+            containerStyle={{ width: '100%', marginTop: 20 }}
+            onChange={setFieldValue}
+          />
           <ConfidenceField
-            entityType="Intrusion-Set"
-            containerStyle={fieldSpacingContainerStyle}
+            entityType="Threat-Actor"
+            containerStyle={{ width: '100%', marginTop: 20 }}
           />
           <Field
             component={MarkDownField}
@@ -197,6 +242,15 @@ export const IntrusionSetCreationForm = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -222,18 +276,17 @@ export const IntrusionSetCreationForm = ({
   );
 };
 
-const IntrusionSetCreation = ({ paginationOptions }) => {
+const ThreatActorCreation = ({ paginationOptions }: { paginationOptions: ThreatActorsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const onReset = () => handleClose();
-  const updater = (store) => insertNode(
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_intrusionSets',
+    'Pagination_threatActors',
     paginationOptions,
-    'intrusionSetAdd',
+    'threatActorAdd',
   );
   return (
     <div>
@@ -263,13 +316,13 @@ const IntrusionSetCreation = ({ paginationOptions }) => {
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create an intrusion set')}</Typography>
+          <Typography variant="h6">{t('Create a threat actor')}</Typography>
         </div>
         <div className={classes.container}>
-          <IntrusionSetCreationForm
+          <ThreatActorCreationForm
             updater={updater}
-            onCompleted={() => handleClose()}
-            onReset={onReset}
+            onCompleted={handleClose}
+            onReset={handleClose}
           />
         </div>
       </Drawer>
@@ -277,4 +330,4 @@ const IntrusionSetCreation = ({ paginationOptions }) => {
   );
 };
 
-export default IntrusionSetCreation;
+export default ThreatActorCreation;

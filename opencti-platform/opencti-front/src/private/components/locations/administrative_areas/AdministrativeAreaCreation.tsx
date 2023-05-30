@@ -11,6 +11,7 @@ import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -95,6 +96,7 @@ interface AdministrativeAreaAddInput {
   objectMarking: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
+  file: File | undefined
 }
 
 interface AdministrativeAreaFormProps {
@@ -121,7 +123,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: AdministrativeAreaCreationMutation$variables['input'] = {
+    const input: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
@@ -130,10 +132,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
@@ -159,6 +162,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
         objectMarking: defaultMarkingDefinitions ?? [],
         objectLabel: [],
         externalReferences: [],
+        file: undefined,
       }}
       validationSchema={administrativeAreaValidator}
       onSubmit={onSubmit}
@@ -225,6 +229,15 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

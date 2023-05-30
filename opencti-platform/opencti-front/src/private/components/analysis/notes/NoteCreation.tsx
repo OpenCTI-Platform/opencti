@@ -14,6 +14,7 @@ import { Add, Close } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { SimpleFileUpload } from 'formik-mui';
 import { useFormatter } from '../../../../components/i18n';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -35,6 +36,7 @@ import { NotesLinesPaginationQuery$variables } from './__generated__/NotesLinesP
 import SliderField from '../../../../components/SliderField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { NoteCreationMutation$variables } from './__generated__/NoteCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -122,6 +124,7 @@ interface NoteAddInput {
   objectMarking: Option[];
   objectLabel: Option[];
   externalReferences: { value: string }[];
+  file: File | undefined
 }
 
 interface NoteCreationProps {
@@ -180,6 +183,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
+    file: undefined,
   };
   const [commit] = userIsKnowledgeEditor
     ? useMutation(noteCreationMutation)
@@ -188,7 +192,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues = {
+    const input: NoteCreationMutation$variables['input'] = {
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
@@ -199,13 +203,14 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
     if (!userIsKnowledgeEditor) {
-      delete finalValues.createdBy;
+      delete input.createdBy;
     }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
@@ -299,6 +304,15 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
             style={fieldSpacingContainerStyle}
             setFieldValue={setFieldValue}
             values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button

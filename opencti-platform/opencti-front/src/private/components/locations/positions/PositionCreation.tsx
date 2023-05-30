@@ -4,31 +4,32 @@ import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
-import makeStyles from '@mui/styles/makeStyles';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
 import { graphql, useMutation } from 'react-relay';
-import { FormikConfig } from 'formik/dist/types';
-import { RecordSourceSelectorProxy } from 'relay-runtime';
+import makeStyles from '@mui/styles/makeStyles';
 import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { Theme } from '../../../../components/Theme';
-import { CountriesLinesPaginationQuery$variables } from './__generated__/CountriesLinesPaginationQuery.graphql';
-import { insertNode } from '../../../../utils/store';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
-import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { insertNode } from '../../../../utils/store';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
 import {
-  CountryCreationMutation,
-  CountryCreationMutation$variables,
-} from './__generated__/CountryCreationMutation.graphql';
+  PositionCreationMutation,
+  PositionCreationMutation$variables,
+} from './__generated__/PositionCreationMutation.graphql';
+import { PositionsLinesPaginationQuery$variables } from './__generated__/PositionsLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -41,19 +42,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
     }),
     padding: 0,
   },
-  dialogActions: {
-    padding: '0 17px 20px 0',
-  },
   createButton: {
     position: 'fixed',
     bottom: 30,
     right: 30,
-  },
-  createButtonContextual: {
-    position: 'fixed',
-    bottom: 30,
-    right: 30,
-    zIndex: 2000,
   },
   buttons: {
     marginTop: 20,
@@ -82,56 +74,92 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const countryMutation = graphql`
-  mutation CountryCreationMutation($input: CountryAddInput!) {
-  countryAdd(input: $input) {
-    id
-    name
-    description
-    entity_type
-    parent_types
-      ...CountryLine_node
+const positionMutation = graphql`
+  mutation PositionCreationMutation($input: PositionAddInput!) {
+    positionAdd(input: $input) {
+      id
+      name
+      description
+      entity_type
+      parent_types
+      ...PositionLine_node
     }
   }
 `;
 
-interface CountryAddInput {
+interface PositionAddInput {
   name: string
   description: string
+  latitude: string
+  longitude: string
+  street_address: string
+  postal_code: string
   createdBy: Option | undefined
   objectMarking: Option[]
   objectLabel: Option[]
-  externalReferences: Option[]
+  externalReferences: { value: string }[]
   file: File | undefined
 }
 
-interface CountryFormProps {
+interface PositionFormProps {
   updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
+  onReset?: () => void;
+  onCompleted?: () => void;
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
 }
 
-export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    street_address: Yup.string().nullable().max(1000, t('The value is too long')),
+    postal_code: Yup.string().nullable().max(1000, t('The value is too long')),
   };
-  const countryValidator = useSchemaCreationValidation('Country', basicShape);
-  const [commit] = useMutation<CountryCreationMutation>(countryMutation);
+  const positionValidator = useSchemaCreationValidation('Position', basicShape);
 
-  const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const input: CountryCreationMutation$variables['input'] = {
+  const initialValues = {
+    name: '',
+    description: '',
+    latitude: '',
+    longitude: '',
+    street_address: '',
+    postal_code: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<PositionCreationMutation>(positionMutation);
+
+  const onSubmit: FormikConfig<PositionAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: PositionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
-      objectMarking: values.objectMarking.map(({ value }) => value),
-      objectLabel: values.objectLabel.map(({ value }) => value),
-      externalReferences: values.externalReferences.map(({ value }) => value),
+      latitude: parseFloat(values.latitude),
+      longitude: parseFloat(values.longitude),
+      street_address: values.street_address,
+      postal_code: values.postal_code,
       createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
       file: values.file,
     };
     commit({
@@ -140,8 +168,12 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'countryAdd');
+          updater(store, 'positionAdd');
         }
+      },
+      onError: (error) => {
+        handleErrorInForm(error, setErrors);
+        setSubmitting(false);
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -153,17 +185,9 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
     });
   };
 
-  return <Formik<CountryAddInput>
-      initialValues={{
-        name: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
-      validationSchema={countryValidator}
+  return <Formik
+      initialValues={initialValues}
+      validationSchema={positionValidator}
       onSubmit={onSubmit}
       onReset={onReset}>
     {({
@@ -180,7 +204,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={['Country']}
+              detectDuplicate={['Position']}
           />
           <Field
               component={MarkDownField}
@@ -188,15 +212,43 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
               label={t('Description')}
               fullWidth={true}
               multiline={true}
-              rows="4"
+              rows={4}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="latitude"
+              label={t('Latitude')}
+              fullWidth={true}
+              style={{ marginTop: 20 }}
+          />
+          <Field
+              component={TextField}
+              variant="standard"
+              name="longitude"
+              label={t('Longitude')}fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="street_address"
+                    label={t('Street address')}
+                    fullWidth={true}
+                    style={{ marginTop: 20 }}
+                  />
+                  <Field
+                    component={TextField}
+                    variant="standard"
+                    name="postal_code"
+                    label={t('Postal code')}
+              fullWidth={true}
               style={{ marginTop: 20 }}
           />
           <CreatedByField
               name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
           />
           <ObjectLabelField
@@ -207,10 +259,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
           />
           <ObjectMarkingField
               name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+              style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
               name="externalReferences"
@@ -251,57 +300,56 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
   </Formik>;
 };
 
-const CountryCreation = ({ paginationOptions }: { paginationOptions: CountriesLinesPaginationQuery$variables }) => {
-  const { t } = useFormatter();
+const PositionCreation = ({ paginationOptions }: { paginationOptions: PositionsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
 
-  const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
 
   const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_countries',
+    'Pagination_positions',
     paginationOptions,
-    'countryAdd',
+    'positionAdd',
   );
 
   return (
-    <div>
-      <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
-        <Add />
-      </Fab>
-      <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
-        <div className={classes.header}>
-          <IconButton
-            aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary">
-            <Close fontSize="small" color="primary" />
-          </IconButton>
-          <Typography variant="h6">{t('Create a country')}</Typography>
-        </div>
-        <div className={classes.container}>
-          <CountryCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
-          />
-        </div>
-      </Drawer>
-    </div>
+      <div>
+        <Fab onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButton}>
+          <Add />
+        </Fab>
+        <Drawer open={open}
+          anchor="right"
+          elevation={1}
+          sx={{ zIndex: 1202 }}
+          classes={{ paper: classes.drawerPaper }}
+          onClose={handleClose}>
+          <div className={classes.header}>
+            <IconButton aria-label="Close"
+              className={classes.closeButton}
+              onClick={handleClose}
+              size="large"
+              color="primary">
+              <Close fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Create a position')}</Typography>
+          </div>
+          <div className={classes.container}>
+            <PositionCreationForm
+                updater={updater}
+                onCompleted={() => handleClose()}
+                onReset={onReset}
+            />
+          </div>
+        </Drawer>
+      </div>
   );
 };
 
-export default CountryCreation;
+export default PositionCreation;

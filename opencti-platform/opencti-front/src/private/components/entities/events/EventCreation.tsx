@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,26 +7,31 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
+import { SimpleFileUpload } from 'formik-mui';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import { commitMutation, handleErrorInForm } from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
-import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
-import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import MarkDownField from '../../../../components/MarkDownField';
-import ConfidenceField from '../../common/form/ConfidenceField';
-import OpenVocabField from '../../common/form/OpenVocabField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
-import { insertNode } from '../../../../utils/store';
+import { parse } from '../../../../utils/Time';
+import DateTimePickerField from '../../../../components/DateTimePickerField';
+import OpenVocabField from '../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import SwitchField from '../../../../components/SwitchField';
+import { insertNode } from '../../../../utils/store';
+import { Theme } from '../../../../components/Theme';
+import { Option } from '../../common/form/ReferenceField';
+import { EventCreationMutation, EventCreationMutation$variables } from './__generated__/EventCreationMutation.graphql';
+import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -69,63 +74,104 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const malwareMutation = graphql`
-  mutation MalwareCreationMutation($input: MalwareAddInput!) {
-    malwareAdd(input: $input) {
+const eventMutation = graphql`
+  mutation EventCreationMutation($input: EventAddInput!) {
+    eventAdd(input: $input) {
       id
       name
       description
       entity_type
       parent_types
-      architecture_execution_envs
-      implementation_languages
-      ...MalwareCard_node
+      ...EventLine_node
     }
   }
 `;
 
-export const MalwareCreationForm = ({ updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+interface EventAddInput {
+  name: string
+  description: string
+  event_types: string[],
+  start_time: Date | null,
+  stop_time: Date | null,
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface EventFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+}
+
+export const EventCreationForm: FunctionComponent<EventFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
-    is_family: Yup.string().required(t('This field is required')),
-    malware_types: Yup.array().nullable(),
-    confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
-    architecture_execution_envs: Yup.array().nullable(),
-    implementation_languages: Yup.array().nullable(),
+    event_types: Yup.array().nullable(),
+    start_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .nullable(),
+    stop_time: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .min(Yup.ref('start_time'), "The end date can't be before start date")
+      .nullable(),
   };
-  const malwareValidator = useSchemaCreationValidation('Malware', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const adaptedValues = R.evolve(
-      {
-        confidence: () => parseInt(values.confidence, 10),
-        createdBy: R.path(['value']),
-        killChainPhases: R.pluck('value'),
-        objectMarking: R.pluck('value'),
-        objectLabel: R.pluck('value'),
-        externalReferences: R.pluck('value'),
-        malware_types: R.pluck('value'),
-      },
-      values,
-    );
-    commitMutation({
-      mutation: malwareMutation,
+  const eventValidator = useSchemaCreationValidation('Event', basicShape);
+
+  const initialValues: EventAddInput = {
+    name: '',
+    description: '',
+    event_types: [],
+    start_time: null,
+    stop_time: null,
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<EventCreationMutation>(eventMutation);
+
+  const onSubmit: FormikConfig<EventAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: EventCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      event_types: values.event_types,
+      start_time: values.start_time ? parse(values.start_time).format() : null,
+      stop_time: values.stop_time ? parse(values.stop_time).format() : null,
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: adaptedValues,
+        input,
       },
       updater: (store) => {
         if (updater) {
-          updater(store, 'malwareAdd');
+          updater(store, 'eventAdd');
         }
       },
       onError: (error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -136,28 +182,10 @@ export const MalwareCreationForm = ({ updater, onReset, onCompleted,
     });
   };
 
-  return <Formik
-      initialValues={{
-        name: '',
-        malware_types: [],
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        is_family: false,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        killChainPhases: [],
-        objectLabel: [],
-        externalReferences: [],
-        architecture_execution_envs: [],
-        implementation_languages: [],
-      }}
-      validationSchema={malwareValidator}
+  return <Formik initialValues={initialValues}
+      validationSchema={eventValidator}
       onSubmit={onSubmit}
-      onReset={() => {
-        if (onReset) {
-          onReset();
-        }
-      }}>
+      onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -172,31 +200,15 @@ export const MalwareCreationForm = ({ updater, onReset, onCompleted,
               name="name"
               label={t('Name')}
               fullWidth={true}
-              detectDuplicate={[
-                'Threat-Actor',
-                'Intrusion-Set',
-                'Campaign',
-                'Malware',
-                'Tool',
-              ]}
+              detectDuplicate={['Event']}
           />
           <OpenVocabField
-              label={t('Malware types')}
-              type="malware-type-ov"
-              name="malware_types"
+              label={t('Event types')}
+              type="event-type-ov"
+              name="event_types"
+              containerStyle={fieldSpacingContainerStyle}
               multiple={true}
-              containerStyle={fieldSpacingContainerStyle}
-          />
-            <Field
-              component={SwitchField}
-              type="checkbox"
-              name="is_family"
-              label={t('Is family?')}
-              containerstyle={fieldSpacingContainerStyle}
-            />
-          <ConfidenceField
-              entityType="Malware"
-              containerStyle={fieldSpacingContainerStyle}
+              onChange={(name, value) => setFieldValue(name, value)}
           />
           <Field
               component={MarkDownField}
@@ -204,28 +216,28 @@ export const MalwareCreationForm = ({ updater, onReset, onCompleted,
               label={t('Description')}
               fullWidth={true}
               multiline={true}
-              rows="4"
+              rows={4}
               style={{ marginTop: 20 }}
           />
-          <OpenVocabField
-            label={t('Architecture execution env.')}
-            type="processor-architecture-ov"
-            name="architecture_execution_envs"
-            containerStyle={fieldSpacingContainerStyle}
-            onChange={(name, value) => setFieldValue(name, value)}
-            multiple={true}
+          <Field
+              component={DateTimePickerField}
+              name="start_time"
+              TextFieldProps={{
+                label: t('Start date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
           />
-          <OpenVocabField
-            label={t('Implementation languages')}
-            type="implementation-language-ov"
-            name="implementation_languages"
-            containerStyle={fieldSpacingContainerStyle}
-            onChange={(name, value) => setFieldValue(name, value)}
-            multiple={true}
-          />
-          <KillChainPhasesField
-              name="killChainPhases"
-              style={fieldSpacingContainerStyle}
+          <Field
+              component={DateTimePickerField}
+              name="stop_time"
+              TextFieldProps={{
+                label: t('End date'),
+                variant: 'standard',
+                fullWidth: true,
+                style: { marginTop: 20 },
+              }}
           />
           <CreatedByField
               name="createdBy"
@@ -247,6 +259,15 @@ export const MalwareCreationForm = ({ updater, onReset, onCompleted,
               style={fieldSpacingContainerStyle}
               setFieldValue={setFieldValue}
               values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
           />
           <div className={classes.buttons}>
             <Button
@@ -272,7 +293,7 @@ export const MalwareCreationForm = ({ updater, onReset, onCompleted,
   </Formik>;
 };
 
-const MalwareCreation = ({ paginationOptions }) => {
+const EventCreation = ({ paginationOptions }: { paginationOptions: EventsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -280,11 +301,12 @@ const MalwareCreation = ({ paginationOptions }) => {
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const updater = (store) => insertNode(
+
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
     store,
-    'Pagination_malwares',
+    'Pagination_events',
     paginationOptions,
-    'malwareAdd',
+    'eventAdd',
   );
 
   return (
@@ -295,7 +317,8 @@ const MalwareCreation = ({ paginationOptions }) => {
         className={classes.createButton}>
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
@@ -310,10 +333,10 @@ const MalwareCreation = ({ paginationOptions }) => {
             color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a malware')}</Typography>
+          <Typography variant="h6">{t('Create an event')}</Typography>
         </div>
         <div className={classes.container}>
-          <MalwareCreationForm
+          <EventCreationForm
               updater={updater}
               onCompleted={() => handleClose()}
               onReset={onReset}
@@ -324,4 +347,4 @@ const MalwareCreation = ({ paginationOptions }) => {
   );
 };
 
-export default MalwareCreation;
+export default EventCreation;

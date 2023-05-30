@@ -230,6 +230,7 @@ export type AdministrativeAreaAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
   longitude?: InputMaybe<Scalars['Float']>;
@@ -517,6 +518,7 @@ export type ArtifactStixCoreRelationshipsDistributionArgs = {
 export type ArtifactAddInput = {
   decryption_key?: InputMaybe<Scalars['String']>;
   encryption_algorithm?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   mime_type?: InputMaybe<Scalars['String']>;
   payload_bin?: InputMaybe<Scalars['String']>;
@@ -735,6 +737,7 @@ export type AttackPatternAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -1041,6 +1044,7 @@ export type AutonomousSystemStixCoreRelationshipsDistributionArgs = {
 };
 
 export type AutonomousSystemAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   name?: InputMaybe<Scalars['String']>;
   number: Scalars['Int'];
   rir?: InputMaybe<Scalars['String']>;
@@ -1224,6 +1228,7 @@ export type BankAccountStixCoreRelationshipsDistributionArgs = {
 export type BankAccountAddInput = {
   account_number?: InputMaybe<Scalars['String']>;
   bic?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   iban?: InputMaybe<Scalars['String']>;
 };
 
@@ -1431,6 +1436,7 @@ export type CampaignAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   lang?: InputMaybe<Scalars['String']>;
   last_seen?: InputMaybe<Scalars['DateTime']>;
@@ -3173,6 +3179,7 @@ export type ChannelAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -3455,6 +3462,7 @@ export type CityAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
   longitude?: InputMaybe<Scalars['Float']>;
@@ -4045,6 +4053,7 @@ export type CountryAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
   longitude?: InputMaybe<Scalars['Float']>;
@@ -4290,6 +4299,7 @@ export type CourseOfActionAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -4575,6 +4585,7 @@ export type CryptocurrencyWalletStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CryptocurrencyWalletAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -4751,6 +4762,7 @@ export type CryptographicKeyStixCoreRelationshipsDistributionArgs = {
 };
 
 export type CryptographicKeyAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -4939,6 +4951,7 @@ export type DataComponentAddInput = {
   dataSource?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -5182,6 +5195,7 @@ export type DataSourceAddInput = {
   dataComponents?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -5450,6 +5464,7 @@ export type DirectoryStixCoreRelationshipsDistributionArgs = {
 export type DirectoryAddInput = {
   atime?: InputMaybe<Scalars['DateTime']>;
   ctime?: InputMaybe<Scalars['DateTime']>;
+  file?: InputMaybe<Scalars['Upload']>;
   mtime?: InputMaybe<Scalars['DateTime']>;
   path: Scalars['String'];
   path_enc?: InputMaybe<Scalars['String']>;
@@ -5658,6 +5673,7 @@ export type DomainNameStixCoreRelationshipsDistributionArgs = {
 };
 
 export type DomainNameAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value: Scalars['String'];
 };
 
@@ -5866,6 +5882,7 @@ export type EmailAddrStixCoreRelationshipsDistributionArgs = {
 
 export type EmailAddrAddInput = {
   display_name?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -6051,6 +6068,7 @@ export type EmailMessageAddInput = {
   attribute_date?: InputMaybe<Scalars['DateTime']>;
   body?: InputMaybe<Scalars['String']>;
   content_type?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   is_multipart?: InputMaybe<Scalars['Boolean']>;
   message_id?: InputMaybe<Scalars['String']>;
   received_lines?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -6235,6 +6253,7 @@ export type EmailMimePartTypeAddInput = {
   body?: InputMaybe<Scalars['String']>;
   content_disposition?: InputMaybe<Scalars['String']>;
   content_type?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
 };
 
 export type EntitySetting = BasicObject & InternalObject & {
@@ -6469,6 +6488,7 @@ export type EventAddInput = {
   description?: InputMaybe<Scalars['String']>;
   event_types?: InputMaybe<Array<Scalars['String']>>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -7359,6 +7379,7 @@ export type GroupingAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -7783,6 +7804,7 @@ export type HostnameStixCoreRelationshipsDistributionArgs = {
 };
 
 export type HostnameAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -7961,6 +7983,7 @@ export type IPv4AddrStixCoreRelationshipsDistributionArgs = {
 
 export type IPv4AddrAddInput = {
   belongsTo?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   resolvesTo?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   value?: InputMaybe<Scalars['String']>;
 };
@@ -8139,6 +8162,7 @@ export type IPv6AddrStixCoreRelationshipsDistributionArgs = {
 };
 
 export type IPv6AddrAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -8614,6 +8638,7 @@ export type IncidentAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   incident_type?: InputMaybe<Scalars['String']>;
   lang?: InputMaybe<Scalars['String']>;
@@ -8775,7 +8800,7 @@ export type Indicator = BasicObject & StixCoreObject & StixDomainObject & StixOb
   valid_from?: Maybe<Scalars['DateTime']>;
   valid_until?: Maybe<Scalars['DateTime']>;
   workflowEnabled?: Maybe<Scalars['Boolean']>;
-  x_mitre_platforms?: Maybe<Array<Scalars['String']>>;
+  x_mitre_platforms?: Maybe<Array<Maybe<Scalars['String']>>>;
   x_opencti_detection?: Maybe<Scalars['Boolean']>;
   x_opencti_graph_data?: Maybe<Scalars['String']>;
   x_opencti_inferences?: Maybe<Array<Maybe<Inference>>>;
@@ -8923,6 +8948,7 @@ export type IndicatorAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<Scalars['String']>>;
+  file?: InputMaybe<Scalars['Upload']>;
   indicator_types?: InputMaybe<Array<Scalars['String']>>;
   killChainPhases?: InputMaybe<Array<Scalars['String']>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -9237,6 +9263,7 @@ export type IndividualAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -9533,6 +9560,7 @@ export type InfrastructureAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   infrastructure_types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -9852,6 +9880,7 @@ export type IntrusionSetAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -10892,6 +10921,7 @@ export type MacAddrStixCoreRelationshipsDistributionArgs = {
 };
 
 export type MacAddrAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -11087,6 +11117,7 @@ export type MalwareAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   implementation_languages?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   is_family?: InputMaybe<Scalars['Boolean']>;
@@ -11504,6 +11535,7 @@ export type MediaContentStixCoreRelationshipsDistributionArgs = {
 
 export type MediaContentAddInput = {
   content?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   media_category?: InputMaybe<Scalars['String']>;
   publication_date?: InputMaybe<Scalars['DateTime']>;
   title?: InputMaybe<Scalars['String']>;
@@ -13345,6 +13377,7 @@ export type MutexStixCoreRelationshipsDistributionArgs = {
 };
 
 export type MutexAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   name?: InputMaybe<Scalars['String']>;
 };
 
@@ -13534,6 +13567,7 @@ export type NarrativeAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -13779,6 +13813,7 @@ export type NetworkTrafficAddInput = {
   dst_packets?: InputMaybe<Scalars['Int']>;
   dst_port?: InputMaybe<Scalars['Int']>;
   end?: InputMaybe<Scalars['DateTime']>;
+  file?: InputMaybe<Scalars['Upload']>;
   is_active?: InputMaybe<Scalars['Boolean']>;
   protocols?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   src_byte_count?: InputMaybe<Scalars['Int']>;
@@ -14000,6 +14035,7 @@ export type NoteAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   likelihood?: InputMaybe<Scalars['Int']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -14406,6 +14442,7 @@ export type ObservedDataAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_observed: Scalars['DateTime'];
   lang?: InputMaybe<Scalars['String']>;
   last_observed: Scalars['DateTime'];
@@ -14715,6 +14752,7 @@ export type OpinionAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   explanation?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -15025,6 +15063,7 @@ export type OrganizationAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -15333,6 +15372,7 @@ export type PaymentCardAddInput = {
   card_number: Scalars['String'];
   cvv?: InputMaybe<Scalars['Int']>;
   expiration_date?: InputMaybe<Scalars['DateTime']>;
+  file?: InputMaybe<Scalars['Upload']>;
   holder_name?: InputMaybe<Scalars['String']>;
 };
 
@@ -15509,6 +15549,7 @@ export type PhoneNumberStixCoreRelationshipsDistributionArgs = {
 };
 
 export type PhoneNumberAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -15699,6 +15740,7 @@ export type PositionAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
   longitude?: InputMaybe<Scalars['Float']>;
@@ -15996,6 +16038,7 @@ export type ProcessAddInput = {
   descriptions?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   display_name?: InputMaybe<Scalars['String']>;
   environment_variables?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   group_name?: InputMaybe<Scalars['String']>;
   integrity_level?: InputMaybe<Scalars['String']>;
   is_hidden?: InputMaybe<Scalars['Boolean']>;
@@ -18519,6 +18562,7 @@ export type RegionAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   latitude?: InputMaybe<Scalars['Float']>;
   longitude?: InputMaybe<Scalars['Float']>;
@@ -18837,6 +18881,7 @@ export type ReportAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -19296,6 +19341,7 @@ export type SectorAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -19647,6 +19693,7 @@ export type SoftwareStixCoreRelationshipsDistributionArgs = {
 
 export type SoftwareAddInput = {
   cpe?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   languages?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   name?: InputMaybe<Scalars['String']>;
   swid?: InputMaybe<Scalars['String']>;
@@ -21201,6 +21248,7 @@ export type StixFileStixCoreRelationshipsDistributionArgs = {
 export type StixFileAddInput = {
   atime?: InputMaybe<Scalars['DateTime']>;
   ctime?: InputMaybe<Scalars['DateTime']>;
+  file?: InputMaybe<Scalars['Upload']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   magic_number_hex?: InputMaybe<Scalars['String']>;
   mime_type?: InputMaybe<Scalars['String']>;
@@ -21393,6 +21441,7 @@ export type StixRefRelationshipAddInput = {
   confidence?: InputMaybe<Scalars['Int']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   fromId?: InputMaybe<Scalars['StixRef']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
@@ -22237,6 +22286,7 @@ export type SystemAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -22646,6 +22696,7 @@ export type TextStixCoreRelationshipsDistributionArgs = {
 };
 
 export type TextAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -22843,6 +22894,7 @@ export type ThreatActorAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   first_seen?: InputMaybe<Scalars['DateTime']>;
   goals?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
@@ -23136,6 +23188,7 @@ export type ToolAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   killChainPhases?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
@@ -23490,6 +23543,7 @@ export type UrlStixCoreRelationshipsDistributionArgs = {
 };
 
 export type UrlAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -23721,6 +23775,7 @@ export type UserAccountAddInput = {
   credential?: InputMaybe<Scalars['String']>;
   credential_last_changed?: InputMaybe<Scalars['DateTime']>;
   display_name?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   is_disabled?: InputMaybe<Scalars['Boolean']>;
   is_privileged?: InputMaybe<Scalars['Boolean']>;
   is_service_account?: InputMaybe<Scalars['Boolean']>;
@@ -23912,6 +23967,7 @@ export type UserAgentStixCoreRelationshipsDistributionArgs = {
 };
 
 export type UserAgentAddInput = {
+  file?: InputMaybe<Scalars['Upload']>;
   value?: InputMaybe<Scalars['String']>;
 };
 
@@ -24362,6 +24418,7 @@ export type VulnerabilityAddInput = {
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
   externalReferences?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  file?: InputMaybe<Scalars['Upload']>;
   lang?: InputMaybe<Scalars['String']>;
   modified?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
@@ -24601,6 +24658,7 @@ export type WindowsRegistryKeyStixCoreRelationshipsDistributionArgs = {
 
 export type WindowsRegistryKeyAddInput = {
   attribute_key?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   modified_time?: InputMaybe<Scalars['DateTime']>;
   number_of_subkeys?: InputMaybe<Scalars['Int']>;
 };
@@ -24782,6 +24840,7 @@ export type WindowsRegistryValueTypeStixCoreRelationshipsDistributionArgs = {
 export type WindowsRegistryValueTypeAddInput = {
   data?: InputMaybe<Scalars['String']>;
   data_type?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   name?: InputMaybe<Scalars['String']>;
 };
 
@@ -25167,6 +25226,7 @@ export type X509CertificateAddInput = {
   certificate_policies?: InputMaybe<Scalars['String']>;
   crl_distribution_points?: InputMaybe<Scalars['String']>;
   extended_key_usage?: InputMaybe<Scalars['String']>;
+  file?: InputMaybe<Scalars['Upload']>;
   hashes?: InputMaybe<Array<InputMaybe<HashInput>>>;
   inhibit_any_policy?: InputMaybe<Scalars['String']>;
   is_self_signed?: InputMaybe<Scalars['Boolean']>;
@@ -29152,7 +29212,7 @@ export type IndicatorResolvers<ContextType = any, ParentType extends ResolversPa
   valid_from?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   valid_until?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   workflowEnabled?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  x_mitre_platforms?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
+  x_mitre_platforms?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   x_opencti_detection?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   x_opencti_graph_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   x_opencti_inferences?: Resolver<Maybe<Array<Maybe<ResolversTypes['Inference']>>>, ParentType, ContextType>;

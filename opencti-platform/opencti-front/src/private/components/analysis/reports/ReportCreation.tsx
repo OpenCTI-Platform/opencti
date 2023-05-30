@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, FunctionComponent } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -7,13 +7,14 @@ import IconButton from '@mui/material/IconButton';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
 import * as Yup from 'yup';
-import { graphql } from 'react-relay';
-import * as R from 'ramda';
+import { graphql, useMutation } from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
-import { dayStartDate, parse } from '../../../../utils/Time';
+import { SimpleFileUpload } from 'formik-mui';
+import { FormikConfig } from 'formik/dist/types';
+import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { dayStartDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import {
-  commitMutation,
   handleErrorInForm,
 } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -29,8 +30,15 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { insertNode } from '../../../../utils/store';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import { ReportsLinesPaginationQuery$variables } from './__generated__/ReportsLinesPaginationQuery.graphql';
+import { Option } from '../../common/form/ReferenceField';
+import { Theme } from '../../../../components/Theme';
+import {
+  ReportCreationMutation,
+  ReportCreationMutation$variables,
+} from './__generated__/ReportCreationMutation.graphql';
 
-const useStyles = makeStyles((theme) => ({
+const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
@@ -87,7 +95,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const reportMutation = graphql`
+export const reportCreationMutation = graphql`
   mutation ReportCreationMutation($input: ReportAddInput!) {
     reportAdd(input: $input) {
       id
@@ -100,7 +108,30 @@ const reportMutation = graphql`
   }
 `;
 
-export const ReportCreationForm = ({
+interface ReportAddInput {
+  name: string
+  description: string
+  published: Date
+  confidence: number
+  report_types: string[]
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  objectAssignee: { value: string }[]
+  externalReferences: { value: string }[]
+  file: File | undefined
+}
+
+interface ReportFormProps {
+  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string, label: string }
+  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultConfidence?: number;
+}
+
+export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -120,21 +151,39 @@ export const ReportCreationForm = ({
     description: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation('Report', basicShape);
-  const onSubmit = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues = R.pipe(
-      R.assoc('published', parse(values.published).format()),
-      R.assoc('confidence', parseInt(values.confidence, 10)),
-      R.assoc('report_types', values.report_types),
-      R.assoc('createdBy', values.createdBy?.value),
-      R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
-      R.assoc('objectAssignee', R.pluck('value', values.objectAssignee)),
-      R.assoc('objectLabel', R.pluck('value', values.objectLabel)),
-      R.assoc('externalReferences', R.pluck('value', values.externalReferences)),
-    )(values);
-    commitMutation({
-      mutation: reportMutation,
+
+  const initialValues: ReportAddInput = {
+    name: '',
+    published: dayStartDate(),
+    report_types: [],
+    confidence: defaultConfidence ?? 75,
+    description: '',
+    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectAssignee: [],
+    objectLabel: [],
+    externalReferences: [],
+    file: undefined,
+  };
+
+  const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
+  const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+    const input: ReportCreationMutation$variables['input'] = {
+      name: values.name,
+      description: values.description,
+      published: values.published,
+      confidence: parseInt(String(values.confidence), 10),
+      report_types: values.report_types,
+      createdBy: values.createdBy?.value,
+      objectMarking: values.objectMarking.map((v) => v.value),
+      objectAssignee: values.objectAssignee.map(({ value }) => value),
+      objectLabel: values.objectLabel.map((v) => v.value),
+      externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
+    };
+    commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {
@@ -145,7 +194,6 @@ export const ReportCreationForm = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      setSubmitting,
       onCompleted: () => {
         setSubmitting(false);
         resetForm();
@@ -158,18 +206,7 @@ export const ReportCreationForm = ({
 
   return (
     <Formik
-      initialValues={{
-        name: '',
-        published: dayStartDate(),
-        report_types: [],
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        createdBy: defaultCreatedBy ?? '',
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-      }}
+      initialValues={initialValues}
       validationSchema={reportValidator}
       onSubmit={onSubmit}
       onReset={onReset}
@@ -239,6 +276,15 @@ export const ReportCreationForm = ({
             setFieldValue={setFieldValue}
             values={values.externalReferences}
           />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
           <div className={classes.buttons}>
             <Button
               variant="contained"
@@ -264,14 +310,19 @@ export const ReportCreationForm = ({
   );
 };
 
-const ReportCreation = ({ paginationOptions }) => {
+const ReportCreation = ({ paginationOptions }: { paginationOptions: ReportsLinesPaginationQuery$variables }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(
+    store,
+    'Pagination_reports',
+    paginationOptions,
+    'reportAdd',
+  );
 
   return (
     <div>

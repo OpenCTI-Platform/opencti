@@ -195,6 +195,7 @@ input DataComponentAddInput {
     description: String
     aliases: [String]
     dataSource: String
+    file: Upload
 }
 
 type Mutation {

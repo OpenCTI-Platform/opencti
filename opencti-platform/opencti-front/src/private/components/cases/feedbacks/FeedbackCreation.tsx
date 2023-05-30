@@ -107,20 +107,18 @@ const FeedbackCreation: FunctionComponent<{
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: FeedbackCreationMutation$variables['input'] = {
+    const input: FeedbackCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
       rating: parseInt(String(values.rating), 6),
       objects: values.objects.map((o) => o.value),
       objectLabel: values.objectLabel.map((v) => v.value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       onCompleted: () => {
         setSubmitting(false);

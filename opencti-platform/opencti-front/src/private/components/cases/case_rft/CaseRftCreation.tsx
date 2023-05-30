@@ -130,7 +130,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: CaseRftAddInput = {
+    const input: CaseRftAddInput = {
       name: values.name,
       description: values.description,
       created: values.created,
@@ -144,13 +144,11 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({ updat
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {
