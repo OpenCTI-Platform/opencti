@@ -171,7 +171,6 @@ export const batchRolesForGroups = async (context, user, groupId, opts = {}) => 
 };
 
 export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
-  const { orderBy = null, orderMode = null } = opts;
   // Get all groups for users
   const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = [];
@@ -200,23 +199,11 @@ export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
       groupWithRoles[groupRole.fromId] = [groupRole.toId];
     }
   });
-  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ids: roleIds });
-  const rolesMap = R.mergeAll(roles.map((r) => ({ [r.id]: r })));
+  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds });
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
     const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
-    let roleValues = idRoles.map((r) => rolesMap[r]);
-    // sort roles
-    if (orderBy && orderMode) {
-      const unsortableRoles = roleValues.filter((n) => isEmptyField(n[orderBy]));
-      const sortedRoles = roleValues // sort sorted edges
-        .filter((n) => isNotEmptyField(n[orderBy]))
-        .sort((a, b) => (orderMode === 'asc'
-          ? (a[orderBy].toString()).localeCompare(b[orderBy].toString())
-          : (b[orderBy].toString()).localeCompare(a[orderBy].toString())));
-      roleValues = sortedRoles.concat(unsortableRoles); // add unsortable edges (empty fields) at the end
-    }
-    return roleValues;
+    return roles.filter((t) => idRoles.includes(t.internal_id));
   });
 };
 
