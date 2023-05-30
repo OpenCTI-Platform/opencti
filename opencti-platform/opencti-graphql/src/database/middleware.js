@@ -2588,6 +2588,7 @@ const buildRelationData = async (context, user, input, opts = {}) => {
   data.creator_id = [user.internal_id];
   data.created_at = today;
   data.updated_at = today;
+  // region re-work data
   // stix-relationship
   if (isStixRelationshipExceptRef(relationshipType)) {
     const stixIds = input.x_opencti_stix_ids || [];
@@ -2617,11 +2618,13 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       }
     }
   }
-  // stix-core-relationship
-  if (isStixCoreRelationship(relationshipType)) {
-    data.description = input.description ? input.description : '';
-    data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
-    data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+  // stix-ref-relationship
+  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
+    // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
+    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
+    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
+    data.created = R.isNil(input.created) ? today : input.created;
+    data.modified = R.isNil(input.modified) ? today : input.modified;
     /* istanbul ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
@@ -2630,13 +2633,11 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       });
     }
   }
-  // stix-ref-relationship
-  if (isStixRefRelationship(relationshipType) && schemaRelationsRefDefinition.isDatable(from.entity_type, relationshipType)) {
-    // because spec is only put in all stix except meta, and stix cyber observable is a meta but requires this
-    data.start_time = R.isNil(input.start_time) ? new Date(FROM_START) : input.start_time;
-    data.stop_time = R.isNil(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
-    data.created = R.isNil(input.created) ? today : input.created;
-    data.modified = R.isNil(input.modified) ? today : input.modified;
+  // stix-core-relationship
+  if (isStixCoreRelationship(relationshipType)) {
+    data.description = input.description ? input.description : '';
+    data.start_time = isEmptyField(input.start_time) ? new Date(FROM_START) : input.start_time;
+    data.stop_time = isEmptyField(input.stop_time) ? new Date(UNTIL_END) : input.stop_time;
     /* istanbul ignore if */
     if (data.start_time > data.stop_time) {
       throw DatabaseError('You cant create a relation with a start_time less than the stop_time', {
@@ -2660,17 +2661,20 @@ const buildRelationData = async (context, user, input, opts = {}) => {
       });
     }
   }
+  // endregion
   // 04. Create the relation
   const fromRole = `${relationshipType}_from`;
   const toRole = `${relationshipType}_to`;
   // Build final query
   const relToCreate = [];
-  // For organizations management
-  if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
-    relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
-  } else if (!user.inside_platform_organization) {
-    // If user is not part of the platform organization, put its own organizations
-    relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+  if (isStixRelationshipExceptRef(relationshipType)) {
+    // We need to link the data to organization sharing, only for core and sightings.
+    if (userHaveCapability(user, KNOWLEDGE_ORGANIZATION_RESTRICT)) {
+      relToCreate.push(...buildInnerRelation(data, input[INPUT_GRANTED_REFS], RELATION_GRANTED_TO));
+    } else if (!user.inside_platform_organization) {
+      // If user is not part of the platform organization, put its own organizations
+      relToCreate.push(...buildInnerRelation(data, user.organizations, RELATION_GRANTED_TO));
+    }
   }
   if (isStixCoreRelationship(relationshipType)) {
     relToCreate.push(...buildInnerRelation(data, input.createdBy, RELATION_CREATED_BY));
