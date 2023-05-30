@@ -37,7 +37,7 @@
     "@aws-sdk/credential-provider-node": "3.341.0",
     "@aws-sdk/lib-storage": "3.341.0",
     "@aws-sdk/property-provider": "3.341.0",
-    "@elastic/elasticsearch": "8.7.0",
+    "@elastic/elasticsearch": "8.8.0",
     "@escape.tech/graphql-armor": "1.7.3",
     "@graphql-tools/schema": "9.0.19",
     "@graphql-tools/utils": "9.2.1",
