@@ -156,7 +156,7 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
   const [commit] = useMutation<CourseOfActionCreationMutation>(courseOfActionMutation);
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: CourseOfActionCreationMutation$variables['input'] = {
+    const input: CourseOfActionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -164,13 +164,11 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

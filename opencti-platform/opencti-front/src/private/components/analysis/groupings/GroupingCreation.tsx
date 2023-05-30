@@ -159,7 +159,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
 
   const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: GroupingCreationMutation$variables['input'] = {
+    const input: GroupingCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       context: values.context,
@@ -168,13 +168,11 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {

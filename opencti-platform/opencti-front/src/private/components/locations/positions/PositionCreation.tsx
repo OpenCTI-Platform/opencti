@@ -149,7 +149,7 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
   const [commit] = useMutation<PositionCreationMutation>(positionMutation);
 
   const onSubmit: FormikConfig<PositionAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: PositionCreationMutation$variables['input'] = {
+    const input: PositionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       latitude: parseFloat(values.latitude),
@@ -160,13 +160,11 @@ export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

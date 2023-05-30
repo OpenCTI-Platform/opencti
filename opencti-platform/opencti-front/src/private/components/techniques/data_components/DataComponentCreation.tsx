@@ -146,7 +146,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       resetForm,
     }: FormikHelpers<DataComponentAddInput>,
   ) => {
-    const finalValues: DataComponentCreationMutation$variables['input'] = {
+    const input: DataComponentCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
@@ -154,13 +154,11 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map((v) => v.value),
       confidence: parseInt(String(values.confidence), 10),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

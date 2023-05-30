@@ -143,7 +143,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
   const [commit] = useMutation<ToolCreationMutation>(toolMutation);
 
   const onSubmit: FormikConfig<ToolAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: ToolCreationMutation$variables['input'] = {
+    const input: ToolCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
@@ -153,13 +153,11 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
       tool_types: values.tool_types,
       confidence: parseInt(String(values.confidence), 10),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

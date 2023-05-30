@@ -278,9 +278,6 @@ class StixSightingRelationshipCreation extends Component {
             R.pluck('value', values.externalReferences),
           ),
         )(values);
-        if (values.file) {
-          finalValues.file = values.file;
-        }
         commitMutation({
           mutation: stixSightingRelationshipCreationMutation,
           variables: {

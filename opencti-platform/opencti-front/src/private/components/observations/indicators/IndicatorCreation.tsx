@@ -192,7 +192,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
   const [commit] = useMutation<IndicatorCreationMutation>(indicatorMutation);
 
   const onSubmit: FormikConfig<IndicatorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: IndicatorCreationMutation$variables['input'] = {
+    const input: IndicatorCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       indicator_types: values.indicator_types,
@@ -210,13 +210,11 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

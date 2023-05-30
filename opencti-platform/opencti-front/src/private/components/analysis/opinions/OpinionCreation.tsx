@@ -167,7 +167,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     values: OpinionAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<OpinionAddInput>,
   ) => {
-    const finalValues: OpinionCreationMutation$variables['input'] = {
+    const input: OpinionCreationMutation$variables['input'] = {
       opinion: values.opinion,
       explanation: values.explanation,
       confidence: parseInt(String(values.confidence), 10),
@@ -175,13 +175,11 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

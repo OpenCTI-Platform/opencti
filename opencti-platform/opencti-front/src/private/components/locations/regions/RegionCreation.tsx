@@ -122,20 +122,18 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
   const [commit] = useMutation(regionMutation);
 
   const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues: RegionCreationMutation$variables['input'] = {
+    const input: RegionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

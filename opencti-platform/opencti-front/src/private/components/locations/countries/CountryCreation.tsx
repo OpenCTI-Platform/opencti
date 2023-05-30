@@ -125,20 +125,18 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({ updat
   const [commit] = useMutation<CountryCreationMutation>(countryMutation);
 
   const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues: CountryCreationMutation$variables['input'] = {
+    const input: CountryCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       objectMarking: values.objectMarking.map(({ value }) => value),
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

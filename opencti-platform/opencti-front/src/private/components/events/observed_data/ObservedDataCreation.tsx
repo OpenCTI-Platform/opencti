@@ -155,7 +155,7 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
   const [commit] = useMutation<ObservedDataCreationMutation>(observedDataCreationMutation);
 
   const onSubmit: FormikConfig<ObservedDataAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: ObservedDataCreationMutation$variables['input'] = {
+    const input: ObservedDataCreationMutation$variables['input'] = {
       objects: values.objects.map((v) => v.value),
       first_observed: parse(values.first_observed).format(),
       last_observed: parse(values.last_observed).format(),
@@ -165,13 +165,11 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {

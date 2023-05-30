@@ -161,7 +161,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   const [commit] = useMutation<AttackPatternCreationMutation>(attackPatternMutation);
 
   const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: AttackPatternCreationMutation$variables['input'] = {
+    const input: AttackPatternCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       x_mitre_id: values.x_mitre_id,
@@ -171,13 +171,11 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

@@ -123,7 +123,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: AdministrativeAreaCreationMutation$variables['input'] = {
+    const input: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
       latitude: parseFloat(values.latitude),
       longitude: parseFloat(values.longitude),
@@ -132,13 +132,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

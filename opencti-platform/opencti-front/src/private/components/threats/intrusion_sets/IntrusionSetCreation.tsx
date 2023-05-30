@@ -144,7 +144,7 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
   const [commit] = useMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
 
   const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: IntrusionSetCreationMutation$variables['input'] = {
+    const input: IntrusionSetCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       confidence: parseInt(String(values.confidence), 10),
@@ -152,13 +152,11 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

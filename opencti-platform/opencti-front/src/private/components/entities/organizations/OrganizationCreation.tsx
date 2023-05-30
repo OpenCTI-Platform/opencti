@@ -141,7 +141,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const [commit] = useMutation<OrganizationCreationMutation>(organizationMutation);
 
   const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: OrganizationCreationMutation$variables['input'] = {
+    const input: OrganizationCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       x_opencti_reliability: values.x_opencti_reliability,
@@ -150,13 +150,11 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

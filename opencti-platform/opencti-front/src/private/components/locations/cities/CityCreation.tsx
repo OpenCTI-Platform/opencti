@@ -117,7 +117,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
   const [commit] = useMutation(cityMutation);
 
   const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
-    const finalValues: CityCreationMutation$variables['input'] = {
+    const input: CityCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       latitude: parseFloat(values.latitude),
@@ -126,13 +126,11 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({ updater, on
       objectLabel: values.objectLabel.map(({ value }) => value),
       externalReferences: values.externalReferences.map(({ value }) => value),
       createdBy: values.createdBy?.value,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

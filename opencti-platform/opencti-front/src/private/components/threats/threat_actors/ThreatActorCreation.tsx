@@ -145,7 +145,7 @@ export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = 
   const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
 
   const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: ThreatActorCreationMutation$variables['input'] = {
+    const input: ThreatActorCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       threat_actor_types: values.threat_actor_types,
@@ -154,13 +154,11 @@ export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = 
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

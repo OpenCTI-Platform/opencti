@@ -155,7 +155,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     values: DataSourceAddInput,
     { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
   ) => {
-    const finalValues: DataSourceCreationMutation$variables['input'] = {
+    const input: DataSourceCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       createdBy: values.createdBy?.value,
@@ -165,13 +165,11 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
       confidence: parseInt(String(values.confidence), 10),
       x_mitre_platforms: values.x_mitre_platforms,
       collection_layers: values.collection_layers,
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

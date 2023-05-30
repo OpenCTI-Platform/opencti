@@ -192,7 +192,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
     values,
     { setSubmitting, resetForm },
   ) => {
-    const finalValues: NoteCreationMutation$variables['input'] = {
+    const input: NoteCreationMutation$variables['input'] = {
       created: values.created,
       attribute_abstract: values.attribute_abstract,
       content: values.content,
@@ -203,16 +203,14 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
       objectMarking: values.objectMarking.map((v) => v.value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     if (!userIsKnowledgeEditor) {
-      delete finalValues.createdBy;
+      delete input.createdBy;
     }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

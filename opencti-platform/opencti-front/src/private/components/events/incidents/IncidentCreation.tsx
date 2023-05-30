@@ -142,23 +142,19 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     const cleanedValues = isEmptyField(values.severity)
       ? R.dissoc('severity', values)
       : values;
-    const finalValues = {
+    const input = {
       ...cleanedValues,
       confidence: parseInt(String(cleanedValues.confidence), 10),
       createdBy: cleanedValues.createdBy?.value,
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
-      externalReferences: cleanedValues.externalReferences.map(
-        ({ value }) => value,
-      ),
+      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store) => {
         if (updater) {

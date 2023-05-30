@@ -168,7 +168,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
 
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
-    const finalValues: ReportCreationMutation$variables['input'] = {
+    const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
       published: values.published,
@@ -179,13 +179,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       objectAssignee: values.objectAssignee.map(({ value }) => value),
       objectLabel: values.objectLabel.map((v) => v.value),
       externalReferences: values.externalReferences.map(({ value }) => value),
+      file: values.file,
     };
-    if (values.file) {
-      finalValues.file = values.file;
-    }
     commit({
       variables: {
-        input: finalValues,
+        input,
       },
       updater: (store, response) => {
         if (updater) {
