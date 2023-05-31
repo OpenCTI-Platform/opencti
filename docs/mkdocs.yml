@@ -131,7 +131,7 @@ nav:
       - Deduplication: usage/deduplication.md
     - Explore knowledge:
       - Overview: usage/overview.md
-      - Search for knowledge: usage/searching.md
+      - Search for knowledge: usage/search.md
       - Explore by entity types: usage/exploring.md
       - Pivot and investigate: usage/pivoting.md
     - Create knowledge:
@@ -141,6 +141,7 @@ nav:
       - Analyst workbench: usage/workbench.md
     - Enrich knowledge:
       - Inferences and reasoning: usage/inferences.md
+      - Enrichment connectors: usage/enrichment.md
       - Enrichment connectors: usage/enrichment.md
     - Act on knowledge:    
       - Case management: usage/case-management.md
