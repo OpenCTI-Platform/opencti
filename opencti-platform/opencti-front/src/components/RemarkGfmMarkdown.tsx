@@ -16,9 +16,16 @@ import { Extension } from 'micromark-extension-gfm';
 import Config from 'remark-parse/lib';
 import { PluggableList } from 'react-markdown/lib/react-markdown';
 import { FrozenProcessor } from 'unified';
-import React, { FunctionComponent } from 'react';
-import { truncate } from '../utils/String';
+import React, { FunctionComponent, useState } from 'react';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import { Theme } from './Theme';
+import { truncate } from '../utils/String';
+import { useFormatter } from './i18n';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const MarkDownComponents = (theme: Theme): Record<string, FunctionComponent<any>> => ({
@@ -96,6 +103,11 @@ export function remarkGfm(this: FrozenProcessor, options = {}) {
   add('toMarkdownExtensions', gfmToMarkdown(options));
 }
 
+const Transition = React.forwardRef((props: SlideProps, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 interface RemarkGfmMarkdownProps {
   content: string,
   expand?: boolean,
@@ -106,25 +118,86 @@ interface RemarkGfmMarkdownProps {
 
 const RemarkGfmMarkdown: FunctionComponent<RemarkGfmMarkdownProps> = ({ content, expand, limit, markdownComponents, commonmark }) => {
   const theme = useTheme<Theme>();
+  const { t } = useFormatter();
 
-  if (markdownComponents) {
+  const [displayExternalLink, setDisplayExternalLink] = useState(false);
+  const [externalLink, setExternalLink] = useState<string | URL | undefined>(undefined);
+
+  const handleOpenExternalLink = (url: string) => {
+    setDisplayExternalLink(true);
+    setExternalLink(url);
+  };
+
+  const handleCloseExternalLink = () => {
+    setDisplayExternalLink(false);
+    setExternalLink(undefined);
+  };
+
+  const handleBrowseExternalLink = () => {
+    window.open(externalLink, '_blank');
+    setDisplayExternalLink(false);
+    setExternalLink(undefined);
+  };
+
+  const markdownElement = () => {
+    if (markdownComponents) {
+      return (
+        <Markdown
+          remarkPlugins={[remarkGfm, [remarkParse, { commonmark: (!!commonmark) }]] as PluggableList}
+          components={MarkDownComponents(theme)}
+          className="markdown"
+        >
+          {(expand || !limit) ? content : truncate(content, limit)}
+        </Markdown>
+      );
+    }
     return (
       <Markdown
         remarkPlugins={[remarkGfm, [remarkParse, { commonmark: (!!commonmark) }]] as PluggableList}
-        components={MarkDownComponents(theme)}
         className="markdown"
       >
-        {(expand || !limit) ? content : truncate(content, limit)}
+        {limit ? truncate(content, limit) : content}
       </Markdown>
     );
-  }
+  };
+
+  const browseLinkWarning = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.target.localName === 'a') { // if the user clicks on a link
+      if (event.target.outerHTML.startsWith('<a href="url">')) { // case: link contains in the text
+        handleOpenExternalLink(event.target.innerText);
+      } else { // case: link contains in a specified url
+        handleOpenExternalLink(event.target.href);
+      }
+    }
+  };
+
   return (
-    <Markdown
-      remarkPlugins={[remarkGfm, [remarkParse, { commonmark: (!!commonmark) }]] as PluggableList}
-      className="markdown"
-    >
-      {limit ? truncate(content, limit) : content}
-    </Markdown>
+    <div>
+      <div onClick={(event) => browseLinkWarning(event)}>
+        {markdownElement()}
+      </div>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayExternalLink}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseExternalLink}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to browse this external link?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
+          <Button color="secondary" onClick={handleBrowseExternalLink}>
+            {t('Browse the link')}
+          </Button>
+        </DialogActions>
+      </Dialog>
+    </div>
   );
 };
 
