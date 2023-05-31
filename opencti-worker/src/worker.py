@@ -176,7 +176,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
         self.api.log(
             "info",
             "Processing a new message (delivery_tag="
-            + method.delivery_tag
+            + str(method.delivery_tag)
             + "), launching a thread...",
         )
         thread = Thread(
@@ -332,7 +332,7 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
                 self.api.log(
                     "info",
                     "Message (delivery_tag="
-                    + delivery_tag
+                    + str(delivery_tag)
                     + ") NOT acknowledged (Bad Gateway)",
                 )
                 cb = functools.partial(self.nack_message, channel, delivery_tag)
