@@ -66,41 +66,6 @@ const uniqFilters = [
   'basedOn',
 ];
 
-export const entityTypes = [
-  'Attack-Pattern',
-  'Campaign',
-  'Note',
-  'Observed-Data',
-  'Opinion',
-  'Report',
-  'Course-Of-Action',
-  'Individual',
-  'Organization',
-  'Sector',
-  'Indicator',
-  'Infrastructure',
-  'Intrusion-Set',
-  'City',
-  'Country',
-  'Region',
-  'Position',
-  'Malware',
-  'Threat-Actor',
-  'Tool',
-  'Vulnerability',
-  'Incident',
-  'Stix-Cyber-Observable',
-  'StixFile',
-  'IPv4-Addr',
-  'Domain-Name',
-  'Email-Addr',
-  'Email-Message',
-  'Case-Incident',
-  'Case-Task',
-  'Case-Rfi',
-  'Case-Rft',
-];
-
 export const isUniqFilter = (key: string) => uniqFilters.includes(key)
   || key.endsWith('start_date')
   || key.endsWith('end_date');

@@ -56,38 +56,9 @@ import {
   StatusFieldStatusesSearchQuery$data,
 } from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
-import { useSearchEntitiesAllTypesQuery$data } from './__generated__/useSearchEntitiesAllTypesQuery.graphql';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { Theme } from '../../components/Theme';
-
-const filtersAllTypesQuery = graphql`
-  query useSearchEntitiesAllTypesQuery {
-    scoTypes: subTypes(type: "Stix-Cyber-Observable") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    sdoTypes: subTypes(type: "Stix-Domain-Object") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-    sroTypes: subTypes(type: "stix-core-relationship") {
-      edges {
-        node {
-          id
-          label
-        }
-      }
-    }
-  }
-`;
+import useAuth from '../hooks/useAuth';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -288,6 +259,7 @@ const useSearchEntities = ({
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
+  const { schema } = useAuth();
   const theme = useTheme() as Theme;
   const unionSetEntities = (key: string, newEntities: EntityValue[]) => setEntities((c) => ({
     ...c,
@@ -295,7 +267,6 @@ const useSearchEntities = ({
       ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
     ),
   }));
-  let entitiesTypes = [];
   const searchEntities = (filterKey: string, event: SelectChangeEvent<string | number>) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     const scores = [
@@ -316,12 +287,10 @@ const useSearchEntities = ({
     if (!event) {
       return;
     }
-    if (event.target.value) {
-      setInputValues(((c: Record<string, string | Date>) => ({
-        ...c,
-        [filterKey]: event.target.value,
-      })) as unknown as Record<string, string | Date>);
-    }
+    setInputValues(((c: Record<string, string | Date>) => ({
+      ...c,
+      [filterKey]: event.target.value,
+    })) as unknown as Record<string, string | Date>);
     switch (filterKey) {
       case 'toSightingId':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
@@ -963,9 +932,7 @@ const useSearchEntities = ({
           });
         break;
       case 'context':
-        fetchQuery(vocabularySearchQuery, {
-          category: 'grouping_context_ov',
-        })
+        fetchQuery(vocabularySearchQuery, { category: 'grouping_context_ov' })
           .toPromise()
           .then((data) => {
             unionSetEntities(
@@ -978,171 +945,182 @@ const useSearchEntities = ({
             );
           });
         break;
+      // region entity and relation types
       case 'entity_type':
-        if (
-          availableEntityTypes
-          && !availableEntityTypes.includes('Stix-Cyber-Observable')
-          && !availableEntityTypes.includes('Stix-Domain-Object')
-        ) {
-          entitiesTypes = availableEntityTypes
-            .map((n) => ({
-              label: t(
-                n.toString()[0] === n.toString()[0].toUpperCase()
-                  ? `entity_${n.toString()}`
-                  : `relationship_${n.toString()}`,
-              ),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
+      case 'entity_types':
+        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
+          const entitiesTypes = availableEntityTypes.map((n) => ({
+            label: t(n.toString()[0] === n.toString()[0].toUpperCase() ? `entity_${n.toString()}` : `relationship_${n.toString()}`),
+            value: n,
+            type: n,
+          })).sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            entitiesTypes = R.prepend(
-              { label: t('entity_All'), value: 'all', type: 'entity' },
-              entitiesTypes,
-            );
+            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
           }
           unionSetEntities('entity_type', entitiesTypes);
         } else {
-          fetchQuery(filtersAllTypesQuery)
-            .toPromise()
-            .then((data) => {
-              let result = [] as EntityWithLabelValue[];
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Cyber-Observable')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.scoTypes?.edges ?? []).map((n) => ({
-                    label: t(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Domain-Object')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sdoTypes?.edges ?? []).map((n) => ({
-                    label: t(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('stix-core-relationship')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sroTypes?.edges ?? []).map((n) => ({
-                    label: t(`relationship_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                  ...result,
-                  {
-                    label: t('relationship_stix-sighting-relationship'),
-                    value: 'stix-sighting-relationship',
-                    type: 'stix-sighting-relationship',
-                  },
-                ];
-              }
-              entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-              if (allEntityTypes) {
-                entitiesTypes = R.prepend(
-                  { label: t('entity_All'), value: 'all', type: 'entity' },
-                  entitiesTypes,
-                );
-              }
-              unionSetEntities('entity_type', entitiesTypes);
-            });
-        }
-        break;
-      case 'entity_types':
-        if (
-          availableEntityTypes
-          && !availableEntityTypes.includes('Stix-Cyber-Observable')
-          && !availableEntityTypes.includes('Stix-Domain-Object')
-        ) {
-          entitiesTypes = availableEntityTypes
-            .map((n) => ({
-              label: t(
-                n.toString()[0] === n.toString()[0].toUpperCase()
-                  ? `entity_${n.toString()}`
-                  : `relationship_${n.toString()}`,
-              ),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            entitiesTypes = R.prepend(
-              { label: t('entity_All'), value: 'all', type: 'entity' },
-              entitiesTypes,
-            );
+          let result = [] as EntityWithLabelValue[];
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+            result = [
+              ...(schema?.scos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
           }
-          unionSetEntities('entity_types', entitiesTypes);
-        } else {
-          fetchQuery(filtersAllTypesQuery)
-            .toPromise()
-            .then((data) => {
-              let result = [] as EntityWithLabelValue[];
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Cyber-Observable')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.scoTypes?.edges ?? []).map((n) => ({
-                    label: t(`entity_${n.node.label}`),
-                    value: n.node.label,
-                    type: n.node.label,
-                  })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Domain-Object')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sdoTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('stix-core-relationship')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sroTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`relationship_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-              if (allEntityTypes) {
-                entitiesTypes = R.prepend(
-                  { label: t('entity_All'), value: 'all', type: 'entity' },
-                  entitiesTypes,
-                );
-              }
-              unionSetEntities('entity_types', entitiesTypes);
-            });
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+            result = [
+              ...(schema.sdos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          if (!availableEntityTypes || availableEntityTypes.includes('stix-core-relationship')) {
+            result = [
+              ...(schema.sros ?? []).map((n) => ({
+                label: t(`relationship_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+              {
+                label: t('relationship_stix-sighting-relationship'),
+                value: 'stix-sighting-relationship',
+                type: 'stix-sighting-relationship',
+              },
+            ];
+          }
+          const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+          }
+          unionSetEntities('entity_type', entitiesTypes);
         }
         break;
+      case 'fromTypes':
+        // eslint-disable-next-line no-case-declarations
+        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
+          const fromTypesTypes = (availableEntityTypes).map((n) => ({
+            label: t(n.toString()[0] === n.toString()[0].toUpperCase() ? `entity_${n.toString()}` : `relationship_${n.toString()}`),
+            value: n,
+            type: n,
+          })).sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            fromTypesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+          }
+          unionSetEntities('fromTypes', fromTypesTypes);
+        } else {
+          let result = [] as EntityWithLabelValue[];
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+            result = [
+              ...(schema?.scos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+            result = [
+              ...(schema.sdos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+          }
+          unionSetEntities('fromTypes', entitiesTypes);
+        }
+        break;
+      case 'toTypes':
+        // eslint-disable-next-line no-case-declarations
+        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
+          const toTypesTypes = (availableEntityTypes).map((n) => ({
+            label: t(
+              n.toString()[0] === n.toString()[0].toUpperCase()
+                ? `entity_${n.toString()}`
+                : `relationship_${n.toString()}`,
+            ),
+            value: n,
+            type: n,
+          })).sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            toTypesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+          }
+          unionSetEntities('toTypes', toTypesTypes);
+        } else {
+          let result = [] as EntityWithLabelValue[];
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+            result = [
+              ...(schema?.scos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+            result = [
+              ...(schema.sdos ?? []).map((n) => ({
+                label: t(`entity_${n.label}`),
+                value: n.label,
+                type: n.label,
+              })),
+              ...result,
+            ];
+          }
+          const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
+          if (allEntityTypes) {
+            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+          }
+          unionSetEntities('toTypes', entitiesTypes);
+        }
+        break;
+      case 'relationship_type':
+        // eslint-disable-next-line no-case-declarations
+        if (availableRelationshipTypes) {
+          const relationshipsTypes = availableRelationshipTypes.map((n) => ({
+            label: t(`relationship_${n.toString()}`),
+            value: n,
+            type: n,
+          })).sort((a, b) => a.label.localeCompare(b.label));
+          unionSetEntities('relationship_type', relationshipsTypes);
+        } else {
+          const relationshipsTypes = (schema.sros ?? [])
+            .map((n) => ({
+              label: t(`relationship_${n.label}`),
+              value: n.label,
+              type: n.label,
+            }))
+            .concat([
+              {
+                label: t('relationship_stix-sighting-relationship'),
+                value: 'stix-sighting-relationship',
+                type: 'stix-sighting-relationship',
+              },
+              {
+                label: t('relationship_object'),
+                value: 'object',
+                type: 'stix-internal-relationship',
+              },
+            ])
+            .sort((a, b) => a.label.localeCompare(b.label));
+          unionSetEntities('relationship_type', relationshipsTypes);
+        }
+        break;
+      // endregion
       case 'category':
         fetchQuery(vocabCategoriesQuery)
           .toPromise()
@@ -1156,185 +1134,6 @@ const useSearchEntities = ({
               })),
             );
           });
-        break;
-      case 'fromTypes':
-        // eslint-disable-next-line no-case-declarations
-        let fromTypesTypes = [];
-        if (
-          availableEntityTypes
-          && !availableEntityTypes.includes('Stix-Cyber-Observable')
-          && !availableEntityTypes.includes('Stix-Domain-Object')
-        ) {
-          fromTypesTypes = (availableEntityTypes)
-            .map((n) => ({
-              label: t(
-                n.toString()[0] === n.toString()[0].toUpperCase()
-                  ? `entity_${n.toString()}`
-                  : `relationship_${n.toString()}`,
-              ),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            fromTypesTypes = R.prepend(
-              { label: t('entity_All'), value: 'all', type: 'entity' },
-              fromTypesTypes,
-            );
-          }
-          unionSetEntities('fromTypes', fromTypesTypes);
-        } else {
-          fetchQuery(filtersAllTypesQuery)
-            .toPromise()
-            .then((data) => {
-              let result = [] as EntityWithLabelValue[];
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Cyber-Observable')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.scoTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Domain-Object')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sdoTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              fromTypesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-              if (allEntityTypes) {
-                fromTypesTypes = R.prepend(
-                  { label: t('entity_All'), value: 'all', type: 'entity' },
-                  fromTypesTypes,
-                );
-              }
-              unionSetEntities('fromTypes', fromTypesTypes);
-            });
-        }
-        break;
-      case 'toTypes':
-        // eslint-disable-next-line no-case-declarations
-        let toTypesTypes = [];
-        if (
-          availableEntityTypes
-          && !availableEntityTypes.includes('Stix-Cyber-Observable')
-          && !availableEntityTypes.includes('Stix-Domain-Object')
-        ) {
-          toTypesTypes = (availableEntityTypes)
-            .map((n) => ({
-              label: t(
-                n.toString()[0] === n.toString()[0].toUpperCase()
-                  ? `entity_${n.toString()}`
-                  : `relationship_${n.toString()}`,
-              ),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          if (allEntityTypes) {
-            toTypesTypes = R.prepend(
-              { label: t('entity_All'), value: 'all', type: 'entity' },
-              toTypesTypes,
-            );
-          }
-          unionSetEntities('toTypes', toTypesTypes);
-        } else {
-          fetchQuery(filtersAllTypesQuery)
-            .toPromise()
-            .then((data) => {
-              let result = [] as EntityWithLabelValue[];
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Cyber-Observable')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.scoTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              if (
-                !availableEntityTypes
-                || availableEntityTypes.includes('Stix-Domain-Object')
-              ) {
-                result = [
-                  ...((data as useSearchEntitiesAllTypesQuery$data)?.sdoTypes?.edges ?? [])
-                    .map((n) => ({
-                      label: t(`entity_${n.node.label}`),
-                      value: n.node.label,
-                      type: n.node.label,
-                    })),
-                  ...result,
-                ];
-              }
-              toTypesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
-              if (allEntityTypes) {
-                toTypesTypes = R.prepend(
-                  { label: t('entity_All'), value: 'all', type: 'entity' },
-                  toTypesTypes,
-                );
-              }
-              unionSetEntities('toTypes', toTypesTypes);
-            });
-        }
-        break;
-      case 'relationship_type':
-        // eslint-disable-next-line no-case-declarations
-        let relationshipsTypes = [];
-        if (availableRelationshipTypes) {
-          relationshipsTypes = availableRelationshipTypes
-            .map((n) => ({
-              label: t(`relationship_${n.toString()}`),
-              value: n,
-              type: n,
-            }))
-            .sort((a, b) => a.label.localeCompare(b.label));
-          unionSetEntities('relationship_type', relationshipsTypes);
-        } else {
-          fetchQuery(filtersAllTypesQuery)
-            .toPromise()
-            .then((data) => {
-              relationshipsTypes = ((data as useSearchEntitiesAllTypesQuery$data)?.sroTypes?.edges ?? [])
-                .map((n) => ({
-                  label: t(`relationship_${n.node.label}`),
-                  value: n.node.label,
-                  type: n.node.label,
-                }))
-                .concat([
-                  {
-                    label: t('relationship_stix-sighting-relationship'),
-                    value: 'stix-sighting-relationship',
-                    type: 'stix-sighting-relationship',
-                  },
-                  {
-                    label: t('relationship_object'),
-                    value: 'object',
-                    type: 'stix-internal-relationship',
-                  },
-                ])
-                .sort((a, b) => a.label.localeCompare(b.label));
-              unionSetEntities('relationship_type', relationshipsTypes);
-            });
-        }
         break;
       case 'container_type':
         // eslint-disable-next-line no-case-declarations

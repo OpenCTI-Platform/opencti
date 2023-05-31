@@ -10857,7 +10857,6 @@ enum StixRelationshipsOrdering {
   toPatternType
 }
 enum StixRelationshipsFilter {
-  entity_type
   created
   modified
   created_at

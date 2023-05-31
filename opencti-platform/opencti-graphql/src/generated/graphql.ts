@@ -21515,7 +21515,6 @@ export enum StixRelationshipsFilter {
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
-  EntityType = 'entity_type',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',

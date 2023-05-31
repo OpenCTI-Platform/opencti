@@ -7,6 +7,11 @@ export interface UserContextType {
   settings: RootPrivateQuery$data['settings'] | undefined;
   entitySettings: RootPrivateQuery$data['entitySettings'] | undefined;
   platformModuleHelpers: ModuleHelper | undefined;
+  schema: {
+    scos: { id: string, label: string }[]
+    sdos: { id: string, label: string }[]
+    sros: { id: string, label: string }[]
+  } | undefined;
 }
 
 const defaultContext = {
@@ -14,15 +19,16 @@ const defaultContext = {
   settings: undefined,
   entitySettings: undefined,
   platformModuleHelpers: undefined,
+  schema: undefined,
 };
 export const UserContext = React.createContext<UserContextType>(defaultContext);
 
 const useAuth = () => {
-  const { me, settings, entitySettings, platformModuleHelpers } = useContext(UserContext);
-  if (!me || !settings || !entitySettings || !platformModuleHelpers) {
+  const { me, settings, entitySettings, platformModuleHelpers, schema } = useContext(UserContext);
+  if (!me || !settings || !entitySettings || !platformModuleHelpers || !schema) {
     throw new Error('Invalid user context !');
   }
-  return { me, settings, entitySettings, platformModuleHelpers };
+  return { me, settings, entitySettings, platformModuleHelpers, schema };
 };
 
 export default useAuth;
