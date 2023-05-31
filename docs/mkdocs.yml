@@ -123,7 +123,7 @@ nav:
       - Indices and rollover: deployment/rollover.md
       - Troubleshooting: deployment/troubleshooting.md
   - User Guide:
-    - Introduction: usage/introduction.md
+    - Getting started: usage/getting-started.md
     - Foundations:
       - Data model: usage/data-model.md
       - Nested objects: usage/nested.md
