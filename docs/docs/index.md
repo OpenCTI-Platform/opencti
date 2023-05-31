@@ -27,7 +27,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     Learn how to deploy and configure the platform as well as
     launch connectors to get the first data in OpenCTI.
 
-    [:octicons-arrow-right-24:{ .middle } Deploy now](deployment/overview)
+    [:octicons-arrow-right-24:{ .middle } Deploy now](deployment/overview.md)
 
 -   :fontawesome-regular-compass:{ .lg .middle } __User Guide__
 
@@ -36,7 +36,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     Understand how to use the platform, explore the knowledge, import
     and export information, create dashboard, etc.
 
-    [:octicons-arrow-right-24:{ .middle } Explore](usage/platform)
+    [:octicons-arrow-right-24:{ .middle } Explore](usage/getting-started.md)
 
 -   :material-tune-vertical:{ .lg .middle } __Administration__
 
@@ -45,7 +45,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     Know how to administrate OpenCTI, create users and groups using RBAC /
     segregation, put retention policies and custom taxonomies.
 
-    [:octicons-arrow-right-24:{ .middle } Customize](administration/parameters)
+    [:octicons-arrow-right-24:{ .middle } Customize](administration/introduction.md)
 </div>
 
 ## Latest blog posts
@@ -55,6 +55,12 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
 
 <div class="grid cards" markdown>
+-   __How OpenCTI helps to fight disinformation and foreign interferences__<br />
+    <sub><sup>May 21, 2023</sup></sub>
+
+    In the past year, our product and engineering teams worked closely with multiple companies, public agencies and non profit organizations...
+
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/how-opencti-helps-to-fight-desinformation-and-foreign-interferences-424a3d02f2c7)**
 
 -   __OpenCTI knowledge streams can now be turned into public feeds!__<br />
     <sub><sup>Apr 18, 2023</sup></sub>
@@ -69,13 +75,6 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     For more and more organizations, OpenCTI is (or starts to be) the nervous system of cyber intelligence knowledge (for both threats and operational data)...
 
     **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-notifications-and-digests-a-new-powerful-engine-for-the-knowledge-graph-5bb9f04586d9)**
-
--   __New OCTI dashboards: the first graph dashboarding engine for the STIX model__<br />
-    <sub><sup>Jan 15, 2023</sup></sub>
-
-    When we’ve started working on Key Performance Indicators (KPI), trends modelization and graphical representation of the Cyber Threat Intelligence knowledge...
-
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/new-octi-dashboards-the-first-graph-dashboarding-engine-for-the-stix-model-406e4eb5842a)**
 </div>
 
 ## Additional resources
