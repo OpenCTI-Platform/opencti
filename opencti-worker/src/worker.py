@@ -525,7 +525,8 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                         self.consumer_threads[thread].terminate()
                 sys.exit(0)
             except Exception as e:  # pylint: disable=broad-except
-                self.api.log("error", str(e))
+                error_msg = traceback.format_exc()
+                self.api.log("error", error_msg)
                 time.sleep(60)
 
 
