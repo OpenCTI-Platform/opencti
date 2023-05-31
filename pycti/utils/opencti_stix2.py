@@ -44,6 +44,7 @@ class OpenCTIStix2:
         self.opencti = opencti
         self.stix2_update = OpenCTIStix2Update(opencti)
         self.mapping_cache = LRUCache(maxsize=50000)
+        self.mapping_cache_permanent = {}
 
     ######### UTILS
     # region utils
@@ -299,8 +300,8 @@ class OpenCTIStix2:
 
         # Open vocabularies
         object_open_vocabularies = {}
-        if self.mapping_cache.get("vocabularies_definition_fields") is None:
-            self.mapping_cache["vocabularies_definition_fields"] = []
+        if self.mapping_cache_permanent.get("vocabularies_definition_fields") is None:
+            self.mapping_cache_permanent["vocabularies_definition_fields"] = []
             query = """
                     query getVocabCategories {
                       vocabularyCategories {
@@ -315,13 +316,13 @@ class OpenCTIStix2:
             result = self.opencti.query(query)
             for category in result["data"]["vocabularyCategories"]:
                 for field in category["fields"]:
-                    self.mapping_cache["vocabularies_definition_fields"].append(field)
-                    self.mapping_cache["category_" + field["key"]] = category["key"]
+                    self.mapping_cache_permanent["vocabularies_definition_fields"].append(field)
+                    self.mapping_cache_permanent["category_" + field["key"]] = category["key"]
         if any(
             field["key"] in stix_object
-            for field in self.mapping_cache["vocabularies_definition_fields"]
+            for field in self.mapping_cache_permanent["vocabularies_definition_fields"]
         ):
-            for f in self.mapping_cache["vocabularies_definition_fields"]:
+            for f in self.mapping_cache_permanent["vocabularies_definition_fields"]:
                 if stix_object.get(f["key"]) is None:
                     continue
                 if isinstance(stix_object.get(f["key"]), list):
@@ -329,14 +330,14 @@ class OpenCTIStix2:
                     for vocab in stix_object[f["key"]]:
                         object_open_vocabularies[f["key"]].append(
                             self.opencti.vocabulary.handle_vocab(
-                                vocab, self.mapping_cache, field=f
+                                vocab, self.mapping_cache_permanent, field=f
                             )["name"]
                         )
                 else:
                     object_open_vocabularies[
                         f["key"]
                     ] = self.opencti.vocabulary.handle_vocab(
-                        stix_object[f["key"]], self.mapping_cache, field=f
+                        stix_object[f["key"]], self.mapping_cache_permanent, field=f
                     )[
                         "name"
                     ]
