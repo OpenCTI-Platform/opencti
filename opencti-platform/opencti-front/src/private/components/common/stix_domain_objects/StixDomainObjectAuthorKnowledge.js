@@ -12,7 +12,7 @@ import { DescriptionOutlined, DeviceHubOutlined } from '@mui/icons-material';
 import { HexagonMultipleOutline } from 'mdi-material-ui';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
-import Chart from 'react-apexcharts';
+import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now, yearsAgo } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';

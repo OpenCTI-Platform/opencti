@@ -7,7 +7,7 @@ import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
+import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { monthsAgo, now } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
@@ -123,6 +123,7 @@ class StixCoreRelationshipsVerticalBars extends Component {
                 type="bar"
                 width="100%"
                 height="100%"
+                withExportPopover={true}
               />
             );
           }

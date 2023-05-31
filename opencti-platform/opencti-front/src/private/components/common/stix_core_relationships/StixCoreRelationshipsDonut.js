@@ -4,9 +4,9 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
 import { useTheme } from '@mui/styles';
 import makeStyles from '@mui/styles/makeStyles';
+import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
@@ -293,6 +293,7 @@ const StixCoreRelationshipsDonut = ({
                 type="donut"
                 width="100%"
                 height="100%"
+                withExportPopover={true}
               />
             );
           }

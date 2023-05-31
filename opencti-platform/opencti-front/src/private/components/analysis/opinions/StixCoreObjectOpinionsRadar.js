@@ -16,7 +16,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import { Field, Form, Formik } from 'formik';
 import { graphql, createRefetchContainer } from 'react-relay';
-import Chart from 'react-apexcharts';
+import Chart from '../../common/charts/Chart';
 import { commitMutation, QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import Security from '../../../../utils/Security';

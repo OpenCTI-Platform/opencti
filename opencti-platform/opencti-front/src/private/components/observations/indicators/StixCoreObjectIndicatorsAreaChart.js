@@ -7,7 +7,7 @@ import withStyles from '@mui/styles/withStyles';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
+import Chart from '../../common/charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import { monthsAgo, now } from '../../../../utils/Time';

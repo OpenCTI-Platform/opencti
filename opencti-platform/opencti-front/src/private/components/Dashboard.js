@@ -17,7 +17,6 @@ import {
   GraphOutline,
   HexagonMultipleOutline,
 } from 'mdi-material-ui';
-import Chart from 'react-apexcharts';
 import Slide from '@mui/material/Slide';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import Chip from '@mui/material/Chip';
@@ -42,6 +41,7 @@ import TopBar from './nav/TopBar';
 import ErrorNotFound from '../../components/ErrorNotFound';
 import { areaChartOptions, polarAreaChartOptions } from '../../utils/Charts';
 import { defaultValue } from '../../utils/Graph';
+import Chart from './common/charts/Chart';
 
 // region styles
 const Transition = React.forwardRef((props, ref) => (
