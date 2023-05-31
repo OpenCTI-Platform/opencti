@@ -322,6 +322,27 @@ And then add the `ClientCertStrategy`:
 
 Then when accessing for the first time OCTI, the browser will ask for the certificate you want to use.
 
+## Automatically create group on SSO
+
+The variable **auto_create_group** can be added in the options of some strategies (LDAP, SAML and OpenID). If this variable is true, the groups of a user that logins will automatically be created if they don’t exist.
+
+More precisely, if the user that tries to authenticate has groups that don’t exist in OpenCTI but exist in the SSO configuration, there are two cases:
+
+- if *auto_create_group= true* in the SSO configuration: the groups are created at the platform initialization and the user will be mapped on them.
+- else: an error is raised.
+
+### Example
+
+We assum that *Group1* exists in the platform, and *newGroup* doesn’t exist. The user that tries to log in has the group *newGroup*. If *auto_create_group = true* in the SSO configuration, the group named *newGroup* will be created at the platform initialization and the user will be mapped on it. If *auto_create_group = false* or is undefined, the user can’t login and an error is raised.
+
+```json
+"groups_management": {
+  "group_attribute": "cn",
+  "groups_mapping": ["SSO_GROUP_NAME1:group1", "SSO_GROUP_NAME_2:newGroup", ...]
+},
+"auto_create_group": true
+```
+
 ## Examples
 
 ### LDAP then fallback to local
