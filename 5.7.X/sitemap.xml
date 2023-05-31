@@ -76,12 +76,22 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/containers/</loc>
+         <lastmod>2023-05-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7.X/usage/dashboards/</loc>
          <lastmod>2023-05-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/data-model/</loc>
+         <lastmod>2023-05-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/deduplication/</loc>
          <lastmod>2023-05-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
@@ -107,11 +117,6 @@
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/notifications/</loc>
-         <lastmod>2023-05-31</lastmod>
-         <changefreq>daily</changefreq>
-    </url>
-    <url>
-         <loc>https://docs.opencti.io/5.7.X/usage/platform/</loc>
          <lastmod>2023-05-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
