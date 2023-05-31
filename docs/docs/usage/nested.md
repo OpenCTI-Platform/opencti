@@ -1,13 +1,15 @@
 # Nested references and objects
 
-## Introduction
+## STIX standard
+
+### Definition
 
 In the [STIX 2.1 standard](https://docs.oasis-open.org/cti/stix/v2.1/stix-v2.1.html), objects can:
 
 1. Refer to other objects in directly in their `attributes`, by referencing one or multiple IDs.
 2. Have other objects directly embedded in the entity.
 
-## Examples
+### Example
 
 ```json
 {
@@ -53,11 +55,13 @@ But we also have a nested object within the entity (an `External Reference`):
 
 ## Implementation
 
+### Modelization
+
 In OpenCTI, all nested references and objects are modelized as relationships, to be able to pivot more easily on labels, external references, kill chain phases, marking definitions, etc.
 
 ![Investigation](assets/investigation.png)
 
-## Import & export
+### Import & export
 
 When importing and exporting data to/from OpenCTI, the translation between nested references and objects to full-fledged nodes and edges is automated and therefore transparent for the users.
 

@@ -139,9 +139,11 @@ nav:
       - Import from files: usage/import-files.md
       - Manual creations: usage/manual-creation.md
       - Analyst workbench: usage/workbench.md
-    - Manipulate knowledge:
-      - Enrichment: usage/enrichment.md
+    - Enrich knowledge:
       - Inferences and reasoning: usage/inferences.md
+      - Enrichment connectors: usage/enrichment.md
+    - Act on knowledge:    
+      - Case management: usage/case-management.md
       - Notifications and alerting: usage/notifications.md
       - Custom dashboards: usage/dashboards.md
       - Workflows and assignation: usage/workflows.md

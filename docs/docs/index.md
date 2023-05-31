@@ -58,7 +58,7 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
 -   __How OpenCTI helps to fight disinformation and foreign interferences__<br />
     <sub><sup>May 21, 2023</sup></sub>
 
-    In the past year, our product and engineering teams worked closely with multiple companies, public agencies and non profit organizations...
+    In the past year, our product and engineering teams worked closely with multiple companies, public agencies and non profit organizations to extend a bit the...
 
     **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/how-opencti-helps-to-fight-desinformation-and-foreign-interferences-424a3d02f2c7)**
 
