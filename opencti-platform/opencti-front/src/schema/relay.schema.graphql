@@ -1765,6 +1765,8 @@ enum StixCoreObjectsOrdering {
   modified
   created_at
   updated_at
+  start_time
+  stop_time
   published
   valid_from
   valid_until
@@ -1790,6 +1792,8 @@ enum StixCoreObjectsFilter {
   created
   modified
   created_at
+  start_time
+  stop_time
   createdBy
   markedBy
   assigneeTo
