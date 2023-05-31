@@ -168,7 +168,7 @@ $ sudo docker stack deploy --compose-file docker-compose.yml opencti
 You have to install all the needed dependencies for the main application and the workers. The example below is for Debian-based systems:
 
 ```bash
-$ sudo apt-get install nodejs npm python3 python3-pip 
+$ sudo apt-get install build-essential nodejs npm python3 python3-pip python3-dev
 ```
 
 #### Download the application files
@@ -177,8 +177,8 @@ First, you have to [download and extract the latest release file](https://github
 
 **For Linux:**
 
-- If your OS support the libc (Ubuntu, Debian, ...) you have to install the `opencti-release_{RELEASE_VERSION}.tar.gz` version.
-- If your OS uses musl (Alpine, ...) you have to install the `opencti-release-{RELEASE_VERSION}_musl.tar.gz` version
+- If your OS supports libc (Ubuntu, Debian, ...) you have to install the `opencti-release_{RELEASE_VERSION}.tar.gz` version.
+- If your OS uses musl (Alpine, ...) you have to install the `opencti-release-{RELEASE_VERSION}_musl.tar.gz` version.
 
 **For Windows:**
 
