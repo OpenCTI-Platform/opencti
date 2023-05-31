@@ -316,8 +316,12 @@ class OpenCTIStix2:
             result = self.opencti.query(query)
             for category in result["data"]["vocabularyCategories"]:
                 for field in category["fields"]:
-                    self.mapping_cache_permanent["vocabularies_definition_fields"].append(field)
-                    self.mapping_cache_permanent["category_" + field["key"]] = category["key"]
+                    self.mapping_cache_permanent[
+                        "vocabularies_definition_fields"
+                    ].append(field)
+                    self.mapping_cache_permanent["category_" + field["key"]] = category[
+                        "key"
+                    ]
         if any(
             field["key"] in stix_object
             for field in self.mapping_cache_permanent["vocabularies_definition_fields"]
