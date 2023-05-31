@@ -406,7 +406,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             "OPENCTI_SSL_VERIFY", ["opencti", "ssl_verify"], config, False, False
         )
         self.opencti_json_logging = get_config_variable(
-            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config
+            "OPENCTI_JSON_LOGGING", ["opencti", "json_logging"], config, False, True
         )
         # Load worker config
         self.log_level = get_config_variable(
