@@ -23,44 +23,16 @@ const colors = (temp) => [
   C.grey[temp],
 ];
 
-const downloadIcon = '<button class="MuiButtonBase-root MuiIconButton-root MuiIconButton-colorPrimary MuiIconButton-sizeSmall css-8prnfn-MuiButtonBase-root-MuiIconButton-root" tabindex="0" type="button" color="primary" style="cursor:pointer">'
-  + '<svg '
-  + 'class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-i4bv87-MuiSvgIcon-root" '
-  + 'focusable="false" '
-  + 'aria-hidden="true" '
-  + 'viewBox="0 0 24 24" '
-  + 'data-testid="GetAppOutlinedIcon">'
-  + '<path d="M13 5v6h1.17L12 13.17 9.83 11H11V5h2m2-2H9v6H5l7 7 7-7h-4V3zm4 15H5v2h14v-2z"></path>'
-  + '</svg>'
-  + '</button>';
-
 const toolbarOptions = {
-  show: true,
-  offsetY: -35,
-  offsetX: -11,
-  tools: {
-    download: downloadIcon,
-    zoom: false,
-    zoomin: false,
-    zoomout: false,
-    pan: false,
-    reset: false,
-  },
+  show: false,
   export: {
     csv: {
-      filename: undefined,
       columnDelimiter: ',',
       headerCategory: 'category',
       headerValue: 'value',
       dateFormatter(timestamp) {
         return new Date(timestamp).toDateString();
       },
-    },
-    svg: {
-      filename: undefined,
-    },
-    png: {
-      filename: undefined,
     },
   },
 };
