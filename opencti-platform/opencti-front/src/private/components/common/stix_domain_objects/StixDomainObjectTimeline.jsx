@@ -295,6 +295,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                     }
                   }
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on ThreatActor {
                   name
                   description
@@ -456,6 +459,9 @@ const StixDomainObjectTimeline = createRefetchContainer(
                       }
                     }
                   }
+                }
+                ... on MalwareAnalysis {
+                  result_name
                 }
                 ... on ThreatActor {
                   name
