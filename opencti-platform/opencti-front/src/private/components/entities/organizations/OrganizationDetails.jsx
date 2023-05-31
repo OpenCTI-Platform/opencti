@@ -1,18 +1,16 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
-import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
-
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ItemReliability from '../../../../components/ItemReliability';
-import ExpandableMarkdown, { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = () => ({
   paper: {
@@ -90,13 +88,10 @@ class OrganizationDetailsComponent extends Component {
               >
                 {t('Contact information')}
               </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {organization.contact_information}
-              </Markdown>
+              <RemarkGfmMarkdown
+                content={organization.contact_information}
+                commonmark={true}
+              ></RemarkGfmMarkdown>
             </Grid>
           </Grid>
         </Paper>

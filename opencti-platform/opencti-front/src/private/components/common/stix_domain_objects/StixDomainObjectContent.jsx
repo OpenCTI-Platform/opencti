@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
@@ -12,12 +12,9 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
-import { pdfjs, Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import Markdown from 'react-markdown';
-
-import remarkParse from 'remark-parse';
 import ReactMde from 'react-mde';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -25,19 +22,12 @@ import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, {
   stixDomainObjectContentFilesUploadStixDomainObjectMutation,
 } from './StixDomainObjectContentFiles';
-import {
-  APP_BASE_PATH,
-  commitMutation,
-  MESSAGING$,
-} from '../../../../relay/environment';
-import {
-  buildViewParamsFromUrlAndStorage,
-  saveViewParameters,
-} from '../../../../utils/ListParameters';
+import { APP_BASE_PATH, commitMutation, MESSAGING$ } from '../../../../relay/environment';
+import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -518,12 +508,10 @@ class StixDomainObjectContentComponent extends Component {
                   selectedTab={markdownSelectedTab}
                   onTabChange={this.onMarkdownChangeTab.bind(this)}
                   generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                      >
-                        {markdown}
-                      </Markdown>,
+                    <RemarkGfmMarkdown
+                      content={markdown}
+                      commonmark={true}
+                    ></RemarkGfmMarkdown>,
                   )
                   }
                   l18n={{

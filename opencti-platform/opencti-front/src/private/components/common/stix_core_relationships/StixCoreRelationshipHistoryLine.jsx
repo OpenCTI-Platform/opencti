@@ -1,34 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import Markdown from 'react-markdown';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
-import {
-  green,
-  pink,
-  deepOrange,
-  deepPurple,
-  yellow,
-  indigo,
-  teal,
-  red,
-} from '@mui/material/colors';
+import { createFragmentContainer, graphql } from 'react-relay';
+import { deepOrange, deepPurple, green, indigo, pink, red, teal, yellow } from '@mui/material/colors';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Avatar from '@mui/material/Avatar';
 import {
   AddOutlined,
+  DeleteOutlined,
   EditOutlined,
-  LinkOutlined,
-  LinkOffOutlined,
   HelpOutlined,
   LanguageOutlined,
-  DeleteOutlined,
+  LinkOffOutlined,
+  LinkOutlined,
 } from '@mui/icons-material';
 import { LinkVariantPlus, LinkVariantRemove, Merge } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
-
-import remarkParse from 'remark-parse';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
@@ -43,7 +31,7 @@ import DialogContentText from '@mui/material/DialogContentText';
 import Slide from '@mui/material/Slide';
 import { truncate } from '../../../../utils/String';
 import inject18n from '../../../../components/i18n';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -324,23 +312,17 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
             <Tooltip
               classes={{ tooltip: classes.tooltip }}
               title={
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data.message}`}
-                </Markdown>
+                <RemarkGfmMarkdown
+                  content={`\`${node.user.name}\` ${node.context_data.message}`}
+                  commonmark={true}
+                ></RemarkGfmMarkdown>
               }
             >
               <div className={classes.description}>
-                <Markdown
-                  remarkPlugins={[remarkGfm, remarkParse]}
-                  parserOptions={{ commonmark: true }}
-                  className="markdown"
-                >
-                  {`\`${node.user.name}\` ${node.context_data.message}`}
-                </Markdown>
+                <RemarkGfmMarkdown
+                  content={`\`${node.user.name}\` ${node.context_data.message}`}
+                  commonmark={true}
+                ></RemarkGfmMarkdown>
               </div>
             </Tooltip>
             {node.context_data.external_references
@@ -424,13 +406,10 @@ class StixCoreRelationshipHistoryLineComponent extends Component {
         >
           <DialogTitle>{t('Commit message')}</DialogTitle>
           <DialogContent>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              parserOptions={{ commonmark: true }}
-              className="markdown"
-            >
-              {node.context_data.commit}
-            </Markdown>
+            <RemarkGfmMarkdown
+              content={node.context_data.commit}
+              commonmark={true}
+            ></RemarkGfmMarkdown>
           </DialogContent>
           <DialogActions>
             <Button color="primary" onClick={this.handleClose.bind(this)}>

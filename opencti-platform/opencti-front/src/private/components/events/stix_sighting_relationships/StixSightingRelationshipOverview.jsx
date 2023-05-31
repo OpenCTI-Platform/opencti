@@ -5,7 +5,6 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
@@ -15,8 +14,6 @@ import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import { ArrowRightAlt, Edit } from '@mui/icons-material';
-
-import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
 import Button from '@mui/material/Button';
@@ -45,9 +42,9 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOrStixRelationshipLastContainers
   from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
+import StixSightingRelationshipLabelsViewfrom './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -443,18 +440,15 @@ class StixSightingRelationshipContainer extends Component {
                       >
                         {t('Description')}
                       </Typography>
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                        className="markdown"
-                      >
-                        {stixSightingRelationship.x_opencti_inferences
+                      <RemarkGfmMarkdown
+                        content={stixSightingRelationship.x_opencti_inferences
                         !== null ? (
                           <i>{t('Inferred knowledge')}</i>
                           ) : (
                             stixSightingRelationship.description
                           )}
-                      </Markdown>
+                        commonmark={true}
+                      ></RemarkGfmMarkdown>
                     </div>
                   </Grid>
                 </Grid>

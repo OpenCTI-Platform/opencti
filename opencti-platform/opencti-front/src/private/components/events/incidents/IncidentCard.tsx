@@ -1,7 +1,6 @@
 import React, { FunctionComponent } from 'react';
 import { Link } from 'react-router-dom';
 import { graphql, useFragment } from 'react-relay';
-import Markdown from 'react-markdown';
 import Card from '@mui/material/Card';
 import CardActionArea from '@mui/material/CardActionArea';
 import CardHeader from '@mui/material/CardHeader';
@@ -11,13 +10,12 @@ import { Fire } from 'mdi-material-ui';
 import Skeleton from '@mui/material/Skeleton';
 
 import makeStyles from '@mui/styles/makeStyles';
-import remarkParse from 'remark-parse';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
 import { itemColor } from '../../../../utils/Colors';
 import { Theme } from '../../../../components/Theme';
 import { IncidentCard_node$key } from './__generated__/IncidentCard_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -151,11 +149,9 @@ export const IncidentCard: FunctionComponent<IncidentCardProps> = ({
         />
         <CardContent className={classes.content}>
           <div className={classes.description}>
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-            >
-              {data.description ?? ''}
-            </Markdown>
+            <RemarkGfmMarkdown
+              content={data.description ?? ''}
+            ></RemarkGfmMarkdown>
           </div>
           <div className={classes.objectLabel}>
             <StixCoreObjectLabels

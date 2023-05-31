@@ -6,20 +6,12 @@ import withTheme from '@mui/styles/withTheme';
 import Typography from '@mui/material/Typography';
 import Paper from '@mui/material/Paper';
 import ForceGraph2D from 'react-force-graph-2d';
-import Markdown from 'react-markdown';
 import { withRouter } from 'react-router-dom';
-
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import {
-  buildGraphData,
-  linkPaint,
-  nodeAreaPaint,
-  nodePaint,
-} from '../../../../utils/Graph';
+import { buildGraphData, linkPaint, nodeAreaPaint, nodePaint } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = () => ({
   container: {
@@ -115,13 +107,10 @@ class StixSightingRelationshipInference extends Component {
         <Typography variant="h3" gutterBottom={true}>
           {t(inference.rule.name)}
         </Typography>
-        <Markdown
-          remarkPlugins={[remarkGfm, remarkParse]}
-          parserOptions={{ commonmark: true }}
-          className="markdown"
-        >
-          {inference.rule.description}
-        </Markdown>
+        <RemarkGfmMarkdown
+          content={inference.rule.description}
+          commonmark={true}
+        ></RemarkGfmMarkdown>
         <ForceGraph2D
           ref={this.graph}
           width={width}

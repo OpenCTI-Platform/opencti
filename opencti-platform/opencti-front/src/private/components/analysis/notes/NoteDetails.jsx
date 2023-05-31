@@ -1,18 +1,15 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Grid from '@mui/material/Grid';
 import Typography from '@mui/material/Typography';
-import Markdown from 'react-markdown';
-
-import remarkParse from 'remark-parse';
 import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   paper: {
@@ -47,13 +44,9 @@ class NoteDetailsComponent extends Component {
               <Typography variant="h3" gutterBottom={true}>
                 {t('Abstract')}
               </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {note.attribute_abstract}
-              </Markdown>
+              <RemarkGfmMarkdown
+                content={note.attribute_abstract}
+              ></RemarkGfmMarkdown>
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -61,13 +54,10 @@ class NoteDetailsComponent extends Component {
               >
                 {t('Content')}
               </Typography>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse]}
-                parserOptions={{ commonmark: true }}
-                className="markdown"
-              >
-                {note.content}
-              </Markdown>
+              <RemarkGfmMarkdown
+                content={note.content}
+                commonmark={true}
+              ></RemarkGfmMarkdown>
             </Grid>
             <Grid item={true} xs={3}>
               <Typography variant="h3" gutterBottom={true}>

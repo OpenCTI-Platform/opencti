@@ -5,14 +5,11 @@ import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import { createFragmentContainer, graphql } from 'react-relay';
-import Markdown from 'react-markdown';
 import Grid from '@mui/material/Grid';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import { ArrowRightAlt, Edit, ExpandLessOutlined, ExpandMoreOutlined } from '@mui/icons-material';
-
-import remarkParse from 'remark-parse';
 import Button from '@mui/material/Button';
 import Divider from '@mui/material/Divider';
 import Chip from '@mui/material/Chip';
@@ -48,7 +45,7 @@ import StixCoreObjectOrStixRelationshipLastContainers
   from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
-import { remarkGfm } from '../../../../components/ExpandableMarkdown';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -421,17 +418,14 @@ class StixCoreRelationshipContainer extends Component {
                       >
                         {t('Description')}
                       </Typography>
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                        className="markdown"
-                      >
-                        {stixCoreRelationship.x_opencti_inferences !== null ? (
+                      <RemarkGfmMarkdown
+                        content={stixCoreRelationship.x_opencti_inferences !== null ? (
                           <i>{t('Inferred knowledge')}</i>
                         ) : (
                           stixCoreRelationship.description
                         )}
-                      </Markdown>
+                        commonmark={true}
+                      ></RemarkGfmMarkdown>
                       <StixCoreObjectKillChainPhasesView killChainPhasesEdges={stixCoreRelationship.killChainPhases.edges}/>
                     </div>
                   </Grid>
