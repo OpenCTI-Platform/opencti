@@ -886,19 +886,24 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     }
     const markingRestrictions = await buildDataRestrictions(context, user);
     mustTerms.push(...markingRestrictions.must);
+    const body = {
+      query: {
+        bool: {
+          must: mustTerms,
+          must_not: markingRestrictions.must_not,
+        },
+      },
+    };
+    if (opts.orderBy) {
+      const orderKey = `${opts.orderBy}.keyword`;
+      body.sort = [{ [orderKey]: (opts.orderMode ?? 'asc') }];
+    }
     const query = {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: ES_IGNORE_THROTTLED,
       _source: baseData ? BASE_FIELDS : true,
-      body: {
-        query: {
-          bool: {
-            must: mustTerms,
-            must_not: markingRestrictions.must_not,
-          },
-        },
-      },
+      body,
     };
     logApp.debug('[SEARCH] elInternalLoadById', { query });
     const searchType = `${ids} (${type !== null ? type : 'Any'})`;

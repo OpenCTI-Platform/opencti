@@ -14,10 +14,34 @@ import { SETTINGS_SETACCESSES } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
 
 const subscription = graphql`
-  subscription RootUsersSubscription($id: ID!) {
+  subscription RootUsersSubscription(
+      $id: ID!
+      $rolesOrderBy: RolesOrdering
+      $rolesOrderMode: OrderingMode
+      $groupsOrderBy: GroupsOrdering
+      $groupsOrderMode: OrderingMode
+      $organizationsOrderBy: OrganizationsOrdering
+      $organizationsOrderMode: OrderingMode
+  ) {
     user(id: $id) {
       ...User_user
+      @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+      )
       ...UserEdition_user
+      @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+      )
     }
   }
 `;
@@ -51,7 +75,15 @@ class RootUser extends Component {
         <TopBar />
         <QueryRenderer
           query={userQuery}
-          variables={{ id: userId }}
+          variables={{
+            id: userId,
+            rolesOrderBy: 'name',
+            rolesOrderMode: 'asc',
+            groupsOrderBy: 'name',
+            groupsOrderMode: 'asc',
+            organizationsOrderBy: 'name',
+            organizationsOrderMode: 'asc',
+          }}
           render={({ props }) => {
             if (props) {
               if (props.user) {

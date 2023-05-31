@@ -43,7 +43,7 @@ export const batchIsSubAttackPattern = async (context: AuthContext, user: AuthUs
     ENTITY_TYPE_ATTACK_PATTERN,
     { paginate: false }
   );
-  return batchAttackPatterns.map((b) => b.length > 0);
+  return batchAttackPatterns.map((b: AttackPattern[]) => b.length > 0);
 };
 
 export const batchDataComponents = async (context: AuthContext, user: AuthUser, attackPatternIds: Array<string>) => {

@@ -140,9 +140,16 @@ const GroupEditionRolesComponent: FunctionComponent<GroupEditionRolesComponentPr
 
 const GroupEditionRoles = createFragmentContainer(GroupEditionRolesComponent, {
   group: graphql`
-      fragment GroupEditionRoles_group on Group {
+      fragment GroupEditionRoles_group on Group
+      @argumentDefinitions(
+          orderBy: { type: "RolesOrdering", defaultValue: name }
+          orderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
           id
-          roles {
+          roles(
+              orderBy: $orderBy,
+              orderMode: $orderMode,
+          ) {
               ... on Role {
                   id
                   name

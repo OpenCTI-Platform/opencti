@@ -166,11 +166,11 @@ export const batchOrganizations = async (context, user, userId, opts = {}) => {
   return batchListThroughGetTo(context, user, userId, RELATION_PARTICIPATE_TO, ENTITY_TYPE_IDENTITY_ORGANIZATION, opts);
 };
 
-export const batchRolesForGroups = async (context, user, groupId) => {
-  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { paginate: false });
+export const batchRolesForGroups = async (context, user, groupId, opts = {}) => {
+  return batchListThroughGetTo(context, user, groupId, RELATION_HAS_ROLE, ENTITY_TYPE_ROLE, { ...opts, paginate: false });
 };
 
-export const batchRolesForUsers = async (context, user, userIds) => {
+export const batchRolesForUsers = async (context, user, userIds, opts = {}) => {
   // Get all groups for users
   const usersGroups = await listAllRelations(context, user, RELATION_MEMBER_OF, { fromId: userIds, toTypes: [ENTITY_TYPE_GROUP] });
   const groupIds = [];
@@ -199,12 +199,11 @@ export const batchRolesForUsers = async (context, user, userIds) => {
       groupWithRoles[groupRole.fromId] = [groupRole.toId];
     }
   });
-  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ids: roleIds });
-  const rolesMap = R.mergeAll(roles.map((r) => ({ [r.id]: r })));
+  const roles = await listAllEntities(context, user, [ENTITY_TYPE_ROLE], { ...opts, ids: roleIds });
   return userIds.map((u) => {
     const groups = usersWithGroups[u] ?? [];
-    const idRoles = groups.map((g) => groupWithRoles[g] ?? []).flat();
-    return idRoles.map((r) => rolesMap[r]);
+    const idRoles = uniq(groups.map((g) => groupWithRoles[g] ?? []).flat());
+    return roles.filter((t) => idRoles.includes(t.internal_id));
   });
 };
 

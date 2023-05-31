@@ -266,6 +266,7 @@ const checkIfInferenceOperationIsValid = (user, element) => {
 // endregion
 
 // region bulk loading method
+
 // Listing handle
 const batchListThrough = async (context, user, sources, sourceSide, relationType, targetEntityType, opts = {}) => {
   const { paginate = true, withInferences = true, batched = true, first = null } = opts;
@@ -297,33 +298,27 @@ const batchListThrough = async (context, user, sources, sourceSide, relationType
     connectionFormat: false,
   });
   // For each relation resolved the target entity
-  const targets = await elFindByIds(context, user, R.uniq(relations.map((s) => s[`${opposite}Id`])));
+  const targets = await elFindByIds(context, user, R.uniq(relations.map((s) => s[`${opposite}Id`])), opts);
   // Group and rebuild the result
   const elGrouped = R.groupBy((e) => e[`${sourceSide}Id`], relations);
   if (paginate) {
     return ids.map((id) => {
-      let values = elGrouped[id];
-      let edges = [];
+      const values = elGrouped[id];
+      const edges = [];
       if (values) {
-        if (first) {
-          values = R.take(first, values);
-        }
-        edges = (values || [])
-          .map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets))
-          .filter((n) => isNotEmptyField(n))
-          .map((n) => ({ node: n }));
+        const data = first ? R.take(first, values) : values;
+        const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
+        const filteredElements = targets.filter((t) => filterIds.includes(t.internal_id));
+        edges.push(...filteredElements.map((n) => ({ node: n })));
       }
       return buildPagination(0, null, edges, edges.length);
     });
   }
   const elements = ids.map((id) => {
-    let values = elGrouped[id];
-    if (first) {
-      values = R.take(first, values);
-    }
-    return (values || [])
-      .map((i) => R.find((s) => s.internal_id === i[`${opposite}Id`], targets))
-      .filter((n) => isNotEmptyField(n));
+    const values = elGrouped[id];
+    const data = first ? R.take(first, values) : values;
+    const filterIds = (data || []).map((i) => i[`${opposite}Id`]);
+    return targets.filter((t) => filterIds.includes(t.internal_id));
   });
   if (batched) {
     return elements;

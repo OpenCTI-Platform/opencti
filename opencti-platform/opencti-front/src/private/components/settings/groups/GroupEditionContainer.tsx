@@ -54,12 +54,20 @@ export const groupEditionContainerQuery = graphql`
 `;
 
 const GroupEditionContainerFragment = graphql`
-      fragment GroupEditionContainer_group on Group {
+      fragment GroupEditionContainer_group on Group
+      @argumentDefinitions(
+          rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+          rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+      ) {
           id
           ...GroupEditionOverview_group
           ...GroupEditionMarkings_group
           ...GroupEditionUsers_group
           ...GroupEditionRoles_group
+          @arguments(
+              orderBy: $rolesOrderBy
+              orderMode: $rolesOrderMode
+          )
           editContext {
               name
               focusOn

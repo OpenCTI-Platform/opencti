@@ -70,7 +70,11 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const groupFragment = graphql`
-  fragment Group_group on Group {
+  fragment Group_group on Group
+  @argumentDefinitions(
+      rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+      rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+  ) {
     id
     entity_type
     name
@@ -89,7 +93,10 @@ const groupFragment = graphql`
         }
       }
     }
-    roles {
+    roles(
+        orderBy: $rolesOrderBy,
+        orderMode: $rolesOrderMode,
+    ) {
       id
       name
       description

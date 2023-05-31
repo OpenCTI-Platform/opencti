@@ -1080,7 +1080,7 @@ type Group implements InternalObject & BasicObject {
   members: UserConnection
   created_at: DateTime
   updated_at: DateTime
-  roles: [Role]
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]
   allowed_marking: [MarkingDefinition]
   editContext: [EditUserContext!]
 }
@@ -1211,11 +1211,11 @@ type User implements BasicObject & InternalObject {
   language: String
   external: Boolean
   dashboard: String
-  roles: [Role]!
+  roles(orderBy: RolesOrdering, orderMode: OrderingMode): [Role]!
   capabilities: [Capability]!
   default_hidden_types: [String]!
-  groups: GroupConnection
-  objectOrganization: OrganizationConnection
+  groups(orderBy: GroupsOrdering, orderMode: OrderingMode): GroupConnection
+  objectOrganization(orderBy: OrganizationsOrdering, orderMode: OrderingMode): OrganizationConnection
   created_at: DateTime!
   updated_at: DateTime!
   sessions: [SessionDetail]
