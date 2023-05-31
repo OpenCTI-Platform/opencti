@@ -120,4 +120,14 @@
          <lastmod>2023-05-31</lastmod>
          <changefreq>daily</changefreq>
     </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/overview/</loc>
+         <lastmod>2023-05-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/search/</loc>
+         <lastmod>2023-05-31</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
 </urlset>

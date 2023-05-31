@@ -27,12 +27,12 @@ definitions:
 
   # Background image
   - &background_image >-
-    {{ params.background_image or "" }}
+    {{ layout.background_image or "" }}
 
   # Background color (default: white)
   - &background_color >-
-    {%- if params.background_color -%}
-      {{ params.background_color }}
+    {%- if layout.background_color -%}
+      {{ layout.background_color }}
     {%- else -%}
       {%- set palette = config.theme.palette or {} -%}
       {%- if not palette is mapping -%}
@@ -67,8 +67,8 @@ definitions:
 
   # Text color (default: indigo)
   - &color >-
-    {%- if params.color -%}
-      {{ params.color }}
+    {%- if layout.color -%}
+      {{ layout.color }}
     {%- else -%}
       {%- set palette = config.theme.palette or {} -%}
       {%- if not palette is mapping -%}
@@ -103,8 +103,8 @@ definitions:
 
   # Font family (default: Roboto)
   - &font_family >-
-    {%- if params.font_family -%}
-      {{ params.font_family }}
+    {%- if layout.font_family -%}
+      {{ layout.font_family }}
     {%- elif config.theme.font != false -%}
       {{ config.theme.font.get("text", "Roboto") }}
     {%- else -%}
@@ -133,7 +133,9 @@ definitions:
 
   # Logo
   - &logo >-
-    {{ config.theme.logo or "" }}
+    {%- if config.theme.logo -%}
+      {{ config.docs_dir }}/{{ config.theme.logo }}
+    {%- endif -%}
 
   # Logo (icon)
   - &logo_icon >-
@@ -186,8 +188,6 @@ layers:
     typography:
       content: *site_name
       color: *color
-      line:
-        amount: 1
       font:
         family: *font_family
         style: Bold
