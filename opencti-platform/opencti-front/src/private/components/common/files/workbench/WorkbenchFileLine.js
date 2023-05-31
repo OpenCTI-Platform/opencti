@@ -347,6 +347,7 @@ const WorkbenchFileLine = createFragmentContainer(WorkbenchFileLineComponent, {
         creator {
           name
         }
+        entity_id
         entity {
           ... on AttackPattern {
             name

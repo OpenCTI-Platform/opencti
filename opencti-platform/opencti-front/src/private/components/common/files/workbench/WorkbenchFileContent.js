@@ -336,8 +336,8 @@ const WorkbenchFileContentComponent = ({
 
   const saveFile = () => {
     let currentEntityId = null;
-    if (file.metaData.entity) {
-      currentEntityId = file.metaData.entity.standard_id;
+    if (file.metaData.entity_id && file.metaData.entity) {
+      currentEntityId = file.metaData.entity_id;
     }
     const data = {
       id: `bundle--${uuid()}`,
@@ -356,7 +356,7 @@ const WorkbenchFileContentComponent = ({
     });
     commitMutation({
       mutation: workbenchFileContentMutation,
-      variables: { file: fileToUpload, id: currentEntityId },
+      variables: { file: fileToUpload, entityId: currentEntityId },
     });
   };
 
@@ -697,8 +697,8 @@ const WorkbenchFileContentComponent = ({
   // region submission
   const onSubmitValidate = (values, { setSubmitting, resetForm }) => {
     let currentEntityId = null;
-    if (file.metaData.entity) {
-      currentEntityId = file.metaData.entity.standard_id;
+    if (file.metaData.entity_id && file.metaData.entity) {
+      currentEntityId = file.metaData.entity_id;
     }
     const data = {
       id: `bundle--${uuid()}`,
@@ -717,7 +717,7 @@ const WorkbenchFileContentComponent = ({
     });
     commitMutation({
       mutation: workbenchFileContentMutation,
-      variables: { file: fileToUpload, id: currentEntityId },
+      variables: { file: fileToUpload, entityId: currentEntityId },
       onCompleted: () => {
         setTimeout(() => {
           commitMutation({
