@@ -19,7 +19,7 @@ import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   investigation: {

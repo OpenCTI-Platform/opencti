@@ -20,7 +20,7 @@ import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {

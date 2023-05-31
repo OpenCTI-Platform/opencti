@@ -19,7 +19,7 @@ import {
 } from '../../../../utils/Graph';
 import { resolveLink } from '../../../../utils/Entity';
 import { isEmptyField } from '../../../../utils/utils';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   container: {

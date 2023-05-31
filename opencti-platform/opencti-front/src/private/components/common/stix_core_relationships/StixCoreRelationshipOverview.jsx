@@ -48,7 +48,7 @@ import StixCoreObjectOrStixRelationshipLastContainers
   from '../containers/StixCoreObjectOrStixRelationshipLastContainers';
 import StixCoreRelationshipObjectLabelsView from './StixCoreRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {

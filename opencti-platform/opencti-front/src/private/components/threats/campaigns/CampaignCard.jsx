@@ -21,7 +21,7 @@ import {
   addBookmark,
   deleteBookMark,
 } from '../../common/stix_domain_objects/StixDomainObjectBookmark';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   card: {

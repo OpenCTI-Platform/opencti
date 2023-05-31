@@ -13,6 +13,12 @@ import { gfmFootnote } from 'micromark-extension-gfm-footnote';
 import { gfmStrikethrough } from 'micromark-extension-gfm-strikethrough';
 import { gfmTable } from 'micromark-extension-gfm-table';
 import { gfmTaskListItem } from 'micromark-extension-gfm-task-list-item';
+import { Options as TableOptions } from 'mdast-util-gfm-table/lib';
+import { Options as ToMarkdownOptions } from 'mdast-util-to-markdown/lib';
+import { Extension } from 'micromark-extension-gfm';
+import Config from 'remark-parse/lib';
+import { PluggableList } from 'react-markdown/lib/react-markdown';
+import { FrozenProcessor } from 'unified';
 import { Theme } from './Theme';
 import { truncate } from '../utils/String';
 
@@ -25,7 +31,7 @@ const gfmFromMarkdown = () => {
   ];
 };
 
-const gfmToMarkdown = (options: any) => {
+const gfmToMarkdown = (options?: TableOptions | null | undefined) => {
   return {
     extensions: [
       gfmFootnoteToMarkdown(),
@@ -36,19 +42,13 @@ const gfmToMarkdown = (options: any) => {
   };
 };
 
-export function remarkGfm(options = {}) {
+export function remarkGfm(this: FrozenProcessor, options = {}) {
   const data = this.data();
 
-  /**
-   * @param {string} field
-   * @param {unknown} value
-   */
-  function add(field: string, value) {
-    const list = /** @type {unknown[]} */ (
-      // Other extensions
-      /* c8 ignore next 2 */
+  function add(field: string, value: Extension | Partial<typeof Config>[] | { extensions: ToMarkdownOptions[] }) {
+    const list = (
       data[field] ? data[field] : (data[field] = [])
-    );
+    ) as (Extension | Partial<typeof Config>[] | { extensions: ToMarkdownOptions[] })[];
 
     list.push(value);
   }
@@ -109,7 +109,6 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({ source
 
   const onClick = () => setExpand(!expand);
   const shouldBeTruncated = (source || '').length > limit;
-  console.log('source', source);
 
   return (
     <span>
@@ -124,7 +123,7 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({ source
         )}
         <div style={{ marginTop: 10 }}>
           <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
+            remarkPlugins={[remarkGfm, remarkParse] as PluggableList}
             components={MarkDownComponents(theme)}
             className="markdown"
           >

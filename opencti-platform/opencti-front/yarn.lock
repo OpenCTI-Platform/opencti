@@ -10471,6 +10471,26 @@ __metadata:
   languageName: node
   linkType: hard
 
+"mdast-util-from-markdown@npm:^1.3.1":
+  version: 1.3.1
+  resolution: "mdast-util-from-markdown@npm:1.3.1"
+  dependencies:
+    "@types/mdast": ^3.0.0
+    "@types/unist": ^2.0.0
+    decode-named-character-reference: ^1.0.0
+    mdast-util-to-string: ^3.1.0
+    micromark: ^3.0.0
+    micromark-util-decode-numeric-character-reference: ^1.0.0
+    micromark-util-decode-string: ^1.0.0
+    micromark-util-normalize-identifier: ^1.0.0
+    micromark-util-symbol: ^1.0.0
+    micromark-util-types: ^1.0.0
+    unist-util-stringify-position: ^3.0.0
+    uvu: ^0.5.0
+  checksum: c2fac225167e248d394332a4ea39596e04cbde07d8cdb3889e91e48972c4c3462a02b39fda3855345d90231eb17a90ac6e082fb4f012a77c1d0ddfb9c7446940
+  languageName: node
+  linkType: hard
+
 "mdast-util-gfm-footnote@npm:^1.0.2":
   version: 1.0.2
   resolution: "mdast-util-gfm-footnote@npm:1.0.2"
@@ -10540,7 +10560,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mdast-util-to-markdown@npm:^1.3.0":
+"mdast-util-to-markdown@npm:^1.3.0, mdast-util-to-markdown@npm:^1.5.0":
   version: 1.5.0
   resolution: "mdast-util-to-markdown@npm:1.5.0"
   dependencies:
@@ -11921,10 +11941,12 @@ __metadata:
     jsdom: ^22.0.0
     leaflet: 1.9.4
     lodash: 4.17.21
+    mdast-util-from-markdown: ^1.3.1
     mdast-util-gfm-footnote: ^1.0.2
     mdast-util-gfm-strikethrough: ^1.0.3
     mdast-util-gfm-table: ^1.0.7
     mdast-util-gfm-task-list-item: ^1.0.2
+    mdast-util-to-markdown: ^1.5.0
     mdi-material-ui: 7.7.0
     micromark-extension-gfm: ^2.0.3
     micromark-extension-gfm-footnote: ^1.1.2
@@ -11966,7 +11988,7 @@ __metadata:
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
     relay-test-utils: 15.0.0
-    remark-parse: 10.0.1
+    remark-parse: ^10.0.2
     rxjs: 7.8.1
     subscriptions-transport-ws: 0.11.0
     tap: 16.3.4
@@ -11974,6 +11996,7 @@ __metadata:
     typeface-ibm-plex-sans: 1.1.13
     typeface-roboto: 1.1.13
     typescript: 4.9.5
+    unified: ^10.1.2
     uuid: 9.0.0
     vite-plugin-relay: ^2.0.0
     vitest: ^0.30.1
@@ -13945,18 +13968,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-parse@npm:10.0.1":
-  version: 10.0.1
-  resolution: "remark-parse@npm:10.0.1"
-  dependencies:
-    "@types/mdast": ^3.0.0
-    mdast-util-from-markdown: ^1.0.0
-    unified: ^10.0.0
-  checksum: 505088e564ab53ff054433368adbb7b551f69240c7d9768975529837a86f1d0f085e72d6211929c5c42db315273df4afc94f3d3a8662ffdb69468534c6643d29
-  languageName: node
-  linkType: hard
-
-"remark-parse@npm:^10.0.0":
+"remark-parse@npm:^10.0.0, remark-parse@npm:^10.0.2":
   version: 10.0.2
   resolution: "remark-parse@npm:10.0.2"
   dependencies:
@@ -16068,7 +16080,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"unified@npm:^10.0.0":
+"unified@npm:^10.0.0, unified@npm:^10.1.2":
   version: 10.1.2
   resolution: "unified@npm:10.1.2"
   dependencies:

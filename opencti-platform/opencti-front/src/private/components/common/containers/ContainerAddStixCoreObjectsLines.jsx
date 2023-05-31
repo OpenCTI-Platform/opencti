@@ -34,7 +34,7 @@ import {
   reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {

@@ -9,7 +9,7 @@ import Markdown from 'react-markdown';
 
 import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = () => ({
   paper: {

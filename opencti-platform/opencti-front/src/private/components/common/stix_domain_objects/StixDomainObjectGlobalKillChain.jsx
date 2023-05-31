@@ -23,7 +23,7 @@ import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   itemIcon: {

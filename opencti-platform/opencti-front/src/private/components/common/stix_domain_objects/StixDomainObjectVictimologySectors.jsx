@@ -44,7 +44,7 @@ import {
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
-import { remarkGfm } from "../../../../components/ExpandableMarkdown";
+import { remarkGfm } from '../../../../components/ExpandableMarkdown';
 
 const styles = (theme) => ({
   container: {
