@@ -95,6 +95,10 @@ export const entityTypes = [
   'Domain-Name',
   'Email-Addr',
   'Email-Message',
+  'Case-Incident',
+  'Case-Task',
+  'Case-Rfi',
+  'Case-Rft',
 ];
 
 export const isUniqFilter = (key: string) => uniqFilters.includes(key)
