@@ -4,23 +4,23 @@ name: client-python-tests
 
 steps:
   - name: sleep-for-opencti
-    image: python:3.10
+    image: python:3.11
     commands:
       - sleep 100
   - name: client-test-38
-    image: python:3.8
+    image: python:3.11
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
   - name: client-test-39
-    image: python:3.9
+    image: python:3.11
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
   - name: client-test-310
-    image: python:3.10
+    image: python:3.11
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
@@ -28,7 +28,7 @@ steps:
 
   # always run the examples last since they don't clean up
   - name: example-tests
-    image: python:3.10
+    image: python:3.11
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install .
