@@ -286,7 +286,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
                       <UserLine
                         key={member?.node?.id}
                         dataColumns={userColumns}
-                        node={member.node}
+                        node={member?.node}
                       />
                     ))}
                   </List>

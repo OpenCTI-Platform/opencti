@@ -4,7 +4,6 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import * as PropTypes from 'prop-types';
@@ -13,6 +12,7 @@ import { useFormatter } from '../../../../components/i18n';
 import { donutChartOptions } from '../../../../utils/Charts';
 import { convertFilters } from '../../../../utils/ListParameters';
 import { defaultValue } from '../../../../utils/Graph';
+import Chart from '../charts/Chart';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -269,6 +269,7 @@ const StixCoreObjectsDonut = ({
                 type="donut"
                 width="100%"
                 height="100%"
+                withExportPopover={true}
               />
             );
           }

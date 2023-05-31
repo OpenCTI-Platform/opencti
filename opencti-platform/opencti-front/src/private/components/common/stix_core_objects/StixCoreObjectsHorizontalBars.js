@@ -4,10 +4,10 @@ import { graphql } from 'react-relay';
 import CircularProgress from '@mui/material/CircularProgress';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Chart from 'react-apexcharts';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import { useNavigate } from 'react-router-dom-v5-compat';
+import Chart from '../charts/Chart';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { horizontalBarsChartOptions } from '../../../../utils/Charts';
@@ -294,6 +294,7 @@ const StixCoreObjectsHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
+                withExportPopover={true}
               />
             );
           }
