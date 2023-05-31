@@ -258,8 +258,6 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             {note.attribute_abstract && (
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
                 className="markdown"
               >
                 {note.attribute_abstract}
@@ -275,8 +273,6 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
             {note.content && (
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
                 className="markdown"
               >
                 {note.content}

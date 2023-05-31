@@ -208,8 +208,6 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                     <Markdown
                                       remarkPlugins={[remarkGfm, remarkParse]}
                                       parserOptions={{ commonmark: true }}
-                                      disallowedElements={['a']} // disable link redirection
-                                      unwrapDisallowed={true}
                                       className="markdown"
                                     >
                                       {attackPattern.description}
@@ -301,8 +299,6 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                                   parserOptions={{
                                                     commonmark: true,
                                                   }}
-                                                  disallowedElements={['a']} // disable link redirection
-                                                  unwrapDisallowed={true}
                                                   className="markdown"
                                                 >
                                                   {courseOfAction.description}

@@ -125,8 +125,6 @@ const ExpandableMarkdown: FunctionComponent<ExpandableMarkdownProps> = ({ source
         <div style={{ marginTop: 10 }}>
           <Markdown
             remarkPlugins={[remarkGfm, remarkParse]}
-            // disallowedElements={['a']} // disable link redirection
-            // unwrapDisallowed={true}
             components={MarkDownComponents(theme)}
             className="markdown"
           >

@@ -50,8 +50,6 @@ class NoteDetailsComponent extends Component {
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
                 className="markdown"
               >
                 {note.attribute_abstract}
@@ -66,8 +64,6 @@ class NoteDetailsComponent extends Component {
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
                 className="markdown"
               >
                 {note.content}

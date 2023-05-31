@@ -153,8 +153,6 @@ export const IncidentCard: FunctionComponent<IncidentCardProps> = ({
           <div className={classes.description}>
             <Markdown
               remarkPlugins={[remarkGfm, remarkParse]}
-              disallowedElements={['a']} // disable link redirection
-              unwrapDisallowed={true}
             >
               {data.description ?? ''}
             </Markdown>

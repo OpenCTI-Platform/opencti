@@ -771,8 +771,6 @@ const ContainerHeader = (props) => {
                                   <Markdown
                                     remarkPlugins={[remarkGfm, remarkParse]}
                                     parserOptions={{ commonmark: true }}
-                                    disallowedElements={['a']} // disable link redirection
-                                    unwrapDisallowed={true}
                                     components={MarkDownComponents(theme)}
                                     className="markdown"
                                   >

@@ -128,8 +128,6 @@ class IntrusionSetCardComponent extends Component {
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
               >
                 {node.description}
               </Markdown>

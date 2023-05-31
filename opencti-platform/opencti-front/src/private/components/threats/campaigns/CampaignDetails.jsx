@@ -47,8 +47,6 @@ class CampaignDetailsComponent extends Component {
               <Markdown
                 remarkPlugins={[remarkGfm, remarkParse]}
                 parserOptions={{ commonmark: true }}
-                disallowedElements={['a']} // disable link redirection
-                unwrapDisallowed={true}
                 className="markdown"
               >
                 {campaign.objective}
