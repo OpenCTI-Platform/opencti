@@ -962,7 +962,7 @@ const useSearchEntities = ({
           let result = [] as EntityWithLabelValue[];
           if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
             result = [
-              ...(schema?.scos ?? []).map((n) => ({
+              ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
                 value: n.label,
                 type: n.label,
@@ -1018,7 +1018,7 @@ const useSearchEntities = ({
           let result = [] as EntityWithLabelValue[];
           if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
             result = [
-              ...(schema?.scos ?? []).map((n) => ({
+              ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
                 value: n.label,
                 type: n.label,
@@ -1063,7 +1063,7 @@ const useSearchEntities = ({
           let result = [] as EntityWithLabelValue[];
           if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
             result = [
-              ...(schema?.scos ?? []).map((n) => ({
+              ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
                 value: n.label,
                 type: n.label,
