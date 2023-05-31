@@ -6,6 +6,7 @@ export const ignoredAttributes = [
   'standard_id',
   'x_opencti_description',
   'x_opencti_stix_ids',
+  'x_opencti_files',
   'entity_type',
   'spec_version',
   'extensions',
