@@ -118,7 +118,7 @@
     "build": "yarn relay && yarn esbuild",
     "build:standalone": "yarn relay && yarn esbuild --keep",
     "start": "yarn relay && node builder/dev/dev.js",
-    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
+    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "control": "yarn audit --groups dependencies --summary",
     "test": "jest",
     "check-ts": "tsc --noEmit"

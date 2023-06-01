@@ -12,7 +12,7 @@
     "build:antlr": "java -jar ./builder/antlr/antlr-4.10.1-complete.jar -Dlanguage=JavaScript ./src/stixpattern/STIXPattern.g4 -o ./src/stixpattern/",
     "migrate:add": "migrate create --template-file src/utils/migration-template.js --migrations-dir=./src/migrations",
     "clean:relations": "yarn build:prod && node build/script-clean-relations.js",
-    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.json src",
+    "lint": "cross-env DEBUG=eslint:cli-engine TIMING=1 eslint --max-warnings 0 --cache -c .eslintrc.js src",
     "build": "yarn install:python && yarn build:prod",
     "start": "NODE_ENV=dev yarn build:dev && node build/back.js",
     "start-light": "NODE_ENV=dev node build/back.js",
