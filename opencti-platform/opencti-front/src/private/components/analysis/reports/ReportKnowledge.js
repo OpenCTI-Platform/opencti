@@ -254,13 +254,11 @@ class ReportKnowledgeComponent extends Component {
       timeLineFunctionalDate,
       timeLineSearchTerm,
     } = this.state;
-    let finalFilters = convertFilters(timeLineFilters);
+    const finalFilters = convertFilters(timeLineFilters);
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
-      || defaultTypes;
-    finalFilters = finalFilters.filter((n) => !['entity_type'].includes(n.key));
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';

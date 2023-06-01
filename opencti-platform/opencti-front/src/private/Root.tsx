@@ -47,18 +47,45 @@ const rootPrivateQuery = graphql`
     entitySettings {
       ...EntitySettingConnection_entitySettings
     }
+    schemaSCOs: subTypes(type: "Stix-Cyber-Observable") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    schemaSDOs: subTypes(type: "Stix-Domain-Object") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
+    schemaSROs: subTypes(type: "stix-core-relationship") {
+      edges {
+        node {
+          id
+          label
+        }
+      }
+    }
   }
 `;
 
 const Root = () => {
   const data = useLazyLoadQuery<RootPrivateQuery>(rootPrivateQuery, {});
-  const { me, settings, entitySettings } = data;
+  const { me, settings, entitySettings, schemaSCOs, schemaSDOs, schemaSROs } = data;
+  const schema = {
+    scos: schemaSCOs.edges.map((sco) => sco.node),
+    sdos: schemaSDOs.edges.map((sco) => sco.node),
+    sros: schemaSROs.edges.map((sco) => sco.node),
+  };
   // TODO : Use the hook useHelper when all project is pure function //
   const platformModuleHelpers = platformModuleHelper(settings);
   return (
-    <UserContext.Provider
-      value={{ me, settings, entitySettings, platformModuleHelpers }}
-    >
+    <UserContext.Provider value={{ me, settings, entitySettings, platformModuleHelpers, schema }}>
       <StyledEngineProvider injectFirst={true}>
         <ConnectedThemeProvider settings={settings}>
           <ConnectedIntlProvider settings={settings}>
