@@ -140,13 +140,9 @@ const RemarkGfmMarkdown: FunctionComponent<RemarkGfmMarkdownProps> = ({ content,
   const browseLinkWarning = (event: SyntheticEvent<HTMLElement, MouseEvent>) => {
     event.stopPropagation();
     event.preventDefault();
-    const target = event.target as HTMLLinkElement;
-    if (target.localName === 'a') { // if the user clicks on a link
-      if (target.outerHTML.startsWith('<a href="url">')) { // case: link contains in the text
-        handleOpenExternalLink(target.innerText);
-      } else { // case: link contains in a specified url
-        handleOpenExternalLink(target.href);
-      }
+    if ((event.target as HTMLElement).localName === 'a') { // if the user clicks on a link
+      const link = event.target as HTMLLinkElement;
+      handleOpenExternalLink(link.href);
     }
   };
 
