@@ -109,7 +109,6 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Connector':
       return <ExtensionOutlined style={style} fontSize={fontSize} role="img" />;
-    case 'Group':
     case 'Marking-Definition':
       return <CenterFocusStrongOutlined style={style} fontSize={fontSize} role="img"/>;
     case 'External-Reference':

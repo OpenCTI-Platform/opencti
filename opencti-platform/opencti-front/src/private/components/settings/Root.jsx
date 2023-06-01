@@ -24,6 +24,7 @@ import Users from './Users';
 import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
+import RootActivity from './activity/Root';
 
 const Root = () => (
   <Switch>
@@ -144,6 +145,17 @@ const Root = () => (
             <MarkingDefinitions />
           </Security>
         )}
+      />
+      <BoundaryRoute
+          exact
+          path="/dashboard/settings/activity"
+          render={() => (
+              <Redirect to="/dashboard/settings/activity/audit" />
+          )}
+      />
+      <BoundaryRoute
+          path="/dashboard/settings/activity"
+          render={() => <RootActivity />}
       />
       <BoundaryRoute
         exact
