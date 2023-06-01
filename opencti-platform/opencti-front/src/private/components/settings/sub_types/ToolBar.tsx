@@ -165,10 +165,10 @@ const ToolBar: FunctionComponent<{
   };
   const handleOpenEnforceRef = () => {
     handleOpen();
-    setTitle(t('Enforce reference'));
+    setTitle(t('Enforce references'));
     setDescription(
       t(
-        'This configuration enables the requirement of a reference message on an entity update.',
+        'This configuration enables the requirement of a reference message on an entity creation or modification.',
       ),
     );
     setKey('enforce_reference');
@@ -256,7 +256,7 @@ const ToolBar: FunctionComponent<{
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title={t('Enforce reference')}>
+        <Tooltip title={t('Enforce references')}>
           <span>
             <IconButton
               aria-label="enforce-ref"

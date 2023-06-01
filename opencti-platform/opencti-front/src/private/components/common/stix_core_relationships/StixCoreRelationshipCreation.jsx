@@ -262,8 +262,8 @@ class StixCoreRelationshipCreation extends Component {
           R.assoc('toId', toObject.id),
           R.assoc('start_time', formatDate(values.start_time)),
           R.assoc('stop_time', formatDate(values.stop_time)),
-          R.assoc('createdBy', values.createdBy?.value),
           R.assoc('killChainPhases', R.pluck('value', values.killChainPhases)),
+          R.assoc('createdBy', values.createdBy?.value),
           R.assoc('objectMarking', R.pluck('value', values.objectMarking)),
           R.assoc(
             'externalReferences',

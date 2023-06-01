@@ -198,7 +198,7 @@ const EntitySetting = ({
             gutterBottom={true}
             style={{ float: 'left' }}
           >
-            {t('Enforce reference')}
+            {t('Enforce references')}
           </Typography>
           <Tooltip
             title={

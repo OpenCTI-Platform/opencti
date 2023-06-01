@@ -28,7 +28,7 @@ const SubTypes = () => {
       isSortable: false,
     },
     enforce_reference: {
-      label: 'Enforce reference',
+      label: 'Enforce references',
       width: '15%',
       isSortable: false,
     },

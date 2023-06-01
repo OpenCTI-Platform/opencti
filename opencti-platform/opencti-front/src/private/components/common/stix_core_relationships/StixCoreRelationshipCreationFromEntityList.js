@@ -12,8 +12,8 @@ import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
 import { deleteNodeFromEdge } from '../../../../utils/store';
 import { useFormatter } from '../../../../components/i18n';
-import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
-import StixCoreRelationshipCreationForm from './StixCoreRelationshipCreationForm';
+import { useIsEnforceReference, useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import StixCoreRelationshipCreationForm, { stixCoreRelationshipBasicShape } from './StixCoreRelationshipCreationForm';
 import { formatDate } from '../../../../utils/Time';
 
 const useStyles = makeStyles((theme) => ({
@@ -232,6 +232,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
   const [commitRelationDelete] = useMutation(stixCoreRelationshipCreationFromEntityListRelationDelete);
 
   const enableReferences = useIsEnforceReference('stix-core-relationship');
+  const stixCoreRelationshipValidator = useSchemaCreationValidation('stix-core-relationship', stixCoreRelationshipBasicShape(t));
   const [showForm, setShowForm] = useState(false);
   const [selected, setSelected] = useState(null);
 
@@ -261,7 +262,7 @@ const StixCoreRelationshipCreationFromEntityList = ({
         updater: (store) => deleteNodeFromEdge(store, updaterOptions.path, entity.id, data.id, updaterOptions.params),
       });
     // Add with references
-    } else if (enableReferences) {
+    } else if (enableReferences || !stixCoreRelationshipValidator.isValidSync(input)) {
       handleOpenForm();
       setSelected(data);
     // Add

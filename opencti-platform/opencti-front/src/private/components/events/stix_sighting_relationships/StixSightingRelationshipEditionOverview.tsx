@@ -21,7 +21,7 @@ import StatusField from '../../common/form/StatusField';
 import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
-import { useIsEnforceReference } from '../../../../utils/hooks/useEntitySettings';
+import { useIsEnforceReference, useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import { adaptFieldValue } from '../../../../utils/String';
 import { Option } from '../../common/form/ReferenceField';
@@ -187,26 +187,6 @@ export const stixSightingRelationshipEditionOverviewQuery = graphql`
   }
 `;
 
-const stixSightingRelationshipValidation = (t: (v: string) => string) => Yup.object().shape({
-  attribute_count: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  confidence: Yup.number()
-    .typeError(t('The value must be a number'))
-    .integer(t('The value must be a number'))
-    .required(t('This field is required')),
-  first_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  last_seen: Yup.date()
-    .nullable()
-    .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)')),
-  description: Yup.string().nullable(),
-  x_opencti_negative: Yup.boolean(),
-  x_opencti_workflow_id: Yup.object(),
-});
-
 interface StixSightingRelationshipEditionOverviewProps {
   handleClose: () => void;
   handleDelete: () => void;
@@ -245,13 +225,34 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
 
   const { editContext } = stixSightingRelationship;
 
+  const basicShape = {
+    attribute_count: Yup.number()
+      .typeError(t('The value must be a number'))
+      .integer(t('The value must be a number'))
+      .required(t('This field is required')),
+    confidence: Yup.number()
+      .typeError(t('The value must be a number'))
+      .integer(t('The value must be a number'))
+      .required(t('This field is required')),
+    first_seen: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    last_seen: Yup.date()
+      .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
+      .required(t('This field is required')),
+    description: Yup.string().nullable(),
+    x_opencti_negative: Yup.boolean(),
+    x_opencti_workflow_id: Yup.object(),
+  };
+  const stixSightingRelationshipValidator = useSchemaEditionValidation('stix-sighting-relationship', basicShape);
+
   const queries = {
     fieldPatch: stixSightingRelationshipMutationFieldPatch,
     relationAdd: stixSightingRelationshipMutationRelationAdd,
     relationDelete: stixSightingRelationshipMutationRelationDelete,
     editionFocus: stixSightingRelationshipEditionFocus,
   };
-  const editor = useFormEditor(stixSightingRelationship, enableReferences, queries, stixSightingRelationshipValidation(t));
+  const editor = useFormEditor(stixSightingRelationship, enableReferences, queries, stixSightingRelationshipValidator);
 
   const onSubmit: FormikConfig<StixSightingRelationshipAddInput>['onSubmit'] = (values, { setSubmitting }) => {
     const { message, references, ...otherValues } = values;
@@ -316,7 +317,7 @@ const StixSightingRelationshipEditionOverviewComponent: FunctionComponent<Omit<S
         <Formik
           enableReinitialize={true}
           initialValues={initialValues}
-          validationSchema={stixSightingRelationshipValidation(t)}
+          validationSchema={stixSightingRelationshipValidator}
           onSubmit={onSubmit}
         >
           {({ submitForm, isSubmitting, setFieldValue, values, isValid, dirty }) => (

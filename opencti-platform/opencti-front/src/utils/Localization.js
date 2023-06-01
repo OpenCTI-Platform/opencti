@@ -246,8 +246,8 @@ const i18n = {
       'Enforce references': 'Hacer cumplir las referencias',
       'Create external reference at upload':
         'Crear referencia externa al cargar',
-      'This configuration enables the requirement of a reference message on an entity update.':
-        'Esta configuración habilita el requisito de un mensaje de referencia en una actualización de entidad.',
+      'This configuration enables the requirement of a reference message on an entity creation or modification.':
+        'Esta configuración habilita el requerimiento de un mensaje de referencia en la creación o modificación de una entidad.',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Esta configuración permite que una entidad construya automáticamente una referencia externa a partir del archivo cargado.',
       'Mandatory attributes': 'Atributos obligatorios',
@@ -2138,8 +2138,8 @@ const i18n = {
       'Create external reference at upload':
         'Créer une référence externe lors du téléchargement',
       'Hide in the platform': 'Cacher dans la plateforme',
-      'This configuration enables the requirement of a reference message on an entity update.':
-        "Cette configuration permet l'exigence d'un message de référence sur une mise à jour d'entité.",
+      'This configuration enables the requirement of a reference message on an entity creation or modification.':
+        "Cette configuration permet l'exigence d'un message de référence sur une création ou modification d'entité.",
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'Cette configuration permet à une entité de construire automatiquement une référence externe à partir du fichier téléchargé.',
       'Mandatory attributes': 'Attributs obligatoires',
@@ -3966,8 +3966,8 @@ const i18n = {
         'この構成により、プラットフォーム全体で特定のエンティティ タイプが非表示になりました。',
       'Enforce references': '参照を強制する',
       'Create external reference at upload': 'アップロード時に外部参照を作成',
-      'This configuration enables the requirement of a reference message on an entity update.':
-        'この構成により、エンティティ更新時の参照メッセージの要件が有効になります。',
+      'This configuration enables the requirement of a reference message on an entity creation or modification.':
+        'この構成により、エンティティの作成または変更に関する参照メッセージの要件が有効になります。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         'この構成により、エンティティはアップロードされたファイルから外部参照を自動的に構築できます。',
       'Mandatory attributes': '必須属性',
@@ -5763,8 +5763,8 @@ const i18n = {
         '此配置隐藏了整个平台的特定实体类型。',
       'Enforce references': '执行引用',
       'Create external reference at upload': '上传时创建外部参考',
-      'This configuration enables the requirement of a reference message on an entity update.':
-        '此配置启用了对实体更新的参考消息的要求。',
+      'This configuration enables the requirement of a reference message on an entity creation or modification.':
+        '此配置启用了对实体创建或修改的参考消息的要求。',
       'This configuration enables an entity to automatically construct an external reference from the uploaded file.':
         '此配置使实体能够从上传的文件自动构建外部引用。',
       'Mandatory attributes': '必須属性',
