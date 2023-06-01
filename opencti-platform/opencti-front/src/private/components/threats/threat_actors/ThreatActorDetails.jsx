@@ -26,11 +26,10 @@ import { Formik, Form, Field } from 'formik';
 import { CloudUploadOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { threatActorMutationFieldPatch } from './ThreatActorEditionDetails';
-import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import MarkDownField from '../../../../components/MarkDownField';
+import MarkdownField from '../../../../components/MarkdownField';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 
 const styles = (theme) => ({
@@ -329,7 +328,7 @@ class ThreatActorDetailsComponent extends Component {
                           fullWidth={true}
                         />
                         <Field
-                          component={MarkDownField}
+                          component={MarkdownField}
                           id="x_opencti_photo_ref_comment"
                           name="x_opencti_photo_ref_comment"
                           label={t('Photo Comment')}
