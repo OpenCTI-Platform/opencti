@@ -28,7 +28,6 @@ import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload.js';
 import Indent from '@ckeditor/ckeditor5-indent/src/indent.js';
 import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock.js';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
-import Link from '@ckeditor/ckeditor5-link/src/link.js';
 import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage.js';
 import List from '@ckeditor/ckeditor5-list/src/list.js';
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed.js';
@@ -71,7 +70,6 @@ Editor.builtinPlugins = [
 	Indent,
 	IndentBlock,
 	Italic,
-	Link,
 	LinkImage,
 	List,
 	MediaEmbed,
@@ -88,6 +86,7 @@ Editor.builtinPlugins = [
 
 // Editor configuration.
 Editor.defaultConfig = {
+	removePlugins: ['AutoLink'],
 	toolbar: {
 		items: [
 			'heading',
