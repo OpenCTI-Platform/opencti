@@ -325,6 +325,7 @@ class EntityStixCoreRelationships extends Component {
               displayImport={true}
               secondaryAction={true}
               iconExtension={true}
+              keyword={searchTerm}
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               selectAll={selectAll}
               numberOfElements={numberOfElements}
@@ -546,6 +547,7 @@ class EntityStixCoreRelationships extends Component {
               handleToggleSelectAll={this.handleToggleSelectAll.bind(this)}
               paginationOptions={paginationOptions}
               selectAll={selectAll}
+              keyword={searchTerm}
               displayImport={true}
               handleToggleExports={
                 disableExport ? null : this.handleToggleExports.bind(this)
