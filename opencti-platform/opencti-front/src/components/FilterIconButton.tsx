@@ -38,6 +38,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   filter1: {
     marginRight: 10,
     lineHeight: 32,
+    marginBottom: 10,
   },
   filter2: {
     margin: '0 10px 10px 0',
@@ -54,6 +55,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
     marginRight: 10,
+    marginBottom: 10,
   },
   operator2: {
     fontFamily: 'Consolas, monaco, monospace',
