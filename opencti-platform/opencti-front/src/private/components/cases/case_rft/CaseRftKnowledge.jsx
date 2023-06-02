@@ -6,7 +6,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -234,7 +233,6 @@ class CaseRftKnowledgeComponent extends Component {
     const {
       classes,
       caseData,
-      t,
       location,
       match: {
         params: { mode },
@@ -253,7 +251,10 @@ class CaseRftKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      .length > 0
+      ? []
+      : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -428,8 +429,4 @@ const CaseRftKnowledge = createFragmentContainer(CaseRftKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CaseRftKnowledge);
+export default R.compose(withRouter, withStyles(styles))(CaseRftKnowledge);

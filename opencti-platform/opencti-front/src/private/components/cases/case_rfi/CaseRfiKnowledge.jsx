@@ -6,7 +6,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -428,7 +427,6 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
 });
 
 export default R.compose(
-  inject18n,
   withRouter,
   withStyles(styles),
 )(CaseRfiKnowledge);

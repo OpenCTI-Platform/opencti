@@ -6,7 +6,6 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import IncidentKnowledgeGraph, {
   incidentKnowledgeGraphQuery,
@@ -234,7 +233,6 @@ class IncidentKnowledgeComponent extends Component {
     const {
       classes,
       caseData,
-      t,
       location,
       match: {
         params: { mode },
@@ -431,7 +429,6 @@ const IncidentKnowledge = createFragmentContainer(IncidentKnowledgeComponent, {
 });
 
 export default R.compose(
-  inject18n,
   withRouter,
   withStyles(styles),
 )(IncidentKnowledge);

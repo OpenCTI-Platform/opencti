@@ -6,7 +6,6 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { propOr } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, {
   groupingKnowledgeGraphQuery,
@@ -281,7 +280,6 @@ const GroupingKnowledge = createFragmentContainer(GroupingKnowledgeComponent, {
 });
 
 export default R.compose(
-  inject18n,
   withRouter,
   withStyles(styles),
 )(GroupingKnowledge);
