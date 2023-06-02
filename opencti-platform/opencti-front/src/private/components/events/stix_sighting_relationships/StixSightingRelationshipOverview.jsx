@@ -42,7 +42,7 @@ import ItemCreator from '../../../../components/ItemCreator';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import StixCoreObjectOrStixRelationshipLastContainers
   from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
-import StixSightingRelationshipLabelsViewfrom './StixSightingRelationshipLabelsView';
+import StixSightingRelationshipLabelsView from './StixSightingRelationshipLabelsView';
 import Transition from '../../../../components/Transition';
 import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
