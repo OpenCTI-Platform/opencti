@@ -226,11 +226,19 @@ export interface StixOpinion extends StixContainer {
 
 // Report Specific Properties
 // name, description, report_types, published, object_refs
+export interface StixReportExtension extends StixOpenctiExtension {
+  content: string;
+  content_mapping: string;
+}
+
 export interface StixReport extends StixContainer {
   name: string
   description: string
   report_types: Array<string>
   published: Date
+  extensions: {
+    [STIX_EXT_OCTI]: StixReportExtension;
+  };
 }
 
 // Threat Actor Specific Properties

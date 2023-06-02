@@ -14,9 +14,7 @@ import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { dayStartDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -109,25 +107,29 @@ export const reportCreationMutation = graphql`
 `;
 
 interface ReportAddInput {
-  name: string
-  description: string
-  published: Date
-  confidence: number
-  report_types: string[]
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  objectAssignee: { value: string }[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  published: Date;
+  confidence: number;
+  report_types: string[];
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  objectAssignee: { value: string }[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ReportFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: { id: string; name: string } | null
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
@@ -158,7 +160,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     report_types: [],
     confidence: defaultConfidence ?? 75,
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectAssignee: [],
     objectLabel: [],
@@ -167,7 +169,10 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   };
 
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
-  const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -310,19 +315,18 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   );
 };
 
-const ReportCreation = ({ paginationOptions }: { paginationOptions: ReportsLinesPaginationQuery$variables }) => {
+const ReportCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: ReportsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
 
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_reports',
-    paginationOptions,
-    'reportAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
 
   return (
     <div>

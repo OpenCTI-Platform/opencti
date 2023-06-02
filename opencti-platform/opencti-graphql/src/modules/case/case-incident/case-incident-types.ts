@@ -7,6 +7,8 @@ export const ENTITY_TYPE_CONTAINER_CASE_INCIDENT = 'Case-Incident';
 export interface BasicStoreEntityCaseIncident extends BasicStoreEntity {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   severity: string,
   priority: string,
   response_types: string,
@@ -15,9 +17,11 @@ export interface BasicStoreEntityCaseIncident extends BasicStoreEntity {
 
 export interface StoreEntityCaseIncident extends StoreEntity {
   name: string,
+  description: string,
+  content: string,
+  content_mapping: string,
   severity: string,
   priority: string,
-  description: string,
   object_refs: Array<string>,
   response_types: string,
 }
@@ -25,6 +29,8 @@ export interface StoreEntityCaseIncident extends StoreEntity {
 export interface StixCaseIncident extends StixDomainObject {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   severity: string,
   priority: string,
   object_refs: Array<string>,

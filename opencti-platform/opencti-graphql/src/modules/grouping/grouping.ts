@@ -30,6 +30,8 @@ const GROUPING_DEFINITION: ModuleDefinition<StoreEntityGrouping, StixGrouping> =
   attributes: [
     { name: 'name', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
     { name: 'description', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
     { name: 'context', type: 'string', mandatoryType: 'external', multiple: false, upsert: true },
   ],
   relations: [],

@@ -5,8 +5,6 @@ import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { QueryRenderer } from '../../../../relay/environment';
 import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
@@ -28,9 +26,7 @@ import ReportKnowledgeTimeLine, {
   reportKnowledgeTimeLineQuery,
 } from './ReportKnowledgeTimeLine';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import Filters from '../../common/lists/Filters';
-import SearchInput from '../../../../components/SearchInput';
-import FilterIconButton from '../../../../components/FilterIconButton';
+import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 
 const styles = () => ({
   container: {
@@ -239,7 +235,6 @@ class ReportKnowledgeComponent extends Component {
     const {
       classes,
       report,
-      t,
       location,
       match: {
         params: { mode },
@@ -310,56 +305,25 @@ class ReportKnowledgeComponent extends Component {
           path="/dashboard/analysis/reports/:reportId/knowledge/timeline"
           render={() => (
             <>
-              <div style={{ float: 'left' }}>
-                <SearchInput
-                  variant="small"
-                  onSubmit={this.handleTimeLineSearch.bind(this)}
-                  keyword={timeLineSearchTerm}
-                />
-                <FormControlLabel
-                  style={{ marginLeft: 10 }}
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineDisplayRelationships.bind(
-                        this,
-                      )}
-                      checked={timeLineDisplayRelationships}
-                    />
-                  }
-                  label={t('Display relationships')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineFunctionalDate.bind(
-                        this,
-                      )}
-                      checked={timeLineFunctionalDate}
-                    />
-                  }
-                  label={t('Use functional dates')}
-                />
-              </div>
-              <Filters
-                availableFilterKeys={[
-                  'entity_type',
-                  'markedBy',
-                  'labelledBy',
-                  'createdBy',
-                  'relationship_type',
-                ]}
-                availableEntityTypes={[
-                  'Stix-Domain-Object',
-                  'Stix-Cyber-Observable',
-                ]}
-                handleAddFilter={this.handleAddTimeLineFilter.bind(this)}
-                noDirectFilters={true}
+              <ContentKnowledgeTimeLineBar
+                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                timeLineSearchTerm={timeLineSearchTerm}
+                timeLineDisplayRelationships={timeLineDisplayRelationships}
+                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                  this,
+                )}
+                timeLineFunctionalDate={timeLineFunctionalDate}
+                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                  this,
+                )}
+                timeLineFilters={timeLineFilters}
+                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                  this,
+                )}
+                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                  this,
+                )}
               />
-              <FilterIconButton
-                filters={timeLineFilters}
-                handleRemoveFilter={this.handleRemoveTimeLineFilter.bind(this)}
-              />
-              <div className="clearfix" />
               <QueryRenderer
                 query={reportKnowledgeTimeLineQuery}
                 variables={{ id: report.id, ...timeLinePaginationOptions }}

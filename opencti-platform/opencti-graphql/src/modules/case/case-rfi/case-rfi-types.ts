@@ -7,7 +7,8 @@ export const ENTITY_TYPE_CONTAINER_CASE_RFI = 'Case-Rfi';
 export interface BasicStoreEntityCaseRfi extends BasicStoreEntity {
   name: string,
   description: string,
-  context: string,
+  content: string,
+  content_mapping: string,
   information_types: string,
   severity: string,
   priority: string,
@@ -18,6 +19,8 @@ export interface StoreEntityCaseRfi extends StoreEntity {
   name: string,
   type: string,
   description: string,
+  content: string,
+  content_mapping: string,
   object_refs: Array<string>,
   information_types: string,
   severity: string,
@@ -27,6 +30,8 @@ export interface StoreEntityCaseRfi extends StoreEntity {
 export interface StixCaseRfi extends StixDomainObject {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   object_refs: Array<string>,
   information_types: string,
   severity: string,

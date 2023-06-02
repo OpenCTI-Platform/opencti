@@ -3431,6 +3431,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Report
   name: String!
   description: String
+  content: String
+  content_mapping: String
   report_types: [String]
   published: DateTime
   # Technical

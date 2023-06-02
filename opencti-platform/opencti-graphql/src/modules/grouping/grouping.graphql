@@ -117,6 +117,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
     # Grouping
     name: String!
     description: String
+    content: String
+    content_mapping: String
     context: String!
     x_opencti_aliases: [String]
     # Technical
@@ -237,6 +239,8 @@ input GroupingAddInput {
     x_opencti_stix_ids: [StixId]
     name: String! @constraint(minLength: 2)
     description: String
+    content: String
+    content_mapping: String
     context: String! @constraint(minLength: 2)
     x_opencti_aliases: [String]
     revoked: Boolean
