@@ -316,7 +316,7 @@ const StixDomainObjectBookmarksList = ({
                                 </Avatar>
                               }
                               title={bookmark.name}
-                              subheader={`${t('Updated the')} ${fsd(
+                              subheader={`${t('Updated on')} ${fsd(
                                 bookmark.modified,
                               )}`}
                             />
