@@ -108,7 +108,7 @@ class IntrusionSetCardComponent extends Component {
               <Avatar className={classes.avatar}>{node.name.charAt(0)}</Avatar>
             }
             title={node.name}
-            subheader={`${t('Updated the')} ${fsd(node.modified)}`}
+            subheader={`${t('Updated on')} ${fsd(node.modified)}`}
             action={
               <IconButton
                 size="small"

@@ -140,7 +140,7 @@ export const IncidentCard: FunctionComponent<IncidentCardProps> = ({
             <Avatar className={classes.avatar}>{data.name.charAt(0)}</Avatar>
           }
           title={data.name}
-          subheader={`${t('Updated the')} ${fsd(data.modified)}`}
+          subheader={`${t('Updated on')} ${fsd(data.modified)}`}
           action={
             <Fire
               className={classes.icon}
