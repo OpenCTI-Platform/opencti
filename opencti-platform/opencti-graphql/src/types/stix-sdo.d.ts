@@ -229,6 +229,7 @@ export interface StixOpinion extends StixContainer {
 export interface StixReportExtension extends StixOpenctiExtension {
   content: string;
   content_mapping: string;
+  object_refs_inferred?: Array<StixId>; // optional
 }
 
 export interface StixReport extends StixContainer {
