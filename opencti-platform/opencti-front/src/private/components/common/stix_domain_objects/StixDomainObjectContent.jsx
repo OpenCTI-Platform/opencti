@@ -2,21 +2,19 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import { graphql, createRefetchContainer } from 'react-relay';
+import { createRefetchContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake';
-import { Editor } from '@tinymce/tinymce-react';
+import { CKEditor } from '@ckeditor/ckeditor5-react';
+import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
-import { pdfjs, Document, Page } from 'react-pdf';
+import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import ReactMde from 'react-mde';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -36,6 +34,7 @@ import {
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -182,7 +181,7 @@ class StixDomainObjectContentComponent extends Component {
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
-      readOnly: true,
+      readOnly: false,
     };
   }
 
@@ -405,7 +404,6 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   render() {
-    const editorRef = React.createRef();
     const { classes, stixDomainObject, t } = this.props;
     const {
       currentFileId,
@@ -475,46 +473,21 @@ class StixDomainObjectContentComponent extends Component {
               className={classes.editorContainer}
               style={{ minHeight: height, height }}
             >
-              <Editor
-                onInit={
-                  // eslint-disable-next-line no-return-assign
-                  (evt, editor) => (editorRef.current = editor)
-                }
-                initialContent={currentContent}
-                init={{
-                  height,
-                  menubar: false,
-                  promotion: false,
-                  skin: 'oxide-dark',
-                  plugins: [
-                    'autolink',
-                    'emoticons',
-                    'lists',
-                    'advlist',
-                    'autoresize',
-                    'link',
-                    'image',
-                    'charmap',
-                    'anchor',
-                    'searchreplace',
-                    'visualblocks',
-                    'image',
-                    'code',
-                    'codesample',
-                    'fullscreen',
-                    'insertdatetime',
-                    'autosave',
-                    'media',
-                    'table',
-                    'preview',
-                    'wordcount',
-                  ],
-                  toolbar:
-                    'styles align | bold italic underline forecolor backcolor | bullist numlist table | code codesample link image media emoticons | undo redo | fullscreen print',
-                  autosave_interval: '2s',
-                  autosave_prefix: `view-stix-domain-object-content-${stixDomainObject.id}-editor`,
-                  paste_data_images : true
+              <CKEditor
+                editor={Editor}
+                config={{
+                  width: '100%',
+                  language: 'en',
+                  image: {
+                    resizeUnit: 'px',
+                  },
                 }}
+                data={currentContent}
+                onChange={(event, editor) => {
+                  this.onHtmlFieldChange(editor.getData());
+                }}
+                onBlur={this.saveFile.bind(this)}
+                disabled={readOnly}
               />
             </div>
           </div>
@@ -542,12 +515,10 @@ class StixDomainObjectContentComponent extends Component {
                   selectedTab={markdownSelectedTab}
                   onTabChange={this.onMarkdownChangeTab.bind(this)}
                   generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <Markdown
-                        remarkPlugins={[remarkGfm, remarkParse]}
-                        parserOptions={{ commonmark: true }}
-                      >
-                        {markdown}
-                      </Markdown>,
+                      <RemarkGfmMarkdown
+                        content={markdown}
+                        commonmark={true}
+                      ></RemarkGfmMarkdown>,
                   )
                   }
                   l18n={{

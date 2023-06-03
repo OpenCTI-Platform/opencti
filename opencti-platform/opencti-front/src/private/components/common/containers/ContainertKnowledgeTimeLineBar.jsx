@@ -120,7 +120,7 @@ const ContentKnowledgeTimeLineBar = ({
               </span>
             </Tooltip>
             <Divider className={classes.divider} orientation="vertical" />
-            <div style={{ margin: '9px 0 0 10px' }}>
+            <div style={{ margin: '9px 10px 0 10px' }}>
               <SearchInput
                 variant="thin"
                 onSubmit={handleTimeLineSearch}
@@ -143,10 +143,12 @@ const ContentKnowledgeTimeLineBar = ({
               handleAddFilter={handleAddTimeLineFilter}
               noDirectFilters={true}
             />
-            <FilterIconButton
-              filters={timeLineFilters}
-              handleRemoveFilter={handleRemoveTimeLineFilter}
-            />
+            <div style={{ marginTop: 5 }}>
+              <FilterIconButton
+                filters={timeLineFilters}
+                handleRemoveFilter={handleRemoveTimeLineFilter}
+              />
+            </div>
           </div>
         </div>
       </div>
