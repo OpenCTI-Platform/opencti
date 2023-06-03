@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link, withRouter } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -10,9 +11,17 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import { Domain, ExpandLess, ExpandMore, FileDownloadOutlined, LibraryBooksOutlined } from '@mui/icons-material';
+import {
+  Domain,
+  ExpandLess,
+  ExpandMore,
+  FileDownloadOutlined,
+  LibraryBooksOutlined,
+} from '@mui/icons-material';
 import { AutoFix, FormatListGroup, RelationManyToMany } from 'mdi-material-ui';
-import { createRefetchContainer, graphql } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import Tooltip from '@mui/material/Tooltip';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import ToggleButton from '@mui/material/ToggleButton';
@@ -23,13 +32,18 @@ import StixCoreRelationshipCreationFromEntity from '../stix_core_relationships/S
 import ItemYears from '../../../../components/ItemYears';
 import SearchInput from '../../../../components/SearchInput';
 import Security from '../../../../utils/Security';
-import { KNOWLEDGE_KNGETEXPORT, KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
+import {
+  KNOWLEDGE_KNGETEXPORT,
+  KNOWLEDGE_KNUPDATE,
+} from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import StixCoreRelationshipsExports from '../stix_core_relationships/StixCoreRelationshipsExports';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { export_max_size } from '../../../../utils/utils';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -433,10 +447,13 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                               // eslint-disable-next-line no-nested-ternary
                               stixCoreRelationship.description
                               && stixCoreRelationship.description.length > 0 ? (
-                                  <RemarkGfmMarkdown
-                                    content={stixCoreRelationship.description}
-                                    commonmark={true}
-                                  ></RemarkGfmMarkdown>
+                                <Markdown
+                                  remarkPlugins={[remarkGfm, remarkParse]}
+                                  parserOptions={{ commonmark: true }}
+                                  className="markdown"
+                                >
+                                  {stixCoreRelationship.description}
+                                </Markdown>
                                 ) : (
                                   t('No description of this targeting')
                                 )
@@ -561,10 +578,18 @@ class StixDomainObjectVictimologySectorsComponent extends Component {
                                           stixCoreRelationship.description
                                           && stixCoreRelationship.description
                                             .length > 0 ? (
-                                              <RemarkGfmMarkdown
-                                                content={stixCoreRelationship.description}
-                                                commonmark={true}
-                                              ></RemarkGfmMarkdown>
+                                            <Markdown
+                                              remarkPlugins={[
+                                                remarkGfm,
+                                                remarkParse,
+                                              ]}
+                                              parserOptions={{
+                                                commonmark: true,
+                                              }}
+                                              className="markdown"
+                                            >
+                                              {stixCoreRelationship.description}
+                                            </Markdown>
                                             ) : stixCoreRelationship.inferred ? (
                                             <i>
                                               {t('This relation is inferred')}

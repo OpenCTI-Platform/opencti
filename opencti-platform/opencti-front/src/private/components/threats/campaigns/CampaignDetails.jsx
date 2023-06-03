@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
+import { graphql, createFragmentContainer } from 'react-relay';
+import Markdown from 'react-markdown';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Grid from '@mui/material/Grid';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = () => ({
   paper: {
@@ -42,10 +44,13 @@ class CampaignDetailsComponent extends Component {
               >
                 {t('Objective')}
               </Typography>
-              <RemarkGfmMarkdown
-                content={campaign.objective}
-                commonmark={true}
-              ></RemarkGfmMarkdown>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                parserOptions={{ commonmark: true }}
+                className="markdown"
+              >
+                {campaign.objective}
+              </Markdown>
             </Grid>
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>

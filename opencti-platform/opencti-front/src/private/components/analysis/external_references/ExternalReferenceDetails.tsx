@@ -6,13 +6,16 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import { OpenInBrowserOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Slide, { SlideProps } from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
-import {
-  ExternalReferenceDetails_externalReference$data,
-} from './__generated__/ExternalReferenceDetails_externalReference.graphql';
+import { ExternalReferenceDetails_externalReference$data } from './__generated__/ExternalReferenceDetails_externalReference.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import ItemCreator from '../../../../components/ItemCreator';
-import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -28,6 +31,11 @@ interface ExternalReferenceDetailsComponentProps {
   externalReference: ExternalReferenceDetails_externalReference$data;
 }
 
+const Transition = React.forwardRef((props: SlideProps, ref) => (
+  <Slide direction="up" ref={ref} {...props} />
+));
+Transition.displayName = 'TransitionSlide';
+
 const ExternalReferenceDetailsComponent: FunctionComponent<
 ExternalReferenceDetailsComponentProps
 > = ({ externalReference }) => {
@@ -40,6 +48,17 @@ ExternalReferenceDetailsComponentProps
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
+  };
+
+  const handleCloseExternalLink = () => {
+    setDisplayExternalLink(false);
+    setExternalLink(undefined);
+  };
+
+  const handleBrowseExternalLink = () => {
+    window.open(externalLink, '_blank');
+    setDisplayExternalLink(false);
+    setExternalLink(undefined);
   };
 
   return (
@@ -91,12 +110,25 @@ ExternalReferenceDetailsComponentProps
           </Grid>
         </Grid>
       </Paper>
-      <ExternalLinkPopover
-        displayExternalLink={displayExternalLink}
-        externalLink={externalLink}
-        setDisplayExternalLink={setDisplayExternalLink}
-        setExternalLink={setExternalLink}
-      ></ExternalLinkPopover>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={displayExternalLink}
+        keepMounted={true}
+        TransitionComponent={Transition}
+        onClose={handleCloseExternalLink}
+      >
+        <DialogContent>
+          <DialogContentText>
+            {t('Do you want to browse this external link?')}
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
+          <Button color="secondary" onClick={handleBrowseExternalLink}>
+            {t('Browse the link')}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 };

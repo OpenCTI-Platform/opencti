@@ -1,11 +1,13 @@
 import React from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
+import Markdown from 'react-markdown';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import * as R from 'ramda';
 import inject18n from './i18n';
-import RemarkGfmMarkdown from './RemarkGfmMarkdown';
 
 const MarkDownField = (props) => {
   const {
@@ -54,10 +56,12 @@ const MarkDownField = (props) => {
         selectedTab={selectedTab}
         onTabChange={setSelectedTab}
         generateMarkdownPreview={(markdown) => Promise.resolve(
-          <RemarkGfmMarkdown
-            content={markdown}
-            commonmark={true}
-          ></RemarkGfmMarkdown>,
+            <Markdown
+              remarkPlugins={[remarkGfm, remarkParse]}
+              parserOptions={{ commonmark: true }}
+            >
+              {markdown}
+            </Markdown>,
         )
         }
         l18n={{

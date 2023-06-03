@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { Link } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -12,7 +13,9 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import { Launch } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
-import { createRefetchContainer, graphql } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
@@ -20,7 +23,6 @@ import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import { stixDomainObjectThreatKnowledgeStixRelationshipsQuery } from './StixDomainObjectThreatKnowledgeQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   itemIcon: {
@@ -194,10 +196,13 @@ class StixDomainObjectGlobalKillChainComponent extends Component {
                               secondary={
                                 stixDomainObject.description
                                 && stixDomainObject.description.length > 0 ? (
-                                  <RemarkGfmMarkdown
-                                    content={stixDomainObject.description}
-                                    commonmark={true}
-                                  ></RemarkGfmMarkdown>
+                                  <Markdown
+                                    remarkPlugins={[remarkGfm, remarkParse]}
+                                    parserOptions={{ commonmark: true }}
+                                    className="markdown"
+                                  >
+                                    {stixDomainObject.description}
+                                  </Markdown>
                                   ) : (
                                     t('No description of this usage')
                                   )

@@ -1,6 +1,7 @@
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useFragment, useMutation } from 'react-relay';
 import { Link } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import { OpenInNewOutlined } from '@mui/icons-material';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
@@ -13,6 +14,8 @@ import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import makeStyles from '@mui/styles/makeStyles';
 import { useTheme } from '@mui/styles';
 import Chip from '@mui/material/Chip';
@@ -24,18 +27,13 @@ import { CollaborativeSecurity } from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { Theme } from '../../../../components/Theme';
 import { deleteNode } from '../../../../utils/store';
-import {
-  StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import {
-  StixCoreObjectOrStixCoreRelationshipNoteCard_node$key,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNoteCard_node$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNoteCard_node.graphql';
 import Transition from '../../../../components/Transition';
 import ItemConfidence from '../../../../components/ItemConfidence';
 import StixCoreObjectLabelsView from '../../common/stix_core_objects/StixCoreObjectLabelsView';
 import ItemLikelihood from '../../../../components/ItemLikelihood';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   card: {
@@ -257,9 +255,12 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Abstract')}
             </Typography>
             {note.attribute_abstract && (
-              <RemarkGfmMarkdown
-                content={note.attribute_abstract}
-              ></RemarkGfmMarkdown>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                className="markdown"
+              >
+                {note.attribute_abstract}
+              </Markdown>
             )}
             <Typography
               variant="h3"
@@ -269,9 +270,12 @@ StixCoreObjectOrStixCoreRelationshipNoteCardComponentProps
               {t('Content')}
             </Typography>
             {note.content && (
-              <RemarkGfmMarkdown
-                content={note.content}
-              ></RemarkGfmMarkdown>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse]}
+                className="markdown"
+              >
+                {note.content}
+              </Markdown>
             )}
           </Grid>
           <Grid item={true} xs={3}>

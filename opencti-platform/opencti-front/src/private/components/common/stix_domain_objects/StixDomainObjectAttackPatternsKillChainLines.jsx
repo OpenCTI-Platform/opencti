@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
+import Markdown from 'react-markdown';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -12,12 +13,13 @@ import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
 import { Launch, LockPattern, ProgressWrench } from 'mdi-material-ui';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import { yearFormat } from '../../../../utils/Time';
 import inject18n from '../../../../components/i18n';
 import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRelationshipPopover';
 import ItemYears from '../../../../components/ItemYears';
 import ItemMarkings from '../../../../components/ItemMarkings';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -202,10 +204,13 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                 secondary={
                                   attackPattern.description
                                   && attackPattern.description.length > 0 ? (
-                                      <RemarkGfmMarkdown
-                                        content={attackPattern.description}
-                                        commonmark={true}
-                                      ></RemarkGfmMarkdown>
+                                    <Markdown
+                                      remarkPlugins={[remarkGfm, remarkParse]}
+                                      parserOptions={{ commonmark: true }}
+                                      className="markdown"
+                                    >
+                                      {attackPattern.description}
+                                    </Markdown>
                                     ) : (
                                       t('No description of this usage')
                                     )
@@ -285,10 +290,18 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
                                               courseOfAction.description
                                               && courseOfAction.description
                                                 .length > 0 ? (
-                                                  <RemarkGfmMarkdown
-                                                    content={courseOfAction.description}
-                                                    commonmark={true}
-                                                  ></RemarkGfmMarkdown>
+                                                <Markdown
+                                                  remarkPlugins={[
+                                                    remarkGfm,
+                                                    remarkParse,
+                                                  ]}
+                                                  parserOptions={{
+                                                    commonmark: true,
+                                                  }}
+                                                  className="markdown"
+                                                >
+                                                  {courseOfAction.description}
+                                                </Markdown>
                                                 ) : (
                                                   t(
                                                     'No description of this course of action',
