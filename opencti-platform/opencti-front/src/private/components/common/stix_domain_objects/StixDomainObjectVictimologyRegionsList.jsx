@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { Link } from 'react-router-dom';
-import Markdown from 'react-markdown';
 import * as R from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
@@ -11,14 +10,7 @@ import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import Collapse from '@mui/material/Collapse';
-import {
-  ExpandLess,
-  ExpandMore,
-  LocalPlayOutlined,
-  Flag,
-} from '@mui/icons-material';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
+import { ExpandLess, ExpandMore, Flag, LocalPlayOutlined } from '@mui/icons-material';
 import Tooltip from '@mui/material/Tooltip';
 import { AutoFix } from 'mdi-material-ui';
 import { yearFormat } from '../../../../utils/Time';
@@ -27,6 +19,7 @@ import StixCoreRelationshipPopover from '../stix_core_relationships/StixCoreRela
 import ItemYears from '../../../../components/ItemYears';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -336,13 +329,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                             // eslint-disable-next-line no-nested-ternary
                             stixCoreRelationship.description
                             && stixCoreRelationship.description.length > 0 ? (
-                              <Markdown
-                                remarkPlugins={[remarkGfm, remarkParse]}
-                                parserOptions={{ commonmark: true }}
-                                className="markdown"
-                              >
-                                {stixCoreRelationship.description}
-                              </Markdown>
+                                <RemarkGfmMarkdown
+                                  content={stixCoreRelationship.description}
+                                  commonmark={true}
+                                ></RemarkGfmMarkdown>
                               ) : (
                                 t('No description of this targeting')
                               )
@@ -463,16 +453,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                       stixCoreRelationship.description
                                       && stixCoreRelationship.description.length
                                         > 0 ? (
-                                        <Markdown
-                                          remarkPlugins={[
-                                            remarkGfm,
-                                            remarkParse,
-                                          ]}
-                                          parserOptions={{ commonmark: true }}
-                                          className="markdown"
-                                        >
-                                          {stixCoreRelationship.description}
-                                        </Markdown>
+                                          <RemarkGfmMarkdown
+                                            content={stixCoreRelationship.description}
+                                            commonmark={true}
+                                          ></RemarkGfmMarkdown>
                                         ) : stixCoreRelationship.inferred ? (
                                         <i>{t('This relation is inferred')}</i>
                                         ) : (
@@ -573,20 +557,10 @@ class StixDomainObjectVictimologyRegionsList extends Component {
                                               stixCoreRelationship.description
                                               && stixCoreRelationship.description
                                                 .length > 0 ? (
-                                                <Markdown
-                                                  remarkPlugins={[
-                                                    remarkGfm,
-                                                    remarkParse,
-                                                  ]}
-                                                  parserOptions={{
-                                                    commonmark: true,
-                                                  }}
-                                                  className="markdown"
-                                                >
-                                                  {
-                                                    stixCoreRelationship.description
-                                                  }
-                                                </Markdown>
+                                                  <RemarkGfmMarkdown
+                                                    content={stixCoreRelationship.description}
+                                                    commonmark={true}
+                                                  ></RemarkGfmMarkdown>
                                                 ) : stixCoreRelationship.inferred ? (
                                                 <i>
                                                   {t(

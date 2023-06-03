@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
+import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import inject18n from '../../../../components/i18n';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = () => ({
   paper: {
@@ -32,13 +30,10 @@ class OpinionDetailsComponent extends Component {
           <Typography variant="h3" gutterBottom={true}>
             {t('Opinion')}
           </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {opinion.opinion}
-          </Markdown>
+          <RemarkGfmMarkdown
+            content={opinion.opinion}
+            commonmark={true}
+          ></RemarkGfmMarkdown>
           <Typography
             variant="h3"
             gutterBottom={true}
@@ -46,13 +41,10 @@ class OpinionDetailsComponent extends Component {
           >
             {t('Explanation')}
           </Typography>
-          <Markdown
-            remarkPlugins={[remarkGfm, remarkParse]}
-            parserOptions={{ commonmark: true }}
-            className="markdown"
-          >
-            {opinion.explanation}
-          </Markdown>
+          <RemarkGfmMarkdown
+            content={opinion.explanation}
+            commonmark={true}
+          ></RemarkGfmMarkdown>
         </Paper>
       </div>
     );

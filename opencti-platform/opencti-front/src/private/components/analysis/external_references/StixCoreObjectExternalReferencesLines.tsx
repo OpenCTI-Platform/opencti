@@ -1,10 +1,6 @@
 import React, { FunctionComponent, useState } from 'react';
 import { includes } from 'ramda';
-import {
-  createPaginationContainer,
-  graphql,
-  RelayPaginationProp,
-} from 'react-relay';
+import { createPaginationContainer, graphql, RelayPaginationProp } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -18,11 +14,7 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogActions from '@mui/material/DialogActions';
-import {
-  ExpandLessOutlined,
-  ExpandMoreOutlined,
-  OpenInBrowserOutlined,
-} from '@mui/icons-material';
+import { ExpandLessOutlined, ExpandMoreOutlined, OpenInBrowserOutlined } from '@mui/icons-material';
 import Slide, { SlideProps } from '@mui/material/Slide';
 import { Field, Form, Formik } from 'formik';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -38,11 +30,7 @@ import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
 import AddExternalReferences from './AddExternalReferences';
 import { externalReferenceMutationRelationDelete } from './AddExternalReferencesLines';
 import Security from '../../../../utils/Security';
-import {
-  KNOWLEDGE_KNENRICHMENT,
-  KNOWLEDGE_KNUPDATE,
-  KNOWLEDGE_KNUPLOAD,
-} from '../../../../utils/hooks/useGranted';
+import { KNOWLEDGE_KNENRICHMENT, KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNUPLOAD } from '../../../../utils/hooks/useGranted';
 import ExternalReferenceEnrichment from './ExternalReferenceEnrichment';
 import FileLine from '../../common/files/FileLine';
 import FileUploader from '../../common/files/FileUploader';
@@ -55,9 +43,12 @@ import {
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
 import { deleteNodeFromId } from '../../../../utils/store';
-import { StixCoreObjectExternalReferencesLines_data$data } from './__generated__/StixCoreObjectExternalReferencesLines_data.graphql';
+import {
+  StixCoreObjectExternalReferencesLines_data$data,
+} from './__generated__/StixCoreObjectExternalReferencesLines_data.graphql';
 import { isNotEmptyField } from '../../../../utils/utils';
 import ItemIcon from '../../../../components/ItemIcon';
+import ExternalLinkPopover from '../../../../components/ExternalLinkPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   paper: {
@@ -181,17 +172,6 @@ StixCoreObjectExternalReferencesLinesContainerProps
   const handleOpenExternalLink = (url: string) => {
     setDisplayExternalLink(true);
     setExternalLink(url);
-  };
-
-  const handleCloseExternalLink = () => {
-    setDisplayExternalLink(false);
-    setExternalLink(undefined);
-  };
-
-  const handleBrowseExternalLink = () => {
-    window.open(externalLink, '_blank');
-    setDisplayExternalLink(false);
-    setExternalLink(undefined);
   };
 
   const removeExternalReference = (
@@ -498,25 +478,12 @@ StixCoreObjectExternalReferencesLinesContainerProps
           </Button>
         </DialogActions>
       </Dialog>
-      <Dialog
-        PaperProps={{ elevation: 1 }}
-        open={displayExternalLink}
-        keepMounted={true}
-        TransitionComponent={Transition}
-        onClose={handleCloseExternalLink}
-      >
-        <DialogContent>
-          <DialogContentText>
-            {t('Do you want to browse this external link?')}
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleCloseExternalLink}>{t('Cancel')}</Button>
-          <Button color="secondary" onClick={handleBrowseExternalLink}>
-            {t('Browse the link')}
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ExternalLinkPopover
+        displayExternalLink={displayExternalLink}
+        externalLink={externalLink}
+        setDisplayExternalLink={setDisplayExternalLink}
+        setExternalLink={setExternalLink}
+      ></ExternalLinkPopover>
       <Formik
         enableReinitialize={true}
         initialValues={{ connector_id: '' }}

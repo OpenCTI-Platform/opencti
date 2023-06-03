@@ -6,7 +6,6 @@ import ClassicEditor from '@ckeditor/ckeditor5-editor-classic/src/classiceditor.
 import Alignment from '@ckeditor/ckeditor5-alignment/src/alignment.js';
 import Autoformat from '@ckeditor/ckeditor5-autoformat/src/autoformat.js';
 import AutoImage from '@ckeditor/ckeditor5-image/src/autoimage.js';
-import AutoLink from '@ckeditor/ckeditor5-link/src/autolink.js';
 import Base64UploadAdapter from '@ckeditor/ckeditor5-upload/src/adapters/base64uploadadapter.js';
 import BlockQuote from '@ckeditor/ckeditor5-block-quote/src/blockquote.js';
 import Bold from '@ckeditor/ckeditor5-basic-styles/src/bold.js';
@@ -29,7 +28,6 @@ import ImageUpload from '@ckeditor/ckeditor5-image/src/imageupload.js';
 import Indent from '@ckeditor/ckeditor5-indent/src/indent.js';
 import IndentBlock from '@ckeditor/ckeditor5-indent/src/indentblock.js';
 import Italic from '@ckeditor/ckeditor5-basic-styles/src/italic.js';
-import Link from '@ckeditor/ckeditor5-link/src/link.js';
 import LinkImage from '@ckeditor/ckeditor5-link/src/linkimage.js';
 import List from '@ckeditor/ckeditor5-list/src/list.js';
 import MediaEmbed from '@ckeditor/ckeditor5-media-embed/src/mediaembed.js';
@@ -50,7 +48,6 @@ Editor.builtinPlugins = [
 	Alignment,
 	Autoformat,
 	AutoImage,
-	AutoLink,
 	Base64UploadAdapter,
 	BlockQuote,
 	Bold,
@@ -73,7 +70,6 @@ Editor.builtinPlugins = [
 	Indent,
 	IndentBlock,
 	Italic,
-	Link,
 	LinkImage,
 	List,
 	MediaEmbed,
@@ -90,6 +86,7 @@ Editor.builtinPlugins = [
 
 // Editor configuration.
 Editor.defaultConfig = {
+	removePlugins: ['AutoLink'],
 	toolbar: {
 		items: [
 			'heading',
