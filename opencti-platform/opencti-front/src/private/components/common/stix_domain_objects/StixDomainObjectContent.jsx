@@ -8,8 +8,7 @@ import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
 import htmlToPdfmake from 'html-to-pdfmake';
 import pdfMake from 'pdfmake';
-import { CKEditor } from '@ckeditor/ckeditor5-react';
-import Editor from 'ckeditor5-custom-build/build/ckeditor';
+import { Editor } from '@tinymce/tinymce-react';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
 import { pdfjs, Document, Page } from 'react-pdf';
@@ -406,6 +405,7 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   render() {
+    const editorRef = React.createRef();
     const { classes, stixDomainObject, t } = this.props;
     const {
       currentFileId,
@@ -475,21 +475,46 @@ class StixDomainObjectContentComponent extends Component {
               className={classes.editorContainer}
               style={{ minHeight: height, height }}
             >
-              <CKEditor
-                editor={Editor}
-                config={{
-                  width: '100%',
-                  language: 'en',
-                  image: {
-                    resizeUnit: 'px',
-                  },
+              <Editor
+                onInit={
+                  // eslint-disable-next-line no-return-assign
+                  (evt, editor) => (editorRef.current = editor)
+                }
+                initialContent={currentContent}
+                init={{
+                  height,
+                  menubar: false,
+                  promotion: false,
+                  skin: 'oxide-dark',
+                  plugins: [
+                    'autolink',
+                    'emoticons',
+                    'lists',
+                    'advlist',
+                    'autoresize',
+                    'link',
+                    'image',
+                    'charmap',
+                    'anchor',
+                    'searchreplace',
+                    'visualblocks',
+                    'image',
+                    'code',
+                    'codesample',
+                    'fullscreen',
+                    'insertdatetime',
+                    'autosave',
+                    'media',
+                    'table',
+                    'preview',
+                    'wordcount',
+                  ],
+                  toolbar:
+                    'styles align | bold italic underline forecolor backcolor | bullist numlist table | code codesample link image media emoticons | undo redo | fullscreen print',
+                  autosave_interval: '2s',
+                  autosave_prefix: `view-stix-domain-object-content-${stixDomainObject.id}-editor`,
+                  paste_data_images : true
                 }}
-                data={currentContent}
-                onChange={(event, editor) => {
-                  this.onHtmlFieldChange(editor.getData());
-                }}
-                onBlur={this.saveFile.bind(this)}
-                disabled={readOnly}
               />
             </div>
           </div>

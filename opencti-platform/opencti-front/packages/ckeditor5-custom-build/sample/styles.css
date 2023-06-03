@@ -1,5 +1,5 @@
 /**
- * @license Copyright (c) 2014-2022, CKSource Holding sp. z o.o. All rights reserved.
+ * @license Copyright (c) 2014-2023, CKSource Holding sp. z o.o. All rights reserved.
  * This file is licensed under the terms of the MIT License (see LICENSE.md).
  */
 
@@ -30,10 +30,6 @@ main .ck-editor[role='application'] .ck.ck-content,
 	line-height: 1.6em;
 	min-height: var(--ck-sample-editor-min-height);
 	padding: 1.5em 2em;
-}
-
-main .ck-editor[role='application'] {
-	overflow: auto;
 }
 
 .ck.ck-editor__editable {
@@ -345,6 +341,20 @@ body[data-revision-history='true'] .ck.ck-pagination-view-line::after {
 	transform: translateX(-100%) !important;
 	left: -1px !important;
 	right: unset !important;
+}
+
+/* --------- DOCUMENT OUTLINE FEATURE ------------------------------------------------------------------------------ */
+
+.document-outline-container {
+	max-height: 80vh;
+	overflow-y: auto;
+	margin-bottom: 1em;
+}
+
+.document-outline-container .ck.ck-document-outline {
+	min-height: 100%;
+	border: 1px solid var(--ck-color-base-border);
+	background-color: hsl(0, 0%, 96%);
 }
 
 /* --------- SAMPLE GENERIC STYLES (not related to CKEditor) ------------------------------------------------------- */

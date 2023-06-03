@@ -6,9 +6,9 @@ html[data-theme="light"],body[data-theme="light"] {
   --ck-font-size-base: 14px !important;
 
   /* Helper variables to avoid duplication in the colors. */
-  --ck-custom-background: #f3f6f9 !important;
+  --ck-custom-background: transparent !important;
   --ck-custom-foreground: #d3eaff !important;
-  --ck-custom-border: #b2b2b2 !important;
+  --ck-custom-border: transparent !important;
   --ck-custom-white: hsl(0, 0%, 100%) !important;
 
   /* -- Overrides generic colors. ------------------------------------------------------------- */
