@@ -18,30 +18,19 @@ const MarkDownField = (props) => {
     disabled,
   } = props;
   const [field, meta] = useField(name);
-  const internalOnFocus = (event) => {
-    const { nodeName } = event.relatedTarget || {};
-    if (nodeName === 'INPUT' || nodeName === undefined) {
-      if (typeof onFocus === 'function') {
-        onFocus(name);
-      }
+  const internalOnFocus = () => {
+    if (typeof onFocus === 'function') {
+      onFocus(name);
     }
   };
-  const internalOnBlur = (event) => {
-    const { nodeName } = event.relatedTarget || {};
-    if (nodeName === 'INPUT' || nodeName === 'DIV' || nodeName === undefined) {
-      setTouched(true);
-      if (typeof onSubmit === 'function') {
-        onSubmit(name, field.value || '');
-      }
+  const internalOnBlur = () => {
+    setTouched(true);
+    if (typeof onSubmit === 'function') {
+      onSubmit(name, field.value || '');
     }
   };
   return (
-    <div
-      style={style}
-      className={!R.isNil(meta.error) ? 'error' : 'main'}
-      onBlur={internalOnBlur}
-      onFocus={internalOnFocus}
-    >
+    <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
       <InputLabel shrink={true} variant="standard">
         {label}
       </InputLabel>
@@ -58,6 +47,8 @@ const MarkDownField = (props) => {
         onChange={(event, editor) => {
           setFieldValue(name, editor.getData());
         }}
+        onBlur={internalOnBlur}
+        onFocus={internalOnFocus}
         disabled={disabled}
       />
       {!R.isNil(meta.error) && (

@@ -3,11 +3,12 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import { GraphOutline, VectorLink, ChartTimeline } from 'mdi-material-ui';
+import { ChartTimeline, GraphOutline, VectorLink } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
   AssistantOutlined,
   ViewColumnOutlined,
+  DifferenceOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
@@ -25,11 +26,8 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
-import { makeStyles, useTheme } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
@@ -41,13 +39,13 @@ import {
 } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
-import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectEnrichment from '../stix_core_objects/StixCoreObjectEnrichment';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const useStyles = makeStyles(() => ({
   title: {
@@ -489,7 +487,6 @@ const ContainerHeader = (props) => {
     enableSuggestions,
     onApplied,
   } = props;
-  const theme = useTheme();
   const classes = useStyles();
   const { t, fd } = useFormatter();
   const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
@@ -640,6 +637,20 @@ const ContainerHeader = (props) => {
                 </ToggleButton>
               </Tooltip>
             )}
+            {modes.includes('content') && (
+              <Tooltip title={t('Content mapping view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/content`}
+                  selected={currentMode === 'content'}
+                >
+                  <DifferenceOutlined
+                    fontSize="small"
+                    color={currentMode === 'content' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+            )}
             {modes.includes('timeline') && (
               <Tooltip title={t('TimeLine view')}>
                 <ToggleButton
@@ -769,14 +780,11 @@ const ContainerHeader = (props) => {
                             >
                               <ListItemText
                                 primary={
-                                  <Markdown
-                                    remarkPlugins={[remarkGfm, remarkParse]}
-                                    parserOptions={{ commonmark: true }}
-                                    components={MarkDownComponents(theme)}
-                                    className="markdown"
-                                  >
-                                    {t(`suggestion_${suggestion.type}`)}
-                                  </Markdown>
+                                  <RemarkGfmMarkdown
+                                    content={t(`suggestion_${suggestion.type}`)}
+                                    commonmark={true}
+                                    markdownComponents={true}
+                                  ></RemarkGfmMarkdown>
                                 }
                               />
                               <Select

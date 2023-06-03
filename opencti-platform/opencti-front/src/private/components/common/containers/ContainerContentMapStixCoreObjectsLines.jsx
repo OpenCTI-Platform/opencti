@@ -1,16 +1,7 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import {
-  append,
-  assoc,
-  compose,
-  filter,
-  groupBy,
-  keys,
-  map,
-  pipe,
-} from 'ramda';
+import { append, assoc, compose, filter, groupBy, keys, map, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -22,9 +13,6 @@ import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import { commitMutation } from '../../../../relay/environment';
 import { truncate } from '../../../../utils/String';
 import ItemIcon from '../../../../components/ItemIcon';
@@ -34,6 +22,7 @@ import {
   reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 import ItemMarkings from '../../../../components/ItemMarkings';
+import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 const styles = (theme) => ({
   container: {
@@ -328,17 +317,12 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
                             60,
                           )}`}
                           secondary={
-                            <Markdown
-                              remarkPlugins={[remarkGfm, remarkParse]}
-                              parserOptions={{ commonmark: true }}
-                              className="markdown"
-                            >
-                              {truncate(
-                                stixCoreObject.description
-                                  || fd(stixCoreObject.created_at),
-                                200,
-                              )}
-                            </Markdown>
+                            <RemarkGfmMarkdown
+                              content={stixCoreObject.description
+                                || fd(stixCoreObject.created_at)}
+                              limit={200}
+                              commonmark={true}
+                            ></RemarkGfmMarkdown>
                           }
                         />
                         <div style={{ marginLeft: 10 }}>
@@ -382,23 +366,21 @@ ContainerAddStixCoreObjectsLinesContainer.propTypes = {
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
   query ContainerAddStixCoreObjectsLinesQuery(
+    $types: [String]
     $search: String
     $count: Int!
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
-    $filters: [StixCoreObjectsFiltering]
-    $filterMode: FilterMode
   ) {
     ...ContainerAddStixCoreObjectsLines_data
       @arguments(
+        types: $types
         search: $search
         count: $count
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
-        filters: $filters
-        filterMode: $filterMode
       )
   }
 `;
@@ -409,15 +391,15 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
     data: graphql`
       fragment ContainerAddStixCoreObjectsLines_data on Query
       @argumentDefinitions(
+        types: { type: "[String]" }
         search: { type: "String" }
         count: { type: "Int", defaultValue: 25 }
         cursor: { type: "ID" }
         orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: asc }
-        filters: { type: "StixCoreObjectsFiltering" }
-        filterMode: { type: "FilterMode" }
       ) {
         stixCoreObjects(
+          types: $types
           search: $search
           first: $count
           after: $cursor

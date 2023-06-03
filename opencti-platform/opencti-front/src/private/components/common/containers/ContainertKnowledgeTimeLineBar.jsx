@@ -128,25 +128,28 @@ const ContentKnowledgeTimeLineBar = ({
               />
             </div>
             <Divider className={classes.divider} orientation="vertical" />
-            <Filters
-              availableFilterKeys={[
-                'entity_type',
-                'markedBy',
-                'labelledBy',
-                'createdBy',
-                'relationship_type',
-              ]}
-              availableEntityTypes={[
-                'Stix-Domain-Object',
-                'Stix-Cyber-Observable',
-              ]}
-              handleAddFilter={handleAddTimeLineFilter}
-              noDirectFilters={true}
-            />
-            <div style={{ marginTop: 5 }}>
+            <div style={{ paddingTop: 4 }}>
+              <Filters
+                availableFilterKeys={[
+                  'entity_type',
+                  'markedBy',
+                  'labelledBy',
+                  'createdBy',
+                  'relationship_type',
+                ]}
+                availableEntityTypes={[
+                  'Stix-Domain-Object',
+                  'Stix-Cyber-Observable',
+                ]}
+                handleAddFilter={handleAddTimeLineFilter}
+                noDirectFilters={true}
+              />
+            </div>
+            <div style={{ paddingTop: 3 }}>
               <FilterIconButton
                 filters={timeLineFilters}
                 handleRemoveFilter={handleRemoveTimeLineFilter}
+                classNameNumber={1}
               />
             </div>
           </div>

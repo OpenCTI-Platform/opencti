@@ -106,3 +106,7 @@ div.markdown p:last-child {
 input[type="file"] {
   width: 100% !important;
 }
+
+.ck-powered-by {
+  display: none !important;
+}

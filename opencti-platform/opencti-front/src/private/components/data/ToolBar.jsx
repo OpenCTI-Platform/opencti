@@ -42,7 +42,7 @@ import {
   AutoFixHighOutlined,
   MergeOutlined,
 } from '@mui/icons-material';
-import { CloudRefresh, Label } from 'mdi-material-ui';
+import { CloudRefreshOutline, Label } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -207,7 +207,13 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template'];
+const notMergableTypes = [
+  'Indicator',
+  'Note',
+  'Opinion',
+  'Label',
+  'Case-Template',
+];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -885,7 +891,9 @@ class ToolBar extends Component {
                   value: data.id,
                   type: data.entity_type,
                 };
-                this.setState(({ containers }) => ({ containers: [...(containers ?? []), element] }));
+                this.setState(({ containers }) => ({
+                  containers: [...(containers ?? []), element],
+                }));
                 this.handleChangeActionInputValues(i, null, element);
               }}
             />
@@ -1188,6 +1196,7 @@ class ToolBar extends Component {
       noMarking,
       noWarning,
       deleteDisable,
+      warning,
     } = this.props;
     const { actions, keptEntityId, mergingElement, actionsInputs, navOpen } = this.state;
     const isOpen = numberOfSelectedElements > 0;
@@ -1195,7 +1204,8 @@ class ToolBar extends Component {
       R.map((o) => o.entity_type, R.values(selectedElements || {})),
     );
     const typesAreDifferent = selectedTypes.length > 1;
-    const preventMerge = selectedTypes.at(0) === 'Vocabulary' && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
+    const preventMerge = selectedTypes.at(0) === 'Vocabulary'
+      && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
     const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template'];
     const typesAreNotUpdatable = R.includes(
@@ -1395,7 +1405,7 @@ class ToolBar extends Component {
                     color="primary"
                     size="small"
                   >
-                    <CloudRefresh fontSize="small" />
+                    <CloudRefreshOutline fontSize="small" />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -1467,7 +1477,7 @@ class ToolBar extends Component {
                       numberOfSelectedElements === 0 || this.state.processing
                     }
                     onClick={this.handleLaunchDelete.bind(this)}
-                    color="primary"
+                    color={warning ? 'warning' : 'primary'}
                     size="small"
                   >
                     <DeleteOutlined fontSize="small" />
@@ -2149,6 +2159,7 @@ ToolBar.propTypes = {
   container: PropTypes.object,
   type: PropTypes.string,
   handleCopy: PropTypes.func,
+  warning: PropTypes.bool,
 };
 
 export default R.compose(inject18n, withTheme, withStyles(styles))(ToolBar);

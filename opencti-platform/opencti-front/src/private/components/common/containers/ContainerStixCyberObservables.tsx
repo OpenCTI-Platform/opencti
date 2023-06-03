@@ -360,6 +360,7 @@ ContainerStixCyberObservablesComponentProps
               variant="large"
               container={container}
               handleCopy={handleCopy}
+              warning={true}
             />
             <StixCyberObservablesRightBar
               types={types}

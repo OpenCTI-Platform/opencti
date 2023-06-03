@@ -293,6 +293,18 @@ export const decodeGraphData = (encodedGraphData) => {
   return {};
 };
 
+export const encodeMappingData = (mappingData) => toB64(JSON.stringify(mappingData));
+
+export const decodeMappingData = (encodedMappingData) => {
+  if (encodedMappingData) {
+    const decodedMappingData = JSON.parse(fromB64(encodedMappingData));
+    if (typeof decodedMappingData === 'object') {
+      return decodedMappingData;
+    }
+  }
+  return {};
+};
+
 export const defaultDate = (n) => {
   if (!n) return '';
   if (!isDateStringNone(n.start_time)) {

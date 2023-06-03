@@ -22,6 +22,7 @@ const styles = () => ({
 class ListLinesContent extends Component {
   constructor(props) {
     super(props);
+    this.containerRef = React.createRef();
     this._isRowLoaded = this._isRowLoaded.bind(this);
     this._loadMoreRows = this._loadMoreRows.bind(this);
     this._rowRenderer = this._rowRenderer.bind(this);
@@ -34,7 +35,8 @@ class ListLinesContent extends Component {
   }
 
   componentDidUpdate(prevProps) {
-    const diff = !R.equals(this.props.dataList, prevProps.dataList) || !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
+    const diff = !R.equals(this.props.dataList, prevProps.dataList)
+      || !R.equals(this.props.bookmarkList, prevProps.bookmarkList);
     let selection = false;
     if (
       Object.keys(this.props.selectedElements || {}).length
@@ -215,70 +217,65 @@ class ListLinesContent extends Component {
       isLoading,
       nbOfRowsToLoad,
       classes,
-      selectedElements,
-      deSelectedElements,
+      height: propHeight,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
-      <ExportContext.Consumer>
-        {({ selectedIds, setSelectedIds }) => {
-          // selectedIds: ids of elements that are selected via checkboxes AND respect the filtering conditions
-          let newSelectedIds = [];
-          if (!isEmptyField(deSelectedElements)) {
-            newSelectedIds = dataList
-              .map((o) => o.node.id)
-              .filter((id) => !Object.keys(deSelectedElements).includes(id));
-          } else if (!isEmptyField(selectedElements)) {
-            newSelectedIds = dataList
-              .map((o) => o.node.id)
-              .filter((id) => Object.keys(selectedElements).includes(id));
-          }
-          if (!R.equals(selectedIds, newSelectedIds)) {
-            setSelectedIds(newSelectedIds);
-          }
-          return (
-            <WindowScroller ref={this._setRef} scrollElement={window}>
-              {({ height, isScrolling, onChildScroll, scrollTop }) => (
-                <div className={classes.windowScrollerWrapper}>
-                  <InfiniteLoader
-                    isRowLoaded={this._isRowLoaded}
-                    loadMoreRows={this._loadMoreRows}
-                    rowCount={globalCount}
-                  >
-                    {({ onRowsRendered, registerChild }) => (
-                      <AutoSizer disableHeight>
-                        {({ width }) => (
-                          <List
-                            ref={(ref) => {
-                              this.listRef = ref;
-                              registerChild(ref);
-                            }}
-                            autoHeight={true}
-                            height={height}
-                            onRowsRendered={onRowsRendered}
-                            isScrolling={isScrolling}
-                            onScroll={onChildScroll}
-                            overscanRowCount={nbOfRowsToLoad}
-                            rowCount={rowCount}
-                            rowHeight={50}
-                            rowRenderer={this._rowRenderer.bind(this)}
-                            scrollToIndex={-1}
-                            scrollTop={scrollTop}
-                            width={width}
-                          />
-                        )}
-                      </AutoSizer>
-                    )}
-                  </InfiniteLoader>
-                </div>
-              )}
-            </WindowScroller>
-          );
+      <div
+        style={{
+          height: propHeight || 'auto',
+          maxHeight: propHeight || 'auto',
+          overflowY: propHeight ? 'auto' : 'hidden',
         }}
-      </ExportContext.Consumer>
+        ref={this.containerRef}
+      >
+        <WindowScroller
+          ref={this._setRef}
+          scrollElement={
+            propHeight && this.containerRef.current
+              ? this.containerRef.current
+              : window
+          }
+        >
+          {({ height, isScrolling, onChildScroll, scrollTop }) => (
+            <div className={classes.windowScrollerWrapper}>
+              <InfiniteLoader
+                isRowLoaded={this._isRowLoaded}
+                loadMoreRows={this._loadMoreRows}
+                rowCount={globalCount}
+              >
+                {({ onRowsRendered, registerChild }) => (
+                  <AutoSizer disableHeight>
+                    {({ width }) => (
+                      <List
+                        ref={(ref) => {
+                          this.listRef = ref;
+                          registerChild(ref);
+                        }}
+                        autoHeight={true}
+                        height={height}
+                        onRowsRendered={onRowsRendered}
+                        isScrolling={isScrolling}
+                        onScroll={onChildScroll}
+                        overscanRowCount={nbOfRowsToLoad}
+                        rowCount={rowCount}
+                        rowHeight={50}
+                        rowRenderer={this._rowRenderer.bind(this)}
+                        scrollToIndex={-1}
+                        scrollTop={scrollTop}
+                        width={width}
+                      />
+                    )}
+                  </AutoSizer>
+                )}
+              </InfiniteLoader>
+            </div>
+          )}
+        </WindowScroller>
+      </div>
     );
   }
 }
@@ -309,6 +306,7 @@ ListLinesContent.propTypes = {
   connectionKey: PropTypes.string,
   isTo: PropTypes.bool,
   redirectionMode: PropTypes.string,
+  scrollElement: PropTypes.object,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

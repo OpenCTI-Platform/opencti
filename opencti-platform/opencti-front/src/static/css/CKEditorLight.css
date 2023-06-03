@@ -166,4 +166,5 @@ td.ck-editor__editable {
 
 .ck-source-editing-area textarea {
   background-color: var(--ck-custom-background) !important;
+  color: var(--ck-color-text) !important;
 }
