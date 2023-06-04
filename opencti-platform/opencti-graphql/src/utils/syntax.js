@@ -1,4 +1,4 @@
-import antlr4 from 'antlr4';
+import antlr4 from '../stixpattern/STIXAntlr';
 import * as C from '../schema/stixCyberObservable';
 import STIXPatternLexer from '../stixpattern/STIXPatternLexer';
 import STIXPatternParser from '../stixpattern/STIXPatternParser';

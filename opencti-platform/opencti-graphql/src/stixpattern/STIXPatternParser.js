@@ -1,6 +1,6 @@
 // Generated from ./src/stixpattern/STIXPattern.g4 by ANTLR 4.13.0
 // jshint ignore: start
-import antlr4 from 'antlr4';
+import antlr4 from './STIXAntlr';
 import STIXPatternListener from './STIXPatternListener.js';
 const serializedATN = [4,1,54,233,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,
 4,2,5,7,5,2,6,7,6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,
