@@ -20,6 +20,9 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import ContainerContent, {
+  containerContentRefetchQuery,
+} from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -171,7 +174,7 @@ class GroupingKnowledgeComponent extends Component {
             container={grouping}
             PopoverComponent={<GroupingPopover />}
             link={`/dashboard/analysis/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -191,6 +194,22 @@ class GroupingKnowledgeComponent extends Component {
                       mode={mode}
                     />
                   );
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/analysis/groupings/:groupingId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentRefetchQuery}
+              variables={{ id: grouping.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} />;
                 }
                 return <Loader />;
               }}
@@ -279,7 +298,4 @@ const GroupingKnowledge = createFragmentContainer(GroupingKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  withRouter,
-  withStyles(styles),
-)(GroupingKnowledge);
+export default R.compose(withRouter, withStyles(styles))(GroupingKnowledge);

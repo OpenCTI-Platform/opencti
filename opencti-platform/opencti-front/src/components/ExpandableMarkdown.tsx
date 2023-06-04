@@ -8,9 +8,9 @@ import { useTheme } from '@mui/styles';
 import { truncate } from '../utils/String';
 import { Theme } from './Theme';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const MarkDownComponents = (
   theme: Theme,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 ): Record<string, FunctionComponent<any>> => ({
   table: ({ tableProps }) => (
     <table

@@ -12,9 +12,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { useHistory } from 'react-router-dom';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -34,6 +33,7 @@ import {
 } from './__generated__/GroupingCreationMutation.graphql';
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,23 +106,28 @@ const groupingMutation = graphql`
 `;
 
 interface GroupingAddInput {
-  name: string
-  confidence: number
-  context: string
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  confidence: number;
+  context: string;
+  description: string;
+  content: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface GroupingFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: { id: string; name: string } | null
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
@@ -136,11 +141,14 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const history = useHistory();
+  const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     confidence: Yup.number().nullable(),
     context: Yup.string().required(t('This field is required')),
     description: Yup.string().nullable(),
+    content: Yup.string().nullable(),
   };
   const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
 
@@ -149,7 +157,8 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     confidence: defaultConfidence ?? 75,
     context: '',
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    content: '',
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -158,10 +167,14 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
 
   const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
 
-  const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<GroupingAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: GroupingCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      content: values.content,
       context: values.context,
       confidence: parseInt(String(values.confidence), 10),
       createdBy: values.createdBy?.value,
@@ -183,11 +196,16 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onCompleted) {
           onCompleted();
+        }
+        if (mapAfter) {
+          history.push(
+            `/dashboard/analysis/groupings/${response.groupingAdd?.id}/knowledge/content`,
+          );
         }
       },
     });
@@ -229,6 +247,17 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <Field
+            component={RichTextField}
+            name="content"
+            label={t('Content')}
+            fullWidth={true}
+            style={{
+              ...fieldSpacingContainerStyle,
+              minHeight: 200,
+              height: 200,
+            }}
           />
           <CreatedByField
             name="createdBy"
@@ -278,6 +307,20 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
             >
               {t('Create')}
             </Button>
+            {values.content.length > 0 && (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  setMapAfter(true);
+                  submitForm();
+                }}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create and map')}
+              </Button>
+            )}
           </div>
         </Form>
       )}
@@ -285,17 +328,16 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
   );
 };
 
-const GroupingCreation = ({ paginationOptions }: { paginationOptions: GroupingsLinesPaginationQuery$variables }) => {
+const GroupingCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: GroupingsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
   const onReset = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_groupings',
-    paginationOptions,
-    'groupingAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_groupings', paginationOptions, 'groupingAdd');
   return (
     <div>
       <Fab

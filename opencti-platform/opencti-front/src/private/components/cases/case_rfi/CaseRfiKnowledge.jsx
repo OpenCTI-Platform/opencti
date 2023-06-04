@@ -26,6 +26,9 @@ import CaseRfiKnowledgeCorrelation, {
   caseRfiKnowledgeCorrelationQuery,
 } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import ContainerContent, {
+  containerContentRefetchQuery,
+} from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -251,7 +254,10 @@ class CaseRfiKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      .length > 0
+      ? []
+      : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -275,7 +281,7 @@ class CaseRfiKnowledgeComponent extends Component {
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}
             link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -295,6 +301,22 @@ class CaseRfiKnowledgeComponent extends Component {
                       mode={mode}
                     />
                   );
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentRefetchQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} />;
                 }
                 return <Loader />;
               }}
@@ -426,7 +448,4 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  withRouter,
-  withStyles(styles),
-)(CaseRfiKnowledge);
+export default R.compose(withRouter, withStyles(styles))(CaseRfiKnowledge);

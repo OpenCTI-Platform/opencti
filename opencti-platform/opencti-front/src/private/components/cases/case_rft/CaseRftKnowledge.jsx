@@ -278,7 +278,7 @@ class CaseRftKnowledgeComponent extends Component {
             container={caseData}
             PopoverComponent={<CaseRftPopover id={caseData.id} />}
             link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />

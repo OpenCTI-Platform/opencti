@@ -26,6 +26,9 @@ import ReportKnowledgeTimeLine, {
 } from './ReportKnowledgeTimeLine';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import ContainerContent, {
+  containerContentRefetchQuery,
+} from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -252,7 +255,10 @@ class ReportKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      .length > 0
+      ? []
+      : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -276,7 +282,7 @@ class ReportKnowledgeComponent extends Component {
             container={report}
             PopoverComponent={<ReportPopover />}
             link={`/dashboard/analysis/reports/${report.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -293,6 +299,22 @@ class ReportKnowledgeComponent extends Component {
                   return (
                     <ReportKnowledgeGraph report={props.report} mode={mode} />
                   );
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/analysis/reports/:reportId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentRefetchQuery}
+              variables={{ id: report.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} />;
                 }
                 return <Loader />;
               }}
@@ -422,7 +444,4 @@ const ReportKnowledge = createFragmentContainer(ReportKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  withRouter,
-  withStyles(styles),
-)(ReportKnowledge);
+export default R.compose(withRouter, withStyles(styles))(ReportKnowledge);

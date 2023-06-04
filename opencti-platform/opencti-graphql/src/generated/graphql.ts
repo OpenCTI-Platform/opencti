@@ -18905,6 +18905,8 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
 export type ReportAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;

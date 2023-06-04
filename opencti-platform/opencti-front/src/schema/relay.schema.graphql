@@ -2898,6 +2898,8 @@ input ReportAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   published: DateTime!
   report_types: [String]
   revoked: Boolean

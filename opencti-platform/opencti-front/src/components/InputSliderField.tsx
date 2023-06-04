@@ -52,9 +52,10 @@ InputSliderFieldProps & FieldProps
   const currentLevel = buildScaleLevel(value, scale);
   if (variant === 'edit') {
     return (
-      <div style={{ display: 'flex', marginTop: 20 }}>
+      <>
         <Field
           component={TextField}
+          fullWidth={true}
           variant="standard"
           type="number"
           name={name}
@@ -66,45 +67,44 @@ InputSliderFieldProps & FieldProps
             <SubscriptionFocus context={editContext} fieldName={name} />
           }
         />
-        <div style={{ padding: '10px 5px 0 20px', flexGrow: 3 }}>
-          <Slider
-            value={value}
-            min={min}
-            max={max}
-            onChange={(_, v) => setFieldValue(name, v.toString())}
-            onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
-            sx={sliderStyle}
-            style={{ marginBottom: 0 }}
-            valueLabelDisplay="auto"
-            valueLabelFormat={() => currentLevel.level.label}
-          />
-        </div>
-      </div>
+        <Slider
+          value={value}
+          min={min}
+          max={max}
+          onChange={(_, v) => setFieldValue(name, v.toString())}
+          onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
+          sx={sliderStyle}
+          style={{ margin: '5px 0 0 0' }}
+          valueLabelDisplay="auto"
+          size="small"
+          valueLabelFormat={() => currentLevel.level.label}
+        />
+      </>
     );
   }
   return (
-    <div style={{ display: 'flex', marginTop: 20 }}>
+    <>
       <Field
         component={TextField}
+        fullWidth={true}
         variant="standard"
         type="number"
         name={name}
         label={label}
         disabled={disabled}
       />
-      <div style={{ padding: '10px 5px 0 20px', flexGrow: 3 }}>
-        <Slider
-          value={value}
-          min={min}
-          max={max}
-          onChange={(_, v) => setFieldValue(name, v.toString())}
-          sx={sliderStyle}
-          style={{ marginBottom: 0 }}
-          valueLabelDisplay="auto"
-          valueLabelFormat={() => currentLevel.level.label}
-        />
-      </div>
-    </div>
+      <Slider
+        value={value}
+        min={min}
+        max={max}
+        onChange={(_, v) => setFieldValue(name, v.toString())}
+        sx={sliderStyle}
+        style={{ margin: '5px 0 0 0' }}
+        valueLabelDisplay="auto"
+        size="small"
+        valueLabelFormat={() => currentLevel.level.label}
+      />
+    </>
   );
 };
 

@@ -37,8 +37,10 @@ import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRig
 import { hexToRGB } from '../../../../utils/Colors';
 import {
   caseRftKnowledgeGraphMutationRelationDeleteMutation,
-  caseRftKnowledgeGraphQueryStixObjectDeleteMutation, caseRftKnowledgeGraphQueryStixRelationshipDeleteMutation,
-  caseRftKnowledgeGraphtMutationRelationAddMutation } from './CaseRftKnowledgeGraphQuery';
+  caseRftKnowledgeGraphQueryStixObjectDeleteMutation,
+  caseRftKnowledgeGraphQueryStixRelationshipDeleteMutation,
+  caseRftKnowledgeGraphtMutationRelationAddMutation,
+} from './CaseRftKnowledgeGraphQuery';
 import CaseRftKnowledgeGraphBar from './CaseRftKnowledgeGraphBar';
 import CaseRftPopover from './CaseRftPopover';
 import { caseRftMutationFieldPatch } from './CaseRftEditionOverview';
@@ -1005,7 +1007,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
           ) {
             commitMutation({
               mutation:
-              caseRftKnowledgeGraphQueryStixRelationshipDeleteMutation,
+                caseRftKnowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1343,7 +1345,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseRftPopover id={caseData.id} />}
           link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}

@@ -12,6 +12,7 @@ import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import * as Yup from 'yup';
+import { useHistory } from 'react-router-dom';
 import DateTimePickerField from '../../../../components/DateTimePickerField';
 import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
@@ -135,16 +136,18 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const history = useHistory();
+  const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
+    content: Yup.string().nullable(),
   };
   const caseIncidentValidator = useSchemaCreationValidation(
     'Case-Incident',
     basicShape,
   );
   const [commit] = useMutation<CaseIncidentCreationCaseMutation>(caseIncidentMutation);
-
   const onSubmit: FormikConfig<FormikCaseIncidentAddInput>['onSubmit'] = (
     values,
     { setSubmitting, resetForm },
@@ -175,11 +178,16 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
           updater(store, 'caseIncidentAdd', response.caseIncidentAdd);
         }
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onCompleted) {
           onCompleted();
+        }
+        if (mapAfter) {
+          history.push(
+            `/dashboard/cases/incidents/${response.caseIncidentAdd?.id}/knowledge/content`,
+          );
         }
       },
     });
@@ -330,6 +338,20 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
             >
               {t('Create')}
             </Button>
+            {values.content.length > 0 && (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  setMapAfter(true);
+                  submitForm();
+                }}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create and map')}
+              </Button>
+            )}
           </div>
         </Form>
       )}

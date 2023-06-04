@@ -1007,7 +1007,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
           ) {
             commitMutation({
               mutation:
-              caseRfiKnowledgeGraphQueryStixRelationshipDeleteMutation,
+                caseRfiKnowledgeGraphQueryStixRelationshipDeleteMutation,
               variables: {
                 id: n.id,
               },
@@ -1345,7 +1345,7 @@ class CaseRfiKnowledgeGraphComponent extends Component {
           container={caseData}
           PopoverComponent={<CaseRfiPopover id={caseData.id} />}
           link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-          modes={['graph', 'timeline', 'correlation', 'matrix']}
+          modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}
