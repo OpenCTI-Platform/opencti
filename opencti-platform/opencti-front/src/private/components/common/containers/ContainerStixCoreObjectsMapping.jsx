@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { compose } from 'ramda';
-import { graphql, createFragmentContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import * as R from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
@@ -21,7 +20,7 @@ const styles = () => ({
   },
 });
 
-class ContainerStixCoreObjectsComponent extends Component {
+class ContainerStixCoreObjectsMapping extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -169,7 +168,7 @@ class ContainerStixCoreObjectsComponent extends Component {
   }
 }
 
-ContainerStixCoreObjectsComponent.propTypes = {
+ContainerStixCoreObjectsMapping.propTypes = {
   container: PropTypes.object,
   classes: PropTypes.object,
   t: PropTypes.func,
@@ -177,36 +176,6 @@ ContainerStixCoreObjectsComponent.propTypes = {
   history: PropTypes.object,
   height: PropTypes.number,
 };
-
-const ContainerStixCoreObjectsMapping = createFragmentContainer(
-  ContainerStixCoreObjectsComponent,
-  {
-    container: graphql`
-      fragment ContainerStixCoreObjectsMapping_container on Container {
-        id
-        ... on Report {
-          name
-        }
-        ... on Grouping {
-          name
-        }
-        ... on Note {
-          attribute_abstract
-          content
-        }
-        ... on Opinion {
-          opinion
-        }
-        ... on ObservedData {
-          name
-          first_observed
-          last_observed
-        }
-        ...ContainerHeader_container
-      }
-    `,
-  },
-);
 
 export default compose(
   inject18n,

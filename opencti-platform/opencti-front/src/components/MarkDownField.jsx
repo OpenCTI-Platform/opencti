@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import Markdown from 'react-markdown';
@@ -15,6 +15,7 @@ const MarkDownField = (props) => {
     field: { name },
     onFocus,
     onSubmit,
+    onSelect,
     label,
     style,
     disabled,
@@ -22,6 +23,7 @@ const MarkDownField = (props) => {
   } = props;
   const [selectedTab, setSelectedTab] = React.useState('write');
   const [field, meta] = useField(name);
+  const textAreaRef = useRef(null);
   const internalOnFocus = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
@@ -36,6 +38,17 @@ const MarkDownField = (props) => {
       setTouched(true);
       if (typeof onSubmit === 'function') {
         onSubmit(name, field.value || '');
+      }
+    }
+  };
+  const internalOnSelect = (event) => {
+    if (event.target && event.target.value && event.target.value.length > 0) {
+      const selection = event.target.value.substring(
+        event.target.selectionStart,
+        event.target.selectionEnd,
+      );
+      if (typeof onSelect === 'function' && selection.length >= 2) {
+        onSelect(selection);
       }
     }
   };
@@ -69,6 +82,9 @@ const MarkDownField = (props) => {
           preview: t('Preview'),
           uploadingImage: t('Uploading image'),
           pasteDropSelect: t('Paste'),
+        }}
+        childProps={{
+          textArea: { ref: textAreaRef, onSelect: internalOnSelect },
         }}
       />
       {!R.isNil(meta.error) && (

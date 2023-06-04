@@ -21,7 +21,7 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import ContainerContent, {
-  containerContentRefetchQuery,
+  containerContentQuery,
 } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
@@ -205,7 +205,7 @@ class GroupingKnowledgeComponent extends Component {
           path="/dashboard/analysis/groupings/:groupingId/knowledge/content"
           render={() => (
             <QueryRenderer
-              query={containerContentRefetchQuery}
+              query={containerContentQuery}
               variables={{ id: grouping.id }}
               render={({ props }) => {
                 if (props && props.container) {

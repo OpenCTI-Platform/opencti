@@ -1,16 +1,19 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
+import Alert from '@mui/material/Alert';
+import * as R from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   ContainerStixCoreObjectsMappingLine,
   ContainerStixCoreObjectsMappingLineDummy,
 } from './ContainerStixCoreObjectsMappingLine';
 import { setNumberOfElements } from '../../../../utils/Number';
+import inject18n from '../../../../components/i18n';
 
 const nbOfRowsToLoad = 50;
 
-class ContainerStixCoreObjectsMappingLines extends Component {
+class ContainerStixCoreObjectsMappingLinesComponent extends Component {
   componentDidUpdate(prevProps) {
     setNumberOfElements(
       prevProps,
@@ -29,49 +32,40 @@ class ContainerStixCoreObjectsMappingLines extends Component {
       container,
       paginationOptions,
       height,
+      t,
     } = this.props;
     return (
-        <ListLinesContent
-          initialLoading={initialLoading}
-          loadMore={relay.loadMore.bind(this)}
-          hasMore={relay.hasMore.bind(this)}
-          isLoading={relay.isLoading.bind(this)}
-          dataList={container?.objects?.edges ?? []}
-          paginationOptions={paginationOptions}
-          globalCount={
-            container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-          }
-          LineComponent={
-            <ContainerStixCoreObjectsMappingLine
-              containerId={container?.id ?? null}
-            />
-          }
-          DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
-          dataColumns={dataColumns}
-          nbOfRowsToLoad={nbOfRowsToLoad}
-          height={height}
-        />
+      <>
+        {(container?.objects?.pageInfo?.globalCount ?? 0) === 0 ? (
+          <Alert severity="info" variant="outlined" style={{ marginTop: 20 }}>
+            {t('No object in the container, select some text to start')}
+          </Alert>
+        ) : (
+          <ListLinesContent
+            initialLoading={initialLoading}
+            loadMore={relay.loadMore.bind(this)}
+            hasMore={relay.hasMore.bind(this)}
+            isLoading={relay.isLoading.bind(this)}
+            dataList={container?.objects?.edges ?? []}
+            paginationOptions={paginationOptions}
+            globalCount={
+              container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+            }
+            LineComponent={
+              <ContainerStixCoreObjectsMappingLine
+                containerId={container?.id ?? null}
+              />
+            }
+            DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
+            dataColumns={dataColumns}
+            nbOfRowsToLoad={nbOfRowsToLoad}
+            height={height}
+          />
+        )}
+      </>
     );
   }
 }
-
-ContainerStixCoreObjectsMappingLines.propTypes = {
-  classes: PropTypes.object,
-  paginationOptions: PropTypes.object,
-  dataColumns: PropTypes.object.isRequired,
-  container: PropTypes.object,
-  relay: PropTypes.object,
-  initialLoading: PropTypes.bool,
-  searchTerm: PropTypes.string,
-  setNumberOfElements: PropTypes.func,
-  onTypesChange: PropTypes.func,
-  openExports: PropTypes.bool,
-  onToggleEntity: PropTypes.func,
-  selectedElements: PropTypes.object,
-  deSelectedElements: PropTypes.object,
-  selectAll: PropTypes.bool,
-  height: PropTypes.number,
-};
 
 export const containerStixCoreObjectsMappingLinesQuery = graphql`
   query ContainerStixCoreObjectsMappingLinesQuery(
@@ -98,8 +92,8 @@ export const containerStixCoreObjectsMappingLinesQuery = graphql`
   }
 `;
 
-export default createPaginationContainer(
-  ContainerStixCoreObjectsMappingLines,
+const ContainerStixCoreObjectsMappingLines = createPaginationContainer(
+  ContainerStixCoreObjectsMappingLinesComponent,
   {
     container: graphql`
       fragment ContainerStixCoreObjectsMappingLines_container on Container
@@ -122,6 +116,7 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
+          all: true
         ) @connection(key: "Pagination_objects") {
           edges {
             types
@@ -167,3 +162,23 @@ export default createPaginationContainer(
     query: containerStixCoreObjectsMappingLinesQuery,
   },
 );
+
+ContainerStixCoreObjectsMappingLines.propTypes = {
+  classes: PropTypes.object,
+  paginationOptions: PropTypes.object,
+  dataColumns: PropTypes.object.isRequired,
+  container: PropTypes.object,
+  relay: PropTypes.object,
+  initialLoading: PropTypes.bool,
+  searchTerm: PropTypes.string,
+  setNumberOfElements: PropTypes.func,
+  onTypesChange: PropTypes.func,
+  openExports: PropTypes.bool,
+  onToggleEntity: PropTypes.func,
+  selectedElements: PropTypes.object,
+  deSelectedElements: PropTypes.object,
+  selectAll: PropTypes.bool,
+  height: PropTypes.number,
+};
+
+export default R.compose(inject18n)(ContainerStixCoreObjectsMappingLines);

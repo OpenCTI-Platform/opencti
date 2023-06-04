@@ -18,7 +18,6 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
-import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 
 const useStyles = makeStyles((theme) => ({
   item: {

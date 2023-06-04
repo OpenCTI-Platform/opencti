@@ -27,7 +27,7 @@ import ReportKnowledgeTimeLine, {
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, {
-  containerContentRefetchQuery,
+  containerContentQuery,
 } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
@@ -310,7 +310,7 @@ class ReportKnowledgeComponent extends Component {
           path="/dashboard/analysis/reports/:reportId/knowledge/content"
           render={() => (
             <QueryRenderer
-              query={containerContentRefetchQuery}
+              query={containerContentQuery}
               variables={{ id: report.id }}
               render={({ props }) => {
                 if (props && props.container) {

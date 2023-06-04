@@ -27,7 +27,7 @@ import CaseRfiKnowledgeCorrelation, {
 } from './CaseRfiKnowledgeCorrelation';
 import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 import ContainerContent, {
-  containerContentRefetchQuery,
+  containerContentQuery,
 } from '../../common/containers/ContainerContent';
 
 const styles = () => ({
@@ -312,7 +312,7 @@ class CaseRfiKnowledgeComponent extends Component {
           path="/dashboard/cases/rfis/:caseId/knowledge/content"
           render={() => (
             <QueryRenderer
-              query={containerContentRefetchQuery}
+              query={containerContentQuery}
               variables={{ id: caseData.id }}
               render={({ props }) => {
                 if (props && props.container) {

@@ -54,7 +54,7 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
   } = useAuth();
   const isRuntimeSort = isRuntimeFieldEnable() ?? false;
   const paginationOptions = {
-    id: container.id,
+    id: container?.id ?? null,
     types: types ?? [],
     count: 50,
   };

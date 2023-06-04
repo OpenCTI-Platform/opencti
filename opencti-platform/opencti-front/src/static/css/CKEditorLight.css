@@ -67,7 +67,7 @@ body[data-theme="light"] {
   --ck-color-input-text: hsl(0, 0%, 98%) !important;
   --ck-color-input-disabled-background: hsl(255, 4%, 21%) !important;
   --ck-color-input-disabled-border: rgba(255, 255, 255, 0.5) !important;
-  --ck-color-input-disabled-text: hsl(240, 3%, 31%) !important;
+  --ck-color-input-disabled-text: hsl(0, 0%, 98%) !important;
 
   /* -- Overrides the default .ck-labeled-field-view class colors. ---------------------------- */
 
@@ -148,16 +148,16 @@ body[data-theme="light"] {
 }
 
 .ck-read-only {
-  color: #9a9a9a !important;
+  color: var(--ck-color-text) !important;
 }
 
 .ck-read-only ::-moz-selection {
   /* Code for Firefox */
-  color: #505050 !important;
+  color: var(--ck-color-text) !important;
 }
 
 .ck-read-only ::selection {
-  color: #505050 !important;
+  color: var(--ck-color-text) !important;
 }
 
 td.ck-editor__editable {

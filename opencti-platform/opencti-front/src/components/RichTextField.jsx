@@ -13,10 +13,12 @@ const MarkDownField = (props) => {
     field: { name },
     onFocus,
     onSubmit,
+    onSelect,
     label,
     style,
     disabled,
   } = props;
+  let editorReference;
   const [field, meta] = useField(name);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
@@ -29,6 +31,15 @@ const MarkDownField = (props) => {
       onSubmit(name, field.value || '');
     }
   };
+  const internalOnSelect = (event) => {
+    console.log(
+      editorReference.data.stringify(
+        editorReference.model.getSelectedContent(
+          editorReference.model.document.selection,
+        ),
+      ),
+    );
+  };
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
       <InputLabel shrink={true} variant="standard">
@@ -36,6 +47,10 @@ const MarkDownField = (props) => {
       </InputLabel>
       <CKEditor
         editor={Editor}
+        onReady={(editor) => {
+          editorReference = editor;
+          editorReference.editing.view.on('selectionChangeDone', internalOnSelect);
+        }}
         config={{
           width: '100%',
           language: 'en',

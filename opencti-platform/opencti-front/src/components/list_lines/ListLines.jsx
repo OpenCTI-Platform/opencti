@@ -181,6 +181,7 @@ class ListLines extends Component {
         {({ selectedIds }) => {
           const exportDisabled = numberOfElements && ((selectedIds.length > export_max_size && numberOfElements.number > export_max_size)
             || (selectedIds.length === 0 && numberOfElements.number > export_max_size));
+          console.log(keyword);
           return (
             <div className={noPadding ? classes.containerNoPadding : classes.container}>
               <div className={parametersWithPadding ? classes.parametersWithPadding : classes.parameters}>

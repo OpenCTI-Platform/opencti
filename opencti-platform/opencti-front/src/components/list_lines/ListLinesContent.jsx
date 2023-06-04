@@ -217,6 +217,8 @@ class ListLinesContent extends Component {
       isLoading,
       nbOfRowsToLoad,
       classes,
+      selectedElements,
+      deSelectedElements,
       height: propHeight,
     } = this.props;
     const countWithLoading = isLoading()
@@ -224,58 +226,78 @@ class ListLinesContent extends Component {
       : dataList.length;
     const rowCount = initialLoading ? nbOfRowsToLoad : countWithLoading;
     return (
-      <div
-        style={{
-          height: propHeight || 'auto',
-          maxHeight: propHeight || 'auto',
-          overflowY: propHeight ? 'auto' : 'hidden',
-        }}
-        ref={this.containerRef}
-      >
-        <WindowScroller
-          ref={this._setRef}
-          scrollElement={
-            propHeight && this.containerRef.current
-              ? this.containerRef.current
-              : window
+      <ExportContext.Consumer>
+        {({ selectedIds, setSelectedIds }) => {
+          // selectedIds: ids of elements that are selected via checkboxes AND respect the filtering conditions
+          let newSelectedIds = [];
+          if (!isEmptyField(deSelectedElements)) {
+            newSelectedIds = dataList
+              .map((o) => o.node.id)
+              .filter((id) => !Object.keys(deSelectedElements).includes(id));
+          } else if (!isEmptyField(selectedElements)) {
+            newSelectedIds = dataList
+              .map((o) => o.node.id)
+              .filter((id) => Object.keys(selectedElements).includes(id));
           }
-        >
-          {({ height, isScrolling, onChildScroll, scrollTop }) => (
-            <div className={classes.windowScrollerWrapper}>
-              <InfiniteLoader
-                isRowLoaded={this._isRowLoaded}
-                loadMoreRows={this._loadMoreRows}
-                rowCount={globalCount}
+          if (!R.equals(selectedIds, newSelectedIds)) {
+            setSelectedIds(newSelectedIds);
+          }
+          return (
+            <div
+              style={{
+                height: propHeight || 'auto',
+                maxHeight: propHeight || 'auto',
+                overflowY: propHeight ? 'auto' : 'hidden',
+              }}
+              ref={this.containerRef}
+            >
+              <WindowScroller
+                ref={this._setRef}
+                scrollElement={
+                  propHeight && this.containerRef.current
+                    ? this.containerRef.current
+                    : window
+                }
               >
-                {({ onRowsRendered, registerChild }) => (
-                  <AutoSizer disableHeight>
-                    {({ width }) => (
-                      <List
-                        ref={(ref) => {
-                          this.listRef = ref;
-                          registerChild(ref);
-                        }}
-                        autoHeight={true}
-                        height={height}
-                        onRowsRendered={onRowsRendered}
-                        isScrolling={isScrolling}
-                        onScroll={onChildScroll}
-                        overscanRowCount={nbOfRowsToLoad}
-                        rowCount={rowCount}
-                        rowHeight={50}
-                        rowRenderer={this._rowRenderer.bind(this)}
-                        scrollToIndex={-1}
-                        scrollTop={scrollTop}
-                        width={width}
-                      />
-                    )}
-                  </AutoSizer>
+                {({ height, isScrolling, onChildScroll, scrollTop }) => (
+                  <div className={classes.windowScrollerWrapper}>
+                    <InfiniteLoader
+                      isRowLoaded={this._isRowLoaded}
+                      loadMoreRows={this._loadMoreRows}
+                      rowCount={globalCount}
+                    >
+                      {({ onRowsRendered, registerChild }) => (
+                        <AutoSizer disableHeight>
+                          {({ width }) => (
+                            <List
+                              ref={(ref) => {
+                                this.listRef = ref;
+                                registerChild(ref);
+                              }}
+                              autoHeight={true}
+                              height={height}
+                              onRowsRendered={onRowsRendered}
+                              isScrolling={isScrolling}
+                              onScroll={onChildScroll}
+                              overscanRowCount={nbOfRowsToLoad}
+                              rowCount={rowCount}
+                              rowHeight={50}
+                              rowRenderer={this._rowRenderer.bind(this)}
+                              scrollToIndex={-1}
+                              scrollTop={scrollTop}
+                              width={width}
+                            />
+                          )}
+                        </AutoSizer>
+                      )}
+                    </InfiniteLoader>
+                  </div>
                 )}
-              </InfiniteLoader>
+              </WindowScroller>
             </div>
-          )}
-        </WindowScroller>
-      </div>
+          );
+        }}
+      </ExportContext.Consumer>
     );
   }
 }

@@ -112,6 +112,9 @@ const ContainerAddStixCoreObjects = (props) => {
     paginationOptions,
     onAdd,
     onDelete,
+    mapping,
+    selectedText,
+    handleClose,
   } = props;
   const classes = useStyles();
   const { t } = useFormatter();
@@ -192,7 +195,7 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <StixDomainObjectCreation
         display={open}
-        inputValue={searchTerm}
+        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         confidence={confidence}
@@ -211,7 +214,7 @@ const ContainerAddStixCoreObjects = (props) => {
       <StixCyberObservableCreation
         display={open}
         contextual={true}
-        inputValue={searchTerm}
+        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
@@ -254,7 +257,7 @@ const ContainerAddStixCoreObjects = (props) => {
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
-          inputValue={searchTerm}
+          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           confidence={confidence}
@@ -272,7 +275,7 @@ const ContainerAddStixCoreObjects = (props) => {
         <StixCyberObservableCreation
           display={open}
           contextual={true}
-          inputValue={searchTerm}
+          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={paginationOptions}
           defaultCreatedBy={defaultCreatedBy}
@@ -372,6 +375,7 @@ const ContainerAddStixCoreObjects = (props) => {
               orderAsc={orderAsc}
               dataColumns={buildColumns(platformModuleHelpers)}
               handleSearch={setSearchTerm}
+              keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
               handleSort={handleSort}
               handleAddFilter={handleAddFilter}
               handleRemoveFilter={handleRemoveFilter}
@@ -423,15 +427,14 @@ const ContainerAddStixCoreObjects = (props) => {
   const finalFilters = convertFilters(filters);
   const searchPaginationOptions = {
     types: [resolveAvailableTypes()],
-    search: searchTerm,
+    search: mapping && searchTerm.length === 0 ? selectedText : searchTerm,
     filters: finalFilters,
     orderBy: sortBy,
     orderMode: orderAsc ? 'asc' : 'desc',
   };
-  return (
-    <div>
-      {/* eslint-disable-next-line no-nested-ternary */}
-      {knowledgeGraph ? (
+  const renderButton = () => {
+    if (knowledgeGraph) {
+      return (
         <Tooltip title={t('Add an entity to this container')}>
           <IconButton
             color="primary"
@@ -442,7 +445,10 @@ const ContainerAddStixCoreObjects = (props) => {
             <Add />
           </IconButton>
         </Tooltip>
-      ) : simple ? (
+      );
+    }
+    if (simple) {
+      return (
         <IconButton
           color="secondary"
           aria-label="Add"
@@ -452,32 +458,38 @@ const ContainerAddStixCoreObjects = (props) => {
         >
           <Add fontSize="small" />
         </IconButton>
-      ) : (
-        <Fab
-          onClick={() => setOpen(true)}
-          color="secondary"
-          aria-label="Add"
-          className={
-            withPadding ? classes.createButtonWithPadding : classes.createButton
-          }
-        >
-          <Add />
-        </Fab>
-      )}
+      );
+    }
+    return (
+      <Fab
+        onClick={() => setOpen(true)}
+        color="secondary"
+        aria-label="Add"
+        className={
+          withPadding ? classes.createButtonWithPadding : classes.createButton
+        }
+      >
+        <Add />
+      </Fab>
+    );
+  };
+  return (
+    <div>
+      {!mapping && renderButton()}
       <Drawer
-        open={open}
+        open={mapping ? selectedText !== null : open}
         keepMounted={true}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => setOpen(false)}
+        onClose={() => (mapping ? handleClose() : setOpen(false))}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={() => setOpen(false)}
+            onClick={() => (mapping ? handleClose() : setOpen(false))}
             size="large"
             color="primary"
           >
