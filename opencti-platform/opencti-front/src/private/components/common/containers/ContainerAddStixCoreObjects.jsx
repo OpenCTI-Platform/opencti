@@ -1,27 +1,18 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
+import React, { useState } from 'react';
 import * as R from 'ramda';
-import withStyles from '@mui/styles/withStyles';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Fab from '@mui/material/Fab';
 import { Add, Close } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
-import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
-import Skeleton from '@mui/material/Skeleton';
 import SpeedDial from '@mui/material/SpeedDial';
 import SpeedDialIcon from '@mui/material/SpeedDialIcon';
 import SpeedDialAction from '@mui/material/SpeedDialAction';
 import { GlobeModel, HexagonOutline } from 'mdi-material-ui';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
-import SearchInput from '../../../../components/SearchInput';
+import { useFormatter } from '../../../../components/i18n';
 import ContainerAddStixCoreObjectsLines, {
   containerAddStixCoreObjectsLinesQuery,
 } from './ContainerAddStixCoreObjectsLines';
@@ -34,13 +25,12 @@ import {
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import ListLines from '../../../../components/list_lines/ListLines';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import {convertFilters} from "../../../../utils/ListParameters";
+import { convertFilters } from '../../../../utils/ListParameters';
 
-const styles = (theme) => ({
+const useStyles = makeStyles((theme) => ({
   drawerPaper: {
     minHeight: '100vh',
     width: '50%',
-
     padding: 0,
     zIndex: 1,
   },
@@ -77,7 +67,7 @@ const styles = (theme) => ({
     color: 'inherit',
   },
   container: {
-    padding: 0,
+    padding: '15px 0 0 0',
     height: '100%',
     width: '100%',
   },
@@ -106,138 +96,105 @@ const styles = (theme) => ({
       backgroundColor: theme.palette.secondary.main,
     },
   },
-});
+}));
 
-class ContainerAddStixCoreObjects extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      open: false,
-      openSpeedDial: false,
-      openCreateEntity: false,
-      openCreateObservable: false,
-      sortBy: '_score',
-      orderAsc: false,
-      filters: props.targetStixCoreObjectTypes ? { 'entity_type': props.targetStixCoreObjectTypes } : {},,
-      numberOfElements: { number: 0, symbol: '' },
-      selectedElements: null,
-      search: '',
-    };
-  }
-
-  handleOpen() {
-    this.setState({ open: true });
-  }
-
-  handleClose() {
-    this.setState({ open: false });
-  }
-
-  handleOpenSpeedDial() {
-    this.setState({ openSpeedDial: true });
-  }
-
-  handleCloseSpeedDial() {
-    this.setState({ openSpeedDial: false });
-  }
-
-  handleOpenCreateEntity() {
-    this.setState({ openCreateEntity: true, openSpeedDial: false });
-  }
-
-  handleCloseCreateEntity() {
-    this.setState({ openCreateEntity: false, openSpeedDial: false });
-  }
-
-  handleOpenCreateObservable() {
-    this.setState({ openCreateObservable: true, openSpeedDial: false });
-  }
-
-  handleCloseCreateObservable() {
-    this.setState({ openCreateObservable: false, openSpeedDial: false });
-  }
-
-  handleSearch(value) {
-    this.setState({ searchTerm: value });
-  }
-
-  handleChangeView(mode) {
-    this.setState({ view: mode });
-  }
-
-  handleSort(field, orderAsc) {
-    this.setState({ sortBy: field, orderAsc });
-  }
-
-  handleToggleExports() {
-    this.setState({ openExports: !this.state.openExports });
-  }
-
-  handleClearSelectedElements() {
-    this.setState({
-      selectAll: false,
-      selectedElements: null,
-      deSelectedElements: null,
-    });
-  }
-
-  handleAddFilter(key, id, value, event = null) {
+const ContainerAddStixCoreObjects = (props) => {
+  const {
+    targetStixCoreObjectTypes,
+    defaultCreatedBy,
+    defaultMarkingDefinitions,
+    containerId,
+    knowledgeGraph,
+    containerStixCoreObjects,
+    confidence,
+    withPadding,
+    simple,
+    paginationOptions,
+    onAdd,
+    onDelete,
+  } = props;
+  const classes = useStyles();
+  const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
+  const [openSpeedDial, setOpenSpeedDial] = useState(false);
+  const [openCreateEntity, setOpenCreateEntity] = useState(false);
+  const [openCreateObservable, setOpenCreateObservable] = useState(false);
+  const [sortBy, setSortBy] = useState('_score');
+  const [orderAsc, setOrderAsc] = useState(false);
+  const [filters, setFilters] = useState(
+    targetStixCoreObjectTypes
+      && !(
+        targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+        || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+      )
+      ? {
+        entity_type: targetStixCoreObjectTypes.map((n) => ({
+          id: n,
+          label: n,
+          value: n,
+        })),
+      }
+      : {},
+  );
+  const [numberOfElements, setNumberOfElements] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
+  const handleOpenCreateEntity = () => {
+    setOpenCreateEntity(true);
+    setOpenSpeedDial(false);
+  };
+  const handleCloseCreateEntity = () => {
+    setOpenCreateEntity(false);
+    setOpenSpeedDial(false);
+  };
+  const handleOpenCreateObservable = () => {
+    setOpenCreateObservable(true);
+    setOpenSpeedDial(false);
+  };
+  const handleCloseCreateObservable = () => {
+    setOpenCreateObservable(false);
+    setOpenSpeedDial(false);
+  };
+  const handleSort = (field, sortOrderAsc) => {
+    setSortBy(field);
+    setOrderAsc(sortOrderAsc);
+  };
+  const handleAddFilter = (key, id, value, event = null) => {
     if (event) {
       event.stopPropagation();
       event.preventDefault();
     }
-    if (this.state.filters[key] && this.state.filters[key].length > 0) {
-      this.setState({
-        filters: R.assoc(
+    if (filters[key] && filters[key].length > 0) {
+      setFilters(
+        R.assoc(
           key,
           isUniqFilter(key)
             ? [{ id, value }]
-            : R.uniqBy(R.prop('id'), [
-              { id, value },
-              ...this.state.filters[key],
-            ]),
-          this.state.filters,
+            : R.uniqBy(R.prop('id'), [{ id, value }, ...filters[key]]),
+          filters,
         ),
-      });
+      );
     } else {
-      this.setState({
-        filters: R.assoc(key, [{ id, value }], this.state.filters),
-      });
+      setFilters(R.assoc(key, [{ id, value }], filters));
     }
-  }
-
-  handleRemoveFilter(key) {
-    this.setState({ filters: R.dissoc(key, this.state.filters) });
-  }
-
-  setNumberOfElements(numberOfElements) {
-    this.setState({ numberOfElements });
-  }
-
-  static isTypeDomainObject(types) {
+  };
+  const handleRemoveFilter = (key) => {
+    setFilters(R.dissoc(key, filters));
+  };
+  const isTypeDomainObject = (types) => {
     return !types || types.some((r) => stixDomainObjectTypes.indexOf(r) >= 0);
-  }
-
-  static isTypeObservable(types) {
+  };
+  const isTypeObservable = (types) => {
     return (
       !types || types.some((r) => stixCyberObservableTypes.indexOf(r) >= 0)
     );
-  }
-
-  renderDomainObjectCreation(paginationOptions) {
-    const {
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-      confidence,
-      targetStixCoreObjectTypes,
-    } = this.props;
-    const { open, searchTerm } = this.state;
+  };
+  const renderDomainObjectCreation = (searchPaginationOptions) => {
     return (
       <StixDomainObjectCreation
         display={open}
         inputValue={searchTerm}
         paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={paginationOptions}
+        paginationOptions={searchPaginationOptions}
         confidence={confidence}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
@@ -248,48 +205,29 @@ class ContainerAddStixCoreObjects extends Component {
         }
       />
     );
-  }
-
-  renderObservableCreation(paginationOptions) {
-    const { defaultCreatedBy, defaultMarkingDefinitions } = this.props;
-    const { open, searchTerm } = this.state;
+  };
+  const renderObservableCreation = (searchPaginationOptions) => {
     return (
       <StixCyberObservableCreation
         display={open}
         contextual={true}
         inputValue={searchTerm}
         paginationKey="Pagination_stixCoreObjects"
-        paginationOptions={paginationOptions}
+        paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
         defaultMarkingDefinitions={defaultMarkingDefinitions}
       />
     );
-  }
-
-  renderStixCoreObjectCreation(paginationOptions) {
-    const {
-      classes,
-      defaultCreatedBy,
-      defaultMarkingDefinitions,
-      confidence,
-      targetStixCoreObjectTypes,
-      t,
-    } = this.props;
-    const {
-      open,
-      openSpeedDial,
-      openCreateEntity,
-      openCreateObservable,
-      searchTerm,
-    } = this.state;
+  };
+  const renderStixCoreObjectCreation = (searchPaginationOptions) => {
     return (
       <div>
         <SpeedDial
           className={classes.createButton}
           ariaLabel="Create"
           icon={<SpeedDialIcon />}
-          onClose={this.handleCloseSpeedDial.bind(this)}
-          onOpen={this.handleOpenSpeedDial.bind(this)}
+          onClose={() => setOpenSpeedDial(false)}
+          onOpen={() => setOpenSpeedDial(true)}
           open={openSpeedDial}
           FabProps={{
             color: 'secondary',
@@ -299,7 +237,7 @@ class ContainerAddStixCoreObjects extends Component {
             title={t('Create an observable')}
             icon={<HexagonOutline />}
             tooltipTitle={t('Create an observable')}
-            onClick={this.handleOpenCreateObservable.bind(this)}
+            onClick={() => handleOpenCreateObservable()}
             FabProps={{
               classes: { root: classes.speedDialButton },
             }}
@@ -308,7 +246,7 @@ class ContainerAddStixCoreObjects extends Component {
             title={t('Create an entity')}
             icon={<GlobeModel />}
             tooltipTitle={t('Create an entity')}
-            onClick={this.handleOpenCreateEntity.bind(this)}
+            onClick={() => handleOpenCreateEntity()}
             FabProps={{
               classes: { root: classes.speedDialButton },
             }}
@@ -318,7 +256,7 @@ class ContainerAddStixCoreObjects extends Component {
           display={open}
           inputValue={searchTerm}
           paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={paginationOptions}
+          paginationOptions={searchPaginationOptions}
           confidence={confidence}
           defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinitions={defaultMarkingDefinitions}
@@ -329,7 +267,7 @@ class ContainerAddStixCoreObjects extends Component {
           }
           speeddial={true}
           open={openCreateEntity}
-          handleClose={this.handleCloseCreateEntity.bind(this)}
+          handleClose={() => handleCloseCreateEntity()}
         />
         <StixCyberObservableCreation
           display={open}
@@ -341,53 +279,90 @@ class ContainerAddStixCoreObjects extends Component {
           defaultMarkingDefinitions={defaultMarkingDefinitions}
           speeddial={true}
           open={openCreateObservable}
-          handleClose={this.handleCloseCreateObservable.bind(this)}
+          handleClose={() => handleCloseCreateObservable()}
         />
       </div>
     );
-  }
-
-  renderEntityCreation(paginationOptions) {
-    const { targetStixCoreObjectTypes } = this.props;
+  };
+  const resolveAvailableTypes = () => {
     if (
       targetStixCoreObjectTypes
-      && ContainerAddStixCoreObjects.isTypeDomainObject(
-        targetStixCoreObjectTypes,
-      )
-      && !ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
+      && isTypeDomainObject(targetStixCoreObjectTypes)
+      && !isTypeObservable(targetStixCoreObjectTypes)
     ) {
-      return this.renderDomainObjectCreation(paginationOptions);
+      return 'Stix-Domain-Object';
     }
     if (
       targetStixCoreObjectTypes
-      && ContainerAddStixCoreObjects.isTypeObservable(targetStixCoreObjectTypes)
-      && !ContainerAddStixCoreObjects.isTypeDomainObject(targetStixCoreObjectTypes)
+      && isTypeObservable(targetStixCoreObjectTypes)
+      && !isTypeDomainObject(targetStixCoreObjectTypes)
     ) {
-      return this.renderObservableCreation(paginationOptions);
+      return 'Stix-Cyber-Observable';
     }
     if (
       !targetStixCoreObjectTypes
-      || (ContainerAddStixCoreObjects.isTypeObservable(
-        targetStixCoreObjectTypes,
-      )
-        && ContainerAddStixCoreObjects.isTypeDomainObject(
-          targetStixCoreObjectTypes,
-        ))
+      || (isTypeObservable(targetStixCoreObjectTypes)
+        && isTypeDomainObject(targetStixCoreObjectTypes))
     ) {
-      return this.renderStixCoreObjectCreation(paginationOptions);
+      return 'Stix-Core-Object';
     }
     return null;
-  }
-
-  renderSearchResults(paginationOptions) {
-    const {
-      classes,
-      containerId,
-      knowledgeGraph,
-      containerStixCoreObjects,
-      t,
-    } = this.props;
-    const { sortBy, orderAsc, filters, numberOfElements } = this.state;
+  };
+  const renderEntityCreation = (searchPaginationOptions) => {
+    if (
+      targetStixCoreObjectTypes
+      && isTypeDomainObject(targetStixCoreObjectTypes)
+      && !isTypeObservable(targetStixCoreObjectTypes)
+    ) {
+      return renderDomainObjectCreation(searchPaginationOptions);
+    }
+    if (
+      targetStixCoreObjectTypes
+      && isTypeObservable(targetStixCoreObjectTypes)
+      && !isTypeDomainObject(targetStixCoreObjectTypes)
+    ) {
+      return renderObservableCreation(searchPaginationOptions);
+    }
+    if (
+      !targetStixCoreObjectTypes
+      || (isTypeObservable(targetStixCoreObjectTypes)
+        && isTypeDomainObject(targetStixCoreObjectTypes))
+    ) {
+      return renderStixCoreObjectCreation(searchPaginationOptions);
+    }
+    return null;
+  };
+  const buildColumns = (platformModuleHelpers) => {
+    const isRuntimeSort = platformModuleHelpers.isRuntimeFieldEnable();
+    return {
+      entity_type: {
+        label: 'Type',
+        width: '15%',
+        isSortable: true,
+      },
+      value: {
+        label: 'Value',
+        width: '32%',
+        isSortable: false,
+      },
+      createdBy: {
+        label: 'Author',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+      objectLabel: {
+        label: 'Labels',
+        width: '22%',
+        isSortable: false,
+      },
+      objectMarking: {
+        label: 'Marking',
+        width: '15%',
+        isSortable: isRuntimeSort,
+      },
+    };
+  };
+  const renderSearchResults = (searchPaginationOptions) => {
     return (
       <UserContext.Consumer>
         {({ platformModuleHelpers }) => (
@@ -395,16 +370,18 @@ class ContainerAddStixCoreObjects extends Component {
             <ListLines
               sortBy={sortBy}
               orderAsc={orderAsc}
-              dataColumns={this.buildColumns(platformModuleHelpers)}
-              handleSort={this.handleSort.bind(this)}
-              handleAddFilter={this.handleAddFilter.bind(this)}
-              handleRemoveFilter={this.handleRemoveFilter.bind(this)}
-              exportEntityType="Stix-Core-Object"
+              dataColumns={buildColumns(platformModuleHelpers)}
+              handleSearch={setSearchTerm}
+              handleSort={handleSort}
+              handleAddFilter={handleAddFilter}
+              handleRemoveFilter={handleRemoveFilter}
               disableCards={true}
               filters={filters}
-              paginationOptions={paginationOptions}
+              paginationOptions={searchPaginationOptions}
               numberOfElements={numberOfElements}
               iconExtension={true}
+              parametersWithPadding={true}
+              availableEntityTypes={resolveAvailableTypes()}
               availableFilterKeys={[
                 'entity_type',
                 'markedBy',
@@ -421,16 +398,19 @@ class ContainerAddStixCoreObjects extends Component {
             >
               <QueryRenderer
                 query={containerAddStixCoreObjectsLinesQuery}
-                variables={{ count: 100, ...paginationOptions }}
-                render={({ props }) => (
+                variables={{ count: 100, ...searchPaginationOptions }}
+                render={({ props: renderProps }) => (
                   <ContainerAddStixCoreObjectsLines
+                    data={renderProps}
                     containerId={containerId}
-                    data={props}
-                    paginationOptions={this.props.paginationOptions}
+                    paginationOptions={paginationOptions}
+                    dataColumns={buildColumns(platformModuleHelpers)}
+                    initialLoading={renderProps === null}
                     knowledgeGraph={knowledgeGraph}
                     containerStixCoreObjects={containerStixCoreObjects}
-                    onAdd={this.props.onAdd}
-                    onDelete={this.props.onDelete}
+                    onAdd={onAdd}
+                    onDelete={onDelete}
+                    setNumberOfElements={setNumberOfElements}
                   />
                 )}
               />
@@ -439,146 +419,84 @@ class ContainerAddStixCoreObjects extends Component {
         )}
       </UserContext.Consumer>
     );
-  }
-
-  renderSearch(paginationOptions) {
-    return this.renderSearchResults(paginationOptions);
-  }
-
-  getSearchTypes() {
-    const { paginationOptions, targetStixCoreObjectTypes } = this.props;
-    let searchTypes;
-    if (targetStixCoreObjectTypes !== undefined) {
-      searchTypes = [...targetStixCoreObjectTypes];
-    }
-    if (paginationOptions !== undefined) {
-      const { types } = paginationOptions;
-      searchTypes = [...types];
-    }
-    return searchTypes;
-  }
-
-  getPaginationOptions() {
-    const { searchTerm, filters, sortBy, orderAsc } = this.state;
-    const finalFilters = convertFilters(filters);
-    const paginationOptions = {
-      search: searchTerm,
-      filters: finalFilters,
-      orderBy: sortBy,
-      orderMode: orderAsc ? 'asc' : 'desc',
-    };
-  }
-
-  render() {
-    const { t, classes, withPadding, simple, knowledgeGraph } = this.props;
-    const paginationOptions = this.getPaginationOptions();
-    return (
-      <div>
-        {/* eslint-disable-next-line no-nested-ternary */}
-        {knowledgeGraph ? (
-          <Tooltip title={t('Add an entity to this container')}>
-            <IconButton
-              color="primary"
-              aria-label="Add"
-              onClick={this.handleOpen.bind(this)}
-              size="large"
-            >
-              <Add />
-            </IconButton>
-          </Tooltip>
-        ) : simple ? (
+  };
+  const finalFilters = convertFilters(filters);
+  const searchPaginationOptions = {
+    types: [resolveAvailableTypes()],
+    search: searchTerm,
+    filters: finalFilters,
+    orderBy: sortBy,
+    orderMode: orderAsc ? 'asc' : 'desc',
+  };
+  return (
+    <div>
+      {/* eslint-disable-next-line no-nested-ternary */}
+      {knowledgeGraph ? (
+        <Tooltip title={t('Add an entity to this container')}>
           <IconButton
-            color="secondary"
+            color="primary"
             aria-label="Add"
-            onClick={this.handleOpen.bind(this)}
-            classes={{ root: classes.createButtonSimple }}
+            onClick={() => setOpen(true)}
             size="large"
           >
-            <Add fontSize="small" />
-          </IconButton>
-        ) : (
-          <Fab
-            onClick={this.handleOpen.bind(this)}
-            color="secondary"
-            aria-label="Add"
-            className={
-              withPadding
-                ? classes.createButtonWithPadding
-                : classes.createButton
-            }
-          >
             <Add />
-          </Fab>
-        )}
-        <Drawer
-          open={this.state.open}
-          keepMounted={true}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={this.handleClose.bind(this)}
+          </IconButton>
+        </Tooltip>
+      ) : simple ? (
+        <IconButton
+          color="secondary"
+          aria-label="Add"
+          onClick={() => setOpen(true)}
+          classes={{ root: classes.createButtonSimple }}
+          size="large"
         >
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={this.handleClose.bind(this)}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            {(ContainerAddStixCoreObjects.isTypeDomainObject(
-              paginationOptions.types,
-            )
-              || ContainerAddStixCoreObjects.isTypeObservable(
-                paginationOptions.types,
-              )) && (
-              <Typography variant="h6" classes={{ root: classes.title }}>
-                {t('Add entities')}
-              </Typography>
-            )}
-            {this.renderSearchTypeFilter(paginationOptions)}
-            <div className={classes.search}>
-              <SearchInput
-                variant="inDrawer"
-                placeholder={`${t('Search')}...`}
-                onSubmit={this.handleSearch.bind(this)}
-              />
-            </div>
-          </div>
-          <div className={classes.container}>
-            {this.renderSearch(paginationOptions)}
-          </div>
-          {this.renderEntityCreation(paginationOptions)}
-        </Drawer>
-      </div>
-    );
-  }
-}
-
-ContainerAddStixCoreObjects.propTypes = {
-  containerId: PropTypes.string,
-  classes: PropTypes.object,
-  t: PropTypes.func,
-  fld: PropTypes.func,
-  paginationOptions: PropTypes.object,
-  knowledgeGraph: PropTypes.bool,
-  withPadding: PropTypes.bool,
-  defaultCreatedBy: PropTypes.object,
-  defaultMarkingDefinitions: PropTypes.array,
-  confidence: PropTypes.number,
-  containerStixCoreObjects: PropTypes.array,
-  simple: PropTypes.bool,
-  targetStixCoreObjectTypes: PropTypes.array,
-  onTypesChange: PropTypes.func,
-  onAdd: PropTypes.func,
-  onDelete: PropTypes.func,
-  openExports: PropTypes.bool,
+          <Add fontSize="small" />
+        </IconButton>
+      ) : (
+        <Fab
+          onClick={() => setOpen(true)}
+          color="secondary"
+          aria-label="Add"
+          className={
+            withPadding ? classes.createButtonWithPadding : classes.createButton
+          }
+        >
+          <Add />
+        </Fab>
+      )}
+      <Drawer
+        open={open}
+        keepMounted={true}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={() => setOpen(false)}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={() => setOpen(false)}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          {(isTypeDomainObject(targetStixCoreObjectTypes)
+            || isTypeObservable(targetStixCoreObjectTypes)) && (
+            <Typography variant="h6" classes={{ root: classes.title }}>
+              {t('Add entities')}
+            </Typography>
+          )}
+        </div>
+        <div className={classes.container}>
+          {renderSearchResults(searchPaginationOptions)}
+        </div>
+        {renderEntityCreation(searchPaginationOptions)}
+      </Drawer>
+    </div>
+  );
 };
 
-export default R.compose(
-  inject18n,
-  withStyles(styles),
-)(ContainerAddStixCoreObjects);
+export default ContainerAddStixCoreObjects;

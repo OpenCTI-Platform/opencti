@@ -57,6 +57,9 @@ const styles = (theme) => ({
     float: 'left',
     marginTop: -10,
   },
+  parametersWithPadding: {
+    padding: '0 0 0 15px',
+  },
   views: {
     float: 'right',
   },
@@ -171,6 +174,7 @@ class ListLines extends Component {
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
+      parametersWithPadding,
     } = this.props;
     return (
       <ExportContext.Consumer>
@@ -179,7 +183,7 @@ class ListLines extends Component {
             || (selectedIds.length === 0 && numberOfElements.number > export_max_size));
           return (
             <div className={noPadding ? classes.containerNoPadding : classes.container}>
-              <div className={classes.parameters}>
+              <div className={parametersWithPadding ? classes.parametersWithPadding : classes.parameters}>
                 {typeof handleSearch === 'function' && (
                   <div style={{ float: 'left', marginRight: 20 }}>
                     <SearchInput
@@ -559,6 +563,7 @@ ListLines.propTypes = {
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,
+  parametersWithPadding: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

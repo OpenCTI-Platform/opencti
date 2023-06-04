@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import Axios from 'axios';
-import { createRefetchContainer, graphql } from 'react-relay';
+import { graphql, createRefetchContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
 import TextField from '@mui/material/TextField';
@@ -12,9 +12,12 @@ import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build/build/ckeditor';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
-import { Document, Page, pdfjs } from 'react-pdf';
+import { pdfjs, Document, Page } from 'react-pdf';
 import 'react-pdf/dist/esm/Page/TextLayer.css';
 import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
 import ReactMde from 'react-mde';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
@@ -34,7 +37,6 @@ import {
 import Loader from '../../../../components/Loader';
 import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
-import RemarkGfmMarkdown from '../../../../components/RemarkGfmMarkdown';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
 
@@ -181,7 +183,7 @@ class StixDomainObjectContentComponent extends Component {
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
-      readOnly: false,
+      readOnly: true,
     };
   }
 
@@ -515,10 +517,12 @@ class StixDomainObjectContentComponent extends Component {
                   selectedTab={markdownSelectedTab}
                   onTabChange={this.onMarkdownChangeTab.bind(this)}
                   generateMarkdownPreview={(markdown) => Promise.resolve(
-                      <RemarkGfmMarkdown
-                        content={markdown}
-                        commonmark={true}
-                      ></RemarkGfmMarkdown>,
+                      <Markdown
+                        remarkPlugins={[remarkGfm, remarkParse]}
+                        parserOptions={{ commonmark: true }}
+                      >
+                        {markdown}
+                      </Markdown>,
                   )
                   }
                   l18n={{

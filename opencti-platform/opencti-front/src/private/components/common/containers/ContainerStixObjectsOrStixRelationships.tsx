@@ -104,17 +104,19 @@ ContainerStixObjectsOrStixRelationshipsComponentProps
       >
         {title ?? t('Related entities')}
       </Typography>
-      <Security needs={security}>
-        <ContainerAddStixCoreObjects
-          containerId={container.id}
-          containerStixCoreObjects={container.objects?.edges}
-          paginationOptions={paginationOptions}
-          simple={true}
-          targetStixCoreObjectTypes={
-            types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
-          }
-        />
-      </Security>
+      {container && (
+        <Security needs={security}>
+          <ContainerAddStixCoreObjects
+            containerId={container.id}
+            containerStixCoreObjects={container.objects?.edges ?? []}
+            paginationOptions={paginationOptions}
+            simple={true}
+            targetStixCoreObjectTypes={
+              types ?? ['Stix-Domain-Object', 'Stix-Cyber-Observable']
+            }
+          />
+        </Security>
+      )}
       <div className="clearfix" />
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <QueryRenderer
