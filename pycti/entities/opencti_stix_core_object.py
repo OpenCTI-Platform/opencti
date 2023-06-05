@@ -323,6 +323,24 @@ class StixCoreObject:
                     }
                 }
             }
+            ... on MalwareAnalysis {
+                product
+                version
+                hostVm
+                operatingSystem
+                installedSoftware
+                configuration_version
+                modules
+                analysis_engine_version
+                analysis_definition_version
+                submitted
+                analysis_started
+                analysis_ended
+                result_name
+                result
+                analysisSco
+                sample
+            }
             ... on ThreatActor {
                 name
                 description

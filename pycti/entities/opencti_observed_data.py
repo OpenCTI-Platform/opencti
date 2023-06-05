@@ -626,4 +626,4 @@ class ObservedData:
 
             return observed_data_result
         else:
-            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")
+            LOGGER.error("[opencti_observed_data] Missing parameters: stixObject")

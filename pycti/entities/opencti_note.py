@@ -626,4 +626,4 @@ class Note:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")
+            LOGGER.error("[opencti_note] Missing parameters: stixObject")

@@ -109,6 +109,8 @@ class MultipleRefRelationship(Enum):
     VALUES = "values"
     LINKED = "x_opencti_linked-to"
     SERVICE_DDL = "service-dll"
+    INSTALLED_SOFTWARE = "installed-software"
+    RELATION_ANALYSIS_SCO = "analysis-sco"
 
     @classmethod
     def has_value(cls, value):

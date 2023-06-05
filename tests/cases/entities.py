@@ -80,6 +80,10 @@ class EntityTestCases:
         return MalwareTest(api_client)
 
     @staticmethod
+    def case_malware_analysis(api_client):
+        return MalwareAnalysisTest(api_client)
+
+    @staticmethod
     def case_marking_definition(api_client):
         return MarkingDefinitionTest(api_client)
 
@@ -497,6 +501,29 @@ class MalwareTest(EntityTest):
 
     def own_class(self):
         return self.api_client.malware
+
+
+class MalwareAnalysisTest(EntityTest):
+    def data(self) -> Dict:
+        return {
+            "type": "MalwareAnalysis",
+            "result_name": "Analysis of Cryptolocker_test",
+            "product": "Wireshark",
+            "submitted": "2023-01-20T17:00:00.000Z",
+            "version": "0",
+        }
+
+    def own_class(self):
+        return self.api_client.malware_analysis
+
+    def get_filter(self) -> Dict[str, str]:
+        return {
+            "key": "result_name",
+            "values": self.data()["result_name"],
+        }
+
+    def update_data(self) -> Dict[str, Union[str, int]]:
+        return {"version": "1.2.3"}
 
 
 class MarkingDefinitionTest(EntityTest):

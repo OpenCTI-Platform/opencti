@@ -602,4 +602,4 @@ class Indicator:
                 update=update,
             )
         else:
-            LOGGER.error("[opencti_attack_pattern] Missing parameters: stixObject")
+            LOGGER.error("[opencti_indicator] Missing parameters: stixObject")
