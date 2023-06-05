@@ -10323,8 +10323,8 @@ __metadata:
   linkType: hard
 
 "libtap@npm:^1.4.0":
-  version: 1.4.0
-  resolution: "libtap@npm:1.4.0"
+  version: 1.4.1
+  resolution: "libtap@npm:1.4.1"
   dependencies:
     async-hook-domain: ^2.0.4
     bind-obj-methods: ^3.0.0
@@ -10339,7 +10339,7 @@ __metadata:
     tap-yaml: ^1.0.0
     tcompare: ^5.0.6
     trivial-deferred: ^1.0.1
-  checksum: ef8416c3aa775f0bf1d2fcdd8732f41b708359bb8b72c58568cfb1913695538724aaa3f629582d9d05f25d7a221bd9b776d7ca4a30f8346cbe5ec9ce2711739c
+  checksum: 25d6cfa20948cef3032598f0c7c35a80f55e02ff8bcb7e72668fcb43a79406d20cb198bc1247bf735468193f7bee76cbcadf3ba16185935c64fd5d64180e7916
   languageName: node
   linkType: hard
 
@@ -12152,7 +12152,7 @@ __metadata:
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
     relay-test-utils: 15.0.0
-    remark-flexible-markers: ^1.0.2
+    remark-flexible-markers: 1.0.2
     remark-gfm: 3.0.1
     remark-parse: 10.0.1
     rxjs: 7.8.1
@@ -14134,7 +14134,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"remark-flexible-markers@npm:^1.0.2":
+"remark-flexible-markers@npm:1.0.2":
   version: 1.0.2
   resolution: "remark-flexible-markers@npm:1.0.2"
   dependencies:
@@ -14395,8 +14395,8 @@ __metadata:
   linkType: hard
 
 "rollup@npm:^3.21.0":
-  version: 3.23.0
-  resolution: "rollup@npm:3.23.0"
+  version: 3.23.1
+  resolution: "rollup@npm:3.23.1"
   dependencies:
     fsevents: ~2.3.2
   dependenciesMeta:
@@ -14404,7 +14404,7 @@ __metadata:
       optional: true
   bin:
     rollup: dist/bin/rollup
-  checksum: 0721065cf725c5611815be61d2b01f20b4d0027e17035f6e76384d38396b56cf6ed21a3db78eb004d9db4d24c8a6a19da4563b4ff96b5dd36f0a0f7a3baf85e8
+  checksum: 4b3b3bbfd490b41ec5473d1141fe2beb0c86f600b56378fce97e0485192818256f8cbf4d43450b097ee7042e6629fb0187488807e2d15050860718f458c44685
   languageName: node
   linkType: hard
 
