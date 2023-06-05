@@ -128,6 +128,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   # Cases
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
 }
 

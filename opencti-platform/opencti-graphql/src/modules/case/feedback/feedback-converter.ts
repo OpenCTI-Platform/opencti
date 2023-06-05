@@ -9,6 +9,8 @@ const convertFeedbackToStix = (instance: StoreEntityFeedback): StixFeedback => {
     ...feedback,
     name: instance.name,
     description: instance.description,
+    content: instance.content,
+    content_mapping: instance.content_mapping,
     rating: instance.rating,
     object_refs: (instance[INPUT_OBJECTS] ?? []).map((m) => m.standard_id),
     extensions: {

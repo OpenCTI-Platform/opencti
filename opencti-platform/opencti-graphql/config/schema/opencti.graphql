@@ -3431,6 +3431,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   # Report
   name: String!
   description: String
+  content: String
+  content_mapping: String
   report_types: [String]
   published: DateTime
   # Technical
@@ -3451,6 +3453,8 @@ input ReportAddInput {
   x_opencti_stix_ids: [StixId]
   name: String! @constraint(minLength: 2)
   description: String
+  content: String
+  content_mapping: String
   published: DateTime!
   report_types: [String]
   revoked: Boolean

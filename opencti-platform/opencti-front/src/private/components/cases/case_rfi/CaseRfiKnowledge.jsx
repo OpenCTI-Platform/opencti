@@ -5,10 +5,7 @@ import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -18,13 +15,20 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import Filters from '../../common/lists/Filters';
-import SearchInput from '../../../../components/SearchInput';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import CaseRfiPopover from './CaseRfiPopover';
-import CaseRfiKnowledgeGraph, { caseRfiKnowledgeGraphQuery } from './CaseRfiKnowledgeGraph';
-import CaseRfiKnowledgeTimeLine, { caseRfiKnowledgeTimeLineQuery } from './CaseRfiKnowledgeTimeLine';
-import CaseRfiKnowledgeCorrelation, { caseRfiKnowledgeCorrelationQuery } from './CaseRfiKnowledgeCorrelation';
+import CaseRfiKnowledgeGraph, {
+  caseRfiKnowledgeGraphQuery,
+} from './CaseRfiKnowledgeGraph';
+import CaseRfiKnowledgeTimeLine, {
+  caseRfiKnowledgeTimeLineQuery,
+} from './CaseRfiKnowledgeTimeLine';
+import CaseRfiKnowledgeCorrelation, {
+  caseRfiKnowledgeCorrelationQuery,
+} from './CaseRfiKnowledgeCorrelation';
+import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
+import ContainerContent, {
+  containerContentQuery,
+} from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -232,7 +236,6 @@ class CaseRfiKnowledgeComponent extends Component {
     const {
       classes,
       caseData,
-      t,
       location,
       match: {
         params: { mode },
@@ -251,7 +254,10 @@ class CaseRfiKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      .length > 0
+      ? []
+      : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -275,7 +281,7 @@ class CaseRfiKnowledgeComponent extends Component {
             container={caseData}
             PopoverComponent={<CaseRfiPopover id={caseData.id} />}
             link={`/dashboard/cases/rfis/${caseData.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -303,59 +309,44 @@ class CaseRfiKnowledgeComponent extends Component {
         />
         <Route
           exact
+          path="/dashboard/cases/rfis/:caseId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentQuery}
+              variables={{ id: caseData.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} />;
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
           path="/dashboard/cases/rfis/:caseId/knowledge/timeline"
           render={() => (
             <>
-              <div style={{ float: 'left' }}>
-                <SearchInput
-                  variant="small"
-                  onSubmit={this.handleTimeLineSearch.bind(this)}
-                  keyword={timeLineSearchTerm}
-                />
-                <FormControlLabel
-                  style={{ marginLeft: 10 }}
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineDisplayRelationships.bind(
-                        this,
-                      )}
-                      checked={timeLineDisplayRelationships}
-                    />
-                  }
-                  label={t('Display relationships')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineFunctionalDate.bind(
-                        this,
-                      )}
-                      checked={timeLineFunctionalDate}
-                    />
-                  }
-                  label={t('Use functional dates')}
-                />
-              </div>
-              <Filters
-                availableFilterKeys={[
-                  'entity_type',
-                  'markedBy',
-                  'labelledBy',
-                  'createdBy',
-                  'relationship_type',
-                ]}
-                availableEntityTypes={[
-                  'Stix-Domain-Object',
-                  'Stix-Cyber-Observable',
-                ]}
-                handleAddFilter={this.handleAddTimeLineFilter.bind(this)}
-                noDirectFilters={true}
+              <ContentKnowledgeTimeLineBar
+                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                timeLineSearchTerm={timeLineSearchTerm}
+                timeLineDisplayRelationships={timeLineDisplayRelationships}
+                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                  this,
+                )}
+                timeLineFunctionalDate={timeLineFunctionalDate}
+                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                  this,
+                )}
+                timeLineFilters={timeLineFilters}
+                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                  this,
+                )}
+                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                  this,
+                )}
               />
-              <FilterIconButton
-                filters={timeLineFilters}
-                handleRemoveFilter={this.handleRemoveTimeLineFilter.bind(this)}
-              />
-              <div className="clearfix" />
               <QueryRenderer
                 query={caseRfiKnowledgeTimeLineQuery}
                 variables={{ id: caseData.id, ...timeLinePaginationOptions }}
@@ -457,8 +448,4 @@ const CaseRfiKnowledge = createFragmentContainer(CaseRfiKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CaseRfiKnowledge);
+export default R.compose(withRouter, withStyles(styles))(CaseRfiKnowledge);

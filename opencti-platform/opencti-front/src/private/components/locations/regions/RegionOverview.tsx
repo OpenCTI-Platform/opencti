@@ -49,7 +49,6 @@ const RegionOverview: FunctionComponent<RegionOverviewProps> = ({ regionRef }) =
   const classes = useStyles();
   const { t, fldt } = useFormatter();
   const region = useFragment(regionOverviewFragment, regionRef);
-
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>

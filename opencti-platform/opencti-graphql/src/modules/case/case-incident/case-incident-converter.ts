@@ -9,6 +9,8 @@ const convertCaseIncidentToStix = (instance: StoreEntityCaseIncident): StixCaseI
     ...caseIncident,
     name: instance.name,
     description: instance.description,
+    content: instance.content,
+    content_mapping: instance.content_mapping,
     severity: instance.severity,
     priority: instance.priority,
     response_types: instance.response_types,

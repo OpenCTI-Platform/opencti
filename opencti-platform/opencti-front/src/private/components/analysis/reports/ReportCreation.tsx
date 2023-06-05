@@ -12,11 +12,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import { SimpleFileUpload } from 'formik-mui';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { useHistory } from 'react-router-dom';
 import { dayStartDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -37,6 +36,7 @@ import {
   ReportCreationMutation,
   ReportCreationMutation$variables,
 } from './__generated__/ReportCreationMutation.graphql';
+import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -109,25 +109,30 @@ export const reportCreationMutation = graphql`
 `;
 
 interface ReportAddInput {
-  name: string
-  description: string
-  published: Date
-  confidence: number
-  report_types: string[]
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  objectAssignee: { value: string }[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  content: string;
+  published: Date;
+  confidence: number;
+  report_types: string[];
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  objectAssignee: { value: string }[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ReportFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string, response: { id: string, name: string } | null) => void
+  updater: (
+    store: RecordSourceSelectorProxy,
+    key: string,
+    response: { id: string; name: string } | null
+  ) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
@@ -141,6 +146,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const history = useHistory();
+  const [mapAfter, setMapAfter] = useState<boolean>(false);
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     published: Yup.date()
@@ -149,6 +156,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     report_types: Yup.array().nullable(),
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
+    content: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation('Report', basicShape);
 
@@ -158,7 +166,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     report_types: [],
     confidence: defaultConfidence ?? 75,
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    content: '',
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectAssignee: [],
     objectLabel: [],
@@ -167,10 +176,14 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   };
 
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
-  const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: ReportCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
+      content: values.content,
       published: values.published,
       confidence: parseInt(String(values.confidence), 10),
       report_types: values.report_types,
@@ -194,11 +207,16 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
       },
-      onCompleted: () => {
+      onCompleted: (response) => {
         setSubmitting(false);
         resetForm();
         if (onCompleted) {
           onCompleted();
+        }
+        if (mapAfter) {
+          history.push(
+            `/dashboard/analysis/reports/${response.reportAdd?.id}/knowledge/content`,
+          );
         }
       },
     });
@@ -250,6 +268,17 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             multiline={true}
             rows="4"
             style={{ marginTop: 20 }}
+          />
+          <Field
+            component={RichTextField}
+            name="content"
+            label={t('Content')}
+            fullWidth={true}
+            style={{
+              ...fieldSpacingContainerStyle,
+              minHeight: 200,
+              height: 200,
+            }}
           />
           <ObjectAssigneeField
             name="objectAssignee"
@@ -303,6 +332,20 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
             >
               {t('Create')}
             </Button>
+            {values.content.length > 0 && (
+              <Button
+                variant="contained"
+                color="success"
+                onClick={() => {
+                  setMapAfter(true);
+                  submitForm();
+                }}
+                disabled={isSubmitting}
+                classes={{ root: classes.button }}
+              >
+                {t('Create and map')}
+              </Button>
+            )}
           </div>
         </Form>
       )}
@@ -310,20 +353,17 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   );
 };
 
-const ReportCreation = ({ paginationOptions }: { paginationOptions: ReportsLinesPaginationQuery$variables }) => {
+const ReportCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: ReportsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_reports',
-    paginationOptions,
-    'reportAdd',
-  );
-
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_reports', paginationOptions, 'reportAdd');
   return (
     <div>
       <Fab

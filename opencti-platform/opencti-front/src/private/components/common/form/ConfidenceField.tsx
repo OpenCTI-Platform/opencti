@@ -9,10 +9,12 @@ const useStyles = makeStyles(() => ({
   alert: {
     width: '100%',
     marginTop: 20,
+    paddingBottom: 0,
   },
   message: {
     width: '100%',
     overflow: 'hidden',
+    paddingBottom: 0,
   },
 }));
 
@@ -42,32 +44,29 @@ const ConfidenceField: FunctionComponent<ConfidenceFieldProps> = ({
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
-
   return (
-    <>
-      <Alert
-        classes={{ root: classes.alert, message: classes.message }}
-        severity="info"
-        icon={false}
-        variant="outlined"
-        style={{ position: 'relative' }}
-      >
-        <Field
-          component={InputSliderField}
-          variant={variant}
-          containerstyle={containerStyle}
-          fullWidth={true}
-          entityType={entityType}
-          attributeName="confidence"
-          name={'confidence'}
-          label={t('Confidence level')}
-          onFocus={onFocus}
-          onSubmit={onSubmit}
-          editContext={editContext}
-          disabled={disabled}
-        />
-      </Alert>
-    </>
+    <Alert
+      classes={{ root: classes.alert, message: classes.message }}
+      severity="info"
+      icon={false}
+      variant="outlined"
+      style={{ position: 'relative' }}
+    >
+      <Field
+        component={InputSliderField}
+        variant={variant}
+        containerstyle={containerStyle}
+        fullWidth={true}
+        entityType={entityType}
+        attributeName="confidence"
+        name={'confidence'}
+        label={t('Confidence level')}
+        onFocus={onFocus}
+        onSubmit={onSubmit}
+        editContext={editContext}
+        disabled={disabled}
+      />
+    </Alert>
   );
 };
 

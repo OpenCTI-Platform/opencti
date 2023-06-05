@@ -7,6 +7,8 @@ export const ENTITY_TYPE_CONTAINER_CASE_RFT = 'Case-Rft';
 export interface BasicStoreEntityCaseRft extends BasicStoreEntity {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   takedown_types: string,
   severity: string,
   priority: string,
@@ -17,6 +19,8 @@ export interface StoreEntityCaseRft extends StoreEntity {
   name: string,
   type: string,
   description: string,
+  content: string,
+  content_mapping: string,
   object_refs: Array<string>,
   takedown_types: string,
   severity: string,
@@ -26,6 +30,8 @@ export interface StoreEntityCaseRft extends StoreEntity {
 export interface StixCaseRft extends StixDomainObject {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   object_refs: Array<string>,
   takedown_types: string,
   severity: string,

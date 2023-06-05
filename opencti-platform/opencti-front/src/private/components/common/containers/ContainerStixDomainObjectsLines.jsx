@@ -64,17 +64,19 @@ class ContainerStixDomainObjectsLines extends Component {
           selectAll={selectAll}
           onToggleEntity={onToggleEntity.bind(this)}
         />
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
-          <ContainerAddStixCoreObjects
-            containerId={container?.id ?? null}
-            containerStixCoreObjects={selectWithoutInferred}
-            paginationOptions={paginationOptions}
-            withPadding={true}
-            targetStixCoreObjectTypes={['Stix-Domain-Object']}
-            onTypesChange={this.props.onTypesChange}
-            openExports={openExports}
-          />
-        </Security>
+        {container && (
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <ContainerAddStixCoreObjects
+              containerId={container.id}
+              containerStixCoreObjects={selectWithoutInferred}
+              paginationOptions={paginationOptions}
+              withPadding={true}
+              targetStixCoreObjectTypes={['Stix-Domain-Object']}
+              onTypesChange={this.props.onTypesChange}
+              openExports={openExports}
+            />
+          </Security>
+        )}
       </div>
     );
   }

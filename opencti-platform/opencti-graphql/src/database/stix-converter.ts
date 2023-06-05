@@ -607,6 +607,9 @@ const convertReportToStix = (instance: StoreEntity, type: string): SDO.StixRepor
     extensions: {
       [STIX_EXT_OCTI]: cleanObject({
         ...report.extensions[STIX_EXT_OCTI],
+        extension_type: 'property-extension',
+        content: instance.content,
+        content_mapping: instance.content_mapping,
         object_refs_inferred: convertObjectReferences(instance, true),
       })
     }

@@ -39,7 +39,6 @@ const TopMenuDataSource: FunctionComponent = () => {
   const { t } = useFormatter();
   const classes = styles();
   const { dataSourceId } = useParams() as { dataSourceId: string };
-
   return (
     <div>
       <Button

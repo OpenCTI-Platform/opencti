@@ -5,10 +5,7 @@ import { propOr } from 'ramda';
 import { createFragmentContainer, graphql } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
-import Switch from '@mui/material/Switch';
-import FormControlLabel from '@mui/material/FormControlLabel';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import Loader from '../../../../components/Loader';
 import AttackPatternsMatrix from '../../techniques/attack_patterns/AttackPatternsMatrix';
@@ -18,13 +15,17 @@ import {
   saveViewParameters,
 } from '../../../../utils/ListParameters';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
-import Filters from '../../common/lists/Filters';
-import SearchInput from '../../../../components/SearchInput';
-import FilterIconButton from '../../../../components/FilterIconButton';
 import CaseRftPopover from './CaseRftPopover';
-import CaseRftKnowledgeGraph, { caseRftKnowledgeGraphQuery } from './CaseRftKnowledgeGraph';
-import CaseRftKnowledgeTimeLine, { caseRftKnowledgeTimeLineQuery } from './CaseRftKnowledgeTimeLine';
-import CaseRftKnowledgeCorrelation, { caseRftKnowledgeCorrelationQuery } from './CaseRftKnowledgeCorrelation';
+import CaseRftKnowledgeGraph, {
+  caseRftKnowledgeGraphQuery,
+} from './CaseRftKnowledgeGraph';
+import CaseRftKnowledgeTimeLine, {
+  caseRftKnowledgeTimeLineQuery,
+} from './CaseRftKnowledgeTimeLine';
+import CaseRftKnowledgeCorrelation, {
+  caseRftKnowledgeCorrelationQuery,
+} from './CaseRftKnowledgeCorrelation';
+import ContentKnowledgeTimeLineBar from '../../common/containers/ContainertKnowledgeTimeLineBar';
 
 const styles = () => ({
   container: {
@@ -232,7 +233,6 @@ class CaseRftKnowledgeComponent extends Component {
     const {
       classes,
       caseData,
-      t,
       location,
       match: {
         params: { mode },
@@ -251,7 +251,10 @@ class CaseRftKnowledgeComponent extends Component {
     const defaultTypes = timeLineDisplayRelationships
       ? ['stix-core-relationship']
       : ['Stix-Core-Object'];
-    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values.length > 0 ? [] : defaultTypes;
+    const types = R.head(finalFilters.filter((n) => n.key === 'entity_type'))?.values
+      .length > 0
+      ? []
+      : defaultTypes;
     let orderBy = 'created_at';
     if (timeLineFunctionalDate && timeLineDisplayRelationships) {
       orderBy = 'start_time';
@@ -275,7 +278,7 @@ class CaseRftKnowledgeComponent extends Component {
             container={caseData}
             PopoverComponent={<CaseRftPopover id={caseData.id} />}
             link={`/dashboard/cases/rfts/${caseData.id}/knowledge`}
-            modes={['graph', 'timeline', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'timeline', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -306,56 +309,25 @@ class CaseRftKnowledgeComponent extends Component {
           path="/dashboard/cases/rfts/:caseId/knowledge/timeline"
           render={() => (
             <>
-              <div style={{ float: 'left' }}>
-                <SearchInput
-                  variant="small"
-                  onSubmit={this.handleTimeLineSearch.bind(this)}
-                  keyword={timeLineSearchTerm}
-                />
-                <FormControlLabel
-                  style={{ marginLeft: 10 }}
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineDisplayRelationships.bind(
-                        this,
-                      )}
-                      checked={timeLineDisplayRelationships}
-                    />
-                  }
-                  label={t('Display relationships')}
-                />
-                <FormControlLabel
-                  control={
-                    <Switch
-                      onChange={this.handleToggleTimeLineFunctionalDate.bind(
-                        this,
-                      )}
-                      checked={timeLineFunctionalDate}
-                    />
-                  }
-                  label={t('Use functional dates')}
-                />
-              </div>
-              <Filters
-                availableFilterKeys={[
-                  'entity_type',
-                  'markedBy',
-                  'labelledBy',
-                  'createdBy',
-                  'relationship_type',
-                ]}
-                availableEntityTypes={[
-                  'Stix-Domain-Object',
-                  'Stix-Cyber-Observable',
-                ]}
-                handleAddFilter={this.handleAddTimeLineFilter.bind(this)}
-                noDirectFilters={true}
+              <ContentKnowledgeTimeLineBar
+                handleTimeLineSearch={this.handleTimeLineSearch.bind(this)}
+                timeLineSearchTerm={timeLineSearchTerm}
+                timeLineDisplayRelationships={timeLineDisplayRelationships}
+                handleToggleTimeLineDisplayRelationships={this.handleToggleTimeLineDisplayRelationships.bind(
+                  this,
+                )}
+                timeLineFunctionalDate={timeLineFunctionalDate}
+                handleToggleTimeLineFunctionalDate={this.handleToggleTimeLineFunctionalDate.bind(
+                  this,
+                )}
+                timeLineFilters={timeLineFilters}
+                handleAddTimeLineFilter={this.handleAddTimeLineFilter.bind(
+                  this,
+                )}
+                handleRemoveTimeLineFilter={this.handleRemoveTimeLineFilter.bind(
+                  this,
+                )}
               />
-              <FilterIconButton
-                filters={timeLineFilters}
-                handleRemoveFilter={this.handleRemoveTimeLineFilter.bind(this)}
-              />
-              <div className="clearfix" />
               <QueryRenderer
                 query={caseRftKnowledgeTimeLineQuery}
                 variables={{ id: caseData.id, ...timeLinePaginationOptions }}
@@ -457,8 +429,4 @@ const CaseRftKnowledge = createFragmentContainer(CaseRftKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(CaseRftKnowledge);
+export default R.compose(withRouter, withStyles(styles))(CaseRftKnowledge);

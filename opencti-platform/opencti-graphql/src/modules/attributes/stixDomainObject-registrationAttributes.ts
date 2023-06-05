@@ -166,6 +166,8 @@ const stixDomainObjectsAttributes: { [k: string]: Array<AttributeDefinition> } =
       label: 'Report types'
     },
     { name: 'published', type: 'date', mandatoryType: 'external', multiple: false, upsert: false },
+    { name: 'content', type: 'string', mandatoryType: 'customizable', multiple: false, upsert: true },
+    { name: 'content_mapping', type: 'string', mandatoryType: 'no', multiple: false, upsert: true },
   ],
   [ENTITY_TYPE_COURSE_OF_ACTION]: [
     xOpenctiAliases,

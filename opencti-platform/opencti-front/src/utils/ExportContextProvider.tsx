@@ -14,7 +14,6 @@ export const ExportContext = React.createContext<ExportContextType>(defaultConte
 
 const ExportContextProvider = ({ children }: { children: ReactNode }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
-
   return (
     <ExportContext.Provider value={{ selectedIds, setSelectedIds }}>
       {children}

@@ -3,7 +3,7 @@ import React, { FunctionComponent } from 'react';
 import { Slider } from '@mui/material';
 import TextField from './TextField';
 import { SubscriptionFocus } from './Subscription';
-import { useLevel } from '../utils/hooks/useScale';
+import { buildScaleLevel, useLevel } from '../utils/hooks/useScale';
 
 interface InputSliderFieldProps {
   label: string;
@@ -31,7 +31,6 @@ InputSliderFieldProps & FieldProps
   variant,
   onFocus,
   onSubmit,
-  containerStyle,
   editContext,
   entityType,
   attributeName,
@@ -40,6 +39,7 @@ InputSliderFieldProps & FieldProps
   const {
     level: { color },
     marks,
+    scale,
   } = useLevel(entityType, attributeName, value);
   const min = marks.length > 0 ? marks[0].value : 0;
   const max = marks.length > 0 ? marks[marks.length - 1].value : 0;
@@ -48,25 +48,18 @@ InputSliderFieldProps & FieldProps
     '& .MuiSlider-rail': {
       background: `${color}`,
     },
-    '& .MuiSlider-markLabel[data-index="0"]': {
-      transform: 'translateX(0%)',
-    },
-    [`& .MuiSlider-markLabel[data-index="${marks.length - 1}"]`]: {
-      transform: 'translateX(-100%)',
-    },
   };
-
+  const currentLevel = buildScaleLevel(value, scale);
   if (variant === 'edit') {
     return (
       <>
         <Field
           component={TextField}
+          fullWidth={true}
           variant="standard"
           type="number"
           name={name}
           label={label}
-          containerstyle={containerStyle}
-          fullWidth={true}
           onSubmit={onSubmit}
           onFocus={onFocus}
           disabled={disabled}
@@ -74,17 +67,18 @@ InputSliderFieldProps & FieldProps
             <SubscriptionFocus context={editContext} fieldName={name} />
           }
         />
-        <div style={{ paddingTop: '20px' }}>
-          <Slider
-            value={value}
-            min={min}
-            max={max}
-            marks={marks}
-            onChange={(_, v) => setFieldValue(name, v.toString())}
-            onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
-            sx={sliderStyle}
-          />
-        </div>
+        <Slider
+          value={value}
+          min={min}
+          max={max}
+          onChange={(_, v) => setFieldValue(name, v.toString())}
+          onChangeCommitted={(_, v) => onSubmit?.(name, v.toString())}
+          sx={sliderStyle}
+          style={{ margin: '5px 0 0 0' }}
+          valueLabelDisplay="auto"
+          size="small"
+          valueLabelFormat={() => currentLevel.level.label}
+        />
       </>
     );
   }
@@ -92,24 +86,24 @@ InputSliderFieldProps & FieldProps
     <>
       <Field
         component={TextField}
+        fullWidth={true}
         variant="standard"
         type="number"
         name={name}
         label={label}
-        containerstyle={containerStyle}
-        fullWidth={true}
         disabled={disabled}
       />
-      <div style={{ paddingTop: '20px' }}>
-        <Slider
-          value={value}
-          marks={marks}
-          min={min}
-          max={max}
-          onChange={(_, v) => setFieldValue(name, v.toString())}
-          sx={sliderStyle}
-        />
-      </div>
+      <Slider
+        value={value}
+        min={min}
+        max={max}
+        onChange={(_, v) => setFieldValue(name, v.toString())}
+        sx={sliderStyle}
+        style={{ margin: '5px 0 0 0' }}
+        valueLabelDisplay="auto"
+        size="small"
+        valueLabelFormat={() => currentLevel.level.label}
+      />
     </>
   );
 };

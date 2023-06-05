@@ -8,16 +8,10 @@ import {
   identitySearchCreatorsSearchQuery,
   identitySearchIdentitiesSearchQuery,
 } from '../../private/components/common/identities/IdentitySearch';
-import {
-  stixDomainObjectsLinesSearchQuery,
-} from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
+import { stixDomainObjectsLinesSearchQuery } from '../../private/components/common/stix_domain_objects/StixDomainObjectsLines';
 import { defaultValue } from '../Graph';
-import {
-  markingDefinitionsLinesSearchQuery,
-} from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
-import {
-  killChainPhasesLinesSearchQuery,
-} from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
+import { markingDefinitionsLinesSearchQuery } from '../../private/components/settings/marking_definitions/MarkingDefinitionsLines';
+import { killChainPhasesLinesSearchQuery } from '../../private/components/settings/kill_chain_phases/KillChainPhasesLines';
 import { labelsSearchQuery } from '../../private/components/settings/LabelsQuery';
 import { attributesSearchQuery } from '../../private/components/settings/AttributesQuery';
 import { statusFieldStatusesSearchQuery } from '../../private/components/common/form/StatusField';
@@ -25,36 +19,16 @@ import { useFormatter } from '../../components/i18n';
 import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
 import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
 import { objectAssigneeFieldAssigneesSearchQuery } from '../../private/components/common/form/ObjectAssigneeField';
-import {
-  IdentitySearchIdentitiesSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
-import {
-  IdentitySearchCreatorsSearchQuery$data,
-} from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
-import {
-  ObjectAssigneeFieldAssigneesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
-import {
-  StixDomainObjectsLinesSearchQuery$data,
-} from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
-import {
-  useSearchEntitiesStixCoreObjectsSearchQuery$data,
-} from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
-import {
-  MarkingDefinitionsLinesSearchQuery$data,
-} from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
-import {
-  KillChainPhasesLinesSearchQuery$data,
-} from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
-import {
-  LabelsQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
-import {
-  AttributesQuerySearchQuery$data,
-} from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
-import {
-  StatusFieldStatusesSearchQuery$data,
-} from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
+import { IdentitySearchIdentitiesSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
+import { IdentitySearchCreatorsSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
+import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
+import { StixDomainObjectsLinesSearchQuery$data } from '../../private/components/common/stix_domain_objects/__generated__/StixDomainObjectsLinesSearchQuery.graphql';
+import { useSearchEntitiesStixCoreObjectsSearchQuery$data } from './__generated__/useSearchEntitiesStixCoreObjectsSearchQuery.graphql';
+import { MarkingDefinitionsLinesSearchQuery$data } from '../../private/components/settings/marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { KillChainPhasesLinesSearchQuery$data } from '../../private/components/settings/kill_chain_phases/__generated__/KillChainPhasesLinesSearchQuery.graphql';
+import { LabelsQuerySearchQuery$data } from '../../private/components/settings/__generated__/LabelsQuerySearchQuery.graphql';
+import { AttributesQuerySearchQuery$data } from '../../private/components/settings/__generated__/AttributesQuerySearchQuery.graphql';
+import { StatusFieldStatusesSearchQuery$data } from '../../private/components/common/form/__generated__/StatusFieldStatusesSearchQuery.graphql';
 import { VocabularyQuery$data } from '../../private/components/settings/__generated__/VocabularyQuery.graphql';
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { Theme } from '../../components/Theme';
@@ -231,17 +205,17 @@ const filtersStixCoreObjectsSearchQuery = graphql`
 `;
 
 export interface EntityValue {
-  label?: string | null,
-  value?: string | null,
-  type?: string,
-  group?: string,
-  color?: string | null,
+  label?: string | null;
+  value?: string | null;
+  type?: string;
+  group?: string;
+  color?: string | null;
 }
 
 interface EntityWithLabelValue {
-  label: string,
-  value: string,
-  type: string,
+  label: string;
+  value: string;
+  type: string;
 }
 
 const useSearchEntities = ({
@@ -251,11 +225,11 @@ const useSearchEntities = ({
   setInputValues,
   allEntityTypes,
 }: {
-  availableEntityTypes?: string[],
-  availableRelationshipTypes?: string[],
-  searchScope: Record<string, string[]>,
-  setInputValues: Dispatch<Record<string, string | Date>>,
-  allEntityTypes?: boolean,
+  availableEntityTypes?: string[];
+  availableRelationshipTypes?: string[];
+  searchScope: Record<string, string[]>;
+  setInputValues: Dispatch<Record<string, string | Date>>;
+  allEntityTypes?: boolean;
 }) => {
   const [entities, setEntities] = useState<Record<string, EntityValue[]>>({});
   const { t } = useFormatter();
@@ -267,7 +241,10 @@ const useSearchEntities = ({
       ({ value, group }, index, arr) => arr.findIndex((v) => v.value === value && v.group === group) === index,
     ),
   }));
-  const searchEntities = (filterKey: string, event: SelectChangeEvent<string | number>) => {
+  const searchEntities = (
+    filterKey: string,
+    event: SelectChangeEvent<string | number>,
+  ) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
     const scores = [
       '0',
@@ -300,12 +277,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const createdByEntities = ((data as IdentitySearchIdentitiesSearchQuery$data)?.identities?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.name,
-                value: n?.node.id,
-                type: n?.node.entity_type,
-              }));
+            const createdByEntities = (
+              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
             unionSetEntities('toSightingId', createdByEntities);
           });
         break;
@@ -316,12 +295,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const creators = ((data as IdentitySearchCreatorsSearchQuery$data)?.creators?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.name,
-                value: n?.node.id,
-                type: 'Individual',
-              }));
+            const creators = (
+              (data as IdentitySearchCreatorsSearchQuery$data)?.creators
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: 'Individual',
+            }));
             unionSetEntities('creator', creators);
           });
         break;
@@ -332,12 +313,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const assigneeToEntities = ((data as ObjectAssigneeFieldAssigneesSearchQuery$data)?.assignees?.edges ?? [])
-              .map((n) => ({
-                label: n.node.name,
-                value: n.node.id,
-                type: 'User',
-              }));
+            const assigneeToEntities = (
+              (data as ObjectAssigneeFieldAssigneesSearchQuery$data)?.assignees
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n.node.name,
+              value: n.node.id,
+              type: 'User',
+            }));
             unionSetEntities('assigneeTo', assigneeToEntities);
           });
         break;
@@ -349,12 +332,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const createdByEntities = ((data as IdentitySearchIdentitiesSearchQuery$data)?.identities?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.name,
-                value: n?.node.id,
-                type: n?.node.entity_type,
-              }));
+            const createdByEntities = (
+              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
             unionSetEntities('createdBy', createdByEntities);
           });
         break;
@@ -373,12 +358,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const sightedByEntities = ((data as StixDomainObjectsLinesSearchQuery$data)?.stixDomainObjects?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.name,
-                value: n?.node.id,
-                type: n?.node.entity_type,
-              }));
+            const sightedByEntities = (
+              (data as StixDomainObjectsLinesSearchQuery$data)
+                ?.stixDomainObjects?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
             unionSetEntities('sightedBy', sightedByEntities);
           });
         break;
@@ -390,13 +377,15 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const elementIdEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const elementIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('elementId', elementIdEntities);
           });
         break;
@@ -408,13 +397,15 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const fromIdEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const fromIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('fromId', fromIdEntities);
           });
         break;
@@ -426,13 +417,15 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const toIdEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const toIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('toId', toIdEntities);
           });
         break;
@@ -444,13 +437,15 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const toIdEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const toIdEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('targets', toIdEntities);
           });
         break;
@@ -464,33 +459,35 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const objectContainsEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const objectContainsEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('objectContains', objectContainsEntities);
           });
         break;
       case 'indicates':
         fetchQuery(filtersStixCoreObjectsSearchQuery, {
-          types: (searchScope && searchScope.indicates) || [
-            'Stix-Core-Object',
-          ],
+          types: (searchScope && searchScope.indicates) || ['Stix-Core-Object'],
           search: event.target.value !== 0 ? event.target.value : '',
           count: 50,
         })
           .toPromise()
           .then((data) => {
-            const indicatesEntities = ((data as useSearchEntitiesStixCoreObjectsSearchQuery$data)?.stixCoreObjects?.edges ?? [])
-              .map((n) => ({
-                label: defaultValue(n?.node),
-                value: n?.node.id,
-                type: n?.node.entity_type,
-                parentTypes: n?.node.parent_types,
-              }));
+            const indicatesEntities = (
+              (data as useSearchEntitiesStixCoreObjectsSearchQuery$data)
+                ?.stixCoreObjects?.edges ?? []
+            ).map((n) => ({
+              label: defaultValue(n?.node),
+              value: n?.node.id,
+              type: n?.node.entity_type,
+              parentTypes: n?.node.parent_types,
+            }));
             unionSetEntities('indicates', indicatesEntities);
           });
         break;
@@ -500,13 +497,15 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const markedByEntities = ((data as MarkingDefinitionsLinesSearchQuery$data)?.markingDefinitions?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.definition,
-                value: n?.node.id,
-                type: 'Marking-Definition',
-                color: n?.node.x_opencti_color,
-              }));
+            const markedByEntities = (
+              (data as MarkingDefinitionsLinesSearchQuery$data)
+                ?.markingDefinitions?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.definition,
+              value: n?.node.id,
+              type: 'Marking-Definition',
+              color: n?.node.x_opencti_color,
+            }));
             unionSetEntities('markedBy', markedByEntities);
           });
         break;
@@ -517,12 +516,16 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const killChainPhaseEntities = ((data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases?.edges ?? [])
-              .map((n) => ({
-                label: n ? `[${n.node.kill_chain_name}] ${n.node.phase_name}` : '',
-                value: n?.node.id,
-                type: 'Kill-Chain-Phase',
-              }));
+            const killChainPhaseEntities = (
+              (data as KillChainPhasesLinesSearchQuery$data)?.killChainPhases
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n
+                ? `[${n.node.kill_chain_name}] ${n.node.phase_name}`
+                : '',
+              value: n?.node.id,
+              type: 'Kill-Chain-Phase',
+            }));
             unionSetEntities('killChainPhase', killChainPhaseEntities);
           });
         break;
@@ -533,13 +536,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const labelledByEntities = ((data as LabelsQuerySearchQuery$data)?.labels?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.value,
-                value: n?.node.id,
-                type: 'Label',
-                color: n?.node.color,
-              }));
+            const labelledByEntities = (
+              (data as LabelsQuerySearchQuery$data)?.labels?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.id,
+              type: 'Label',
+              color: n?.node.color,
+            }));
             unionSetEntities('labelledBy', [
               {
                 label: t('No label'),
@@ -695,13 +699,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const priorityEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? []).map(
-              (n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }),
-            );
+            const priorityEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('priority', priorityEntities);
           });
         break;
@@ -713,12 +718,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const severityEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }));
+            const severityEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('severity', severityEntities);
           });
         break;
@@ -749,13 +756,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const severityEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? []).map(
-              (n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }),
-            );
+            const severityEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('x_opencti_base_severity', severityEntities);
           });
         break;
@@ -767,12 +775,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }));
+            const attackVectorEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('x_opencti_attack_vector', attackVectorEntities);
           });
         break;
@@ -784,12 +794,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const attackVectorEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }));
+            const attackVectorEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('malware_types', attackVectorEntities);
           });
         break;
@@ -800,7 +812,10 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const statusEntities = ((data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges ?? [])
+            const statusEntities = (
+              (data as StatusFieldStatusesSearchQuery$data)?.statuses?.edges
+              ?? []
+            )
               .filter((n) => !R.isNil(n.node.template))
               .map((n) => ({
                 label: n.node.template?.name,
@@ -821,12 +836,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const organizationTypeEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? [])
-              .map((n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }));
+            const organizationTypeEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities(
               'x_opencti_organization_type',
               organizationTypeEntities,
@@ -841,13 +858,14 @@ const useSearchEntities = ({
         })
           .toPromise()
           .then((data) => {
-            const sourceEntities = ((data as AttributesQuerySearchQuery$data)?.runtimeAttributes?.edges ?? []).map(
-              (n) => ({
-                label: n?.node.value,
-                value: n?.node.value,
-                type: 'Vocabulary',
-              }),
-            );
+            const sourceEntities = (
+              (data as AttributesQuerySearchQuery$data)?.runtimeAttributes
+                ?.edges ?? []
+            ).map((n) => ({
+              label: n?.node.value,
+              value: n?.node.value,
+              type: 'Vocabulary',
+            }));
             unionSetEntities('source', sourceEntities);
           });
         break;
@@ -859,11 +877,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'indicator_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
@@ -875,11 +895,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'incident_type',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
@@ -891,11 +913,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'report_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
@@ -907,11 +931,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'channel_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
@@ -923,11 +949,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'event_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
@@ -937,30 +965,51 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'context',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;
       // region entity and relation types
       case 'entity_type':
       case 'entity_types':
-        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
-          const entitiesTypes = availableEntityTypes.map((n) => ({
-            label: t(n.toString()[0] === n.toString()[0].toUpperCase() ? `entity_${n.toString()}` : `relationship_${n.toString()}`),
-            value: n,
-            type: n,
-          })).sort((a, b) => a.label.localeCompare(b.label));
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+          && !availableEntityTypes.includes('Stix-Core-Object')
+        ) {
+          const entitiesTypes = availableEntityTypes
+            .map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            entitiesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('entity_type', entitiesTypes);
         } else {
           let result = [] as EntityWithLabelValue[];
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Core-Object')
+            || availableEntityTypes.includes('Stix-Cyber-Observable')
+          ) {
             result = [
               ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -970,7 +1019,11 @@ const useSearchEntities = ({
               ...result,
             ];
           }
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Core-Object')
+            || availableEntityTypes.includes('Stix-Domain-Object')
+          ) {
             result = [
               ...(schema.sdos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -980,7 +1033,10 @@ const useSearchEntities = ({
               ...result,
             ];
           }
-          if (!availableEntityTypes || availableEntityTypes.includes('stix-core-relationship')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('stix-core-relationship')
+          ) {
             result = [
               ...(schema.sros ?? []).map((n) => ({
                 label: t(`relationship_${n.label}`),
@@ -997,26 +1053,47 @@ const useSearchEntities = ({
           }
           const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            entitiesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('entity_type', entitiesTypes);
         }
         break;
       case 'fromTypes':
         // eslint-disable-next-line no-case-declarations
-        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
-          const fromTypesTypes = (availableEntityTypes).map((n) => ({
-            label: t(n.toString()[0] === n.toString()[0].toUpperCase() ? `entity_${n.toString()}` : `relationship_${n.toString()}`),
-            value: n,
-            type: n,
-          })).sort((a, b) => a.label.localeCompare(b.label));
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          const fromTypesTypes = availableEntityTypes
+            .map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            fromTypesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            fromTypesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('fromTypes', fromTypesTypes);
         } else {
           let result = [] as EntityWithLabelValue[];
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Cyber-Observable')
+          ) {
             result = [
               ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -1026,7 +1103,10 @@ const useSearchEntities = ({
               ...result,
             ];
           }
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Domain-Object')
+          ) {
             result = [
               ...(schema.sdos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -1038,30 +1118,47 @@ const useSearchEntities = ({
           }
           const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            entitiesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('fromTypes', entitiesTypes);
         }
         break;
       case 'toTypes':
         // eslint-disable-next-line no-case-declarations
-        if (availableEntityTypes && !availableEntityTypes.includes('Stix-Cyber-Observable') && !availableEntityTypes.includes('Stix-Domain-Object')) {
-          const toTypesTypes = (availableEntityTypes).map((n) => ({
-            label: t(
-              n.toString()[0] === n.toString()[0].toUpperCase()
-                ? `entity_${n.toString()}`
-                : `relationship_${n.toString()}`,
-            ),
-            value: n,
-            type: n,
-          })).sort((a, b) => a.label.localeCompare(b.label));
+        if (
+          availableEntityTypes
+          && !availableEntityTypes.includes('Stix-Cyber-Observable')
+          && !availableEntityTypes.includes('Stix-Domain-Object')
+        ) {
+          const toTypesTypes = availableEntityTypes
+            .map((n) => ({
+              label: t(
+                n.toString()[0] === n.toString()[0].toUpperCase()
+                  ? `entity_${n.toString()}`
+                  : `relationship_${n.toString()}`,
+              ),
+              value: n,
+              type: n,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            toTypesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            toTypesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('toTypes', toTypesTypes);
         } else {
           let result = [] as EntityWithLabelValue[];
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Cyber-Observable')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Cyber-Observable')
+          ) {
             result = [
               ...(schema.scos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -1071,7 +1168,10 @@ const useSearchEntities = ({
               ...result,
             ];
           }
-          if (!availableEntityTypes || availableEntityTypes.includes('Stix-Domain-Object')) {
+          if (
+            !availableEntityTypes
+            || availableEntityTypes.includes('Stix-Domain-Object')
+          ) {
             result = [
               ...(schema.sdos ?? []).map((n) => ({
                 label: t(`entity_${n.label}`),
@@ -1083,7 +1183,11 @@ const useSearchEntities = ({
           }
           const entitiesTypes = result.sort((a, b) => a.label.localeCompare(b.label));
           if (allEntityTypes) {
-            entitiesTypes.unshift({ label: t('entity_All'), value: 'all', type: 'entity' });
+            entitiesTypes.unshift({
+              label: t('entity_All'),
+              value: 'all',
+              type: 'entity',
+            });
           }
           unionSetEntities('toTypes', entitiesTypes);
         }
@@ -1091,11 +1195,13 @@ const useSearchEntities = ({
       case 'relationship_type':
         // eslint-disable-next-line no-case-declarations
         if (availableRelationshipTypes) {
-          const relationshipsTypes = availableRelationshipTypes.map((n) => ({
-            label: t(`relationship_${n.toString()}`),
-            value: n,
-            type: n,
-          })).sort((a, b) => a.label.localeCompare(b.label));
+          const relationshipsTypes = availableRelationshipTypes
+            .map((n) => ({
+              label: t(`relationship_${n.toString()}`),
+              value: n,
+              type: n,
+            }))
+            .sort((a, b) => a.label.localeCompare(b.label));
           unionSetEntities('relationship_type', relationshipsTypes);
         } else {
           const relationshipsTypes = (schema.sros ?? [])
@@ -1127,7 +1233,9 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'category',
-              (data as useVocabularyCategoryQuery$data).vocabularyCategories.map(({ key }) => ({
+              (
+                data as useVocabularyCategoryQuery$data
+              ).vocabularyCategories.map(({ key }) => ({
                 label: key,
                 value: key,
                 type: 'Vocabulary',
@@ -1137,7 +1245,14 @@ const useSearchEntities = ({
         break;
       case 'container_type':
         // eslint-disable-next-line no-case-declarations
-        const containersTypes = ['Note', 'Observed-Data', 'Opinion', 'Report', 'Grouping', 'Case']
+        const containersTypes = [
+          'Note',
+          'Observed-Data',
+          'Opinion',
+          'Report',
+          'Grouping',
+          'Case',
+        ]
           .map((n) => ({
             label: t(
               n.toString()[0] === n.toString()[0].toUpperCase()
@@ -1167,11 +1282,13 @@ const useSearchEntities = ({
           .then((data) => {
             unionSetEntities(
               'note_types',
-              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(({ node }) => ({
-                label: t(node.name),
-                value: node.name,
-                type: 'Vocabulary',
-              })),
+              ((data as VocabularyQuery$data)?.vocabularies?.edges ?? []).map(
+                ({ node }) => ({
+                  label: t(node.name),
+                  value: node.name,
+                  type: 'Vocabulary',
+                }),
+              ),
             );
           });
         break;

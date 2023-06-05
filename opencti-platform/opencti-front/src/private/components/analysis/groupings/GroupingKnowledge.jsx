@@ -6,7 +6,6 @@ import withStyles from '@mui/styles/withStyles';
 import { Route, withRouter } from 'react-router-dom';
 import { propOr } from 'ramda';
 import { QueryRenderer } from '../../../../relay/environment';
-import inject18n from '../../../../components/i18n';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import GroupingKnowledgeGraph, {
   groupingKnowledgeGraphQuery,
@@ -21,6 +20,9 @@ import {
   buildViewParamsFromUrlAndStorage,
   saveViewParameters,
 } from '../../../../utils/ListParameters';
+import ContainerContent, {
+  containerContentQuery,
+} from '../../common/containers/ContainerContent';
 
 const styles = () => ({
   container: {
@@ -172,7 +174,7 @@ class GroupingKnowledgeComponent extends Component {
             container={grouping}
             PopoverComponent={<GroupingPopover />}
             link={`/dashboard/analysis/groupings/${grouping.id}/knowledge`}
-            modes={['graph', 'correlation', 'matrix']}
+            modes={['graph', 'content', 'correlation', 'matrix']}
             currentMode={mode}
             knowledge={true}
           />
@@ -192,6 +194,22 @@ class GroupingKnowledgeComponent extends Component {
                       mode={mode}
                     />
                   );
+                }
+                return <Loader />;
+              }}
+            />
+          )}
+        />
+        <Route
+          exact
+          path="/dashboard/analysis/groupings/:groupingId/knowledge/content"
+          render={() => (
+            <QueryRenderer
+              query={containerContentQuery}
+              variables={{ id: grouping.id }}
+              render={({ props }) => {
+                if (props && props.container) {
+                  return <ContainerContent containerData={props.container} />;
                 }
                 return <Loader />;
               }}
@@ -280,8 +298,4 @@ const GroupingKnowledge = createFragmentContainer(GroupingKnowledgeComponent, {
   `,
 });
 
-export default R.compose(
-  inject18n,
-  withRouter,
-  withStyles(styles),
-)(GroupingKnowledge);
+export default R.compose(withRouter, withStyles(styles))(GroupingKnowledge);

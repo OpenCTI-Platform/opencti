@@ -1,39 +1,22 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
-import {
-  append,
-  assoc,
-  compose,
-  filter,
-  groupBy,
-  keys,
-  map,
-  pipe,
-} from 'ramda';
 import withStyles from '@mui/styles/withStyles';
-import Accordion from '@mui/material/Accordion';
-import AccordionDetails from '@mui/material/AccordionDetails';
-import AccordionSummary from '@mui/material/AccordionSummary';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Typography from '@mui/material/Typography';
-import { CheckCircle, ExpandMore } from '@mui/icons-material';
 import { ConnectionHandler } from 'relay-runtime';
-import Markdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
 import { commitMutation } from '../../../../relay/environment';
-import { truncate } from '../../../../utils/String';
-import ItemIcon from '../../../../components/ItemIcon';
 import inject18n from '../../../../components/i18n';
 import {
   reportKnowledgeGraphMutationRelationDeleteMutation,
   reportKnowledgeGraphtMutationRelationAddMutation,
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
-import ItemMarkings from '../../../../components/ItemMarkings';
+import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
+import {
+  ContainerAddStixCoreObjectsLine,
+  ContainerAddStixCoreObjecstLineDummy,
+} from './ContainerAddStixCoreObjectsLine';
+
+const nbOfRowsToLoad = 50;
 
 const styles = (theme) => ({
   container: {
@@ -106,23 +89,29 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   }
 `;
 
-class ContainerAddStixCoreObjectsLinesContainer extends Component {
+class ContainerAddStixCoreObjectsLinesComponent extends Component {
   constructor(props) {
     super(props);
-    this.state = { expandedPanels: {}, addedStixCoreObjects: [] };
-  }
-
-  getContainerStixCoreObjectsIds() {
-    const { containerStixCoreObjects } = this.props;
-    return map((n) => n.node.id, containerStixCoreObjects || []);
+    this.state = {
+      expandedPanels: {},
+      addedStixCoreObjects: R.indexBy(
+        R.prop('id'),
+        (props.containerStixCoreObjects || []).map((n) => n.node),
+      ),
+    };
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const { containerId, paginationOptions, knowledgeGraph, onAdd, onDelete } = this.props;
+    const {
+      containerId,
+      paginationOptions,
+      knowledgeGraph,
+      onAdd,
+      onDelete,
+      mapping,
+    } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
-    const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
+    const alreadyAdded = stixCoreObject.id in addedStixCoreObjects;
     if (alreadyAdded) {
       if (knowledgeGraph) {
         commitMutation({
@@ -134,8 +123,8 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixCoreObjects: filter(
-                (n) => n !== stixCoreObject.id,
+              addedStixCoreObjects: R.dissoc(
+                stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -157,7 +146,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             const options = { ...paginationOptions };
             delete options.id;
             delete options.count;
-
             const conn = ConnectionHandler.getConnection(
               store.get(containerId),
               'Pagination_objects',
@@ -167,8 +155,8 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixCoreObjects: filter(
-                (n) => n !== stixCoreObject.id,
+              addedStixCoreObjects: R.dissoc(
+                stixCoreObject.id,
                 this.state.addedStixCoreObjects,
               ),
             });
@@ -189,10 +177,10 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
           },
           onCompleted: () => {
             this.setState({
-              addedStixCoreObjects: append(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
+              addedStixCoreObjects: {
+                ...this.state.addedStixCoreObjects,
+                [stixCoreObject.id]: stixCoreObject,
+              },
             });
             if (typeof onAdd === 'function') {
               onAdd(stixCoreObject);
@@ -211,7 +199,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             const options = { ...paginationOptions };
             delete options.id;
             delete options.count;
-
             const payload = store
               .getRootField('containerEdit')
               .getLinkedRecord('relationAdd', { input })
@@ -225,148 +212,51 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },
           onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: append(
-                stixCoreObject.id,
-                this.state.addedStixCoreObjects,
-              ),
-            });
+            if (!mapping) {
+              this.setState({
+                addedStixCoreObjects: {
+                  ...this.state.addedStixCoreObjects,
+                  [stixCoreObject.id]: stixCoreObject,
+                },
+              });
+            }
+            if (typeof onAdd === 'function') {
+              onAdd(stixCoreObject);
+            }
           },
         });
       }
     }
   }
 
-  handleChangePanel(panelKey, event, expanded) {
-    this.setState({
-      expandedPanels: assoc(panelKey, expanded, this.state.expandedPanels),
-    });
-  }
-
-  isExpanded(type, numberOfEntities, numberOfTypes) {
-    if (this.state.expandedPanels[type] !== undefined) {
-      return this.state.expandedPanels[type];
-    }
-    if (numberOfEntities === 1) {
-      return true;
-    }
-    return numberOfTypes === 1;
-  }
-
   render() {
-    const { t, classes, data, fd } = this.props;
+    const { initialLoading, dataColumns, relay } = this.props;
     const { addedStixCoreObjects } = this.state;
-    const stixCoreObjectsNodes = pipe(
-      map((n) => n.node),
-      filter((n) => n.entity_type !== 'Note' && n.entity_type !== 'Opinion'),
-    )(data.stixCoreObjects.edges);
-    const byType = groupBy((stixCoreObject) => stixCoreObject.entity_type);
-    const stixCoreObjects = byType(stixCoreObjectsNodes);
-    const stixCoreObjectsTypes = keys(stixCoreObjects);
-    const containerStixCoreObjectsIds = this.getContainerStixCoreObjectsIds();
     return (
-      <div className={classes.container}>
-        {stixCoreObjectsTypes.length > 0 ? (
-          stixCoreObjectsTypes.map((type) => (
-            <Accordion
-              key={type}
-              expanded={this.isExpanded(
-                type,
-                stixCoreObjects[type].length,
-                stixCoreObjectsTypes.length,
-              )}
-              onChange={this.handleChangePanel.bind(this, type)}
-              elevation={3}
-            >
-              <AccordionSummary expandIcon={<ExpandMore />}>
-                <Typography className={classes.heading}>
-                  {t(`entity_${type}`)}
-                </Typography>
-                <Typography className={classes.secondaryHeading}>
-                  {stixCoreObjects[type].length} {t('entitie(s)')}
-                </Typography>
-              </AccordionSummary>
-              <AccordionDetails
-                classes={{ root: classes.expansionPanelContent }}
-              >
-                <List classes={{ root: classes.list }}>
-                  {stixCoreObjects[type].map((stixCoreObject) => {
-                    const alreadyAdded = addedStixCoreObjects.includes(stixCoreObject.id)
-                      || containerStixCoreObjectsIds.includes(stixCoreObject.id);
-                    return (
-                      <ListItem
-                        key={stixCoreObject.id}
-                        classes={{ root: classes.menuItem }}
-                        divider={true}
-                        button={true}
-                        onClick={this.toggleStixCoreObject.bind(
-                          this,
-                          stixCoreObject,
-                        )}
-                      >
-                        <ListItemIcon>
-                          {alreadyAdded ? (
-                            <CheckCircle classes={{ root: classes.icon }} />
-                          ) : (
-                            <ItemIcon type={type} />
-                          )}
-                        </ListItemIcon>
-                        <ListItemText
-                          primary={`${
-                            stixCoreObject.x_mitre_id
-                              ? `[${stixCoreObject.x_mitre_id}] `
-                              : ''
-                          }${truncate(
-                            stixCoreObject.name
-                              || stixCoreObject.observable_value
-                              || stixCoreObject.attribute_abstract
-                              || stixCoreObject.content
-                              || stixCoreObject.opinion
-                              || `${fd(stixCoreObject.first_observed)} - ${fd(
-                                stixCoreObject.last_observed,
-                              )}`,
-                            60,
-                          )}`}
-                          secondary={
-                            <Markdown
-                              remarkPlugins={[remarkGfm, remarkParse]}
-                              parserOptions={{ commonmark: true }}
-                              className="markdown"
-                            >
-                              {truncate(
-                                stixCoreObject.description
-                                  || fd(stixCoreObject.created_at),
-                                200,
-                              )}
-                            </Markdown>
-                          }
-                        />
-                        <div style={{ marginLeft: 10 }}>
-                          <ItemMarkings
-                            markingDefinitionsEdges={
-                              stixCoreObject.objectMarking?.edges ?? []
-                            }
-                            limit={1}
-                          />
-                        </div>
-                      </ListItem>
-                    );
-                  })}
-                </List>
-              </AccordionDetails>
-            </Accordion>
-          ))
-        ) : (
-          <div style={{ paddingLeft: 20 }}>
-            {t('No entities were found for this search.')}
-          </div>
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={R.pathOr([], ['stixCoreObjects', 'edges'], this.props.data)}
+        globalCount={R.pathOr(
+          nbOfRowsToLoad,
+          ['stixCoreObjects', 'pageInfo', 'globalCount'],
+          this.props.data,
         )}
-      </div>
+        LineComponent={<ContainerAddStixCoreObjectsLine />}
+        DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        addedElements={addedStixCoreObjects}
+        onToggleEntity={this.toggleStixCoreObject.bind(this)}
+        disableExport={true}
+      />
     );
   }
 }
 
-ContainerAddStixCoreObjectsLinesContainer.propTypes = {
+ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   containerId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -378,6 +268,7 @@ ContainerAddStixCoreObjectsLinesContainer.propTypes = {
   containerStixCoreObjects: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
+  mapping: PropTypes.bool,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
@@ -388,6 +279,8 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
     $cursor: ID
     $orderBy: StixCoreObjectsOrdering
     $orderMode: OrderingMode
+    $filters: [StixCoreObjectsFiltering]
+    $filterMode: FilterMode
   ) {
     ...ContainerAddStixCoreObjectsLines_data
       @arguments(
@@ -397,12 +290,14 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
         cursor: $cursor
         orderBy: $orderBy
         orderMode: $orderMode
+        filters: $filters
+        filterMode: $filterMode
       )
   }
 `;
 
 const ContainerAddStixCoreObjectsLines = createPaginationContainer(
-  ContainerAddStixCoreObjectsLinesContainer,
+  ContainerAddStixCoreObjectsLinesComponent,
   {
     data: graphql`
       fragment ContainerAddStixCoreObjectsLines_data on Query
@@ -413,6 +308,8 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
         cursor: { type: "ID" }
         orderBy: { type: "StixCoreObjectsOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: asc }
+        filters: { type: "[StixCoreObjectsFiltering]" }
+        filterMode: { type: "FilterMode" }
       ) {
         stixCoreObjects(
           types: $types
@@ -421,19 +318,22 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
           after: $cursor
           orderBy: $orderBy
           orderMode: $orderMode
+          filters: $filters
+          filterMode: $filterMode
         ) @connection(key: "Pagination_stixCoreObjects") {
           edges {
             node {
               id
               entity_type
-              parent_types
               created_at
               createdBy {
                 ... on Identity {
-                  id
                   name
-                  entity_type
                 }
+              }
+              creators {
+                id
+                name
               }
               objectMarking {
                 edges {
@@ -446,153 +346,13 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
                   }
                 }
               }
-              ... on AttackPattern {
-                name
-                description
-                x_mitre_id
-              }
-              ... on Campaign {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Note {
-                attribute_abstract
-              }
-              ... on ObservedData {
-                name
-                first_observed
-                last_observed
-              }
-              ... on Opinion {
-                opinion
-              }
-              ... on Report {
-                name
-                description
-                published
-              }
-              ... on Grouping {
-                name
-                description
-                context
-              }
-              ... on CourseOfAction {
-                name
-                description
-              }
-              ... on Individual {
-                name
-                description
-              }
-              ... on Organization {
-                name
-                description
-              }
-              ... on Sector {
-                name
-                description
-              }
-              ... on System {
-                name
-                description
-              }
-              ... on Indicator {
-                name
-                description
-                valid_from
-              }
-              ... on Infrastructure {
-                name
-                description
-              }
-              ... on IntrusionSet {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Position {
-                name
-                description
-              }
-              ... on City {
-                name
-                description
-              }
-              ... on AdministrativeArea {
-                name
-                description
-              }
-              ... on Country {
-                name
-                description
-              }
-              ... on Region {
-                name
-                description
-              }
-              ... on Malware {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on ThreatActor {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Tool {
-                name
-                description
-              }
-              ... on Vulnerability {
-                name
-                description
-              }
-              ... on Incident {
-                name
-                description
-                first_seen
-                last_seen
-              }
-              ... on Event {
-                name
-                description
-                start_time
-                stop_time
-              }
-              ... on Channel {
-                name
-                description
-              }
-              ... on Narrative {
-                name
-                description
-              }
-              ... on Language {
-                name
-              }
-              ... on DataComponent {
-                name
-              }
-              ... on DataSource {
-                name
-              }
-              ... on Case {
-                name
-              }
-              ... on CaseTask {
-                name
-              }
-              ... on StixCyberObservable {
-                observable_value
-                x_opencti_description
-              }
+              ...ContainerAddStixCoreObjectsLine_node
             }
+          }
+          pageInfo {
+            endCursor
+            hasNextPage
+            globalCount
           }
         }
       }
@@ -622,7 +382,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
   },
 );
 
-export default compose(
+export default R.compose(
   inject18n,
   withStyles(styles),
 )(ContainerAddStixCoreObjectsLines);

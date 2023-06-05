@@ -1589,6 +1589,8 @@ export type Case = {
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -1803,6 +1805,8 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -2008,6 +2012,8 @@ export type CaseIncidentAddInput = {
   caseTemplates?: InputMaybe<Array<Scalars['String']>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -2088,6 +2094,8 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -2292,6 +2300,8 @@ export type CaseRfiAddInput = {
   caseTemplates?: InputMaybe<Array<Scalars['String']>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -2329,7 +2339,6 @@ export type CaseRfiEdge = {
 export enum CaseRfisFilter {
   AssigneeTo = 'assigneeTo',
   Confidence = 'confidence',
-  Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -2353,7 +2362,6 @@ export type CaseRfisFiltering = {
 
 export enum CaseRfisOrdering {
   Confidence = 'confidence',
-  Context = 'context',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
@@ -2372,6 +2380,8 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -2576,6 +2586,8 @@ export type CaseRftAddInput = {
   caseTemplates?: InputMaybe<Array<Scalars['String']>>;
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -6775,6 +6787,8 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -6976,6 +6990,8 @@ export type FeedbackStixCoreRelationshipsDistributionArgs = {
 export type FeedbackAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -7179,6 +7195,8 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   context: Scalars['String'];
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
@@ -7380,6 +7398,8 @@ export type GroupingStixCoreRelationshipsDistributionArgs = {
 export type GroupingAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   context: Scalars['String'];
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
@@ -18681,6 +18701,8 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   cases?: Maybe<CaseConnection>;
   confidence?: Maybe<Scalars['Int']>;
   connectors?: Maybe<Array<Maybe<Connector>>>;
+  content?: Maybe<Scalars['String']>;
+  content_mapping?: Maybe<Scalars['String']>;
   created?: Maybe<Scalars['DateTime']>;
   createdBy?: Maybe<Identity>;
   created_at: Scalars['DateTime'];
@@ -18883,6 +18905,8 @@ export type ReportStixCoreRelationshipsDistributionArgs = {
 export type ReportAddInput = {
   clientMutationId?: InputMaybe<Scalars['String']>;
   confidence?: InputMaybe<Scalars['Int']>;
+  content?: InputMaybe<Scalars['String']>;
+  content_mapping?: InputMaybe<Scalars['String']>;
   created?: InputMaybe<Scalars['DateTime']>;
   createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
@@ -27216,6 +27240,8 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -27277,6 +27303,8 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseIncidentCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseIncidentConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -27343,6 +27371,8 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRfiCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseRfiConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -27408,6 +27438,8 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<CaseRftCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<CaseRftConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -28658,6 +28690,8 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<FeedbackCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<FeedbackConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -28807,6 +28841,8 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<GroupingCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<GroupingConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   context?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
@@ -31496,6 +31532,8 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   cases?: Resolver<Maybe<ResolversTypes['CaseConnection']>, ParentType, ContextType, Partial<ReportCasesArgs>>;
   confidence?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   connectors?: Resolver<Maybe<Array<Maybe<ResolversTypes['Connector']>>>, ParentType, ContextType, Partial<ReportConnectorsArgs>>;
+  content?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  content_mapping?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   createdBy?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;

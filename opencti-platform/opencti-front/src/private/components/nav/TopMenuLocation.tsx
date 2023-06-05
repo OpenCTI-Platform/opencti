@@ -30,7 +30,6 @@ const TopMenuLocation = () => {
   const classes = useStyles();
   const location = useLocation();
   const { t } = useFormatter();
-
   return (
     <div>
       {!useIsHiddenEntity('Region') && (

@@ -219,6 +219,7 @@ interface BasicStoreEntity extends BasicStoreCommon {
   color: string;
   attribute_abstract: string;
   content: string;
+  content_mapping: string;
   pattern: string;
   pattern_type: string;
   pattern_version: string;

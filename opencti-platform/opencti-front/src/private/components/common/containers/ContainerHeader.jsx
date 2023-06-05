@@ -3,16 +3,20 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
-import { GraphOutline, VectorLink, ChartTimeline } from 'mdi-material-ui';
+import { ChartTimeline, GraphOutline, VectorLink } from 'mdi-material-ui';
 import {
   AddTaskOutlined,
   AssistantOutlined,
   ViewColumnOutlined,
+  DifferenceOutlined,
 } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { DialogTitle } from '@mui/material';
 import Dialog from '@mui/material/Dialog';
+import remarkGfm from 'remark-gfm';
+import remarkParse from 'remark-parse';
+import Markdown from 'react-markdown';
 import DialogContent from '@mui/material/DialogContent';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -25,14 +29,12 @@ import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
-import remarkGfm from 'remark-gfm';
-import remarkParse from 'remark-parse';
-import Markdown from 'react-markdown';
 import CircularProgress from '@mui/material/CircularProgress';
 import { makeStyles, useTheme } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
+import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
 import {
   commitMutation,
@@ -41,7 +43,6 @@ import {
 } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
 import { stixCoreRelationshipCreationMutation } from '../stix_core_relationships/StixCoreRelationshipCreation';
-import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { containerAddStixCoreObjectsLinesRelationAddMutation } from './ContainerAddStixCoreObjectsLines';
 import StixCoreObjectSharing from '../stix_core_objects/StixCoreObjectSharing';
 import useGranted, {
@@ -636,6 +637,20 @@ const ContainerHeader = (props) => {
                   <GraphOutline
                     fontSize="small"
                     color={currentMode === 'graph' ? 'secondary' : 'primary'}
+                  />
+                </ToggleButton>
+              </Tooltip>
+            )}
+            {modes.includes('content') && (
+              <Tooltip title={t('Content mapping view')}>
+                <ToggleButton
+                  component={Link}
+                  to={`${link}/content`}
+                  selected={currentMode === 'content'}
+                >
+                  <DifferenceOutlined
+                    fontSize="small"
+                    color={currentMode === 'content' ? 'secondary' : 'primary'}
                   />
                 </ToggleButton>
               </Tooltip>

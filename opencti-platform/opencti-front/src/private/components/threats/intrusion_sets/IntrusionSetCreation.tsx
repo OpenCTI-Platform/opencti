@@ -129,7 +129,6 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
     'Intrusion-Set',
     basicShape,
   );
-
   const initialValues = {
     name: '',
     confidence: defaultConfidence ?? 75,
@@ -140,9 +139,7 @@ export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> 
     externalReferences: [],
     file: undefined,
   };
-
   const [commit] = useMutation<IntrusionSetCreationMutation>(intrusionSetMutation);
-
   const onSubmit: FormikConfig<IntrusionSetAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
     const input: IntrusionSetCreationMutation$variables['input'] = {
       name: values.name,

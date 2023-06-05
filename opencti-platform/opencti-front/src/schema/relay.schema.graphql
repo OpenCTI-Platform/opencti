@@ -2876,6 +2876,8 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
   description: String
+  content: String
+  content_mapping: String
   report_types: [String]
   published: DateTime
   creators: [Creator!]
@@ -2896,6 +2898,8 @@ input ReportAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   published: DateTime!
   report_types: [String]
   revoked: Boolean
@@ -8870,6 +8874,8 @@ type Grouping implements BasicObject & StixObject & StixCoreObject & StixDomainO
   relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
   name: String!
   description: String
+  content: String
+  content_mapping: String
   context: String!
   x_opencti_aliases: [String]
   creators: [Creator!]
@@ -8935,6 +8941,8 @@ input GroupingAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   context: context_String_NotNull_minLength_2!
   x_opencti_aliases: [String]
   revoked: Boolean
@@ -9722,6 +9730,8 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   workflowEnabled: Boolean
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
 }
 
@@ -9818,6 +9828,8 @@ type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainO
   workflowEnabled: Boolean
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
   rating: Int
 }
@@ -9876,6 +9888,8 @@ input FeedbackAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -9940,6 +9954,8 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   workflowEnabled: Boolean
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
   rating: Int
   response_types: [String!]
@@ -10005,6 +10021,8 @@ input CaseIncidentAddInput {
   severity: String
   priority: String
   description: String
+  content: String
+  content_mapping: String
   confidence: Int
   revoked: Boolean
   lang: String
@@ -10070,6 +10088,8 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
   information_types: [String!]
   severity: String
@@ -10080,7 +10100,6 @@ enum CaseRfisOrdering {
   name
   created
   modified
-  context
   created_at
   updated_at
   creator
@@ -10096,7 +10115,6 @@ enum CaseRfisFilter {
   name
   created
   modified
-  context
   created_at
   updated_at
   creator
@@ -10132,6 +10150,8 @@ input CaseRfiAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   severity: String
   priority: String
   confidence: Int
@@ -10199,6 +10219,8 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   workflowEnabled: Boolean
   name: String!
   description: String
+  content: String
+  content_mapping: String
   tasks: CaseTaskConnection!
   takedown_types: [String!]
   severity: String
@@ -10261,6 +10283,8 @@ input CaseRftAddInput {
   x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
+  content: String
+  content_mapping: String
   severity: String
   priority: String
   confidence: Int

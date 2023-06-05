@@ -7,20 +7,26 @@ export const ENTITY_TYPE_CONTAINER_FEEDBACK = 'Feedback';
 export interface BasicStoreEntityFeedback extends BasicStoreEntity {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   rating: number,
   object_refs: Array<string>,
 }
 
 export interface StoreEntityFeedback extends StoreEntity {
   name: string,
-  rating: number,
   description: string,
+  content: string,
+  content_mapping: string,
+  rating: number,
   object_refs: Array<string>,
 }
 
 export interface StixFeedback extends StixDomainObject {
   name: string,
   description: string,
+  content: string,
+  content_mapping: string,
   rating: number,
   object_refs: Array<string>,
   extensions: {

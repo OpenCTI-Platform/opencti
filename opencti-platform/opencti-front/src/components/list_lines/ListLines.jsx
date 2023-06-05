@@ -22,17 +22,20 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import { FormatListGroup, GraphOutline, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
+import {
+  FormatListGroup,
+  GraphOutline,
+  RelationManyToMany,
+  VectorPolygon,
+} from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
-import StixCyberObservablesExports
-  from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import StixCoreRelationshipsExports
-  from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
@@ -56,6 +59,9 @@ const styles = (theme) => ({
   parameters: {
     float: 'left',
     marginTop: -10,
+  },
+  parametersWithPadding: {
+    padding: '0 0 0 15px',
   },
   views: {
     float: 'right',
@@ -171,15 +177,29 @@ class ListLines extends Component {
       currentView,
       handleSwitchRedirectionMode,
       redirectionMode,
+      parametersWithPadding,
     } = this.props;
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
-          const exportDisabled = numberOfElements && ((selectedIds.length > export_max_size && numberOfElements.number > export_max_size)
-            || (selectedIds.length === 0 && numberOfElements.number > export_max_size));
+          const exportDisabled = numberOfElements
+            && ((selectedIds.length > export_max_size
+              && numberOfElements.number > export_max_size)
+              || (selectedIds.length === 0
+                && numberOfElements.number > export_max_size));
           return (
-            <div className={noPadding ? classes.containerNoPadding : classes.container}>
-              <div className={classes.parameters}>
+            <div
+              className={
+                noPadding ? classes.containerNoPadding : classes.container
+              }
+            >
+              <div
+                className={
+                  parametersWithPadding
+                    ? classes.parametersWithPadding
+                    : classes.parameters
+                }
+              >
                 {typeof handleSearch === 'function' && (
                   <div style={{ float: 'left', marginRight: 20 }}>
                     <SearchInput
@@ -210,7 +230,13 @@ class ListLines extends Component {
               <div className={classes.views}>
                 <div style={{ float: 'right', marginTop: -20 }}>
                   {numberOfElements && (
-                    <div style={{ float: 'left', padding: '16px 5px 0 0' }}>
+                    <div
+                      style={
+                        parametersWithPadding
+                          ? { float: 'left', padding: '16px 20px 0 0' }
+                          : { float: 'left', padding: '16px 5px 0 0' }
+                      }
+                    >
                       <strong>{`${numberOfElements.number}${numberOfElements.symbol}`}</strong>{' '}
                       {t('entitie(s)')}
                     </div>
@@ -226,19 +252,23 @@ class ListLines extends Component {
                       style={{ margin: '7px 20px 0 10px' }}
                     >
                       <ToggleButton value="overview" aria-label="overview">
-                        <Tooltip title={t('Redirecting to the Overview section')}>
+                        <Tooltip
+                          title={t('Redirecting to the Overview section')}
+                        >
                           <PreviewOutlined
                             fontSize="small"
                             color={
                               !redirectionMode || redirectionMode === 'overview'
                                 ? 'secondary'
                                 : 'primary'
-
-                          }
-                        /></Tooltip>
+                            }
+                          />
+                        </Tooltip>
                       </ToggleButton>
                       <ToggleButton value="knowledge" aria-label="knowledge">
-                        <Tooltip title={t('Redirecting to the Knowledge section')}>
+                        <Tooltip
+                          title={t('Redirecting to the Knowledge section')}
+                        >
                           <GraphOutline
                             fontSize="small"
                             color={
@@ -250,11 +280,15 @@ class ListLines extends Component {
                         </Tooltip>
                       </ToggleButton>
                       <ToggleButton value="content" aria-label="content">
-                        <Tooltip title={t('Redirecting to the Content section')}>
+                        <Tooltip
+                          title={t('Redirecting to the Content section')}
+                        >
                           <SourceOutlined
                             fontSize="small"
                             color={
-                              redirectionMode === 'content' ? 'secondary' : 'primary'
+                              redirectionMode === 'content'
+                                ? 'secondary'
+                                : 'primary'
                             }
                           />
                         </Tooltip>
@@ -277,12 +311,16 @@ class ListLines extends Component {
                       }}
                       style={{ margin: '7px 0 0 5px' }}
                     >
-                      {typeof handleChangeView === 'function' && !disableCards && (
-                        <ToggleButton value="cards" aria-label="cards">
-                          <Tooltip title={t('Cards view')}>
-                            <ViewModuleOutlined fontSize="small" color="primary" />
-                          </Tooltip>
-                        </ToggleButton>
+                      {typeof handleChangeView === 'function'
+                        && !disableCards && (
+                          <ToggleButton value="cards" aria-label="cards">
+                            <Tooltip title={t('Cards view')}>
+                              <ViewModuleOutlined
+                                fontSize="small"
+                                color="primary"
+                              />
+                            </Tooltip>
+                          </ToggleButton>
                       )}
                       {typeof handleChangeView === 'function'
                         && enableEntitiesView && (
@@ -291,7 +329,9 @@ class ListLines extends Component {
                               <LibraryBooksOutlined
                                 fontSize="small"
                                 color={
-                                  currentView === 'entities' ? 'secondary' : 'primary'
+                                  currentView === 'entities'
+                                    ? 'secondary'
+                                    : 'primary'
                                 }
                               />
                             </Tooltip>
@@ -328,48 +368,57 @@ class ListLines extends Component {
                           </Tooltip>
                         </ToggleButton>
                       )}
-                      {typeof handleChangeView === 'function' && enableGraph && (
-                        <ToggleButton value="graph" aria-label="graph">
-                          <Tooltip title={t('Graph view')}>
-                            <VectorPolygon fontSize="small" color="primary" />
-                          </Tooltip>
-                        </ToggleButton>
-                      )}
-                      {typeof handleChangeView === 'function' && enableNestedView && (
-                        <ToggleButton value="nested" aria-label="nested">
-                          <Tooltip title={t('Nested view')}>
-                            <FormatListGroup fontSize="small" color="primary" />
-                          </Tooltip>
-                        </ToggleButton>
-                      )}
-                      {typeof handleToggleExports === 'function'
-                        && !exportDisabled
-                        && <ToggleButton value="export" aria-label="export">
-                          <Tooltip title={t('Open export panel')}>
-                            <FileDownloadOutlined
-                              fontSize="small"
-                              color={openExports ? 'secondary' : 'primary'}
-                            />
-                          </Tooltip>
-                        </ToggleButton>
-                      }
-                      {typeof handleToggleExports === 'function'
-                        && exportDisabled
-                        && <Tooltip title={`${t('Export is disabled because too many entities are targeted (maximum number of entities is: ') + export_max_size})`}>
-                          <span>
-                          <ToggleButton
-                            size="small"
-                            value="export"
-                            aria-label="export"
-                            disabled={true}
-                          >
-                            <FileDownloadOutlined
-                              fontSize="small"
-                            />
+                      {typeof handleChangeView === 'function'
+                        && enableGraph && (
+                          <ToggleButton value="graph" aria-label="graph">
+                            <Tooltip title={t('Graph view')}>
+                              <VectorPolygon fontSize="small" color="primary" />
+                            </Tooltip>
                           </ToggleButton>
-                          </span>
-                        </Tooltip>
-                      }
+                      )}
+                      {typeof handleChangeView === 'function'
+                        && enableNestedView && (
+                          <ToggleButton value="nested" aria-label="nested">
+                            <Tooltip title={t('Nested view')}>
+                              <FormatListGroup
+                                fontSize="small"
+                                color="primary"
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {typeof handleToggleExports === 'function'
+                        && !exportDisabled && (
+                          <ToggleButton value="export" aria-label="export">
+                            <Tooltip title={t('Open export panel')}>
+                              <FileDownloadOutlined
+                                fontSize="small"
+                                color={openExports ? 'secondary' : 'primary'}
+                              />
+                            </Tooltip>
+                          </ToggleButton>
+                      )}
+                      {typeof handleToggleExports === 'function'
+                        && exportDisabled && (
+                          <Tooltip
+                            title={`${
+                              t(
+                                'Export is disabled because too many entities are targeted (maximum number of entities is: ',
+                              ) + export_max_size
+                            })`}
+                          >
+                            <span>
+                              <ToggleButton
+                                size="small"
+                                value="export"
+                                aria-label="export"
+                                disabled={true}
+                              >
+                                <FileDownloadOutlined fontSize="small" />
+                              </ToggleButton>
+                            </span>
+                          </Tooltip>
+                      )}
                     </ToggleButtonGroup>
                   )}
                 </div>
@@ -452,7 +501,10 @@ class ListLines extends Component {
                       }
                     />
                     {secondaryAction && (
-                      <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
+                      <ListItemSecondaryAction>
+                        {' '}
+                        &nbsp;{' '}
+                      </ListItemSecondaryAction>
                     )}
                   </ListItem>
                 ) : (
@@ -559,6 +611,7 @@ ListLines.propTypes = {
   currentView: PropTypes.string,
   handleSwitchRedirectionMode: PropTypes.func,
   redirectionMode: PropTypes.string,
+  parametersWithPadding: PropTypes.bool,
 };
 
 export default compose(inject18n, withStyles(styles))(ListLines);

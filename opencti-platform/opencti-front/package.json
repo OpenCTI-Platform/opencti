@@ -4,7 +4,7 @@
   "private": true,
   "main": "src/index.tsx",
   "dependencies": {
-    "@ckeditor/ckeditor5-react": "5.1.0",
+    "@ckeditor/ckeditor5-react": "6.0.0",
     "@date-io/date-fns": "2.16.0",
     "@emotion/react": "11.11.0",
     "@emotion/styled": "11.11.0",
@@ -61,6 +61,7 @@
     "react-virtualized": "9.22.5",
     "recharts": "2.6.2",
     "relay-runtime": "15.0.0",
+    "remark-flexible-markers": "1.0.2",
     "remark-gfm": "3.0.1",
     "remark-parse": "10.0.1",
     "rxjs": "7.8.1",
@@ -68,11 +69,12 @@
     "three-spritetext": "1.8.1",
     "typeface-ibm-plex-sans": "1.1.13",
     "typeface-roboto": "1.1.13",
+    "unified": "10.1.2",
     "uuid": "9.0.0",
     "yup": "0.32.11"
   },
   "devDependencies": {
-    "@rollup/plugin-graphql": "^2.0.3",
+    "@rollup/plugin-graphql": "2.0.3",
     "@testing-library/react": "14.0.0",
     "@types/node": "20.2.1",
     "@types/qrcode": "1.5.0",
@@ -83,8 +85,8 @@
     "@types/react-router-dom": "5.3.3",
     "@types/react-test-renderer": "18.0.0",
     "@types/relay-test-utils": "14.1.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "babel-plugin-relay": "^15.0.0",
+    "@vitejs/plugin-react": "4.0.0",
+    "babel-plugin-relay": "15.0.0",
     "chokidar": "3.5.3",
     "compression": "1.7.4",
     "cross-env": "7.0.3",
@@ -102,15 +104,15 @@
     "express": "4.18.2",
     "fs-extra": "11.1.1",
     "http-proxy-middleware": "2.0.6",
-    "jsdom": "^22.0.0",
+    "jsdom": "22.0.0",
     "prettier": "2.8.8",
     "react-test-renderer": "18.2.0",
     "relay-compiler": "15.0.0",
     "relay-test-utils": "15.0.0",
     "tap": "16.3.4",
     "typescript": "4.9.5",
-    "vite-plugin-relay": "^2.0.0",
-    "vitest": "^0.30.1"
+    "vite-plugin-relay": "2.0.0",
+    "vitest": "0.30.1"
   },
   "engines": {
     "node": ">= 16.*"

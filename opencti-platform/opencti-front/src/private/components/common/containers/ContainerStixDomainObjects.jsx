@@ -326,6 +326,7 @@ class ContainerStixDomainObjectsComponent extends Component {
                 )}
                 variant="large"
                 container={container}
+                warning={true}
               />
               <StixDomainObjectsRightBar
                 types={types}

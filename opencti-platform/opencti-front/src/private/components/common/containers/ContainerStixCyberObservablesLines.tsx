@@ -165,17 +165,19 @@ ContainerStixCyberObservablesLinesProps
         selectAll={selectAll}
         onToggleEntity={onToggleEntity}
       />
-      <Security needs={[KNOWLEDGE_KNUPDATE]}>
-        <ContainerAddStixCoreObjects
-          containerId={data?.container?.id}
-          containerStixCoreObjects={data?.container?.objects?.edges ?? []}
-          paginationOptions={paginationOptions}
-          withPadding={true}
-          targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
-          onTypesChange={onTypesChange}
-          openExports={openExports}
-        />
-      </Security>
+      {data?.container && (
+        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+          <ContainerAddStixCoreObjects
+            containerId={data?.container.id}
+            containerStixCoreObjects={data?.container.objects?.edges ?? []}
+            paginationOptions={paginationOptions}
+            withPadding={true}
+            targetStixCoreObjectTypes={['Stix-Cyber-Observable']}
+            onTypesChange={onTypesChange}
+            openExports={openExports}
+          />
+        </Security>
+      )}
     </div>
   );
 };

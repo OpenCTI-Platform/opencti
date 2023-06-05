@@ -1,4 +1,5 @@
-html[data-theme="dark"],body[data-theme="dark"] {
+html[data-theme="dark"],
+body[data-theme="dark"] {
   /* Overrides the border radius setting in the theme. */
   --ck-border-radius: 4px !important;
 
@@ -7,7 +8,7 @@ html[data-theme="dark"],body[data-theme="dark"] {
 
   /* Helper variables to avoid duplication in the colors. */
   --ck-custom-background: #001e3c !important;
-  --ck-custom-foreground: #01478dff !important;
+  --ck-custom-foreground: #01478d !important;
   --ck-custom-border: #b2b2b2 !important;
   --ck-custom-white: hsl(0, 0%, 100%) !important;
 
@@ -22,16 +23,16 @@ html[data-theme="dark"],body[data-theme="dark"] {
   /* -- Overrides the default .ck-button class colors. ---------------------------------------- */
 
   --ck-color-button-default-background: var(--ck-custom-background) !important;
-  --ck-color-button-default-hover-background: #01478dff !important;
-  --ck-color-button-default-active-background: #01478dff !important;
+  --ck-color-button-default-hover-background: #01478d !important;
+  --ck-color-button-default-active-background: #01478d !important;
   --ck-color-button-default-active-shadow: transparent !important;
   --ck-color-button-default-disabled-background: var(
     --ck-custom-background
   ) !important;
 
   --ck-color-button-on-background: var(--ck-custom-foreground) !important;
-  --ck-color-button-on-hover-background: #01478dff !important;
-  --ck-color-button-on-active-background: #01478dff !important;
+  --ck-color-button-on-hover-background: #01478d !important;
+  --ck-color-button-on-active-background: #01478d !important;
   --ck-color-button-on-active-shadow: transparent !important;
   --ck-color-button-on-disabled-background: var(
     --ck-custom-foreground
@@ -66,7 +67,7 @@ html[data-theme="dark"],body[data-theme="dark"] {
   --ck-color-input-text: hsl(0, 0%, 98%) !important;
   --ck-color-input-disabled-background: hsl(255, 4%, 21%) !important;
   --ck-color-input-disabled-border: rgba(255, 255, 255, 0.5) !important;
-  --ck-color-input-disabled-text: hsl(240, 3%, 31%) !important;
+  --ck-color-input-disabled-text: hsl(0, 0%, 98%) !important;
 
   /* -- Overrides the default .ck-labeled-field-view class colors. ---------------------------- */
 
@@ -147,17 +148,23 @@ html[data-theme="dark"],body[data-theme="dark"] {
 }
 
 .ck-read-only {
-  color: #9a9a9a !important;
+  color: var(--ck-color-text) !important;
 }
 
-.ck-read-only ::-moz-selection { /* Code for Firefox */
-  color: #505050 !important;
+.ck-read-only ::-moz-selection {
+  /* Code for Firefox */
+  color: var(--ck-custom-foreground) !important;
 }
 
 .ck-read-only ::selection {
-  color: #505050 !important;
+  color: var(--ck-custom-foreground) !important;
 }
 
 td.ck-editor__editable {
   overflow: hidden !important;
+}
+
+.ck-source-editing-area textarea {
+  background-color: var(--ck-custom-background) !important;
+  color: var(--ck-color-text) !important;
 }

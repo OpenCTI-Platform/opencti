@@ -65,14 +65,16 @@ class StixDomainObjectsRightBar extends Component {
                     <ListSubheader component="div">
                       {t('Entity types')}
                       <Tooltip title={t('Clear filters')}>
-                        <IconButton
-                          onClick={handleClear.bind(this)}
-                          disabled={types.length === 0}
-                          color="primary"
-                          size="large"
-                        >
-                          <FilterOffOutline fontSize="small" />
-                        </IconButton>
+                        <span>
+                          <IconButton
+                            onClick={handleClear.bind(this)}
+                            disabled={types.length === 0}
+                            color="primary"
+                            size="large"
+                          >
+                            <FilterOffOutline fontSize="small" />
+                          </IconButton>
+                        </span>
                       </Tooltip>
                     </ListSubheader>
                   }
