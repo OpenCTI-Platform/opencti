@@ -30,6 +30,7 @@ from .entities.opencti_kill_chain_phase import KillChainPhase
 from .entities.opencti_label import Label
 from .entities.opencti_location import Location
 from .entities.opencti_malware import Malware
+from .entities.opencti_malware_analysis import MalwareAnalysis
 from .entities.opencti_marking_definition import MarkingDefinition
 from .entities.opencti_note import Note
 from .entities.opencti_observed_data import ObservedData
@@ -79,6 +80,7 @@ __all__ = [
     "Label",
     "Location",
     "Malware",
+    "MalwareAnalysis",
     "MarkingDefinition",
     "Note",
     "ObservedData",

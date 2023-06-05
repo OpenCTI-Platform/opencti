@@ -794,6 +794,7 @@ class OpenCTIStix2:
             "intrusion-set": self.opencti.intrusion_set.import_from_stix2,
             "location": self.opencti.location.import_from_stix2,
             "malware": self.opencti.malware.import_from_stix2,
+            "malware-analysis": self.opencti.malware_analysis.import_from_stix2,
             "threat-actor": self.opencti.threat_actor.import_from_stix2,
             "tool": self.opencti.tool.import_from_stix2,
             "narrative": self.opencti.narrative.import_from_stix2,
@@ -1623,24 +1624,15 @@ class OpenCTIStix2:
         )
         for stix_nested_ref_relationship in stix_nested_ref_relationships:
             if "standard_id" in stix_nested_ref_relationship["to"]:
-                if MultipleRefRelationship.has_value(
+                # dirty fix because the sample and operating-system ref are not multiple for a Malware Analysis
+                # will be replaced by a proper toStix converter in the back
+                if not MultipleRefRelationship.has_value(
                     stix_nested_ref_relationship["relationship_type"]
+                ) or (
+                    entity["type"] == "malware-analysis"
+                    and stix_nested_ref_relationship["relationship_type"]
+                    in ["operating-system", "sample"]
                 ):
-                    key = (
-                        stix_nested_ref_relationship["relationship_type"]
-                        .replace("obs_", "")
-                        .replace("-", "_")
-                        + "_refs"
-                    )
-                    if key in entity:
-                        entity[key].append(
-                            stix_nested_ref_relationship["to"]["standard_id"]
-                        )
-                    else:
-                        entity[key] = [
-                            stix_nested_ref_relationship["to"]["standard_id"]
-                        ]
-                else:
                     key = (
                         stix_nested_ref_relationship["relationship_type"]
                         .replace("obs_", "")
@@ -1648,6 +1640,22 @@ class OpenCTIStix2:
                         + "_ref"
                     )
                     entity[key] = stix_nested_ref_relationship["to"]["standard_id"]
+
+                else:
+                    key = (
+                        stix_nested_ref_relationship["relationship_type"]
+                        .replace("obs_", "")
+                        .replace("-", "_")
+                        + "_refs"
+                    )
+                    if key in entity and isinstance(entity[key], list):
+                        entity[key].append(
+                            stix_nested_ref_relationship["to"]["standard_id"]
+                        )
+                    else:
+                        entity[key] = [
+                            stix_nested_ref_relationship["to"]["standard_id"]
+                        ]
         result.append(entity)
 
         if mode == "simple":
@@ -1789,6 +1797,7 @@ class OpenCTIStix2:
                 "Location": self.opencti.location.read,
                 "Language": self.opencti.language.read,
                 "Malware": self.opencti.malware.read,
+                "Malware-Analysis": self.opencti.malware_analysis.read,
                 "Threat-Actor": self.opencti.threat_actor.read,
                 "Tool": self.opencti.tool.read,
                 "Vulnerability": self.opencti.vulnerability.read,
@@ -1952,6 +1961,7 @@ class OpenCTIStix2:
             "Location": self.opencti.location.read,
             "Language": self.opencti.language.read,
             "Malware": self.opencti.malware.read,
+            "Malware-Analysis": self.opencti.malware_analysis.read,
             "Threat-Actor": self.opencti.threat_actor.read,
             "Tool": self.opencti.tool.read,
             "Narrative": self.opencti.narrative.read,
@@ -2088,6 +2098,7 @@ class OpenCTIStix2:
             "Location": self.opencti.location.list,
             "Language": self.opencti.language.list,
             "Malware": self.opencti.malware.list,
+            "Malware-Analysis": self.opencti.malware_analysis.list,
             "Threat-Actor": self.opencti.threat_actor.list,
             "Tool": self.opencti.tool.list,
             "Narrative": self.opencti.narrative.list,

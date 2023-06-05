@@ -39,6 +39,7 @@ from pycti.entities.opencti_label import Label
 from pycti.entities.opencti_language import Language
 from pycti.entities.opencti_location import Location
 from pycti.entities.opencti_malware import Malware
+from pycti.entities.opencti_malware_analysis import MalwareAnalysis
 from pycti.entities.opencti_marking_definition import MarkingDefinition
 from pycti.entities.opencti_narrative import Narrative
 from pycti.entities.opencti_note import Note
@@ -190,6 +191,7 @@ class OpenCTIApiClient:
         self.case_task = CaseTask(self)
         self.incident = Incident(self)
         self.malware = Malware(self)
+        self.malware_analysis = MalwareAnalysis(self)
         self.tool = Tool(self)
         self.channel = Channel(self)
         self.narrative = Narrative(self)
