@@ -104,7 +104,7 @@
     "express": "4.18.2",
     "fs-extra": "11.1.1",
     "http-proxy-middleware": "2.0.6",
-    "jsdom": "22.0.0",
+    "jsdom": "22.1.0",
     "prettier": "2.8.8",
     "react-test-renderer": "18.2.0",
     "relay-compiler": "15.0.0",
