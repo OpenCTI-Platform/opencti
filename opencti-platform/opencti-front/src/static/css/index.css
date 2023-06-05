@@ -110,3 +110,7 @@ input[type="file"] {
 .ck-powered-by {
   display: none !important;
 }
+
+.marker-yellow {
+  background-color: rgb(255, 255, 0) !important;
+}

@@ -177,7 +177,7 @@ const ContainerContentComponent = ({ containerData }) => {
   let { description, content } = containerData;
   for (const mappedString of mappedStrings) {
     description = description.replaceAll(mappedString, `==${mappedString}==`);
-    content = content.replaceAll(mappedString, `==${mappedString}==`);
+    content = content.replaceAll(mappedString, `<mark class="marker-yellow">${mappedString}</mark>`);
   }
   const initialValues = {
     description,
@@ -245,7 +245,7 @@ const ContainerContentComponent = ({ containerData }) => {
                         fieldName="content"
                       />
                     }
-                    disabled={false}
+                    disabled={true}
                   />
                   {enableReferences && (
                     <CommitMessage
