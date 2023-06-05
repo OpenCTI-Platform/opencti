@@ -135,6 +135,15 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
         ... on Malware {
           name
         }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
+          name
+        }
         ... on ThreatActor {
           name
         }
@@ -206,6 +215,15 @@ const stixCoreRelationshipCreationFromRelationQuery = graphql`
           name
         }
         ... on Malware {
+          name
+        }
+        ... on MalwareAnalysis {
+          result_name
+        }
+        ... on DataComponent {
+          name
+        }
+        ... on DataSource {
           name
         }
         ... on ThreatActor {

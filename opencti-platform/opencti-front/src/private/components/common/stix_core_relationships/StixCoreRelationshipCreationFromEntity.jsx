@@ -159,6 +159,9 @@ const stixCoreRelationshipCreationFromEntityQuery = graphql`
       ... on Case {
         name
       }
+      ... on MalwareAnalysis {
+        result_name
+      }
       ... on StixCyberObservable {
         observable_value
       }

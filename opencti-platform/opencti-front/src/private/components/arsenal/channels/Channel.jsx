@@ -82,7 +82,7 @@ class ChannelComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={channel.id}
-          defaultMarking={(channel.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(channel.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelEdition channelId={channel.id} />

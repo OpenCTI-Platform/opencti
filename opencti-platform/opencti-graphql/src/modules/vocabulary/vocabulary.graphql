@@ -16,6 +16,7 @@ enum VocabularyCategory {
   infrastructure_type_ov
   integrity_level_ov
   malware_capabilities_ov
+  malware_result_ov
   malware_type_ov
   platforms_ov
   opinion_ov

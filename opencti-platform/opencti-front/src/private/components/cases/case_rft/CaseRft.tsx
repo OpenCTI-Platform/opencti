@@ -121,7 +121,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={caseRftData.id}
-        defaultMarking={(caseRftData.objectMarking?.edges ?? []).map(
+        defaultMarkings={(caseRftData.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />

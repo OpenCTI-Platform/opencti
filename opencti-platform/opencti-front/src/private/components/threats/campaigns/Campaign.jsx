@@ -82,7 +82,7 @@ class CampaignComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={campaign.id}
-          defaultMarking={(campaign.objectMarking?.edges ?? []).map(
+          defaultMarkings={(campaign.objectMarking?.edges ?? []).map(
             (edge) => edge.node,
           )}
         />

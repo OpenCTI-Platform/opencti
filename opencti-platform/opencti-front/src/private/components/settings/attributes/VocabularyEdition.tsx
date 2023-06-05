@@ -17,6 +17,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { MESSAGING$ } from '../../../../relay/environment';
 import AutocompleteFreeSoloField from '../../../../components/AutocompleteFreeSoloField';
 import { Option } from '../../common/form/ReferenceField';
+import { RelayError } from '../../../../relay/relayTypes';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   header: {
@@ -99,13 +100,7 @@ const VocabularyEdition = ({
       commitUpdateMutation({
         variables: { id: vocab.id, input },
         onError: (error) => {
-          const { errors } = (
-            error as unknown as {
-              res: {
-                errors: { data: { existingIds: string[]; reason: string } }[];
-              };
-            }
-          ).res;
+          const { errors } = (error as unknown as RelayError).res;
           MESSAGING$.notifyError(errors.at(0)?.data.reason);
           setSubmitting(false);
         },

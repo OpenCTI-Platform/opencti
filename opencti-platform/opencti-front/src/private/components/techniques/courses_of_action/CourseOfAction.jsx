@@ -83,7 +83,7 @@ class CourseOfActionComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
-          defaultMarking={(courseOfAction.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(courseOfAction.objectMarking?.edges ?? []).map((edge) => edge.node)}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />

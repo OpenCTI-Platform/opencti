@@ -34,6 +34,30 @@ import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocab
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
 
+export const stixCyberObservablesSearchQuery = graphql`
+    query useSearchEntitiesStixCyberObservablesSearchQuery(
+        $types: [String]
+        $search: String
+        $filters: [StixCyberObservablesFiltering]
+        $count: Int
+    ) {
+        stixCyberObservables(
+            types: $types
+            search: $search
+            filters: $filters
+            first: $count
+        ) {
+            edges {
+                node {
+                    id
+                    observable_value
+                    entity_type
+                }
+            }
+        }
+    }
+`;
+
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
     $search: String
@@ -133,6 +157,12 @@ const filtersStixCoreObjectsSearchQuery = graphql`
           ... on Malware {
             name
             description
+          }
+          ... on MalwareAnalysis {
+              product
+              operatingSystem {
+                name
+              }
           }
           ... on ThreatActor {
             name

@@ -31,7 +31,7 @@ import { schemaTypesDefinition } from './schema-types';
 export const ABSTRACT_STIX_NESTED_REF_RELATIONSHIP = 'stix-nested-ref-relationship'; // Only for front usage
 
 export const INPUT_OPERATING_SYSTEM = 'operatingSystems';
-export const INPUT_SAMPLE = 'sample';
+export const INPUT_SAMPLE = 'samples';
 export const INPUT_CONTAINS = 'contains';
 export const INPUT_RESOLVES_TO = 'resolvesTo';
 export const INPUT_BELONGS_TO = 'belongsTo';

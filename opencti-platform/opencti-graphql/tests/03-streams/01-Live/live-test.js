@@ -37,7 +37,7 @@ describe('Live streams tests', () => {
       const number = byType[key].length;
       const dbNumber = elementsCounting[key];
       expect(dbNumber).toBeDefined();
-      expect(number === dbNumber).toBeTruthy();
+      expect(`${key}_${number}` === `${key}_${dbNumber}`).toBeTruthy();
     }
   };
 

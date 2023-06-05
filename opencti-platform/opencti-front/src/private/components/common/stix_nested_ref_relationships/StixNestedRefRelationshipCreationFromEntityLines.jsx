@@ -277,7 +277,10 @@ const StixNestedRefRelationshipCreationFromEntityLines = createPaginationContain
                 ... on Case {
                   name
                 }
-                  ... on StixCyberObservable {
+                  ... on MalwareAnalysis {
+                  result_name
+                }
+                ... on StixCyberObservable {
                       x_opencti_description
                       observable_value
                   }

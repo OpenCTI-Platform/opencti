@@ -578,6 +578,7 @@ class EntityStixCoreRelationships extends Component {
                     'Incident',
                     'Malware',
                     'Tool',
+                    'Malware-Analysis',
                   ],
               }}
               availableEntityTypes={stixCoreObjectTypes}
@@ -632,6 +633,7 @@ class EntityStixCoreRelationships extends Component {
       defaultStartTime,
       defaultStopTime,
       currentView,
+      paddingRightButtonAdd,
     } = this.props;
     const { view, searchTerm, sortBy, orderAsc, filters } = this.state;
     const finalView = currentView || view;
@@ -755,6 +757,7 @@ class EntityStixCoreRelationships extends Component {
     const finalStixCoreObjectTypes = stixCoreObjectTypes || [
       'Stix-Core-Object',
     ];
+    const paddingRight = paddingRightButtonAdd ?? 220;
     const targetStixCyberObservableTypes = finalStixCoreObjectTypes.includes('Stix-Core-Object')
       || finalStixCoreObjectTypes.includes('Stix-Cyber-Observable')
       ? ['Stix-Cyber-Observable']
@@ -774,7 +777,7 @@ class EntityStixCoreRelationships extends Component {
             <StixCoreRelationshipCreationFromEntity
               entityId={entityId}
               isRelationReversed={isRelationReversed}
-              paddingRight={220}
+              paddingRight={paddingRight}
               targetStixDomainObjectTypes={targetStixDomainObjectTypes}
               targetStixCyberObservableTypes={targetStixCyberObservableTypes}
               allowedRelationshipTypes={relationshipTypes}
@@ -814,6 +817,7 @@ EntityStixCoreRelationships.propTypes = {
   enableNestedView: PropTypes.func,
   defaultStartTime: PropTypes.string,
   defaultStopTime: PropTypes.string,
+  paddingRightButtonAdd: PropTypes.string,
 };
 
 export default R.compose(

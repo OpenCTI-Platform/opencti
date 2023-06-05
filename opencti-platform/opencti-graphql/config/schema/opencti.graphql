@@ -1915,6 +1915,10 @@ enum StixDomainObjectsOrdering {
   x_opencti_base_severity
   event_types
   x_opencti_organization_type
+  submitted
+  product
+  result_name
+  operatingSystem
 }
 enum StixDomainObjectsFilter {
   name
@@ -1949,6 +1953,10 @@ enum StixDomainObjectsFilter {
   severity
   priority
   revoked
+  submitted
+  product
+  result_name
+  operatingSystem
 }
 input StixDomainObjectsFiltering {
   key: [StixDomainObjectsFilter!]!
@@ -9141,6 +9149,14 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   connectors(onlyAlive: Boolean): [Connector]
   jobs(first: Int): [Work]
 }
+type SoftwareConnection {
+  pageInfo: PageInfo!
+  edges: [SoftwareEdge!]!
+}
+type SoftwareEdge {
+  cursor: String!
+  node: Software!
+}
 input SoftwareAddInput {
   name: String
   cpe: String
@@ -10715,6 +10731,7 @@ union StixObjectOrStixRelationshipOrCreator =
   | Region
   | Position
   | Malware
+  | MalwareAnalysis
   | ThreatActor
   | Tool
   | Vulnerability
@@ -10792,6 +10809,7 @@ union StixObjectOrStixRelationship =
   | Region
   | Position
   | Malware
+  | MalwareAnalysis
   | ThreatActor
   | Tool
   | Vulnerability
@@ -10864,6 +10882,7 @@ union StixCoreObjectOrStixCoreRelationship =
   | Region
   | Position
   | Malware
+  | MalwareAnalysis
   | Narrative
   | ThreatActor
   | Tool

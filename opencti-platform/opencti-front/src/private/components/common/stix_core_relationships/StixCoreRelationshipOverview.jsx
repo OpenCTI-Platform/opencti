@@ -600,7 +600,7 @@ class StixCoreRelationshipContainer extends Component {
                 marginTop={55}
                 stixCoreObjectOrStixCoreRelationshipId={stixCoreRelationship.id}
                 isRelationship={true}
-                defaultMarking={(
+                defaultMarkings={(
                   stixCoreRelationship.objectMarking?.edges ?? []
                 ).map((edge) => edge.node)}
               />
@@ -785,6 +785,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
             ... on Malware {
               name
             }
+            ... on MalwareAnalysis {
+              result_name
+            }
             ... on ThreatActor {
               name
             }
@@ -893,6 +896,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 }
                 ... on Malware {
                   name
+                }
+                ... on MalwareAnalysis {
+                  result_name
                 }
                 ... on ThreatActor {
                   name
@@ -1051,6 +1057,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
+                        ... on MalwareAnalysis {
+                          result_name
+                        }
                         ... on ThreatActor {
                           name
                           description
@@ -1178,6 +1187,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -1277,6 +1289,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on Malware {
                       name
+                    }
+                    ... on MalwareAnalysis {
+                      result_name
                     }
                     ... on ThreatActor {
                       name
@@ -1432,6 +1447,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               first_seen
                               last_seen
                             }
+                            ... on MalwareAnalysis {
+                              result_name
+                            }
                             ... on ThreatActor {
                               name
                               description
@@ -1559,6 +1577,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 }
                 ... on Malware {
                   name
+                }
+                ... on MalwareAnalysis {
+                  result_name
                 }
                 ... on ThreatActor {
                   name
@@ -1716,6 +1737,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
+                        ... on MalwareAnalysis {
+                          result_name
+                        }
                         ... on ThreatActor {
                           name
                           description
@@ -1845,6 +1869,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -2000,6 +2027,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               first_seen
                               last_seen
+                            }
+                            ... on MalwareAnalysis {
+                              result_name
                             }
                             ... on ThreatActor {
                               name
@@ -2124,6 +2154,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -2278,6 +2311,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               first_seen
                               last_seen
+                            }
+                            ... on MalwareAnalysis {
+                              result_name
                             }
                             ... on ThreatActor {
                               name
@@ -2411,6 +2447,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on ThreatActor {
                   name
                 }
@@ -2567,6 +2606,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
+                        ... on MalwareAnalysis {
+                          result_name
+                        }
                         ... on ThreatActor {
                           name
                           description
@@ -2694,6 +2736,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -2793,6 +2838,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     }
                     ... on Malware {
                       name
+                    }
+                    ... on MalwareAnalysis {
+                      result_name
                     }
                     ... on ThreatActor {
                       name
@@ -2946,6 +2994,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               first_seen
                               last_seen
+                            }
+                            ... on MalwareAnalysis {
+                              result_name
                             }
                             ... on ThreatActor {
                               name
@@ -3075,6 +3126,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                 ... on Malware {
                   name
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on ThreatActor {
                   name
                 }
@@ -3231,6 +3285,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                           first_seen
                           last_seen
                         }
+                        ... on MalwareAnalysis {
+                          result_name
+                        }
                         ... on ThreatActor {
                           name
                           description
@@ -3360,6 +3417,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -3515,6 +3575,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               first_seen
                               last_seen
+                            }
+                            ... on MalwareAnalysis {
+                              result_name
                             }
                             ... on ThreatActor {
                               name
@@ -3639,6 +3702,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     ... on Malware {
                       name
                     }
+                    ... on MalwareAnalysis {
+                      result_name
+                    }
                     ... on ThreatActor {
                       name
                     }
@@ -3794,6 +3860,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                               description
                               first_seen
                               last_seen
+                            }
+                            ... on MalwareAnalysis {
+                              result_name
                             }
                             ... on ThreatActor {
                               name
@@ -3951,6 +4020,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Malware {
             name
           }
+          ... on MalwareAnalysis {
+            result_name
+          }
           ... on ThreatActor {
             name
           }
@@ -4106,6 +4178,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     first_seen
                     last_seen
                   }
+                  ... on MalwareAnalysis {
+                    result_name
+                  }
                   ... on ThreatActor {
                     name
                     description
@@ -4233,6 +4308,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
+              ... on MalwareAnalysis {
+                result_name
+              }
               ... on ThreatActor {
                 name
               }
@@ -4332,6 +4410,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               }
               ... on Malware {
                 name
+              }
+              ... on MalwareAnalysis {
+                result_name
               }
               ... on ThreatActor {
                 name
@@ -4439,6 +4520,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
           ... on Malware {
             name
           }
+          ... on MalwareAnalysis {
+            result_name
+          }
           ... on ThreatActor {
             name
           }
@@ -4595,6 +4679,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
                     first_seen
                     last_seen
                   }
+                  ... on MalwareAnalysis {
+                    result_name
+                  }
                   ... on ThreatActor {
                     name
                     description
@@ -4712,6 +4799,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               ... on Malware {
                 name
               }
+              ... on MalwareAnalysis {
+                result_name
+              }
               ... on ThreatActor {
                 name
               }
@@ -4807,6 +4897,9 @@ const StixCoreRelationshipOverview = createFragmentContainer(
               }
               ... on Malware {
                 name
+              }
+              ... on MalwareAnalysis {
+                result_name
               }
               ... on ThreatActor {
                 name

@@ -171,6 +171,11 @@ export const itemColor = (type, dark = false, reversed = false) => {
         return '#e65100';
       }
       return '#ff9800';
+    case 'Malware-Analysis':
+      if (dark) {
+        return '#e65100aa';
+      }
+      return '#ff9800aa';
     case 'Threat-Actor':
       if (dark) {
         return '#880e4f';

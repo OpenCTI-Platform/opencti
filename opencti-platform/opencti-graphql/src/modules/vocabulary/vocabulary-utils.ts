@@ -618,6 +618,12 @@ export const openVocabularies: Record<VocabularyCategory, Array<{ key: string, d
         'Indicates that the malware instance or family is able to compromise the operational integrity of the system on which it is executing and/or one or more remote systems, e.g., by causing them to operate beyond their set of specified operational parameters. For example, malware that causes the CPU fan on the machine that it is executing to spin at a higher than normal speed.',
     },
   ],
+  malware_result_ov: [
+    { key: 'malicious', description: 'The tool reported the malware binary as malicious.' },
+    { key: 'suspicious', description: 'The tool reported the malware binary as suspicious but not definitively malicious.' },
+    { key: 'benign', description: 'The tool reported the malware binary as benign.' },
+    { key: 'unknown', description: 'The tool was unable to determine whether the malware binary is malicious.' },
+  ],
   malware_type_ov: [
     {
       key: 'adware',

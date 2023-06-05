@@ -157,7 +157,7 @@ const ToolBar: FunctionComponent<{
     setTitle(t('Hidden in interface'));
     setDescription(
       t(
-        'This configuration hide a specific entity type across the entire platform.',
+        'This configuration hides a specific entity type across the entire platform.',
       ),
     );
     setKey('platform_hidden_type');

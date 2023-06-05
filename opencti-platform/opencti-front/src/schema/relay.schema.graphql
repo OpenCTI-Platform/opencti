@@ -1921,6 +1921,10 @@ enum StixDomainObjectsOrdering {
   x_opencti_base_severity
   event_types
   x_opencti_organization_type
+  submitted
+  product
+  result_name
+  operatingSystem
 }
 
 enum StixDomainObjectsFilter {
@@ -1956,6 +1960,10 @@ enum StixDomainObjectsFilter {
   severity
   priority
   revoked
+  submitted
+  product
+  result_name
+  operatingSystem
 }
 
 input StixDomainObjectsFiltering {
@@ -6381,6 +6389,16 @@ type Software implements BasicObject & StixObject & StixCoreObject & StixCyberOb
   jobs(first: Int): [Work]
 }
 
+type SoftwareConnection {
+  pageInfo: PageInfo!
+  edges: [SoftwareEdge!]!
+}
+
+type SoftwareEdge {
+  cursor: String!
+  node: Software!
+}
+
 input SoftwareAddInput {
   name: String
   cpe: String
@@ -7131,11 +7149,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Creator | Workspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Creator | Workspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7812,6 +7830,8 @@ type Query {
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
   workspace(id: String!): Workspace
   workspaces(first: Int, after: ID, orderBy: WorkspacesOrdering, orderMode: OrderingMode, filters: [WorkspacesFiltering!], filterMode: FilterMode, adminBypassUserAccess: Boolean, search: String): WorkspaceConnection
+  malwareAnalysis(id: String!): MalwareAnalysis
+  malwareAnalyses(first: Int, after: ID, orderBy: MalwareAnalysesOrdering, orderMode: OrderingMode, filters: [MalwareAnalysesFiltering!], filterMode: FilterMode, search: String): MalwareAnalysisConnection
 }
 
 type Subscription {
@@ -8494,6 +8514,13 @@ type Mutation {
   workspaceRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Workspace
   workspaceRelationsAdd(id: ID!, input: StixRefRelationshipsAddInput!): Workspace
   workspaceRelationsDelete(id: ID!, toIds: [String!]!, relationship_type: String!): Workspace
+  malwareAnalysisAdd(input: MalwareAnalysisAddInput!): MalwareAnalysis
+  malwareAnalysisDelete(id: ID!): ID
+  malwareAnalysisFieldPatch(id: ID!, input: [EditInput]!, commitMessage: String, references: [String]): MalwareAnalysis
+  malwareAnalysisContextPatch(id: ID!, input: EditContext!): MalwareAnalysis
+  malwareAnalysisContextClean(id: ID!): MalwareAnalysis
+  malwareAnalysisRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  malwareAnalysisRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): MalwareAnalysis
 }
 
 type Channel implements BasicObject & StixObject & StixCoreObject & StixDomainObject {
@@ -9472,6 +9499,7 @@ enum VocabularyCategory {
   infrastructure_type_ov
   integrity_level_ov
   malware_capabilities_ov
+  malware_result_ov
   malware_type_ov
   platforms_ov
   opinion_ov
@@ -10568,4 +10596,147 @@ input WorkspaceAddInput {
   description: String
   tags: [String]
   authorized_members: [MemberAccessInput!]
+}
+
+type MalwareAnalysis implements BasicObject & StixCoreObject & StixDomainObject & StixObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  product: String!
+  version: String
+  hostVm: Software
+  operatingSystem: Software
+  installedSoftware: SoftwareConnection
+  configuration_version: String
+  modules: [String!]
+  analysis_engine_version: String
+  analysis_definition_version: String
+  submitted: DateTime
+  analysis_started: DateTime
+  analysis_ended: DateTime
+  result_name: String!
+  result: String
+  analysisSco: StixCyberObservableConnection
+  sample: StixCyberObservable
+}
+
+enum MalwareAnalysesOrdering {
+  result_name
+  product
+  operatingSystem
+  creator
+  createdBy
+  objectLabel
+  submitted
+  objectMarking
+  x_opencti_workflow_id
+  confidence
+}
+
+enum MalwareAnalysesFilter {
+  createdBy
+  created
+  modified
+  created_at
+  updated_at
+  objectMarking
+  objectLabel
+  labelledBy
+  markedBy
+  x_opencti_workflow_id
+  confidence
+  result_name
+  product
+  operatingSystem
+  submitted
+  creator
+}
+
+input MalwareAnalysesFiltering {
+  key: [MalwareAnalysesFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+type MalwareAnalysisConnection {
+  pageInfo: PageInfo!
+  edges: [MalwareAnalysisEdge!]
+}
+
+type MalwareAnalysisEdge {
+  cursor: String!
+  node: MalwareAnalysis!
+}
+
+input MalwareAnalysisAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
+  product: String!
+  version: String
+  hostVm: String
+  operatingSystem: String
+  installedSoftware: [String]
+  configuration_version: String
+  modules: [String]
+  analysis_engine_version: String
+  analysis_definition_version: String
+  submitted: DateTime
+  analysis_started: DateTime
+  analysis_ended: DateTime
+  result_name: String!
+  result: String
+  analysisSco: [String]
+  sample: String
+  created: DateTime
+  modified: DateTime
+  confidence: Int
+  revoked: Boolean
+  lang: String
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  externalReferences: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  clientMutationId: String
+  update: Boolean
 }

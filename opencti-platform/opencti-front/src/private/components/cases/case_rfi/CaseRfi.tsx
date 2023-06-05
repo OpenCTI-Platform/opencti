@@ -124,7 +124,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={caseRfiData.id}
-        defaultMarking={(caseRfiData.objectMarking?.edges ?? []).map(
+        defaultMarkings={(caseRfiData.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />

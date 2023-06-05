@@ -1,13 +1,7 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  DescriptionOutlined,
-  LocalOfferOutlined,
-  ReviewsOutlined,
-  SubjectOutlined,
-  WorkspacesOutlined,
-} from '@mui/icons-material';
+import { BiotechOutlined, DescriptionOutlined, LocalOfferOutlined, ReviewsOutlined, SubjectOutlined, WorkspacesOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
@@ -54,25 +48,46 @@ const TopMenuAnalysis = () => {
             {t('Reports')}
           </Button>
         )}
-        {!useIsHiddenEntity('Grouping') && (
+          {!useIsHiddenEntity('Grouping') && (
+              <Button
+                  component={Link}
+                  to="/dashboard/analysis/groupings"
+                  variant={
+                      location.pathname === '/dashboard/analysis/groupings'
+                        ? 'contained'
+                        : 'text'
+                  }
+                  size="small"
+                  color={
+                      location.pathname === '/dashboard/analysis/groupings'
+                        ? 'secondary'
+                        : 'primary'
+                  }
+                  classes={{ root: classes.button }}
+              >
+                  <WorkspacesOutlined className={classes.icon} fontSize="small" />
+                  {t('Groupings')}
+              </Button>
+          )}
+        {!useIsHiddenEntity('Malware-Analysis') && (
           <Button
             component={Link}
-            to="/dashboard/analysis/groupings"
+            to="/dashboard/analysis/malware_analyses"
             variant={
-              location.pathname === '/dashboard/analysis/groupings'
+              location.pathname === '/dashboard/analysis/malware_analyses'
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname === '/dashboard/analysis/groupings'
+              location.pathname === '/dashboard/analysis/malware_analyses'
                 ? 'secondary'
                 : 'primary'
             }
             classes={{ root: classes.button }}
           >
-            <WorkspacesOutlined className={classes.icon} fontSize="small" />
-            {t('Groupings')}
+            <BiotechOutlined className={classes.icon} fontSize="small" />
+            {t('Malware Analyses')}
           </Button>
         )}
         {!useIsHiddenEntity('Note') && (

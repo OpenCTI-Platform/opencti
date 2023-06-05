@@ -298,6 +298,9 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                   name
                   description
                 }
+                ... on MalwareAnalysis {
+                  result_name
+                }
                 ... on ThreatActor {
                   name
                   description
@@ -429,6 +432,9 @@ const StixCyberObservableNestedEntitiesLines = createFragmentContainer(
                 ... on Malware {
                   name
                   description
+                }
+                ... on MalwareAnalysis {
+                  result_name
                 }
                 ... on ThreatActor {
                   name

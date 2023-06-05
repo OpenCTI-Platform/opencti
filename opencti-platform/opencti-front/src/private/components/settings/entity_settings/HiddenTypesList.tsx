@@ -31,7 +31,7 @@ export const hiddenTypesListRoleMutationFieldPatch = graphql`
 `;
 
 export const groups = new Map<string, string[]>([
-  ['Analysis', ['Report', 'Grouping', 'Note', 'Opinion']],
+  ['Analysis', ['Report', 'Grouping', 'Note', 'Opinion', 'Malware-Analysis']],
   ['Cases', ['Case-Incident', 'Feedback', 'Case-Rfi', 'Case-Rft']],
   ['Events', ['Incident', 'Observed-Data']],
   ['Observations', ['Indicator', 'Infrastructure']],

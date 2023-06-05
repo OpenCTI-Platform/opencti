@@ -19,7 +19,7 @@ import {
   stixSightingRelationshipDeleteRelation,
   stixSightingRelationshipEditContext,
   stixSightingRelationshipEditField,
-  stixSightingRelationshipsNumber,
+  stixSightingRelationshipsNumber
 } from '../domain/stixSightingRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';

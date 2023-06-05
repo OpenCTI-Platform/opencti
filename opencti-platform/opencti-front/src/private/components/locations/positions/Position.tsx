@@ -115,7 +115,7 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={position.id}
-        defaultMarking={(position.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(position.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionEdition positionId={position.id} />

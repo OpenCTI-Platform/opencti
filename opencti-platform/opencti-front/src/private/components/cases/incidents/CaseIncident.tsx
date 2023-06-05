@@ -164,7 +164,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={caseIncidentData.id}
-        defaultMarking={(caseIncidentData.objectMarking?.edges ?? []).map(
+        defaultMarkings={(caseIncidentData.objectMarking?.edges ?? []).map(
           (edge) => edge.node,
         )}
       />

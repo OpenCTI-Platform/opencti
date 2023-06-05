@@ -18,6 +18,7 @@ import type { VocabularyCategory } from '../../generated/graphql';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
+import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../malwareAnalysis/malwareAnalysis-types';
 import { ENTITY_TYPE_CONTAINER_CASE_INCIDENT } from '../case/case-incident/case-incident-types';
 
 export const ENTITY_TYPE_VOCABULARY = 'Vocabulary';
@@ -196,6 +197,15 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
       key: 'capabilities',
       required: false,
       multiple: true,
+    }]
+  },
+  malware_result_ov: {
+    description: 'This is a non-exhaustive, open vocabulary that captures common types of scanner or tool analysis process results.',
+    entity_types: [ENTITY_TYPE_MALWARE_ANALYSIS],
+    fields: [{
+      key: 'result',
+      required: false,
+      multiple: false,
     }]
   },
   malware_type_ov: {

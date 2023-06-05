@@ -76,7 +76,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
     });
     expect(queryResult.data.stixCoreRelationshipsNumber.total).toEqual(1);
     const queryResult2 = await queryAsAdmin({ query: NUMBER_QUERY, variables: { relationship_type: 'stix-relationship' } });
-    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(23);
+    expect(queryResult2.data.stixCoreRelationshipsNumber.total).toEqual(24);
   });
   it('should update stixCoreRelationship', async () => {
     const UPDATE_QUERY = gql`

@@ -162,7 +162,7 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={region.id}
-        defaultMarking={(region.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(region.objectMarking?.edges ?? []).map((edge) => edge.node)}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <RegionEdition regionId={region.id} />
