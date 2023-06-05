@@ -1322,25 +1322,6 @@ const useSearchEntities = ({
             );
           });
         break;
-      case 'operatingSystem':
-        fetchQuery(stixCyberObservablesSearchQuery, {
-          types: ['Software'],
-          search: event.target.value !== 0 ? event.target.value : '',
-          count: 50,
-        })
-          .toPromise()
-          .then((data) => {
-            const softwares = R.pipe(
-              R.pathOr([], ['stixCyberObservables', 'edges']),
-              R.map((n) => ({
-                label: n.node.observable_value,
-                value: n.node.observable_value,
-                type: n.node.entity_type,
-              })),
-            )(data);
-            unionSetEntities('operatingSystem', softwares);
-          });
-        break;
       default:
         break;
     }
