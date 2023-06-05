@@ -43,11 +43,15 @@ const caseRftQuery = graphql`
       name
       x_opencti_graph_data
       ...CaseUtils_case
+      ...CaseRftKnowledge_case
       ...FileImportViewer_entity
       ...FileExportViewer_entity
       ...FileExternalReferencesViewer_entity
       ...WorkbenchFileViewer_entity
       ...StixDomainObjectContent_stixDomainObject
+      ...ContainerHeader_container
+      ...ContainerStixDomainObjects_container
+      ...ContainerStixCyberObservables_container
     }
     connectorsForExport {
       ...StixCoreObjectFilesAndHistory_connectorsExport

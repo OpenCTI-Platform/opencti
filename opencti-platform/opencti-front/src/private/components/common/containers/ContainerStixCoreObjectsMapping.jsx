@@ -12,6 +12,7 @@ import { convertFilters } from '../../../../utils/ListParameters';
 import inject18n from '../../../../components/i18n';
 import { UserContext } from '../../../../utils/hooks/useAuth';
 import { isUniqFilter } from '../../../../utils/filters/filtersUtils';
+import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
 
 const styles = () => ({
   container: {
@@ -105,7 +106,15 @@ class ContainerStixCoreObjectsMapping extends Component {
   }
 
   render() {
-    const { container, classes, height } = this.props;
+    const {
+      container,
+      classes,
+      height,
+      selectedText,
+      openDrawer,
+      handleClose,
+      onAdd,
+    } = this.props;
     const { sortBy, orderAsc, searchTerm, numberOfElements, filters } = this.state;
     const finalFilters = convertFilters(filters);
     const paginationOptions = {
@@ -161,6 +170,24 @@ class ContainerStixCoreObjectsMapping extends Component {
                 )}
               />
             </ListLines>
+            <ContainerAddStixCoreObjects
+              containerId={container.id}
+              mapping={true}
+              selectedText={selectedText}
+              openDrawer={openDrawer}
+              handleClose={handleClose}
+              defaultCreatedBy={container.createdBy ?? null}
+              defaultMarkingDefinitions={(
+                container.objectMarking?.edges ?? []
+              ).map((n) => n.node)}
+              targetStixCoreObjectTypes={[
+                'Stix-Domain-Object',
+                'Stix-Cyber-Observable',
+              ]}
+              confidence={container.confidence}
+              paginationOptions={paginationOptions}
+              onAdd={onAdd}
+            />
           </div>
         )}
       </UserContext.Consumer>

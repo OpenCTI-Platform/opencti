@@ -66,7 +66,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
   node,
   onLabelClick,
   onToggleEntity,
-  selectedElements,
+  addedElements,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -78,7 +78,7 @@ const ContainerAddStixCoreObjectsLineComponent = ({
       onClick={onToggleEntity.bind(this, node)}
     >
       <ListItemIcon style={{ paddingLeft: 10 }}>
-        {node.id in (selectedElements || {}) ? (
+        {node.id in (addedElements || {}) ? (
           <CheckCircleOutlined
             classes={{ root: classes.icon }}
             color="primary"

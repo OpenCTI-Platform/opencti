@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { createFragmentContainer, graphql } from 'react-relay';
 import 'ckeditor5-custom-build/build/translations/fr';
 import 'ckeditor5-custom-build/build/translations/zh-cn';
@@ -10,6 +10,8 @@ import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
+import { Subject, timer } from 'rxjs';
+import { debounce } from 'rxjs/operators';
 import { useFormatter } from '../../../../components/i18n';
 import {
   useIsEnforceReference,
@@ -21,8 +23,10 @@ import MarkDownField from '../../../../components/MarkDownField';
 import CommitMessage from '../form/CommitMessage';
 import RichTextField from '../../../../components/RichTextField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import ContainerStixCoreObjects from './ContainerStixCoreObjectsMapping';
-import ContainerAddStixCoreObjects from './ContainerAddStixCoreObjects';
+import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
+import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
+
+const OPEN$ = new Subject().pipe(debounce(() => timer(1500)));
 
 export const contentMutationFieldPatch = graphql`
   mutation ContainerContentFieldPatchMutation(
@@ -68,15 +72,22 @@ const useStyles = makeStyles(() => ({
 const ContainerContentComponent = ({ containerData }) => {
   const classes = useStyles();
   const { t } = useFormatter();
+  const [open, setOpen] = useState(false);
   const [selectedText, setSelectedText] = useState(null);
+  useEffect(() => {
+    const subscription = OPEN$.subscribe({
+      next: () => {
+        setOpen(true);
+      },
+    });
+    return function cleanup() {
+      subscription.unsubscribe();
+    };
+  }, []);
   const enableReferences = useIsEnforceReference(containerData.entity_type);
   const { innerHeight } = window;
   const enrichedEditorHeight = innerHeight - 540;
   const listHeight = innerHeight - 340;
-  const initialValues = {
-    description: containerData.description,
-    content: containerData.content,
-  };
   const queries = {
     fieldPatch: contentMutationFieldPatch,
   };
@@ -132,7 +143,45 @@ const ContainerContentComponent = ({ containerData }) => {
     }
   };
   const handleTextSelection = (text) => {
-    setSelectedText(text);
+    if (selectedText === 'CLOSED') {
+      setSelectedText(text);
+    } else {
+      OPEN$.next({ action: 'OpenMapping' });
+      setSelectedText(text);
+    }
+  };
+  const onAdd = (stixCoreObject) => {
+    const { content_mapping } = containerData;
+    const contentMappingData = decodeMappingData(content_mapping);
+    const newMappingData = {
+      ...contentMappingData,
+      [selectedText]: stixCoreObject.id,
+    };
+    editor.fieldPatch({
+      variables: {
+        id: containerData.id,
+        input: {
+          key: 'content_mapping',
+          value: encodeMappingData(newMappingData),
+        },
+      },
+      onCompleted: () => {
+        setOpen(false);
+        setSelectedText('CLOSED');
+      },
+    });
+  };
+  const { content_mapping } = containerData;
+  const contentMappingData = decodeMappingData(content_mapping);
+  const mappedStrings = Object.keys(contentMappingData);
+  let { description, content } = containerData;
+  for (const mappedString of mappedStrings) {
+    description = description.replaceAll(mappedString, `==${mappedString}==`);
+    content = content.replaceAll(mappedString, `==${mappedString}==`);
+  }
+  const initialValues = {
+    description,
+    content,
   };
   return (
     <div className={classes.container}>
@@ -168,7 +217,6 @@ const ContainerContentComponent = ({ containerData }) => {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    onFocus={editor.changeFocus}
                     onSubmit={handleSubmitField}
                     onSelect={handleTextSelection}
                     helperText={
@@ -177,15 +225,15 @@ const ContainerContentComponent = ({ containerData }) => {
                         fieldName="description"
                       />
                     }
-                    disabled={false}
+                    disabled={true}
                   />
                   <Field
                     component={RichTextField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
-                    onFocus={editor.changeFocus}
                     onSubmit={handleSubmitField}
+                    onSelect={handleTextSelection}
                     style={{
                       ...fieldSpacingContainerStyle,
                       minHeight: enrichedEditorHeight,
@@ -219,28 +267,20 @@ const ContainerContentComponent = ({ containerData }) => {
             {t('Mapping')}
           </Typography>
           <Paper classes={{ root: classes.paper }} variant="outlined">
-            <ContainerStixCoreObjects
+            <ContainerStixCoreObjectsMapping
               container={containerData}
               height={listHeight}
+              selectedText={selectedText}
+              openDrawer={open}
+              handleClose={() => {
+                setOpen(false);
+                setSelectedText('CLOSED');
+              }}
+              onAdd={onAdd}
             />
           </Paper>
         </Grid>
       </Grid>
-      <ContainerAddStixCoreObjects
-        containerId={containerData.id}
-        mapping={true}
-        selectedText={selectedText}
-        handleClose={() => setSelectedText(null)}
-        defaultCreatedBy={containerData.createdBy ?? null}
-        defaultMarkingDefinitions={(
-          containerData.objectMarking?.edges ?? []
-        ).map((n) => n.node)}
-        targetStixCoreObjectTypes={[
-          'Stix-Domain-Object',
-          'Stix-Cyber-Observable',
-        ]}
-        confidence={containerData.confidence}
-      />
     </div>
   );
 };

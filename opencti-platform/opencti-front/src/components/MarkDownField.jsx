@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React, { useRef, useState } from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import Markdown from 'react-markdown';
@@ -6,6 +6,7 @@ import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
+import remarkFlexibleMarkers from 'remark-flexible-markers';
 import * as R from 'ramda';
 import inject18n from './i18n';
 
@@ -21,7 +22,9 @@ const MarkDownField = (props) => {
     disabled,
     t,
   } = props;
-  const [selectedTab, setSelectedTab] = React.useState('write');
+  const [selectedTab, setSelectedTab] = useState(
+    disabled ? 'preview' : 'write',
+  );
   const [field, meta] = useField(name);
   const textAreaRef = useRef(null);
   const internalOnFocus = (event) => {
@@ -41,15 +44,10 @@ const MarkDownField = (props) => {
       }
     }
   };
-  const internalOnSelect = (event) => {
-    if (event.target && event.target.value && event.target.value.length > 0) {
-      const selection = event.target.value.substring(
-        event.target.selectionStart,
-        event.target.selectionEnd,
-      );
-      if (typeof onSelect === 'function' && selection.length >= 2) {
-        onSelect(selection);
-      }
+  const internalOnSelect = () => {
+    const selection = window.getSelection().toString();
+    if (typeof onSelect === 'function' && selection.length >= 2) {
+      onSelect(selection);
     }
   };
   return (
@@ -67,14 +65,16 @@ const MarkDownField = (props) => {
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={selectedTab}
-        onTabChange={setSelectedTab}
+        onTabChange={(tab) => (!disabled ? setSelectedTab(tab) : null)}
         generateMarkdownPreview={(markdown) => Promise.resolve(
-            <Markdown
-              remarkPlugins={[remarkGfm, remarkParse]}
-              parserOptions={{ commonmark: true }}
-            >
-              {markdown}
-            </Markdown>,
+            <div onMouseUp={() => internalOnSelect()}>
+              <Markdown
+                remarkPlugins={[remarkGfm, remarkParse, remarkFlexibleMarkers]}
+                parserOptions={{ commonmark: true }}
+              >
+                {markdown}
+              </Markdown>
+            </div>,
         )
         }
         l18n={{

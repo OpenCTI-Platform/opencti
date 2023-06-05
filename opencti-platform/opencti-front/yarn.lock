@@ -3585,7 +3585,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/mdast@npm:^3.0.0":
+"@types/mdast@npm:^3.0.0, @types/mdast@npm:^3.0.10":
   version: 3.0.11
   resolution: "@types/mdast@npm:3.0.11"
   dependencies:
@@ -12152,6 +12152,7 @@ __metadata:
     relay-compiler: 15.0.0
     relay-runtime: 15.0.0
     relay-test-utils: 15.0.0
+    remark-flexible-markers: ^1.0.2
     remark-gfm: 3.0.1
     remark-parse: 10.0.1
     rxjs: 7.8.1
@@ -14130,6 +14131,17 @@ __metadata:
   dependencies:
     es6-error: ^4.0.1
   checksum: b59849dc310f6c426f34e308c48ba83df3d034ddef75189951723bb2aac99d29d15f5e127edad951c4095fc9025aa582053907154d68fe0c5380cd6a75365e53
+  languageName: node
+  linkType: hard
+
+"remark-flexible-markers@npm:^1.0.2":
+  version: 1.0.2
+  resolution: "remark-flexible-markers@npm:1.0.2"
+  dependencies:
+    "@types/mdast": ^3.0.10
+    unist-builder: ^3.0.1
+    unist-util-visit: ^4.0.0
+  checksum: b3b173fdbe3bada504424d31b4b10dbeda1471ba4b671146998e45290dad43d66ee658ed7c42774e2f8270eeafac35085579c3db7444de27ba1e03ba8ea3c78a
   languageName: node
   linkType: hard
 
@@ -16328,6 +16340,15 @@ __metadata:
   dependencies:
     imurmurhash: ^0.1.4
   checksum: 49f8d915ba7f0101801b922062ee46b7953256c93ceca74303bd8e6413ae10aa7e8216556b54dc5382895e8221d04f1efaf75f945c2e4a515b4139f77aa6640c
+  languageName: node
+  linkType: hard
+
+"unist-builder@npm:^3.0.1":
+  version: 3.0.1
+  resolution: "unist-builder@npm:3.0.1"
+  dependencies:
+    "@types/unist": ^2.0.0
+  checksum: d8c42fe69aa55a3e9aed3c581007ec5371349bf9885bfa8b0b787634f8d12fa5081f066b205ded379b6d0aeaa884039bae9ebb65a3e71784005fb110aef30d0f
   languageName: node
   linkType: hard
 

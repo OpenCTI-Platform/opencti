@@ -89,7 +89,7 @@ export const containerAddStixCoreObjectsLinesRelationDeleteMutation = graphql`
   }
 `;
 
-class ContainerAddStixCoreObjectsLinesContainer extends Component {
+class ContainerAddStixCoreObjectsLinesComponent extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -102,7 +102,14 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
   }
 
   toggleStixCoreObject(stixCoreObject) {
-    const { containerId, paginationOptions, knowledgeGraph, onAdd, onDelete } = this.props;
+    const {
+      containerId,
+      paginationOptions,
+      knowledgeGraph,
+      onAdd,
+      onDelete,
+      mapping,
+    } = this.props;
     const { addedStixCoreObjects } = this.state;
     const alreadyAdded = stixCoreObject.id in addedStixCoreObjects;
     if (alreadyAdded) {
@@ -192,7 +199,6 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             const options = { ...paginationOptions };
             delete options.id;
             delete options.count;
-
             const payload = store
               .getRootField('containerEdit')
               .getLinkedRecord('relationAdd', { input })
@@ -206,12 +212,17 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
             ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },
           onCompleted: () => {
-            this.setState({
-              addedStixCoreObjects: {
-                ...this.state.addedStixCoreObjects,
-                [stixCoreObject.id]: stixCoreObject,
-              },
-            });
+            if (!mapping) {
+              this.setState({
+                addedStixCoreObjects: {
+                  ...this.state.addedStixCoreObjects,
+                  [stixCoreObject.id]: stixCoreObject,
+                },
+              });
+            }
+            if (typeof onAdd === 'function') {
+              onAdd(stixCoreObject);
+            }
           },
         });
       }
@@ -237,14 +248,15 @@ class ContainerAddStixCoreObjectsLinesContainer extends Component {
         DummyLineComponent={<ContainerAddStixCoreObjecstLineDummy />}
         dataColumns={dataColumns}
         nbOfRowsToLoad={nbOfRowsToLoad}
-        selectedElements={addedStixCoreObjects}
+        addedElements={addedStixCoreObjects}
         onToggleEntity={this.toggleStixCoreObject.bind(this)}
+        disableExport={true}
       />
     );
   }
 }
 
-ContainerAddStixCoreObjectsLinesContainer.propTypes = {
+ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   containerId: PropTypes.string,
   data: PropTypes.object,
   limit: PropTypes.number,
@@ -256,6 +268,7 @@ ContainerAddStixCoreObjectsLinesContainer.propTypes = {
   containerStixCoreObjects: PropTypes.array,
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
+  mapping: PropTypes.bool,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
@@ -284,7 +297,7 @@ export const containerAddStixCoreObjectsLinesQuery = graphql`
 `;
 
 const ContainerAddStixCoreObjectsLines = createPaginationContainer(
-  ContainerAddStixCoreObjectsLinesContainer,
+  ContainerAddStixCoreObjectsLinesComponent,
   {
     data: graphql`
       fragment ContainerAddStixCoreObjectsLines_data on Query

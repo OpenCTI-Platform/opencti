@@ -114,6 +114,7 @@ const ContainerAddStixCoreObjects = (props) => {
     onDelete,
     mapping,
     selectedText,
+    openDrawer,
     handleClose,
   } = props;
   const classes = useStyles();
@@ -139,7 +140,10 @@ const ContainerAddStixCoreObjects = (props) => {
       }
       : {},
   );
-  const [numberOfElements, setNumberOfElements] = useState(false);
+  const [numberOfElements, setNumberOfElements] = useState({
+    number: 0,
+    symbol: '',
+  });
   const [searchTerm, setSearchTerm] = useState('');
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
@@ -195,7 +199,9 @@ const ContainerAddStixCoreObjects = (props) => {
     return (
       <StixDomainObjectCreation
         display={open}
-        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+        inputValue={
+          mapping && searchTerm.length === 0 ? selectedText : searchTerm
+        }
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         confidence={confidence}
@@ -214,7 +220,9 @@ const ContainerAddStixCoreObjects = (props) => {
       <StixCyberObservableCreation
         display={open}
         contextual={true}
-        inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+        inputValue={
+          mapping && searchTerm.length === 0 ? selectedText : searchTerm
+        }
         paginationKey="Pagination_stixCoreObjects"
         paginationOptions={searchPaginationOptions}
         defaultCreatedBy={defaultCreatedBy}
@@ -257,7 +265,9 @@ const ContainerAddStixCoreObjects = (props) => {
         </SpeedDial>
         <StixDomainObjectCreation
           display={open}
-          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+          inputValue={
+            mapping && searchTerm.length === 0 ? selectedText : searchTerm
+          }
           paginationKey="Pagination_stixCoreObjects"
           paginationOptions={searchPaginationOptions}
           confidence={confidence}
@@ -275,9 +285,11 @@ const ContainerAddStixCoreObjects = (props) => {
         <StixCyberObservableCreation
           display={open}
           contextual={true}
-          inputValue={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+          inputValue={
+            mapping && searchTerm.length === 0 ? selectedText : searchTerm
+          }
           paginationKey="Pagination_stixCoreObjects"
-          paginationOptions={paginationOptions}
+          paginationOptions={searchPaginationOptions}
           defaultCreatedBy={defaultCreatedBy}
           defaultMarkingDefinitions={defaultMarkingDefinitions}
           speeddial={true}
@@ -375,7 +387,9 @@ const ContainerAddStixCoreObjects = (props) => {
               orderAsc={orderAsc}
               dataColumns={buildColumns(platformModuleHelpers)}
               handleSearch={setSearchTerm}
-              keyword={mapping && searchTerm.length === 0 ? selectedText : searchTerm}
+              keyword={
+                mapping && searchTerm.length === 0 ? selectedText : searchTerm
+              }
               handleSort={handleSort}
               handleAddFilter={handleAddFilter}
               handleRemoveFilter={handleRemoveFilter}
@@ -385,7 +399,7 @@ const ContainerAddStixCoreObjects = (props) => {
               numberOfElements={numberOfElements}
               iconExtension={true}
               parametersWithPadding={true}
-              availableEntityTypes={resolveAvailableTypes()}
+              availableEntityTypes={[resolveAvailableTypes()]}
               availableFilterKeys={[
                 'entity_type',
                 'markedBy',
@@ -415,6 +429,7 @@ const ContainerAddStixCoreObjects = (props) => {
                     onAdd={onAdd}
                     onDelete={onDelete}
                     setNumberOfElements={setNumberOfElements}
+                    mapping={mapping}
                   />
                 )}
               />
@@ -473,23 +488,54 @@ const ContainerAddStixCoreObjects = (props) => {
       </Fab>
     );
   };
+  const resetState = () => {
+    setSearchTerm('');
+    setFilters(
+      targetStixCoreObjectTypes
+        && !(
+          targetStixCoreObjectTypes.includes('Stix-Domain-Object')
+          || targetStixCoreObjectTypes.includes('Stix-Cyber-Observable')
+        )
+        ? {
+          entity_type: targetStixCoreObjectTypes.map((n) => ({
+            id: n,
+            label: n,
+            value: n,
+          })),
+        }
+        : {},
+    );
+  };
   return (
     <div>
       {!mapping && renderButton()}
       <Drawer
-        open={mapping ? selectedText !== null : open}
-        keepMounted={true}
+        open={mapping ? openDrawer : open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={() => (mapping ? handleClose() : setOpen(false))}
+        onClose={() => {
+          resetState();
+          if (mapping) {
+            handleClose();
+          } else {
+            setOpen(false);
+          }
+        }}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
-            onClick={() => (mapping ? handleClose() : setOpen(false))}
+            onClick={() => {
+              resetState();
+              if (mapping) {
+                handleClose();
+              } else {
+                setOpen(false);
+              }
+            }}
             size="large"
             color="primary"
           >

@@ -141,6 +141,7 @@ class ListLinesContent extends Component {
       deSelectedElements,
       selectAll,
       onToggleEntity,
+      addedElements,
       connectionKey,
       isTo,
       redirectionMode,
@@ -175,6 +176,7 @@ class ListLinesContent extends Component {
             onLabelClick={onLabelClick}
             selectedElements={selectedElements}
             deSelectedElements={deSelectedElements}
+            addedElements={addedElements}
             selectAll={selectAll}
             onToggleEntity={onToggleEntity}
             connectionKey={connectionKey}
@@ -196,6 +198,7 @@ class ListLinesContent extends Component {
             onLabelClick,
             selectedElements,
             deSelectedElements,
+            addedElements,
             selectAll,
             onToggleEntity,
             connectionKey,
@@ -328,7 +331,7 @@ ListLinesContent.propTypes = {
   connectionKey: PropTypes.string,
   isTo: PropTypes.bool,
   redirectionMode: PropTypes.string,
-  scrollElement: PropTypes.object,
+  addedElements: PropTypes.object,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

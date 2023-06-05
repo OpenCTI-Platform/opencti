@@ -61,6 +61,7 @@
     "react-virtualized": "9.22.5",
     "recharts": "2.6.2",
     "relay-runtime": "15.0.0",
+    "remark-flexible-markers": "^1.0.2",
     "remark-gfm": "3.0.1",
     "remark-parse": "10.0.1",
     "rxjs": "7.8.1",

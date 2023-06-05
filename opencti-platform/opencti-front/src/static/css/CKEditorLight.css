@@ -153,11 +153,11 @@ body[data-theme="light"] {
 
 .ck-read-only ::-moz-selection {
   /* Code for Firefox */
-  color: var(--ck-color-text) !important;
+  color: var(--ck-custom-foreground) !important;
 }
 
 .ck-read-only ::selection {
-  color: var(--ck-color-text) !important;
+  color: var(--ck-custom-foreground) !important;
 }
 
 td.ck-editor__editable {

@@ -31,14 +31,18 @@ const MarkDownField = (props) => {
       onSubmit(name, field.value || '');
     }
   };
-  const internalOnSelect = (event) => {
-    console.log(
-      editorReference.data.stringify(
-        editorReference.model.getSelectedContent(
-          editorReference.model.document.selection,
-        ),
+  const internalOnSelect = () => {
+    const htmlContent = editorReference.data.stringify(
+      editorReference.model.getSelectedContent(
+        editorReference.model.document.selection,
       ),
     );
+    const tmp = document.createElement('DIV');
+    tmp.innerHTML = htmlContent;
+    const selection = tmp.textContent || tmp.innerText || '';
+    if (typeof onSelect === 'function' && selection.length >= 2) {
+      onSelect(selection);
+    }
   };
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
@@ -49,7 +53,10 @@ const MarkDownField = (props) => {
         editor={Editor}
         onReady={(editor) => {
           editorReference = editor;
-          editorReference.editing.view.on('selectionChangeDone', internalOnSelect);
+          editorReference.model.document.selection.on(
+            'change',
+            internalOnSelect,
+          );
         }}
         config={{
           width: '100%',

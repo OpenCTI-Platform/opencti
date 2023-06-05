@@ -116,7 +116,6 @@ const ContainerStixCoreObjectsMappingLines = createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-          all: true
         ) @connection(key: "Pagination_objects") {
           edges {
             types
@@ -175,9 +174,7 @@ ContainerStixCoreObjectsMappingLines.propTypes = {
   onTypesChange: PropTypes.func,
   openExports: PropTypes.bool,
   onToggleEntity: PropTypes.func,
-  selectedElements: PropTypes.object,
-  deSelectedElements: PropTypes.object,
-  selectAll: PropTypes.bool,
+  addedElements: PropTypes.object,
   height: PropTypes.number,
 };
 
