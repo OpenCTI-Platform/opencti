@@ -131,6 +131,9 @@ const stixCoreObjectsDonutDistributionQuery = graphql`
           name
           description
         }
+        ... on MalwareAnalysis {
+          result_name
+        }
         ... on ThreatActor {
           name
           description
