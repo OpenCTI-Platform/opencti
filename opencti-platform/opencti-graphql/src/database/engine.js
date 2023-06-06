@@ -24,7 +24,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, {booleanConf, loadCert, logApp} from '../config/conf';
+import conf, { booleanConf, loadCert, logApp } from '../config/conf';
 import {
   ConfigurationError,
   DatabaseError,

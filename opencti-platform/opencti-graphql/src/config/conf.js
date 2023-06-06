@@ -354,6 +354,9 @@ export const configureCA = (certificates) => {
 
 // App
 export const loadCert = (cert) => {
+  if (!cert) {
+    return undefined;
+  }
   if (cert.startsWith('-----BEGIN')) {
     return cert;
   }
