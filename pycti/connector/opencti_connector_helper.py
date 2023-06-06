@@ -8,6 +8,7 @@ import queue
 import signal
 import ssl
 import sys
+import tempfile
 import threading
 import time
 import traceback
@@ -79,27 +80,85 @@ def get_config_variable(
     return result
 
 
-def create_ssl_context() -> ssl.SSLContext:
-    """Set strong SSL defaults: require TLSv1.2+
+def is_memory_certificate(certificate):
+    return certificate.startswith("-----BEGIN")
 
-    `ssl` uses bitwise operations to specify context `<enum 'Options'>`
-    """
 
-    ssl_context_options: List[int] = [
-        ssl.OP_NO_COMPRESSION,
-        ssl.OP_NO_TICKET,  # pylint: disable=no-member
-        ssl.OP_NO_RENEGOTIATION,  # pylint: disable=no-member
-        ssl.OP_SINGLE_DH_USE,
-        ssl.OP_SINGLE_ECDH_USE,
-    ]
-    ssl_context = ssl.create_default_context(purpose=ssl.Purpose.SERVER_AUTH)
-    ssl_context.options &= ~ssl.OP_ENABLE_MIDDLEBOX_COMPAT  # pylint: disable=no-member
-    ssl_context.verify_mode = ssl.CERT_REQUIRED
-    ssl_context.minimum_version = ssl.TLSVersion.TLSv1_2
+def ssl_verify_locations(ssl_context, certdata):
+    if certdata is None:
+        return
 
-    for option in ssl_context_options:
-        ssl_context.options |= option
+    if is_memory_certificate(certdata):
+        ssl_context.load_verify_locations(cadata=certdata)
+    else:
+        ssl_context.load_verify_locations(cafile=certdata)
 
+
+# As cert must be written in files to be loaded in ssl context
+# Creates a temporary file in the most secure manner possible
+def data_to_temp_file(data):
+    # The file is readable and writable only by the creating user ID.
+    # If the operating system uses permission bits to indicate whether a
+    # file is executable, the file is executable by no one. The file
+    # descriptor is not inherited by children of this process.
+    file_descriptor, file_path = tempfile.mkstemp()
+    with os.fdopen(file_descriptor, "w") as open_file:
+        open_file.write(data)
+        open_file.close()
+    return file_path
+
+
+def ssl_cert_chain(ssl_context, cert_data, key_data, passphrase):
+    if cert_data is None:
+        return
+
+    cert_file_path = None
+    key_file_path = None
+
+    # Cert loading
+    if cert_data is not None and is_memory_certificate(cert_data):
+        cert_file_path = data_to_temp_file(cert_data)
+    cert = cert_file_path if cert_file_path is not None else cert_data
+
+    # Key loading
+    if key_data is not None and is_memory_certificate(key_data):
+        key_file_path = data_to_temp_file(key_data)
+    key = key_file_path if key_file_path is not None else key_data
+
+    # Load cert
+    ssl_context.load_cert_chain(cert, key, passphrase)
+    # Remove temp files
+    if cert_file_path is not None:
+        os.unlink(cert_file_path)
+    if key_file_path is not None:
+        os.unlink(key_file_path)
+
+
+def create_mq_ssl_context(config) -> ssl.SSLContext:
+    use_ssl_ca = get_config_variable("MQ_USE_SSL_CA", ["mq", "use_ssl_ca"], config)
+    use_ssl_cert = get_config_variable(
+        "MQ_USE_SSL_CERT", ["mq", "use_ssl_cert"], config
+    )
+    use_ssl_key = get_config_variable("MQ_USE_SSL_KEY", ["mq", "use_ssl_key"], config)
+    use_ssl_reject_unauthorized = get_config_variable(
+        "MQ_USE_SSL_REJECT_UNAUTHORIZED",
+        ["mq", "use_ssl_reject_unauthorized"],
+        config,
+        True,
+        True,
+    )
+    use_ssl_passphrase = get_config_variable(
+        "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
+    )
+    ssl_context = ssl.create_default_context()
+    # If no rejection allowed, use private function to generate unverified context
+    if not use_ssl_reject_unauthorized:
+        # noinspection PyUnresolvedReferences,PyProtectedMember
+        ssl_context = ssl._create_unverified_context()
+    ssl_verify_locations(ssl_context, use_ssl_ca)
+    # Thanks to https://bugs.python.org/issue16487 is not possible today to easily use memory pem
+    # in SSL context. We need to write it to a temporary file before
+    ssl_cert_chain(ssl_context, use_ssl_cert, use_ssl_key, use_ssl_passphrase)
     return ssl_context
 
 
@@ -114,20 +173,21 @@ class ListenQueue:
     :type callback: callable
     """
 
-    def __init__(self, helper, config: Dict, callback) -> None:
+    def __init__(self, helper, config: Dict, connector_config: Dict, callback) -> None:
         self.pika_credentials = None
         self.pika_parameters = None
         self.pika_connection = None
         self.channel = None
         self.helper = helper
         self.callback = callback
-        self.host = config["connection"]["host"]
-        self.vhost = config["connection"]["vhost"]
-        self.use_ssl = config["connection"]["use_ssl"]
-        self.port = config["connection"]["port"]
-        self.user = config["connection"]["user"]
-        self.password = config["connection"]["pass"]
-        self.queue_name = config["listen"]
+        self.config = config
+        self.host = connector_config["connection"]["host"]
+        self.vhost = connector_config["connection"]["vhost"]
+        self.use_ssl = connector_config["connection"]["use_ssl"]
+        self.port = connector_config["connection"]["port"]
+        self.user = connector_config["connection"]["user"]
+        self.password = connector_config["connection"]["pass"]
+        self.queue_name = connector_config["listen"]
         self.connector_thread = None
         self.connector_event_loop = None
         self.queue_event_loop = asyncio.new_event_loop()
@@ -215,7 +275,9 @@ class ListenQueue:
                     port=self.port,
                     virtual_host=self.vhost,
                     credentials=self.pika_credentials,
-                    ssl_options=pika.SSLOptions(create_ssl_context(), self.host)
+                    ssl_options=pika.SSLOptions(
+                        create_mq_ssl_context(self.config), self.host
+                    )
                     if self.use_ssl
                     else None,
                 )
@@ -484,6 +546,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         sys.excepthook = killProgramHook
 
         # Load API config
+        self.config = config
         self.opencti_url = get_config_variable(
             "OPENCTI_URL", ["opencti", "url"], config
         )
@@ -617,7 +680,7 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         self.work_id = None
         self.applicant_id = connector_configuration["connector_user_id"]
         self.connector_state = connector_configuration["connector_state"]
-        self.config = connector_configuration["config"]
+        self.connector_config = connector_configuration["config"]
 
         # Start ping thread
         if not self.connect_run_and_terminate:
@@ -725,7 +788,9 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         :type message_callback: Callable[[Dict], str]
         """
 
-        self.listen_queue = ListenQueue(self, self.config, message_callback)
+        self.listen_queue = ListenQueue(
+            self, self.config, self.connector_config, message_callback
+        )
 
     def listen_stream(
         self,
@@ -907,17 +972,19 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
             self.api.work.add_expectations(work_id, len(bundles))
 
         pika_credentials = pika.PlainCredentials(
-            self.config["connection"]["user"], self.config["connection"]["pass"]
+            self.connector_config["connection"]["user"],
+            self.connector_config["connection"]["pass"],
         )
         pika_parameters = pika.ConnectionParameters(
-            host=self.config["connection"]["host"],
-            port=self.config["connection"]["port"],
-            virtual_host=self.config["connection"]["vhost"],
+            host=self.connector_config["connection"]["host"],
+            port=self.connector_config["connection"]["port"],
+            virtual_host=self.connector_config["connection"]["vhost"],
             credentials=pika_credentials,
             ssl_options=pika.SSLOptions(
-                create_ssl_context(), self.config["connection"]["host"]
+                create_mq_ssl_context(self.config),
+                self.connector_config["connection"]["host"],
             )
-            if self.config["connection"]["use_ssl"]
+            if self.connector_config["connection"]["use_ssl"]
             else None,
         )
 
@@ -978,8 +1045,8 @@ class OpenCTIConnectorHelper:  # pylint: disable=too-many-public-methods
         # Send the message
         try:
             channel.basic_publish(
-                exchange=self.config["push_exchange"],
-                routing_key=self.config["push_routing"],
+                exchange=self.connector_config["push_exchange"],
+                routing_key=self.connector_config["push_routing"],
                 body=json.dumps(message),
                 properties=pika.BasicProperties(
                     delivery_mode=2,  # make message persistent
