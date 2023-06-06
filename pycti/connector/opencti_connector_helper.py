@@ -144,8 +144,8 @@ def create_mq_ssl_context(config) -> ssl.SSLContext:
         "MQ_USE_SSL_REJECT_UNAUTHORIZED",
         ["mq", "use_ssl_reject_unauthorized"],
         config,
-        True,
-        True,
+        False,
+        False,
     )
     use_ssl_passphrase = get_config_variable(
         "MQ_USE_SSL_PASSPHRASE", ["mq", "use_ssl_passphrase"], config
