@@ -1,4 +1,3 @@
-import { readFileSync } from 'node:fs';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import Redis, { Cluster, RedisOptions } from 'ioredis';
 import Redlock from 'redlock';
@@ -7,7 +6,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import * as R from 'ramda';
 import type { ChainableCommander } from 'ioredis/built/utils/RedisCommander';
 import type { ClusterOptions } from 'ioredis/built/cluster/ClusterOptions';
-import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, logApp, } from '../config/conf';
+import conf, { booleanConf, configureCA, DEV_MODE, getStoppingState, loadCert, logApp } from '../config/conf';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -43,7 +42,7 @@ import type { ClusterConfig } from '../manager/clusterManager';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
-const REDIS_CA = conf.get('redis:ca').map((path: string) => readFileSync(path));
+const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
 export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
 

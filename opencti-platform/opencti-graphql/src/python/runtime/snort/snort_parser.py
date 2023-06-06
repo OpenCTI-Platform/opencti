@@ -2,6 +2,7 @@ import collections
 import ipaddress
 import re
 from typing import Any, Dict, List, Optional, Tuple
+
 from .snort_dicts import Dicts
 
 
@@ -110,7 +111,6 @@ class Parser:
         }
 
         for item in ips:
-
             if isinstance(item, bool):
                 pass
 

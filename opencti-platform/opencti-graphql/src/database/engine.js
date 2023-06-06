@@ -4,7 +4,6 @@ import { Client as OpenClient } from '@opensearch-project/opensearch';
 import { Promise as BluePromise } from 'bluebird';
 import * as R from 'ramda';
 import semver from 'semver';
-import { readFileSync } from 'node:fs';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
 import {
   buildPagination,
@@ -25,7 +24,7 @@ import {
   waitInSec,
   WRITE_PLATFORM_INDICES,
 } from './utils';
-import conf, { booleanConf, logApp } from '../config/conf';
+import conf, {booleanConf, loadCert, logApp} from '../config/conf';
 import {
   ConfigurationError,
   DatabaseError,
@@ -119,7 +118,7 @@ export const isImpactedTypeAndSide = (type, side) => {
 export const isImpactedRole = (role) => !UNIMPACTED_ENTITIES_ROLE.includes(role);
 
 const ca = conf.get('elasticsearch:ssl:ca')
-  ? readFileSync(conf.get('elasticsearch:ssl:ca'))
+  ? loadCert(conf.get('elasticsearch:ssl:ca'))
   : conf.get('elasticsearch:ssl:ca_plain') || null;
 
 const searchConfiguration = {

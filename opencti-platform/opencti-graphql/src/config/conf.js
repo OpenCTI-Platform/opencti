@@ -353,6 +353,12 @@ export const configureCA = (certificates) => {
 };
 
 // App
+export const loadCert = (cert) => {
+  if (cert.startsWith('-----BEGIN')) {
+    return cert;
+  }
+  return readFileSync(cert);
+};
 export const PORT = nconf.get('app:port');
 class ExtendedHttpsProxyAgent extends HttpsProxyAgent {
   constructor(basicOpts, extendedOpts) {
@@ -402,7 +408,7 @@ export const getPlatformHttpProxies = () => {
   const exclusions = (nconf.get('no_proxy') ?? '').split(',');
   const https = nconf.get('https_proxy');
   if (https) {
-    const proxyCA = nconf.get('https_proxy_ca').map((caPath) => readFileSync(caPath));
+    const proxyCA = nconf.get('https_proxy_ca').map((caPath) => loadCert(caPath));
     proxies['https:'] = {
       build: () => new ExtendedHttpsProxyAgent(https, {
         rejectUnauthorized: booleanConf('https_proxy_reject_unauthorized', false),

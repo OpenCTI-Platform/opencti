@@ -114,7 +114,6 @@ class Dicts:
 
     @staticmethod
     def payload_detection(option: str = None) -> Any:
-
         payload_detection = {
             "content",
             # The content keyword allows
@@ -655,7 +654,6 @@ class Dicts:
 
     @staticmethod
     def rule_thresholds(option):
-
         threshold = {"threshold"}
 
         if option in threshold:
@@ -663,7 +661,6 @@ class Dicts:
         return False
 
     def options(self, option):  # pylint: disable=too-many-return-statements
-
         # TODO: maybe add Snort Default Classifications
         general_options = self.general_options()
         payload_detection = self.payload_detection()
