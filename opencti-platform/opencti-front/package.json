@@ -131,7 +131,7 @@
   "resolutions": {
     "json5": "2.2.3",
     "glob-parent": "6.0.2",
-    "webpack": "5.76.0",
+    "webpack": "5.85.1",
     "d3-color": "3.1.0",
     "loader-utils": "3.2.1",
     "scss-tokenizer": "0.4.3",
