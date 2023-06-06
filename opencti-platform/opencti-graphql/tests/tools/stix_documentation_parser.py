@@ -115,7 +115,7 @@ inverse_relationships = [
     "sections",
     "message-body-data",
     "service-dll",
-    "x509-v3-extensions"
+    "x509-v3-extensions",
 ]
 
 # STIX documentation

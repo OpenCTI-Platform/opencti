@@ -155,7 +155,7 @@
     "hostname": "localhost",
     "vhost": "/",
     "use_ssl": false,
-    "ca": [],
+    "use_ssl_ca": [],
     "port": 5672,
     "port_management": 15672,
     "management_ssl": false,

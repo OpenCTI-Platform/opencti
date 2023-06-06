@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs';
 import amqp from 'amqplib';
 import axios from 'axios';
 import { SemanticAttributes } from '@opentelemetry/semantic-conventions';
-import conf, { booleanConf, configureCA } from '../config/conf';
+import { Agent } from 'node:https';
+import conf, { booleanConf, configureCA, loadCert } from '../config/conf';
 import { DatabaseError, UnknownError } from '../config/errors';
 import { SYSTEM_USER } from '../utils/access';
 import { telemetry } from '../config/tracing';
@@ -13,7 +13,14 @@ export const WORKER_EXCHANGE = `${RABBIT_QUEUE_PREFIX}amqp.worker.exchange`;
 
 const USE_SSL = booleanConf('rabbitmq:use_ssl', false);
 const QUEUE_TYPE = conf.get('rabbitmq:queue_type');
-const RABBITMQ_CA = conf.get('rabbitmq:ca').map((path) => readFileSync(path));
+const readFileFromConfig = (configKey) => (conf.get(configKey) ? loadCert(conf.get(configKey)) : undefined);
+const RABBITMQ_CA = (conf.get('rabbitmq:use_ssl_ca') ?? []).map((path) => loadCert(path));
+const RABBITMQ_CA_CERT = readFileFromConfig('rabbitmq:use_ssl_cert');
+const RABBITMQ_CA_KEY = readFileFromConfig('rabbitmq:use_ssl_key');
+const RABBITMQ_CA_PFX = readFileFromConfig('rabbitmq:use_ssl_pfx');
+const RABBITMQ_CA_PASSPHRASE = conf.get('rabbitmq:use_ssl_passphrase');
+const RABBITMQ_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:use_ssl_reject_unauthorized', false);
+const RABBITMQ_MGMT_REJECT_UNAUTHORIZED = booleanConf('rabbitmq:management_ssl_reject_unauthorized', false);
 const HOSTNAME = conf.get('rabbitmq:hostname');
 const PORT = conf.get('rabbitmq:port');
 const USERNAME = conf.get('rabbitmq:username');
@@ -48,10 +55,13 @@ const amqpExecute = async (execute) => {
   try {
     const amqpConnection = await amqp.connect(amqpUri(), USE_SSL ? {
       ...amqpCred(),
-      tls: {
-        ...configureCA(RABBITMQ_CA),
-        servername: HOSTNAME,
-      }
+      ...configureCA(RABBITMQ_CA),
+      cert: RABBITMQ_CA_CERT,
+      key: RABBITMQ_CA_KEY,
+      pfx: RABBITMQ_CA_PFX,
+      passphrase: RABBITMQ_CA_PASSPHRASE,
+      rejectUnauthorized: RABBITMQ_REJECT_UNAUTHORIZED,
+      // checkServerIdentity: () => undefined,
     } : amqpCred());
     const channel = await amqpConnection.createConfirmChannel();
     const response = await execute(channel);
@@ -71,30 +81,18 @@ export const metrics = async (context, user) => {
   const metricApi = async () => {
     const ssl = USE_SSL_MGMT ? 's' : '';
     const baseURL = `http${ssl}://${HOSTNAME_MGMT}:${PORT_MGMT}`;
-    const overview = await axios
-      .get('/api/overview', {
-        baseURL,
-        withCredentials: true,
-        auth: {
-          username: USERNAME,
-          password: PASSWORD,
-        },
-      })
-      .then((response) => {
-        return response.data;
-      });
-    const queues = await axios
-      .get(`/api/queues${VHOST_PATH}`, {
-        baseURL,
-        withCredentials: true,
-        auth: {
-          username: USERNAME,
-          password: PASSWORD,
-        },
-      })
-      .then((response) => {
-        return response.data;
-      });
+    const httpsAgent = ssl ? new Agent({ rejectUnauthorized: RABBITMQ_MGMT_REJECT_UNAUTHORIZED }) : undefined;
+    const axiosConfig = {
+      baseURL,
+      httpsAgent,
+      withCredentials: true,
+      auth: {
+        username: USERNAME,
+        password: PASSWORD,
+      },
+    };
+    const overview = await axios.get('/api/overview', axiosConfig).then((response) => response.data);
+    const queues = await axios.get(`/api/queues${VHOST_PATH}`, axiosConfig).then((response) => response.data);
     // Compute number of push queues
     const platformQueues = queues.filter((q) => q.name.startsWith(RABBIT_QUEUE_PREFIX));
     const pushQueues = platformQueues.filter((q) => q.name.startsWith(`${RABBIT_QUEUE_PREFIX}push_`) && q.consumers > 0);
@@ -166,7 +164,7 @@ export const rabbitMQIsAlive = async () => {
     durable: true,
   })).catch(
     /* istanbul ignore next */ (e) => {
-      throw DatabaseError('RabbitMQ seems down', { error: e.message });
+      throw DatabaseError('RabbitMQ seems down', { error: e.data });
     }
   );
 };

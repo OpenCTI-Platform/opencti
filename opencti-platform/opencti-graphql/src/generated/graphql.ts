@@ -18724,7 +18724,6 @@ export type QueueTotals = {
 
 export type RabbitMqConnection = {
   __typename?: 'RabbitMQConnection';
-  ca?: Maybe<Array<Maybe<Scalars['String']>>>;
   host: Scalars['String'];
   pass: Scalars['String'];
   port: Scalars['Int'];
@@ -31885,7 +31884,6 @@ export type QueueTotalsResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type RabbitMqConnectionResolvers<ContextType = any, ParentType extends ResolversParentTypes['RabbitMQConnection'] = ResolversParentTypes['RabbitMQConnection']> = ResolversObject<{
-  ca?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   host?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   pass?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   port?: Resolver<ResolversTypes['Int'], ParentType, ContextType>;

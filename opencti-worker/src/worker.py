@@ -25,10 +25,8 @@ from opentelemetry.sdk.resources import SERVICE_NAME, Resource
 from pika.adapters.blocking_connection import BlockingChannel
 from prometheus_client import start_http_server
 from pycti import OpenCTIApiClient
-from pycti.connector.opencti_connector_helper import (
-    create_ssl_context,
-    get_config_variable,
-)
+from pycti.connector.opencti_connector_helper import (create_mq_ssl_context,
+                                                      get_config_variable)
 from requests.exceptions import RequestException, Timeout
 
 PROCESSING_COUNT: int = 4
@@ -78,6 +76,7 @@ bundles_processing_time_gauge = meter.create_histogram(
 @dataclass(unsafe_hash=True)
 class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
     connector: Dict[str, Any] = field(hash=False)
+    config: Dict[str, Any] = field(hash=False)
     opencti_url: str
     opencti_token: str
     log_level: str
@@ -98,14 +97,19 @@ class Consumer(Thread):  # pylint: disable=too-many-instance-attributes
             self.connector["config"]["connection"]["user"],
             self.connector["config"]["connection"]["pass"],
         )
+        ssl_options = None
+        if self.connector["config"]["connection"]["use_ssl"]:
+            ssl_options = pika.SSLOptions(
+                create_mq_ssl_context(self.config),
+                self.connector["config"]["connection"]["host"],
+            )
+
         self.pika_parameters = pika.ConnectionParameters(
             self.connector["config"]["connection"]["host"],
             self.connector["config"]["connection"]["port"],
             self.connector["config"]["connection"]["vhost"],
             self.pika_credentials,
-            ssl_options=pika.SSLOptions(create_ssl_context())
-            if self.connector["config"]["connection"]["use_ssl"]
-            else None,
+            ssl_options=ssl_options,
         )
         self.pika_connection = pika.BlockingConnection(self.pika_parameters)
         self.channel = self.pika_connection.channel()
@@ -396,6 +400,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
             config = {}
 
         # Load API config
+        self.config = config
         self.opencti_url = get_config_variable(
             "OPENCTI_URL", ["opencti", "url"], config
         )
@@ -482,6 +487,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                             )
                             self.consumer_threads[queue] = Consumer(
                                 connector,
+                                self.config,
                                 self.opencti_url,
                                 self.opencti_token,
                                 self.log_level,
@@ -492,6 +498,7 @@ class Worker:  # pylint: disable=too-few-public-methods, too-many-instance-attri
                     else:
                         self.consumer_threads[queue] = Consumer(
                             connector,
+                            self.config,
                             self.opencti_url,
                             self.opencti_token,
                             self.log_level,

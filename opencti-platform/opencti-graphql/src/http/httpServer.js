@@ -1,13 +1,12 @@
 import https from 'node:https';
 import http from 'node:http';
 import graphqlUploadExpress from 'graphql-upload/graphqlUploadExpress.mjs';
-import { readFileSync } from 'node:fs';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 // eslint-disable-next-line import/extensions
 import { execute, subscribe } from 'graphql/index.js';
 import nconf from 'nconf';
 import express from 'express';
-import conf, { basePath, booleanConf, logApp, PORT } from '../config/conf';
+import conf, { basePath, booleanConf, loadCert, logApp, PORT } from '../config/conf';
 import createApp from './httpPlatform';
 import createApolloServer from '../graphql/graphql';
 import { isStrategyActivated, STRATEGY_CERT } from '../config/providers';
@@ -30,9 +29,9 @@ const createHttpServer = async () => {
   const { schema, apolloServer } = createApolloServer();
   let httpServer;
   if (CERT_KEY_PATH && CERT_KEY_CERT) {
-    const key = readFileSync(CERT_KEY_PATH);
-    const cert = readFileSync(CERT_KEY_CERT);
-    const ca = CA_CERTS.map((path) => readFileSync(path));
+    const key = loadCert(CERT_KEY_PATH);
+    const cert = loadCert(CERT_KEY_CERT);
+    const ca = CA_CERTS.map((path) => loadCert(path));
     const requestCert = isStrategyActivated(STRATEGY_CERT);
     const passphrase = conf.get('app:https_cert:passphrase');
     const options = { key, cert, passphrase, requestCert, rejectUnauthorized, ca };
