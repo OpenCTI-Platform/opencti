@@ -1,7 +1,7 @@
 # Configuration
 
 The purpose of this section is to learn how to configure OpenCTI to have it tailored for your production and development needs. 
-
+ 
 Here are the configuration keys, for both containers (environment variables) and manual deployment.
 
 !!! note "Parameters equivalence"
@@ -46,12 +46,12 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### SSL / TLS
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| app:https_cert:ca                  | APP__HTTPS_CERT__CA                             | Empty list []                 | Certificate authority paths, only if the client uses a self-signed certificate.     |
-| app:https_cert:key                 | APP__HTTPS_CERT__KEY                            |                               | Certificate key path                                                                |
-| app:https_cert:crt                 | APP__HTTPS_CERT__CRT                            |                               | Certificate crt path                                                                |
-| app:https_cert:reject_unauthorized | APP__HTTPS_CERT__REJECT_UNAUTHORIZED            |                               | If not false, the server certificate is verified against the list of supplied CAs   |
+| Parameter                          | Environment variable                            | Default value                 | Description                                                                                |
+| :--------------------------------- | :---------------------------------------------- | :---------------------------- |:-------------------------------------------------------------------------------------------|
+| app:https_cert:ca                  | APP__HTTPS_CERT__CA                             | Empty list []                 | Certificate authority paths or content, only if the client uses a self-signed certificate. |
+| app:https_cert:key                 | APP__HTTPS_CERT__KEY                            |                               | Certificate key path or content                                                            |
+| app:https_cert:crt                 | APP__HTTPS_CERT__CRT                            |                               | Certificate crt path or content                                                            |
+| app:https_cert:reject_unauthorized | APP__HTTPS_CERT__REJECT_UNAUTHORIZED            |                               | If not false, the server certificate is verified against the list of supplied CAs          |
 
 #### Logging
 
@@ -84,28 +84,28 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### Technical customization
 
-| Parameter                          | Environment variable                            | Default value                    | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :------------------------------- | :---------------------------------------------------------------------------------- |
-| app:graphql:playground:enabled     | APP__GRAPHQL__PLAYGROUND__ENABLED               | `true`                           | Enable the playground on /graphql                                                   |
-| app:graphql:playground:force_disabled_introspection  | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION | `false`  | Introspection is allowed to auth users but can be disabled in needed                |
-| app:concurrency:retry_count        | APP__CONCURRENCY__RETRY_COUNT                   | 200                              | Number of try to get the lock to work an element (create/update/merge, ...)         |
-| app:concurrency:retry_delay        | APP__CONCURRENCY__RETRY_DELAY                   | 100                              | Delay between 2 lock retry (in milliseconds)                                        |
-| app:concurrency:retry_jitter       | APP__CONCURRENCY__RETRY_JITTER                  | 50                               | Random jitter to prevent concurrent retry  (in milliseconds)                        |
-| app:concurrency:max_ttl            | APP__CONCURRENCY__MAX_TTL                       | 30000                            | Global maximum time for lock retry (in milliseconds)                                |
+| Parameter                                              | Environment variable                                    | Default value | Description                                                                         |
+|:-------------------------------------------------------|:--------------------------------------------------------|:--------------| :---------------------------------------------------------------------------------- |
+| app:graphql:playground:enabled                         | APP__GRAPHQL__PLAYGROUND__ENABLED                       | `true`        | Enable the playground on /graphql                                                   |
+| app:graphql:playground:force_disabled_introspection    | APP__GRAPHQL_PLAYGROUND__FORCE_DISABLED_INTROSPECTION   | `false`       | Introspection is allowed to auth users but can be disabled in needed                |
+| app:concurrency:retry_count                            | APP__CONCURRENCY__RETRY_COUNT                           | 200           | Number of try to get the lock to work an element (create/update/merge, ...)         |
+| app:concurrency:retry_delay                            | APP__CONCURRENCY__RETRY_DELAY                           | 100           | Delay between 2 lock retry (in milliseconds)                                        |
+| app:concurrency:retry_jitter                           | APP__CONCURRENCY__RETRY_JITTER                          | 50            | Random jitter to prevent concurrent retry  (in milliseconds)                        |
+| app:concurrency:max_ttl                                | APP__CONCURRENCY__MAX_TTL                               | 30000         | Global maximum time for lock retry (in milliseconds)                                |
 
 ### Dependencies
 
 #### ElasticSearch
 
-| Parameter                             | Environment variable                    | Default value                 | Description                                                                              |
-| :------------------------------------ | :-------------------------------------- | :---------------------------- | :--------------------------------------------------------------------------------------- |
-| elasticsearch:url                     | ELASTICSEARCH__URL                      | http://localhost:9200         | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs)  |
-| elasticsearch:username                | ELASTICSEARCH__USERNAME                 |                               | Username can be put in the URL or with this parameter                                    |
-| elasticsearch:password                | ELASTICSEARCH__PASSWORD                 |                               | Password can be put in the URL or with this parameter                                    |
-| elasticsearch:index_prefix            | ELASTICSEARCH__INDEX_PREFIX             | opencti                       | Prefix for the indices                                                                   |
-| elasticsearch:ssl:reject_unauthorized | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                        | Enable TLS certificate check                                                             |
-| elasticsearch:ssl:ca                  | ELASTICSEARCH__SSL__CA                  |                               | Custom certificate path                                                                  |
-| elasticsearch:ssl:ca_plain            | ELASTICSEARCH__SSL__CA_PLAIN            |                               | Custom certificate (plain texc)                                                          |
+| Parameter                              | Environment variable                    | Default value                 | Description                                                                             |
+|:---------------------------------------| :-------------------------------------- | :---------------------------- |:----------------------------------------------------------------------------------------|
+| elasticsearch:url                      | ELASTICSEARCH__URL                      | http://localhost:9200         | URL(s) of the ElasticSearch (supports http://user:pass@localhost:9200 and list of URLs) |
+| elasticsearch:username                 | ELASTICSEARCH__USERNAME                 |                               | Username can be put in the URL or with this parameter                                   |
+| elasticsearch:password                 | ELASTICSEARCH__PASSWORD                 |                               | Password can be put in the URL or with this parameter                                   |
+| elasticsearch:index_prefix             | ELASTICSEARCH__INDEX_PREFIX             | opencti                       | Prefix for the indices                                                                  |
+| elasticsearch:ssl:reject_unauthorized  | ELASTICSEARCH__SSL__REJECT_UNAUTHORIZED | `true`                        | Enable TLS certificate check                                                            |
+| elasticsearch:ssl:ca                   | ELASTICSEARCH__SSL__CA                  |                               | Custom certificate path or content                                                      |
+| elasticsearch:ssl:ca_plain (depecated) | ELASTICSEARCH__SSL__CA_PLAIN            |                               | @depecated, use ca directly                                                             |
 
 #### Redis
 
@@ -124,17 +124,25 @@ Here are the configuration keys, for both containers (environment variables) and
 
 #### RabbitMQ
 
-| Parameter                          | Environment variable                           | Default value                 | Description                                                                         |
-| :--------------------------------- | :--------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| rabbitmq:hostname                  | RABBITMQ__HOSTNAME                             | localhost                     | Hostname of the RabbitMQ server                                                     |
-| rabbitmq:port                      | RABBITMQ__PORT                                 | 5672                          | Port of the RabbitMQ server                                                         |
-| rabbitmq:use_ssl                   | RABBITMQ__USE_SSL                              | `false`                       | Use TLS connection                                                                  |
-| rabbitmq:port_management           | RABBITMQ__PORT_MANAGEMENT                      | 15672                         | Port of the RabbitMQ Management Plugin                                              |
-| rabbitmq:management_ssl            | RABBITMQ__MANAGEMENT_SSL                       | `false`                       | Is the Management Plugin has TLS enabled                                            |
-| rabbitmq:username                  | RABBITMQ__USERNAME                             | guest                         | RabbitMQ user                                                                       |
-| rabbitmq:password                  | RABBITMQ__PASSWORD                             | guest                         | RabbitMQ password                                                                   |
-| rabbitmq:queue_type                | RABBITMQ__QUEUE_TYPE                           | "classic"                     | RabbitMQ Queue Type ("classic" or "quorum")                                         |
-| rabbitmq:ca                        | RABBITMQ__CA                                   | Empty list []                 | Custom CA certificates files                                                        |
+| Parameter                                   | Environment variable              | Default value  | Description                                 |
+|:--------------------------------------------|:----------------------------------|:---------------|:--------------------------------------------|
+| rabbitmq:hostname                           | RABBITMQ__HOSTNAME                | localhost      | Hostname of the RabbitMQ server             |
+| rabbitmq:port                               | RABBITMQ__PORT                    | 5672           | Port of the RabbitMQ server                 |
+| rabbitmq:port_management                    | RABBITMQ__PORT_MANAGEMENT         | 15672          | Port of the RabbitMQ Management Plugin      |
+| rabbitmq:username                           | RABBITMQ__USERNAME                | guest          | RabbitMQ user                               |
+| rabbitmq:password                           | RABBITMQ__PASSWORD                | guest          | RabbitMQ password                           |
+| rabbitmq:queue_type                         | RABBITMQ__QUEUE_TYPE              | "classic"      | RabbitMQ Queue Type ("classic" or "quorum") |
+| -                                           | -                                 | -              | -                                           |
+| rabbitmq:use_ssl                            | RABBITMQ__USE_SSL                 | `false`        | Use TLS connection                          |                                                |                               |                                                                                     |
+| rabbitmq:use_ssl_cert                       | RABBITMQ__USE_SSL_CERT            |                | Path or cert content                        |
+| rabbitmq:use_ssl_key                        | RABBITMQ__USE_SSL_KEY             |                | Path or key content                         |
+| rabbitmq:use_ssl_pfx                        | RABBITMQ__USE_SSL_PFX             |                | Path or pfx content                         |
+| rabbitmq:use_ssl_ca                         | RABBITMQ__USE_SSL_CA              |                | Path or cacert content                      |
+| rabbitmq:use_ssl_passphrase                 | RABBITMQ__SSL_PASSPHRASE          |                | Passphrase for the key certificate          |
+| rabbitmq:use_ssl_reject_unauthorized        | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `false`        | Reject rabbit self signed certificate       |
+| -                                           | -                                 | -              | -                                           |
+| rabbitmq:management_ssl                     | RABBITMQ__MANAGEMENT_SSL          | `false`        | Is the Management Plugin has TLS enabled    |                                                |                               |                                                                                     |
+| rabbitmq:management_ssl_reject_unauthorized | RABBITMQ__SSL_REJECT_UNAUTHORIZED | `true`         | Reject management self signed certificate   |
 
 #### S3 Bucket
 
@@ -199,22 +207,38 @@ Here are the configuration keys, for both containers (environment variables) and
     
     It is possible to check all default parameters implemented in the platform in the [`default.json` file](https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json).
 
-## Worker
+## Worker and connector
 
-The Python worker can be configured manually using the configuration file `config.yml` or through environment variables.
+Can be configured manually using the configuration file `config.yml` or through environment variables.
 
-| Parameter                          | Environment variable                            | Default value                 | Description                                                                         |
-| :--------------------------------- | :---------------------------------------------- | :---------------------------- | :---------------------------------------------------------------------------------- |
-| opencti:url                        | OPENCTI_URL                                     |                               | The URL of the OpenCTI platform                                                     |
-| opencti:token                      | OPENCTI_TOKEN                                   |                               | A token of an administrator account with bypass capability                          |
-| worker:log_level                   | WORKER_LOG_LEVEL                                | info                          | The log level (error, warning, info or debug)                                       |
+| Parameter                      | Environment variable           | Default value | Description                                                |
+|:-------------------------------|:-------------------------------|:--------------|:-----------------------------------------------------------|
+| opencti:url                    | OPENCTI_URL                    |               | The URL of the OpenCTI platform                            |
+| opencti:token                  | OPENCTI_TOKEN                  |               | A token of an administrator account with bypass capability |
+| -                              | -                              | -             | -                                                          |
+| mq:use_ssl                     | /                              | /             | Depending of the API configuration (fetch from API)        |
+| mq:use_ssl_ca                  | MQ_USE_SSL_CA                  |               | Path or cacert content                                     |
+| mq:use_ssl_cert                | MQ_USE_SSL_CERT                |               | Path or cert content                                       |
+| mq:use_ssl_key                 | MQ_USE_SSL_KEY                 |               | Path or key content                                        |
+| mq:use_ssl_passphrase          | MQ_USE_SSL_PASSPHRASE          |               | Passphrase for the key certificate                         |
+| mq:use_ssl_reject_unauthorized | MQ_USE_SSL_REJECT_UNAUTHORIZED | `false`       | Reject rabbit self signed certificate                      |
+
+### Worker specific configuration
+
+| Parameter                      | Environment variable           | Default value | Description                                                |
+|:-------------------------------|:-------------------------------|:--------------|:-----------------------------------------------------------|
+| worker:log_level               | WORKER_LOG_LEVEL               | info          | The log level (error, warning, info or debug)              |
+
+### Connector specific configuration
+
+For specific connector configuration, you need to check each connector behavior.
 
 ## ElasticSearch
 
 If you want to adapt the memory consumption of ElasticSearch, you can use theses options:
 
 ```bash
-# Add the followiung environment variable:
+# Add the following environment variable:
 "ES_JAVA_OPTS=-Xms8g -Xmx8g"
 ```
 
