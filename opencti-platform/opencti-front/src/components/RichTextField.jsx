@@ -40,8 +40,8 @@ const MarkDownField = (props) => {
     const tmp = document.createElement('DIV');
     tmp.innerHTML = htmlContent;
     const selection = tmp.textContent || tmp.innerText || '';
-    if (typeof onSelect === 'function' && selection.length >= 2) {
-      onSelect(selection);
+    if (typeof onSelect === 'function' && selection.length > 2 && disabled) {
+      onSelect(selection.trim());
     }
   };
   return (

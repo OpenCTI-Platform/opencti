@@ -287,6 +287,9 @@ ContainerStixCoreObjectPopover.propTypes = {
   t: PropTypes.func,
   selectedElements: PropTypes.object,
   setSelectedElements: PropTypes.func,
+  onDeleteMapping: PropTypes.func,
+  onRemove: PropTypes.func,
+  onDelete: PropTypes.func,
 };
 
 export default compose(

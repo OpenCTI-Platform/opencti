@@ -11,6 +11,7 @@ import {
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
+  FilterAltOffOutlined,
   FilterListOutlined,
   LinkOutlined,
   ReadMoreOutlined,
@@ -61,15 +62,12 @@ import { truncate } from '../../../../utils/String';
 import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
 import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
 import { parseDomain } from '../../../../utils/Graph';
-import StixSightingRelationshipCreation
-  from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
+import StixSightingRelationshipCreation from '../../events/stix_sighting_relationships/StixSightingRelationshipCreation';
 import StixSightingRelationshipEdition from '../../events/stix_sighting_relationships/StixSightingRelationshipEdition';
 import SearchInput from '../../../../components/SearchInput';
 import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
-import StixNestedRefRelationshipEdition
-  from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
-import StixNestedRefRelationshipCreation
-  from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
+import StixNestedRefRelationshipEdition from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipEdition';
+import StixNestedRefRelationshipCreation from '../../common/stix_nested_ref_relationships/StixNestedRefRelationshipCreation';
 import { convertCreatedBy, convertMarkings } from '../../../../utils/edition';
 
 const styles = () => ({
@@ -247,10 +245,10 @@ class CaseRfiKnowledgeGraphBar extends Component {
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].entity_type
-        === 'stix-sighting-relationship')
+          === 'stix-sighting-relationship')
       || (this.props.numberOfSelectedNodes === 1
         && this.props.selectedNodes[0].entity_type
-        === 'stix-sighting-relationship')
+          === 'stix-sighting-relationship')
     ) {
       this.setState({ openEditSighting: true });
     } else if (
@@ -350,6 +348,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       timeRangeValues,
       theme,
       navOpen,
+      resetAllFilters,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -374,7 +373,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       deleteObject,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
-      > 0
+        > 0
       || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length > 0;
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
@@ -642,7 +641,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
                     <Badge
                       badgeContent={Math.abs(
                         currentStixCoreObjectsTypes.length
-                        - stixCoreObjectsTypes.length,
+                          - stixCoreObjectsTypes.length,
                       )}
                       color="secondary"
                     >
@@ -809,6 +808,17 @@ class CaseRfiKnowledgeGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
+              <Tooltip title={t('Clear all filters')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={resetAllFilters.bind(this)}
+                    size="large"
+                  >
+                    <FilterAltOffOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
               <div style={{ margin: '9px 0 0 10px' }}>
                 <SearchInput
@@ -866,8 +876,8 @@ class CaseRfiKnowledgeGraphBar extends Component {
                   stixCyberObservableId={selectedNodes[0]?.id ?? null}
                   handleClose={this.handleCloseObservableEdition.bind(this)}
                 />
-                {stixCoreObjectOrRelationshipId != null
-                  && <>
+                {stixCoreObjectOrRelationshipId != null && (
+                  <>
                     <StixCoreRelationshipEdition
                       open={openEditRelation}
                       stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
@@ -876,18 +886,22 @@ class CaseRfiKnowledgeGraphBar extends Component {
                     />
                     <StixSightingRelationshipEdition
                       open={openEditSighting}
-                      stixSightingRelationshipId={stixCoreObjectOrRelationshipId}
+                      stixSightingRelationshipId={
+                        stixCoreObjectOrRelationshipId
+                      }
                       handleClose={this.handleCloseSightingEdition.bind(this)}
                       noStoreUpdate={true}
                     />
                     <StixNestedRefRelationshipEdition
                       open={openEditNested}
-                      stixCyberObservableRelationshipId={stixCoreObjectOrRelationshipId}
+                      stixCyberObservableRelationshipId={
+                        stixCoreObjectOrRelationshipId
+                      }
                       handleClose={this.handleCloseNestedEdition.bind(this)}
                       noStoreUpdate={true}
                     />
                   </>
-                }
+                )}
                 {onAddRelation && (
                   <Tooltip title={t('Create a relationship')}>
                     <span>

@@ -15,6 +15,8 @@ import {
   ContainerAddStixCoreObjectsLine,
   ContainerAddStixCoreObjecstLineDummy,
 } from './ContainerAddStixCoreObjectsLine';
+import { setNumberOfElements } from '../../../../utils/Number';
+import { insertNode } from '../../../../utils/store';
 
 const nbOfRowsToLoad = 50;
 
@@ -99,6 +101,15 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
         (props.containerStixCoreObjects || []).map((n) => n.node),
       ),
     };
+  }
+
+  componentDidUpdate(prevProps) {
+    setNumberOfElements(
+      prevProps,
+      this.props,
+      'stixCoreObjects',
+      this.props.setNumberOfElements.bind(this),
+    );
   }
 
   toggleStixCoreObject(stixCoreObject) {
@@ -199,17 +210,16 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
             const options = { ...paginationOptions };
             delete options.id;
             delete options.count;
-            const payload = store
-              .getRootField('containerEdit')
-              .getLinkedRecord('relationAdd', { input })
-              .getLinkedRecord('to');
-            const newEdge = payload.setLinkedRecord(payload, 'node');
-            const conn = ConnectionHandler.getConnection(
-              store.get(containerId),
+            insertNode(
+              store,
               'Pagination_objects',
               options,
+              'containerEdit',
+              containerId,
+              'relationAdd',
+              input,
+              'to',
             );
-            ConnectionHandler.insertEdgeBefore(conn, newEdge);
           },
           onCompleted: () => {
             if (!mapping) {
@@ -230,7 +240,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
   }
 
   render() {
-    const { initialLoading, dataColumns, relay } = this.props;
+    const { initialLoading, dataColumns, relay, containerRef } = this.props;
     const { addedStixCoreObjects } = this.state;
     return (
       <ListLinesContent
@@ -251,6 +261,7 @@ class ContainerAddStixCoreObjectsLinesComponent extends Component {
         addedElements={addedStixCoreObjects}
         onToggleEntity={this.toggleStixCoreObject.bind(this)}
         disableExport={true}
+        containerRef={containerRef}
       />
     );
   }
@@ -269,6 +280,7 @@ ContainerAddStixCoreObjectsLinesComponent.propTypes = {
   onAdd: PropTypes.func,
   onDelete: PropTypes.func,
   mapping: PropTypes.bool,
+  containerRef: PropTypes.object,
 };
 
 export const containerAddStixCoreObjectsLinesQuery = graphql`
@@ -371,11 +383,14 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
     },
     getVariables(props, { count, cursor }, fragmentVariables) {
       return {
+        search: fragmentVariables.search,
         types: fragmentVariables.types,
         count,
         cursor,
         orderBy: fragmentVariables.orderBy,
         orderMode: fragmentVariables.orderMode,
+        filters: fragmentVariables.filters,
+        filterMode: fragmentVariables.filterMode,
       };
     },
     query: containerAddStixCoreObjectsLinesQuery,

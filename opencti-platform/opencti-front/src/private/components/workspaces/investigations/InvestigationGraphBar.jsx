@@ -18,6 +18,7 @@ import {
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
+  FilterAltOffOutlined,
   FilterListOutlined,
   LinkOutlined,
   OpenWithOutlined,
@@ -267,6 +268,7 @@ class InvestigationGraphBar extends Component {
       lastLinkLastSeen,
       handleOpenExpandElements,
       navOpen,
+      resetAllFilters,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -550,7 +552,7 @@ class InvestigationGraphBar extends Component {
                     <Badge
                       badgeContent={Math.abs(
                         currentStixCoreObjectsTypes.length
-                        - stixCoreObjectsTypes.length,
+                          - stixCoreObjectsTypes.length,
                       )}
                       color="secondary"
                     >
@@ -717,6 +719,17 @@ class InvestigationGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
+              <Tooltip title={t('Clear all filters')}>
+                <span>
+                  <IconButton
+                    color="primary"
+                    onClick={resetAllFilters.bind(this)}
+                    size="large"
+                  >
+                    <FilterAltOffOutlined />
+                  </IconButton>
+                </span>
+              </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
               <div style={{ margin: '9px 0 0 10px' }}>
                 <SearchInput
@@ -726,150 +739,156 @@ class InvestigationGraphBar extends Component {
               </div>
             </div>
             {workspace && (
-            <Security
-              needs={[EXPLORE_EXUPDATE]}
-              hasAccess={workspace.currentUserAccessRight === 'admin' || workspace.currentUserAccessRight === 'edit'}>
-              <div
-                style={{
-                  float: 'right',
-                  display: 'flex',
-                  height: '100%',
-                }}
-              >
-                <InvestigationAddStixCoreObjects
-                  workspaceId={workspace.id}
-                  workspaceStixCoreObjects={workspace.objects.edges}
-                  defaultCreatedBy={workspace.createdBy ?? null}
-                  defaultMarkingDefinitions={(
-                    workspace.objectMarking?.edges ?? []
-                  ).map((n) => n.node)}
-                  targetStixCoreObjectTypes={[
-                    'Stix-Domain-Object',
-                    'Stix-Cyber-Observable',
-                  ]}
-                  onAdd={onAdd}
-                  onDelete={onDelete}
-                />
-                <Tooltip title={t('Edit the selected item')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenEditItem.bind(this)}
-                      disabled={!editionEnabled}
-                      size="large"
-                    >
-                      <EditOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <StixDomainObjectEdition
-                  open={openEditDomainObject}
-                  stixDomainObjectId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseDomainObjectEdition.bind(this)}
-                  noStoreUpdate={true}
-                />
-                <StixCyberObservableEdition
-                  open={openEditObservable}
-                  stixCyberObservableId={selectedNodes[0]?.id ?? null}
-                  handleClose={this.handleCloseObservableEdition.bind(this)}
-                />
-                {stixCoreObjectOrRelationshipId != null
-                  && <>
-                    <StixCoreRelationshipEdition
-                      open={openEditRelation}
-                      stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
-                      handleClose={this.handleCloseRelationEdition.bind(this)}
-                      noStoreUpdate={true}
-                    />
-                  </>
+              <Security
+                needs={[EXPLORE_EXUPDATE]}
+                hasAccess={
+                  workspace.currentUserAccessRight === 'admin'
+                  || workspace.currentUserAccessRight === 'edit'
                 }
-                <Tooltip title={t('Expand')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={handleOpenExpandElements.bind(this)}
-                      disabled={!expandEnabled}
-                      size="large"
-                    >
-                      <OpenWithOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                {onAddRelation && (
-                  <Tooltip title={t('Create a relationship')}>
+              >
+                <div
+                  style={{
+                    float: 'right',
+                    display: 'flex',
+                    height: '100%',
+                  }}
+                >
+                  <InvestigationAddStixCoreObjects
+                    workspaceId={workspace.id}
+                    workspaceStixCoreObjects={workspace.objects.edges}
+                    defaultCreatedBy={workspace.createdBy ?? null}
+                    defaultMarkingDefinitions={(
+                      workspace.objectMarking?.edges ?? []
+                    ).map((n) => n.node)}
+                    targetStixCoreObjectTypes={[
+                      'Stix-Domain-Object',
+                      'Stix-Cyber-Observable',
+                    ]}
+                    onAdd={onAdd}
+                    onDelete={onDelete}
+                  />
+                  <Tooltip title={t('Edit the selected item')}>
                     <span>
                       <IconButton
                         color="primary"
-                        onClick={this.handleOpenCreateRelationship.bind(this)}
-                        disabled={!relationEnabled}
+                        onClick={this.handleOpenEditItem.bind(this)}
+                        disabled={!editionEnabled}
                         size="large"
                       >
-                        <LinkOutlined />
+                        <EditOutlined />
                       </IconButton>
                     </span>
                   </Tooltip>
-                )}
-                {onAddRelation && (
-                  <StixCoreRelationshipCreation
-                    open={openCreatedRelation}
-                    fromObjects={relationFromObjects}
-                    toObjects={relationToObjects}
-                    startTime={lastLinkFirstSeen || null}
-                    stopTime={lastLinkLastSeen || null}
-                    confidence={50}
-                    handleClose={this.handleCloseCreateRelationship.bind(this)}
-                    handleResult={onAddRelation}
-                    handleReverseRelation={this.handleReverseRelation.bind(
-                      this,
-                    )}
+                  <StixDomainObjectEdition
+                    open={openEditDomainObject}
+                    stixDomainObjectId={selectedNodes[0]?.id ?? null}
+                    handleClose={this.handleCloseDomainObjectEdition.bind(this)}
+                    noStoreUpdate={true}
                   />
-                )}
-                <Tooltip title={t('Remove selected items')}>
-                  <span>
-                    <IconButton
-                      color="primary"
-                      onClick={this.handleOpenRemove.bind(this)}
-                      disabled={
-                        numberOfSelectedNodes === 0
-                        && numberOfSelectedLinks === 0
-                      }
-                      size="large"
-                    >
-                      <DeleteOutlined />
-                    </IconButton>
-                  </span>
-                </Tooltip>
-                <Dialog
-                  open={this.state.displayRemove}
-                  PaperProps={{ elevation: 1 }}
-                  keepMounted={true}
-                  TransitionComponent={Transition}
-                  onClose={this.handleCloseRemove.bind(this)}
-                >
-                  <DialogContent>
-                    <DialogContentText>
-                      {t(
-                        'Do you want to remove these elements from this investigation?',
+                  <StixCyberObservableEdition
+                    open={openEditObservable}
+                    stixCyberObservableId={selectedNodes[0]?.id ?? null}
+                    handleClose={this.handleCloseObservableEdition.bind(this)}
+                  />
+                  {stixCoreObjectOrRelationshipId != null && (
+                    <>
+                      <StixCoreRelationshipEdition
+                        open={openEditRelation}
+                        stixCoreRelationshipId={stixCoreObjectOrRelationshipId}
+                        handleClose={this.handleCloseRelationEdition.bind(this)}
+                        noStoreUpdate={true}
+                      />
+                    </>
+                  )}
+                  <Tooltip title={t('Expand')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={handleOpenExpandElements.bind(this)}
+                        disabled={!expandEnabled}
+                        size="large"
+                      >
+                        <OpenWithOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  {onAddRelation && (
+                    <Tooltip title={t('Create a relationship')}>
+                      <span>
+                        <IconButton
+                          color="primary"
+                          onClick={this.handleOpenCreateRelationship.bind(this)}
+                          disabled={!relationEnabled}
+                          size="large"
+                        >
+                          <LinkOutlined />
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                  )}
+                  {onAddRelation && (
+                    <StixCoreRelationshipCreation
+                      open={openCreatedRelation}
+                      fromObjects={relationFromObjects}
+                      toObjects={relationToObjects}
+                      startTime={lastLinkFirstSeen || null}
+                      stopTime={lastLinkLastSeen || null}
+                      confidence={50}
+                      handleClose={this.handleCloseCreateRelationship.bind(
+                        this,
                       )}
-                    </DialogContentText>
-                  </DialogContent>
-                  <DialogActions>
-                    <Button onClick={this.handleCloseRemove.bind(this)}>
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      onClick={() => {
-                        this.handleCloseRemove();
-                        handleDeleteSelected();
-                      }}
-                      color="secondary"
-                    >
-                      {t('Remove')}
-                    </Button>
-                  </DialogActions>
-                </Dialog>
-              </div>
-            </Security>
+                      handleResult={onAddRelation}
+                      handleReverseRelation={this.handleReverseRelation.bind(
+                        this,
+                      )}
+                    />
+                  )}
+                  <Tooltip title={t('Remove selected items')}>
+                    <span>
+                      <IconButton
+                        color="primary"
+                        onClick={this.handleOpenRemove.bind(this)}
+                        disabled={
+                          numberOfSelectedNodes === 0
+                          && numberOfSelectedLinks === 0
+                        }
+                        size="large"
+                      >
+                        <DeleteOutlined />
+                      </IconButton>
+                    </span>
+                  </Tooltip>
+                  <Dialog
+                    open={this.state.displayRemove}
+                    PaperProps={{ elevation: 1 }}
+                    keepMounted={true}
+                    TransitionComponent={Transition}
+                    onClose={this.handleCloseRemove.bind(this)}
+                  >
+                    <DialogContent>
+                      <DialogContentText>
+                        {t(
+                          'Do you want to remove these elements from this investigation?',
+                        )}
+                      </DialogContentText>
+                    </DialogContent>
+                    <DialogActions>
+                      <Button onClick={this.handleCloseRemove.bind(this)}>
+                        {t('Cancel')}
+                      </Button>
+                      <Button
+                        onClick={() => {
+                          this.handleCloseRemove();
+                          handleDeleteSelected();
+                        }}
+                        color="secondary"
+                      >
+                        {t('Remove')}
+                      </Button>
+                    </DialogActions>
+                  </Dialog>
+                </div>
+              </Security>
             )}
           </div>
           <div className="clearfix" />

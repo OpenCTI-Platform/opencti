@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import * as R from 'ramda';
 import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
@@ -145,6 +145,7 @@ const ContainerAddStixCoreObjects = (props) => {
     symbol: '',
   });
   const [searchTerm, setSearchTerm] = useState('');
+  const containerRef = useRef(null);
   const handleOpenCreateEntity = () => {
     setOpenCreateEntity(true);
     setOpenSpeedDial(false);
@@ -430,6 +431,7 @@ const ContainerAddStixCoreObjects = (props) => {
                     onDelete={onDelete}
                     setNumberOfElements={setNumberOfElements}
                     mapping={mapping}
+                    containerRef={containerRef}
                   />
                 )}
               />
@@ -522,6 +524,9 @@ const ContainerAddStixCoreObjects = (props) => {
           } else {
             setOpen(false);
           }
+        }}
+        PaperProps={{
+          ref: containerRef,
         }}
       >
         <div className={classes.header}>

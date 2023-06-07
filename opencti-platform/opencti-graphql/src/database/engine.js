@@ -1024,6 +1024,14 @@ export const elGenerateFullTextSearchShould = (search, args = {}) => {
       },
     },
     {
+      multi_match: {
+        type: 'phrase',
+        query: searchPhrase,
+        lenient: true,
+        fields: BASE_SEARCH_ATTRIBUTES,
+      },
+    },
+    {
       nested: {
         path: 'connections',
         query: {

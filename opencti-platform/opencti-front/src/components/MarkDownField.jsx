@@ -21,10 +21,10 @@ const MarkDownField = (props) => {
     style,
     disabled,
     t,
+    controlledSelectedTab,
+    controlledSetSelectTab,
   } = props;
-  const [selectedTab, setSelectedTab] = useState(
-    disabled ? 'preview' : 'write',
-  );
+  const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
   const textAreaRef = useRef(null);
   const internalOnFocus = (event) => {
@@ -46,8 +46,8 @@ const MarkDownField = (props) => {
   };
   const internalOnSelect = () => {
     const selection = window.getSelection().toString();
-    if (typeof onSelect === 'function' && selection.length >= 2) {
-      onSelect(selection);
+    if (typeof onSelect === 'function' && selection.length > 2 && disabled) {
+      onSelect(selection.trim());
     }
   };
   return (
@@ -64,8 +64,13 @@ const MarkDownField = (props) => {
         value={field.value}
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
-        selectedTab={selectedTab}
-        onTabChange={(tab) => (!disabled ? setSelectedTab(tab) : null)}
+        selectedTab={
+          controlledSelectedTab !== null ? controlledSelectedTab : selectedTab
+        }
+        onTabChange={(tab) => (controlledSetSelectTab !== null
+          ? controlledSetSelectTab(tab)
+          : setSelectedTab(tab))
+        }
         generateMarkdownPreview={(markdown) => Promise.resolve(
             <div onMouseUp={() => internalOnSelect()}>
               <Markdown

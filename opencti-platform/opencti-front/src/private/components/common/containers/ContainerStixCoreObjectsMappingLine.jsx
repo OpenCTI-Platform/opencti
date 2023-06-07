@@ -18,6 +18,7 @@ import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
+import ContainerStixCoreObjectPopover from './ContainerStixCoreObjectPopover';
 
 const useStyles = makeStyles((theme) => ({
   item: {
@@ -60,9 +61,20 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const ContainerStixCoreObjectLineComponent = (props) => {
-  const { node, dataColumns } = props;
+  const {
+    node,
+    types,
+    dataColumns,
+    contentMapping,
+    containerId,
+    paginationOptions,
+    onDeleteMapping,
+  } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
+  const refTypes = types ?? ['manual'];
+  const isThroughInference = refTypes.includes('inferred');
+  const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -121,13 +133,39 @@ const ContainerStixCoreObjectLineComponent = (props) => {
                 limit={1}
               />
             </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.mapping.width }}
+            >
+              <Chip
+                classes={{ root: classes.chipInList }}
+                label={
+                  contentMapping[node.id]
+                    ? contentMapping[node.id]
+                    : t('No mapping')
+                }
+              />
+            </div>
           </div>
         }
       />
       <ListItemSecondaryAction>
-        <Tooltip title={t('Clear mapping')}>
-          <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
-        </Tooltip>
+        {isOnlyThroughInference ? (
+          <Tooltip title={t('Inferred knowledge')}>
+            <AutoFix fontSize="small" style={{ marginLeft: -30 }} />
+          </Tooltip>
+        ) : (
+          <ContainerStixCoreObjectPopover
+            containerId={containerId}
+            toId={node.id}
+            relationshipType="object"
+            paginationKey="Pagination_objects"
+            paginationOptions={paginationOptions}
+            onDeleteMapping={onDeleteMapping}
+            onRemove={onDeleteMapping}
+            onDelete={onDeleteMapping}
+          />
+        )}
       </ListItemSecondaryAction>
     </ListItem>
   );
@@ -324,7 +362,18 @@ export const ContainerStixCoreObjectsMappingLineDummy = (props) => {
               <Skeleton
                 animation="wave"
                 variant="rectangular"
-                width={100}
+                width="90%"
+                height="100%"
+              />
+            </div>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.mapping.width }}
+            >
+              <Skeleton
+                animation="wave"
+                variant="rectangular"
+                width="90%"
                 height="100%"
               />
             </div>
