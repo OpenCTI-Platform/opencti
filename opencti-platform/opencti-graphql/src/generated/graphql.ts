@@ -20433,6 +20433,7 @@ export enum StixCoreObjectsFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  ElementId = 'elementId',
   EntityType = 'entity_type',
   HasExternalReference = 'hasExternalReference',
   HashesMd5 = 'hashes_MD5',

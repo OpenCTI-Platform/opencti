@@ -1791,6 +1791,7 @@ enum StixCoreObjectsFilter {
   entity_type
   revoked
   relationship_type
+  elementId
   aliases
   x_opencti_aliases
   x_mitre_id
