@@ -103,29 +103,35 @@ const channelMutation = graphql`
 `;
 
 interface ChannelAddInput {
-  name: string
-  channel_types: string[]
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  confidence: number
-  file: File | undefined
+  name: string;
+  channel_types: string[];
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  confidence: number;
+  file: File | undefined;
 }
 
 interface ChannelFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
-  updater, onReset, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions,
+  updater,
+  onReset,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -138,10 +144,10 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
   const channelValidator = useSchemaCreationValidation('Channel', basicShape);
 
   const initialValues: ChannelAddInput = {
-    name: '',
+    name: inputValue ?? '',
     channel_types: [],
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -151,7 +157,10 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
 
   const [commit] = useMutation<ChannelCreationMutation>(channelMutation);
 
-  const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ChannelAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: ChannelCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -186,115 +195,116 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     });
   };
 
-  return <Formik
-    initialValues={initialValues}
-    validationSchema={channelValidator}
-    onSubmit={onSubmit}
-    onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Channel', 'Malware']}
-        />
-        <OpenVocabField
-          type='channel_types_ov'
-          name="channel_types"
-          label={t('Channel type')}
-          multiple
-          containerStyle={fieldSpacingContainerStyle}
-          onChange={setFieldValue}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-        />
-        <ConfidenceField
-          entityType="Channel"
-          containerStyle={fieldSpacingContainerStyle}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
-    )}
-  </Formik>;
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={channelValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Channel', 'Malware']}
+          />
+          <OpenVocabField
+            type="channel_types_ov"
+            name="channel_types"
+            label={t('Channel type')}
+            multiple
+            containerStyle={fieldSpacingContainerStyle}
+            onChange={setFieldValue}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <ConfidenceField
+            entityType="Channel"
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
-const ChannelCreation = ({ paginationOptions }: { paginationOptions: ChannelsLinesPaginationQuery$variables }) => {
+const ChannelCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: ChannelsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -302,27 +312,26 @@ const ChannelCreation = ({ paginationOptions }: { paginationOptions: ChannelsLin
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
   const onReset = () => handleClose();
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_channels',
-    paginationOptions,
-    'channelAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_channels', paginationOptions, 'channelAdd');
 
   return (
     <div>
-      <Fab onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
-           className={classes.createButton}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
-              onClose={handleClose}>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
         <div>
           <div className={classes.header}>
             <IconButton
@@ -330,12 +339,11 @@ const ChannelCreation = ({ paginationOptions }: { paginationOptions: ChannelsLin
               className={classes.closeButton}
               onClick={handleClose}
               size="large"
-              color="primary">
+              color="primary"
+            >
               <Close fontSize="small" color="primary" />
             </IconButton>
-            <Typography variant="h6">
-              {t('Create a channel')}
-            </Typography>
+            <Typography variant="h6">{t('Create a channel')}</Typography>
           </div>
           <div className={classes.container}>
             <ChannelCreationForm

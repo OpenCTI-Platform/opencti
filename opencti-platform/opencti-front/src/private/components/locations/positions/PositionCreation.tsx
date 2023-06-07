@@ -107,6 +107,7 @@ interface PositionFormProps {
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string;
 }
 
 export const PositionCreationForm: FunctionComponent<PositionFormProps> = ({

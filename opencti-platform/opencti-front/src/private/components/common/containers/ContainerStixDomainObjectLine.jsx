@@ -81,7 +81,6 @@ const ContainerStixDomainObjectLineComponent = (props) => {
   const refTypes = types ?? ['manual'];
   const isThroughInference = refTypes.includes('inferred');
   const isOnlyThroughInference = isThroughInference && !refTypes.includes('manual');
-
   return (
     <ListItem
       classes={{ root: classes.item }}

@@ -1401,6 +1401,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
           timeRangeValues={timeRangeValues}
           handleSearch={this.handleSearch.bind(this)}
           navOpen={navOpen}
+          resetAllFilters={this.resetAllFilters.bind(this)}
         />
         {selectedEntities.length > 0 && (
           <EntitiesDetailsRightsBar

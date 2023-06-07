@@ -145,6 +145,8 @@ class ListLinesContent extends Component {
       connectionKey,
       isTo,
       redirectionMode,
+      contentMapping,
+      contentMappingData,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -184,6 +186,8 @@ class ListLinesContent extends Component {
             onToggleShiftEntity={this._onRowShiftClick.bind(this)}
             index={index}
             redirectionMode={redirectionMode}
+            contentMapping={contentMapping}
+            contentMappingData={contentMappingData}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -206,6 +210,8 @@ class ListLinesContent extends Component {
             onToggleShiftEntity: this._onRowShiftClick.bind(this),
             index,
             redirectionMode,
+            contentMapping,
+            contentMappingData,
           })
         )}
       </div>
@@ -223,6 +229,7 @@ class ListLinesContent extends Component {
       selectedElements,
       deSelectedElements,
       height: propHeight,
+      containerRef: propContainerRef,
     } = this.props;
     const countWithLoading = isLoading()
       ? dataList.length + this.state.loadingRowCount
@@ -245,6 +252,12 @@ class ListLinesContent extends Component {
           if (!R.equals(selectedIds, newSelectedIds)) {
             setSelectedIds(newSelectedIds);
           }
+          let scrollElement = window;
+          if (propHeight && this.containerRef && this.containerRef.current) {
+            scrollElement = this.containerRef.current;
+          } else if (propContainerRef && propContainerRef.current) {
+            scrollElement = propContainerRef.current;
+          }
           return (
             <div
               style={{
@@ -254,14 +267,7 @@ class ListLinesContent extends Component {
               }}
               ref={this.containerRef}
             >
-              <WindowScroller
-                ref={this._setRef}
-                scrollElement={
-                  propHeight && this.containerRef.current
-                    ? this.containerRef.current
-                    : window
-                }
-              >
+              <WindowScroller ref={this._setRef} scrollElement={scrollElement}>
                 {({ height, isScrolling, onChildScroll, scrollTop }) => (
                   <div className={classes.windowScrollerWrapper}>
                     <InfiniteLoader
@@ -332,6 +338,9 @@ ListLinesContent.propTypes = {
   isTo: PropTypes.bool,
   redirectionMode: PropTypes.string,
   addedElements: PropTypes.object,
+  containerRef: PropTypes.object,
+  contentMapping: PropTypes.object,
+  contentMappingData: PropTypes.object,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

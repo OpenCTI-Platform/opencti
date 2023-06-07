@@ -13,9 +13,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
@@ -91,23 +89,24 @@ const campaignMutation = graphql`
 `;
 
 interface CampaignAddInput {
-  name: string
-  description: string
-  confidence: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface CampaignFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
@@ -117,6 +116,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   defaultCreatedBy,
   defaultMarkingDefinitions,
   defaultConfidence,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -128,10 +128,10 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   const campaignValidator = useSchemaCreationValidation('Campaign', basicShape);
 
   const initialValues = {
-    name: '',
+    name: inputValue ?? '',
     confidence: defaultConfidence ?? 75,
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -140,7 +140,10 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
 
   const [commit] = useMutation<CampaignCreationMutation>(campaignMutation);
 
-  const onSubmit: FormikConfig<CampaignAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<CampaignAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: CampaignCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -263,7 +266,11 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
   );
 };
 
-const CampaignCreation = ({ paginationOptions }: { paginationOptions: CampaignsLinesPaginationQuery$variables }) => {
+const CampaignCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: CampaignsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

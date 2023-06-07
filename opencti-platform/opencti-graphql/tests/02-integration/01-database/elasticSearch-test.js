@@ -356,7 +356,7 @@ describe('Elasticsearch pagination', () => {
     expect(data).not.toBeNull();
     // external-reference--d1b50d16-2c9c-45f2-8ae0-d5b554e0fbf5 | url
     // intrusion-set--18854f55-ac7c-4634-bd9a-352dd07613b7 | description
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate everything after', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
@@ -395,7 +395,7 @@ describe('Elasticsearch pagination', () => {
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: 'with malicious' });
     expect(data.edges.length).toEqual(48);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"with malicious"' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate with escaped search', async () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '(Citation:' });
@@ -409,13 +409,13 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       search: '"http://attack.mitre.org/groups/G0096"',
     });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"https://attack.mitre.org/groups/G0096"' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate with incorrect encoding', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"ATT%"' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];

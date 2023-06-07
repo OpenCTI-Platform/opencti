@@ -93,25 +93,32 @@ const regionMutation = graphql`
 `;
 
 interface RegionAddInput {
-  name: string
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  file: File | undefined
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface RegionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: Option
-  defaultMarkingDefinitions?: Option[]
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: Option;
+  defaultMarkingDefinitions?: Option[];
+  inputValue?: string;
 }
 
-export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  inputValue,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -121,7 +128,10 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
   const regionValidator = useSchemaCreationValidation('Region', basicShape);
   const [commit] = useMutation(regionMutation);
 
-  const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, resetForm },
+  ) => {
     const input: RegionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -149,9 +159,10 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
       },
     });
   };
-  return <Formik<RegionAddInput>
+  return (
+    <Formik<RegionAddInput>
       initialValues={{
-        name: '',
+        name: inputValue ?? '',
         description: '',
         createdBy: defaultCreatedBy ?? undefined,
         objectMarking: defaultMarkingDefinitions ?? [],
@@ -161,58 +172,53 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
       }}
       validationSchema={regionValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Region']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Region']}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <CreatedByField
-              name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <Field
             component={SimpleFileUpload}
@@ -225,68 +231,78 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({ updater
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
-const RegionCreation = ({ paginationOptions }: { paginationOptions: RegionsLinesPaginationQuery$variables }) => {
+const RegionCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: RegionsLinesPaginationQuery$variables;
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
   const [open, setOpen] = useState<boolean>(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_regions',
-    paginationOptions,
-    'regionAdd',
-  );
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_regions', paginationOptions, 'regionAdd');
 
   return (
     <div>
-      <Fab onClick={handleOpen}
+      <Fab
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
-          <IconButton aria-label="Close"
+          <IconButton
+            aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a region')}</Typography>
         </div>
         <div className={classes.container}>
-          <RegionCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
+          <RegionCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>

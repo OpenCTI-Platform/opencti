@@ -108,6 +108,7 @@ interface IntrusionSetFormProps {
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const IntrusionSetCreationForm: FunctionComponent<IntrusionSetFormProps> = ({

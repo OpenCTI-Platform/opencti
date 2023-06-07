@@ -65,12 +65,7 @@ export const stixDomainObjectCreationAllTypesQuery = graphql`
   }
 `;
 
-const UNSUPPORTED_TYPES = [
-  'Language',
-  'Note',
-  'Opinion',
-  'Feedback',
-]; // Language as no ui, note and opinion are not useful
+const UNSUPPORTED_TYPES = ['Language', 'Note', 'Opinion', 'Feedback']; // Language as no ui, note and opinion are not useful
 const IDENTITY_ENTITIES = [
   'Sector',
   'Organization',
@@ -197,6 +192,7 @@ const StixDomainPanel = ({
   onClose,
   creationUpdater,
   confidence,
+  inputValue,
   defaultCreatedBy,
   defaultMarkingDefinitions,
 }) => {
@@ -225,6 +221,7 @@ const StixDomainPanel = ({
     if (type === 'Administrative-Area') {
       return (
         <AdministrativeAreaCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -235,6 +232,7 @@ const StixDomainPanel = ({
     if (type === 'Attack-Pattern') {
       return (
         <AttackPatternCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -245,6 +243,7 @@ const StixDomainPanel = ({
     if (type === 'Campaign') {
       return (
         <CampaignCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -257,6 +256,7 @@ const StixDomainPanel = ({
       // Default to Incident case type
       return (
         <CaseIncidentCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -268,6 +268,7 @@ const StixDomainPanel = ({
     if (type === 'Case-Rfi') {
       return (
         <CaseRfiCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -279,6 +280,7 @@ const StixDomainPanel = ({
     if (type === 'Case-Rft') {
       return (
         <CaseRftCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -290,6 +292,7 @@ const StixDomainPanel = ({
     if (type === 'Channel') {
       return (
         <ChannelCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -301,6 +304,7 @@ const StixDomainPanel = ({
     if (type === 'City') {
       return (
         <CityCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -311,6 +315,7 @@ const StixDomainPanel = ({
     if (type === 'Country') {
       return (
         <CountryCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -322,6 +327,7 @@ const StixDomainPanel = ({
       // Course-Of-Action
       return (
         <CourseOfActionCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -333,6 +339,7 @@ const StixDomainPanel = ({
       // Data-Component
       return (
         <DataComponentCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -345,6 +352,7 @@ const StixDomainPanel = ({
       // Data-Source
       return (
         <DataSourceCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -357,6 +365,7 @@ const StixDomainPanel = ({
       // Event
       return (
         <EventCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -368,6 +377,7 @@ const StixDomainPanel = ({
       // Grouping
       return (
         <GroupingCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -380,6 +390,7 @@ const StixDomainPanel = ({
       // Incident
       return (
         <IncidentCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -392,6 +403,7 @@ const StixDomainPanel = ({
       // Indicator
       return (
         <IndicatorCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -404,6 +416,7 @@ const StixDomainPanel = ({
       // Individual
       return (
         <IndividualCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -415,6 +428,7 @@ const StixDomainPanel = ({
       // Infrastructure
       return (
         <InfrastructureCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -427,6 +441,7 @@ const StixDomainPanel = ({
       // IntrusionSet
       return (
         <IntrusionSetCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -439,6 +454,7 @@ const StixDomainPanel = ({
       // Malware
       return (
         <MalwareCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -451,6 +467,7 @@ const StixDomainPanel = ({
       // Narrative
       return (
         <NarrativeCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -462,6 +479,7 @@ const StixDomainPanel = ({
       // Note
       return (
         <NoteCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -474,6 +492,7 @@ const StixDomainPanel = ({
       // Observed data
       return (
         <ObservedDataCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -487,6 +506,7 @@ const StixDomainPanel = ({
       const userIsKnowledgeEditor = useGranted([KNOWLEDGE_KNUPDATE]);
       return userIsKnowledgeEditor ? (
         <OpinionCreationFormKnowledgeEditor
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -495,6 +515,7 @@ const StixDomainPanel = ({
         />
       ) : (
         <OpinionCreationFormKnowledgeParticipant
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -507,6 +528,7 @@ const StixDomainPanel = ({
       // Organization
       return (
         <OrganizationCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -518,6 +540,7 @@ const StixDomainPanel = ({
       // Position
       return (
         <PositionCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -529,6 +552,7 @@ const StixDomainPanel = ({
       // Region
       return (
         <RegionCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -540,6 +564,7 @@ const StixDomainPanel = ({
       // Report
       return (
         <ReportCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -552,6 +577,7 @@ const StixDomainPanel = ({
       // Sector
       return (
         <SectorCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -563,6 +589,7 @@ const StixDomainPanel = ({
       // System
       return (
         <SystemCreationForm
+          inputValue={inputValue}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
           onReset={onClose}
@@ -574,6 +601,7 @@ const StixDomainPanel = ({
       // Threat-Actor
       return (
         <ThreatActorCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -586,6 +614,7 @@ const StixDomainPanel = ({
       // Tool
       return (
         <ToolCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -598,6 +627,7 @@ const StixDomainPanel = ({
       // Vulnerability
       return (
         <VulnerabilityCreationForm
+          inputValue={inputValue}
           defaultConfidence={confidence}
           defaultCreatedBy={baseCreatedBy}
           defaultMarkingDefinitions={baseMarkingDefinitions}
@@ -638,6 +668,7 @@ const StixDomainPanel = ({
 
 const StixDomainObjectCreation = ({
   creationCallback,
+  inputValue,
   confidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
@@ -702,6 +733,7 @@ const StixDomainObjectCreation = ({
         <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
           <StixDomainPanel
             queryRef={queryRef}
+            inputValue={inputValue}
             confidence={confidence}
             defaultCreatedBy={defaultCreatedBy}
             defaultMarkingDefinitions={defaultMarkingDefinitions}

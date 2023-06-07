@@ -126,6 +126,7 @@ interface IndicatorFormProps {
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({

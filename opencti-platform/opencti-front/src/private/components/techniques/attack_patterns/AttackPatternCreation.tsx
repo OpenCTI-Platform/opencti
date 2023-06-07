@@ -123,6 +123,7 @@ interface AttackPatternFormProps {
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps> = ({

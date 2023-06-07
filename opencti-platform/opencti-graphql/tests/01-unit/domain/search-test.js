@@ -30,16 +30,16 @@ it('should search parsing correctly generated', () => {
   // URL TESTING
   let parsed = parse('first http://localhost:4000/graphql');
   expect(parsed.queriesString).toBe('first* http\\:\\/\\/localhost\\:4000\\/graphql*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('first* http\\:\\/\\/localhost\\:4000\\/graphql*');
 
   parsed = parse('https://localhost:4000/graphql second');
   expect(parsed.queriesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('https\\:\\/\\/localhost\\:4000\\/graphql* second*');
 
   // GENERIC TESTING
   parsed = parse('(Citation:');
   expect(parsed.queriesString).toBe('\\(Citation\\:*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('\\(Citation\\:*');
 
   parsed = parse('        """""coucou"  ');
   expect(parsed.queriesString).toBe('');
@@ -47,28 +47,28 @@ it('should search parsing correctly generated', () => {
 
   parsed = parse('        "test search        fs       ');
   expect(parsed.queriesString).toBe('test* search* fs*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('test* search* fs*');
 
   parsed = parse('test test search "please my" "bad');
   expect(parsed.queriesString).toBe('test* search* bad*');
-  expect(parsed.matchesString).toBe('please my');
+  expect(parsed.matchesString).toBe('please my test* search* bad*');
 
   parsed = parse('cool test-with');
   expect(parsed.queriesString).toBe('cool* test\\-with*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('cool* test\\-with*');
 
   parsed = parse('test of search with $"()_"!spe")£")cif2933920ic chars');
   expect(parsed.queriesString).toBe('test* of* search* with* $!spe\\)cif2933920ic* chars*');
-  expect(parsed.matchesString).toBe('()_ )£');
+  expect(parsed.matchesString).toBe('()_ )£ test* of* search* with* $!spe\\)cif2933920ic* chars*');
 
   // IDS TESTING
   parsed = parse('     test       d1d7344e-f38e-497b-930c-07779d81ffff');
   expect(parsed.queriesString).toBe('test* d1d7344e\\-f38e\\-497b\\-930c\\-07779d81ffff*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('test* d1d7344e\\-f38e\\-497b\\-930c\\-07779d81ffff*');
 
   parsed = parse('identity--21985175-7f18-589d-a078-ad14116a0efc');
   expect(parsed.queriesString).toBe('identity\\-\\-21985175\\-7f18\\-589d\\-a078\\-ad14116a0efc*');
-  expect(parsed.matchesString).toBe('');
+  expect(parsed.matchesString).toBe('identity\\-\\-21985175\\-7f18\\-589d\\-a078\\-ad14116a0efc*');
 
   parsed = parse('"identity--21985175-7f18-589d-a078-ad14116a0efc"');
   expect(parsed.queriesString).toBe('');

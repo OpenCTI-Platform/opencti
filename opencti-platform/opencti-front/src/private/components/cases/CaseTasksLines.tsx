@@ -165,7 +165,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       <Typography
         variant="h4"
         gutterBottom={true}
-        style={{ float: 'left', paddingBottom: '11px' }}
+        style={{ float: 'left', paddingBottom: 11 }}
       >
         {t('Tasks')}
       </Typography>

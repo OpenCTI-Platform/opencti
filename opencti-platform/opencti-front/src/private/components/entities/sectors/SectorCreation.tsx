@@ -97,21 +97,22 @@ const sectorMutation = graphql`
 `;
 
 interface SectorAddInput {
-  name: string
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface SectorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
 export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
@@ -120,6 +121,7 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -128,20 +130,20 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
     description: Yup.string().nullable(),
   };
   const sectorValidator = useSchemaCreationValidation('Sector', basicShape);
-
   const initialValues: SectorAddInput = {
-    name: '',
+    name: inputValue ?? '',
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
   };
-
   const [commit] = useMutation<SectorCreationMutation>(sectorMutation);
-
-  const onSubmit: FormikConfig<SectorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<SectorAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: SectorCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -173,56 +175,52 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       },
     });
   };
-
-  return <Formik initialValues={initialValues}
+  return (
+    <Formik
+      initialValues={initialValues}
       validationSchema={sectorValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Sector']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Sector']}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <Field
             component={SimpleFileUpload}
@@ -235,74 +233,79 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
-const SectorCreation = ({ paginationOptions }: { paginationOptions: SectorsLinesPaginationQuery$variables }) => {
+const SectorCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: SectorsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
-
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(
-    store,
-    'Pagination_sectors',
-    paginationOptions,
-    'sectorAdd',
-  );
-
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_sectors', paginationOptions, 'sectorAdd');
   return (
-      <div>
-        <Fab onClick={handleOpen}
-          color="secondary"
-          aria-label="Add"
-          className={classes.createButton}
-        >
-          <Add />
-        </Fab>
-        <Drawer open={open}
-          anchor="right"
-          elevation={1}
-          sx={{ zIndex: 1202 }}
-          classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a sector')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <SectorCreationForm updater={updater} onCompleted={handleClose} onReset={handleClose}/>
-          </div>
-        </Drawer>
-      </div>
+    <div>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButton}
+      >
+        <Add />
+      </Fab>
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
+        onClose={handleClose}
+      >
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a sector')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <SectorCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
+        </div>
+      </Drawer>
+    </div>
   );
 };
 

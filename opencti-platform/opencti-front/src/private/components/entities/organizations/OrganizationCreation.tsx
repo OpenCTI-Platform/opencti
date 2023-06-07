@@ -107,6 +107,7 @@ interface OrganizationFormProps {
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string;
 }
 
 export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> = ({

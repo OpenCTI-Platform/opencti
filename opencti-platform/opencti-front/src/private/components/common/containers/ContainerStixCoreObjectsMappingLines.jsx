@@ -1,15 +1,12 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
-import Alert from '@mui/material/Alert';
-import * as R from 'ramda';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
   ContainerStixCoreObjectsMappingLine,
   ContainerStixCoreObjectsMappingLineDummy,
 } from './ContainerStixCoreObjectsMappingLine';
 import { setNumberOfElements } from '../../../../utils/Number';
-import inject18n from '../../../../components/i18n';
 
 const nbOfRowsToLoad = 50;
 
@@ -32,37 +29,32 @@ class ContainerStixCoreObjectsMappingLinesComponent extends Component {
       container,
       paginationOptions,
       height,
-      t,
+      contentMapping,
+      contentMappingData
     } = this.props;
     return (
-      <>
-        {(container?.objects?.pageInfo?.globalCount ?? 0) === 0 ? (
-          <Alert severity="info" variant="outlined" style={{ marginTop: 20 }}>
-            {t('No object in the container, select some text to start')}
-          </Alert>
-        ) : (
-          <ListLinesContent
-            initialLoading={initialLoading}
-            loadMore={relay.loadMore.bind(this)}
-            hasMore={relay.hasMore.bind(this)}
-            isLoading={relay.isLoading.bind(this)}
-            dataList={container?.objects?.edges ?? []}
-            paginationOptions={paginationOptions}
-            globalCount={
-              container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
-            }
-            LineComponent={
-              <ContainerStixCoreObjectsMappingLine
-                containerId={container?.id ?? null}
-              />
-            }
-            DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
-            dataColumns={dataColumns}
-            nbOfRowsToLoad={nbOfRowsToLoad}
-            height={height}
+      <ListLinesContent
+        initialLoading={initialLoading}
+        loadMore={relay.loadMore.bind(this)}
+        hasMore={relay.hasMore.bind(this)}
+        isLoading={relay.isLoading.bind(this)}
+        dataList={container?.objects?.edges ?? []}
+        paginationOptions={paginationOptions}
+        globalCount={
+          container?.objects?.pageInfo?.globalCount ?? nbOfRowsToLoad
+        }
+        LineComponent={
+          <ContainerStixCoreObjectsMappingLine
+            containerId={container?.id ?? null}
           />
-        )}
-      </>
+        }
+        DummyLineComponent={<ContainerStixCoreObjectsMappingLineDummy />}
+        dataColumns={dataColumns}
+        nbOfRowsToLoad={nbOfRowsToLoad}
+        height={height}
+        contentMapping={contentMapping}
+        contentMappingData={contentMappingData}
+      />
     );
   }
 }
@@ -176,6 +168,9 @@ ContainerStixCoreObjectsMappingLines.propTypes = {
   onToggleEntity: PropTypes.func,
   addedElements: PropTypes.object,
   height: PropTypes.number,
+  contentMapping: PropTypes.object,
+  contentMappingData: PropTypes.object,
+  deleteMapping: PropTypes.func,
 };
 
-export default R.compose(inject18n)(ContainerStixCoreObjectsMappingLines);
+export default ContainerStixCoreObjectsMappingLines;

@@ -8,10 +8,19 @@ import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
+import * as R from 'ramda';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
+import Tooltip from '@mui/material/Tooltip';
+import IconButton from '@mui/material/IconButton';
+import { EditOutlined, LayersClearOutlined } from '@mui/icons-material';
+import Dialog from '@mui/material/Dialog';
+import DialogContent from '@mui/material/DialogContent';
+import Button from '@mui/material/Button';
+import DialogContentText from '@mui/material/DialogContentText';
+import DialogActions from '@mui/material/DialogActions';
 import { useFormatter } from '../../../../components/i18n';
 import {
   useIsEnforceReference,
@@ -25,8 +34,9 @@ import RichTextField from '../../../../components/RichTextField';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
 import ContainerStixCoreObjectsMapping from './ContainerStixCoreObjectsMapping';
 import { decodeMappingData, encodeMappingData } from '../../../../utils/Graph';
+import Transition from '../../../../components/Transition';
 
-const OPEN$ = new Subject().pipe(debounce(() => timer(1500)));
+const OPEN$ = new Subject().pipe(debounce(() => timer(500)));
 
 export const contentMutationFieldPatch = graphql`
   mutation ContainerContentFieldPatchMutation(
@@ -67,13 +77,25 @@ const useStyles = makeStyles(() => ({
     padding: '15px',
     borderRadius: 6,
   },
+  clearButton: {
+    float: 'right',
+    marginTop: -15,
+  },
+  editButton: {
+    float: 'left',
+    marginTop: -15,
+  },
 }));
 
 const ContainerContentComponent = ({ containerData }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
+  const [editionMode, setEditionMode] = useState(false);
+  const [openClearMapping, setOpenClearMapping] = useState(false);
   const [selectedText, setSelectedText] = useState(null);
+  const [selectedTab, setSelectedTab] = useState('preview');
+  const [clearing, setClearing] = useState(false);
   useEffect(() => {
     const subscription = OPEN$.subscribe({
       next: () => {
@@ -143,19 +165,17 @@ const ContainerContentComponent = ({ containerData }) => {
     }
   };
   const handleTextSelection = (text) => {
-    if (selectedText === 'CLOSED') {
-      setSelectedText(text);
-    } else {
+    if (text && text.length > 2) {
+      setSelectedText(text.trim());
       OPEN$.next({ action: 'OpenMapping' });
-      setSelectedText(text);
     }
   };
-  const onAdd = (stixCoreObject) => {
+  const addMapping = (stixCoreObject) => {
     const { content_mapping } = containerData;
     const contentMappingData = decodeMappingData(content_mapping);
     const newMappingData = {
       ...contentMappingData,
-      [selectedText]: stixCoreObject.id,
+      [selectedText.toLowerCase()]: stixCoreObject.id,
     };
     editor.fieldPatch({
       variables: {
@@ -167,21 +187,80 @@ const ContainerContentComponent = ({ containerData }) => {
       },
       onCompleted: () => {
         setOpen(false);
-        setSelectedText('CLOSED');
+        setSelectedText(null);
       },
     });
+  };
+  const clearMapping = () => {
+    setClearing(true);
+    editor.fieldPatch({
+      variables: {
+        id: containerData.id,
+        input: {
+          key: 'content_mapping',
+          value: encodeMappingData({}),
+        },
+      },
+      onCompleted: () => {
+        setClearing(false);
+        setOpenClearMapping(false);
+      },
+    });
+  };
+  const toggleEditionMode = () => {
+    if (editionMode) {
+      setSelectedTab('preview');
+      setEditionMode(false);
+    } else {
+      setSelectedTab('write');
+      setEditionMode(true);
+    }
+  };
+  const handleChangeSelectedTab = (mode) => {
+    if (editionMode) {
+      setSelectedTab(mode);
+    }
+  };
+  const matchCase = (text, pattern) => {
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      const c = text.charAt(i);
+      const p = pattern.charCodeAt(i);
+      if (p >= 65 && p < 65 + 26) {
+        result += c.toUpperCase();
+      } else {
+        result += c.toLowerCase();
+      }
+    }
+    return result;
   };
   const { content_mapping } = containerData;
   const contentMappingData = decodeMappingData(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
   let { description, content } = containerData;
-  for (const mappedString of mappedStrings) {
-    description = description.replaceAll(mappedString, `==${mappedString}==`);
-    content = content.replaceAll(mappedString, `<mark class="marker-yellow">${mappedString}</mark>`);
+  const contentMapping = {};
+  if (!editionMode) {
+    for (const mappedString of mappedStrings) {
+      const descriptionRegex = new RegExp(mappedString, 'ig');
+      const descriptionCount = (
+        (description || '').match(descriptionRegex) || []
+      ).length;
+      description = (description || '').replace(
+        descriptionRegex,
+        (match) => `==${matchCase(mappedString, match)}==`,
+      );
+      const contentRegex = new RegExp(mappedString, 'ig');
+      const contentCount = ((content || '').match(contentRegex) || []).length;
+      content = (content || '').replace(
+        contentRegex,
+        (match) => `<mark class="marker-yellow">${matchCase(mappedString, match)}</mark>`,
+      );
+      contentMapping[contentMappingData[mappedString]] = descriptionCount + contentCount;
+    }
   }
   const initialValues = {
-    description,
-    content,
+    description: description || '',
+    content: content || '',
   };
   return (
     <div className={classes.container}>
@@ -191,10 +270,71 @@ const ContainerContentComponent = ({ containerData }) => {
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={6} style={{ marginTop: -15 }}>
-          <Typography variant="h4" gutterBottom={true}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left' }}
+          >
             {t('Content')}
           </Typography>
-          <Paper classes={{ root: classes.paper }} variant="outlined">
+          <Tooltip title={t('Edition mode')}>
+            <IconButton
+              color={editionMode ? 'secondary' : 'primary'}
+              aria-label="Edit"
+              onClick={() => toggleEditionMode()}
+              classes={{ root: classes.editButton }}
+              size="large"
+            >
+              <EditOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <>
+            <Tooltip title={t('Clear mappings')}>
+              <IconButton
+                color="primary"
+                aria-label="Apply"
+                onClick={() => setOpenClearMapping(true)}
+                classes={{ root: classes.clearButton }}
+                size="large"
+              >
+                <LayersClearOutlined fontSize="small" />
+              </IconButton>
+            </Tooltip>
+            <Dialog
+              PaperProps={{ elevation: 1 }}
+              open={openClearMapping}
+              keepMounted={true}
+              TransitionComponent={Transition}
+              onClose={() => setOpenClearMapping(false)}
+            >
+              <DialogContent>
+                <DialogContentText>
+                  {t('Do you want to delete the mapping of this content?')}
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  onClick={() => setOpenClearMapping(false)}
+                  disabled={clearing}
+                >
+                  {t('Cancel')}
+                </Button>
+                <Button
+                  color="secondary"
+                  onClick={() => clearMapping()}
+                  disabled={clearing}
+                >
+                  {t('Clear')}
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </>
+          <div className="clearfix" />
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+            style={{ marginTop: -5 }}
+          >
             <Formik
               enableReinitialize={true}
               initialValues={initialValues}
@@ -217,7 +357,7 @@ const ContainerContentComponent = ({ containerData }) => {
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    onSubmit={handleSubmitField}
+                    onSubmit={editionMode ? handleSubmitField : null}
                     onSelect={handleTextSelection}
                     helperText={
                       <SubscriptionFocus
@@ -225,14 +365,16 @@ const ContainerContentComponent = ({ containerData }) => {
                         fieldName="description"
                       />
                     }
-                    disabled={true}
+                    disabled={!editionMode}
+                    controlledSelectedTab={selectedTab}
+                    controlledSetSelectTab={handleChangeSelectedTab}
                   />
                   <Field
                     component={RichTextField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
-                    onSubmit={handleSubmitField}
+                    onSubmit={editionMode ? handleSubmitField : null}
                     onSelect={handleTextSelection}
                     style={{
                       ...fieldSpacingContainerStyle,
@@ -245,7 +387,7 @@ const ContainerContentComponent = ({ containerData }) => {
                         fieldName="content"
                       />
                     }
-                    disabled={true}
+                    disabled={!editionMode}
                   />
                   {enableReferences && (
                     <CommitMessage
@@ -274,9 +416,11 @@ const ContainerContentComponent = ({ containerData }) => {
               openDrawer={open}
               handleClose={() => {
                 setOpen(false);
-                setSelectedText('CLOSED');
+                setSelectedText(null);
               }}
-              onAdd={onAdd}
+              addMapping={addMapping}
+              contentMappingData={contentMappingData}
+              contentMapping={contentMapping}
             />
           </Paper>
         </Grid>

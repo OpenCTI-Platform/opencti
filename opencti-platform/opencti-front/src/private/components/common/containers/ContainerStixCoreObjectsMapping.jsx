@@ -84,7 +84,7 @@ class ContainerStixCoreObjectsMapping extends Component {
       },
       value: {
         label: 'Value',
-        width: '35%',
+        width: '30%',
         isSortable: false,
       },
       createdBy: {
@@ -102,6 +102,11 @@ class ContainerStixCoreObjectsMapping extends Component {
         width: '10%',
         isSortable: isRuntimeSort,
       },
+      mapping: {
+        label: 'Mapping',
+        width: '10%',
+        isSortable: false,
+      },
     };
   }
 
@@ -113,7 +118,9 @@ class ContainerStixCoreObjectsMapping extends Component {
       selectedText,
       openDrawer,
       handleClose,
-      onAdd,
+      addMapping,
+      contentMapping,
+      contentMappingData,
     } = this.props;
     const { sortBy, orderAsc, searchTerm, numberOfElements, filters } = this.state;
     const finalFilters = convertFilters(filters);
@@ -166,6 +173,8 @@ class ContainerStixCoreObjectsMapping extends Component {
                     initialLoading={props === null}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                     height={height}
+                    contentMappingData={contentMappingData}
+                    contentMapping={contentMapping}
                   />
                 )}
               />
@@ -186,7 +195,7 @@ class ContainerStixCoreObjectsMapping extends Component {
               ]}
               confidence={container.confidence}
               paginationOptions={paginationOptions}
-              onAdd={onAdd}
+              onAdd={addMapping}
             />
           </div>
         )}
@@ -202,6 +211,9 @@ ContainerStixCoreObjectsMapping.propTypes = {
   fd: PropTypes.func,
   history: PropTypes.object,
   height: PropTypes.number,
+  contentMapping: PropTypes.object,
+  contentMappingData: PropTypes.object,
+  addMapping: PropTypes.func,
 };
 
 export default compose(
