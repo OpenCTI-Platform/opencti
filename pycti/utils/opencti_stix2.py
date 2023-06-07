@@ -1929,6 +1929,10 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
+
+        if entity_type == "StixFile":
+            entity_type = "File"
+
         # Map types
         if IdentityTypes.has_value(entity_type):
             entity_type = "Identity"
@@ -2143,6 +2147,7 @@ class OpenCTIStix2:
 
     def export_selected(
         self,
+        entity_type: str,
         entities_list: [str],
         element_id: str = None,
         max_marking_definition: Dict = None,
@@ -2157,6 +2162,9 @@ class OpenCTIStix2:
             "id": "bundle--" + str(uuid.uuid4()),
             "objects": [],
         }
+        if entity_type == "StixFile":
+            entity_type = "File"
+
         if entities_list is not None:
             uuids = []
             for entity in entities_list:
