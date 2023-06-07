@@ -146,7 +146,7 @@ class ListLinesContent extends Component {
       isTo,
       redirectionMode,
       contentMapping,
-      onDelete,
+      contentMappingData,
     } = this.props;
     const edge = dataList[index];
     if (!edge) {
@@ -187,7 +187,7 @@ class ListLinesContent extends Component {
             index={index}
             redirectionMode={redirectionMode}
             contentMapping={contentMapping}
-            onDelete={onDelete}
+            contentMappingData={contentMappingData}
           />
         ) : (
           React.cloneElement(LineComponent, {
@@ -211,7 +211,7 @@ class ListLinesContent extends Component {
             index,
             redirectionMode,
             contentMapping,
-            onDelete,
+            contentMappingData,
           })
         )}
       </div>
@@ -340,7 +340,7 @@ ListLinesContent.propTypes = {
   addedElements: PropTypes.object,
   containerRef: PropTypes.object,
   contentMapping: PropTypes.object,
-  onDelete: PropTypes.func,
+  contentMappingData: PropTypes.object,
 };
 
 export default R.compose(inject18n, withStyles(styles))(ListLinesContent);

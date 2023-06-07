@@ -1,19 +1,35 @@
-import React, {useState} from 'react';
-import {Form, useField} from 'formik';
+import React, { useState } from 'react';
+import { useField } from 'formik';
 import InputLabel from '@mui/material/InputLabel';
 import FormHelperText from '@mui/material/FormHelperText';
-import { FullscreenOutlined } from '@mui/icons-material';
+import { CloseOutlined, FullscreenOutlined } from '@mui/icons-material';
 import * as R from 'ramda';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import Editor from 'ckeditor5-custom-build';
 import IconButton from '@mui/material/IconButton';
-import inject18n, {useFormatter} from './i18n';
-import DialogTitle from "@mui/material/DialogTitle";
-import DialogContent from "@mui/material/DialogContent";
-import ObjectOrganizationField from "../private/components/common/form/ObjectOrganizationField";
-import DialogActions from "@mui/material/DialogActions";
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import Dialog from '@mui/material/Dialog';
+import Typography from '@mui/material/Typography';
+import makeStyles from '@mui/styles/makeStyles';
+import inject18n, { useFormatter } from './i18n';
+
+const useStyles = makeStyles((theme) => ({
+  header: {
+    backgroundColor: theme.palette.background.nav,
+    padding: '20px 20px 20px 60px',
+  },
+  container: {
+    padding: 20,
+    height: '100%',
+  },
+  closeButton: {
+    position: 'absolute',
+    top: 12,
+    left: 5,
+    color: 'inherit',
+  },
+}));
 
 const MarkDownField = (props) => {
   const {
@@ -27,8 +43,9 @@ const MarkDownField = (props) => {
     disabled,
   } = props;
   let editorReference;
-  const [field, meta] = useField(name);
+  const classes = useStyles();
   const { t } = useFormatter();
+  const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
@@ -50,7 +67,12 @@ const MarkDownField = (props) => {
     const tmp = document.createElement('DIV');
     tmp.innerHTML = htmlContent;
     const selection = tmp.textContent || tmp.innerText || '';
-    if (typeof onSelect === 'function' && selection.length > 2 && disabled) {
+    if (
+      typeof onSelect === 'function'
+      && selection.length > 2
+      && disabled
+      && !fullScreen
+    ) {
       onSelect(selection.trim());
     }
   };
@@ -59,24 +81,41 @@ const MarkDownField = (props) => {
       <InputLabel shrink={true} variant="standard" style={{ float: 'left' }}>
         {label}
       </InputLabel>
-      <IconButton size="small" style={{ float: 'left' }}>
+      <IconButton
+        size="small"
+        style={{ float: 'right', marginTop: -7 }}
+        onClick={() => setFullScreen(true)}
+      >
         <FullscreenOutlined fontSize="small" />
       </IconButton>
-      {fullScreen ?
-      <Dialog
+      <div className="clearfix" />
+      {fullScreen ? (
+        <Dialog
           PaperProps={{ elevation: 1 }}
           open={fullScreen}
           onClose={() => setFullScreen(false)}
-          full
-      >
-        <DialogContent style={{ overflowY: 'hidden' }}>
-          <CKEditor
+          fullScreen={true}
+        >
+          <div className={classes.header}>
+            <IconButton
+              aria-label="Close"
+              className={classes.closeButton}
+              onClick={() => setFullScreen(true)}
+              size="large"
+              color="primary"
+            >
+              <CloseOutlined fontSize="small" color="primary" />
+            </IconButton>
+            <Typography variant="h6">{t('Content')}</Typography>
+          </div>
+          <div className={classes.container}>
+            <CKEditor
               editor={Editor}
               onReady={(editor) => {
                 editorReference = editor;
                 editorReference.model.document.selection.on(
-                    'change',
-                    internalOnSelect,
+                  'change',
+                  internalOnSelect,
                 );
               }}
               config={{
@@ -93,41 +132,41 @@ const MarkDownField = (props) => {
               onBlur={internalOnBlur}
               onFocus={internalOnFocus}
               disabled={disabled}
-          />
-          {!R.isNil(meta.error) && (
+            />
+            {!R.isNil(meta.error) && (
               <FormHelperText error={true}>{meta.error}</FormHelperText>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setFullScreen(false)}>
-            {t('Close')}
-          </Button>
-        </DialogActions>
-      </Dialog> :
-      <CKEditor
-        editor={Editor}
-        onReady={(editor) => {
-          editorReference = editor;
-          editorReference.model.document.selection.on(
-            'change',
-            internalOnSelect,
-          );
-        }}
-        config={{
-          width: '100%',
-          language: 'en',
-          image: {
-            resizeUnit: 'px',
-          },
-        }}
-        data={field.value || ''}
-        onChange={(event, editor) => {
-          setFieldValue(name, editor.getData());
-        }}
-        onBlur={internalOnBlur}
-        onFocus={internalOnFocus}
-        disabled={disabled}
-      />}
+            )}
+          </div>
+          <DialogActions>
+            <Button onClick={() => setFullScreen(false)}>{t('Close')}</Button>
+          </DialogActions>
+        </Dialog>
+      ) : (
+        <CKEditor
+          editor={Editor}
+          onReady={(editor) => {
+            editorReference = editor;
+            editorReference.model.document.selection.on(
+              'change',
+              internalOnSelect,
+            );
+          }}
+          config={{
+            width: '100%',
+            language: 'en',
+            image: {
+              resizeUnit: 'px',
+            },
+          }}
+          data={field.value || ''}
+          onChange={(event, editor) => {
+            setFieldValue(name, editor.getData());
+          }}
+          onBlur={internalOnBlur}
+          onFocus={internalOnFocus}
+          disabled={disabled}
+        />
+      )}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
       )}

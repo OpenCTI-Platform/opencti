@@ -382,26 +382,24 @@ const ReportCreation = ({
         classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
-        <div>
-          <div className={classes.header}>
-            <IconButton
-              aria-label="Close"
-              className={classes.closeButton}
-              onClick={handleClose}
-              size="large"
-              color="primary"
-            >
-              <Close fontSize="small" color="primary" />
-            </IconButton>
-            <Typography variant="h6">{t('Create a report')}</Typography>
-          </div>
-          <div className={classes.container}>
-            <ReportCreationForm
-              updater={updater}
-              onCompleted={handleClose}
-              onReset={handleClose}
-            />
-          </div>
+        <div className={classes.header}>
+          <IconButton
+            aria-label="Close"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
+            color="primary"
+          >
+            <Close fontSize="small" color="primary" />
+          </IconButton>
+          <Typography variant="h6">{t('Create a report')}</Typography>
+        </div>
+        <div className={classes.container}>
+          <ReportCreationForm
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>

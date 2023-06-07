@@ -30,7 +30,7 @@ class ContainerStixCoreObjectsMappingLinesComponent extends Component {
       paginationOptions,
       height,
       contentMapping,
-      deleteMapping,
+      contentMappingData
     } = this.props;
     return (
       <ListLinesContent
@@ -53,7 +53,7 @@ class ContainerStixCoreObjectsMappingLinesComponent extends Component {
         nbOfRowsToLoad={nbOfRowsToLoad}
         height={height}
         contentMapping={contentMapping}
-        onDelete={deleteMapping}
+        contentMappingData={contentMappingData}
       />
     );
   }
@@ -169,6 +169,7 @@ ContainerStixCoreObjectsMappingLines.propTypes = {
   addedElements: PropTypes.object,
   height: PropTypes.number,
   contentMapping: PropTypes.object,
+  contentMappingData: PropTypes.object,
   deleteMapping: PropTypes.func,
 };
 

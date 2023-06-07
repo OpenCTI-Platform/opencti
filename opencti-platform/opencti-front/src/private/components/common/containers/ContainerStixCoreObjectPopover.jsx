@@ -21,6 +21,8 @@ import inject18n from '../../../../components/i18n';
 import { commitMutation } from '../../../../relay/environment';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { encodeMappingData } from '../../../../utils/Graph';
+import { deleteElementByValue } from '../../../../utils/utils';
 
 const styles = (theme) => ({
   container: {
@@ -58,6 +60,27 @@ export const containerStixCoreObjectPopoverRemoveMutation = graphql`
   }
 `;
 
+export const containerStixCoreObjectPopoverFieldPatchMutation = graphql`
+  mutation ContainerStixCoreObjectPopoverFieldPatchMutation(
+    $id: ID!
+    $input: [EditInput!]!
+  ) {
+    stixDomainObjectEdit(id: $id) {
+      fieldPatch(input: $input) {
+        ... on Report {
+          content_mapping
+        }
+        ... on Case {
+          content_mapping
+        }
+        ... on Grouping {
+          content_mapping
+        }
+      }
+    }
+  }
+`;
+
 export const containerStixCoreObjectPopoverDeleteMutation = graphql`
   mutation ContainerStixCoreObjectPopoverDeleteMutation($id: ID!) {
     stixCoreObjectEdit(id: $id) {
@@ -71,10 +94,12 @@ class ContainerStixCoreObjectPopover extends Component {
     super(props);
     this.state = {
       anchorEl: null,
+      displayDeleteMapping: false,
       displayRemove: false,
       displayDelete: false,
       removing: false,
       deleting: false,
+      deletingMapping: false,
     };
   }
 
@@ -96,6 +121,15 @@ class ContainerStixCoreObjectPopover extends Component {
     this.setState({ removing: false, displayRemove: false });
   }
 
+  handleOpenDeleteMapping() {
+    this.setState({ displayDeleteMapping: true });
+    this.handleClose();
+  }
+
+  handleCloseDeleteMapping() {
+    this.setState({ deletingMapping: false, displayDeleteMapping: false });
+  }
+
   handleOpenDelete() {
     this.setState({ displayDelete: true });
     this.handleClose();
@@ -103,6 +137,25 @@ class ContainerStixCoreObjectPopover extends Component {
 
   handleCloseDelete() {
     this.setState({ deleting: false, displayDelete: false });
+  }
+
+  submitDeleteMapping() {
+    const { containerId, toId, contentMappingData } = this.props;
+    this.setState({ removing: true });
+    const newMappingData = deleteElementByValue(contentMappingData, toId);
+    commitMutation({
+      mutation: containerStixCoreObjectPopoverFieldPatchMutation,
+      variables: {
+        id: containerId,
+        input: {
+          key: 'content_mapping',
+          value: encodeMappingData(newMappingData),
+        },
+      },
+      onCompleted: () => {
+        this.handleCloseDeleteMapping();
+      },
+    });
   }
 
   submitRemove() {
@@ -138,6 +191,7 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
+        this.submitDeleteMapping();
         this.handleCloseRemove();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements(newSelectedElements);
@@ -175,6 +229,7 @@ class ContainerStixCoreObjectPopover extends Component {
         }
       },
       onCompleted: () => {
+        this.submitDeleteMapping();
         this.handleCloseDelete();
         const newSelectedElements = R.omit([toId], selectedElements);
         setSelectedElements(newSelectedElements);
@@ -183,7 +238,7 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   render() {
-    const { classes, t, theme } = this.props;
+    const { classes, t, theme, contentMappingData, mapping } = this.props;
     return (
       <div className={classes.container}>
         <IconButton
@@ -199,6 +254,11 @@ class ContainerStixCoreObjectPopover extends Component {
           open={Boolean(this.state.anchorEl)}
           onClose={this.handleClose.bind(this)}
         >
+          {contentMappingData && mapping && mapping > 0 && (
+            <MenuItem onClick={this.handleOpenDeleteMapping.bind(this)}>
+              {t('Delete mapping')}
+            </MenuItem>
+          )}
           <MenuItem onClick={this.handleOpenRemove.bind(this)}>
             {t('Remove')}
           </MenuItem>
@@ -211,6 +271,34 @@ class ContainerStixCoreObjectPopover extends Component {
             </MenuItem>
           </Security>
         </Menu>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          open={this.state.displayDeleteMapping}
+          keepMounted={true}
+          TransitionComponent={Transition}
+          onClose={this.handleCloseDeleteMapping.bind(this)}
+        >
+          <DialogContent>
+            <DialogContentText>
+              {t('Do you want to delete the mapping for this entity?')}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={this.handleCloseDeleteMapping.bind(this)}
+              disabled={this.state.deletingMapping}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={this.submitDeleteMapping.bind(this)}
+              disabled={this.state.deletingMapping}
+            >
+              {t('Delete mapping')}
+            </Button>
+          </DialogActions>
+        </Dialog>
         <Dialog
           PaperProps={{ elevation: 1 }}
           open={this.state.displayRemove}
@@ -287,9 +375,8 @@ ContainerStixCoreObjectPopover.propTypes = {
   t: PropTypes.func,
   selectedElements: PropTypes.object,
   setSelectedElements: PropTypes.func,
-  onDeleteMapping: PropTypes.func,
-  onRemove: PropTypes.func,
-  onDelete: PropTypes.func,
+  contentMappingData: PropTypes.object,
+  mapping: PropTypes.number,
 };
 
 export default compose(

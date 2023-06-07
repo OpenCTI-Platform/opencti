@@ -191,24 +191,6 @@ const ContainerContentComponent = ({ containerData }) => {
       },
     });
   };
-  const deleteMapping = () => {
-    const { content_mapping } = containerData;
-    const contentMappingData = decodeMappingData(content_mapping);
-    const newMappingData = R.dissoc(selectedText, contentMappingData);
-    editor.fieldPatch({
-      variables: {
-        id: containerData.id,
-        input: {
-          key: 'content_mapping',
-          value: encodeMappingData(newMappingData),
-        },
-      },
-      onCompleted: () => {
-        setOpen(false);
-        setSelectedText(null);
-      },
-    });
-  };
   const clearMapping = () => {
     setClearing(true);
     editor.fieldPatch({
@@ -239,6 +221,19 @@ const ContainerContentComponent = ({ containerData }) => {
       setSelectedTab(mode);
     }
   };
+  const matchCase = (text, pattern) => {
+    let result = '';
+    for (let i = 0; i < text.length; i++) {
+      const c = text.charAt(i);
+      const p = pattern.charCodeAt(i);
+      if (p >= 65 && p < 65 + 26) {
+        result += c.toUpperCase();
+      } else {
+        result += c.toLowerCase();
+      }
+    }
+    return result;
+  };
   const { content_mapping } = containerData;
   const contentMappingData = decodeMappingData(content_mapping);
   const mappedStrings = Object.keys(contentMappingData);
@@ -252,13 +247,13 @@ const ContainerContentComponent = ({ containerData }) => {
       ).length;
       description = (description || '').replace(
         descriptionRegex,
-        `==${mappedString}==`,
+        (match) => `==${matchCase(mappedString, match)}==`,
       );
       const contentRegex = new RegExp(mappedString, 'ig');
       const contentCount = ((content || '').match(contentRegex) || []).length;
       content = (content || '').replace(
         contentRegex,
-        `<mark class="marker-yellow">${mappedString}</mark>`,
+        (match) => `<mark class="marker-yellow">${matchCase(mappedString, match)}</mark>`,
       );
       contentMapping[contentMappingData[mappedString]] = descriptionCount + contentCount;
     }
@@ -424,7 +419,7 @@ const ContainerContentComponent = ({ containerData }) => {
                 setSelectedText(null);
               }}
               addMapping={addMapping}
-              deleteMapping={deleteMapping}
+              contentMappingData={contentMappingData}
               contentMapping={contentMapping}
             />
           </Paper>

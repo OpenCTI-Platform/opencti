@@ -68,7 +68,7 @@ const ContainerStixCoreObjectLineComponent = (props) => {
     contentMapping,
     containerId,
     paginationOptions,
-    onDeleteMapping,
+    contentMappingData,
   } = props;
   const classes = useStyles();
   const { t, fd } = useFormatter();
@@ -161,9 +161,8 @@ const ContainerStixCoreObjectLineComponent = (props) => {
             relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
-            onDeleteMapping={onDeleteMapping}
-            onRemove={onDeleteMapping}
-            onDelete={onDeleteMapping}
+            contentMappingData={contentMappingData}
+            mapping={contentMapping[node.id]}
           />
         )}
       </ListItemSecondaryAction>

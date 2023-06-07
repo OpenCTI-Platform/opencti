@@ -119,8 +119,8 @@ class ContainerStixCoreObjectsMapping extends Component {
       openDrawer,
       handleClose,
       addMapping,
-      deleteMapping,
       contentMapping,
+      contentMappingData,
     } = this.props;
     const { sortBy, orderAsc, searchTerm, numberOfElements, filters } = this.state;
     const finalFilters = convertFilters(filters);
@@ -173,8 +173,8 @@ class ContainerStixCoreObjectsMapping extends Component {
                     initialLoading={props === null}
                     setNumberOfElements={this.setNumberOfElements.bind(this)}
                     height={height}
+                    contentMappingData={contentMappingData}
                     contentMapping={contentMapping}
-                    deleteMapping={deleteMapping}
                   />
                 )}
               />
@@ -212,8 +212,8 @@ ContainerStixCoreObjectsMapping.propTypes = {
   history: PropTypes.object,
   height: PropTypes.number,
   contentMapping: PropTypes.object,
-  addMapping: PropTypes.function,
-  deleteMapping: PropTypes.function,
+  contentMappingData: PropTypes.object,
+  addMapping: PropTypes.func,
 };
 
 export default compose(
