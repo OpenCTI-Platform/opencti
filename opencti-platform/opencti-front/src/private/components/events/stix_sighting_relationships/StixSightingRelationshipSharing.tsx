@@ -10,7 +10,7 @@ import type { FormikHelpers } from 'formik/dist/types';
 import ToggleButton from '@mui/material/ToggleButton';
 import { Form, Formik } from 'formik';
 import Dialog from '@mui/material/Dialog';
-import { DialogTitle } from '@mui/material';
+import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
