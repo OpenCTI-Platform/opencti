@@ -49,9 +49,18 @@ interface MarkdownWithRedirectionWarningProps {
   remarkGfmPlugin?: boolean
   markdownComponents?: boolean,
   commonmark?: boolean,
+  remarkPlugins?: PluggableList,
 }
 
-const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionWarningProps> = ({ content, expand, limit, remarkGfmPlugin, markdownComponents, commonmark }) => {
+const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionWarningProps> = ({
+  content,
+  expand,
+  limit,
+  remarkGfmPlugin,
+  markdownComponents,
+  commonmark,
+  remarkPlugins,
+}) => {
   const theme = useTheme<Theme>();
   const [displayExternalLink, setDisplayExternalLink] = useState(false);
   const [externalLink, setExternalLink] = useState<string | URL | undefined>(undefined);
@@ -70,6 +79,16 @@ const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionW
   };
 
   const remarkGfmMarkdownElement = () => {
+    if (remarkPlugins) {
+      return (
+        <Markdown
+          remarkPlugins={remarkPlugins}
+          className="markdown"
+        >
+          {(expand || !limit) ? content : truncate(content, limit)}
+        </Markdown>
+      );
+    }
     if (markdownComponents) {
       return (
         <Markdown

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import { createPaginationContainer, graphql } from 'react-relay';
-import { append, assoc, compose, filter, groupBy, keys, map, pipe } from 'ramda';
 import withStyles from '@mui/styles/withStyles';
 import { ConnectionHandler } from 'relay-runtime';
 import { commitMutation } from '../../../../relay/environment';
@@ -13,8 +12,8 @@ import {
 } from '../../analysis/reports/ReportKnowledgeGraphQuery';
 import ListLinesContent from '../../../../components/list_lines/ListLinesContent';
 import {
-  ContainerAddStixCoreObjectsLine,
   ContainerAddStixCoreObjecstLineDummy,
+  ContainerAddStixCoreObjectsLine,
 } from './ContainerAddStixCoreObjectsLine';
 import { setNumberOfElements } from '../../../../utils/Number';
 import { insertNode } from '../../../../utils/store';

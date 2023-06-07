@@ -4,12 +4,7 @@ import Typography from '@mui/material/Typography';
 import { Link } from 'react-router-dom';
 import Tooltip from '@mui/material/Tooltip';
 import { ChartTimeline, GraphOutline, VectorLink } from 'mdi-material-ui';
-import {
-  AddTaskOutlined,
-  AssistantOutlined,
-  ViewColumnOutlined,
-  DifferenceOutlined,
-} from '@mui/icons-material';
+import { AddTaskOutlined, AssistantOutlined, DifferenceOutlined, ViewColumnOutlined, } from '@mui/icons-material';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import { DialogTitle } from '@mui/material';
@@ -31,7 +26,6 @@ import { makeStyles } from '@mui/styles';
 import ExportButtons from '../../../../components/ExportButtons';
 import Security from '../../../../utils/Security';
 import { useFormatter } from '../../../../components/i18n';
-import { MarkDownComponents } from '../../../../components/ExpandableMarkdown';
 import { truncate } from '../../../../utils/String';
 import { commitMutation, MESSAGING$, QueryRenderer } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
