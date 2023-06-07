@@ -8,7 +8,6 @@ import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid';
 import { Field, Form, Formik } from 'formik';
 import * as Yup from 'yup';
-import * as R from 'ramda';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import { Subject, timer } from 'rxjs';

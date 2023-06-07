@@ -8,7 +8,7 @@ import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import remarkFlexibleMarkers from 'remark-flexible-markers';
 import * as R from 'ramda';
-import inject18n from './i18n';
+import { useFormatter } from './i18n';
 
 const MarkDownField = (props) => {
   const {
@@ -20,10 +20,10 @@ const MarkDownField = (props) => {
     label,
     style,
     disabled,
-    t,
     controlledSelectedTab,
     controlledSetSelectTab,
   } = props;
+  const { t } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
   const textAreaRef = useRef(null);
@@ -99,4 +99,4 @@ const MarkDownField = (props) => {
   );
 };
 
-export default inject18n(MarkDownField);
+export default MarkDownField;

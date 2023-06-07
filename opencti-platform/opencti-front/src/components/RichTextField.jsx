@@ -12,7 +12,7 @@ import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
-import inject18n, { useFormatter } from './i18n';
+import { useFormatter } from './i18n';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -31,7 +31,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const MarkDownField = (props) => {
+const RichTextField = (props) => {
   const {
     form: { setFieldValue, setTouched },
     field: { name },
@@ -100,7 +100,7 @@ const MarkDownField = (props) => {
             <IconButton
               aria-label="Close"
               className={classes.closeButton}
-              onClick={() => setFullScreen(true)}
+              onClick={() => setFullScreen(false)}
               size="large"
               color="primary"
             >
@@ -174,4 +174,4 @@ const MarkDownField = (props) => {
   );
 };
 
-export default inject18n(MarkDownField);
+export default RichTextField;
