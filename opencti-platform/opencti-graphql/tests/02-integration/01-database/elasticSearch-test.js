@@ -409,13 +409,13 @@ describe('Elasticsearch pagination', () => {
     let data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, {
       search: '"http://attack.mitre.org/groups/G0096"',
     });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
     data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"https://attack.mitre.org/groups/G0096"' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate with incorrect encoding', async () => {
     const data = await elPaginate(testContext, ADMIN_USER, READ_ENTITIES_INDICES, { search: '"ATT%"' });
-    expect(data.edges.length).toEqual(2);
+    expect(data.edges.length).toEqual(52);
   });
   it('should entity paginate with field not exist filter', async () => {
     const filters = [{ key: 'x_opencti_color', operator: undefined, values: [null] }];

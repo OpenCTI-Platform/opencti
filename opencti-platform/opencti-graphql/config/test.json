@@ -7,7 +7,7 @@
     "sync_direct_start_remote_uri": "http://localhost:4200/graphql",
     "sync_restore_start_remote_uri": "http://localhost:4200/graphql",
     "app_logs": {
-      "logs_level": "info",
+      "logs_level": "error",
       "logs_files": false,
       "logs_console": true
     },
@@ -47,6 +47,8 @@
     "url": "http://localhost:9200"
   },
   "minio": {
+    "access_key": "88a4e88e-870d-42fc-96f0-cbd94b8c134f",
+    "secret_key": "ebd76177-b83d-4e0f-a859-5ab5baff26a9",
     "bucket_name": "test",
     "endpoint": "localhost",
     "port": 9000
