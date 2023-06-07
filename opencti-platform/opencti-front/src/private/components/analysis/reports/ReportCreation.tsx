@@ -134,6 +134,7 @@ interface ReportFormProps {
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
@@ -143,6 +144,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -159,9 +161,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     content: Yup.string().nullable(),
   };
   const reportValidator = useSchemaCreationValidation('Report', basicShape);
-
   const initialValues: ReportAddInput = {
-    name: '',
+    name: inputValue ?? '',
     published: dayStartDate(),
     report_types: [],
     confidence: defaultConfidence ?? 75,
@@ -174,7 +175,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     externalReferences: [],
     file: undefined,
   };
-
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
@@ -221,7 +221,6 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       },
     });
   };
-
   return (
     <Formik
       initialValues={initialValues}

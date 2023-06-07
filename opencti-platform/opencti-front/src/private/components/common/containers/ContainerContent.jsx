@@ -166,7 +166,7 @@ const ContainerContentComponent = ({ containerData }) => {
   };
   const handleTextSelection = (text) => {
     if (text && text.length > 2) {
-      setSelectedText(text.trim().toLowerCase());
+      setSelectedText(text.trim());
       OPEN$.next({ action: 'OpenMapping' });
     }
   };
@@ -175,7 +175,7 @@ const ContainerContentComponent = ({ containerData }) => {
     const contentMappingData = decodeMappingData(content_mapping);
     const newMappingData = {
       ...contentMappingData,
-      [selectedText]: stixCoreObject.id,
+      [selectedText.toLowerCase()]: stixCoreObject.id,
     };
     editor.fieldPatch({
       variables: {

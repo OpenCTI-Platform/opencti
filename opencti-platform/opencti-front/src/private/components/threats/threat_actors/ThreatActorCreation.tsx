@@ -13,9 +13,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -29,7 +27,10 @@ import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySe
 import { Option } from '../../common/form/ReferenceField';
 import { ThreatActorsLinesPaginationQuery$variables } from './__generated__/ThreatActorsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
-import { ThreatActorCreationMutation, ThreatActorCreationMutation$variables } from './__generated__/ThreatActorCreationMutation.graphql';
+import {
+  ThreatActorCreationMutation,
+  ThreatActorCreationMutation$variables,
+} from './__generated__/ThreatActorCreationMutation.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -89,33 +90,37 @@ const threatActorMutation = graphql`
 `;
 
 interface ThreatActorAddInput {
-  name: string
-  threat_actor_types: string[]
-  confidence: number
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[],
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  threat_actor_types: string[];
+  confidence: number;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface ThreatActorFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
-export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = ({
+export const ThreatActorCreationForm: FunctionComponent<
+ThreatActorFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -131,11 +136,11 @@ export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = 
   );
 
   const initialValues: ThreatActorAddInput = {
-    name: '',
+    name: inputValue ?? '',
     threat_actor_types: [],
     confidence: defaultConfidence ?? 75,
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -144,7 +149,10 @@ export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = 
 
   const [commit] = useMutation<ThreatActorCreationMutation>(threatActorMutation);
 
-  const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<ThreatActorAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: ThreatActorCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -276,7 +284,11 @@ export const ThreatActorCreationForm: FunctionComponent<ThreatActorFormProps> = 
   );
 };
 
-const ThreatActorCreation = ({ paginationOptions }: { paginationOptions: ThreatActorsLinesPaginationQuery$variables }) => {
+const ThreatActorCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: ThreatActorsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);

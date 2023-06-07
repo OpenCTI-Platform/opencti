@@ -110,6 +110,7 @@ interface IncidentCreationProps {
   defaultCreatedBy?: Option;
   defaultMarkingDefinitions?: Option[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
@@ -119,6 +120,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   defaultConfidence,
   defaultCreatedBy,
   defaultMarkingDefinitions,
+  inputValue,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -149,7 +151,9 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       objectMarking: cleanedValues.objectMarking.map((v) => v.value),
       objectAssignee: cleanedValues.objectAssignee.map(({ value }) => value),
       objectLabel: cleanedValues.objectLabel.map(({ value }) => value),
-      externalReferences: cleanedValues.externalReferences.map(({ value }) => value),
+      externalReferences: cleanedValues.externalReferences.map(
+        ({ value }) => value,
+      ),
       file: values.file,
     };
     commit({
@@ -178,7 +182,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   return (
     <Formik<IncidentAddInput>
       initialValues={{
-        name: '',
+        name: inputValue ?? '',
         confidence: defaultConfidence ?? 75,
         incident_type: '',
         severity: '',

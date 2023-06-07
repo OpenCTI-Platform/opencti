@@ -20,9 +20,7 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
-import {
-  AdministrativeAreasLinesPaginationQuery$variables,
-} from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
+import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
 import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -88,36 +86,52 @@ const administrativeAreaMutation = graphql`
 `;
 
 interface AdministrativeAreaAddInput {
-  name: string
-  description: string
-  latitude: string
-  longitude: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  file: File | undefined
+  name: string;
+  description: string;
+  latitude: string;
+  longitude: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  file: File | undefined;
 }
 
 interface AdministrativeAreaFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  inputValue?: string;
 }
 
-export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAreaFormProps> = ({ updater, onReset, onCompleted,
-  defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const AdministrativeAreaCreationForm: FunctionComponent<
+AdministrativeAreaFormProps
+> = ({
+  updater,
+  onReset,
+  onCompleted,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+  inputValue,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
-    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
-    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
   };
-  const administrativeAreaValidator = useSchemaCreationValidation('Administrative-Area', basicShape);
+  const administrativeAreaValidator = useSchemaCreationValidation(
+    'Administrative-Area',
+    basicShape,
+  );
   const [commit] = useMutation(administrativeAreaMutation);
   const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
     values,
@@ -152,9 +166,10 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       },
     });
   };
-  return <Formik<AdministrativeAreaAddInput>
+  return (
+    <Formik<AdministrativeAreaAddInput>
       initialValues={{
-        name: '',
+        name: inputValue ?? '',
         description: '',
         latitude: '',
         longitude: '',
@@ -167,68 +182,62 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       validationSchema={administrativeAreaValidator}
       onSubmit={onSubmit}
       onReset={onReset}
-  >
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Administrative-Area']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Administrative-Area']}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows={4}
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
           />
           <Field
-              component={TextField}
-              variant="standard"
-              name="latitude"
-              label={t('Latitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+            component={TextField}
+            variant="standard"
+            name="latitude"
+            label={t('Latitude')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
           />
           <Field
-              component={TextField}
-              variant="standard"
-              name="longitude"
-              label={t('Longitude')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
+            component={TextField}
+            variant="standard"
+            name="longitude"
+            label={t('Longitude')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
           />
           <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <Field
             component={SimpleFileUpload}
@@ -241,26 +250,27 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const AdministrativeAreaCreation = ({
@@ -313,9 +323,9 @@ const AdministrativeAreaCreation = ({
         </div>
         <div className={classes.container}>
           <AdministrativeAreaCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={handleClose}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={handleClose}
           />
         </div>
       </Drawer>

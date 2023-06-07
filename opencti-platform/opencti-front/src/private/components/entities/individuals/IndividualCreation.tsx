@@ -103,6 +103,7 @@ interface IndividualFormProps {
   onCompleted?: () => void;
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
+  inputValue?: string;
 }
 
 export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({

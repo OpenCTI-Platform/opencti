@@ -129,6 +129,7 @@ interface GroupingFormProps {
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({

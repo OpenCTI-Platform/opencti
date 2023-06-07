@@ -118,6 +118,7 @@ interface InfrastructureFormProps {
   defaultCreatedBy?: { value: string, label: string }
   defaultMarkingDefinitions?: { value: string, label: string }[]
   defaultConfidence?: number;
+  inputValue?: string;
 }
 
 export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormProps> = ({
