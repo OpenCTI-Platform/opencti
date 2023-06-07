@@ -27,13 +27,20 @@ const i18n = {
       'Two factor authentication': 'Autenticación de dos factores',
       'Password security policies': 'Políticas de seguridad de contraseñas',
       '0 equals no maximum': '0 es igual a ningún máximo',
-      'Number of chars must be lower or equals to': 'Número de caracteres debe ser menor o igual a',
-      'Number of chars must be greater or equals to': 'Número de caracteres debe ser mayor o igual a',
-      'Number of symbols must be greater or equals to': 'El número de símbolos debe ser mayor o igual a',
-      'Number of digits must be greater or equals to': 'Número de dígitos debe ser mayor o igual a',
-      'Number of words (split on hyphen, space) must be greater or equals to': 'Número de palabras (división en guión, espacio) debe ser mayor o igual a',
-      'Number of lowercase chars must be greater or equals to': 'Número de caracteres en minúscula debe ser mayor o igual a',
-      'Number of uppercase chars must be greater or equals to': 'Número de caracteres en mayúsculas debe ser mayor o igual a',
+      'Number of chars must be lower or equals to':
+        'Número de caracteres debe ser menor o igual a',
+      'Number of chars must be greater or equals to':
+        'Número de caracteres debe ser mayor o igual a',
+      'Number of symbols must be greater or equals to':
+        'El número de símbolos debe ser mayor o igual a',
+      'Number of digits must be greater or equals to':
+        'Número de dígitos debe ser mayor o igual a',
+      'Number of words (split on hyphen, space) must be greater or equals to':
+        'Número de palabras (división en guión, espacio) debe ser mayor o igual a',
+      'Number of lowercase chars must be greater or equals to':
+        'Número de caracteres en minúscula debe ser mayor o igual a',
+      'Number of uppercase chars must be greater or equals to':
+        'Número de caracteres en mayúsculas debe ser mayor o igual a',
       gt: 'Superior a',
       lte: 'Inferior o igual a',
       Login: 'Usuario',
@@ -85,7 +92,8 @@ const i18n = {
       'Do you want to delete this kill chain phase?':
         '¿Quieres borrar esta fase de la «kill chain»?',
       'Do you want to delete this report?': '¿Quieres borrar este informe?',
-      'Do you want to delete this relationship?': '¿Quieres borrar esta relación?',
+      'Do you want to delete this relationship?':
+        '¿Quieres borrar esta relación?',
       'Cascade delete': 'Eliminación en cascada',
       'In this report, ': 'En este informe, ',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -392,14 +400,20 @@ const i18n = {
       'Create a feedback': 'Crear un comentario',
       'Update a feedback': 'Actualizar un comentario',
       'Submit a feedback': 'Enviar un comentario',
-      'Do you want to delete this case incident ?': '¿Desea eliminar este incidente de caso?',
-      'Do you want to delete this feedback ?': '¿Quieres eliminar este comentario?',
-      'Do you want to delete this request for information case ?': '¿Desea eliminar este caso de solicitud de información?',
-      'Do you want to delete this request for takedown case ?': '¿Quieres eliminar esta solicitud de caso de eliminación?',
+      'Do you want to delete this case incident ?':
+        '¿Desea eliminar este incidente de caso?',
+      'Do you want to delete this feedback ?':
+        '¿Quieres eliminar este comentario?',
+      'Do you want to delete this request for information case ?':
+        '¿Desea eliminar este caso de solicitud de información?',
+      'Do you want to delete this request for takedown case ?':
+        '¿Quieres eliminar esta solicitud de caso de eliminación?',
       'Create a request for information': 'Crear una solicitud de información',
-      'Update a request for information': 'Actualizar una solicitud de información',
+      'Update a request for information':
+        'Actualizar una solicitud de información',
       'Create a request for takedown': 'Crear una solicitud de eliminación',
-      'Update a request for takedown': 'Actualizar una solicitud de eliminación',
+      'Update a request for takedown':
+        'Actualizar una solicitud de eliminación',
       'Request for Information date': 'Fecha de solicitud de información',
       'Request for Takedown date': 'Solicitud de fecha de eliminación',
       'Do you want to delete this task ?': '¿Quieres eliminar esta tarea?',
@@ -1921,13 +1935,20 @@ const i18n = {
       'Two factor authentication': 'Authentification à deux facteurs',
       'Password security policies': 'Politiques de sécurité des mots de passe',
       '0 equals no maximum': '0 pour aucun maximum',
-      'Number of chars must be lower or equals to': 'Le nombre de caractères doit être inférieur ou égal à',
-      'Number of chars must be greater or equals to': 'Le nombre de caractères doit être supérieur ou égal à',
-      'Number of symbols must be greater or equals to': 'Le nombre de symboles doit être supérieur ou égal à',
-      'Number of digits must be greater or equals to': 'Le nombre de chiffres doit être supérieur ou égal à',
-      'Number of words (split on hyphen, space) must be greater or equals to': 'Le nombre de mots (séparés par un trait d\'union, un espace) doit être supérieur ou égal à',
-      'Number of lowercase chars must be greater or equals to': 'Le nombre de caractères minuscules doit être supérieur ou égal à',
-      'Number of uppercase chars must be greater or equals to': 'Le nombre de caractères majuscules doit être supérieur ou égal à',
+      'Number of chars must be lower or equals to':
+        'Le nombre de caractères doit être inférieur ou égal à',
+      'Number of chars must be greater or equals to':
+        'Le nombre de caractères doit être supérieur ou égal à',
+      'Number of symbols must be greater or equals to':
+        'Le nombre de symboles doit être supérieur ou égal à',
+      'Number of digits must be greater or equals to':
+        'Le nombre de chiffres doit être supérieur ou égal à',
+      'Number of words (split on hyphen, space) must be greater or equals to':
+        "Le nombre de mots (séparés par un trait d'union, un espace) doit être supérieur ou égal à",
+      'Number of lowercase chars must be greater or equals to':
+        'Le nombre de caractères minuscules doit être supérieur ou égal à',
+      'Number of uppercase chars must be greater or equals to':
+        'Le nombre de caractères majuscules doit être supérieur ou égal à',
       gt: 'Supérieur à',
       lte: 'Inférieur ou égal à',
       Login: "Nom d'utilisateur",
@@ -1988,7 +2009,8 @@ const i18n = {
         'Souhaitez-vous supprimer cette étape de kill chain ?',
       'Do you want to delete this report?':
         'Souhaitez-vous supprimer ce rapport ?',
-      'Do you want to delete this relationship?': 'Voulez-vous supprimer cette relation ?',
+      'Do you want to delete this relationship?':
+        'Voulez-vous supprimer cette relation ?',
       'Cascade delete': 'Suppression en cascade',
       'In this report, ': 'Dans ce rapport, ',
       'element(s) are not linked to any other reports and will be orphan after the deletion.':
@@ -2304,25 +2326,31 @@ const i18n = {
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
-      'Do you want to delete this case incident ?': 'Voulez-vous supprimer ce cas d\'incident ?',
-      'Do you want to delete this feedback ?': 'Voulez-vous supprimer ce commentaire ?',
-      'Do you want to delete this request for information case ?': 'Voulez-vous supprimer ce dossier de demande d\'information ?',
-      'Do you want to delete this request for takedown case ?': 'Voulez-vous supprimer ce dossier de demande de retrait ?',
-      'Create a request for information': 'Créer une demande d\'informations',
-      'Update a request for information': 'Mettre à jour une demande d\'information',
+      'Do you want to delete this case incident ?':
+        "Voulez-vous supprimer ce cas d'incident ?",
+      'Do you want to delete this feedback ?':
+        'Voulez-vous supprimer ce commentaire ?',
+      'Do you want to delete this request for information case ?':
+        "Voulez-vous supprimer ce dossier de demande d'information ?",
+      'Do you want to delete this request for takedown case ?':
+        'Voulez-vous supprimer ce dossier de demande de retrait ?',
+      'Create a request for information': "Créer une demande d'informations",
+      'Update a request for information':
+        "Mettre à jour une demande d'information",
       'Create a request for takedown': 'Créer une demande de retrait',
       'Update a request for takedown': 'Mettre à jour une demande de retrait',
-      'Request for Information date': 'Date de la demande d\'information',
+      'Request for Information date': "Date de la demande d'information",
       'Request for Takedown date': 'Date de la demande de retrait',
-      'Do you want to delete this task ?': 'Voulez-vous supprimer cette tâche ?',
+      'Do you want to delete this task ?':
+        'Voulez-vous supprimer cette tâche ?',
       'Create a task': 'Créer une tâche',
       'Update a task': 'Mettre à jour une tâche',
       'Add a task to this container': 'Ajouter une tâche à ce conteneur',
       Tasks: 'Tâches',
       takedown_types: 'types de retraits',
-      information_types: 'types d\'informations',
+      information_types: "types d'informations",
       Takedown_types: 'Types de retraits',
-      Information_types: 'Types d\'informations',
+      Information_types: "Types d'informations",
       'Export to image': 'Exporter en image',
       'Export to PDF': 'Exporter en PDF',
       'Export to CSV': 'Exporter en CSV',
@@ -2517,10 +2545,10 @@ const i18n = {
       'Potential duplicate entities': "Duplicats potentiels d'entités",
       'Create an opinion': 'Créer une opinion',
       'Update opinion': "Modifier l'opinion",
-      'Manage access': 'Gérer l\'accès',
+      'Manage access': "Gérer l'accès",
       'Add new access': 'Ajouter un nouvel accès',
       'Access already granted': 'Accès déjà accordé',
-      'Access right': 'Droit d\'accès',
+      'Access right': "Droit d'accès",
       'Current members access': 'Accès des membres actuels',
       'Deleted or restricted member': 'Membre supprimé ou restreint',
       // Menu
@@ -2701,7 +2729,7 @@ const i18n = {
       entity_Threats: 'Menaces',
       entity_Case: 'Case',
       entity_Feedback: 'Commentaire',
-      'entity_Case-Rfi': 'Demande d\'information',
+      'entity_Case-Rfi': "Demande d'information",
       'entity_Case-Rft': 'Demande de retrait',
       'entity_Case-Incident': 'Réponse aux incidents',
       'entity_Case-Task': 'Tâches',
@@ -3080,7 +3108,7 @@ const i18n = {
       'Case priority': 'Priorité',
       'Case severity': 'Sévérité',
       'Case Task': 'Tâche de cas',
-      'Due Date': 'Date d\'échéance',
+      'Due Date': "Date d'échéance",
       'Apply case templates': 'Appliquer des modèles de cas',
       'Create a case template': 'Créer un nouveau modèle de cas',
       'Apply a new case template': 'Appliquer un nouveau modèle de cas',
@@ -3088,8 +3116,9 @@ const i18n = {
       'Update the case template': 'Modifier le modèle de cas',
       Apply: 'Appliquer',
       Unlink: 'Dissocier',
-      'Do you want to unlink this task ?': 'Voulez-vous dissocier cette tâche ?',
-      'No tasks has been found.': 'Aucune tâche n\'a été trouvée.',
+      'Do you want to unlink this task ?':
+        'Voulez-vous dissocier cette tâche ?',
+      'No tasks has been found.': "Aucune tâche n'a été trouvée.",
       'Source name': 'Nom de la source',
       'External ID': 'ID externe',
       'Log sources': 'Sources de log',
@@ -3122,11 +3151,11 @@ const i18n = {
       'Add Tick': 'Ajouter un marqueur',
       'Incident response type': 'Type de réponse à incident',
       'Related cases': 'Cas connexes',
-      'Request for information type': 'Type de demande d\'informations',
+      'Request for information type': "Type de demande d'informations",
       'Request for takedown type': 'Type de demande de retrait',
-      'Request For Information Date': 'Date de la demande d\'informations',
+      'Request For Information Date': "Date de la demande d'informations",
       'Request For Takedown Date': 'Date de la demande de Retrait',
-      'Information type': 'Type d\'informations',
+      'Information type': "Type d'informations",
       'Takedown type': 'Type de retrait',
       Ticks: 'Marqueurs',
       Likelihood: 'Probabilité',
@@ -3384,7 +3413,8 @@ const i18n = {
       Limit: 'Limite',
       'All threats': 'Toutes les menaces',
       Assignees: 'Référents',
-      'Users, groups or organizations': 'Utilisateurs, groupes ou organisations',
+      'Users, groups or organizations':
+        'Utilisateurs, groupes ou organisations',
       'Everyone on the platform': 'Tout le monde sur la plateforme',
       on: 'le',
       Use: 'Utiliser',
@@ -3464,13 +3494,13 @@ const i18n = {
       Analysis_started: 'Analyse commencée',
       'Analysis ended': 'Analyse terminée',
       Analysis_ended: 'Analyse terminée',
-      'Analysis engine version': 'Version du moteur d\'analyse',
-      Analysis_engine_version: 'Version du moteur d\'analyse',
-      'Analysis definition version': 'Version de la définition de l\'analyse',
-      Analysis_definition_version: 'Version de la définition de l\'analyse',
+      'Analysis engine version': "Version du moteur d'analyse",
+      Analysis_engine_version: "Version du moteur d'analyse",
+      'Analysis definition version': "Version de la définition de l'analyse",
+      Analysis_definition_version: "Version de la définition de l'analyse",
       Modules: 'Modules',
       Result: 'Résultat',
-      'Operating System': 'Système d\'exploitation',
+      'Operating System': "Système d'exploitation",
       'entity_Threat-Actor': 'Acteur',
       entity_Tool: 'Outil',
       entity_Channel: 'Canal',
@@ -3793,6 +3823,10 @@ const i18n = {
         'Références automatiques lors du téléchargement du fichier',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+      'suggestion_threats-arsenal':
+        'Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.',
+      'suggestion_threats-targets':
+        'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
       Collapse: 'Réduire',
     },
     'ja-jp': {
@@ -3822,13 +3856,20 @@ const i18n = {
       'Two factor authentication': '二要素認証',
       'Password security policies': 'パスワード セキュリティ ポリシー',
       '0 equals no maximum': '0 は最大値なし',
-      'Number of chars must be lower or equals to': '文字数は以下でなければなりません',
-      'Number of chars must be greater or equals to': '文字数は次の値以上でなければなりません',
-      'Number of symbols must be greater or equals to': 'シンボルの数は次の値以上でなければなりません',
-      'Number of digits must be greater or equals to': '桁数は以上でなければなりません',
-      'Number of words (split on hyphen, space) must be greater or equals to': '単語数 (ハイフン、スペースで分割) は次の値以上でなければなりません',
-      'Number of lowercase chars must be greater or equals to': '小文字の数は次の値以上でなければなりません',
-      'Number of uppercase chars must be greater or equals to': '大文字の数は次の値以上でなければなりません',
+      'Number of chars must be lower or equals to':
+        '文字数は以下でなければなりません',
+      'Number of chars must be greater or equals to':
+        '文字数は次の値以上でなければなりません',
+      'Number of symbols must be greater or equals to':
+        'シンボルの数は次の値以上でなければなりません',
+      'Number of digits must be greater or equals to':
+        '桁数は以上でなければなりません',
+      'Number of words (split on hyphen, space) must be greater or equals to':
+        '単語数 (ハイフン、スペースで分割) は次の値以上でなければなりません',
+      'Number of lowercase chars must be greater or equals to':
+        '小文字の数は次の値以上でなければなりません',
+      'Number of uppercase chars must be greater or equals to':
+        '大文字の数は次の値以上でなければなりません',
       gt: 'より大きい',
       lte: '以下',
       Login: 'ログイン',
@@ -4167,10 +4208,14 @@ const i18n = {
       'Create a feedback': 'フィードバックを作成する',
       'Update a feedback': 'フィードバックを更新する',
       'Submit a feedback': 'フィードバックを送信する',
-      'Do you want to delete this case incident ?': 'このケース インシデントを削除しますか?',
-      'Do you want to delete this feedback ?': 'このフィードバックを削除しますか?',
-      'Do you want to delete this request for information case ?': 'この情報要求のケースを削除しますか?',
-      'Do you want to delete this request for takedown case ?': 'この削除依頼のケースを削除しますか?',
+      'Do you want to delete this case incident ?':
+        'このケース インシデントを削除しますか?',
+      'Do you want to delete this feedback ?':
+        'このフィードバックを削除しますか?',
+      'Do you want to delete this request for information case ?':
+        'この情報要求のケースを削除しますか?',
+      'Do you want to delete this request for takedown case ?':
+        'この削除依頼のケースを削除しますか?',
       'Create a request for information': '情報のリクエストを作成する',
       'Update a request for information': '情報のリクエストを更新する',
       'Create a request for takedown': '削除依頼を作成する',
@@ -5622,7 +5667,8 @@ const i18n = {
     },
     'zh-cn': {
       // Titles
-      'OpenCTI - Cyber threat intelligence platform': 'OpenCTI - 网络威胁情报平台',
+      'OpenCTI - Cyber threat intelligence platform':
+        'OpenCTI - 网络威胁情报平台',
       // Errors
       Error: '错误',
       'Bad login or password': '用户名或密码错误',
@@ -5649,9 +5695,12 @@ const i18n = {
       'Number of chars must be greater or equals to': '字符數必須大於或等於',
       'Number of symbols must be greater or equals to': '符號數必須大於或等於',
       'Number of digits must be greater or equals to': '位數必須大於或等於',
-      'Number of words (split on hyphen, space) must be greater or equals to': '字數（以連字符、空格分隔）必須大於或等於',
-      'Number of lowercase chars must be greater or equals to': '小寫字符的數量必須大於或等於',
-      'Number of uppercase chars must be greater or equals to': '大寫字符的數量必須大於或等於',
+      'Number of words (split on hyphen, space) must be greater or equals to':
+        '字數（以連字符、空格分隔）必須大於或等於',
+      'Number of lowercase chars must be greater or equals to':
+        '小寫字符的數量必須大於或等於',
+      'Number of uppercase chars must be greater or equals to':
+        '大寫字符的數量必須大於或等於',
       gt: '優於',
       lte: '小於或等於',
       Login: '登录',
@@ -5951,8 +6000,10 @@ const i18n = {
       'Submit a feedback': '提交反馈',
       'Do you want to delete this case incident ?': '是否要删除此案例事件？',
       'Do you want to delete this feedback ?': '要删除此反馈吗？',
-      'Do you want to delete this request for information case ?': '是否要删除此信息案例请求？',
-      'Do you want to delete this request for takedown case ?': '您要删除此移除案例请求吗？',
+      'Do you want to delete this request for information case ?':
+        '是否要删除此信息案例请求？',
+      'Do you want to delete this request for takedown case ?':
+        '您要删除此移除案例请求吗？',
       'Create a request for information': '创建信息请求',
       'Update a request for information': '更新信息请求',
       'Create a request for takedown': '创建移除请求',
@@ -7720,7 +7771,11 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
       'suggestion_threats-indicators':
-        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+          'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+      'suggestion_threats-arsenal':
+          'Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.',
+      'suggestion_threats-targets':
+          'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
     },
   },
 };

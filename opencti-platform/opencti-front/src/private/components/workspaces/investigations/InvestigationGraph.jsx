@@ -1159,7 +1159,7 @@ class InvestigationGraphComponent extends Component {
             keyword: '',
           },
           () => {
-            this.saveParameters(false);
+            this.saveParameters(true);
             resolve(true);
           },
         );

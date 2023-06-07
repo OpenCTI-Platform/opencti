@@ -795,7 +795,7 @@ class IncidentKnowledgeGraphComponent extends Component {
           keyword: '',
         },
         () => {
-          this.saveParameters(false);
+          this.saveParameters(true);
           resolve(true);
         },
       );
@@ -1275,8 +1275,28 @@ class IncidentKnowledgeGraphComponent extends Component {
     );
   }
 
-  handleApplySuggestion() {
-    this.forceUpdate();
+  async handleApplySuggestion(createdRelationships) {
+    this.graphObjects = [...this.graphObjects, ...createdRelationships];
+    this.graphData = buildGraphData(
+      this.graphObjects,
+      decodeGraphData(this.props.report.x_opencti_graph_data),
+      this.props.t,
+    );
+    await this.resetAllFilters();
+    const selectedTimeRangeInterval = computeTimeRangeInterval(
+      this.graphObjects,
+    );
+    this.setState({
+      selectedTimeRangeInterval,
+      graphData: applyFilters(
+        this.graphData,
+        this.state.stixCoreObjectsTypes,
+        this.state.markedBy,
+        this.state.createdBy,
+        ignoredStixCoreObjectsTypes,
+        selectedTimeRangeInterval,
+      ),
+    });
   }
 
   handleTimeRangeChange(selectedTimeRangeInterval) {
