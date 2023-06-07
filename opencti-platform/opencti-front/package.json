@@ -14,7 +14,7 @@
     "@mui/styles": "5.13.1",
     "@mui/utils": "5.13.1",
     "@mui/x-date-pickers": "5.0.20",
-    "apexcharts": "3.40.0",
+    "apexcharts": "3.41.0",
     "axios": "1.4.0",
     "ckeditor5-custom-build": "0.0.1",
     "dagre": "0.8.5",
