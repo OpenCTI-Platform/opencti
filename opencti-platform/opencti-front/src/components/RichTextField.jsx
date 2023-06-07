@@ -15,6 +15,7 @@ import Dialog from '@mui/material/Dialog';
 import Typography from '@mui/material/Typography';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from './i18n';
+import ExternalLinkPopover from './ExternalLinkPopover';
 
 const useStyles = makeStyles((theme) => ({
   header: {
@@ -49,6 +50,8 @@ const RichTextField = (props) => {
   const { t } = useFormatter();
   const [field, meta] = useField(name);
   const [fullScreen, setFullScreen] = useState(false);
+  const [externalLink, setExternalLink] = useState(false);
+  const [displayExternalLink, setDisplayExternalLink] = useState(undefined);
   const internalOnFocus = () => {
     if (typeof onFocus === 'function') {
       onFocus(name);
@@ -76,6 +79,17 @@ const RichTextField = (props) => {
       && !fullScreen
     ) {
       onSelect(selection.trim());
+    }
+  };
+  const handleOpenExternalLink = (url) => {
+    setDisplayExternalLink(true);
+    setExternalLink(url);
+  };
+  const browseLinkWarning = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (event.target.localName === 'a') { // if the user clicks on a link
+      handleOpenExternalLink(event.target.href);
     }
   };
   return (
@@ -111,6 +125,7 @@ const RichTextField = (props) => {
             <Typography variant="h6">{t('Content')}</Typography>
           </div>
           <div className={classes.container}>
+            <div onClick={(event) => browseLinkWarning(event)}>
             <CKEditor
               editor={Editor}
               onReady={(editor) => {
@@ -135,6 +150,13 @@ const RichTextField = (props) => {
               onFocus={internalOnFocus}
               disabled={disabled}
             />
+            </div>
+            <ExternalLinkPopover
+              displayExternalLink={displayExternalLink}
+              externalLink={externalLink}
+              setDisplayExternalLink={setDisplayExternalLink}
+              setExternalLink={setExternalLink}
+            ></ExternalLinkPopover>
             {!R.isNil(meta.error) && (
               <FormHelperText error={true}>{meta.error}</FormHelperText>
             )}
@@ -144,30 +166,40 @@ const RichTextField = (props) => {
           </DialogActions>
         </Dialog>
       ) : (
-        <CKEditor
-          editor={Editor}
-          onReady={(editor) => {
-            editorReference = editor;
-            editorReference.model.document.selection.on(
-              'change',
-              internalOnSelect,
-            );
-          }}
-          config={{
-            width: '100%',
-            language: 'en',
-            image: {
-              resizeUnit: 'px',
-            },
-          }}
-          data={field.value || ''}
-          onChange={(event, editor) => {
-            setFieldValue(name, editor.getData());
-          }}
-          onBlur={internalOnBlur}
-          onFocus={internalOnFocus}
-          disabled={disabled}
-        />
+        <div>
+          <div onClick={(event) => browseLinkWarning(event)}>
+          <CKEditor
+            editor={Editor}
+            onReady={(editor) => {
+              editorReference = editor;
+              editorReference.model.document.selection.on(
+                'change',
+                internalOnSelect,
+              );
+            }}
+            config={{
+              width: '100%',
+              language: 'en',
+              image: {
+                resizeUnit: 'px',
+              },
+            }}
+            data={field.value || ''}
+            onChange={(event, editor) => {
+              setFieldValue(name, editor.getData());
+            }}
+            onBlur={internalOnBlur}
+            onFocus={internalOnFocus}
+            disabled={disabled}
+          />
+          </div>
+          <ExternalLinkPopover
+            displayExternalLink={displayExternalLink}
+            externalLink={externalLink}
+            setDisplayExternalLink={setDisplayExternalLink}
+            setExternalLink={setExternalLink}
+          ></ExternalLinkPopover>
+        </div>
       )}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
