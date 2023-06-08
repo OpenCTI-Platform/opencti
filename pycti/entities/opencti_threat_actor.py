@@ -314,7 +314,7 @@ class ThreatActor:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
         threat_actor_types = kwargs.get("threat_actor_types", None)
         first_seen = kwargs.get("first_seen", None)
@@ -329,7 +329,7 @@ class ThreatActor:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None:
+        if name is not None:
             LOGGER.info("Creating Threat-Actor {%s}.", name)
             query = """
                 mutation ThreatActorAdd($input: ThreatActorAddInput) {
@@ -413,10 +413,10 @@ class ThreatActor:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -429,7 +429,7 @@ class ThreatActor:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 threat_actor_types=stix_object["threat_actor_types"]
                 if "threat_actor_types" in stix_object

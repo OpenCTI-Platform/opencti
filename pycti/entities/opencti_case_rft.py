@@ -458,7 +458,7 @@ class CaseRft:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
@@ -635,11 +635,11 @@ class CaseRft:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 objects=extras["object_ids"] if "object_ids" in extras else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -652,7 +652,7 @@ class CaseRft:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 takedown_types=stix_object["takedown_types"]
                 if "takedown_types" in stix_object
                 else None,

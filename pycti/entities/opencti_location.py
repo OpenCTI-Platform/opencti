@@ -267,7 +267,7 @@ class Location:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         latitude = kwargs.get("latitude", None)
         longitude = kwargs.get("longitude", None)
         precision = kwargs.get("precision", None)
@@ -371,13 +371,13 @@ class Location:
                 else None,
                 objectMarking=extras["object_marking_ids"]
                 if "object_marking_ids" in extras
-                else [],
+                else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -390,7 +390,7 @@ class Location:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 latitude=stix_object["latitude"] if "latitude" in stix_object else None,
                 longitude=stix_object["longitude"]
                 if "longitude" in stix_object

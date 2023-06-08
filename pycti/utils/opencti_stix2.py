@@ -909,10 +909,10 @@ class OpenCTIStix2:
                 else [],
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 createIndicator=stix_object["x_opencti_create_indicator"]
                 if "x_opencti_create_indicator" in stix_object
                 else None,
@@ -932,10 +932,10 @@ class OpenCTIStix2:
                 else [],
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 objectOrganization=extras["granted_refs_ids"]
                 if "granted_refs_ids" in extras
                 else [],
@@ -1206,10 +1206,10 @@ class OpenCTIStix2:
             else [],
             objectLabel=extras["object_label_ids"]
             if "object_label_ids" in extras
-            else [],
+            else None,
             externalReferences=extras["external_references_ids"]
             if "external_references_ids" in extras
-            else [],
+            else None,
             objectOrganization=extras["granted_refs_ids"]
             if "granted_refs_ids" in extras
             else [],

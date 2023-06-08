@@ -1126,7 +1126,7 @@ class StixCoreRelationship:
                     stix_relation["description"]
                 )
                 if "description" in stix_relation
-                else "",
+                else None,
                 start_time=stix_relation["start_time"]
                 if "start_time" in stix_relation
                 else default_date,
@@ -1154,10 +1154,10 @@ class StixCoreRelationship:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 killChainPhases=extras["kill_chain_phases_ids"]
                 if "kill_chain_phases_ids" in extras
                 else None,

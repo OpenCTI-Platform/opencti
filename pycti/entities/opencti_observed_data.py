@@ -564,7 +564,7 @@ class ObservedData:
                         else None,
                         objectLabel=extras["object_label_ids"]
                         if "object_label_ids" in extras
-                        else [],
+                        else None,
                         objectOrganization=extras["granted_refs_ids"]
                         if "granted_refs_ids" in extras
                         else None,
@@ -594,11 +594,11 @@ class ObservedData:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 objects=object_refs,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
