@@ -43,7 +43,7 @@ import {
   MergeOutlined,
   Input,
 } from '@mui/icons-material';
-import { CloudRefreshOutline, Label } from 'mdi-material-ui';
+import { CloudRefresh, CloudRefreshOutline, Label } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
 import Drawer from '@mui/material/Drawer';
 import Dialog from '@mui/material/Dialog';
@@ -254,21 +254,13 @@ const toolBarContainersQuery = graphql`
   query ToolBarContainersQuery($search: String) {
     containers(
       search: $search
-      filters: [{ key: entity_type, values: ["Report", "Grouping"] }]
+      filters: [{ key: entity_type, values: ["Container"] }]
     ) {
       edges {
         node {
           id
           entity_type
-          ... on Report {
-            name
-          }
-          ... on Grouping {
-            name
-          }
-          ... on ObservedData {
-            name
-          }
+          representative
         }
       }
     }
@@ -721,7 +713,7 @@ class ToolBar extends Component {
       .then((data) => {
         const elements = data.containers.edges.map((e) => e.node);
         const containers = elements.map((n) => ({
-          label: n.name,
+          label: n.representative,
           type: n.entity_type,
           value: n.id,
         }));
@@ -909,7 +901,7 @@ class ToolBar extends Component {
               fullWidth={true}
               selectOnFocus={true}
               autoHighlight={true}
-              getOptionLabel={(option) => (option.label ? option.label : '')}
+              getOptionLabel={(option) => option.label ?? ''}
               value={actionsInputs[i]?.values || []}
               multiple={true}
               renderInput={(params) => (
@@ -2212,7 +2204,7 @@ class ToolBar extends Component {
               noOptionsText={t('No available options')}
               options={this.state.containers}
               onInputChange={this.searchContainers.bind(this, 0)}
-              inputValue={''}
+              inputValue={actionsInputs[0]?.inputValue || ''}
               onChange={this.handleChangeActionInputValues.bind(this, 0)}
               renderOption={(props, option) => (
                 <li {...props}>

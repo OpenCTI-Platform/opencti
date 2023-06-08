@@ -92,6 +92,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID

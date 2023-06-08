@@ -92,6 +92,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID

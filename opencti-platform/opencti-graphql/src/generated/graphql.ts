@@ -1621,6 +1621,7 @@ export type Case = {
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -1839,6 +1840,7 @@ export type CaseIncident = BasicObject & Case & Container & StixCoreObject & Sti
   rating?: Maybe<Scalars['Int']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   response_types?: Maybe<Array<Scalars['String']>>;
   revoked: Scalars['Boolean'];
   severity?: Maybe<Scalars['String']>;
@@ -2128,6 +2130,7 @@ export type CaseRfi = BasicObject & Case & Container & StixCoreObject & StixDoma
   priority?: Maybe<Scalars['String']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   severity?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
@@ -2413,6 +2416,7 @@ export type CaseRft = BasicObject & Case & Container & StixCoreObject & StixDoma
   priority?: Maybe<Scalars['String']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   severity?: Maybe<Scalars['String']>;
   spec_version: Scalars['String'];
@@ -2699,6 +2703,7 @@ export type CaseTask = BasicObject & Container & StixCoreObject & StixDomainObje
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -3611,6 +3616,7 @@ export type Container = {
   parent_types: Array<Maybe<Scalars['String']>>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -6820,6 +6826,7 @@ export type Feedback = BasicObject & Case & Container & StixCoreObject & StixDom
   rating?: Maybe<Scalars['Int']>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -7228,6 +7235,7 @@ export type Grouping = BasicObject & Container & StixCoreObject & StixDomainObje
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -14207,6 +14215,7 @@ export type Note = BasicObject & Container & StixCoreObject & StixDomainObject &
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -14617,6 +14626,7 @@ export type ObservedData = BasicObject & Container & StixCoreObject & StixDomain
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -14925,6 +14935,7 @@ export type Opinion = BasicObject & Container & StixCoreObject & StixDomainObjec
   pendingFiles?: Maybe<FileConnection>;
   relatedContainers?: Maybe<ContainerConnection>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -19074,6 +19085,7 @@ export type Report = BasicObject & Container & StixCoreObject & StixDomainObject
   relatedContainers?: Maybe<ContainerConnection>;
   report_types?: Maybe<Array<Maybe<Scalars['String']>>>;
   reports?: Maybe<ReportConnection>;
+  representative: Scalars['String'];
   revoked: Scalars['Boolean'];
   spec_version: Scalars['String'];
   standard_id: Scalars['String'];
@@ -27647,6 +27659,7 @@ export type CaseResolvers<ContextType = any, ParentType extends ResolversParentT
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CasePendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27712,6 +27725,7 @@ export type CaseIncidentResolvers<ContextType = any, ParentType extends Resolver
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseIncidentRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseIncidentReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   response_types?: Resolver<Maybe<Array<ResolversTypes['String']>>, ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -27780,6 +27794,7 @@ export type CaseRfiResolvers<ContextType = any, ParentType extends ResolversPare
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRfiRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRfiReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27846,6 +27861,7 @@ export type CaseRftResolvers<ContextType = any, ParentType extends ResolversPare
   priority?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseRftRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseRftReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   severity?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -27911,6 +27927,7 @@ export type CaseTaskResolvers<ContextType = any, ParentType extends ResolversPar
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<CaseTaskPendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<CaseTaskRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<CaseTaskReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -28172,6 +28189,7 @@ export type ContainerResolvers<ContextType = any, ParentType extends ResolversPa
   parent_types?: Resolver<Array<Maybe<ResolversTypes['String']>>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ContainerRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ContainerReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29098,6 +29116,7 @@ export type FeedbackResolvers<ContextType = any, ParentType extends ResolversPar
   rating?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<FeedbackRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<FeedbackReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -29249,6 +29268,7 @@ export type GroupingResolvers<ContextType = any, ParentType extends ResolversPar
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<GroupingPendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<GroupingRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<GroupingReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31022,6 +31042,7 @@ export type NoteResolvers<ContextType = any, ParentType extends ResolversParentT
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<NotePendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<NoteRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<NoteReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31155,6 +31176,7 @@ export type ObservedDataResolvers<ContextType = any, ParentType extends Resolver
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<ObservedDataPendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ObservedDataRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ObservedDataReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31227,6 +31249,7 @@ export type OpinionResolvers<ContextType = any, ParentType extends ResolversPare
   pendingFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<OpinionPendingFilesArgs>>;
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<OpinionRelatedContainersArgs>>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<OpinionReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -32023,6 +32046,7 @@ export type ReportResolvers<ContextType = any, ParentType extends ResolversParen
   relatedContainers?: Resolver<Maybe<ResolversTypes['ContainerConnection']>, ParentType, ContextType, Partial<ReportRelatedContainersArgs>>;
   report_types?: Resolver<Maybe<Array<Maybe<ResolversTypes['String']>>>, ParentType, ContextType>;
   reports?: Resolver<Maybe<ResolversTypes['ReportConnection']>, ParentType, ContextType, Partial<ReportReportsArgs>>;
+  representative?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   revoked?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   spec_version?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   standard_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
