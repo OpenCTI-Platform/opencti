@@ -263,7 +263,7 @@ class IntrusionSet:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
         first_seen = kwargs.get("first_seen", None)
         last_seen = kwargs.get("last_seen", None)
@@ -275,7 +275,7 @@ class IntrusionSet:
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None:
+        if name is not None:
             LOGGER.info("Creating Intrusion-Set {%s}.", name)
             query = """
                 mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
@@ -356,10 +356,10 @@ class IntrusionSet:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -372,7 +372,7 @@ class IntrusionSet:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 first_seen=stix_object["first_seen"]
                 if "first_seen" in stix_object

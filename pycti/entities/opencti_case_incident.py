@@ -461,7 +461,7 @@ class CaseIncident:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         severity = kwargs.get("severity", None)
         priority = kwargs.get("priority", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
@@ -644,11 +644,11 @@ class CaseIncident:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 objects=extras["object_ids"] if "object_ids" in extras else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -661,7 +661,7 @@ class CaseIncident:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 severity=stix_object["severity"] if "severity" in stix_object else None,
                 priority=stix_object["priority"] if "priority" in stix_object else None,
                 response_types=stix_object["response_types"]

@@ -449,7 +449,7 @@ class CaseTask:
         objects = kwargs.get("objects", None)
         created = kwargs.get("created", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         due_date = kwargs.get("dueDate", None)
 
         if name is not None:
@@ -630,7 +630,7 @@ class CaseTask:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 dueDate=stix_object["due_date"] if "due_date" in stix_object else None,
             )
         else:

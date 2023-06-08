@@ -442,10 +442,10 @@ class AttackPattern:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -458,7 +458,7 @@ class AttackPattern:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 x_mitre_platforms=stix_object["x_mitre_platforms"]
                 if "x_mitre_platforms" in stix_object

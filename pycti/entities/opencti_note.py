@@ -592,11 +592,11 @@ class Note:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 objects=extras["object_ids"] if "object_ids" in extras else [],
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -606,10 +606,10 @@ class Note:
                 modified=stix_object["modified"] if "modified" in stix_object else None,
                 abstract=self.opencti.stix2.convert_markdown(stix_object["abstract"])
                 if "abstract" in stix_object
-                else "",
+                else None,
                 content=self.opencti.stix2.convert_markdown(stix_object["content"])
                 if "content" in stix_object
-                else "",
+                else None,
                 x_opencti_stix_ids=stix_object["x_opencti_stix_ids"]
                 if "x_opencti_stix_ids" in stix_object
                 else None,

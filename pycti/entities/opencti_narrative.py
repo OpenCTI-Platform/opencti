@@ -280,14 +280,14 @@ class Narrative:
         created = kwargs.get("created", None)
         modified = kwargs.get("modified", None)
         name = kwargs.get("name", None)
-        description = kwargs.get("description", "")
+        description = kwargs.get("description", None)
         aliases = kwargs.get("aliases", None)
         narrative_types = kwargs.get("narrative_types", None)
         x_opencti_stix_ids = kwargs.get("x_opencti_stix_ids", None)
         granted_refs = kwargs.get("objectOrganization", None)
         update = kwargs.get("update", False)
 
-        if name is not None and description is not None:
+        if name is not None:
             LOGGER.info("Creating Narrative {%s}.", name)
             query = """
                 mutation NarrativeAdd($input: NarrativeAddInput!) {
@@ -359,10 +359,10 @@ class Narrative:
                 else None,
                 objectLabel=extras["object_label_ids"]
                 if "object_label_ids" in extras
-                else [],
+                else None,
                 externalReferences=extras["external_references_ids"]
                 if "external_references_ids" in extras
-                else [],
+                else None,
                 revoked=stix_object["revoked"] if "revoked" in stix_object else None,
                 confidence=stix_object["confidence"]
                 if "confidence" in stix_object
@@ -375,7 +375,7 @@ class Narrative:
                     stix_object["description"]
                 )
                 if "description" in stix_object
-                else "",
+                else None,
                 aliases=self.opencti.stix2.pick_aliases(stix_object),
                 narrative_types=stix_object["narrative_types"]
                 if "narrative_types" in stix_object
