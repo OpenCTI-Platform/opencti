@@ -171,6 +171,7 @@ const ContainerStixCyberObservableLineComponent = (props) => {
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
+            toStandardId={node.standard_id}
             menuDisable={isOnlyThroughInference}
             relationshipType="object"
             paginationKey="Pagination_objects"
@@ -190,6 +191,7 @@ export const ContainerStixCyberObservableLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixCyberObservableLine_node on StixCyberObservable {
         id
+        standard_id
         observable_value
         entity_type
         parent_types

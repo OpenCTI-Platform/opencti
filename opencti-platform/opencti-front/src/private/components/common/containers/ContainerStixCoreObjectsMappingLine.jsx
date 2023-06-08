@@ -140,8 +140,8 @@ const ContainerStixCoreObjectLineComponent = (props) => {
               <Chip
                 classes={{ root: classes.chipInList }}
                 label={
-                  contentMapping[node.id]
-                    ? contentMapping[node.id]
+                  contentMapping[node.standard_id]
+                    ? contentMapping[node.standard_id]
                     : t('No mapping')
                 }
               />
@@ -158,11 +158,12 @@ const ContainerStixCoreObjectLineComponent = (props) => {
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
+            toStandardId={node.standard_id}
             relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
             contentMappingData={contentMappingData}
-            mapping={contentMapping[node.id]}
+            mapping={contentMapping[node.standard_id]}
           />
         )}
       </ListItemSecondaryAction>
@@ -176,6 +177,7 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixCoreObjectsMappingLine_node on StixCoreObject {
         id
+        standard_id
         entity_type
         parent_types
         created_at

@@ -159,6 +159,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
         <ContainerStixCoreObjectPopover
           containerId={containerId}
           toId={node.id}
+          toStandardId={node.standard_id}
           relationshipType="object"
           paginationKey="Pagination_objects"
           paginationOptions={paginationOptions}
@@ -173,6 +174,7 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
       fragment ContainerStixObjectOrStixRelationshipLine_node on StixObjectOrStixRelationship {
         ... on BasicObject {
           id
+          standard_id
           entity_type
         }
         ... on StixCoreObject {
@@ -304,6 +306,7 @@ export const ContainerStixObjectOrStixRelationshipLine = createFragmentContainer
         }
         ... on BasicRelationship {
           id
+          standard_id
           entity_type
         }
         ... on StixCoreRelationship {

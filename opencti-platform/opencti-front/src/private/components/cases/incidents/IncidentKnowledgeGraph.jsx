@@ -45,7 +45,7 @@ import CaseIncidentPopover from './CaseIncidentPopover';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
 import { hexToRGB } from '../../../../utils/Colors';
 
-const ignoredStixCoreObjectsTypes = ['Incident', 'Note', 'Opinion'];
+const ignoredStixCoreObjectsTypes = ['Case-Incident', 'Note', 'Opinion'];
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -466,7 +466,7 @@ class IncidentKnowledgeGraphComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-incident-case-${this.props.caseData.id}-knowledge`,
+      `view-case-incident-${this.props.caseData.id}-knowledge`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = props.caseData.objects.edges.map((n) => ({
@@ -1279,7 +1279,7 @@ class IncidentKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, ...createdRelationships];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.caseData.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
@@ -1370,7 +1370,7 @@ class IncidentKnowledgeGraphComponent extends Component {
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}
-          enableSuggestions={false}
+          enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
         <IncidentKnowledgeGraphBar

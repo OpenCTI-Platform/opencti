@@ -114,6 +114,7 @@ const ContainerStixCoreObjectsMappingLines = createPaginationContainer(
             node {
               ... on BasicObject {
                 id
+                standard_id
               }
               ...ContainerStixCoreObjectsMappingLine_node
             }

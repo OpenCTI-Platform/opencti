@@ -45,7 +45,7 @@ import CaseRftKnowledgeGraphBar from './CaseRftKnowledgeGraphBar';
 import CaseRftPopover from './CaseRftPopover';
 import { caseRftMutationFieldPatch } from './CaseRftEditionOverview';
 
-const ignoredStixCoreObjectsTypes = ['Incident', 'Note', 'Opinion'];
+const ignoredStixCoreObjectsTypes = ['Case-Rft', 'Note', 'Opinion'];
 
 const PARAMETERS$ = new Subject().pipe(debounce(() => timer(2000)));
 const POSITIONS$ = new Subject().pipe(debounce(() => timer(2000)));
@@ -465,7 +465,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      `view-case-rfts-${this.props.caseData.id}-knowledge`,
+      `view-case-rft-${this.props.caseData.id}-knowledge`,
     );
     this.zoom = R.propOr(null, 'zoom', params);
     this.graphObjects = props.caseData.objects.edges.map((n) => ({
@@ -1278,7 +1278,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, ...createdRelationships];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.caseData.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();
@@ -1369,7 +1369,7 @@ class CaseRftKnowledgeGraphComponent extends Component {
           currentMode={mode}
           adjust={this.handleZoomToFit.bind(this)}
           knowledge={true}
-          enableSuggestions={false}
+          enableSuggestions={true}
           onApplied={this.handleApplySuggestion.bind(this)}
         />
         <CaseRftKnowledgeGraphBar

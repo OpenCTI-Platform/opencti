@@ -944,6 +944,7 @@ const ContainerHeader = (props) => {
                               <Select
                                 style={{
                                   width: 200,
+                                  minWidth: 200,
                                   margin: '0 0 0 15px',
                                 }}
                                 variant="standard"

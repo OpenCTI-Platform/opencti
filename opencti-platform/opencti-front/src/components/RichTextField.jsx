@@ -70,7 +70,7 @@ const RichTextField = (props) => {
     if (
       typeof onSelect === 'function'
       && selection.length > 2
-      && disabled
+      && editorReference.isReadOnly
       && !fullScreen
     ) {
       onSelect(selection.trim());

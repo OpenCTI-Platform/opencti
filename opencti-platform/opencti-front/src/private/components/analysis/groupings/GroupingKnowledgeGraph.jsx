@@ -1141,7 +1141,7 @@ class GroupingKnowledgeGraphComponent extends Component {
     this.graphObjects = [...this.graphObjects, ...createdRelationships];
     this.graphData = buildGraphData(
       this.graphObjects,
-      decodeGraphData(this.props.report.x_opencti_graph_data),
+      decodeGraphData(this.props.grouping.x_opencti_graph_data),
       this.props.t,
     );
     await this.resetAllFilters();

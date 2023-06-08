@@ -336,6 +336,7 @@ const ContainerAddStixCoreObjectsLines = createPaginationContainer(
           edges {
             node {
               id
+              standard_id
               entity_type
               created_at
               createdBy {

@@ -140,9 +140,9 @@ class ContainerStixCoreObjectPopover extends Component {
   }
 
   submitDeleteMapping() {
-    const { containerId, toId, contentMappingData } = this.props;
+    const { containerId, toStandardId, contentMappingData } = this.props;
     this.setState({ removing: true });
-    const newMappingData = deleteElementByValue(contentMappingData, toId);
+    const newMappingData = deleteElementByValue(contentMappingData, toStandardId);
     commitMutation({
       mutation: containerStixCoreObjectPopoverFieldPatchMutation,
       variables: {
@@ -368,6 +368,7 @@ class ContainerStixCoreObjectPopover extends Component {
 ContainerStixCoreObjectPopover.propTypes = {
   containerId: PropTypes.string,
   toId: PropTypes.string,
+  toStandardId: PropTypes.string,
   relationshipType: PropTypes.string,
   paginationKey: PropTypes.string,
   paginationOptions: PropTypes.object,

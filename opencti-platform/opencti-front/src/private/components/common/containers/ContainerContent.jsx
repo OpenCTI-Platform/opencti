@@ -174,7 +174,7 @@ const ContainerContentComponent = ({ containerData }) => {
     const contentMappingData = decodeMappingData(content_mapping);
     const newMappingData = {
       ...contentMappingData,
-      [selectedText.toLowerCase()]: stixCoreObject.id,
+      [selectedText.toLowerCase()]: stixCoreObject.standard_id,
     };
     editor.fieldPatch({
       variables: {
@@ -442,6 +442,7 @@ const ContainerContent = createFragmentContainer(
     containerData: graphql`
       fragment ContainerContent_container on Container {
         id
+        standard_id
         entity_type
         confidence
         createdBy {
