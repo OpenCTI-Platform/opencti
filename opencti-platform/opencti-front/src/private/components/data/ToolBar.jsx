@@ -41,6 +41,7 @@ import {
   ContentCopyOutlined,
   AutoFixHighOutlined,
   MergeOutlined,
+  Input,
 } from '@mui/icons-material';
 import { CloudRefreshOutline, Label } from 'mdi-material-ui';
 import Autocomplete from '@mui/material/Autocomplete';
@@ -283,6 +284,7 @@ class ToolBar extends Component {
       displayEnrichment: false,
       displayRescan: false,
       displayMerge: false,
+      displayAddInContainer: false,
       displayPromote: false,
       containerCreation: false,
       actions: [],
@@ -344,6 +346,10 @@ class ToolBar extends Component {
 
   handleOpenMerge() {
     this.setState({ displayMerge: true });
+  }
+
+  handleOpenAddInContainer() {
+    this.setState({ displayAddInContainer: true });
   }
 
   handleOpenPromote() {
@@ -894,7 +900,7 @@ class ToolBar extends Component {
                 this.setState(({ containers }) => ({
                   containers: [...(containers ?? []), element],
                 }));
-                this.handleChangeActionInputValues(i, null, element);
+                this.handleChangeActionInputValues(i, null, [...(actionsInputs[i]?.values ?? []), element]);
               }}
             />
             <Autocomplete
@@ -1447,6 +1453,23 @@ class ToolBar extends Component {
                 </span>
               </Tooltip>
             )}
+          </Security>
+          <Security needs={[KNOWLEDGE_KNUPDATE]}>
+            <Tooltip title={t('Add in container')}>
+                <span>
+                  <IconButton
+                    aria-label="input"
+                    disabled={
+                      numberOfSelectedElements === 0 || this.state.processing
+                    }
+                    onClick={this.handleOpenAddInContainer.bind(this)}
+                    color="primary"
+                    size="small"
+                  >
+                    <Input fontSize="small" />
+                  </IconButton>
+                </span>
+            </Tooltip>
           </Security>
           {container && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
@@ -2139,6 +2162,100 @@ class ToolBar extends Component {
             </div>
           </div>
         </Drawer>
+        <Dialog
+          PaperProps={{ elevation: 1 }}
+          fullWidth={true}
+          maxWidth="sm"
+          TransitionComponent={Transition}
+          open={this.state.displayAddInContainer}
+          onClose={() => this.setState({ displayAddInContainer: false })}
+        >
+          <DialogTitle>{t('Add in container')}</DialogTitle>
+          <DialogContent>
+            <StixDomainObjectCreation
+              inputValue={actionsInputs[0]?.inputValue || ''}
+              open={this.state.containerCreation}
+              display={true}
+              speeddial={true}
+              stixDomainObjectTypes={['Container']}
+              handleClose={() => this.setState({ containerCreation: false })}
+              creationCallback={(data) => {
+                const element = {
+                  label: data.name,
+                  value: data.id,
+                  type: data.entity_type,
+                };
+                this.setState(({ containers }) => ({
+                  containers: [...(containers ?? []), element],
+                }));
+                this.handleChangeActionInputValues(0, null, [...(actionsInputs[0]?.values ?? []), element]);
+              }}
+            />
+            <Autocomplete
+              size="small"
+              fullWidth={true}
+              selectOnFocus={true}
+              autoHighlight={true}
+              getOptionLabel={(option) => (option.label ? option.label : '')}
+              value={actionsInputs[0]?.values || []}
+              multiple={true}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  variant="standard"
+                  label={t('Values')}
+                  fullWidth={true}
+                  onFocus={this.searchContainers.bind(this, 0)}
+                  style={{ marginTop: 3 }}
+                />
+              )}
+              noOptionsText={t('No available options')}
+              options={this.state.containers}
+              onInputChange={this.searchContainers.bind(this, 0)}
+              inputValue={''}
+              onChange={this.handleChangeActionInputValues.bind(this, 0)}
+              renderOption={(props, option) => (
+                <li {...props}>
+                  <div className={classes.icon}>
+                    <ItemIcon type={option.type} />
+                  </div>
+                  <div className={classes.text}>{option.label}</div>
+                </li>
+              )}
+            />
+            <IconButton
+              onClick={() => this.setState({ containerCreation: true })}
+              edge="end"
+              style={{ position: 'absolute', top: 68, right: 48 }}
+              size="large"
+            >
+              <Add />
+            </IconButton>
+          </DialogContent>
+          <DialogActions>
+            <Button
+              onClick={() => this.setState({ displayAddInContainer: false })}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              color="secondary"
+              onClick={() => {
+                this.setState({
+                  displayAddInContainer: false,
+                  actionsInputs: [{
+                    ...actionsInputs[0],
+                    type: 'ADD',
+                    fieldType: 'ATTRIBUTE',
+                    field: 'container-object',
+                  }],
+                }, this.handleLaunchUpdate.bind(this));
+              }}
+            >
+              {t('Add')}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </Drawer>
     );
   }
