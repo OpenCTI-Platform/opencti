@@ -81,10 +81,10 @@ const collectionQuery = async (context, user, collectionId, args) => {
   const filters = collection.filters ? JSON.parse(collection.filters) : undefined;
   const options = await convertFiltersToQueryOptions(context, filters, { after: added_after });
   options.after = next;
-  let maxSize = 1000;
+  let maxSize = 100;
   if (limit) {
     const paramLimit = parseInt(limit, 10);
-    maxSize = paramLimit > 1000 ? 1000 : paramLimit;
+    maxSize = paramLimit > 100 ? 100 : paramLimit;
   }
   options.first = maxSize;
   if (type) options.types = type.split(',');
