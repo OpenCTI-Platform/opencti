@@ -33,7 +33,7 @@ interface CreatorFieldProps {
 
 const CreatorFieldQuery = graphql`
   query CreatorFieldSearchQuery($search: String) {
-    creators(search: $search) {
+    members(search: $search, entityTypes: [User]) {
       edges {
         node {
           id
@@ -67,7 +67,7 @@ const CreatorField: FunctionComponent<CreatorFieldProps> = ({
       .toPromise()
       .then((data) => {
         const NewCreators = (
-          (data as CreatorFieldSearchQuery$data)?.creators?.edges ?? []
+          (data as CreatorFieldSearchQuery$data)?.members?.edges ?? []
         ).map((n) => ({
           label: n?.node.name,
           value: n?.node.id,

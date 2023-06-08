@@ -2,7 +2,7 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_DATA_INDICES } from '../database/utils';
 import { ENTITY_TYPE_INDICATOR } from '../schema/stixDomainObject';
-import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
+import { BULK_TIMEOUT, elBulk, elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { logApp } from '../config/conf';
 import { ABSTRACT_STIX_CORE_OBJECT, ABSTRACT_STIX_CORE_RELATIONSHIP, buildRefRelationKey } from '../schema/general';
 import { executionContext, SYSTEM_USER } from '../utils/access';
@@ -30,7 +30,7 @@ export const up = async (next) => {
   await elList(context, SYSTEM_USER, READ_DATA_INDICES, opts);
   // Apply operations.
   let currentProcessing = 0;
-  const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);
+  const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;

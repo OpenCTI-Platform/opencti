@@ -273,7 +273,7 @@ const useSearchEntities = ({
   }));
   const searchEntities = (
     filterKey: string,
-    searchContext: { entityType: string },
+    searchContext: { entityTypes: string[] },
     cacheEntities: Record<string, { label: string, value: string, type: string }[]>,
     setCacheEntities: Dispatch<Record<string, { label: string, value: string, type: string }[]>>,
     event: SelectChangeEvent<string | number>,
@@ -324,8 +324,7 @@ const useSearchEntities = ({
       case 'creator':
         if (!cacheEntities[filterKey]) {
           fetchQuery(identitySearchCreatorsSearchQuery, {
-            onlyUsed: true,
-            entityType: searchContext?.entityType ?? null,
+            entityTypes: searchContext?.entityTypes ?? null,
           })
             .toPromise()
             .then((data) => {
@@ -345,8 +344,7 @@ const useSearchEntities = ({
       case 'assigneeTo':
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
-            onlyUsed: true,
-            entityType: searchContext?.entityType ?? null,
+            entityTypes: searchContext?.entityTypes ?? null,
           })
             .toPromise()
             .then((data) => {

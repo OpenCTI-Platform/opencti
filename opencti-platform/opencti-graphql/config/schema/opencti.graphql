@@ -57,6 +57,11 @@ enum Capabilities {
   SETTINGS_SETLABELS
   TAXIIAPI_SETCOLLECTIONS
 }
+enum MemberType {
+  User
+  Group
+  Organization
+}
 
 ### RELAY
 
@@ -11447,9 +11452,9 @@ type Query {
   me: MeUser! @auth
   otpGeneration: OtpElement @auth
   user(id: String!): User @auth(for: [SETTINGS_SETACCESSES])
-  creators(first: Int, search: String, entityType: String, onlyUsed: Boolean): CreatorConnection @auth(for: [KNOWLEDGE])
-  assignees(first: Int, search: String, entityType: String, onlyUsed: Boolean): AssigneeConnection @auth(for: [KNOWLEDGE])
-  members(first: Int, search: String): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE])
+  creators(entityTypes: [String!]): CreatorConnection @auth(for: [KNOWLEDGE])
+  assignees(entityTypes: [String!]): AssigneeConnection @auth(for: [KNOWLEDGE])
+  members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection @auth(for: [KNOWLEDGE_KNUPDATE, EXPLORE_EXUPDATE CONNECTORAPI, SETTINGS])
   users(
     first: Int
     after: ID

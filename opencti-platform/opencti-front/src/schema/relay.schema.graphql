@@ -52,6 +52,12 @@ enum Capabilities {
   TAXIIAPI_SETCOLLECTIONS
 }
 
+enum MemberType {
+  User
+  Group
+  Organization
+}
+
 type PageInfo {
   startCursor: String!
   endCursor: String!
@@ -7612,9 +7618,9 @@ type Query {
   me: MeUser!
   otpGeneration: OtpElement
   user(id: String!): User
-  creators(first: Int, search: String, entityType: String, onlyUsed: Boolean): CreatorConnection
-  assignees(first: Int, search: String, entityType: String, onlyUsed: Boolean): AssigneeConnection
-  members(first: Int, search: String): MemberConnection
+  creators(entityTypes: [String!]): CreatorConnection
+  assignees(entityTypes: [String!]): AssigneeConnection
+  members(first: Int, search: String, entityTypes: [MemberType!]): MemberConnection
   users(first: Int, after: ID, orderBy: UsersOrdering, orderMode: OrderingMode, filters: [UsersFiltering], filterMode: FilterMode, search: String, toStix: Boolean): UserConnection
   sessions: [UserSession]
   role(id: String!): Role

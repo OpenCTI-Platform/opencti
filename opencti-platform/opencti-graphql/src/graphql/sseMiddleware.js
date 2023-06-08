@@ -8,7 +8,7 @@ import { createStreamProcessor, EVENT_CURRENT_VERSION } from '../database/redis'
 import { generateInternalId, generateStandardId } from '../schema/identifier';
 import { streamCollectionGroups } from '../domain/stream';
 import { stixLoadById, stixLoadByIds, storeLoadByIdsWithRefs } from '../database/middleware';
-import { elList, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
+import { elList, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import {
   EVENT_TYPE_CREATE,
   EVENT_TYPE_DELETE,
@@ -196,7 +196,7 @@ const createSseMiddleware = () => {
     if (refsToResolve.length > 0) {
       // Resolve missing element standard ids
       const missingIds = [];
-      const groupsOfRefsToResolve = R.splitEvery(MAX_SPLIT, refsToResolve);
+      const groupsOfRefsToResolve = R.splitEvery(MAX_BULK_OPERATIONS, refsToResolve);
       const missingRefsResolver = async (refs) => {
         const idsOpts = { ids: refs, connectionFormat: false };
         const findMissing = await elList(context, req.user, queryIndices, idsOpts);
