@@ -22,7 +22,6 @@ import { smtpIsAlive } from './database/smtp';
 import { createStatus, createStatusTemplate } from './domain/status';
 import { ENTITY_TYPE_CONTAINER_REPORT } from './schema/stixDomainObject';
 import {
-  KNOWLEDGE_ASSIGN,
   KNOWLEDGE_COLLABORATION,
   KNOWLEDGE_DELETE,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
@@ -58,7 +57,6 @@ const KNOWLEDGE_CAPABILITIES = {
       description: 'Create / Update knowledge',
       attribute_order: 200,
       dependencies: [
-        { name: KNOWLEDGE_ASSIGN, attribute_order: 250, description: 'Assign users' },
         { name: KNOWLEDGE_ORGANIZATION_RESTRICT, attribute_order: 290, description: 'Restrict organization access' },
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }
       ],
