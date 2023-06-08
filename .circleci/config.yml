@@ -6,7 +6,7 @@ jobs:
   build_frontend:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18
+      - image: nikolaik/python-nodejs:python3.11-nodejs20
     resource_class: large
     steps:
       - run:
@@ -38,7 +38,7 @@ jobs:
   build_platform:
     working_directory: ~/opencti
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18
+      - image: nikolaik/python-nodejs:python3.11-nodejs20
     resource_class: medium+
     steps:
       - run:
@@ -67,7 +67,7 @@ jobs:
   build_platform_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: nikolaik/python-nodejs:python3.10-nodejs18-alpine
+      - image: nikolaik/python-nodejs:python3.11-nodejs20-alpine
     resource_class: medium+
     steps:
       - run:
@@ -96,7 +96,7 @@ jobs:
   package_rolling:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -128,7 +128,7 @@ jobs:
   package_rolling_musl:
     working_directory: ~/opencti_musl
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -158,7 +158,7 @@ jobs:
   deploy_demo:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -202,7 +202,7 @@ jobs:
   deploy_reference:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -246,7 +246,7 @@ jobs:
   deploy_club:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -290,7 +290,7 @@ jobs:
   deploy_testing:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
@@ -334,7 +334,7 @@ jobs:
   deploy_lab:
     working_directory: ~/opencti
     docker:
-      - image: circleci/node:16-bullseye
+      - image: circleci/node:current
     resource_class: medium+
     steps:
       - attach_workspace:
