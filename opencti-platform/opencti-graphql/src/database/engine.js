@@ -9,6 +9,7 @@ import {
   buildPagination,
   cursorToOffset,
   ES_INDEX_PREFIX,
+  extractEntityRepresentative,
   isInferredIndex,
   isNotEmptyField,
   offsetToCursor,
@@ -91,7 +92,8 @@ const ES_INDEX_SHARD_NUMBER = conf.get('elasticsearch:number_of_shards');
 const ES_INDEX_REPLICA_NUMBER = conf.get('elasticsearch:number_of_replicas');
 
 const ES_RETRY_ON_CONFLICT = 5;
-export const MAX_SPLIT = 250; // Max number of terms resolutions (ES limitation)
+export const MAX_TERMS_SPLIT = 65000; // By default, Elasticsearch limits the terms query to a maximum of 65,536 terms. You can change this limit using the index.
+export const MAX_BULK_OPERATIONS = 250;
 export const BULK_TIMEOUT = '5m';
 const MAX_AGGREGATION_SIZE = 100;
 const MAX_JS_PARAMS = 65536; // Too prevent Maximum call stack size exceeded
@@ -838,7 +840,7 @@ export const elFindByFromAndTo = async (context, user, fromId, toId, relationshi
 };
 
 export const elFindByIds = async (context, user, ids, opts = {}) => {
-  const { indices = READ_DATA_INDICES, baseData = false } = opts;
+  const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
@@ -846,8 +848,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     return toMap ? {} : [];
   }
   const hits = {};
-  // const startTime = Date.now();
-  const groupIds = R.splitEvery(MAX_SPLIT, idsArray);
+  const groupIds = R.splitEvery(MAX_TERMS_SPLIT, idsArray);
   for (let index = 0; index < groupIds.length; index += 1) {
     const mustTerms = [];
     const workingIds = groupIds[index];
@@ -856,13 +857,10 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     if (isStixObjectAliased(type) || forceAliases) {
       elementTypes.push(INTERNAL_IDS_ALIASES);
     }
-    for (let i = 0; i < workingIds.length; i += 1) {
-      const id = workingIds[i];
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const term = { [`${elementType}.keyword`]: id };
-        idsTermsPerType.push({ term });
-      }
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const terms = { [`${elementType}.keyword`]: workingIds };
+      idsTermsPerType.push({ terms });
     }
     const should = {
       bool: {
@@ -901,7 +899,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       index: indices,
       size: MAX_SEARCH_SIZE,
       ignore_throttled: ES_IGNORE_THROTTLED,
-      _source: baseData ? BASE_FIELDS : true,
+      _source: baseData ? baseFields : true,
       body,
     };
     logApp.debug('[SEARCH] elInternalLoadById', { query });
@@ -1070,13 +1068,10 @@ const elQueryBodyBuilder = async (context, user, options) => {
   if (ids.length > 0) {
     const idsTermsPerType = [];
     const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    for (let i = 0; i < ids.length; i += 1) {
-      const id = ids[i];
-      for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
-        const elementType = elementTypes[indexType];
-        const term = { [`${elementType}.keyword`]: id };
-        idsTermsPerType.push({ term });
-      }
+    for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
+      const elementType = elementTypes[indexType];
+      const terms = { [`${elementType}.keyword`]: ids };
+      idsTermsPerType.push({ terms });
     }
     mustFilters.push({ bool: { should: idsTermsPerType, minimum_should_match: 1 } });
   }
@@ -1514,6 +1509,57 @@ export const elAggregationRelationsCount = async (context, user, indexName, opti
       throw DatabaseError('[SEARCH] Fail processing AggregationRelationsCount', { error: e });
     });
 };
+
+export const elAggregationsList = async (context, user, indexName, aggregations, opts = {}) => {
+  const { types = [], resolveToRepresentative = true } = opts;
+  const queryAggs = {};
+  aggregations.forEach((agg) => {
+    queryAggs[agg.name] = {
+      terms: {
+        field: agg.field,
+        size: 500, // Aggregate on top 500 should get all needed results
+      }
+    };
+  });
+  const body = {
+    aggs: queryAggs,
+    size: 0 // No limit on the search
+  };
+  if (types.length) {
+    // handle options for entity context (entity types)
+    const searchBody = await elQueryBodyBuilder(context, user, opts);
+    if (searchBody.query) {
+      body.query = searchBody.query;
+    }
+  }
+  const query = {
+    index: indexName,
+    ignore_throttled: ES_IGNORE_THROTTLED,
+    track_total_hits: true,
+    _source: false,
+    body,
+  };
+  const searchType = `Aggregations (${aggregations.map((agg) => agg.field)?.join(', ')})`;
+  const data = await elRawSearch(context, user, searchType, query).catch((err) => {
+    throw DatabaseError('[SEARCH] Aggregations list fail', { error: err, query });
+  });
+  const aggsMap = Object.keys(data.aggregations);
+  const aggsValues = R.uniq(R.flatten(aggsMap.map((agg) => data.aggregations[agg].buckets?.map((b) => b.key))));
+  if (resolveToRepresentative) {
+    const baseFields = ['internal_id', 'name', 'entity_type']; // Needs to take elements required to fill extractEntityRepresentative function
+    const aggsElements = await elFindByIds(context, user, aggsValues, { baseData: true, baseFields });
+    const aggsElementsCache = R.mergeAll(aggsElements.map((element) => ({ [element.internal_id]: extractEntityRepresentative(element) })));
+    return aggsMap.map((agg) => {
+      const values = data.aggregations[agg].buckets?.map((b) => ({ label: aggsElementsCache[b.key], value: b.key }))?.filter((v) => !!v.label);
+      return { name: agg, values };
+    });
+  }
+  return aggsMap.map((agg) => {
+    const values = data.aggregations[agg].buckets?.map((b) => ({ label: b.key, value: b.key }));
+    return { name: agg, values };
+  });
+};
+
 export const elPaginate = async (context, user, indexName, options = {}) => {
   // eslint-disable-next-line no-use-before-define
   const { baseData = false, first = 200 } = options;
@@ -1739,7 +1785,7 @@ const getRelatedRelations = async (context, user, targetIds, elements, level, ca
   }
   // If relations find, need to recurs to find relations to relations
   if (foundRelations.length > 0) {
-    const groups = R.splitEvery(MAX_SPLIT, foundRelations);
+    const groups = R.splitEvery(MAX_BULK_OPERATIONS, foundRelations);
     const concurrentFetch = (gIds) => getRelatedRelations(context, user, gIds, elements, level + 1, cache);
     await BluePromise.map(groups, concurrentFetch, { concurrency: ES_MAX_CONCURRENCY });
   }
@@ -1837,7 +1883,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
     .filter((r) => r.isFromCleanup || r.isToCleanup);
   // Remove all relations
   let currentRelationsDelete = 0;
-  const groupsOfDeletions = R.splitEvery(MAX_SPLIT, relations);
+  const groupsOfDeletions = R.splitEvery(MAX_BULK_OPERATIONS, relations);
   const concurrentDeletions = async (deletions) => {
     await elDeleteInstances(deletions);
     currentRelationsDelete += deletions.length;
@@ -1848,7 +1894,7 @@ export const elDeleteElements = async (context, user, elements, stixLoadById) =>
   await elDeleteInstances(elements);
   // Update all rel connections that will remain
   let currentRelationsCount = 0;
-  const groupsOfRelsFromTo = R.splitEvery(MAX_SPLIT, relsFromToImpacts);
+  const groupsOfRelsFromTo = R.splitEvery(MAX_BULK_OPERATIONS, relsFromToImpacts);
   const concurrentRelsFromTo = async (relsToClean) => {
     await elRemoveRelationConnection(context, user, relsToClean);
     currentRelationsCount += relsToClean.length;

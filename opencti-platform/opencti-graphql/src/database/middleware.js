@@ -55,7 +55,7 @@ import {
   elUpdateRelationConnections,
   ES_MAX_CONCURRENCY,
   isImpactedTypeAndSide,
-  MAX_SPLIT,
+  MAX_BULK_OPERATIONS,
   ROLE_FROM,
   ROLE_TO,
 } from './engine';
@@ -1149,7 +1149,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
   // Update all impacted relations.
   logApp.info(`[OPENCTI] Merging updating ${updateConnections.length} relations for ${targetEntity.internal_id}`);
   let currentRelsUpdateCount = 0;
-  const groupsOfRelsUpdate = R.splitEvery(MAX_SPLIT, updateConnections);
+  const groupsOfRelsUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateConnections);
   const concurrentRelsUpdate = async (connsToUpdate) => {
     await elUpdateRelationConnections(connsToUpdate);
     currentRelsUpdateCount += connsToUpdate.length;
@@ -1168,7 +1168,7 @@ const mergeEntitiesRaw = async (context, user, targetEntity, sourceEntities, tar
     .filter(([, values]) => values.length === 1)
     .map(([, values]) => values)
     .flat();
-  const groupsOfEntityUpdate = R.splitEvery(MAX_SPLIT, updateBulkEntities);
+  const groupsOfEntityUpdate = R.splitEvery(MAX_BULK_OPERATIONS, updateBulkEntities);
   const concurrentEntitiesUpdate = async (entitiesToUpdate) => {
     await elUpdateEntityConnections(entitiesToUpdate);
     currentEntUpdateCount += entitiesToUpdate.length;

@@ -21,6 +21,7 @@ const Filters = ({
   availableRelationFilterTypes,
   allEntityTypes,
   handleAddFilter,
+  searchContext = {},
   type,
 }) => {
   const navigate = useNavigate();
@@ -72,6 +73,7 @@ const Filters = ({
       variant={variant}
       keyword={keyword}
       availableFilterKeys={availableFilterKeys}
+      searchContext={searchContext}
       handleChangeKeyword={handleChangeKeyword}
       noDirectFilters={noDirectFilters}
       inputValues={inputValues}
@@ -111,6 +113,7 @@ const Filters = ({
       noDirectFilters={noDirectFilters}
       availableFilterKeys={availableFilterKeys}
       filterElement={filterElement}
+      searchContext={searchContext}
       variant={variant}
       type={type}
       inputValues={inputValues}

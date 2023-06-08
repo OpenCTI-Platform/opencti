@@ -57,7 +57,7 @@ const KNOWLEDGE_CAPABILITIES = {
       description: 'Create / Update knowledge',
       attribute_order: 200,
       dependencies: [
-        { name: KNOWLEDGE_ORGANIZATION_RESTRICT, attribute_order: 290, description: 'Restrict group access' },
+        { name: KNOWLEDGE_ORGANIZATION_RESTRICT, attribute_order: 290, description: 'Restrict organization access' },
         { name: KNOWLEDGE_DELETE, description: 'Delete knowledge', attribute_order: 300 }
       ],
     },

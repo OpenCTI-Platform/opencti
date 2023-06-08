@@ -273,6 +273,9 @@ const useSearchEntities = ({
   }));
   const searchEntities = (
     filterKey: string,
+    searchContext: { entityTypes: string[] },
+    cacheEntities: Record<string, { label: string, value: string, type: string }[]>,
+    setCacheEntities: Dispatch<Record<string, { label: string, value: string, type: string }[]>>,
     event: SelectChangeEvent<string | number>,
   ) => {
     const baseScores = ['1', '2', '3', '4', '5', '6', '7', '8', '9'];
@@ -319,40 +322,44 @@ const useSearchEntities = ({
           });
         break;
       case 'creator':
-        fetchQuery(identitySearchCreatorsSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const creators = (
-              (data as IdentitySearchCreatorsSearchQuery$data)?.creators
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n?.node.name,
-              value: n?.node.id,
-              type: 'Individual',
-            }));
-            unionSetEntities('creator', creators);
-          });
+        if (!cacheEntities[filterKey]) {
+          fetchQuery(identitySearchCreatorsSearchQuery, {
+            entityTypes: searchContext?.entityTypes ?? null,
+          })
+            .toPromise()
+            .then((data) => {
+              const creators = (
+                (data as IdentitySearchCreatorsSearchQuery$data)?.creators
+                  ?.edges ?? []
+              ).map((n) => ({
+                label: n?.node.name ?? '',
+                value: n?.node.id ?? '',
+                type: 'Individual',
+              }));
+              setCacheEntities({ ...cacheEntities, [filterKey]: creators });
+              unionSetEntities('creator', creators);
+            });
+        }
         break;
       case 'assigneeTo':
-        fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
-          search: event.target.value !== 0 ? event.target.value : '',
-          first: 10,
-        })
-          .toPromise()
-          .then((data) => {
-            const assigneeToEntities = (
-              (data as ObjectAssigneeFieldAssigneesSearchQuery$data)?.assignees
-                ?.edges ?? []
-            ).map((n) => ({
-              label: n.node.name,
-              value: n.node.id,
-              type: 'User',
-            }));
-            unionSetEntities('assigneeTo', assigneeToEntities);
-          });
+        if (!cacheEntities[filterKey]) {
+          fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
+            entityTypes: searchContext?.entityTypes ?? null,
+          })
+            .toPromise()
+            .then((data) => {
+              const assigneeToEntities = (
+                (data as ObjectAssigneeFieldAssigneesSearchQuery$data)?.assignees
+                  ?.edges ?? []
+              ).map((n) => ({
+                label: n?.node.name ?? '',
+                value: n?.node.id ?? '',
+                type: 'User',
+              }));
+              setCacheEntities({ ...cacheEntities, [filterKey]: assigneeToEntities });
+              unionSetEntities('assigneeTo', assigneeToEntities);
+            });
+        }
         break;
       case 'createdBy':
         fetchQuery(identitySearchIdentitiesSearchQuery, {

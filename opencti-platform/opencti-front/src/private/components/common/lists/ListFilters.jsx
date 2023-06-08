@@ -37,6 +37,7 @@ const ListFilters = ({
   noDirectFilters,
   availableFilterKeys,
   filterElement,
+  searchContext,
   variant,
   type,
   inputValues,
@@ -113,6 +114,7 @@ const ListFilters = ({
               <div className={classes.autocomplete} key={filterKey}>
                 <FilterAutocomplete
                   filterKey={filterKey}
+                  searchContext={searchContext}
                   defaultHandleAddFilter={defaultHandleAddFilter}
                   inputValues={inputValues}
                   setInputValues={setInputValues}

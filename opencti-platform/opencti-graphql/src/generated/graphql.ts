@@ -11873,6 +11873,12 @@ export type MemberEdge = {
   node: Member;
 };
 
+export enum MemberType {
+  Group = 'Group',
+  Organization = 'Organization',
+  User = 'User'
+}
+
 export type MessagesStats = {
   __typename?: 'MessagesStats';
   ack?: Maybe<Scalars['String']>;
@@ -16674,8 +16680,7 @@ export type QueryAdministrativeAreasArgs = {
 
 
 export type QueryAssigneesArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-  search?: InputMaybe<Scalars['String']>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -16958,8 +16963,7 @@ export type QueryCoursesOfActionArgs = {
 
 
 export type QueryCreatorsArgs = {
-  first?: InputMaybe<Scalars['Int']>;
-  search?: InputMaybe<Scalars['String']>;
+  entityTypes?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -17462,6 +17466,7 @@ export type QueryMarkingDefinitionsArgs = {
 
 
 export type QueryMembersArgs = {
+  entityTypes?: InputMaybe<Array<MemberType>>;
   first?: InputMaybe<Scalars['Int']>;
   search?: InputMaybe<Scalars['String']>;
 };
@@ -26128,6 +26133,7 @@ export type ResolversTypes = ResolversObject<{
   MemberAccessInput: MemberAccessInput;
   MemberConnection: ResolverTypeWrapper<MemberConnection>;
   MemberEdge: ResolverTypeWrapper<MemberEdge>;
+  MemberType: MemberType;
   MessagesStats: ResolverTypeWrapper<MessagesStats>;
   Module: ResolverTypeWrapper<Module>;
   MultiDistribution: ResolverTypeWrapper<MultiDistribution>;

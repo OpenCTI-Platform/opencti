@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { READ_RELATIONSHIPS_INDICES } from '../database/utils';
-import { BULK_TIMEOUT, elBulk, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_SPLIT } from '../database/engine';
+import { BULK_TIMEOUT, elBulk, elUpdateByQueryForMigration, ES_MAX_CONCURRENCY, MAX_BULK_OPERATIONS } from '../database/engine';
 import { logApp } from '../config/conf';
 
 export const up = async (next) => {
@@ -11,7 +11,7 @@ export const up = async (next) => {
   // Old type
   // Apply operations.
   let currentProcessing = 0;
-  const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);
+  const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;

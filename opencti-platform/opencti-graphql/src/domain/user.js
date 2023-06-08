@@ -16,7 +16,13 @@ import {
   patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listAllEntities, listAllRelations, listEntities, storeLoadById } from '../database/middleware-loader';
+import {
+  listAllEntities,
+  listAllEntitiesForFilter,
+  listAllRelations,
+  listEntities,
+  storeLoadById
+} from '../database/middleware-loader';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -62,6 +68,7 @@ import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { ENTITY_TYPE_IDENTITY_INDIVIDUAL, ENTITY_TYPE_IDENTITY_ORGANIZATION } from '../schema/stixDomainObject';
 import { getEntitiesFromCache, getEntityFromCache } from '../database/cache';
 import { addIndividual } from './individual';
+import { ASSIGNEE_FILTER, CREATOR_FILTER } from '../utils/filtering';
 
 const BEARER = 'Bearer ';
 const BASIC = 'Basic ';
@@ -139,8 +146,20 @@ export const findAll = (context, user, args) => {
   return listEntities(context, user, [ENTITY_TYPE_USER], args);
 };
 
+export const findCreators = (context, user, args) => {
+  const { entityTypes = [] } = args;
+  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+};
+
+export const findAssignees = (context, user, args) => {
+  const { entityTypes = [] } = args;
+  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
+};
+
 export const findAllMembers = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP], args);
+  const { entityTypes = null } = args;
+  const types = entityTypes || [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+  return listEntities(context, user, types, args);
 };
 
 export const batchGroups = async (context, user, userId, opts = {}) => {

@@ -7,7 +7,7 @@ import {
   elList,
   elUpdateByQueryForMigration,
   ES_MAX_CONCURRENCY,
-  MAX_SPLIT
+  MAX_BULK_OPERATIONS
 } from '../database/engine';
 import { generateStandardId } from '../schema/identifier';
 import { logApp } from '../config/conf';
@@ -42,7 +42,7 @@ export const up = async (next) => {
   await elList(context, SYSTEM_USER, READ_INDEX_STIX_DOMAIN_OBJECTS, opts);
   // Apply operations.
   let currentProcessing = 0;
-  const groupsOfOperations = R.splitEvery(MAX_SPLIT, bulkOperations);
+  const groupsOfOperations = R.splitEvery(MAX_BULK_OPERATIONS, bulkOperations);
   const concurrentUpdate = async (bulk) => {
     await elBulk({ refresh: true, timeout: BULK_TIMEOUT, body: bulk });
     currentProcessing += bulk.length;

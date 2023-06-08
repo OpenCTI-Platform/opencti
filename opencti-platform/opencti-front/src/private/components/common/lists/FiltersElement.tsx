@@ -23,6 +23,7 @@ interface FiltersElementProps {
   variant?: string;
   keyword: string;
   availableFilterKeys: string[];
+  searchContext: { entityTypes: string[] };
   handleChangeKeyword: (event: React.SyntheticEvent) => void;
   noDirectFilters?: boolean;
   setInputValues: Dispatch<Record<string, string | Date>>;
@@ -43,6 +44,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
   variant,
   keyword,
   availableFilterKeys,
+  searchContext,
   handleChangeKeyword,
   noDirectFilters,
   setInputValues,
@@ -92,6 +94,7 @@ const FiltersElement: FunctionComponent<FiltersElementProps> = ({
               <Grid key={filterKey} item={true} xs={6}>
                 <FilterAutocomplete
                   filterKey={filterKey}
+                  searchContext={searchContext}
                   defaultHandleAddFilter={defaultHandleAddFilter}
                   inputValues={inputValues}
                   setInputValues={setInputValues}

@@ -88,6 +88,7 @@ const IncidentsCards: FunctionComponent<IncidentsCardsProps> = ({
     linesQuery: incidentsCardsAndLinesPaginationQuery,
     linesFragment: IncidentsCardsAndLinesFragment,
     queryRef,
+    nodePath: ['incidents', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
