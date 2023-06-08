@@ -88,7 +88,6 @@ class ListCards extends Component {
       numberOfElements,
       availableFilterKeys,
     } = this.props;
-    const searchContext = { entityType: exportEntityType };
     const exportDisabled = numberOfElements && numberOfElements.number > export_max_size;
     return (
       <div className={classes.container}>
@@ -104,7 +103,7 @@ class ListCards extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
-              searchContext={searchContext}
+              searchContext={{ entityTypes: [exportEntityType] }}
             />
           )}
           <InputLabel

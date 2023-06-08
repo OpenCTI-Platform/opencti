@@ -391,7 +391,9 @@ export const listAllEntitiesForFilter = async (context: AuthContext, user: AuthU
   }
   const aggregationsList = await elAggregationsList(context, user, READ_ENTITIES_INDICES, [aggregation], args);
   const values = aggregationsList.find((agg) => agg.name === filter)?.values ?? [];
-  const nodeElements = values.map((val: { value: string, label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
+  const nodeElements = values
+    .sort((a: { value: string, label: string }, b: { value: string, label: string }) => a.label.localeCompare(b.label))
+    .map((val: { value: string, label: string }) => ({ node: { id: val.value, name: val.label, entity_type: type } }));
   return buildPagination(0, null, nodeElements, nodeElements.length);
 };
 

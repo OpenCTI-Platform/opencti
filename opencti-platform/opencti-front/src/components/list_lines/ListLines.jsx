@@ -22,20 +22,17 @@ import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Checkbox from '@mui/material/Checkbox';
 import Alert from '@mui/material/Alert';
-import {
-  FormatListGroup,
-  GraphOutline,
-  RelationManyToMany,
-  VectorPolygon,
-} from 'mdi-material-ui';
+import { FormatListGroup, GraphOutline, RelationManyToMany, VectorPolygon } from 'mdi-material-ui';
 import SearchInput from '../SearchInput';
 import inject18n from '../i18n';
 import StixDomainObjectsExports from '../../private/components/common/stix_domain_objects/StixDomainObjectsExports';
 import Security from '../../utils/Security';
 import { KNOWLEDGE_KNGETEXPORT } from '../../utils/hooks/useGranted';
 import Filters from '../../private/components/common/lists/Filters';
-import StixCyberObservablesExports from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
-import StixCoreRelationshipsExports from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
+import StixCyberObservablesExports
+  from '../../private/components/observations/stix_cyber_observables/StixCyberObservablesExports';
+import StixCoreRelationshipsExports
+  from '../../private/components/common/stix_core_relationships/StixCoreRelationshipsExports';
 import StixCoreObjectsExports from '../../private/components/common/stix_core_objects/StixCoreObjectsExports';
 import FilterIconButton from '../FilterIconButton';
 import { ExportContext } from '../../utils/ExportContextProvider';
@@ -179,7 +176,6 @@ class ListLines extends Component {
       redirectionMode,
       parametersWithPadding,
     } = this.props;
-    const searchContext = { entityType: exportEntityType };
     return (
       <ExportContext.Consumer>
         {({ selectedIds }) => {
@@ -212,7 +208,7 @@ class ListLines extends Component {
                 )}
                 {availableFilterKeys && availableFilterKeys.length > 0 && (
                   <Filters
-                    searchContext={searchContext}
+                    searchContext={{ entityTypes: [exportEntityType] }}
                     availableFilterKeys={availableFilterKeys}
                     handleAddFilter={handleAddFilter}
                     availableEntityTypes={availableEntityTypes}

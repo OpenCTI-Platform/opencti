@@ -40,7 +40,7 @@ interface OptionValue extends Option {
 
 interface FilterAutocompleteProps {
   filterKey: string;
-  searchContext: { entityType: string };
+  searchContext: { entityTypes: string[] };
   defaultHandleAddFilter: HandleAddFilter;
   inputValues: Record<string, string | Date>;
   setInputValues: Dispatch<Record<string, string | Date>>;
@@ -79,7 +79,7 @@ const FilterAutocomplete: FunctionComponent<FilterAutocompleteProps> = ({
     Record<string, OptionValue[]>,
     (
       filterKey: string,
-      searchContext: { entityType: string },
+      searchContext: { entityTypes: string[] },
       cacheEntities: Record<string, { label: string, value: string, type: string }[]>,
       setCacheEntities: Dispatch<Record<string, { label: string, value: string, type: string }[]>>,
       event: SyntheticEvent

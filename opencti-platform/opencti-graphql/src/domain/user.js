@@ -61,8 +61,6 @@ import {
   isBypassUser,
   isUserHasCapability,
   KNOWLEDGE_ORGANIZATION_RESTRICT,
-  KNOWLEDGE_UPDATE,
-  KNOWLEDGE_UPDATE_ASSIGN,
   SETTINGS_SET_ACCESSES,
   SYSTEM_USER
 } from '../utils/access';
@@ -149,25 +147,19 @@ export const findAll = (context, user, args) => {
 };
 
 export const findCreators = (context, user, args) => {
-  const { onlyUsed = false, entityType = null } = args;
-  if (!onlyUsed && isUserHasCapability(user, KNOWLEDGE_UPDATE)) {
-    return findAll(context, user, args);
-  }
-  const types = entityType ? [entityType] : [];
-  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types });
+  const { entityTypes = [] } = args;
+  return listAllEntitiesForFilter(context, user, CREATOR_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAssignees = (context, user, args) => {
-  const { onlyUsed = false, entityType = null } = args;
-  if (!onlyUsed && isUserHasCapability(user, KNOWLEDGE_UPDATE_ASSIGN)) {
-    return findAll(context, user, args);
-  }
-  const types = entityType ? [entityType] : [];
-  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types });
+  const { entityTypes = [] } = args;
+  return listAllEntitiesForFilter(context, user, ASSIGNEE_FILTER, ENTITY_TYPE_USER, { ...args, types: entityTypes });
 };
 
 export const findAllMembers = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP], args);
+  const { entityTypes = null } = args;
+  const types = entityTypes || [ENTITY_TYPE_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION, ENTITY_TYPE_GROUP];
+  return listEntities(context, user, types, args);
 };
 
 export const batchGroups = async (context, user, userId, opts = {}) => {
