@@ -836,6 +836,7 @@ const DefaultDashboard = ({ timeField }) => {
             dateAttribute={
               timeField === 'functional' ? 'start_time' : 'created_at'
             }
+            withExportPopover={false}
           />
         </Grid>
         <Grid item={true} xs={6}>

@@ -227,6 +227,7 @@ const StixCoreRelationshipsHorizontalBars = ({
   dateAttribute,
   dataSelection,
   parameters = {},
+  withExportPopover = true,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -323,7 +324,7 @@ const StixCoreRelationshipsHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }
