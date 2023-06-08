@@ -28,7 +28,7 @@ const styles = (theme) => ({
 const userMutationRelationAdd = graphql`
   mutation UserEditionGroupsRelationAddMutation(
     $id: ID!
-    $input: InternalRelationshipAddInput
+    $input: InternalRelationshipAddInput!
   ) {
     userEdit(id: $id) {
       relationAdd(input: $input) {

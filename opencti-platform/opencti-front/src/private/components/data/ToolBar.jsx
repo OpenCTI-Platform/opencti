@@ -221,7 +221,7 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const toolBarListTaskAddMutation = graphql`
-  mutation ToolBarListTaskAddMutation($input: ListTaskAddInput) {
+  mutation ToolBarListTaskAddMutation($input: ListTaskAddInput!) {
     listTaskAdd(input: $input) {
       id
       type
@@ -230,7 +230,7 @@ const toolBarListTaskAddMutation = graphql`
 `;
 
 const toolBarQueryTaskAddMutation = graphql`
-  mutation ToolBarQueryTaskAddMutation($input: QueryTaskAddInput) {
+  mutation ToolBarQueryTaskAddMutation($input: QueryTaskAddInput!) {
     queryTaskAdd(input: $input) {
       id
       type

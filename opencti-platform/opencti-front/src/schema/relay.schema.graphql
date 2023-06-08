@@ -7876,7 +7876,7 @@ type SettingsEditMutations {
 }
 
 type SubTypeEditMutations {
-  statusAdd(input: StatusAddInput): SubType
+  statusAdd(input: StatusAddInput!): SubType
   statusFieldPatch(statusId: String!, input: [EditInput]!): SubType
   statusDelete(statusId: String!): SubType
 }
@@ -7886,7 +7886,7 @@ type GroupEditMutations {
   fieldPatch(input: [EditInput]!): Group
   contextPatch(input: EditContext): Group
   contextClean: Group
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
 }
 
@@ -7896,7 +7896,7 @@ type UserEditMutations {
   contextPatch(input: EditContext): User
   contextClean: User
   tokenRenew: User
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
   organizationAdd(organizationId: ID!): User
   organizationDelete(organizationId: ID!): User
@@ -7907,7 +7907,7 @@ type RoleEditMutations {
   fieldPatch(input: [EditInput]!): Role
   contextPatch(input: EditContext): Role
   contextClean: Role
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Role
 }
 
@@ -8286,7 +8286,7 @@ type Mutation {
   uploadImport(file: Upload!): File
   uploadPending(file: Upload!, entityId: String, labels: [String], errorOnExisting: Boolean): File
   askJobImport(fileName: ID!, connectorId: String, bypassEntityId: String, bypassValidation: Boolean): File
-  synchronizerAdd(input: SynchronizerAddInput): Synchronizer
+  synchronizerAdd(input: SynchronizerAddInput!): Synchronizer
   synchronizerEdit(id: ID!): SynchronizerEditMutations
   synchronizerStart(id: ID!): Synchronizer
   synchronizerStop(id: ID!): Synchronizer
@@ -8295,9 +8295,9 @@ type Mutation {
   workEdit(id: ID!): WorkEditMutations
   workDelete(connectorId: String!): Boolean
   deleteTask(id: ID!): ID!
-  listTaskAdd(input: ListTaskAddInput): Task!
-  queryTaskAdd(input: QueryTaskAddInput): Task!
-  retentionRuleAdd(input: RetentionRuleAddInput): RetentionRule!
+  listTaskAdd(input: ListTaskAddInput!): Task!
+  queryTaskAdd(input: QueryTaskAddInput!): Task!
+  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
   ruleSetActivation(id: ID!, enable: Boolean!): Rule!
@@ -8315,16 +8315,16 @@ type Mutation {
   statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate!
   statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate!
   statusTemplateContextClean(id: ID!): StatusTemplate!
-  groupAdd(input: GroupAddInput): Group
+  groupAdd(input: GroupAddInput!): Group
   groupEdit(id: ID!): GroupEditMutations
-  userAdd(input: UserAddInput): User
+  userAdd(input: UserAddInput!): User
   userEdit(id: ID!): UserEditMutations
   meTokenRenew: MeUser
   meEdit(input: [EditInput]!, password: String): MeUser
   bookmarkAdd(id: ID!, type: String!): StixDomainObject
   bookmarkDelete(id: ID!): ID
   logout: ID
-  roleAdd(input: RoleAddInput): Role
+  roleAdd(input: RoleAddInput!): Role
   sessionKill(id: ID!): ID
   userSessionsKill(id: ID!): [ID]
   roleEdit(id: ID!): RoleEditMutations
@@ -8336,79 +8336,79 @@ type Mutation {
   feedAdd(input: FeedAddInput!): Feed
   feedDelete(id: ID!): ID!
   feedEdit(id: ID!, input: FeedAddInput!): Feed!
-  taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations
-  streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection
+  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations
   stixEdit(id: ID!): StixEditMutations
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition
+  markingDefinitionAdd(input: MarkingDefinitionAddInput!): MarkingDefinition
   markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations
-  labelAdd(input: LabelAddInput): Label
+  labelAdd(input: LabelAddInput!): Label
   labelEdit(id: ID!): LabelEditMutations
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference
+  externalReferenceAdd(input: ExternalReferenceAddInput!): ExternalReference
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase
+  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations
   stixCoreObjectEdit(id: ID!): StixCoreObjectEditMutations
   stixCoreObjectsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, relationship_type: [String], elementId: String, orderBy: StixCoreObjectsOrdering, orderMode: OrderingMode, filters: [StixCoreObjectsFiltering], filterMode: FilterMode, selectedIds: [String]): FileConnection
   stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
-  stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject
+  stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(type: String!, format: String!, exportType: String!, maxMarkingDefinition: String, context: String, search: String, relationship_type: [String], elementId: String, orderBy: StixDomainObjectsOrdering, orderMode: OrderingMode, filters: [StixDomainObjectsFiltering], filterMode: FilterMode, selectedIds: [String]): FileConnection
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
-  attackPatternAdd(input: AttackPatternAddInput): AttackPattern
+  attackPatternAdd(input: AttackPatternAddInput!): AttackPattern
   attackPatternEdit(id: ID!): AttackPatternEditMutations
-  campaignAdd(input: CampaignAddInput): Campaign
+  campaignAdd(input: CampaignAddInput!): Campaign
   campaignEdit(id: ID!): CampaignEditMutations
   containerEdit(id: ID!): ContainerEditMutations
-  noteAdd(input: NoteAddInput): Note
+  noteAdd(input: NoteAddInput!): Note
   userNoteAdd(input: NoteUserAddInput!): Note
   noteEdit(id: ID!): NoteEditMutations
-  observedDataAdd(input: ObservedDataAddInput): ObservedData
+  observedDataAdd(input: ObservedDataAddInput!): ObservedData
   observedDataEdit(id: ID!): ObservedDataEditMutations
-  opinionAdd(input: OpinionAddInput): Opinion
+  opinionAdd(input: OpinionAddInput!): Opinion
   userOpinionAdd(input: OpinionUserAddInput!): Opinion
   opinionEdit(id: ID!): OpinionEditMutations
-  reportAdd(input: ReportAddInput): Report
+  reportAdd(input: ReportAddInput!): Report
   reportEdit(id: ID!): ReportEditMutations
-  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction
+  courseOfActionAdd(input: CourseOfActionAddInput!): CourseOfAction
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
-  identityAdd(input: IdentityAddInput): Identity
+  identityAdd(input: IdentityAddInput!): Identity
   identityEdit(id: ID!): IdentityEditMutations
-  individualAdd(input: IndividualAddInput): Individual
+  individualAdd(input: IndividualAddInput!): Individual
   individualEdit(id: ID!): IndividualEditMutations
-  organizationAdd(input: OrganizationAddInput): Organization
+  organizationAdd(input: OrganizationAddInput!): Organization
   organizationEdit(id: ID!): OrganizationEditMutations
-  sectorAdd(input: SectorAddInput): Sector
+  sectorAdd(input: SectorAddInput!): Sector
   sectorEdit(id: ID!): SectorEditMutations
-  systemAdd(input: SystemAddInput): System
+  systemAdd(input: SystemAddInput!): System
   systemEdit(id: ID!): SystemEditMutations
-  indicatorAdd(input: IndicatorAddInput): Indicator
+  indicatorAdd(input: IndicatorAddInput!): Indicator
   indicatorEdit(id: ID!): IndicatorEditMutations
-  infrastructureAdd(input: InfrastructureAddInput): Infrastructure
+  infrastructureAdd(input: InfrastructureAddInput!): Infrastructure
   infrastructureEdit(id: ID!): InfrastructureEditMutations
-  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet
+  intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
-  locationAdd(input: LocationAddInput): Location
+  locationAdd(input: LocationAddInput!): Location
   locationEdit(id: ID!): LocationEditMutations
-  cityAdd(input: CityAddInput): City
+  cityAdd(input: CityAddInput!): City
   cityEdit(id: ID!): CityEditMutations
-  countryAdd(input: CountryAddInput): Country
+  countryAdd(input: CountryAddInput!): Country
   countryEdit(id: ID!): CountryEditMutations
-  regionAdd(input: RegionAddInput): Region
+  regionAdd(input: RegionAddInput!): Region
   regionEdit(id: ID!): RegionEditMutations
-  positionAdd(input: PositionAddInput): Position
+  positionAdd(input: PositionAddInput!): Position
   positionEdit(id: ID!): PositionEditMutations
-  malwareAdd(input: MalwareAddInput): Malware
+  malwareAdd(input: MalwareAddInput!): Malware
   malwareEdit(id: ID!): MalwareEditMutations
-  threatActorAdd(input: ThreatActorAddInput): ThreatActor
+  threatActorAdd(input: ThreatActorAddInput!): ThreatActor
   threatActorEdit(id: ID!): ThreatActorEditMutations
-  toolAdd(input: ToolAddInput): Tool
+  toolAdd(input: ToolAddInput!): Tool
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability
+  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  incidentAdd(input: IncidentAddInput): Incident
+  incidentAdd(input: IncidentAddInput!): Incident
   incidentEdit(id: ID!): IncidentEditMutations
   stixCyberObservableAdd(type: String!, stix_id: StixId, x_opencti_score: Int, x_opencti_description: String, createIndicator: Boolean, createdBy: String, objectMarking: [String], objectLabel: [String], objectOrganization: [String], externalReferences: [String], clientMutationId: String, update: Boolean, AutonomousSystem: AutonomousSystemAddInput, Directory: DirectoryAddInput, DomainName: DomainNameAddInput, EmailAddr: EmailAddrAddInput, EmailMessage: EmailMessageAddInput, EmailMimePartType: EmailMimePartTypeAddInput, Artifact: ArtifactAddInput, StixFile: StixFileAddInput, X509Certificate: X509CertificateAddInput, IPv4Addr: IPv4AddrAddInput, IPv6Addr: IPv6AddrAddInput, MacAddr: MacAddrAddInput, Mutex: MutexAddInput, NetworkTraffic: NetworkTrafficAddInput, Process: ProcessAddInput, Software: SoftwareAddInput, Url: UrlAddInput, UserAccount: UserAccountAddInput, WindowsRegistryKey: WindowsRegistryKeyAddInput, WindowsRegistryValueType: WindowsRegistryValueTypeAddInput, CryptographicKey: CryptographicKeyAddInput, CryptocurrencyWallet: CryptocurrencyWalletAddInput, Hostname: HostnameAddInput, Text: TextAddInput, UserAgent: UserAgentAddInput, BankAccount: BankAccountAddInput, PhoneNumber: PhoneNumberAddInput, PaymentCard: PaymentCardAddInput, MediaContent: MediaContentAddInput): StixCyberObservable
   stixCyberObservableEdit(id: ID!): StixCyberObservableEditMutations
@@ -8423,7 +8423,7 @@ type Mutation {
   stixCoreRelationshipsExportPush(type: String!, file: Upload!, listFilters: String): Boolean
   stixRefRelationshipAdd(input: StixRefRelationshipAddInput!): StixRefRelationship
   stixRefRelationshipEdit(id: ID!): StixRefRelationshipEditMutations
-  stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
+  stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations
   channelAdd(input: ChannelAddInput!): Channel
   channelDelete(id: ID!): ID

@@ -23,7 +23,7 @@ import { RoleEditionCapabilities_role$data } from './__generated__/RoleEditionCa
 const roleEditionAddCapability = graphql`
   mutation RoleEditionCapabilitiesAddCapabilityMutation(
     $id: ID!
-    $input: InternalRelationshipAddInput
+    $input: InternalRelationshipAddInput!
   ) {
     roleEdit(id: $id) {
       relationAdd(input: $input) {
