@@ -152,6 +152,7 @@ export const ContainerAddStixCoreObjectsLine = createFragmentContainer(
     node: graphql`
       fragment ContainerAddStixCoreObjectsLine_node on StixCoreObject {
         id
+        standard_id
         parent_types
         entity_type
         created_at

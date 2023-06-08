@@ -181,6 +181,7 @@ const ContainerStixDomainObjectLineComponent = (props) => {
           <ContainerStixCoreObjectPopover
             containerId={containerId}
             toId={node.id}
+            toStandardId={node.standard_id}
             relationshipType="object"
             paginationKey="Pagination_objects"
             paginationOptions={paginationOptions}
@@ -197,6 +198,7 @@ export const ContainerStixDomainObjectLine = createFragmentContainer(
     node: graphql`
       fragment ContainerStixDomainObjectLine_node on StixDomainObject {
         id
+        standard_id
         entity_type
         parent_types
         created_at
