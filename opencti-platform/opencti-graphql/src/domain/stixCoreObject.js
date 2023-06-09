@@ -72,23 +72,16 @@ export const findAll = async (context, user, args) => {
     throw UnsupportedError('Cant find stixCoreObject only based on relationship type, elementId is required');
   }
   let filters = args.filters ?? [];
-  const elementIds = isNotEmptyField(args.elementId) ? [args.elementId] : [];
-  const filterElementId = filters.find((f) => f.key.includes('elementId'));
-  if (filterElementId) {
-    elementIds.push(...filterElementId.values);
-    // remove elementId filter key
-    filters.splice(filters.indexOf(filterElementId), 1);
-  }
-  if (elementIds.length > 0) {
+  if (isNotEmptyField(args.elementId)) {
     // In case of element id, we look for a specific entity used by relationships independent of the direction
     // To do that we need to lookup the element inside the rel_ fields that represent the relationships connections
     // that are denormalized at relation creation.
     // If relation types are also in the query, we filter on specific rel_[TYPE], if not, using a wilcard.
     if (isNotEmptyField(args.relationship_type)) {
       const relationshipFilterKeys = args.relationship_type.map((n) => buildRefRelationKey(n));
-      filters = [...filters, { key: relationshipFilterKeys, values: elementIds }];
+      filters = [...filters, { key: relationshipFilterKeys, values: [args.elementId] }];
     } else {
-      filters = [...filters, { key: buildRefRelationKey('*'), values: elementIds }];
+      filters = [...filters, { key: buildRefRelationKey('*'), values: [args.elementId] }];
     }
   }
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
