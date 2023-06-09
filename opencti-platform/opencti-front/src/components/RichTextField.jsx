@@ -86,9 +86,9 @@ const RichTextField = (props) => {
     setExternalLink(url);
   };
   const browseLinkWarning = (event) => {
-    event.stopPropagation();
-    event.preventDefault();
     if (event.target.localName === 'a') { // if the user clicks on a link
+      event.stopPropagation();
+      event.preventDefault();
       handleOpenExternalLink(event.target.href);
     }
   };

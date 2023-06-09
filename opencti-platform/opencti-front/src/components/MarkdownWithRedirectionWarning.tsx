@@ -111,9 +111,9 @@ const MarkdownWithRedirectionWarning: FunctionComponent<MarkdownWithRedirectionW
   };
 
   const browseLinkWarning = (event: SyntheticEvent<HTMLElement, MouseEvent>) => {
-    event.stopPropagation();
-    event.preventDefault();
     if ((event.target as HTMLElement).localName === 'a') { // if the user clicks on a link
+      event.stopPropagation();
+      event.preventDefault();
       const link = event.target as HTMLLinkElement;
       handleOpenExternalLink(link.href);
     }
