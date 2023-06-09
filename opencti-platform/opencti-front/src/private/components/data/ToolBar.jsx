@@ -2214,6 +2214,7 @@ class ToolBar extends Component {
                   <div className={classes.text}>{option.label}</div>
                 </li>
               )}
+              disableClearable
             />
             <IconButton
               onClick={() => this.setState({ containerCreation: true })}

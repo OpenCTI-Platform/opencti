@@ -579,6 +579,7 @@ const i18n = {
       'No enrichment connectors on this platform':
         'Ningún conector de enriquecimiento en esta plataforma',
       'Enrichment connectors': 'Conectores de enriquecimiento ',
+      'Add in container': 'Añadir en contenedor',
       'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
         'Copia deshabilitada: demasiados elementos seleccionados (número máximo de elementos para una copia: ',
       Copy: 'Copiar',
@@ -2503,6 +2504,7 @@ const i18n = {
       'No enrichment connectors on this platform':
         "Aucun connecteur d'enrichissement sur cette plateforme",
       'Enrichment connectors': "Connecteurs d'enrichissement",
+      'Add in container': 'Ajout dans un conteneur',
       'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
         "Copie désactivée : trop d’éléments sélectionnés (nombre maximum d'éléments pour une copie: ",
       Copy: 'Copie',
@@ -4382,6 +4384,7 @@ const i18n = {
       'No enrichment connectors on this platform':
         '有効なエンリッチ用コネクタがありません',
       'Enrichment connectors': 'エンリッチ用コネクタ',
+      'Add in container': 'コンテナに追加',
       'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
         'コピー無効:選択した要素が多すぎます(コピーの要素の最大数:',
       Copy: '写し',
@@ -6160,6 +6163,7 @@ const i18n = {
       'Enabled import connectors': '已启用的导入连接器',
       'No enrichment connectors on this platform': '此平台上没有富化连接器',
       'Enrichment connectors': '富化连接器',
+      'Add in container': '添加到容器中',
       'Copy disabled: too many selected elements (maximum number of elements for a copy: ':
         '複製已關閉：選取元素過多（複製的最大元素數：',
       Copy: '複製',
