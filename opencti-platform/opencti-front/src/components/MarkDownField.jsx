@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useState } from 'react';
 import ReactMde from 'react-mde';
 import { useField } from 'formik';
 import Markdown from 'react-markdown';
@@ -26,7 +26,6 @@ const MarkDownField = (props) => {
   const { t } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
   const [field, meta] = useField(name);
-  const textAreaRef = useRef(null);
   const internalOnFocus = (event) => {
     const { nodeName } = event.relatedTarget || {};
     if (nodeName === 'INPUT' || nodeName === undefined) {
@@ -65,9 +64,9 @@ const MarkDownField = (props) => {
         readOnly={disabled}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={
-          controlledSelectedTab !== null ? controlledSelectedTab : selectedTab
+          controlledSelectedTab || selectedTab
         }
-        onTabChange={(tab) => (controlledSetSelectTab !== null
+        onTabChange={(tab) => (controlledSetSelectTab
           ? controlledSetSelectTab(tab)
           : setSelectedTab(tab))
         }
@@ -89,7 +88,7 @@ const MarkDownField = (props) => {
           pasteDropSelect: t('Paste'),
         }}
         childProps={{
-          textArea: { ref: textAreaRef, onSelect: internalOnSelect },
+          textArea: { onSelect: internalOnSelect },
         }}
       />
       {!R.isNil(meta.error) && (
