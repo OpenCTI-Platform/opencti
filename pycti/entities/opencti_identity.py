@@ -306,7 +306,7 @@ class Identity:
             }
             if type == IdentityTypes.ORGANIZATION.value:
                 query = """
-                    mutation OrganizationAdd($input: OrganizationAddInput) {
+                    mutation OrganizationAdd($input: OrganizationAddInput!) {
                         organizationAdd(input: $input) {
                             id
                             standard_id
@@ -322,7 +322,7 @@ class Identity:
                 result_data_field = "organizationAdd"
             elif type == IdentityTypes.INDIVIDUAL.value:
                 query = """
-                    mutation IndividualAdd($input: IndividualAddInput) {
+                    mutation IndividualAdd($input: IndividualAddInput!) {
                         individualAdd(input: $input) {
                             id
                             standard_id
@@ -336,7 +336,7 @@ class Identity:
                 result_data_field = "individualAdd"
             else:
                 query = """
-                    mutation IdentityAdd($input: IdentityAddInput) {
+                    mutation IdentityAdd($input: IdentityAddInput!) {
                         identityAdd(input: $input) {
                             id
                             standard_id

@@ -272,7 +272,7 @@ class Campaign:
         if name is not None:
             LOGGER.info("Creating Campaign {%s}.", name)
             query = """
-                mutation CampaignAdd($input: CampaignAddInput) {
+                mutation CampaignAdd($input: CampaignAddInput!) {
                     campaignAdd(input: $input) {
                         id
                         standard_id

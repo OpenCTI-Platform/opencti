@@ -432,7 +432,7 @@ class Note:
         if content is not None:
             LOGGER.info("Creating Note {%s}.", content)
             query = """
-                mutation NoteAdd($input: NoteAddInput) {
+                mutation NoteAdd($input: NoteAddInput!) {
                     noteAdd(input: $input) {
                         id
                         standard_id

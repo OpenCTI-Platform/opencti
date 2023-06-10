@@ -278,7 +278,7 @@ class Incident:
         if name is not None:
             LOGGER.info("Creating Incident {%s}.", name)
             query = """
-                mutation IncidentAdd($input: IncidentAddInput) {
+                mutation IncidentAdd($input: IncidentAddInput!) {
                     incidentAdd(input: $input) {
                         id
                         standard_id

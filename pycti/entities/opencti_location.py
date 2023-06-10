@@ -278,7 +278,7 @@ class Location:
         if name is not None:
             LOGGER.info("Creating Location {%s}.", name)
             query = """
-                mutation LocationAdd($input: LocationAddInput) {
+                mutation LocationAdd($input: LocationAddInput!) {
                     locationAdd(input: $input) {
                         id
                         standard_id

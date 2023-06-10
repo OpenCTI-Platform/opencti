@@ -150,7 +150,7 @@ class KillChainPhase:
             LOGGER.info("Creating Kill-Chain-Phase {%s}.", phase_name)
             query = (
                 """
-                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput) {
+                mutation KillChainPhaseAdd($input: KillChainPhaseAddInput!) {
                     killChainPhaseAdd(input: $input) {
                         """
                 + self.properties

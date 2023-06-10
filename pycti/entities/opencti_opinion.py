@@ -401,7 +401,7 @@ class Opinion:
         if opinion is not None:
             LOGGER.info("Creating Opinion {%s}.", opinion)
             query = """
-                mutation OpinionAdd($input: OpinionAddInput) {
+                mutation OpinionAdd($input: OpinionAddInput!) {
                     opinionAdd(input: $input) {
                         id
                         standard_id

@@ -405,7 +405,7 @@ class ObservedData:
         ):
             LOGGER.info("Creating ObservedData.")
             query = """
-                mutation ObservedDataAdd($input: ObservedDataAddInput) {
+                mutation ObservedDataAdd($input: ObservedDataAddInput!) {
                     observedDataAdd(input: $input) {
                         id
                         standard_id

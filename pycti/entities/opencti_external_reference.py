@@ -175,7 +175,7 @@ class ExternalReference:
             LOGGER.info("Creating External Reference {%s}.", source_name)
             query = (
                 """
-                mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
+                mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) {
                     externalReferenceAdd(input: $input) {
                         """
                 + self.properties

@@ -153,7 +153,7 @@ class MarkingDefinition:
         if definition is not None and definition_type is not None:
             query = (
                 """
-                mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
+                mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) {
                     markingDefinitionAdd(input: $input) {
                         """
                 + self.properties

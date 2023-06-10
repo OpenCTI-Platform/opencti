@@ -364,7 +364,7 @@ class Indicator:
                 x_opencti_main_observable_type = "StixFile"
             LOGGER.info("Creating Indicator {%s}.", name)
             query = """
-                mutation IndicatorAdd($input: IndicatorAddInput) {
+                mutation IndicatorAdd($input: IndicatorAddInput!) {
                     indicatorAdd(input: $input) {
                         id
                         standard_id
