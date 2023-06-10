@@ -19846,6 +19846,8 @@ export type Settings = BasicObject & InternalObject & {
   password_policy_min_uppercase?: Maybe<Scalars['Int']>;
   password_policy_min_words?: Maybe<Scalars['Int']>;
   platform_cluster: Cluster;
+  platform_consent_confirm_text?: Maybe<Scalars['String']>;
+  platform_consent_message?: Maybe<Scalars['String']>;
   platform_email?: Maybe<Scalars['String']>;
   platform_favicon?: Maybe<Scalars['String']>;
   platform_feature_flags?: Maybe<Array<Module>>;
@@ -32311,6 +32313,8 @@ export type SettingsResolvers<ContextType = any, ParentType extends ResolversPar
   password_policy_min_uppercase?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   password_policy_min_words?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   platform_cluster?: Resolver<ResolversTypes['Cluster'], ParentType, ContextType>;
+  platform_consent_confirm_text?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  platform_consent_message?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_email?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_favicon?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   platform_feature_flags?: Resolver<Maybe<Array<ResolversTypes['Module']>>, ParentType, ContextType>;
