@@ -17,8 +17,8 @@ export const findAll = (context, user, args) => {
 export const addKillChainPhase = async (context, user, killChainPhase) => {
   const phaseOrder = killChainPhase.x_opencti_order ? killChainPhase.x_opencti_order : 0;
   const killChainPhaseToCreate = assoc('x_opencti_order', phaseOrder, killChainPhase);
-  const created = await createEntity(context, user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE);
-  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, created, user);
+  const element = await createEntity(context, user, killChainPhaseToCreate, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].ADDED_TOPIC, element, user);
 };
 
 export const killChainPhaseDelete = async (context, user, killChainPhaseId) => {
@@ -32,14 +32,12 @@ export const killChainPhaseAddRelation = (context, user, killChainPhaseId, input
     assoc('relationship_type', RELATION_KILL_CHAIN_PHASE)
   )(input);
   return createRelation(context, user, finalInput).then((relationData) => {
-    notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, relationData, user);
-    return relationData;
+    return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, relationData, user);
   });
 };
 
 export const killChainPhaseDeleteRelation = async (context, user, killChainPhaseId, relationId) => {
-  await deleteElementById(context, user, relationId, RELATION_KILL_CHAIN_PHASE);
-  const data = await storeLoadById(context, user, killChainPhaseId, ENTITY_TYPE_KILL_CHAIN_PHASE);
+  const data = await deleteElementById(context, user, relationId, RELATION_KILL_CHAIN_PHASE);
   return notify(BUS_TOPICS[ENTITY_TYPE_KILL_CHAIN_PHASE].EDIT_TOPIC, data, user);
 };
 

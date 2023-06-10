@@ -79,18 +79,14 @@ const createApolloServer = () => {
     introspection: true, // Will be disabled by plugin if needed
     persistedQueries: false,
     validationRules: apolloValidationRules,
-    async context({ req, res, connection }) {
+    async context({ req, res }) {
       const executeContext = executionContext('api');
       executeContext.req = req;
       executeContext.res = res;
       executeContext.workId = req.headers['opencti-work-id'];
-      if (connection && connection.context.user) {
-        executeContext.user = userWithOrigin(req, connection.context.user);
-      } else {
-        const user = await authenticateUserFromRequest(executeContext, req, res);
-        if (user) {
-          executeContext.user = userWithOrigin(req, user);
-        }
+      const user = await authenticateUserFromRequest(executeContext, req, res);
+      if (user) {
+        executeContext.user = userWithOrigin(req, user);
       }
       return executeContext;
     },

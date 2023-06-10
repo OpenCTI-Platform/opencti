@@ -10,6 +10,11 @@ import retentionManager from './retentionManager';
 import publisherManager from './publisherManager';
 import notificationManager from './notificationManager';
 import { registerClusterInstance } from '../database/redis';
+import activityManager from './activityManager';
+import { getEntityFromCache } from '../database/cache';
+import type { BasicStoreSettings } from '../types/store';
+import { executionContext, SYSTEM_USER } from '../utils/access';
+import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 
 const SCHEDULE_TIME = 30000;
 const NODE_INSTANCE_ID = conf.get('app:node_identifier') || uuid();
@@ -26,6 +31,8 @@ export type ClusterConfig = {
 const initClusterManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   const clusterHandler = async (platformId: string) => {
+    const context = executionContext('cluster_manager');
+    const settings = await getEntityFromCache<BasicStoreSettings>(context, SYSTEM_USER, ENTITY_TYPE_SETTINGS);
     const managers = [
       ruleEngine.status(),
       historyManager.status(),
@@ -35,6 +42,7 @@ const initClusterManager = () => {
       retentionManager.status(),
       publisherManager.status(),
       notificationManager.status(),
+      activityManager.status(settings),
     ];
     const configData: ClusterConfig = { platform_id: platformId, managers };
     await registerClusterInstance(platformId, configData);

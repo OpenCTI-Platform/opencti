@@ -4,8 +4,14 @@ import { logApp, TOPIC_PREFIX } from '../config/conf';
 import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_RULE, ENTITY_TYPE_SETTINGS, ENTITY_TYPE_STATUS, ENTITY_TYPE_STATUS_TEMPLATE, ENTITY_TYPE_STREAM_COLLECTION, ENTITY_TYPE_USER } from '../schema/internalObject';
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { connectors as findConnectors } from '../database/repository';
-import type { BasicStoreEntity, BasicStreamEntity, BasicTriggerEntity, BasicWorkflowStatusEntity, BasicWorkflowTemplateEntity } from '../types/store';
-import { EntityOptions, internalFindByIds, listAllEntities } from '../database/middleware-loader';
+import type {
+  BasicStoreEntity, BasicStoreRelation, BasicStoreSettings,
+  BasicStreamEntity,
+  BasicTriggerEntity,
+  BasicWorkflowStatusEntity,
+  BasicWorkflowTemplateEntity,
+} from '../types/store';
+import { EntityOptions, internalFindByIds, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { resetCacheForEntity, writeCacheForEntity } from '../database/cache';
 import type { AuthContext } from '../types/user';
@@ -17,6 +23,7 @@ import { BasicStoreEntityTrigger, ENTITY_TYPE_TRIGGER } from '../modules/notific
 import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { resolveUserById } from '../domain/user';
 import { pubSubSubscription } from '../database/redis';
+import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 const workflowStatuses = (context: AuthContext) => {
   const reloadStatuses = async () => {
@@ -85,8 +92,21 @@ const platformUsers = (context: AuthContext) => {
   return { values: null, fn: reloadUsers };
 };
 const platformSettings = (context: AuthContext) => {
-  const reloadSettings = () => {
-    return listAllEntities(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false });
+  const reloadSettings = async () => {
+    const memberOfRelations = await listAllRelations<BasicStoreRelation>(context, SYSTEM_USER, [RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO], { connectionFormat: false });
+    const memberOfGroups = memberOfRelations.filter((m) => m.entity_type === RELATION_MEMBER_OF)
+      .map((mr) => ({ group: mr.toId, user: mr.fromId }));
+    const membersGroupMap = new Map(Object.entries(R.groupBy((r) => r.group, memberOfGroups)).map(([k, v]) => [k, v.map((t) => t.user)]));
+    const memberOfOrgs = memberOfRelations.filter((m) => m.entity_type === RELATION_PARTICIPATE_TO)
+      .map((mr) => ({ organization: mr.toId, user: mr.fromId }));
+    const membersOrganizationMap = new Map(Object.entries(R.groupBy((r) => r.organization, memberOfOrgs)).map(([k, v]) => [k, v.map((t) => t.user)]));
+    return listAllEntities<BasicStoreSettings>(context, SYSTEM_USER, [ENTITY_TYPE_SETTINGS], { connectionFormat: false }).then((settings) => {
+      return settings.map((s) => {
+        const auditListenerIds = s.activity_listeners_ids ?? [];
+        const activity_listeners_users = auditListenerIds.map((id: string) => membersGroupMap.get(id) ?? membersOrganizationMap.get(id) ?? [id]).flat();
+        return { ...s, activity_listeners_users };
+      });
+    });
   };
   return { values: null, fn: reloadSettings };
 };

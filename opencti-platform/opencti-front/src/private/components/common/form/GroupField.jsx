@@ -20,6 +20,19 @@ const styles = () => ({
   },
 });
 
+export const searchGroupFieldQuery = graphql`
+    query GroupFieldSearchQuery($search: String) {
+        groups(orderBy: name, search: $search) {
+            edges {
+                node {
+                    id
+                    name
+                }
+            }
+        }
+    }
+`;
+
 export const groupsQuery = graphql`
   query GroupFieldQuery {
     groups {
@@ -55,17 +68,17 @@ class GroupField extends Component {
   }
 
   render() {
-    const { t, name, style, classes, onChange, helpertext, disabled } = this.props;
+    const { t, name, label, style, classes, onChange, multiple = true, helpertext, disabled } = this.props;
     return (
       <Field
         component={AutocompleteField}
         style={style}
         name={name}
-        multiple={true}
+        multiple={multiple}
         disabled={disabled}
         textfieldprops={{
           variant: 'standard',
-          label: t('Groups'),
+          label: label ?? t('Groups'),
           helperText: helpertext,
           onFocus: this.searchGroups.bind(this),
         }}

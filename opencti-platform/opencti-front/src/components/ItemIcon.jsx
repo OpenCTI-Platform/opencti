@@ -13,6 +13,12 @@ import {
   DescriptionOutlined,
   CenterFocusStrongOutlined,
   ShortTextOutlined,
+  LayersClearOutlined,
+  AssignmentOutlined,
+  LoginOutlined,
+  ExtensionOutlined,
+  LogoutOutlined,
+  ManageAccountsOutlined,
   WorkOutline,
   ReviewsOutlined,
   LocalOfferOutlined,
@@ -36,6 +42,7 @@ import {
   PowerSettingsNewOutlined,
   TaskAltOutlined,
   CasesOutlined,
+  SettingsOutlined,
 } from '@mui/icons-material';
 import {
   Biohazard,
@@ -44,6 +51,8 @@ import {
   LockPattern,
   Fire,
   CityVariantOutline,
+  FileDelimitedOutline,
+  DatabaseExportOutline,
   LabelOutline,
   ProgressWrench,
   HexagonOutline,
@@ -78,20 +87,32 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 
   switch (type) {
+    case 'admin':
+      return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'login':
+      return <LoginOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'logout':
+      return <LogoutOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Vocabulary':
       return <ShortTextOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'RetentionRule':
+      return <LayersClearOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'StreamCollection':
+      return <StreamOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Settings':
+      return <SettingsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'TaxiiCollection':
+      return <DatabaseExportOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Feed':
+      return <FileDelimitedOutline style={style} fontSize={fontSize} role="img" />;
+    case 'Task':
+      return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Connector':
+      return <ExtensionOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
-      return (
-        <CenterFocusStrongOutlined
-          style={style}
-          fontSize={fontSize}
-          role="img"
-        />
-      );
+      return <CenterFocusStrongOutlined style={style} fontSize={fontSize} role="img"/>;
     case 'External-Reference':
-      return (
-        <LocalOfferOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <LocalOfferOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Label':
       return <LabelOutline style={style} fontSize={fontSize} role="img" />;
     case 'Attack-Pattern':
@@ -101,19 +122,13 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Note':
       return <SubjectOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Observed-Data':
-      return (
-        <WifiTetheringOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <WifiTetheringOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Opinion':
       return <ReviewsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Report':
-      return (
-        <DescriptionOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <DescriptionOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Grouping':
-      return (
-        <WorkspacesOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <WorkspacesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
     case 'Individual':
@@ -125,9 +140,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <GroupsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Organization':
     case 'Identity':
-      return (
-        <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <AccountBalanceOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Sector':
       return <DomainOutlined style={style} fontSize={fontSize} role="img" />;
     case 'System':
@@ -139,9 +152,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Intrusion-Set':
       return <DiamondOutline style={style} fontSize={fontSize} role="img" />;
     case 'City':
-      return (
-        <CityVariantOutline style={style} fontSize={fontSize} role="img" />
-      );
+      return <CityVariantOutline style={style} fontSize={fontSize} role="img" />;
     case 'Position':
     case 'Location':
       return <PlaceOutlined style={style} fontSize={fontSize} role="img" />;
@@ -164,15 +175,11 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Incident':
       return <Fire style={style} fontSize={fontSize} role="img" />;
     case 'Channel':
-      return (
-        <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <SurroundSoundOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Event':
       return <EventOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Narrative':
-      return (
-        <SpeakerNotesOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <SpeakerNotesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Language':
       return <TranslateOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Data-Source':
@@ -190,9 +197,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'Case-Template':
       return <CasesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Feedback':
-      return (
-        <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />
-      );
+      return <TipsAndUpdatesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Case-Rfi':
       return <Brain style={style} fontSize={fontSize} role="img" />;
     case 'Case-Rft':
@@ -306,6 +311,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
     case 'src-payload':
     case 'remediates':
     case 'resolves-to':
+    case 'participates-to':
     case 'obs_resolves-to':
     case 'revoked-by':
     case 'sample':

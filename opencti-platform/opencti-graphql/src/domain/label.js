@@ -42,8 +42,8 @@ export const addLabel = async (context, user, label) => {
     assoc('value', normalizeName(label.value).toLowerCase()),
     assoc('color', label.color ? label.color : stringToColour(normalizeName(label.value)))
   )(label);
-  const created = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
-  return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, created, user);
+  const element = await createEntity(context, user, finalLabel, ENTITY_TYPE_LABEL);
+  return notify(BUS_TOPICS[ENTITY_TYPE_LABEL].ADDED_TOPIC, element, user);
 };
 
 export const labelDelete = async (context, user, labelId) => {

@@ -325,7 +325,8 @@ export const stixCyberObservableExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w.work));
 };
 export const stixCyberObservablesExportPush = async (context, user, file, listFilters) => {
-  await upload(context, user, 'export/Stix-Cyber-Observable', file, { list_filters: listFilters });
+  const meta = { list_filters: listFilters };
+  await upload(context, user, 'export/Stix-Cyber-Observable', file, { meta });
   return true;
 };
 export const stixCyberObservableExportPush = async (context, user, entityId, file) => {
@@ -333,7 +334,7 @@ export const stixCyberObservableExportPush = async (context, user, entityId, fil
   if (!entity) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
-  await upload(context, user, `export/Stix-Cyber-Observable/${entityId}`, file, { entity_id: entityId });
+  await upload(context, user, `export/Stix-Cyber-Observable/${entityId}`, file, { entity });
   return true;
 };
 // endregion
@@ -389,7 +390,8 @@ export const artifactImport = async (context, user, args) => {
     objectLabel,
   };
   const artifact = await addStixCyberObservable(context, user, artifactData);
-  await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity_id: artifact.id, version });
+  const meta = { version };
+  await upload(context, user, `import/${artifact.entity_type}/${artifact.id}`, file, { entity: artifact, meta });
   return artifact;
 };
 

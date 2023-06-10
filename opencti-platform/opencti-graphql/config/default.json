@@ -86,6 +86,9 @@
     "enabled": true,
     "lock_key": "history_manager_lock"
   },
+  "activity_manager": {
+    "lock_key": "activity_manager_lock"
+  },
   "connector_manager": {
     "enabled": true,
     "lock_key": "connector_manager_lock",

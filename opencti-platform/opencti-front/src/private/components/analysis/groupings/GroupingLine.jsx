@@ -257,10 +257,7 @@ class GroupingLineDummyComponent extends Component {
     const { classes, dataColumns } = this.props;
     return (
       <ListItem classes={{ root: classes.item }} divider={true}>
-        <ListItemIcon
-          classes={{ root: classes.itemIconDisabled }}
-          style={{ minWidth: 40 }}
-        >
+        <ListItemIcon classes={{ root: classes.itemIconDisabled }} style={{ minWidth: 40 }}>
           <Checkbox edge="start" disabled={true} disableRipple={true} />
         </ListItemIcon>
         <ListItemIcon classes={{ root: classes.itemIcon }}>

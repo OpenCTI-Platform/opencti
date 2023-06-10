@@ -39,12 +39,12 @@ import type { EditContext } from '../generated/graphql';
 import { telemetry } from '../config/tracing';
 import { filterEmpty } from '../types/type-utils';
 import type { ClusterConfig } from '../manager/clusterManager';
+import type { ActivityStreamEvent } from '../manager/activityListener';
 
 export const REDIS_PREFIX = conf.get('redis:namespace') ? `${conf.get('redis:namespace')}:` : '';
 const USE_SSL = booleanConf('redis:use_ssl', false);
 const REDIS_CA = conf.get('redis:ca').map((path: string) => loadCert(path));
 export const REDIS_STREAM_NAME = `${REDIS_PREFIX}stream.opencti`;
-export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
 
 export const EVENT_CURRENT_VERSION = '4';
 
@@ -237,8 +237,10 @@ export const getSessionTtl = (key: string) => {
 export const setSession = (key: string, value: any, expirationTime: number) => {
   return setKeyWithList(key, ['platform_sessions'], value, expirationTime);
 };
-export const killSession = (key: string) => {
-  return delKeyWithList(key, ['platform_sessions']);
+export const killSession = async (key: string) => {
+  const currentSession = await getSession(key);
+  await delKeyWithList(key, ['platform_sessions']);
+  return { sessionId: key, session: currentSession };
 };
 export const getSessionKeys = () => {
   return getClientBase().zrange('platform_sessions', 0, -1);
@@ -377,7 +379,6 @@ export const lockResource = async (resources: Array<string>, opts: { automaticEx
 
 // region opencti data stream
 const streamTrimming = conf.get('redis:trimming') || 0;
-const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
 const mapJSToStream = (event: any) => {
   const cmdArgs: Array<string> = [];
   Object.keys(event).forEach((key) => {
@@ -688,6 +689,8 @@ export const createStreamProcessor = <T extends BaseEvent> (
 // endregion
 
 // region opencti notification stream
+export const NOTIFICATION_STREAM_NAME = `${REDIS_PREFIX}stream.notification`;
+const notificationTrimming = conf.get('redis:notification_trimming') || 50000;
 export const storeNotificationEvent = async (context: AuthContext, event: any) => {
   await getClientBase().call('XADD', NOTIFICATION_STREAM_NAME, 'MAXLEN', '~', notificationTrimming, '*', ...mapJSToStream(event));
 };
@@ -695,6 +698,15 @@ export const fetchRangeNotifications = async <T extends BaseEvent> (start: Date,
   const streamResult = await getClientBase().call('XRANGE', NOTIFICATION_STREAM_NAME, start.getTime(), end.getTime()) as any[];
   const streamElements: Array<SseEvent<T>> = R.map((r) => mapStreamToJS(r), streamResult);
   return streamElements.filter((s) => s.event === 'live').map((e) => e.data);
+};
+// endregion
+
+// region opencti audit stream
+export const EVENT_ACTIVITY_VERSION = '1';
+export const ACTIVITY_STREAM_NAME = `${REDIS_PREFIX}stream.activity`;
+const auditTrimming = conf.get('redis:activity_trimming') || 50000;
+export const storeActivityEvent = async (event: ActivityStreamEvent) => {
+  await getClientBase().call('XADD', ACTIVITY_STREAM_NAME, 'MAXLEN', '~', auditTrimming, '*', ...mapJSToStream(event));
 };
 // endregion
 

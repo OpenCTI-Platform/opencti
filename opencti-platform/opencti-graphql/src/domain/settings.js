@@ -10,6 +10,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { isUserHasCapability, SETTINGS_SET_ACCESSES, SYSTEM_USER } from '../utils/access';
 import { storeLoadById } from '../database/middleware-loader';
 import { PROVIDERS } from '../config/providers';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const getMemoryStatistics = () => {
   return { ...process.memoryUsage(), ...getHeapStatistics() };
@@ -17,9 +18,7 @@ export const getMemoryStatistics = () => {
 
 const getClusterInformation = async () => {
   const clusterConfig = await getClusterInstances();
-  const info = {
-    instances_number: clusterConfig.length
-  };
+  const info = { instances_number: clusterConfig.length };
   const allManagers = clusterConfig.map((i) => i.managers).flat();
   const groupManagersById = R.groupBy((manager) => manager.id, allManagers);
   const modules = Object.entries(groupManagersById).map(([id, managers]) => ({
@@ -27,10 +26,7 @@ const getClusterInformation = async () => {
     enable: managers.reduce((acc, m) => acc || m.enable, false),
     running: managers.reduce((acc, m) => acc || m.running, false),
   }));
-  return {
-    info,
-    modules
-  };
+  return { info, modules };
 };
 
 export const isModuleActivated = async (moduleId) => {
@@ -97,6 +93,14 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
-  const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
-  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
+  await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, operation: 'update', input }
+  });
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };

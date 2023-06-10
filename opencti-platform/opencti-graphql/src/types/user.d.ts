@@ -9,8 +9,11 @@ interface UserCapability {
 }
 
 interface UserOrigin {
+  socket: string;
   name?: string;
   user_id?: string;
+  group_ids?: string[];
+  organization_ids?: string[];
   applicant_id?: string;
   referer?: string;
 }

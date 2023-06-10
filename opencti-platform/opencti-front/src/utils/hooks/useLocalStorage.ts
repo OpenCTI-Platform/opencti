@@ -246,7 +246,11 @@ export const usePaginationLocalStorage = <U>(
       orderAsc: order,
     })),
     handleAddProperty: (field: string, value: unknown) => {
-      setValue((c) => ({ ...c, [field]: value }));
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      if (!R.equals(viewStorage[field], value)) {
+        setValue((c) => ({ ...c, [field]: value }));
+      }
     },
     handleAddFilter: (
       k: string,

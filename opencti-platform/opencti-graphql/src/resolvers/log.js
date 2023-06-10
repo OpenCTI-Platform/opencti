@@ -1,4 +1,4 @@
-import { findAll, logsTimeSeries, logsWorkerConfig } from '../domain/log';
+import { findHistory, findAudits, logsTimeSeries, logsWorkerConfig } from '../domain/log';
 import { batchCreator } from '../domain/user';
 import { storeLoadById } from '../database/middleware-loader';
 import { ENTITY_TYPE_EXTERNAL_REFERENCE } from '../schema/stixMetaObject';
@@ -8,12 +8,15 @@ const creatorLoader = batchLoader(batchCreator);
 
 const logResolvers = {
   Query: {
-    logs: (_, args, context) => findAll(context, context.user, args),
+    logs: (_, args, context) => findHistory(context, context.user, args),
+    audits: (_, args, context) => findAudits(context, context.user, args),
     logsTimeSeries: (_, args, context) => logsTimeSeries(context, context.user, args),
     logsWorkerConfig: () => logsWorkerConfig(),
   },
   Log: {
     user: (log, _, context) => creatorLoader.load(log.applicant_id || log.user_id, context, context.user),
+    raw_data: (log, _, __) => JSON.stringify(log, null, 2),
+    context_uri: (log, _, __) => (log.context_data.id ? `/dashboard/id/${log.context_data.id}` : undefined),
   },
   // Backward compatibility
   ContextData: {
@@ -21,15 +24,19 @@ const logResolvers = {
       const refPromises = Promise.all(
         (data.references || []).map((id) => storeLoadById(context, context.user, id, ENTITY_TYPE_EXTERNAL_REFERENCE))
       ).then((refs) => refs.filter((element) => element !== undefined));
-
       return Promise.resolve(data.external_references ?? [])
         .then((externalReferences) => refPromises.then((refs) => externalReferences.concat(refs)));
     }
   },
   LogsFilter: {
-    entity_id: 'context_data.id',
-    connection_id: 'context_data.*_id',
-    user_id: '*_id',
+    entity_id: 'context_data.*id',
+    elementId: 'context_data.*id', // Compatibility with standard filters
+    connection_id: 'context_data.*id', // Compatibility with standard filters
+    created: 'timestamp',
+    user_id: 'user_id',
+    members_user: 'user_id',
+    members_group: 'group_ids',
+    members_organization: 'organization_ids',
   },
 };
 

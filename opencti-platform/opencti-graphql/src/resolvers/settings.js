@@ -13,6 +13,7 @@ import { ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import { elAggregationCount } from '../database/engine';
 import { findById } from '../domain/organization';
 import { READ_DATA_INDICES } from '../database/utils';
+import { internalFindByIds } from '../database/middleware-loader';
 
 const settingsResolvers = {
   Query: {
@@ -25,6 +26,7 @@ const settingsResolvers = {
   },
   Settings: {
     platform_organization: (settings, __, context) => findById(context, context.user, settings.platform_organization),
+    activity_listeners: (settings, __, context) => internalFindByIds(context, context.user, settings.activity_listeners_ids),
     otp_mandatory: (settings) => settings.otp_mandatory ?? false,
     password_policy_min_length: (settings) => settings.password_policy_min_length ?? 0,
     password_policy_max_length: (settings) => settings.password_policy_max_length ?? 0,

@@ -1,20 +1,30 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment, useMutation, useLazyLoadQuery } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import Alert from '@mui/material/Alert';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import { VpnKeyOutlined } from '@mui/icons-material';
+import ListItemText from '@mui/material/ListItemText';
+import Chip from '@mui/material/Chip';
 import AccessesMenu from './AccessesMenu';
 import ObjectOrganizationField from '../common/form/ObjectOrganizationField';
 import { useFormatter } from '../../../components/i18n';
 import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/SwitchField';
 import TextField from '../../../components/TextField';
-import useAuth from '../../../utils/hooks/useAuth';
 import { Policies$key } from './__generated__/Policies.graphql';
+import MarkDownField from '../../../components/MarkDownField';
+import { SubscriptionFocus } from '../../../components/Subscription';
+import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -41,6 +51,9 @@ const useStyles = makeStyles(() => ({
 const PoliciesFragment = graphql`
   fragment Policies on Settings {
     id
+    platform_login_message
+    platform_consent_message
+    platform_consent_confirm_text
     password_policy_min_length
     password_policy_max_length
     password_policy_min_symbols
@@ -48,15 +61,31 @@ const PoliciesFragment = graphql`
     password_policy_min_words
     password_policy_min_lowercase
     password_policy_min_uppercase
+    platform_providers {
+      name
+      strategy
+    }
     platform_organization {
       id
       name
     }
     otp_mandatory
+    editContext {
+      name
+      focusOn
+    }
   }
 `;
 
-export const PoliciesFieldPatch = graphql`
+const policiesQuery = graphql`
+  query PoliciesQuery {
+    settings {
+      ...Policies
+    }
+  }
+`;
+
+export const policiesFieldPatch = graphql`
   mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
@@ -66,7 +95,17 @@ export const PoliciesFieldPatch = graphql`
   }
 `;
 
-const settingsValidation = () => Yup.object().shape({
+const policiesFocus = graphql`
+  mutation PoliciesFocusMutation($id: ID!, $input: EditContext!) {
+    settingsEdit(id: $id) {
+      contextPatch(input: $input) {
+        id
+      }
+    }
+  }
+`;
+
+const policiesValidation = () => Yup.object().shape({
   platform_organization: Yup.object().nullable(),
   otp_mandatory: Yup.boolean(),
   password_policy_min_length: Yup.number(),
@@ -76,19 +115,33 @@ const settingsValidation = () => Yup.object().shape({
   password_policy_min_words: Yup.number(),
   password_policy_min_lowercase: Yup.number(),
   password_policy_min_uppercase: Yup.number(),
+  platform_login_message: Yup.string().nullable(),
+  platform_consent_message: Yup.string().nullable(),
+  platform_consent_confirm_text: Yup.string().nullable(),
 });
 
 const Policies: FunctionComponent = () => {
-  const { settings: rawSettings } = useAuth();
-  const settings = useFragment<Policies$key>(PoliciesFragment, rawSettings);
-  const [commit] = useMutation(PoliciesFieldPatch);
+  const data = useLazyLoadQuery<PoliciesQuery>(policiesQuery, {});
+  const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
+  const [commitFocus] = useMutation(policiesFocus);
+  const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t } = useFormatter();
+  const handleChangeFocus = (id: string, name: string) => {
+    commitFocus({
+      variables: {
+        id,
+        input: {
+          focusOn: name,
+        },
+      },
+    });
+  };
   const handleSubmitField = (name: string, value: unknown) => {
-    settingsValidation()
+    policiesValidation()
       .validateAt(name, { [name]: value })
       .then(() => {
-        commit({
+        commitField({
           variables: {
             id: settings.id,
             input: { key: name, value: value || '' },
@@ -97,13 +150,15 @@ const Policies: FunctionComponent = () => {
       })
       .catch(() => false);
   };
+  const { id, editContext } = settings;
   const initialValues = {
-    platform_organization: settings.platform_organization
-      ? {
-        label: settings.platform_organization?.name,
-        value: settings.platform_organization?.id,
-      }
-      : '',
+    platform_organization: settings.platform_organization ? {
+      label: settings.platform_organization?.name,
+      value: settings.platform_organization?.id,
+    } : '',
+    platform_login_message: settings.platform_login_message,
+    platform_consent_message: settings.platform_consent_message,
+    platform_consent_confirm_text: settings.platform_consent_confirm_text,
     password_policy_min_length: settings.password_policy_min_length,
     password_policy_max_length: settings.password_policy_max_length,
     password_policy_min_symbols: settings.password_policy_min_symbols,
@@ -113,16 +168,14 @@ const Policies: FunctionComponent = () => {
     password_policy_min_uppercase: settings.password_policy_min_uppercase,
     otp_mandatory: settings.otp_mandatory,
   };
+  const authProviders = settings.platform_providers;
   return (
     <div className={classes.container}>
       <AccessesMenu />
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
-          <Formik
-            onSubmit={() => {}}
-            initialValues={initialValues}
-            validationSchema={settingsValidation()}
-          >
+          <Formik onSubmit={() => {}} initialValues={initialValues}
+                  enableReinitialize={true} validationSchema={policiesValidation()}>
             {() => (
               <Form>
                 <Grid container={true} spacing={3}>
@@ -149,14 +202,23 @@ const Policies: FunctionComponent = () => {
                   </Grid>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
-                      {t('Two-factor authentication')}
+                      {t('Authentication strategies')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Alert severity="info">
-                        {t(
-                          'When enforcing 2FA, all users will be asked to enable 2FA to be able to login in the platform.',
-                        )}
-                      </Alert>
+                      <List style={{ marginTop: -20 }}>
+                        {authProviders.map((provider) => (
+                          <ListItem key={provider.strategy} divider={true}>
+                            <ListItemIcon>
+                              <VpnKeyOutlined color="primary" />
+                            </ListItemIcon>
+                            <ListItemText
+                              primary={provider.name}
+                              secondary={provider.strategy}
+                            />
+                            <Chip label={t('Enabled')} color="success" />
+                          </ListItem>
+                        ))}
+                      </List>
                       <Field
                         component={SwitchField}
                         type="checkbox"
@@ -165,6 +227,9 @@ const Policies: FunctionComponent = () => {
                         containerstyle={{ marginTop: 20 }}
                         onChange={(name: string, value: string) => handleSubmitField(name, value)
                         }
+                        tooltip={t(
+                          'When enforcing 2FA, all users will be asked to enable 2FA to be able to login in the platform.',
+                        )}
                       />
                     </Paper>
                   </Grid>
@@ -290,6 +355,61 @@ const Policies: FunctionComponent = () => {
                             value !== '' ? value : '0',
                           );
                         }}
+                      />
+                    </Paper>
+                  </Grid>
+                  <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+                    <Typography variant="h4" gutterBottom={true}>
+                      {t('Login messages')}
+                    </Typography>
+                    <Paper classes={{ root: classes.paper }} variant="outlined">
+                      <Typography variant="h4" gutterBottom={true}>
+                        {t('Platform login message')}
+                      </Typography>
+                      <Field component={MarkDownField}
+                        name="platform_login_message"
+                        label={t('Platform login message')}
+                        fullWidth
+                        multiline={true}
+                        rows="3"
+                        style={{ marginTop: 20 }}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
+                      />
+                      <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                        {t('Platform Consent Message')}
+                      </Typography>
+                      <Field component={MarkDownField}
+                        name="platform_consent_message"
+                        label={t('Requires acceptance to enable login form when set')}
+                        fullWidth
+                        style={{ marginTop: 20 }}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_message"/>}
+                      />
+                      <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
+                        {t('Platform Consent Confirm Text')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '16px 0 0 8px' }}>
+                        <Tooltip title={`${t('Default')}: I have read and comply with the above statement`}>
+                          <InformationOutline fontSize="small" color="primary" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field component={MarkDownField}
+                        name="platform_consent_confirm_text"
+                        label={t('One line confirm label next to confirm checkbox')}
+                        fullWidth
+                        style={{ marginTop: 14 }}
+                        height={38}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
                       />
                     </Paper>
                   </Grid>

@@ -133,12 +133,13 @@ export const stixDomainObjectExportAsk = async (context, user, args) => {
   return works.map((w) => workToExportFile(w));
 };
 export const stixDomainObjectsExportPush = async (context, user, type, file, listFilters) => {
-  await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
+  const meta = { list_filters: listFilters };
+  await upload(context, user, `export/${type}`, file, { meta });
   return true;
 };
 export const stixDomainObjectExportPush = async (context, user, entityId, file) => {
   const entity = await internalLoadById(context, user, entityId);
-  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity });
   return true;
 };
 // endregion

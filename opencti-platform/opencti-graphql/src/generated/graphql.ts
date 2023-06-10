@@ -46,6 +46,13 @@ export type AckDetails = {
   rate?: Maybe<Scalars['Float']>;
 };
 
+export type ActivityListener = {
+  __typename?: 'ActivityListener';
+  entity_type: Scalars['String'];
+  id: Scalars['ID'];
+  name: Scalars['String'];
+};
+
 export type AdministrativeArea = BasicObject & Location & StixCoreObject & StixDomainObject & StixObject & {
   __typename?: 'AdministrativeArea';
   cases?: Maybe<CaseConnection>;
@@ -3846,10 +3853,10 @@ export enum ContainersOrdering {
 export type ContextData = {
   __typename?: 'ContextData';
   commit?: Maybe<Scalars['String']>;
-  entity_type: Scalars['String'];
+  entity_name?: Maybe<Scalars['String']>;
+  entity_type?: Maybe<Scalars['String']>;
   external_references?: Maybe<Array<ExternalReference>>;
   from_id?: Maybe<Scalars['String']>;
-  id: Scalars['String'];
   message: Scalars['String'];
   to_id?: Maybe<Scalars['String']>;
 };
@@ -10733,8 +10740,11 @@ export enum LocationsOrdering {
 export type Log = {
   __typename?: 'Log';
   context_data?: Maybe<ContextData>;
+  context_uri?: Maybe<Scalars['String']>;
+  entity_type?: Maybe<Scalars['String']>;
   event_type: Scalars['String'];
   id: Scalars['ID'];
+  raw_data?: Maybe<Scalars['String']>;
   timestamp: Scalars['DateTime'];
   user?: Maybe<Creator>;
   user_id: Scalars['String'];
@@ -10755,8 +10765,14 @@ export type LogEdge = {
 export enum LogsFilter {
   ApplicantId = 'applicant_id',
   ConnectionId = 'connection_id',
+  Created = 'created',
+  Creator = 'creator',
+  ElementId = 'elementId',
   EntityId = 'entity_id',
   EventType = 'event_type',
+  MembersGroup = 'members_group',
+  MembersOrganization = 'members_organization',
+  MembersUser = 'members_user',
   UserId = 'user_id'
 }
 
@@ -16436,6 +16452,7 @@ export type Query = {
   assignees?: Maybe<AssigneeConnection>;
   attackPattern?: Maybe<AttackPattern>;
   attackPatterns?: Maybe<AttackPatternConnection>;
+  audits?: Maybe<LogConnection>;
   bookmarks?: Maybe<StixDomainObjectConnection>;
   campaign?: Maybe<Campaign>;
   campaigns?: Maybe<CampaignConnection>;
@@ -16709,6 +16726,18 @@ export type QueryAttackPatternsArgs = {
   orderMode?: InputMaybe<OrderingMode>;
   search?: InputMaybe<Scalars['String']>;
   toStix?: InputMaybe<Scalars['Boolean']>;
+};
+
+
+export type QueryAuditsArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<LogsFiltering>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<LogsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<Scalars['String']>>;
 };
 
 
@@ -19832,8 +19861,10 @@ export type SessionDetail = {
 
 export type Settings = BasicObject & InternalObject & {
   __typename?: 'Settings';
+  activity_listeners?: Maybe<Array<ActivityListener>>;
   created_at: Scalars['DateTime'];
   editContext?: Maybe<Array<EditUserContext>>;
+  enterprise_edition?: Maybe<Scalars['DateTime']>;
   entity_type: Scalars['String'];
   id: Scalars['ID'];
   otp_mandatory?: Maybe<Scalars['Boolean']>;
@@ -25770,6 +25801,7 @@ export type ResolversUnionParentTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   AckDetails: ResolverTypeWrapper<AckDetails>;
+  ActivityListener: ResolverTypeWrapper<ActivityListener>;
   AdministrativeArea: ResolverTypeWrapper<BasicStoreEntityAdministrativeArea>;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: ResolverTypeWrapper<Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversTypes['AdministrativeAreaEdge']>> }>;
@@ -26525,6 +26557,7 @@ export type ResolversTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   AckDetails: AckDetails;
+  ActivityListener: ActivityListener;
   AdministrativeArea: BasicStoreEntityAdministrativeArea;
   AdministrativeAreaAddInput: AdministrativeAreaAddInput;
   AdministrativeAreaConnection: Omit<AdministrativeAreaConnection, 'edges'> & { edges?: Maybe<Array<ResolversParentTypes['AdministrativeAreaEdge']>> };
@@ -27149,6 +27182,13 @@ export type ConstraintDirectiveResolver<Result, Parent, ContextType = any, Args 
 
 export type AckDetailsResolvers<ContextType = any, ParentType extends ResolversParentTypes['AckDetails'] = ResolversParentTypes['AckDetails']> = ResolversObject<{
   rate?: Resolver<Maybe<ResolversTypes['Float']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ActivityListenerResolvers<ContextType = any, ParentType extends ResolversParentTypes['ActivityListener'] = ResolversParentTypes['ActivityListener']> = ResolversObject<{
+  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -28235,10 +28275,10 @@ export type ContainerEditMutationsResolvers<ContextType = any, ParentType extend
 
 export type ContextDataResolvers<ContextType = any, ParentType extends ResolversParentTypes['ContextData'] = ResolversParentTypes['ContextData']> = ResolversObject<{
   commit?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  entity_name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   external_references?: Resolver<Maybe<Array<ResolversTypes['ExternalReference']>>, ParentType, ContextType>;
   from_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   message?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   to_id?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -30206,8 +30246,11 @@ export type LocationEditMutationsResolvers<ContextType = any, ParentType extends
 
 export type LogResolvers<ContextType = any, ParentType extends ResolversParentTypes['Log'] = ResolversParentTypes['Log']> = ResolversObject<{
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
+  context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   timestamp?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   user?: Resolver<Maybe<ResolversTypes['Creator']>, ParentType, ContextType>;
   user_id?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -31637,6 +31680,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   assignees?: Resolver<Maybe<ResolversTypes['AssigneeConnection']>, ParentType, ContextType, Partial<QueryAssigneesArgs>>;
   attackPattern?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<QueryAttackPatternArgs>>;
   attackPatterns?: Resolver<Maybe<ResolversTypes['AttackPatternConnection']>, ParentType, ContextType, Partial<QueryAttackPatternsArgs>>;
+  audits?: Resolver<Maybe<ResolversTypes['LogConnection']>, ParentType, ContextType, Partial<QueryAuditsArgs>>;
   bookmarks?: Resolver<Maybe<ResolversTypes['StixDomainObjectConnection']>, ParentType, ContextType, Partial<QueryBookmarksArgs>>;
   campaign?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<QueryCampaignArgs>>;
   campaigns?: Resolver<Maybe<ResolversTypes['CampaignConnection']>, ParentType, ContextType, Partial<QueryCampaignsArgs>>;
@@ -32299,8 +32343,10 @@ export type SessionDetailResolvers<ContextType = any, ParentType extends Resolve
 }>;
 
 export type SettingsResolvers<ContextType = any, ParentType extends ResolversParentTypes['Settings'] = ResolversParentTypes['Settings']> = ResolversObject<{
+  activity_listeners?: Resolver<Maybe<Array<ResolversTypes['ActivityListener']>>, ParentType, ContextType>;
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
+  enterprise_edition?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   otp_mandatory?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
@@ -34122,6 +34168,7 @@ export type X509CertificateResolvers<ContextType = any, ParentType extends Resol
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   AckDetails?: AckDetailsResolvers<ContextType>;
+  ActivityListener?: ActivityListenerResolvers<ContextType>;
   AdministrativeArea?: AdministrativeAreaResolvers<ContextType>;
   AdministrativeAreaConnection?: AdministrativeAreaConnectionResolvers<ContextType>;
   AdministrativeAreaEdge?: AdministrativeAreaEdgeResolvers<ContextType>;

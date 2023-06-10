@@ -82,7 +82,7 @@ class RedisStore extends Store {
   }
 
   destroy(sid, cb = noop) {
-    return killSession(sid).then(() => cb());
+    return killSession(sid).then((data) => cb(data));
   }
 
   all(cb = noop) {

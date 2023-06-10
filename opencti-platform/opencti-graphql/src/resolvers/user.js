@@ -43,7 +43,7 @@ import {
   userWithOrigin,
   batchRolesForUsers,
 } from '../domain/user';
-import { BUS_TOPICS, logApp, logAudit } from '../config/conf';
+import { BUS_TOPICS, logApp } from '../config/conf';
 import passport, { PROVIDERS } from '../config/providers';
 import { AuthenticationFailure } from '../config/errors';
 import { addRole } from '../domain/grant';
@@ -51,9 +51,10 @@ import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { batchLoader } from '../database/middleware';
-import { LOGIN_ACTION } from '../config/audit';
 import { executionContext } from '../utils/access';
 import { findSessions, findUserSessions, killSession, killUserSessions } from '../database/session';
+import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from '../database/middleware-loader';
 
 const groupsLoader = batchLoader(batchGroups);
 const organizationsLoader = batchLoader(batchOrganizations);
@@ -116,7 +117,7 @@ const userResolvers = {
             if (err || info) {
               logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
               const auditUser = userWithOrigin(req, { user_email: input.email });
-              logAudit.error(auditUser, LOGIN_ACTION, { provider: auth.provider });
+              publishUserAction({ user: auditUser, event_type: 'login', status: 'error', context_data: { provider: auth.provider } });
             }
             resolve({ user: authUser, provider: auth.provider });
           })({ body });
@@ -134,9 +135,32 @@ const userResolvers = {
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
-    sessionKill: (_, { id }) => killSession(id),
+    sessionKill: async (_, { id }, context) => {
+      const kill = await killSession(id);
+      const { user } = kill.session;
+      await publishUserAction({
+        user: context.user,
+        event_type: 'admin',
+        status: 'success',
+        message: `kills \`specific session\` for user \`${user.user_email}\``,
+        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: user.id, session_id: kill.sessionId } }
+      });
+      return id;
+    },
     otpUserDeactivation: (_, { id }, context) => otpUserDeactivation(context, context.user, id),
-    userSessionsKill: (_, { id }) => killUserSessions(id),
+    userSessionsKill: async (_, { id }, context) => {
+      const user = await internalLoadById(context, context.user, id);
+      const sessions = await killUserSessions(id);
+      const sessionIds = sessions.map((s) => s.sessionId);
+      await publishUserAction({
+        user: context.user,
+        event_type: 'admin',
+        status: 'success',
+        message: `kills \`all sessions\` for user \`${user.user_email}\``,
+        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: id } }
+      });
+      return sessionIds;
+    },
     logout: (_, args, context) => logout(context, context.user, context.req, context.res),
     roleEdit: (_, { id }, context) => ({
       delete: () => roleDelete(context, context.user, id),

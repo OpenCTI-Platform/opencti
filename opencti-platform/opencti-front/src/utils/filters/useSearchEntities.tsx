@@ -18,7 +18,10 @@ import { statusFieldStatusesSearchQuery } from '../../private/components/common/
 import { useFormatter } from '../../components/i18n';
 import { vocabCategoriesQuery } from '../hooks/useVocabularyCategory';
 import { vocabularySearchQuery } from '../../private/components/settings/VocabularyQuery';
-import { objectAssigneeFieldAssigneesSearchQuery } from '../../private/components/common/form/ObjectAssigneeField';
+import {
+  objectAssigneeFieldAssigneesSearchQuery,
+  objectAssigneeFieldMembersSearchQuery,
+} from '../../private/components/common/form/ObjectAssigneeField';
 import { IdentitySearchIdentitiesSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchIdentitiesSearchQuery.graphql';
 import { IdentitySearchCreatorsSearchQuery$data } from '../../private/components/common/identities/__generated__/IdentitySearchCreatorsSearchQuery.graphql';
 import { ObjectAssigneeFieldAssigneesSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldAssigneesSearchQuery.graphql';
@@ -33,30 +36,7 @@ import { VocabularyQuery$data } from '../../private/components/settings/__genera
 import { useVocabularyCategoryQuery$data } from '../hooks/__generated__/useVocabularyCategoryQuery.graphql';
 import { Theme } from '../../components/Theme';
 import useAuth from '../hooks/useAuth';
-
-export const stixCyberObservablesSearchQuery = graphql`
-    query useSearchEntitiesStixCyberObservablesSearchQuery(
-        $types: [String]
-        $search: String
-        $filters: [StixCyberObservablesFiltering]
-        $count: Int
-    ) {
-        stixCyberObservables(
-            types: $types
-            search: $search
-            filters: $filters
-            first: $count
-        ) {
-            edges {
-                node {
-                    id
-                    observable_value
-                    entity_type
-                }
-            }
-        }
-    }
-`;
+import { ObjectAssigneeFieldMembersSearchQuery$data } from '../../private/components/common/form/__generated__/ObjectAssigneeFieldMembersSearchQuery.graphql';
 
 const filtersStixCoreObjectsSearchQuery = graphql`
   query useSearchEntitiesStixCoreObjectsSearchQuery(
@@ -321,10 +301,61 @@ const useSearchEntities = ({
             unionSetEntities('toSightingId', createdByEntities);
           });
         break;
-      case 'creator':
+      // region member global
+      case 'members_user': // All groups, only for granted users
+        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          entityTypes: ['User'],
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
+            unionSetEntities('members_user', membersEntities);
+          });
+        break;
+      case 'members_group': // All groups, only for granted users
+        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          entityTypes: ['Group'],
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
+            unionSetEntities('members_group', membersEntities);
+          });
+        break;
+      case 'members_organization': // All groups, only for granted users
+        fetchQuery(objectAssigneeFieldMembersSearchQuery, {
+          search: event.target.value !== 0 ? event.target.value : '',
+          entityTypes: ['Organization'],
+          first: 10,
+        })
+          .toPromise()
+          .then((data) => {
+            const membersEntities = ((data as ObjectAssigneeFieldMembersSearchQuery$data)?.members?.edges ?? []).map((n) => ({
+              label: n?.node.name,
+              value: n?.node.id,
+              type: n?.node.entity_type,
+            }));
+            unionSetEntities('members_organization', membersEntities);
+          });
+        break;
+      // endregion
+      // region user usage
+      case 'creator': // only used
         if (!cacheEntities[filterKey]) {
           fetchQuery(identitySearchCreatorsSearchQuery, {
-            entityTypes: searchContext?.entityTypes ?? null,
+            entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
             .then((data) => {
@@ -341,10 +372,10 @@ const useSearchEntities = ({
             });
         }
         break;
-      case 'assigneeTo':
+      case 'assigneeTo': // only used
         if (!cacheEntities[filterKey]) {
           fetchQuery(objectAssigneeFieldAssigneesSearchQuery, {
-            entityTypes: searchContext?.entityTypes ?? null,
+            entityTypes: searchContext?.entityTypes ?? [],
           })
             .toPromise()
             .then((data) => {
@@ -361,6 +392,7 @@ const useSearchEntities = ({
             });
         }
         break;
+      // endregion
       case 'createdBy':
         fetchQuery(identitySearchIdentitiesSearchQuery, {
           types: ['Organization', 'Individual', 'System'],
@@ -370,9 +402,7 @@ const useSearchEntities = ({
           .toPromise()
           .then((data) => {
             const createdByEntities = (
-              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities
-                ?.edges ?? []
-            ).map((n) => ({
+              (data as IdentitySearchIdentitiesSearchQuery$data)?.identities?.edges ?? []).map((n) => ({
               label: n?.node.name,
               value: n?.node.id,
               type: n?.node.entity_type,

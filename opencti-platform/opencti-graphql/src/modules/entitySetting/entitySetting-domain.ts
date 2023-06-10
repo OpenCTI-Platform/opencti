@@ -9,6 +9,7 @@ import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { defaultEntitySetting, getAvailableSettings, typeAvailableSetting } from './entitySetting-utils';
 import { queryDefaultSubTypes } from '../../domain/subType';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 // -- LOADING --
 
@@ -27,8 +28,15 @@ export const findAll = (context: AuthContext, user: AuthUser, opts: QueryEntityS
 };
 
 export const entitySettingEditField = async (context: AuthContext, user: AuthUser, entitySettingId: string, input: EditInput[]) => {
-  return updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input)
-    .then(({ element }) => notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user));
+  const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
+    context_data: { entity_type: element.target_type, operation: 'update', input }
+  });
+  return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };
 
 export const entitySettingsEditField = async (context: AuthContext, user: AuthUser, entitySettingIds: string[], input: EditInput[]) => {

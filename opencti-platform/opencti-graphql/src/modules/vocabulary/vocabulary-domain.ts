@@ -54,8 +54,8 @@ export const getVocabularyUsages = async (context: AuthContext, user: AuthUser, 
 };
 
 export const addVocabulary = async (context: AuthContext, user: AuthUser, vocabulary: VocabularyAddInput) => {
-  const created = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
-  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, created, user);
+  const element = await createEntity(context, user, vocabulary, ENTITY_TYPE_VOCABULARY);
+  return notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].ADDED_TOPIC, element, user);
 };
 
 export const deleteVocabulary = async (context: AuthContext, user: AuthUser, vocabularyId: string, props?: Record<string, unknown>) => {
@@ -124,9 +124,6 @@ export const editVocabulary = async (context: AuthContext, user: AuthUser, id: s
         await updateElasticVocabularyValue([oldValue.name], name, completeCategory);
       }
     }
-    const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
-    await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);
-    return element;
   }
   const { element } = await updateAttribute(context, user, id, ENTITY_TYPE_VOCABULARY, input, props);
   await notify(BUS_TOPICS[ENTITY_TYPE_VOCABULARY].EDIT_TOPIC, element, user);

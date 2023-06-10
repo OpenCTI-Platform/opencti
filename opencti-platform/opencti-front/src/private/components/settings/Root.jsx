@@ -1,6 +1,11 @@
 import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
-import { SETTINGS, SETTINGS_SETACCESSES, SETTINGS_SETLABELS, SETTINGS_SETMARKINGS } from '../../../utils/hooks/useGranted';
+import {
+  SETTINGS,
+  SETTINGS_SETACCESSES,
+  SETTINGS_SETLABELS,
+  SETTINGS_SETMARKINGS,
+} from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 import { BoundaryRoute } from '../Error';
 import CaseTemplates from './case_templates/CaseTemplates';
@@ -24,6 +29,7 @@ import Users from './Users';
 import RootUser from './users/Root';
 import Vocabularies from './Vocabularies';
 import VocabularyCategories from './VocabularyCategories';
+import RootActivity from './activity/Root';
 
 const Root = () => (
   <Switch>
@@ -147,11 +153,32 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/entity_types"
+        path="/dashboard/settings/activity"
+        render={() => <Redirect to="/dashboard/settings/activity/audit" />}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/activity"
+        render={() => <RootActivity />}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/customization"
+        render={() => (
+          <Redirect to="/dashboard/settings/customization/entity_types" />
+        )}
+      />
+      <BoundaryRoute
+        exact
+        path="/dashboard/settings/customization/entity_types"
         component={SubTypes}
       />
       <BoundaryRoute
-        path="/dashboard/settings/entity_types/:subTypeId"
+        exact
+        path="/dashboard/settings/customization/retention"
+        component={Retention}
+      />
+      <BoundaryRoute
+        path="/dashboard/settings/customization/entity_types/:subTypeId"
         render={() => <RootSubType />}
       />
       <BoundaryRoute
@@ -161,10 +188,9 @@ const Root = () => (
       />
       <BoundaryRoute
         exact
-        path="/dashboard/settings/retention"
-        component={Retention}
+        path="/dashboard/settings/customization/rules"
+        component={Rules}
       />
-      <BoundaryRoute exact path="/dashboard/settings/rules" component={Rules} />
       <BoundaryRoute
         exact
         path="/dashboard/settings/vocabularies"
@@ -193,7 +219,10 @@ const Root = () => (
         exact
         path="/dashboard/settings/vocabularies/caseTemplates"
         render={() => (
-          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+          <Security
+            needs={[SETTINGS_SETLABELS]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
+          >
             <CaseTemplates />
           </Security>
         )}
@@ -202,7 +231,10 @@ const Root = () => (
         exact
         path="/dashboard/settings/vocabularies/caseTemplates/:caseTemplateId"
         render={() => (
-          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
+          <Security
+            needs={[SETTINGS_SETLABELS]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
+          >
             <CaseTemplateTasks />
           </Security>
         )}
@@ -211,7 +243,9 @@ const Root = () => (
         exact
         path="/dashboard/settings/vocabularies/kill_chain_phases"
         render={() => (
-          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}
+          <Security
+            needs={[SETTINGS_SETLABELS]}
+            placeholder={<Redirect to={'/dashboard/settings'} />}
           >
             <KillChainPhases />
           </Security>

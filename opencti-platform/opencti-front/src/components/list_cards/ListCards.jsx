@@ -103,7 +103,7 @@ class ListCards extends Component {
             <Filters
               availableFilterKeys={availableFilterKeys}
               handleAddFilter={handleAddFilter}
-              searchContext={{ entityTypes: [exportEntityType] }}
+              searchContext={{ entityTypes: exportEntityType ? [exportEntityType] : [] }}
             />
           )}
           <InputLabel

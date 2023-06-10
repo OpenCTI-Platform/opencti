@@ -124,8 +124,8 @@ export const extractStixRepresentative = async (context: AuthContext, user: Noti
   }
   if (entityType === ENTITY_TYPE_CONTAINER_OBSERVED_DATA) {
     const observed = stix as SDO.StixObservedData;
-    const from = observed.first_observed?.toISOString() ?? '-inf';
-    const to = observed.last_observed?.toISOString() ?? '+inf';
+    const from = observed.first_observed ?? '-inf';
+    const to = observed.last_observed ?? '+inf';
     return `${from} - ${to}`;
   }
   if (entityType === ENTITY_TYPE_COURSE_OF_ACTION) {

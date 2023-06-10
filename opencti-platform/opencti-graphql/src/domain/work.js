@@ -9,9 +9,10 @@ import {
   redisUpdateActionExpectation,
   redisUpdateWorkFigures
 } from '../database/redis';
-import { ENTITY_TYPE_WORK } from '../schema/internalObject';
+import { ENTITY_TYPE_CONNECTOR, ENTITY_TYPE_WORK } from '../schema/internalObject';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { CONNECTOR_INTERNAL_EXPORT_FILE } from '../schema/general';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const workToExportFile = (work) => {
   const lastModifiedSinceMin = sinceNowInMinutes(work.updated_at);
@@ -106,11 +107,19 @@ export const pingWork = async (context, user, workId) => {
 };
 
 export const deleteWorkForConnector = async (context, user, connectorId) => {
+  const connector = await elLoadById(context, user, connectorId, { type: ENTITY_TYPE_CONNECTOR });
   let works = await worksForConnector(context, user, connectorId, { first: 500 });
   while (works.length > 0) {
     await deleteWorksRaw(works);
     works = await worksForConnector(context, user, connectorId, { first: 500 });
   }
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `cleans \`all works\` for connector \`${connector.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, operation: 'create', input: connector }
+  });
   return true;
 };
 

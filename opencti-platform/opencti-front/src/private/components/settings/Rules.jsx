@@ -10,6 +10,7 @@ import { UserContext } from '../../../utils/hooks/useAuth';
 import { dayAgo, yearsAgo } from '../../../utils/Time';
 import { RULE_ENGINE } from '../../../utils/platformModulesHelper';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
+import CustomizationMenu from './CustomizationMenu';
 
 const LOCAL_STORAGE_KEY = 'view-rules';
 
@@ -19,6 +20,10 @@ const Transition = React.forwardRef((props, ref) => (
 Transition.displayName = 'TransitionSlide';
 
 const useStyles = makeStyles(() => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 50px 0',
+  },
   parameters: {
     float: 'left',
     marginTop: -10,
@@ -33,43 +38,49 @@ const Rules = () => {
     {},
   );
   return (
-    <UserContext.Consumer>
-      {({ platformModuleHelpers }) => {
-        if (!platformModuleHelpers.isRuleEngineEnable()) {
+    <div className={classes.container}>
+      <CustomizationMenu />
+      <UserContext.Consumer>
+        {({ platformModuleHelpers }) => {
+          if (!platformModuleHelpers.isRuleEngineEnable()) {
+            return (
+              <Alert severity="info">
+                {t(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
+              </Alert>
+            );
+          }
           return (
-            <Alert severity="info">
-              {t(platformModuleHelpers.generateDisableMessage(RULE_ENGINE))}
-            </Alert>
-          );
-        }
-        return (
-          <div className={classes.container}>
-            <div className={classes.parameters}>
-              <div style={{ float: 'left', marginRight: 20 }}>
-                <SearchInput
-                  variant="small"
-                  onSubmit={helpers.handleSearch}
-                  keyword={viewStorage.searchTerm ?? ''}
-                />
+            <>
+              <div className={classes.parameters}>
+                <div style={{ float: 'left', marginRight: 20 }}>
+                  <SearchInput
+                    variant="small"
+                    onSubmit={helpers.handleSearch}
+                    keyword={viewStorage.searchTerm ?? ''}
+                  />
+                </div>
               </div>
-            </div>
-            <div className="clearfix" />
-            <QueryRenderer
-              query={rulesListQuery}
-              variables={{ startDate: yearsAgo(1), endDate: dayAgo() }}
-              render={({ props }) => {
-                if (props) {
-                  return (
-                    <RulesList data={props} keyword={viewStorage.searchTerm ?? ''} />
-                  );
-                }
-                return <div />;
-              }}
-            />
-          </div>
-        );
-      }}
-    </UserContext.Consumer>
+              <div className="clearfix" />
+              <QueryRenderer
+                query={rulesListQuery}
+                variables={{ startDate: yearsAgo(1), endDate: dayAgo() }}
+                render={({ props }) => {
+                  if (props) {
+                    return (
+                      <RulesList
+                        data={props}
+                        keyword={viewStorage.searchTerm ?? ''}
+                      />
+                    );
+                  }
+                  return <div />;
+                }}
+              />
+            </>
+          );
+        }}
+      </UserContext.Consumer>
+    </div>
   );
 };
 

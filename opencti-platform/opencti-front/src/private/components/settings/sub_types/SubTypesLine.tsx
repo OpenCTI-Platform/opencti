@@ -122,7 +122,7 @@ const SubTypeLine: FunctionComponent<SubTypeLineProps> = ({
       divider={true}
       classes={{ root: classes.item }}
       component={Link}
-      to={`/dashboard/settings/entity_types/${nodeSubType.id}`}
+      to={`/dashboard/settings/customization/entity_types/${nodeSubType.id}`}
     >
       <ListItemIcon
         onClick={(event) => (event.shiftKey

@@ -11,6 +11,7 @@ import { FunctionalError, UnsupportedError, ValidationError } from '../config/er
 import { isStixCyberObservable } from '../schema/stixCyberObservable';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import type { DomainFindById } from './domainTypes';
+import { publishUserAction } from '../listener/UserActionListener';
 
 const checkFeedIntegrity = (input: FeedAddInput) => {
   if (input.separator.length > 1) {
@@ -38,7 +39,17 @@ const checkFeedIntegrity = (input: FeedAddInput) => {
 
 export const createFeed = async (context: AuthContext, user: AuthUser, input: FeedAddInput): Promise<StoreEntityFeed> => {
   checkFeedIntegrity(input);
-  return createEntity(context, user, input, ENTITY_TYPE_FEED);
+  const { element, isCreation } = await createEntity(context, user, input, ENTITY_TYPE_FEED, { complete: true });
+  if (isCreation) {
+    await publishUserAction({
+      user,
+      event_type: 'admin',
+      status: 'success',
+      message: `creates csv feed \`${element.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'create', input }
+    });
+  }
+  return element;
 };
 export const findById: DomainFindById<StoreEntityFeed> = async (context: AuthContext, user: AuthUser, feedId: string) => {
   return storeLoadById<StoreEntityFeed>(context, user, feedId, ENTITY_TYPE_FEED);
@@ -50,12 +61,26 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
     throw FunctionalError(`Feed ${id} cant be found`);
   }
   await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: input });
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `updates \`configuration\` for csv feed \`${feed.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'update', input }
+  });
   return findById(context, user, id);
 };
 export const findAll = (context: AuthContext, user: AuthUser, opts: QueryFeedsArgs) => {
   return listEntitiesPaginated<StoreEntityFeed>(context, user, [ENTITY_TYPE_FEED], opts);
 };
 export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: string) => {
-  await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);
+  const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);
+  await publishUserAction({
+    user,
+    event_type: 'admin',
+    status: 'success',
+    message: `deletes csv feed \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'delete', input: deleted }
+  });
   return feedId;
 };

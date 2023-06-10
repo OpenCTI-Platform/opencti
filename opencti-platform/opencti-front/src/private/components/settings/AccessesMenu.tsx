@@ -14,7 +14,7 @@ import useGranted, {
 } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
 
-const SettingsMenu: FunctionComponent = () => {
+const AccessesMenu: FunctionComponent = () => {
   const entries: MenuEntry[] = [
     {
       path: '/dashboard/settings/accesses/roles',
@@ -67,4 +67,4 @@ const SettingsMenu: FunctionComponent = () => {
   return <NavToolbarMenu entries={markingEntries} />;
 };
 
-export default SettingsMenu;
+export default AccessesMenu;

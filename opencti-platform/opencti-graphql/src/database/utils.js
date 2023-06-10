@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import moment from 'moment';
 import { DatabaseError, UnsupportedError } from '../config/errors';
-import { isHistoryObject, isInternalObject } from '../schema/internalObject';
+import { ENTITY_TYPE_CAPABILITY, isHistoryObject, isInternalObject } from '../schema/internalObject';
 import { isStixMetaObject } from '../schema/stixMetaObject';
 import { isStixDomainObject } from '../schema/stixDomainObject';
 import { ENTITY_HASHED_OBSERVABLE_STIX_FILE, isStixCyberObservable } from '../schema/stixCyberObservable';
@@ -11,7 +11,7 @@ import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import { isStixObject } from '../schema/stixCoreObject';
 import conf from '../config/conf';
 import { FROM_START_STR, now, observableValue, UNTIL_END_STR } from '../utils/format';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import { truncate } from '../utils/mailData';
 import {
   isDateAttribute,
@@ -271,6 +271,8 @@ export const extractEntityRepresentative = (entityData) => {
     const from = moment(entityData.first_observed).utc().toISOString();
     const to = moment(entityData.last_observed).utc().toISOString();
     mainValue = `${from} - ${to}`;
+  } else if (entityData.entity_type === ENTITY_TYPE_CAPABILITY) {
+    return entityData.description;
   } else if (isNotEmptyField(entityData.name)) {
     mainValue = entityData.name;
   } else if (isNotEmptyField(entityData.description)) {
@@ -297,7 +299,7 @@ const generateCreateDeleteMessage = (type, instance) => {
     }
     return `${type}s a ${entityType} \`${name}\``;
   }
-  if (isStixRelationship(instance.entity_type)) {
+  if (isBasicRelationship(instance.entity_type)) {
     const from = extractEntityRepresentative(instance.from);
     let fromType = instance.from.entity_type;
     if (fromType === ENTITY_HASHED_OBSERVABLE_STIX_FILE) {

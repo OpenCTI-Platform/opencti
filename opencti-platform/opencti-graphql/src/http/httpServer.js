@@ -60,7 +60,14 @@ const createHttpServer = async () => {
         // We have a good session. attach to context
         if (wsSession.user) {
           const context = executionContext('api');
-          context.user = wsSession.user;
+          const origin = {
+            socket: 'subscription',
+            ip: webSocket._socket.remoteAddress,
+            user_id: wsSession.user?.id,
+            group_ids: wsSession.user?.group_ids,
+            organization_ids: wsSession.user?.organizations?.map((o) => o.internal_id) ?? [],
+          };
+          context.user = { ...wsSession.user, origin };
           return context;
         }
         throw new Error('User must be authenticated');

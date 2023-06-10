@@ -337,10 +337,16 @@ enum LogsOrdering {
 }
 
 enum LogsFilter {
+  elementId
   event_type
   entity_id
+  created
   connection_id
   user_id
+  creator
+  members_user
+  members_group
+  members_organization
   applicant_id
 }
 
@@ -362,8 +368,8 @@ type LogEdge {
 }
 
 type ContextData {
-  id: String!
-  entity_type: String!
+  entity_name: String
+  entity_type: String
   from_id: String
   to_id: String
   message: String!
@@ -373,10 +379,13 @@ type ContextData {
 
 type Log {
   id: ID!
+  entity_type: String
   event_type: String!
   timestamp: DateTime!
   user_id: String!
   user: Creator
+  raw_data: String
+  context_uri: String
   context_data: ContextData
 }
 
@@ -1005,6 +1014,12 @@ type Provider {
   provider: String
 }
 
+type ActivityListener {
+  id: ID!
+  name: String!
+  entity_type: String!
+}
+
 type Settings implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
@@ -1047,6 +1062,8 @@ type Settings implements InternalObject & BasicObject {
   platform_feature_flags: [Module!]
   created_at: DateTime!
   updated_at: DateTime!
+  enterprise_edition: DateTime
+  activity_listeners: [ActivityListener!]
   otp_mandatory: Boolean
   password_policy_min_length: Int
   password_policy_max_length: Int
@@ -7611,6 +7628,7 @@ type Query {
   rabbitMQMetrics(prefix: String): RabbitMQMetrics
   elasticSearchMetrics: ElasticSearchMetrics
   logs(first: Int, after: ID, orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
+  audits(first: Int, after: ID, types: [String!], orderBy: LogsOrdering, orderMode: OrderingMode, filters: [LogsFiltering!], filterMode: FilterMode, search: String): LogConnection
   logsTimeSeries(userId: String, field: String!, operation: StatsOperation!, startDate: DateTime!, endDate: DateTime!, interval: String!, filters: [LogsFiltering!], filterMode: FilterMode, search: String): [TimeSeries]
   subType(id: String!): SubType
   subTypes(first: Int, after: ID, orderBy: SubTypesOrdering, orderMode: OrderingMode, type: String, includeParents: Boolean, search: String): SubTypeConnection!

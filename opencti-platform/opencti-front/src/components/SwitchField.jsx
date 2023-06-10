@@ -1,9 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 import MuiSwitch from '@mui/material/Switch';
 import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import FormHelperText from '@mui/material/FormHelperText';
 import { fieldToSwitch } from 'formik-mui';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
+import { useFormatter } from './i18n';
 
 const SwitchField = (props) => {
   const {
@@ -11,8 +14,10 @@ const SwitchField = (props) => {
     field: { name },
     onChange,
     helpertext,
+    tooltip,
   } = props;
-  const internalOnChange = React.useCallback(
+  const { t } = useFormatter();
+  const internalOnChange = useCallback(
     (event) => {
       const value = event.target.checked ? 'true' : 'false';
       setFieldValue(name, event.target.checked);
@@ -22,7 +27,7 @@ const SwitchField = (props) => {
     },
     [onChange, setFieldValue, name],
   );
-  const internalOnBlur = React.useCallback(() => {
+  const internalOnBlur = useCallback(() => {
     setTouched(true);
   }, [setTouched]);
   return (
@@ -36,7 +41,26 @@ const SwitchField = (props) => {
               onBlur={internalOnBlur}
             />
           }
-          label={props.label}
+          label={
+            tooltip ? (
+              <div style={{ display: 'flex' }}>
+                <span>{props.label}</span>
+                <Tooltip
+                  title={t(
+                    'All objects matching the filters that have not been updated since this amount of days will be deleted',
+                  )}
+                >
+                  <InformationOutline
+                    fontSize="small"
+                    color="primary"
+                    style={{ cursor: 'default', margin: '0 0 0 10px' }}
+                  />
+                </Tooltip>
+              </div>
+            ) : (
+              props.label
+            )
+          }
         />
       </FormGroup>
       <FormHelperText>{helpertext}</FormHelperText>

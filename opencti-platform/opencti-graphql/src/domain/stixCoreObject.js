@@ -250,12 +250,13 @@ export const stixCoreObjectExportAsk = async (context, user, args) => {
 };
 
 export const stixCoreObjectsExportPush = async (context, user, type, file, listFilters) => {
-  await upload(context, user, `export/${type}`, file, { list_filters: listFilters });
+  const meta = { list_filters: listFilters };
+  await upload(context, user, `export/${type}`, file, { meta });
   return true;
 };
 export const stixCoreObjectExportPush = async (context, user, entityId, file) => {
   const entity = await internalLoadById(context, user, entityId);
-  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity_id: entityId });
+  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity });
   return true;
 };
 
@@ -275,12 +276,12 @@ export const stixCoreObjectImportPush = async (context, user, id, file, noTrigge
     const isAutoExternal = !entitySetting ? false : entitySetting.platform_entity_files_ref;
     const filePath = `import/${previous.entity_type}/${internalId}`;
     // 01. Upload the file
-    const meta = { entity_id: internalId };
+    const meta = {};
     if (isAutoExternal) {
       const key = `${filePath}/${filename}`;
       meta.external_reference_id = generateStandardId(ENTITY_TYPE_EXTERNAL_REFERENCE, { url: `/storage/get/${key}` });
     }
-    const up = await upload(context, user, filePath, file, meta, noTriggerImport);
+    const up = await upload(context, user, filePath, file, { meta, noTriggerImport, entity: previous });
     // 02. Create and link external ref if needed.
     let addedExternalRef;
     if (isAutoExternal) {

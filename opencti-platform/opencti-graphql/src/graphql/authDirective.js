@@ -2,11 +2,9 @@
 import { mapSchema, MapperKind, getDirective } from '@graphql-tools/utils';
 import { includes, map, filter } from 'ramda';
 // eslint-disable-next-line import/extensions
-import { defaultFieldResolver, responsePathAsArray } from 'graphql/index.js';
+import { defaultFieldResolver } from 'graphql/index.js';
 import { AuthRequired, ForbiddenAccess, OtpRequired, OtpRequiredActivation } from '../config/errors';
 import { OPENCTI_ADMIN_UUID } from '../schema/general';
-import { logAudit } from '../config/conf';
-import { ACCESS_CONTROL } from '../config/audit';
 import { BYPASS } from '../utils/access';
 
 // eslint-disable-next-line
@@ -72,8 +70,6 @@ export const authDirectiveBuilder = (directiveName) => {
               const isAccessForbidden = numberOfAvailableCapabilities === 0
                   || (requiredAll && numberOfAvailableCapabilities !== requiredCapabilities.length);
               if (isAccessForbidden) {
-                const executionPath = responsePathAsArray(info.path);
-                logAudit.error(user, ACCESS_CONTROL, { path: executionPath });
                 throw ForbiddenAccess();
               }
               return resolve(source, args, context, info);

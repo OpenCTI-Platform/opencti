@@ -17,7 +17,7 @@ class Dicts:
             "icmp-event": "Generic ICMP Event",
             "inappropriate-content": "Inappropriate content was detected",
             "malware-cnc": "Known malware command and control traffic",
-            "misc-activity": "Misc Activity",
+            "misc-activity": "Misc Audit",
             "misc-attack": "Misc Attack",
             "network-scan": "Detection of a Network Scan",
             "non-standard-protocol": "Detection of a Non-Standard Protocol or Event",

@@ -20,9 +20,9 @@ const MarkDownField = (props) => {
     label,
     style,
     disabled,
-    maxEditorHeight,
     controlledSelectedTab,
     controlledSetSelectTab,
+    height,
   } = props;
   const { t } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
@@ -61,7 +61,6 @@ const MarkDownField = (props) => {
       <ReactMde
         value={field.value}
         readOnly={disabled}
-        maxEditorHeight={maxEditorHeight}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={controlledSelectedTab || selectedTab}
         onTabChange={(tab) => (controlledSetSelectTab ? controlledSetSelectTab(tab) : setSelectedTab(tab))}
@@ -82,6 +81,8 @@ const MarkDownField = (props) => {
         childProps={{
           textArea: { onSelect: internalOnSelect },
         }}
+        minEditorHeight={height || 100}
+        maxEditorHeight={height || 100}
       />
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
