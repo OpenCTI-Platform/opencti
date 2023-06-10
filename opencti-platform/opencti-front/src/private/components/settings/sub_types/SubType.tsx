@@ -13,8 +13,13 @@ import { SubType_subType$key } from './__generated__/SubType_subType.graphql';
 import EntitySettingAttributesConfiguration from './EntitySettingAttributesConfiguration';
 import EntitySettingAttributesConfigurationScale from './EntitySettingAttributesConfigurationScale';
 import { SubTypeEntitySettingSubscription } from './__generated__/SubTypeEntitySettingSubscription.graphql';
+import CustomizationMenu from '../CustomizationMenu';
 
 const useStyles = makeStyles(() => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 50px 0',
+  },
   paper: {
     height: '100%',
     minHeight: '100%',
@@ -80,7 +85,8 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
   }
 
   return (
-    <>
+    <div className={classes.container}>
+      <CustomizationMenu />
       <div style={{ marginBottom: 23 }}>
         <Typography variant="h1" gutterBottom={true}>
           {t(`entity_${subType.label}`)}
@@ -93,7 +99,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
               {t('Configuration')}
             </Typography>
             <Paper classes={{ root: classes.paper }} variant="outlined">
-              <EntitySetting entitySettingsData={subType.settings}/>
+              <EntitySetting entitySettingsData={subType.settings} />
               <div style={{ marginTop: 10 }}>
                 <Typography variant="h3" gutterBottom={true}>
                   {t('Workflow')}
@@ -110,11 +116,11 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         <EntitySettingAttributesConfiguration
           entitySettingsData={subType.settings}
         />
-          <EntitySettingAttributesConfigurationScale
-            entitySettingsData={subType.settings}
-          />
+        <EntitySettingAttributesConfigurationScale
+          entitySettingsData={subType.settings}
+        />
       </Grid>
-    </>
+    </div>
   );
 };
 

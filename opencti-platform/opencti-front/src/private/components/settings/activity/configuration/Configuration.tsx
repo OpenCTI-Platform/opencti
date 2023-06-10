@@ -16,7 +16,12 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 import React, { FunctionComponent } from 'react';
 import * as R from 'ramda';
 import { Form, Formik } from 'formik';
-import { graphql, usePreloadedQuery, useMutation, PreloadedQuery } from 'react-relay';
+import {
+  graphql,
+  usePreloadedQuery,
+  useMutation,
+  PreloadedQuery,
+} from 'react-relay';
 import makeStyles from '@mui/styles/makeStyles';
 import IconButton from '@mui/material/IconButton';
 import List from '@mui/material/List';
@@ -61,129 +66,199 @@ const useStyles = makeStyles<Theme>(() => ({
 }));
 
 export const configurationQuery = graphql`
-    query ConfigurationQuery {
-        settings {
-            id
-            enterprise_edition
-            activity_listeners {
-                id
-                name
-                entity_type
-            }
-        }
+  query ConfigurationQuery {
+    settings {
+      id
+      enterprise_edition
+      activity_listeners {
+        id
+        name
+        entity_type
+      }
     }
+  }
 `;
 
 export const configurationFieldPatch = graphql`
-    mutation ConfigurationFieldPatchMutation($id: ID!, $input: [EditInput]!) {
-        settingsEdit(id: $id) {
-            fieldPatch(input: $input) {
-                activity_listeners {
-                    id
-                    name
-                    entity_type
-                }
-            }
+  mutation ConfigurationFieldPatchMutation($id: ID!, $input: [EditInput]!) {
+    settingsEdit(id: $id) {
+      fieldPatch(input: $input) {
+        activity_listeners {
+          id
+          name
+          entity_type
         }
+      }
     }
+  }
 `;
 
 interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<ConfigurationQuery>,
+  queryRef: PreloadedQuery<ConfigurationQuery>;
 }
 
-const ConfigurationComponent: FunctionComponent<ConfigurationComponentProps> = ({ queryRef }) => {
+const ConfigurationComponent: FunctionComponent<
+ConfigurationComponentProps
+> = ({ queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [commit] = useMutation(configurationFieldPatch);
-  const { settings } = usePreloadedQuery<ConfigurationQuery>(configurationQuery, queryRef);
+  const { settings } = usePreloadedQuery<ConfigurationQuery>(
+    configurationQuery,
+    queryRef,
+  );
   const currentListeners = (settings.activity_listeners ?? []).map((a) => a.id);
   const onChangeData = (resetForm: () => void) => {
     return (name: string, data: Option) => {
       if (!currentListeners.includes(data.value)) {
         const value = R.uniq([...currentListeners, data.value]);
-        commit({ variables: { id: settings?.id, input: { key: 'activity_listeners_ids', value } } });
+        commit({
+          variables: {
+            id: settings?.id,
+            input: { key: 'activity_listeners_ids', value },
+          },
+        });
       }
       resetForm();
     };
   };
 
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition/>;
+    return <EnterpriseEdition />;
   }
 
   return (
-        <div className={classes.container}>
-            <ActivityMenu />
-            <Alert icon={false} classes={{ root: classes.alert, message: classes.message }}
-                   severity="warning" variant="outlined" style={{ position: 'relative' }}>
-                <AlertTitle style={{ marginBottom: 0 }}>
-                    {t('Activity logs can be enhance to listen for users actions like see, upload, download...')}<br/>
-                    {t('To activate it you need to choose witch users/groups/organizations you want to enhance')}<br/>
-                    {t('History of new listeners will start as soon added in the configuration')}<br/>
-                </AlertTitle>
-            </Alert>
-            <div>
-                <Formik onSubmit={() => {}} enableReinitialize={true} initialValues={{ users: '', groups: '', organizations: '' }}>
-                    {({ resetForm }) => {
-                      return (
-                        <Form style={{ margin: '20px 0 20px 0' }}>
-                            <Grid container={true} spacing={0}>
-                                <Grid key='users' item={true} xs={4} style={{ padding: 4 }}>
-                                    <CreatorField name={'users'} label={t('Add a user')} onChange={onChangeData(resetForm)} containerStyle={{ width: '100%' }}/>
-                                </Grid>
-                                <Grid key='groups' item={true} xs={4} style={{ padding: 4 }}>
-                                    <GroupField name={'groups'} label={t('Add a group')} multiple={false} onChange={onChangeData(resetForm)} containerStyle={{ width: '100%' }}/>
-                                </Grid>
-                                <Grid key='organizations' item={true} xs={4} style={{ padding: 4 }}>
-                                    <ObjectOrganizationField alert={false} name={'orgs'} label={t('Add an organization')} multiple={false} onChange={onChangeData(resetForm)} containerStyle={{ width: '100' }}/>
-                                </Grid>
-                            </Grid>
-                        </Form>
+    <div className={classes.container}>
+      <ActivityMenu />
+      <Alert
+        icon={false}
+        classes={{ root: classes.alert, message: classes.message }}
+        severity="warning"
+        variant="outlined"
+        style={{ position: 'relative' }}
+      >
+        <AlertTitle style={{ marginBottom: 0 }}>
+          {t(
+            'Activity logs can be enhance to listen for users actions like see, upload, download...',
+          )}
+          <br />
+          {t(
+            'To activate it you need to choose witch users/groups/organizations you want to enhance',
+          )}
+          <br />
+          {t(
+            'History of new listeners will start as soon added in the configuration',
+          )}
+          <br />
+        </AlertTitle>
+      </Alert>
+      <div>
+        <Formik
+          onSubmit={() => {}}
+          enableReinitialize={true}
+          initialValues={{ users: '', groups: '', organizations: '' }}
+        >
+          {({ resetForm }) => {
+            return (
+              <Form style={{ margin: '20px 0 20px 0' }}>
+                <Grid container={true} spacing={0}>
+                  <Grid key="users" item={true} xs={4} style={{ padding: 4 }}>
+                    <CreatorField
+                      name={'users'}
+                      label={t('Add a user')}
+                      onChange={onChangeData(resetForm)}
+                      containerStyle={{ width: '100%' }}
+                    />
+                  </Grid>
+                  <Grid key="groups" item={true} xs={4} style={{ padding: 4 }}>
+                    <GroupField
+                      name={'groups'}
+                      label={t('Add a group')}
+                      multiple={false}
+                      onChange={onChangeData(resetForm)}
+                      containerStyle={{ width: '100%' }}
+                    />
+                  </Grid>
+                  <Grid
+                    key="organizations"
+                    item={true}
+                    xs={4}
+                    style={{ padding: 4 }}
+                  >
+                    <ObjectOrganizationField
+                      alert={false}
+                      name={'orgs'}
+                      label={t('Add an organization')}
+                      multiple={false}
+                      onChange={onChangeData(resetForm)}
+                      containerStyle={{ width: '100' }}
+                    />
+                  </Grid>
+                </Grid>
+              </Form>
+            );
+          }}
+        </Formik>
+      </div>
+      <List
+        component="nav"
+        aria-labelledby="nested-list-subheader"
+        className={classes.root}
+      >
+        {(settings.activity_listeners ?? []).map((listener) => {
+          return (
+            <div key={listener.id}>
+              <ListItem
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+              >
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ItemIcon type={listener.entity_type} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div className={classes.name}>{listener.name}</div>
+                    </div>
+                  }
+                />
+                <ListItemSecondaryAction>
+                  <IconButton
+                    aria-label="Kill"
+                    onClick={() => {
+                      const value = currentListeners.filter(
+                        (c) => c !== listener.id,
                       );
+                      commit({
+                        variables: {
+                          id: settings?.id,
+                          input: { key: 'activity_listeners_ids', value },
+                        },
+                      });
                     }}
-                </Formik>
+                    size="large"
+                  >
+                    <Delete />
+                  </IconButton>
+                </ListItemSecondaryAction>
+              </ListItem>
             </div>
-            <List component="nav" aria-labelledby="nested-list-subheader" className={classes.root}>
-                {(settings.activity_listeners ?? []).map((listener) => {
-                  return (
-                        <div key={listener.id}>
-                            <ListItem classes={{ root: classes.item }} divider={true} button={true}>
-                                <ListItemIcon classes={{ root: classes.itemIcon }}>
-                                    <ItemIcon type={listener.entity_type} />
-                                </ListItemIcon>
-                                <ListItemText
-                                    primary={
-                                        <div>
-                                            <div className={classes.name}>{listener.name}</div>
-                                        </div>
-                                    }
-                                />
-                                <ListItemSecondaryAction>
-                                    <IconButton aria-label="Kill" onClick={() => {
-                                      const value = currentListeners.filter((c) => c !== listener.id);
-                                      commit({ variables: { id: settings?.id, input: { key: 'activity_listeners_ids', value } } });
-                                    }} size="large">
-                                        <Delete />
-                                    </IconButton>
-                                </ListItemSecondaryAction>
-                            </ListItem>
-                        </div>
-                  );
-                })}
-            </List>
-        </div>
+          );
+        })}
+      </List>
+    </div>
   );
 };
 
 const Configuration = () => {
   const queryRef = useQueryLoading<ConfigurationQuery>(configurationQuery, {});
   return queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <ConfigurationComponent queryRef={queryRef} />
-        </React.Suspense>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <ConfigurationComponent queryRef={queryRef} />
+    </React.Suspense>
   ) : (
-        <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

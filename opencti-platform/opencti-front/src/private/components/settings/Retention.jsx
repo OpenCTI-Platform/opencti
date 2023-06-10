@@ -1,17 +1,29 @@
 import React from 'react';
 import Alert from '@mui/material/Alert';
+import makeStyles from '@mui/styles/makeStyles';
 import { QueryRenderer } from '../../../relay/environment';
 import ListLines from '../../../components/list_lines/ListLines';
-import RetentionLines, { RetentionLinesQuery } from './retention/RetentionLines';
+import RetentionLines, {
+  RetentionLinesQuery,
+} from './retention/RetentionLines';
 import RetentionCreation from './retention/RetentionCreation';
 import useAuth from '../../../utils/hooks/useAuth';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import { useFormatter } from '../../../components/i18n';
 import { RETENTION_MANAGER } from '../../../utils/platformModulesHelper';
+import CustomizationMenu from './CustomizationMenu';
 
 const LOCAL_STORAGE_KEY = 'retention-view';
 
+const useStyles = makeStyles(() => ({
+  container: {
+    margin: 0,
+    padding: '0 200px 50px 0',
+  },
+}));
+
 const Retention = () => {
+  const classes = useStyles();
   const { t } = useFormatter();
   const { platformModuleHelpers } = useAuth();
   const {
@@ -51,7 +63,8 @@ const Retention = () => {
     );
   }
   return (
-    <>
+    <div className={classes.container}>
+      <CustomizationMenu />
       <ListLines
         dataColumns={dataColumns}
         handleSearch={storageHelpers.handleSearch}
@@ -73,7 +86,7 @@ const Retention = () => {
         />
       </ListLines>
       <RetentionCreation paginationOptions={paginationOptions} />
-    </>
+    </div>
   );
 };
 
