@@ -1909,10 +1909,10 @@ const i18n = {
       Collapse: 'Colapso',
       'Platform Message Configuration': 'Configuración de mensajes de la plataforma',
       'Platform Consent Message': 'Mensaje de consentimiento de la plataforma',
-      'Platform Consent Message - requires acceptance to enable login form when set':
-        'Mensaje de consentimiento de la plataforma: requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece',
-      'I have read and comply with the above statement': 'He leído y cumplo con la declaración anterior',
-      'Platform Consent Confirm Text - confirm label next to confirm checkbox': 'Texto de confirmación de consentimiento de la plataforma: etiqueta de confirmación junto a la casilla de verificación de confirmación',
+      'Platform Consent Confirm Text': 'Texto de confirmación de consentimiento de la plataforma',
+      'Requires acceptance to enable login form when set':
+        'Requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece',
+      'One line confirm label next to confirm checkbox': 'Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación',
     },
     'fr-fr': {
       // Titles
@@ -3241,6 +3241,7 @@ const i18n = {
       'Total processed messages': 'Total de messages traités',
       'Read operations': 'Opérations de lecture',
       'Write operations': "Opérations d'écriture",
+      'Platform login message': 'Message de connexion à la plateforme',
       Write: 'Ecrire',
       Preview: 'Aperçu',
       'Graph type': 'Type de graphique',
@@ -3837,11 +3838,11 @@ const i18n = {
         'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
       Collapse: 'Réduire',
       'Platform Message Configuration': 'Configuration des messages de la plate-forme',
-      'Platform Consent Message': 'Message de consentement de la plate-forme',
-      'Platform Consent Message - requires acceptance to enable login form when set':
-        "Message de consentement de la plate-forme - nécessite une acceptation pour activer le formulaire de connexion lorsqu'il est défini",
-      'I have read and comply with the above statement': "J'ai lu et respecte la déclaration ci-dessus",
-      'Platform Consent Confirm Text - confirm label next to confirm checkbox': "Texte de confirmation du consentement de la plate-forme - confirmez l'étiquette à côté de la case à cocher de confirmation",
+      'Platform Consent Message': 'Message de consentement de la plateforme',
+      'Platform Consent Confirm Text': 'Texte de confirmation du consentement de la plateforme',
+      'Requires acceptance to enable login form when set':
+        "Nécessite une acceptation pour activer le formulaire de connexion lorsqu'il est défini",
+      'One line confirm label next to confirm checkbox': 'Texte monoligne de confirmation à côté de la case à cocher de confirmation',
     },
     'ja-jp': {
       // Titles
@@ -5681,10 +5682,9 @@ const i18n = {
       Collapse: '崩壊',
       'Platform Message Configuration': 'プラットフォームメッセージの構成',
       'Platform Consent Message': 'プラットフォーム同意メッセージ',
-      'Platform Consent Message - requires acceptance to enable login form when set':
-        'プラットフォーム同意メッセージ - 設定時にログインフォームを有効にするには同意が必要です',
-      'I have read and comply with the above statement': '上記の声明を読み、遵守します',
-      'Platform Consent Confirm Text - confirm label next to confirm checkbox': 'プラットフォーム同意確認テキスト - 確認チェックボックスの横にある確認ラベル',
+      'Platform Consent Confirm Text': 'プラットフォーム同意確認テキスト',
+      'Requires acceptance to enable login form when set': '設定時にログインフォームを有効にするには同意が必要です',
+      'One line confirm label next to confirm checkbox': '確認チェックボックスの横にある 1 行の確認ラベル',
     },
     'zh-cn': {
       // Titles
@@ -6881,6 +6881,7 @@ const i18n = {
       'Total processed messages': '已处理消息总数',
       'Read operations': '读取操作',
       'Write operations': '写入操作',
+      'Platform login message': '平台登錄信息',
       Write: '写入',
       Preview: '预览',
       'Graph type': '图表类型',
@@ -7423,11 +7424,9 @@ const i18n = {
       Collapse: '坍塌',
       'Platform Message Configuration': '平台消息配置',
       'Platform Consent Message': '我已阅读并遵守以上声明',
-      'Platform Consent Message - requires acceptance to enable login form when set':
-        '平台同意消息 - 需要接受才能在设置时启用登录表单',
-      'I have read and comply with the above statement': '我已阅读并遵守以上声明',
-      'Platform Consent Confirm Text - confirm label next to confirm checkbox':
-        '平台同意确认文本 - 确认复选框旁边的确认标签',
+      'Platform Consent Confirm Text': '平台同意確認文本',
+      'Requires acceptance to enable login form when set': '設置後需要接受才能啟用登錄表單',
+      'One line confirm label next to confirm checkbox': '確認複選框旁邊的一行確認標籤',
     },
     'en-us': {
       gt: 'Greater than',

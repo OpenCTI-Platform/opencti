@@ -20,6 +20,7 @@ const MarkDownField = (props) => {
     label,
     style,
     disabled,
+    maxEditorHeight,
     controlledSelectedTab,
     controlledSetSelectTab,
   } = props;
@@ -50,37 +51,28 @@ const MarkDownField = (props) => {
     }
   };
   return (
-    <div
-      style={style}
+    <div style={style}
       className={!R.isNil(meta.error) ? 'error' : 'main'}
       onBlur={internalOnBlur}
-      onFocus={internalOnFocus}
-    >
+      onFocus={internalOnFocus}>
       <InputLabel shrink={true} variant="standard">
         {label}
       </InputLabel>
       <ReactMde
         value={field.value}
         readOnly={disabled}
+        maxEditorHeight={maxEditorHeight}
         onChange={(value) => setFieldValue(name, value)}
-        selectedTab={
-          controlledSelectedTab || selectedTab
-        }
-        onTabChange={(tab) => (controlledSetSelectTab
-          ? controlledSetSelectTab(tab)
-          : setSelectedTab(tab))
-        }
+        selectedTab={controlledSelectedTab || selectedTab}
+        onTabChange={(tab) => (controlledSetSelectTab ? controlledSetSelectTab(tab) : setSelectedTab(tab))}
         generateMarkdownPreview={(markdown) => Promise.resolve(
             <div onMouseUp={() => internalOnSelect()}>
-              <Markdown
-                remarkPlugins={[remarkGfm, remarkParse, remarkFlexibleMarkers]}
-                parserOptions={{ commonmark: true }}
-              >
+              <Markdown remarkPlugins={[remarkGfm, remarkParse, remarkFlexibleMarkers]}
+                parserOptions={{ commonmark: true }}>
                 {markdown}
               </Markdown>
             </div>,
-        )
-        }
+        )}
         l18n={{
           write: t('Write'),
           preview: t('Preview'),

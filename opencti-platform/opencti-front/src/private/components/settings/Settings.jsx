@@ -3,6 +3,8 @@ import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';
@@ -416,7 +418,7 @@ const Settings = () => {
                             {t('Platform Message Configuration')}
                             </Typography>
                             <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
-                              {t('Platform Login Message')}
+                              {t('Platform login message')}
                             </Typography>
                             <Field
                               component={MarkDownField}
@@ -434,49 +436,35 @@ const Settings = () => {
                             <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
                               {t('Platform Consent Message')}
                             </Typography>
-                            <Field
-                              component={MarkDownField}
+                            <Field component={MarkDownField}
                               name="platform_consent_message"
-                              label={t('Platform Consent Message - requires acceptance to enable login form when set')}
+                              label={t('Requires acceptance to enable login form when set')}
                               fullWidth
-                              multiline={true}
-                              rows="3"
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_consent_message"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_message"/>}
                             />
-                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                            <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
                               {t('Platform Consent Confirm Text')}
                             </Typography>
-                            <Field
-                              component={MarkDownField}
+                            <div style={{ float: 'left', margin: '16px 0 0 8px' }}>
+                              <Tooltip title={`${t('Default')}: I have read and comply with the above statement`}>
+                                <InformationOutline fontSize="small" color="primary" />
+                              </Tooltip>
+                            </div>
+                            <div className="clearfix" />
+                            <Field component={MarkDownField}
                               name="platform_consent_confirm_text"
-                              label={`${t('Platform Consent Confirm Text - confirm label next to confirm checkbox')
-                              }. ${t('Default')}: ${
-                                t('I have read and comply with the above statement')}`
-                                    }
+                              label={t('One line confirm label next to confirm checkbox')}
                               fullWidth
-                              multiline={true}
-                              rows="3"
-                              style={{ marginTop: 20 }}
+                              style={{ marginTop: 14 }}
+                              maxEditorHeight={32}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)
-                              }
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
                               variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_consent_confirm_text"
-                                />
-                              }
+                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
                             />
                           </Form>
                         )}
