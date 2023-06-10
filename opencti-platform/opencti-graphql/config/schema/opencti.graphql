@@ -2608,6 +2608,7 @@ interface Container {
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID
@@ -2776,6 +2777,7 @@ type Note implements BasicObject & StixObject & StixCoreObject & StixDomainObjec
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID
@@ -2999,6 +3001,7 @@ type ObservedData implements BasicObject & StixObject & StixCoreObject & StixDom
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID
@@ -3199,6 +3202,7 @@ type Opinion implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID
@@ -3418,6 +3422,7 @@ type Report implements BasicObject & StixObject & StixCoreObject & StixDomainObj
   x_opencti_graph_data: String
   objectAssignee: AssigneeConnection
   # Container
+  representative: String!
   objects(
     first: Int
     after: ID
