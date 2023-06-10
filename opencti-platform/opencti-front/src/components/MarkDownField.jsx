@@ -23,6 +23,7 @@ const MarkDownField = (props) => {
     maxEditorHeight,
     controlledSelectedTab,
     controlledSetSelectTab,
+    height,
   } = props;
   const { t } = useFormatter();
   const [selectedTab, setSelectedTab] = useState('write');
@@ -82,6 +83,8 @@ const MarkDownField = (props) => {
         childProps={{
           textArea: { onSelect: internalOnSelect },
         }}
+        minEditorHeight={height || 100}
+        maxEditorHeight={height || 100}
       />
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>

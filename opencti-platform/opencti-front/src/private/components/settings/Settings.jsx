@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import * as R from 'ramda';
 import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
@@ -13,18 +13,24 @@ import * as Yup from 'yup';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
-import ListItemIcon from '@mui/material/ListItemIcon';
+import { RocketLaunchOutlined } from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import { deepPurple } from '@mui/material/colors';
 import { makeStyles } from '@mui/styles';
-import { VpnKeyOutlined } from '@mui/icons-material';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import FormGroup from '@mui/material/FormGroup';
+import FormControlLabel from '@mui/material/FormControlLabel';
+import Checkbox from '@mui/material/Checkbox';
+import Alert from '@mui/material/Alert';
 import { SubscriptionFocus } from '../../../components/Subscription';
 import { commitMutation, QueryRenderer } from '../../../relay/environment';
 import { useFormatter } from '../../../components/i18n';
 import TextField from '../../../components/TextField';
 import SelectField from '../../../components/SelectField';
 import Loader from '../../../components/Loader';
-import MarkDownField from '../../../components/MarkDownField';
 import ColorPickerField from '../../../components/ColorPickerField';
 import { now } from '../../../utils/Time';
 import HiddenTypesList from './entity_settings/HiddenTypesList';
@@ -47,8 +53,8 @@ const useStyles = makeStyles((theme) => ({
     backgroundColor: deepPurple[500],
   },
   button: {
-    float: 'left',
-    margin: '20px 0 0 0',
+    float: 'right',
+    marginTop: -30,
   },
   nested: {
     paddingLeft: theme.spacing(4),
@@ -85,9 +91,6 @@ const settingsQuery = graphql`
       platform_email
       platform_theme
       platform_language
-      platform_login_message
-      platform_consent_message
-      platform_consent_confirm_text
       platform_theme_dark_background
       platform_theme_dark_paper
       platform_theme_dark_nav
@@ -109,10 +112,6 @@ const settingsQuery = graphql`
       platform_organization {
         id
         name
-      }
-      platform_providers {
-        name
-        strategy
       }
       platform_modules {
         id
@@ -167,9 +166,6 @@ export const settingsMutationFieldPatch = graphql`
         platform_theme_light_logo_collapsed
         platform_theme_light_logo_login
         platform_language
-        platform_login_message
-        platform_consent_message
-        platform_consent_confirm_text
         enterprise_edition
       }
     }
@@ -189,7 +185,9 @@ const settingsFocus = graphql`
 const settingsValidation = (t) => Yup.object().shape({
   platform_title: Yup.string().required(t('This field is required')),
   platform_favicon: Yup.string().nullable(),
-  platform_email: Yup.string().required(t('This field is required')).email(t('The value must be an email address')),
+  platform_email: Yup.string()
+    .required(t('This field is required'))
+    .email(t('The value must be an email address')),
   platform_theme: Yup.string().nullable(),
   platform_theme_dark_background: Yup.string().nullable(),
   platform_theme_dark_paper: Yup.string().nullable(),
@@ -210,16 +208,14 @@ const settingsValidation = (t) => Yup.object().shape({
   platform_theme_light_logo_collapsed: Yup.string().nullable(),
   platform_theme_light_logo_login: Yup.string().nullable(),
   platform_language: Yup.string().nullable(),
-  platform_login_message: Yup.string().nullable(),
-  platform_consent_message: Yup.string().nullable(),
-  platform_consent_confirm_text: Yup.string().nullable(),
   enterprise_edition: Yup.string().nullable(),
 });
 
 const Settings = () => {
   const classes = useStyles();
   const { t } = useFormatter();
-
+  const [openEnterpriseEditionConsent, setOpenEnterpriseEditionConsent] = useState(false);
+  const [enterpriseEditionConsent, setEnterpriseEditionConsent] = useState(false);
   const handleChangeFocus = (id, name) => {
     commitMutation({
       mutation: settingsFocus,
@@ -231,7 +227,6 @@ const Settings = () => {
       },
     });
   };
-
   const handleSubmitField = (id, name, value) => {
     let finalValue = value;
     if (
@@ -269,7 +264,6 @@ const Settings = () => {
       })
       .catch(() => false);
   };
-
   return (
     <div className={classes.container}>
       <QueryRenderer
@@ -285,9 +279,6 @@ const Settings = () => {
                 'platform_email',
                 'platform_theme',
                 'platform_language',
-                'platform_login_message',
-                'platform_consent_message',
-                'platform_consent_confirm_text',
                 'platform_theme_dark_background',
                 'platform_theme_dark_paper',
                 'platform_theme_dark_nav',
@@ -310,98 +301,122 @@ const Settings = () => {
                 'platform_map_tile_server_light',
               ]),
             )(settings);
-            const authProviders = settings.platform_providers;
             const modules = settings.platform_modules;
             const { version, dependencies } = about;
-            const clusterInfo = settings.platform_cluster.instances_number > 1 ? `Cluster of ${settings.platform_cluster.instances_number} nodes` : 'Single node';
-            const isEnterpriseEdition = isNotEmptyField(settings.enterprise_edition);
+            const isEnterpriseEdition = isNotEmptyField(
+              settings.enterprise_edition,
+            );
+            const enableEnterpriseEdition = () => {
+              handleSubmitField(id, 'enterprise_edition', now());
+              setOpenEnterpriseEditionConsent(false);
+            };
             return (
-              <div>
+              <>
                 <Grid container={true} spacing={3}>
-                  <Grid item={true} xs={12}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t('Platform')}
-                    </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <b>OpenCTI {version} {isEnterpriseEdition ? 'Enterprise edition' : 'Community edition'}</b> ({clusterInfo})
-                      { isEnterpriseEdition && <div>Activated since {settings.enterprise_edition}</div>}
-                      { !isEnterpriseEdition && <div>
-                        <Button variant="contained" color="secondary"
-                            onClick={() => handleSubmitField(id, 'enterprise_edition', now())}
-                            classes={{ root: classes.button }}>
-                          {t('Activate enterprise edition')}
-                        </Button>
-                      </div>}
-                      { isEnterpriseEdition && <div>
-                        <Button variant="contained" color="secondary"
-                                onClick={() => handleSubmitField(id, 'enterprise_edition', '')}
-                                classes={{ root: classes.button }}>
-                          {t('Reset enterprise edition')}
-                        </Button>
-                      </div>}
-                    </Paper>
-                  </Grid>
-                </Grid>
-                <Grid container={true} spacing={3} style={{ marginTop: 25 }}>
                   <Grid item={true} xs={6}>
                     <Typography variant="h4" gutterBottom={true}>
                       {t('Configuration')}
                     </Typography>
-                    <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Formik onSubmit={() => {}} enableReinitialize={true} initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}>
+                    <Paper
+                      classes={{ root: classes.paper }}
+                      variant="outlined"
+                      style={{ marginTop: 15 }}
+                    >
+                      <Formik
+                        onSubmit={() => {}}
+                        enableReinitialize={true}
+                        initialValues={initialValues}
+                        validationSchema={settingsValidation(t)}
+                      >
                         {() => (
                           <Form>
-                            <Field component={TextField}
+                            <Field
+                              component={TextField}
                               variant="standard"
                               name="platform_title"
                               label={t('Platform title')}
                               fullWidth
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_title"/>}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_title"
+                                />
+                              }
                             />
-                            <Field component={TextField}
+                            <Field
+                              component={TextField}
                               variant="standard"
                               name="platform_favicon"
                               label={t('Platform favicon URL')}
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_favicon"/>}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_favicon"
+                                />
+                              }
                             />
-                            <Field component={TextField}
+                            <Field
+                              component={TextField}
                               variant="standard"
                               name="platform_email"
                               label={t('Sender email address')}
                               fullWidth
                               style={{ marginTop: 20 }}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_email"/>}
+                              onSubmit={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              helperText={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_email"
+                                />
+                              }
                             />
-                            <Field component={SelectField}
+                            <Field
+                              component={SelectField}
                               variant="standard"
                               name="platform_theme"
                               label={t('Theme')}
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)}
-                              helpertext={<SubscriptionFocus context={editContext} fieldName="platform_theme"/>}>
+                              onChange={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              helpertext={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_theme"
+                                />
+                              }
+                            >
                               <MenuItem value="dark">{t('Dark')}</MenuItem>
                               <MenuItem value="light">{t('Light')}</MenuItem>
                             </Field>
-                            <Field component={SelectField}
+                            <Field
+                              component={SelectField}
                               variant="standard"
                               name="platform_language"
                               label={t('Language')}
                               fullWidth
                               containerstyle={fieldSpacingContainerStyle}
                               onFocus={(name) => handleChangeFocus(id, name)}
-                              onChange={(name, value) => handleSubmitField(id, name, value)}
-                              helpertext={<SubscriptionFocus context={editContext} fieldName="platform_language"/>}>
+                              onChange={(name, value) => handleSubmitField(id, name, value)
+                              }
+                              helpertext={
+                                <SubscriptionFocus
+                                  context={editContext}
+                                  fieldName="platform_language"
+                                />
+                              }
+                            >
                               <MenuItem value="auto">
                                 <em>{t('Automatic')}</em>
                               </MenuItem>
@@ -418,101 +433,195 @@ const Settings = () => {
                     </Paper>
                   </Grid>
                   <Grid item={true} xs={6}>
-                    <Typography variant="h4" gutterBottom={true}>
-                      {t('Authentication strategies')}
+                    <Typography
+                      variant="h4"
+                      gutterBottom={true}
+                      stye={{ float: 'left' }}
+                    >
+                      {t('OpenCTI platform')}
                     </Typography>
+                    {!isEnterpriseEdition ? (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => setOpenEnterpriseEditionConsent(true)}
+                        startIcon={<RocketLaunchOutlined />}
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Enable Enterprise Edition')}
+                      </Button>
+                    ) : (
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        color="secondary"
+                        onClick={() => handleSubmitField(id, 'enterprise_edition', '')
+                        }
+                        classes={{ root: classes.button }}
+                      >
+                        {t('Disable Enterprise Edition')}
+                      </Button>
+                    )}
+                    <div className="clearfix" />
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <List style={{ marginTop: -20 }}>
-                        {authProviders.map((provider) => (
-                          <ListItem key={provider.strategy} divider={true}>
-                            <ListItemIcon>
-                              <VpnKeyOutlined color="primary" />
-                            </ListItemIcon>
-                            <ListItemText
-                              primary={provider.name}
-                              secondary={provider.strategy}
-                            />
-                            <Chip label={t('Enabled')} color="success" />
-                          </ListItem>
-                        ))}
-                      </List>
-                      <Formik onSubmit={() => {}} enableReinitialize={true}
+                      <Formik
+                        onSubmit={() => {}}
+                        enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}>
+                        validationSchema={settingsValidation(t)}
+                      >
                         {() => (
                           <Form>
-                            <Typography variant="h1" gutterBottom={true} style={{ marginTop: '20px' }}>
-                            {t('Platform Message Configuration')}
-                            </Typography>
-                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
-                              {t('Platform login message')}
-                            </Typography>
-                            <Field
-                              component={MarkDownField}
-                              name="platform_login_message"
-                              label={t('Platform login message')}
-                              fullWidth
-                              multiline={true}
-                              rows="3"
-                              style={{ marginTop: 20 }}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              variant="standard"
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
-                            />
-                            <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
-                              {t('Platform Consent Message')}
-                            </Typography>
-                            <Field component={MarkDownField}
-                              name="platform_consent_message"
-                              label={t('Requires acceptance to enable login form when set')}
-                              fullWidth
-                              style={{ marginTop: 20 }}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              variant="standard"
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_message"/>}
-                            />
-                            <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
-                              {t('Platform Consent Confirm Text')}
-                            </Typography>
-                            <div style={{ float: 'left', margin: '16px 0 0 8px' }}>
-                              <Tooltip title={`${t('Default')}: I have read and comply with the above statement`}>
-                                <InformationOutline fontSize="small" color="primary" />
-                              </Tooltip>
-                            </div>
-                            <div className="clearfix" />
-                            <Field component={MarkDownField}
-                              name="platform_consent_confirm_text"
-                              label={t('One line confirm label next to confirm checkbox')}
-                              fullWidth
-                              style={{ marginTop: 14 }}
-                              maxEditorHeight={32}
-                              onFocus={(name) => handleChangeFocus(id, name)}
-                              onSubmit={(name, value) => handleSubmitField(id, name, value)}
-                              variant="standard"
-                              helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
-                            />
-                            <Field
-                                component={SwitchField}
-                                disabled={!isAccessAdmin}
-                                type="checkbox"
-                                name="enterprise_edition"
-                                label={t('Enterprise edition')}
-                                containerstyle={{
-                                  margin: '20px 0',
-                                }}
-                                onChange={(name, value) => handleSubmitField(id, name, value)}
-                                helperText={
-                                  <SubscriptionFocus
-                                      context={editContext}
-                                      fieldName="enterprise_edition"
-                                  />
-                                }
-                            />
+                            <List style={{ marginTop: -20 }}>
+                              <ListItem divider={true}>
+                                <ListItemText primary={t('Version')} />
+                                <Chip label={version} color="primary" />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <ListItemText primary={t('Edition')} />
+                                <Chip
+                                  label={
+                                    isEnterpriseEdition
+                                      ? t('Enterprise Edition (EE)')
+                                      : t('Community Edition (CC)')
+                                  }
+                                  color={
+                                    isEnterpriseEdition ? 'success' : 'warning'
+                                  }
+                                />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <ListItemText
+                                  primary={t('Architecture mode')}
+                                />
+                                <Chip
+                                  label={
+                                    settings.platform_cluster.instances_number
+                                    > 1
+                                      ? t('Cluster')
+                                      : t('Standalone')
+                                  }
+                                  color="primary"
+                                />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <ListItemText
+                                  primary={t('Number of node(s)')}
+                                />
+                                <Chip
+                                  label={
+                                    settings.platform_cluster.instances_number
+                                  }
+                                  color="primary"
+                                />
+                              </ListItem>
+                              <ListItem divider={true}>
+                                <Field
+                                  component={TextField}
+                                  type="number"
+                                  variant="standard"
+                                  disabled={true}
+                                  name="filigran_support_key"
+                                  label={t('Filigran support key')}
+                                  fullWidth={true}
+                                />
+                              </ListItem>
+                            </List>
                           </Form>
                         )}
                       </Formik>
+                      <Dialog
+                        PaperProps={{ elevation: 1 }}
+                        open={openEnterpriseEditionConsent}
+                        onClose={() => setOpenEnterpriseEditionConsent(false)}
+                        fullWidth={true}
+                        maxWidth="md"
+                      >
+                        <DialogTitle>
+                          {t(
+                            'OpenCTI Enterprise Edition (EE) license agreement',
+                          )}
+                        </DialogTitle>
+                        <DialogContent>
+                          <Alert severity="info" style={{ marginBottom: 15 }}>
+                            {t(
+                              'To learn more about OpenCTI Enterprise Edition, please read the',
+                            )}{' '}
+                            <a href="https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c">
+                              {t('associated blog post')}.
+                            </a>
+                          </Alert>
+                          <span>
+                            {t(
+                              'By enabling the OpenCTI Enterprise Edition, you (and your organization) agrees to the OpenCTI Enterprise Edition (EE) supplemental license terms and conditions of usage:',
+                            )}
+                          </span>
+                          <ul>
+                            <li>
+                              {t(
+                                'OpenCTI EE is free-to-use for development, testing and research purposes as well as for non-profit organizations.',
+                              )}
+                            </li>
+                            <li>
+                              {t(
+                                'OpenCTI EE is included for all Filigran SaaS customers without additional fee.',
+                              )}
+                            </li>
+                            <li>
+                              {t(
+                                'For all other usages, you (and your organization) should have entered in a',
+                              )}{' '}
+                              <a href="https://www.filigran.io/en/company/connect-with-us/contact-us">
+                                {t('Filigran Enterprise agreement')}
+                              </a>
+                              .
+                            </li>
+                          </ul>
+                          <FormGroup>
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={enterpriseEditionConsent}
+                                  onChange={(event) => setEnterpriseEditionConsent(
+                                    event.target.checked,
+                                  )
+                                  }
+                                />
+                              }
+                              label={
+                                <>
+                                  <span>
+                                    {t('I have read and agree to the')}
+                                  </span>{' '}
+                                  <a
+                                    href="https://github.com/OpenCTI-Platform/opencti/blob/master/LICENSE"
+                                    target="_blank"
+                                  >
+                                    {t('OpenCTI EE license terms')}
+                                  </a>
+                                  .
+                                </>
+                              }
+                            />
+                          </FormGroup>
+                        </DialogContent>
+                        <DialogActions>
+                          <Button
+                            onClick={() => setOpenEnterpriseEditionConsent(false)
+                            }
+                          >
+                            {t('Cancel')}
+                          </Button>
+                          <Button
+                            color="secondary"
+                            onClick={enableEnterpriseEdition}
+                            disabled={!enterpriseEditionConsent}
+                          >
+                            {t('Enable')}
+                          </Button>
+                        </DialogActions>
+                      </Dialog>
                     </Paper>
                   </Grid>
                 </Grid>
@@ -522,10 +631,12 @@ const Settings = () => {
                       {t('Dark theme')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Formik onSubmit={() => {}}
+                      <Formik
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
-                        validationSchema={settingsValidation(t)}>
+                        validationSchema={settingsValidation(t)}
+                      >
                         {() => (
                           <Form>
                             <Field
@@ -727,8 +838,7 @@ const Settings = () => {
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <Formik
-                        onSubmit={() => {
-                        }}
+                        onSubmit={() => {}}
                         enableReinitialize={true}
                         initialValues={initialValues}
                         validationSchema={settingsValidation(t)}
@@ -935,24 +1045,27 @@ const Settings = () => {
                     <Paper classes={{ root: classes.paper }} variant="outlined">
                       <List style={{ marginTop: -20 }}>
                         {modules.map((module) => (
-                            <ListItem key={module.id} divider={true}>
-                              <ListItemText primary={t(module.id)} />
-                              <Chip label={module.enable ? t('Enabled') : t('Disabled')}
-                                    color={module.enable ? 'success' : 'error'}
-                              />
-                            </ListItem>
+                          <ListItem key={module.id} divider={true}>
+                            <ListItemText primary={t(module.id)} />
+                            <Chip
+                              label={
+                                module.enable ? t('Enabled') : t('Disabled')
+                              }
+                              color={module.enable ? 'success' : 'error'}
+                            />
+                          </ListItem>
                         ))}
                         {dependencies.map((dep) => (
-                            <ListItem key={dep.name} divider={true}>
-                              <ListItemText primary={t(dep.name)} />
-                              <Chip label={dep.version} color="primary" />
-                            </ListItem>
+                          <ListItem key={dep.name} divider={true}>
+                            <ListItemText primary={t(dep.name)} />
+                            <Chip label={dep.version} color="primary" />
+                          </ListItem>
                         ))}
                       </List>
                     </Paper>
                   </Grid>
                 </Grid>
-              </div>
+              </>
             );
           }
           return <Loader />;

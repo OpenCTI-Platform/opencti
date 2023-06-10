@@ -53,11 +53,9 @@ const CommitMessage: FunctionComponent<CommitMessageProps> = ({
   const [controlOpen, setControlOpen] = useState<boolean>(open ?? false);
   const handleOpen = () => setControlOpen(true);
   const handleControlClose = () => setControlOpen(false);
-
   const validateReferences = (
     references: ExternalReferencesValues | undefined,
   ) => !!references && references.length > 0;
-
   return (
     <div>
       {!handleClose && (
