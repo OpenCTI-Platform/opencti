@@ -314,7 +314,7 @@ class AttackPattern:
         if name is not None:
             LOGGER.info("Creating Attack-Pattern {%s}.", name)
             query = """
-                mutation AttackPatternAdd($input: AttackPatternAddInput) {
+                mutation AttackPatternAdd($input: AttackPatternAddInput!) {
                     attackPatternAdd(input: $input) {
                         id
                         standard_id

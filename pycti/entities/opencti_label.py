@@ -138,7 +138,7 @@ class Label:
             LOGGER.info("Creating Label {%s}.", value)
             query = (
                 """
-                mutation LabelAdd($input: LabelAddInput) {
+                mutation LabelAdd($input: LabelAddInput!) {
                     labelAdd(input: $input) {
                         """
                 + self.properties

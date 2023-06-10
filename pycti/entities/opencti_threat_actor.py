@@ -332,7 +332,7 @@ class ThreatActor:
         if name is not None:
             LOGGER.info("Creating Threat-Actor {%s}.", name)
             query = """
-                mutation ThreatActorAdd($input: ThreatActorAddInput) {
+                mutation ThreatActorAdd($input: ThreatActorAddInput!) {
                     threatActorAdd(input: $input) {
                         id
                         standard_id

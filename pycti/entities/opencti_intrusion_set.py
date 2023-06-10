@@ -278,7 +278,7 @@ class IntrusionSet:
         if name is not None:
             LOGGER.info("Creating Intrusion-Set {%s}.", name)
             query = """
-                mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
+                mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
                     intrusionSetAdd(input: $input) {
                         id
                         standard_id

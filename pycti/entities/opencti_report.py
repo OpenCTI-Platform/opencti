@@ -469,7 +469,7 @@ class Report:
         if name is not None and published is not None:
             LOGGER.info("Creating Report {%s}.", name)
             query = """
-                mutation ReportAdd($input: ReportAddInput) {
+                mutation ReportAdd($input: ReportAddInput!) {
                     reportAdd(input: $input) {
                         id
                         standard_id

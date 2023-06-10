@@ -306,7 +306,7 @@ class Tool:
         if name is not None:
             LOGGER.info("Creating Tool {%s}.", name)
             query = """
-                mutation ToolAdd($input: ToolAddInput) {
+                mutation ToolAdd($input: ToolAddInput!) {
                     toolAdd(input: $input) {
                         id
                         standard_id

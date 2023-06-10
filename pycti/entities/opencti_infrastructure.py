@@ -326,7 +326,7 @@ class Infrastructure:
         if name is not None:
             LOGGER.info("Creating Infrastructure {%s}.", name)
             query = """
-                mutation InfrastructureAdd($input: InfrastructureAddInput) {
+                mutation InfrastructureAdd($input: InfrastructureAddInput!) {
                     infrastructureAdd(input: $input) {
                         id
                         standard_id

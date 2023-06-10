@@ -273,7 +273,7 @@ class CourseOfAction:
         if name is not None:
             LOGGER.info("Creating Course Of Action {%s}.", name)
             query = """
-                mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
+                mutation CourseOfActionAdd($input: CourseOfActionAddInput!) {
                     courseOfActionAdd(input: $input) {
                         id
                         standard_id
