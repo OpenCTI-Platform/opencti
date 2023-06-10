@@ -22,7 +22,7 @@ describe('stixSightingRelationship resolver standard behavior', () => {
   let stixSightingRelationshipStandardId;
   it('should stixSightingRelationship created', async () => {
     const CREATE_QUERY = gql`
-      mutation StixDomainRelationAdd($input: StixSightingRelationshipAddInput) {
+      mutation StixDomainRelationAdd($input: StixSightingRelationshipAddInput!) {
         stixSightingRelationshipAdd(input: $input) {
           id
           standard_id

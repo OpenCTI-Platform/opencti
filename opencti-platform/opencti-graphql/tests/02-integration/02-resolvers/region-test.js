@@ -67,7 +67,7 @@ describe('Region resolver standard behavior', () => {
   const regionStixId = 'identity--e0afe8b4-8615-46cb-abe1-cf7e08c1f0ca';
   it('should region created', async () => {
     const CREATE_QUERY = gql`
-      mutation RegionAdd($input: RegionAddInput) {
+      mutation RegionAdd($input: RegionAddInput!) {
         regionAdd(input: $input) {
           id
           name

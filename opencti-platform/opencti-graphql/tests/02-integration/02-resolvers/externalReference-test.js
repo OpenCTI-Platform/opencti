@@ -59,7 +59,7 @@ describe('ExternalReference resolver standard behavior', () => {
   const externalReferenceStixId = 'external-reference--e8ff325d-d51b-4e0e-aa1f-9e19ae6c6a65';
   it('should externalReference created', async () => {
     const CREATE_QUERY = gql`
-      mutation ExternalReferenceAdd($input: ExternalReferenceAddInput) {
+      mutation ExternalReferenceAdd($input: ExternalReferenceAddInput!) {
         externalReferenceAdd(input: $input) {
           id
           source_name

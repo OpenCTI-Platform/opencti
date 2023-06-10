@@ -58,7 +58,7 @@ describe('City resolver standard behavior', () => {
   const cityStixId = 'identity--861af688-581e-4571-a0d9-955c9096fb41';
   it('should city created', async () => {
     const CREATE_QUERY = gql`
-      mutation CityAdd($input: CityAddInput) {
+      mutation CityAdd($input: CityAddInput!) {
         cityAdd(input: $input) {
           id
           name

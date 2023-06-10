@@ -67,7 +67,7 @@ describe('Sector resolver standard behavior', () => {
   const sectorStixId = 'identity--be5c22c3-b130-4c6e-9545-10a0114d0908';
   it('should sector created', async () => {
     const CREATE_QUERY = gql`
-      mutation SectorAdd($input: SectorAddInput) {
+      mutation SectorAdd($input: SectorAddInput!) {
         sectorAdd(input: $input) {
           id
           name

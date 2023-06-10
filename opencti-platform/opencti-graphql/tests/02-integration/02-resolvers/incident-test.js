@@ -75,7 +75,7 @@ describe('Incident resolver standard behavior', () => {
   const incidentStixId = 'incident--1cbc610d-9f6b-4937-a404-2bec7f261ae5';
   it('should Incident created', async () => {
     const CREATE_QUERY = gql`
-      mutation IncidentAdd($input: IncidentAddInput) {
+      mutation IncidentAdd($input: IncidentAddInput!) {
         incidentAdd(input: $input) {
           id
           name

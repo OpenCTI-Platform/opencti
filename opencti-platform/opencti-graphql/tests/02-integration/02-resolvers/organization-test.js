@@ -58,7 +58,7 @@ describe('Organization resolver standard behavior', () => {
   const organizationStixId = 'identity--43008345-56bd-4175-adad-312bef2ff6a1';
   it('should organization created', async () => {
     const CREATE_QUERY = gql`
-      mutation OrganizationAdd($input: OrganizationAddInput) {
+      mutation OrganizationAdd($input: OrganizationAddInput!) {
         organizationAdd(input: $input) {
           id
           name

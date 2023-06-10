@@ -54,7 +54,7 @@ describe('Country resolver standard behavior', () => {
   const countryStixId = 'identity--93b1ee77-79d0-461d-8096-7c83b7a77646';
   it('should country created', async () => {
     const CREATE_QUERY = gql`
-      mutation CountryAdd($input: CountryAddInput) {
+      mutation CountryAdd($input: CountryAddInput!) {
         countryAdd(input: $input) {
           id
           name

@@ -31,7 +31,7 @@ describe('Group resolver standard behavior', () => {
   let groupInternalId;
   it('should group created', async () => {
     const CREATE_QUERY = gql`
-      mutation GroupAdd($input: GroupAddInput) {
+      mutation GroupAdd($input: GroupAddInput!) {
         groupAdd(input: $input) {
           id
           name

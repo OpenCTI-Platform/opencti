@@ -57,7 +57,7 @@ describe('Tool resolver standard behavior', () => {
   const toolStixId = 'tool--50a74e71-131c-4d98-a4b8-24e0441b2587';
   it('should tool created', async () => {
     const CREATE_QUERY = gql`
-      mutation ToolAdd($input: ToolAddInput) {
+      mutation ToolAdd($input: ToolAddInput!) {
         toolAdd(input: $input) {
           id
           name

@@ -76,7 +76,7 @@ describe('Campaign resolver standard behavior', () => {
   const campaignStixId = 'campaign--76c42acb-c5d7-4f38-abf2-a8566ac89ac9';
   it('should campaign created', async () => {
     const CREATE_QUERY = gql`
-      mutation CampaignAdd($input: CampaignAddInput) {
+      mutation CampaignAdd($input: CampaignAddInput!) {
         campaignAdd(input: $input) {
           id
           standard_id

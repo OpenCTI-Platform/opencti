@@ -48,7 +48,7 @@ describe('MarkingDefinition resolver standard behavior', () => {
   const markingDefinitionStixId = 'marking-definition--35ee3df2-dc60-4bf3-9b57-98222b827a83';
   it('should markingDefinition created', async () => {
     const CREATE_QUERY = gql`
-      mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput) {
+      mutation MarkingDefinitionAdd($input: MarkingDefinitionAddInput!) {
         markingDefinitionAdd(input: $input) {
           id
           definition_type

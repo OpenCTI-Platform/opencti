@@ -109,7 +109,7 @@ describe('Report resolver standard behavior', () => {
   const reportStixId = 'report--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should report created', async () => {
     const CREATE_QUERY = gql`
-      mutation ReportAdd($input: ReportAddInput) {
+      mutation ReportAdd($input: ReportAddInput!) {
         reportAdd(input: $input) {
           id
           standard_id

@@ -48,7 +48,7 @@ describe('Threat actor resolver standard behavior', () => {
   const threatActorStixId = 'threat-actor--16978493-d5fb-4b28-a39a-eca332f53189';
   it('should threat actor created', async () => {
     const CREATE_QUERY = gql`
-      mutation ThreatActorAdd($input: ThreatActorAddInput) {
+      mutation ThreatActorAdd($input: ThreatActorAddInput!) {
         threatActorAdd(input: $input) {
           id
           name

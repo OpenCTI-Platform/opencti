@@ -34,7 +34,7 @@ describe('Role resolver standard behavior', () => {
   let capabilityId;
   it('should role created', async () => {
     const CREATE_QUERY = gql`
-      mutation RoleAdd($input: RoleAddInput) {
+      mutation RoleAdd($input: RoleAddInput!) {
         roleAdd(input: $input) {
           id
           name

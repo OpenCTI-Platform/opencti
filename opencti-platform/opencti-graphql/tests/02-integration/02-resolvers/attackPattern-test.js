@@ -66,7 +66,7 @@ describe('AttackPattern resolver standard behavior', () => {
   const attackPatternStixId = 'attack-pattern--7dd8142a-e21b-4a29-b241-e63dac6a23ea';
   it('should attackPattern created', async () => {
     const CREATE_QUERY = gql`
-      mutation AttackPatternAdd($input: AttackPatternAddInput) {
+      mutation AttackPatternAdd($input: AttackPatternAddInput!) {
         attackPatternAdd(input: $input) {
           id
           standard_id

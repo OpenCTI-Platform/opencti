@@ -58,7 +58,7 @@ describe('Individual resolver standard behavior', () => {
   const individualStixId = 'identity--a7da7a84-73a0-4f1b-b0c0-35ed56418e82';
   it('should individual created', async () => {
     const CREATE_QUERY = gql`
-      mutation IndividualAdd($input: IndividualAddInput) {
+      mutation IndividualAdd($input: IndividualAddInput!) {
         individualAdd(input: $input) {
           id
           name

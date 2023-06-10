@@ -57,7 +57,7 @@ describe('Note resolver standard behavior', () => {
   const noteStixId = 'note--2cf49568-b812-45fe-8c48-bb0c7d5eb952';
   it('should note created', async () => {
     const CREATE_QUERY = gql`
-      mutation NoteAdd($input: NoteAddInput) {
+      mutation NoteAdd($input: NoteAddInput!) {
         noteAdd(input: $input) {
           id
           standard_id

@@ -28,7 +28,7 @@ describe('Label resolver standard behavior', () => {
   let labelInternalId;
   it('should label created', async () => {
     const CREATE_QUERY = gql`
-      mutation LabelAdd($input: LabelAddInput) {
+      mutation LabelAdd($input: LabelAddInput!) {
         labelAdd(input: $input) {
           id
           value

@@ -109,7 +109,7 @@ describe('Opinion resolver standard behavior', () => {
   const opinionStixId = 'opinion--994491f0-f114-4e41-bcf0-3288c0324f53';
   it('should opinion created', async () => {
     const CREATE_QUERY = gql`
-      mutation OpinionAdd($input: OpinionAddInput) {
+      mutation OpinionAdd($input: OpinionAddInput!) {
         opinionAdd(input: $input) {
           id
           standard_id

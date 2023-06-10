@@ -102,7 +102,7 @@ describe('User resolver standard behavior', () => {
   let capabilityId;
   it('should user created', async () => {
     const CREATE_QUERY = gql`
-      mutation UserAdd($input: UserAddInput) {
+      mutation UserAdd($input: UserAddInput!) {
         userAdd(input: $input) {
           id
           standard_id
@@ -215,7 +215,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should add user in group', async () => {
     const GROUP_ADD_QUERY = gql`
-      mutation GroupAdd($input: GroupAddInput) {
+      mutation GroupAdd($input: GroupAddInput!) {
         groupAdd(input: $input) {
           id
           name
@@ -278,7 +278,7 @@ describe('User resolver standard behavior', () => {
   });
   it('should add role in group', async () => {
     const ROLE_ADD_QUERY = gql`
-        mutation RoleAdd($input: RoleAddInput) {
+        mutation RoleAdd($input: RoleAddInput!) {
             roleAdd(input: $input) {
                 id
                 name

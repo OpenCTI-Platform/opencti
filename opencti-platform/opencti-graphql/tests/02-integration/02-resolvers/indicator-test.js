@@ -50,7 +50,7 @@ describe('Indicator resolver standard behavior', () => {
   const indicatorStixId = 'indicator--f6ad652c-166a-43e6-98b8-8ff078e2349f';
   it('should indicator created', async () => {
     const CREATE_QUERY = gql`
-        mutation IndicatorAdd($input: IndicatorAddInput) {
+        mutation IndicatorAdd($input: IndicatorAddInput!) {
             indicatorAdd(input: $input) {
                 id
                 name

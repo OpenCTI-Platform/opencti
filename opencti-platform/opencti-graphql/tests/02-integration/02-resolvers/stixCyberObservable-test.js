@@ -198,7 +198,7 @@ describe('StixCyberObservable resolver standard behavior', () => {
   });
   it('should add observable in note', async () => {
     const CREATE_QUERY = gql`
-        mutation NoteAdd($input: NoteAddInput) {
+        mutation NoteAdd($input: NoteAddInput!) {
             noteAdd(input: $input) {
                 id
                 attribute_abstract

@@ -58,7 +58,7 @@ describe('CourseOfAction resolver standard behavior', () => {
   const courseOfActionStixId = 'course-of-action--1a80c59c-d839-4984-af04-04f3286d8f89';
   it('should courseOfAction created', async () => {
     const CREATE_QUERY = gql`
-      mutation CourseOfActionAdd($input: CourseOfActionAddInput) {
+      mutation CourseOfActionAdd($input: CourseOfActionAddInput!) {
         courseOfActionAdd(input: $input) {
           id
           name

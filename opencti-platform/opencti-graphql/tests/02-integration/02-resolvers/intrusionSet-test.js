@@ -49,7 +49,7 @@ describe('Intrusion set resolver standard behavior', () => {
   const intrusionSetStixId = 'intrusion-set--952ec932-a8c8-4050-9662-f0771ed7c477';
   it('should intrusion set created', async () => {
     const CREATE_QUERY = gql`
-      mutation IntrusionSetAdd($input: IntrusionSetAddInput) {
+      mutation IntrusionSetAdd($input: IntrusionSetAddInput!) {
         intrusionSetAdd(input: $input) {
           id
           name

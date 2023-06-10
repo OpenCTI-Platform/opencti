@@ -22,7 +22,7 @@ describe('StixCoreRelationship resolver standard behavior', () => {
   let stixCoreRelationshipInternalId;
   it('should stixCoreRelationship created', async () => {
     const CREATE_QUERY = gql`
-        mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput) {
+        mutation StixDomainRelationAdd($input: StixCoreRelationshipAddInput!) {
             stixCoreRelationshipAdd(input: $input) {
                 id
                 description

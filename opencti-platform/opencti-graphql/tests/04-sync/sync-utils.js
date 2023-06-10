@@ -48,7 +48,7 @@ const STANDARD_LOADER_QUERY = `query standard($id: String!) {
       }
     }
   `;
-export const SYNC_CREATION_QUERY = `mutation SynchronizerAdd($input: SynchronizerAddInput) {
+export const SYNC_CREATION_QUERY = `mutation SynchronizerAdd($input: SynchronizerAddInput!) {
       synchronizerAdd(input: $input) {
         id
       }
