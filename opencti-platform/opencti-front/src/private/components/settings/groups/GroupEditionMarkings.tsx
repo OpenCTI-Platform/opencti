@@ -32,7 +32,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const groupMutationRelationAdd = graphql`
   mutation GroupEditionMarkingsMarkingDefinitionsRelationAddMutation(
     $id: ID!
-    $input: InternalRelationshipAddInput
+    $input: InternalRelationshipAddInput!
   ) {
     groupEdit(id: $id) {
       relationAdd(input: $input) {

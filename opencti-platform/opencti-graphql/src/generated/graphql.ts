@@ -7188,7 +7188,7 @@ export type GroupEditMutationsFieldPatchArgs = {
 
 
 export type GroupEditMutationsRelationAddArgs = {
-  input?: InputMaybe<InternalRelationshipAddInput>;
+  input: InternalRelationshipAddInput;
 };
 
 
@@ -12219,7 +12219,7 @@ export type MutationAskJobImportArgs = {
 
 
 export type MutationAttackPatternAddArgs = {
-  input?: InputMaybe<AttackPatternAddInput>;
+  input: AttackPatternAddInput;
 };
 
 
@@ -12240,7 +12240,7 @@ export type MutationBookmarkDeleteArgs = {
 
 
 export type MutationCampaignAddArgs = {
-  input?: InputMaybe<CampaignAddInput>;
+  input: CampaignAddInput;
 };
 
 
@@ -12369,7 +12369,7 @@ export type MutationChannelRelationDeleteArgs = {
 
 
 export type MutationCityAddArgs = {
-  input?: InputMaybe<CityAddInput>;
+  input: CityAddInput;
 };
 
 
@@ -12384,7 +12384,7 @@ export type MutationContainerEditArgs = {
 
 
 export type MutationCountryAddArgs = {
-  input?: InputMaybe<CountryAddInput>;
+  input: CountryAddInput;
 };
 
 
@@ -12394,7 +12394,7 @@ export type MutationCountryEditArgs = {
 
 
 export type MutationCourseOfActionAddArgs = {
-  input?: InputMaybe<CourseOfActionAddInput>;
+  input: CourseOfActionAddInput;
 };
 
 
@@ -12565,7 +12565,7 @@ export type MutationEventRelationDeleteArgs = {
 
 
 export type MutationExternalReferenceAddArgs = {
-  input?: InputMaybe<ExternalReferenceAddInput>;
+  input: ExternalReferenceAddInput;
 };
 
 
@@ -12601,7 +12601,7 @@ export type MutationFeedbackDeleteArgs = {
 
 
 export type MutationGroupAddArgs = {
-  input?: InputMaybe<GroupAddInput>;
+  input: GroupAddInput;
 };
 
 
@@ -12653,7 +12653,7 @@ export type MutationGroupingRelationDeleteArgs = {
 
 
 export type MutationIdentityAddArgs = {
-  input?: InputMaybe<IdentityAddInput>;
+  input: IdentityAddInput;
 };
 
 
@@ -12663,7 +12663,7 @@ export type MutationIdentityEditArgs = {
 
 
 export type MutationIncidentAddArgs = {
-  input?: InputMaybe<IncidentAddInput>;
+  input: IncidentAddInput;
 };
 
 
@@ -12673,7 +12673,7 @@ export type MutationIncidentEditArgs = {
 
 
 export type MutationIndicatorAddArgs = {
-  input?: InputMaybe<IndicatorAddInput>;
+  input: IndicatorAddInput;
 };
 
 
@@ -12683,7 +12683,7 @@ export type MutationIndicatorEditArgs = {
 
 
 export type MutationIndividualAddArgs = {
-  input?: InputMaybe<IndividualAddInput>;
+  input: IndividualAddInput;
 };
 
 
@@ -12693,7 +12693,7 @@ export type MutationIndividualEditArgs = {
 
 
 export type MutationInfrastructureAddArgs = {
-  input?: InputMaybe<InfrastructureAddInput>;
+  input: InfrastructureAddInput;
 };
 
 
@@ -12703,7 +12703,7 @@ export type MutationInfrastructureEditArgs = {
 
 
 export type MutationIntrusionSetAddArgs = {
-  input?: InputMaybe<IntrusionSetAddInput>;
+  input: IntrusionSetAddInput;
 };
 
 
@@ -12713,7 +12713,7 @@ export type MutationIntrusionSetEditArgs = {
 
 
 export type MutationKillChainPhaseAddArgs = {
-  input?: InputMaybe<KillChainPhaseAddInput>;
+  input: KillChainPhaseAddInput;
 };
 
 
@@ -12723,7 +12723,7 @@ export type MutationKillChainPhaseEditArgs = {
 
 
 export type MutationLabelAddArgs = {
-  input?: InputMaybe<LabelAddInput>;
+  input: LabelAddInput;
 };
 
 
@@ -12775,12 +12775,12 @@ export type MutationLanguageRelationDeleteArgs = {
 
 
 export type MutationListTaskAddArgs = {
-  input?: InputMaybe<ListTaskAddInput>;
+  input: ListTaskAddInput;
 };
 
 
 export type MutationLocationAddArgs = {
-  input?: InputMaybe<LocationAddInput>;
+  input: LocationAddInput;
 };
 
 
@@ -12790,7 +12790,7 @@ export type MutationLocationEditArgs = {
 
 
 export type MutationMalwareAddArgs = {
-  input?: InputMaybe<MalwareAddInput>;
+  input: MalwareAddInput;
 };
 
 
@@ -12842,7 +12842,7 @@ export type MutationMalwareEditArgs = {
 
 
 export type MutationMarkingDefinitionAddArgs = {
-  input?: InputMaybe<MarkingDefinitionAddInput>;
+  input: MarkingDefinitionAddInput;
 };
 
 
@@ -12900,7 +12900,7 @@ export type MutationNarrativeRelationDeleteArgs = {
 
 
 export type MutationNoteAddArgs = {
-  input?: InputMaybe<NoteAddInput>;
+  input: NoteAddInput;
 };
 
 
@@ -12921,7 +12921,7 @@ export type MutationNotificationMarkReadArgs = {
 
 
 export type MutationObservedDataAddArgs = {
-  input?: InputMaybe<ObservedDataAddInput>;
+  input: ObservedDataAddInput;
 };
 
 
@@ -12931,7 +12931,7 @@ export type MutationObservedDataEditArgs = {
 
 
 export type MutationOpinionAddArgs = {
-  input?: InputMaybe<OpinionAddInput>;
+  input: OpinionAddInput;
 };
 
 
@@ -12941,7 +12941,7 @@ export type MutationOpinionEditArgs = {
 
 
 export type MutationOrganizationAddArgs = {
-  input?: InputMaybe<OrganizationAddInput>;
+  input: OrganizationAddInput;
 };
 
 
@@ -12977,7 +12977,7 @@ export type MutationPingConnectorArgs = {
 
 
 export type MutationPositionAddArgs = {
-  input?: InputMaybe<PositionAddInput>;
+  input: PositionAddInput;
 };
 
 
@@ -12987,12 +12987,12 @@ export type MutationPositionEditArgs = {
 
 
 export type MutationQueryTaskAddArgs = {
-  input?: InputMaybe<QueryTaskAddInput>;
+  input: QueryTaskAddInput;
 };
 
 
 export type MutationRegionAddArgs = {
-  input?: InputMaybe<RegionAddInput>;
+  input: RegionAddInput;
 };
 
 
@@ -13007,7 +13007,7 @@ export type MutationRegisterConnectorArgs = {
 
 
 export type MutationReportAddArgs = {
-  input?: InputMaybe<ReportAddInput>;
+  input: ReportAddInput;
 };
 
 
@@ -13022,7 +13022,7 @@ export type MutationResetStateConnectorArgs = {
 
 
 export type MutationRetentionRuleAddArgs = {
-  input?: InputMaybe<RetentionRuleAddInput>;
+  input: RetentionRuleAddInput;
 };
 
 
@@ -13037,7 +13037,7 @@ export type MutationRetentionRuleEditArgs = {
 
 
 export type MutationRoleAddArgs = {
-  input?: InputMaybe<RoleAddInput>;
+  input: RoleAddInput;
 };
 
 
@@ -13065,7 +13065,7 @@ export type MutationRuntimeAttributeEditArgs = {
 
 
 export type MutationSectorAddArgs = {
-  input?: InputMaybe<SectorAddInput>;
+  input: SectorAddInput;
 };
 
 
@@ -13254,7 +13254,7 @@ export type MutationStixCyberObservablesExportPushArgs = {
 
 
 export type MutationStixDomainObjectAddArgs = {
-  input?: InputMaybe<StixDomainObjectAddInput>;
+  input: StixDomainObjectAddInput;
 };
 
 
@@ -13313,7 +13313,7 @@ export type MutationStixRelationshipEditArgs = {
 
 
 export type MutationStixSightingRelationshipAddArgs = {
-  input?: InputMaybe<StixSightingRelationshipAddInput>;
+  input: StixSightingRelationshipAddInput;
 };
 
 
@@ -13323,7 +13323,7 @@ export type MutationStixSightingRelationshipEditArgs = {
 
 
 export type MutationStreamCollectionAddArgs = {
-  input?: InputMaybe<StreamCollectionAddInput>;
+  input: StreamCollectionAddInput;
 };
 
 
@@ -13338,7 +13338,7 @@ export type MutationSubTypeEditArgs = {
 
 
 export type MutationSynchronizerAddArgs = {
-  input?: InputMaybe<SynchronizerAddInput>;
+  input: SynchronizerAddInput;
 };
 
 
@@ -13363,7 +13363,7 @@ export type MutationSynchronizerTestArgs = {
 
 
 export type MutationSystemAddArgs = {
-  input?: InputMaybe<SystemAddInput>;
+  input: SystemAddInput;
 };
 
 
@@ -13373,7 +13373,7 @@ export type MutationSystemEditArgs = {
 
 
 export type MutationTaxiiCollectionAddArgs = {
-  input?: InputMaybe<TaxiiCollectionAddInput>;
+  input: TaxiiCollectionAddInput;
 };
 
 
@@ -13383,7 +13383,7 @@ export type MutationTaxiiCollectionEditArgs = {
 
 
 export type MutationThreatActorAddArgs = {
-  input?: InputMaybe<ThreatActorAddInput>;
+  input: ThreatActorAddInput;
 };
 
 
@@ -13398,7 +13398,7 @@ export type MutationTokenArgs = {
 
 
 export type MutationToolAddArgs = {
-  input?: InputMaybe<ToolAddInput>;
+  input: ToolAddInput;
 };
 
 
@@ -13442,7 +13442,7 @@ export type MutationUploadPendingArgs = {
 
 
 export type MutationUserAddArgs = {
-  input?: InputMaybe<UserAddInput>;
+  input: UserAddInput;
 };
 
 
@@ -13483,7 +13483,7 @@ export type MutationVocabularyFieldPatchArgs = {
 
 
 export type MutationVulnerabilityAddArgs = {
-  input?: InputMaybe<VulnerabilityAddInput>;
+  input: VulnerabilityAddInput;
 };
 
 
@@ -19470,7 +19470,7 @@ export type RoleEditMutationsFieldPatchArgs = {
 
 
 export type RoleEditMutationsRelationAddArgs = {
-  input?: InputMaybe<InternalRelationshipAddInput>;
+  input: InternalRelationshipAddInput;
 };
 
 
@@ -22322,7 +22322,7 @@ export type SubTypeEditMutations = {
 
 
 export type SubTypeEditMutationsStatusAddArgs = {
-  input?: InputMaybe<StatusAddInput>;
+  input: StatusAddInput;
 };
 
 
@@ -24446,7 +24446,7 @@ export type UserEditMutationsOrganizationDeleteArgs = {
 
 
 export type UserEditMutationsRelationAddArgs = {
-  input?: InputMaybe<InternalRelationshipAddInput>;
+  input: InternalRelationshipAddInput;
 };
 
 
@@ -29233,7 +29233,7 @@ export type GroupEditMutationsResolvers<ContextType = any, ParentType extends Re
   contextPatch?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<GroupEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, Partial<GroupEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<GroupEditMutationsRelationDeleteArgs, 'relationship_type'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -30619,11 +30619,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   administrativeAreaRelationDelete?: Resolver<Maybe<ResolversTypes['AdministrativeArea']>, ParentType, ContextType, RequireFields<MutationAdministrativeAreaRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   artifactImport?: Resolver<Maybe<ResolversTypes['Artifact']>, ParentType, ContextType, RequireFields<MutationArtifactImportArgs, 'file'>>;
   askJobImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationAskJobImportArgs, 'fileName'>>;
-  attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, Partial<MutationAttackPatternAddArgs>>;
+  attackPatternAdd?: Resolver<Maybe<ResolversTypes['AttackPattern']>, ParentType, ContextType, RequireFields<MutationAttackPatternAddArgs, 'input'>>;
   attackPatternEdit?: Resolver<Maybe<ResolversTypes['AttackPatternEditMutations']>, ParentType, ContextType, RequireFields<MutationAttackPatternEditArgs, 'id'>>;
   bookmarkAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationBookmarkAddArgs, 'id' | 'type'>>;
   bookmarkDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationBookmarkDeleteArgs, 'id'>>;
-  campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, Partial<MutationCampaignAddArgs>>;
+  campaignAdd?: Resolver<Maybe<ResolversTypes['Campaign']>, ParentType, ContextType, RequireFields<MutationCampaignAddArgs, 'input'>>;
   campaignEdit?: Resolver<Maybe<ResolversTypes['CampaignEditMutations']>, ParentType, ContextType, RequireFields<MutationCampaignEditArgs, 'id'>>;
   caseDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseDeleteArgs, 'id'>>;
   caseIncidentAdd?: Resolver<Maybe<ResolversTypes['CaseIncident']>, ParentType, ContextType, RequireFields<MutationCaseIncidentAddArgs, 'input'>>;
@@ -30646,12 +30646,12 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   channelFieldPatch?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelFieldPatchArgs, 'id' | 'input'>>;
   channelRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationChannelRelationAddArgs, 'id' | 'input'>>;
   channelRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationChannelRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, Partial<MutationCityAddArgs>>;
+  cityAdd?: Resolver<Maybe<ResolversTypes['City']>, ParentType, ContextType, RequireFields<MutationCityAddArgs, 'input'>>;
   cityEdit?: Resolver<Maybe<ResolversTypes['CityEditMutations']>, ParentType, ContextType, RequireFields<MutationCityEditArgs, 'id'>>;
   containerEdit?: Resolver<Maybe<ResolversTypes['ContainerEditMutations']>, ParentType, ContextType, RequireFields<MutationContainerEditArgs, 'id'>>;
-  countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, Partial<MutationCountryAddArgs>>;
+  countryAdd?: Resolver<Maybe<ResolversTypes['Country']>, ParentType, ContextType, RequireFields<MutationCountryAddArgs, 'input'>>;
   countryEdit?: Resolver<Maybe<ResolversTypes['CountryEditMutations']>, ParentType, ContextType, RequireFields<MutationCountryEditArgs, 'id'>>;
-  courseOfActionAdd?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, Partial<MutationCourseOfActionAddArgs>>;
+  courseOfActionAdd?: Resolver<Maybe<ResolversTypes['CourseOfAction']>, ParentType, ContextType, RequireFields<MutationCourseOfActionAddArgs, 'input'>>;
   courseOfActionEdit?: Resolver<Maybe<ResolversTypes['CourseOfActionEditMutations']>, ParentType, ContextType, RequireFields<MutationCourseOfActionEditArgs, 'id'>>;
   dataComponentAdd?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentAddArgs, 'input'>>;
   dataComponentContextClean?: Resolver<Maybe<ResolversTypes['DataComponent']>, ParentType, ContextType, RequireFields<MutationDataComponentContextCleanArgs, 'id'>>;
@@ -30680,14 +30680,14 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   eventFieldPatch?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventFieldPatchArgs, 'id' | 'input'>>;
   eventRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationEventRelationAddArgs, 'id' | 'input'>>;
   eventRelationDelete?: Resolver<Maybe<ResolversTypes['Event']>, ParentType, ContextType, RequireFields<MutationEventRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, Partial<MutationExternalReferenceAddArgs>>;
+  externalReferenceAdd?: Resolver<Maybe<ResolversTypes['ExternalReference']>, ParentType, ContextType, RequireFields<MutationExternalReferenceAddArgs, 'input'>>;
   externalReferenceEdit?: Resolver<Maybe<ResolversTypes['ExternalReferenceEditMutations']>, ParentType, ContextType, RequireFields<MutationExternalReferenceEditArgs, 'id'>>;
   feedAdd?: Resolver<Maybe<ResolversTypes['Feed']>, ParentType, ContextType, RequireFields<MutationFeedAddArgs, 'input'>>;
   feedDelete?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationFeedDeleteArgs, 'id'>>;
   feedEdit?: Resolver<ResolversTypes['Feed'], ParentType, ContextType, RequireFields<MutationFeedEditArgs, 'id' | 'input'>>;
   feedbackAdd?: Resolver<Maybe<ResolversTypes['Feedback']>, ParentType, ContextType, RequireFields<MutationFeedbackAddArgs, 'input'>>;
   feedbackDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationFeedbackDeleteArgs, 'id'>>;
-  groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, Partial<MutationGroupAddArgs>>;
+  groupAdd?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<MutationGroupAddArgs, 'input'>>;
   groupEdit?: Resolver<Maybe<ResolversTypes['GroupEditMutations']>, ParentType, ContextType, RequireFields<MutationGroupEditArgs, 'id'>>;
   groupingAdd?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingAddArgs, 'input'>>;
   groupingContextClean?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingContextCleanArgs, 'id'>>;
@@ -30696,21 +30696,21 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   groupingFieldPatch?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingFieldPatchArgs, 'id' | 'input'>>;
   groupingRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationGroupingRelationAddArgs, 'id'>>;
   groupingRelationDelete?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<MutationGroupingRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, Partial<MutationIdentityAddArgs>>;
+  identityAdd?: Resolver<Maybe<ResolversTypes['Identity']>, ParentType, ContextType, RequireFields<MutationIdentityAddArgs, 'input'>>;
   identityEdit?: Resolver<Maybe<ResolversTypes['IdentityEditMutations']>, ParentType, ContextType, RequireFields<MutationIdentityEditArgs, 'id'>>;
-  incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, Partial<MutationIncidentAddArgs>>;
+  incidentAdd?: Resolver<Maybe<ResolversTypes['Incident']>, ParentType, ContextType, RequireFields<MutationIncidentAddArgs, 'input'>>;
   incidentEdit?: Resolver<Maybe<ResolversTypes['IncidentEditMutations']>, ParentType, ContextType, RequireFields<MutationIncidentEditArgs, 'id'>>;
-  indicatorAdd?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, Partial<MutationIndicatorAddArgs>>;
+  indicatorAdd?: Resolver<Maybe<ResolversTypes['Indicator']>, ParentType, ContextType, RequireFields<MutationIndicatorAddArgs, 'input'>>;
   indicatorEdit?: Resolver<Maybe<ResolversTypes['IndicatorEditMutations']>, ParentType, ContextType, RequireFields<MutationIndicatorEditArgs, 'id'>>;
-  individualAdd?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, Partial<MutationIndividualAddArgs>>;
+  individualAdd?: Resolver<Maybe<ResolversTypes['Individual']>, ParentType, ContextType, RequireFields<MutationIndividualAddArgs, 'input'>>;
   individualEdit?: Resolver<Maybe<ResolversTypes['IndividualEditMutations']>, ParentType, ContextType, RequireFields<MutationIndividualEditArgs, 'id'>>;
-  infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, Partial<MutationInfrastructureAddArgs>>;
+  infrastructureAdd?: Resolver<Maybe<ResolversTypes['Infrastructure']>, ParentType, ContextType, RequireFields<MutationInfrastructureAddArgs, 'input'>>;
   infrastructureEdit?: Resolver<Maybe<ResolversTypes['InfrastructureEditMutations']>, ParentType, ContextType, RequireFields<MutationInfrastructureEditArgs, 'id'>>;
-  intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, Partial<MutationIntrusionSetAddArgs>>;
+  intrusionSetAdd?: Resolver<Maybe<ResolversTypes['IntrusionSet']>, ParentType, ContextType, RequireFields<MutationIntrusionSetAddArgs, 'input'>>;
   intrusionSetEdit?: Resolver<Maybe<ResolversTypes['IntrusionSetEditMutations']>, ParentType, ContextType, RequireFields<MutationIntrusionSetEditArgs, 'id'>>;
-  killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, Partial<MutationKillChainPhaseAddArgs>>;
+  killChainPhaseAdd?: Resolver<Maybe<ResolversTypes['KillChainPhase']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseAddArgs, 'input'>>;
   killChainPhaseEdit?: Resolver<Maybe<ResolversTypes['KillChainPhaseEditMutations']>, ParentType, ContextType, RequireFields<MutationKillChainPhaseEditArgs, 'id'>>;
-  labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, Partial<MutationLabelAddArgs>>;
+  labelAdd?: Resolver<Maybe<ResolversTypes['Label']>, ParentType, ContextType, RequireFields<MutationLabelAddArgs, 'input'>>;
   labelEdit?: Resolver<Maybe<ResolversTypes['LabelEditMutations']>, ParentType, ContextType, RequireFields<MutationLabelEditArgs, 'id'>>;
   languageAdd?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageAddArgs, 'input'>>;
   languageContextClean?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageContextCleanArgs, 'id'>>;
@@ -30719,11 +30719,11 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   languageFieldPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageFieldPatchArgs, 'id' | 'input'>>;
   languageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationLanguageRelationAddArgs, 'id' | 'input'>>;
   languageRelationDelete?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  listTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, Partial<MutationListTaskAddArgs>>;
-  locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, Partial<MutationLocationAddArgs>>;
+  listTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationListTaskAddArgs, 'input'>>;
+  locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<MutationLocationAddArgs, 'input'>>;
   locationEdit?: Resolver<Maybe<ResolversTypes['LocationEditMutations']>, ParentType, ContextType, RequireFields<MutationLocationEditArgs, 'id'>>;
   logout?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
-  malwareAdd?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, Partial<MutationMalwareAddArgs>>;
+  malwareAdd?: Resolver<Maybe<ResolversTypes['Malware']>, ParentType, ContextType, RequireFields<MutationMalwareAddArgs, 'input'>>;
   malwareAnalysisAdd?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisAddArgs, 'input'>>;
   malwareAnalysisContextClean?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisContextCleanArgs, 'id'>>;
   malwareAnalysisContextPatch?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisContextPatchArgs, 'id' | 'input'>>;
@@ -30732,7 +30732,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   malwareAnalysisRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationAddArgs, 'id' | 'input'>>;
   malwareAnalysisRelationDelete?: Resolver<Maybe<ResolversTypes['MalwareAnalysis']>, ParentType, ContextType, RequireFields<MutationMalwareAnalysisRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   malwareEdit?: Resolver<Maybe<ResolversTypes['MalwareEditMutations']>, ParentType, ContextType, RequireFields<MutationMalwareEditArgs, 'id'>>;
-  markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, Partial<MutationMarkingDefinitionAddArgs>>;
+  markingDefinitionAdd?: Resolver<Maybe<ResolversTypes['MarkingDefinition']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionAddArgs, 'input'>>;
   markingDefinitionEdit?: Resolver<Maybe<ResolversTypes['MarkingDefinitionEditMutations']>, ParentType, ContextType, RequireFields<MutationMarkingDefinitionEditArgs, 'id'>>;
   meEdit?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationMeEditArgs, 'input'>>;
   meTokenRenew?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
@@ -30743,15 +30743,15 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   narrativeFieldPatch?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeFieldPatchArgs, 'id' | 'input'>>;
   narrativeRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationNarrativeRelationAddArgs, 'id' | 'input'>>;
   narrativeRelationDelete?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<MutationNarrativeRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
-  noteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, Partial<MutationNoteAddArgs>>;
+  noteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationNoteAddArgs, 'input'>>;
   noteEdit?: Resolver<Maybe<ResolversTypes['NoteEditMutations']>, ParentType, ContextType, RequireFields<MutationNoteEditArgs, 'id'>>;
   notificationDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationNotificationDeleteArgs, 'id'>>;
   notificationMarkRead?: Resolver<Maybe<ResolversTypes['Notification']>, ParentType, ContextType, RequireFields<MutationNotificationMarkReadArgs, 'id' | 'read'>>;
-  observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, Partial<MutationObservedDataAddArgs>>;
+  observedDataAdd?: Resolver<Maybe<ResolversTypes['ObservedData']>, ParentType, ContextType, RequireFields<MutationObservedDataAddArgs, 'input'>>;
   observedDataEdit?: Resolver<Maybe<ResolversTypes['ObservedDataEditMutations']>, ParentType, ContextType, RequireFields<MutationObservedDataEditArgs, 'id'>>;
-  opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, Partial<MutationOpinionAddArgs>>;
+  opinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationOpinionAddArgs, 'input'>>;
   opinionEdit?: Resolver<Maybe<ResolversTypes['OpinionEditMutations']>, ParentType, ContextType, RequireFields<MutationOpinionEditArgs, 'id'>>;
-  organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, Partial<MutationOrganizationAddArgs>>;
+  organizationAdd?: Resolver<Maybe<ResolversTypes['Organization']>, ParentType, ContextType, RequireFields<MutationOrganizationAddArgs, 'input'>>;
   organizationEdit?: Resolver<Maybe<ResolversTypes['OrganizationEditMutations']>, ParentType, ContextType, RequireFields<MutationOrganizationEditArgs, 'id'>>;
   otpActivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, Partial<MutationOtpActivationArgs>>;
   otpDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType>;
@@ -30759,24 +30759,24 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   otpSetActivation?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationOtpSetActivationArgs>>;
   otpUserDeactivation?: Resolver<Maybe<ResolversTypes['MeUser']>, ParentType, ContextType, RequireFields<MutationOtpUserDeactivationArgs, 'id'>>;
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
-  positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, Partial<MutationPositionAddArgs>>;
+  positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
-  queryTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, Partial<MutationQueryTaskAddArgs>>;
-  regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, Partial<MutationRegionAddArgs>>;
+  queryTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
+  regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;
   registerConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, Partial<MutationRegisterConnectorArgs>>;
-  reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, Partial<MutationReportAddArgs>>;
+  reportAdd?: Resolver<Maybe<ResolversTypes['Report']>, ParentType, ContextType, RequireFields<MutationReportAddArgs, 'input'>>;
   reportEdit?: Resolver<Maybe<ResolversTypes['ReportEditMutations']>, ParentType, ContextType, RequireFields<MutationReportEditArgs, 'id'>>;
   resetStateConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationResetStateConnectorArgs, 'id'>>;
-  retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, Partial<MutationRetentionRuleAddArgs>>;
+  retentionRuleAdd?: Resolver<ResolversTypes['RetentionRule'], ParentType, ContextType, RequireFields<MutationRetentionRuleAddArgs, 'input'>>;
   retentionRuleCheck?: Resolver<ResolversTypes['Int'], ParentType, ContextType, Partial<MutationRetentionRuleCheckArgs>>;
   retentionRuleEdit?: Resolver<Maybe<ResolversTypes['RetentionRuleEditMutations']>, ParentType, ContextType, RequireFields<MutationRetentionRuleEditArgs, 'id'>>;
-  roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, Partial<MutationRoleAddArgs>>;
+  roleAdd?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<MutationRoleAddArgs, 'input'>>;
   roleEdit?: Resolver<Maybe<ResolversTypes['RoleEditMutations']>, ParentType, ContextType, RequireFields<MutationRoleEditArgs, 'id'>>;
   ruleManagerClean?: Resolver<ResolversTypes['RuleManager'], ParentType, ContextType, Partial<MutationRuleManagerCleanArgs>>;
   ruleSetActivation?: Resolver<ResolversTypes['Rule'], ParentType, ContextType, RequireFields<MutationRuleSetActivationArgs, 'enable' | 'id'>>;
   runtimeAttributeEdit?: Resolver<ResolversTypes['ID'], ParentType, ContextType, RequireFields<MutationRuntimeAttributeEditArgs, 'current' | 'id' | 'previous'>>;
-  sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, Partial<MutationSectorAddArgs>>;
+  sectorAdd?: Resolver<Maybe<ResolversTypes['Sector']>, ParentType, ContextType, RequireFields<MutationSectorAddArgs, 'input'>>;
   sectorEdit?: Resolver<Maybe<ResolversTypes['SectorEditMutations']>, ParentType, ContextType, RequireFields<MutationSectorEditArgs, 'id'>>;
   sessionKill?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationSessionKillArgs, 'id'>>;
   settingsEdit?: Resolver<Maybe<ResolversTypes['SettingsEditMutations']>, ParentType, ContextType, RequireFields<MutationSettingsEditArgs, 'id'>>;
@@ -30797,7 +30797,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixCyberObservableEdit?: Resolver<Maybe<ResolversTypes['StixCyberObservableEditMutations']>, ParentType, ContextType, RequireFields<MutationStixCyberObservableEditArgs, 'id'>>;
   stixCyberObservablesExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportAskArgs, 'exportType' | 'format'>>;
   stixCyberObservablesExportPush?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationStixCyberObservablesExportPushArgs, 'file'>>;
-  stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, Partial<MutationStixDomainObjectAddArgs>>;
+  stixDomainObjectAdd?: Resolver<Maybe<ResolversTypes['StixDomainObject']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectAddArgs, 'input'>>;
   stixDomainObjectEdit?: Resolver<Maybe<ResolversTypes['StixDomainObjectEditMutations']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectEditArgs, 'id'>>;
   stixDomainObjectsDelete?: Resolver<Array<Maybe<ResolversTypes['ID']>>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsDeleteArgs, 'id'>>;
   stixDomainObjectsExportAsk?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, RequireFields<MutationStixDomainObjectsExportAskArgs, 'exportType' | 'format' | 'type'>>;
@@ -30806,24 +30806,24 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   stixRefRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipAddArgs, 'input'>>;
   stixRefRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRefRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRefRelationshipEditArgs, 'id'>>;
   stixRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixRelationshipEditArgs, 'id'>>;
-  stixSightingRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, Partial<MutationStixSightingRelationshipAddArgs>>;
+  stixSightingRelationshipAdd?: Resolver<Maybe<ResolversTypes['StixSightingRelationship']>, ParentType, ContextType, RequireFields<MutationStixSightingRelationshipAddArgs, 'input'>>;
   stixSightingRelationshipEdit?: Resolver<Maybe<ResolversTypes['StixSightingRelationshipEditMutations']>, ParentType, ContextType, RequireFields<MutationStixSightingRelationshipEditArgs, 'id'>>;
-  streamCollectionAdd?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, Partial<MutationStreamCollectionAddArgs>>;
+  streamCollectionAdd?: Resolver<Maybe<ResolversTypes['StreamCollection']>, ParentType, ContextType, RequireFields<MutationStreamCollectionAddArgs, 'input'>>;
   streamCollectionEdit?: Resolver<Maybe<ResolversTypes['StreamCollectionEditMutations']>, ParentType, ContextType, RequireFields<MutationStreamCollectionEditArgs, 'id'>>;
   subTypeEdit?: Resolver<Maybe<ResolversTypes['SubTypeEditMutations']>, ParentType, ContextType, RequireFields<MutationSubTypeEditArgs, 'id'>>;
-  synchronizerAdd?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, Partial<MutationSynchronizerAddArgs>>;
+  synchronizerAdd?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerAddArgs, 'input'>>;
   synchronizerEdit?: Resolver<Maybe<ResolversTypes['SynchronizerEditMutations']>, ParentType, ContextType, RequireFields<MutationSynchronizerEditArgs, 'id'>>;
   synchronizerStart?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerStartArgs, 'id'>>;
   synchronizerStop?: Resolver<Maybe<ResolversTypes['Synchronizer']>, ParentType, ContextType, RequireFields<MutationSynchronizerStopArgs, 'id'>>;
   synchronizerTest?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationSynchronizerTestArgs>>;
-  systemAdd?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, Partial<MutationSystemAddArgs>>;
+  systemAdd?: Resolver<Maybe<ResolversTypes['System']>, ParentType, ContextType, RequireFields<MutationSystemAddArgs, 'input'>>;
   systemEdit?: Resolver<Maybe<ResolversTypes['SystemEditMutations']>, ParentType, ContextType, RequireFields<MutationSystemEditArgs, 'id'>>;
-  taxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, Partial<MutationTaxiiCollectionAddArgs>>;
+  taxiiCollectionAdd?: Resolver<Maybe<ResolversTypes['TaxiiCollection']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionAddArgs, 'input'>>;
   taxiiCollectionEdit?: Resolver<Maybe<ResolversTypes['TaxiiCollectionEditMutations']>, ParentType, ContextType, RequireFields<MutationTaxiiCollectionEditArgs, 'id'>>;
-  threatActorAdd?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, Partial<MutationThreatActorAddArgs>>;
+  threatActorAdd?: Resolver<Maybe<ResolversTypes['ThreatActor']>, ParentType, ContextType, RequireFields<MutationThreatActorAddArgs, 'input'>>;
   threatActorEdit?: Resolver<Maybe<ResolversTypes['ThreatActorEditMutations']>, ParentType, ContextType, RequireFields<MutationThreatActorEditArgs, 'id'>>;
   token?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType, Partial<MutationTokenArgs>>;
-  toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, Partial<MutationToolAddArgs>>;
+  toolAdd?: Resolver<Maybe<ResolversTypes['Tool']>, ParentType, ContextType, RequireFields<MutationToolAddArgs, 'input'>>;
   toolEdit?: Resolver<Maybe<ResolversTypes['ToolEditMutations']>, ParentType, ContextType, RequireFields<MutationToolEditArgs, 'id'>>;
   triggerDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationTriggerDeleteArgs, 'id'>>;
   triggerDigestAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerDigestAddArgs, 'input'>>;
@@ -30831,7 +30831,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   triggerLiveAdd?: Resolver<Maybe<ResolversTypes['Trigger']>, ParentType, ContextType, RequireFields<MutationTriggerLiveAddArgs, 'input'>>;
   uploadImport?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadImportArgs, 'file'>>;
   uploadPending?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<MutationUploadPendingArgs, 'file'>>;
-  userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, Partial<MutationUserAddArgs>>;
+  userAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationUserAddArgs, 'input'>>;
   userEdit?: Resolver<Maybe<ResolversTypes['UserEditMutations']>, ParentType, ContextType, RequireFields<MutationUserEditArgs, 'id'>>;
   userNoteAdd?: Resolver<Maybe<ResolversTypes['Note']>, ParentType, ContextType, RequireFields<MutationUserNoteAddArgs, 'input'>>;
   userOpinionAdd?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<MutationUserOpinionAddArgs, 'input'>>;
@@ -30839,7 +30839,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   vocabularyAdd?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyAddArgs, 'input'>>;
   vocabularyDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationVocabularyDeleteArgs, 'id'>>;
   vocabularyFieldPatch?: Resolver<Maybe<ResolversTypes['Vocabulary']>, ParentType, ContextType, RequireFields<MutationVocabularyFieldPatchArgs, 'id' | 'input'>>;
-  vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, Partial<MutationVulnerabilityAddArgs>>;
+  vulnerabilityAdd?: Resolver<Maybe<ResolversTypes['Vulnerability']>, ParentType, ContextType, RequireFields<MutationVulnerabilityAddArgs, 'input'>>;
   vulnerabilityEdit?: Resolver<Maybe<ResolversTypes['VulnerabilityEditMutations']>, ParentType, ContextType, RequireFields<MutationVulnerabilityEditArgs, 'id'>>;
   workAdd?: Resolver<ResolversTypes['Work'], ParentType, ContextType, RequireFields<MutationWorkAddArgs, 'connectorId'>>;
   workDelete?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationWorkDeleteArgs, 'connectorId'>>;
@@ -32153,7 +32153,7 @@ export type RoleEditMutationsResolvers<ContextType = any, ParentType extends Res
   contextPatch?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, Partial<RoleEditMutationsContextPatchArgs>>;
   delete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType>;
   fieldPatch?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsFieldPatchArgs, 'input'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, Partial<RoleEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['Role']>, ParentType, ContextType, RequireFields<RoleEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -33092,7 +33092,7 @@ export type SubTypeEdgeResolvers<ContextType = any, ParentType extends Resolvers
 }>;
 
 export type SubTypeEditMutationsResolvers<ContextType = any, ParentType extends ResolversParentTypes['SubTypeEditMutations'] = ResolversParentTypes['SubTypeEditMutations']> = ResolversObject<{
-  statusAdd?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, Partial<SubTypeEditMutationsStatusAddArgs>>;
+  statusAdd?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusAddArgs, 'input'>>;
   statusDelete?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusDeleteArgs, 'statusId'>>;
   statusFieldPatch?: Resolver<Maybe<ResolversTypes['SubType']>, ParentType, ContextType, RequireFields<SubTypeEditMutationsStatusFieldPatchArgs, 'input' | 'statusId'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -33735,7 +33735,7 @@ export type UserEditMutationsResolvers<ContextType = any, ParentType extends Res
   fieldPatch?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsFieldPatchArgs, 'input'>>;
   organizationAdd?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsOrganizationAddArgs, 'organizationId'>>;
   organizationDelete?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsOrganizationDeleteArgs, 'organizationId'>>;
-  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, Partial<UserEditMutationsRelationAddArgs>>;
+  relationAdd?: Resolver<Maybe<ResolversTypes['InternalRelationship']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationAddArgs, 'input'>>;
   relationDelete?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<UserEditMutationsRelationDeleteArgs, 'relationship_type' | 'toId'>>;
   tokenRenew?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

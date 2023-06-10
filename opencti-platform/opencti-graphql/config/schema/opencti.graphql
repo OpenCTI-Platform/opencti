@@ -12527,7 +12527,7 @@ type SettingsEditMutations {
   contextClean: Settings
 }
 type SubTypeEditMutations {
-  statusAdd(input: StatusAddInput): SubType
+  statusAdd(input: StatusAddInput!): SubType
   statusFieldPatch(statusId: String!, input: [EditInput]!): SubType
   statusDelete(statusId: String!): SubType
 }
@@ -12536,7 +12536,7 @@ type GroupEditMutations {
   fieldPatch(input: [EditInput]!): Group
   contextPatch(input: EditContext): Group
   contextClean: Group
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(fromId: StixRef, toId: StixRef, relationship_type: String!): Group
 }
 type UserEditMutations {
@@ -12545,7 +12545,7 @@ type UserEditMutations {
   contextPatch(input: EditContext): User
   contextClean: User
   tokenRenew: User
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): User
   organizationAdd(organizationId: ID!): User
   organizationDelete(organizationId: ID!): User
@@ -12555,7 +12555,7 @@ type RoleEditMutations {
   fieldPatch(input: [EditInput]!): Role
   contextPatch(input: EditContext): Role
   contextClean: Role
-  relationAdd(input: InternalRelationshipAddInput): InternalRelationship
+  relationAdd(input: InternalRelationshipAddInput!): InternalRelationship
   relationDelete(toId: StixRef!, relationship_type: String!): Role
 }
 type AttributeEditMutations {
@@ -12952,7 +12952,7 @@ type Mutation {
     @auth(for: [KNOWLEDGE_KNASKIMPORT])
 
   ### SYNC
-  synchronizerAdd(input: SynchronizerAddInput): Synchronizer @auth(for: [CONNECTORAPI])
+  synchronizerAdd(input: SynchronizerAddInput!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerEdit(id: ID!): SynchronizerEditMutations @auth(for: [CONNECTORAPI])
   synchronizerStart(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
   synchronizerStop(id: ID!): Synchronizer @auth(for: [CONNECTORAPI])
@@ -12966,11 +12966,11 @@ type Mutation {
 
   ### TASK
   deleteTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
-  listTaskAdd(input: ListTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
-  queryTaskAdd(input: QueryTaskAddInput): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  listTaskAdd(input: ListTaskAddInput!): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
+  queryTaskAdd(input: QueryTaskAddInput!): Task! @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ### RETENTION RULE
-  retentionRuleAdd(input: RetentionRuleAddInput): RetentionRule! @auth(for: [SETTINGS])
+  retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])
   retentionRuleCheck(input: RetentionRuleAddInput): Int! @auth(for: [SETTINGS])
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations @auth(for: [SETTINGS])
 
@@ -12992,16 +12992,16 @@ type Mutation {
   statusTemplateFieldPatch(id: ID!, input: [EditInput!]!): StatusTemplate! @auth(for: [SETTINGS])
   statusTemplateContextPatch(id: ID!, input: EditContext!): StatusTemplate! @auth(for: [SETTINGS])
   statusTemplateContextClean(id: ID!): StatusTemplate! @auth(for: [SETTINGS])
-  groupAdd(input: GroupAddInput): Group @auth(for: [SETTINGS_SETACCESSES])
+  groupAdd(input: GroupAddInput!): Group @auth(for: [SETTINGS_SETACCESSES])
   groupEdit(id: ID!): GroupEditMutations @auth(for: [SETTINGS_SETACCESSES])
-  userAdd(input: UserAddInput): User @auth(for: [SETTINGS_SETACCESSES])
+  userAdd(input: UserAddInput!): User @auth(for: [SETTINGS_SETACCESSES])
   userEdit(id: ID!): UserEditMutations @auth(for: [SETTINGS_SETACCESSES])
   meTokenRenew: MeUser @auth
   meEdit(input: [EditInput]!, password: String): MeUser @auth
   bookmarkAdd(id: ID!, type: String!): StixDomainObject @auth(for: [KNOWLEDGE])
   bookmarkDelete(id: ID!): ID @auth(for: [KNOWLEDGE])
   logout: ID @auth
-  roleAdd(input: RoleAddInput): Role @auth(for: [SETTINGS_SETACCESSES])
+  roleAdd(input: RoleAddInput!): Role @auth(for: [SETTINGS_SETACCESSES])
   sessionKill(id: ID!): ID @auth(for: [SETTINGS_SETACCESSES])
   userSessionsKill(id: ID!): [ID] @auth(for: [SETTINGS_SETACCESSES])
   roleEdit(id: ID!): RoleEditMutations @auth(for: [SETTINGS_SETACCESSES])
@@ -13013,9 +13013,9 @@ type Mutation {
   feedAdd(input: FeedAddInput!): Feed @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedDelete(id: ID!): ID! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   feedEdit(id: ID!, input: FeedAddInput!): Feed! @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  taxiiCollectionAdd(input: TaxiiCollectionAddInput): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  taxiiCollectionAdd(input: TaxiiCollectionAddInput!): TaxiiCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   taxiiCollectionEdit(id: ID!): TaxiiCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
-  streamCollectionAdd(input: StreamCollectionAddInput): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
+  streamCollectionAdd(input: StreamCollectionAddInput!): StreamCollection @auth(for: [TAXIIAPI_SETCOLLECTIONS])
   streamCollectionEdit(id: ID!): StreamCollectionEditMutations @auth(for: [TAXIIAPI_SETCOLLECTIONS])
 
   ######## STIX OBJECT
@@ -13024,13 +13024,13 @@ type Mutation {
   ######## STIX OBJECT ENTITIES
 
   ######## STIX META OBJECT ENTITIES
-  markingDefinitionAdd(input: MarkingDefinitionAddInput): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
+  markingDefinitionAdd(input: MarkingDefinitionAddInput!): MarkingDefinition @auth(for: [SETTINGS_SETMARKINGS])
   markingDefinitionEdit(id: ID!): MarkingDefinitionEditMutations @auth(for: [SETTINGS_SETMARKINGS])
-  labelAdd(input: LabelAddInput): Label @auth(for: [SETTINGS_SETLABELS])
+  labelAdd(input: LabelAddInput!): Label @auth(for: [SETTINGS_SETLABELS])
   labelEdit(id: ID!): LabelEditMutations @auth(for: [SETTINGS_SETLABELS])
-  externalReferenceAdd(input: ExternalReferenceAddInput): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
+  externalReferenceAdd(input: ExternalReferenceAddInput!): ExternalReference @auth(for: [KNOWLEDGE_KNUPDATE])
   externalReferenceEdit(id: ID!): ExternalReferenceEditMutations
-  killChainPhaseAdd(input: KillChainPhaseAddInput): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
+  killChainPhaseAdd(input: KillChainPhaseAddInput!): KillChainPhase @auth(for: [SETTINGS_SETLABELS])
   killChainPhaseEdit(id: ID!): KillChainPhaseEditMutations @auth(for: [SETTINGS_SETLABELS])
 
   ######## STIX CORE OBJECT ENTITIES
@@ -13053,7 +13053,7 @@ type Mutation {
   stixCoreObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
 
   ######## STIX DOMAIN OBJECT ENTITIES
-  stixDomainObjectAdd(input: StixDomainObjectAddInput): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
+  stixDomainObjectAdd(input: StixDomainObjectAddInput!): StixDomainObject @auth(for: [KNOWLEDGE_KNUPDATE])
   stixDomainObjectEdit(id: ID!): StixDomainObjectEditMutations
   stixDomainObjectsExportAsk(
     type: String!
@@ -13072,61 +13072,61 @@ type Mutation {
   ): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT_KNASKEXPORT])
   stixDomainObjectsDelete(id: [ID]!): [ID]!
   stixDomainObjectsExportPush(type: String!, file: Upload!, listFilters: String): Boolean @auth(for: [CONNECTORAPI])
-  attackPatternAdd(input: AttackPatternAddInput): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
+  attackPatternAdd(input: AttackPatternAddInput!): AttackPattern @auth(for: [KNOWLEDGE_KNUPDATE])
   attackPatternEdit(id: ID!): AttackPatternEditMutations
-  campaignAdd(input: CampaignAddInput): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
+  campaignAdd(input: CampaignAddInput!): Campaign @auth(for: [KNOWLEDGE_KNUPDATE])
   campaignEdit(id: ID!): CampaignEditMutations
   ############### Containers
   containerEdit(id: ID!): ContainerEditMutations
-  noteAdd(input: NoteAddInput): Note @auth(for: [KNOWLEDGE_KNUPDATE])
+  noteAdd(input: NoteAddInput!): Note @auth(for: [KNOWLEDGE_KNUPDATE])
   userNoteAdd(input: NoteUserAddInput!): Note @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   noteEdit(id: ID!): NoteEditMutations
-  observedDataAdd(input: ObservedDataAddInput): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
+  observedDataAdd(input: ObservedDataAddInput!): ObservedData @auth(for: [KNOWLEDGE_KNUPDATE])
   observedDataEdit(id: ID!): ObservedDataEditMutations
-  opinionAdd(input: OpinionAddInput): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
+  opinionAdd(input: OpinionAddInput!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE])
   userOpinionAdd(input: OpinionUserAddInput!): Opinion @auth(for: [KNOWLEDGE_KNUPDATE, KNOWLEDGE_KNPARTICIPATE])
   opinionEdit(id: ID!): OpinionEditMutations
-  reportAdd(input: ReportAddInput): Report @auth(for: [KNOWLEDGE_KNUPDATE])
+  reportAdd(input: ReportAddInput!): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   reportEdit(id: ID!): ReportEditMutations
-  courseOfActionAdd(input: CourseOfActionAddInput): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
+  courseOfActionAdd(input: CourseOfActionAddInput!): CourseOfAction @auth(for: [KNOWLEDGE_KNUPDATE])
   courseOfActionEdit(id: ID!): CourseOfActionEditMutations
   ############### Identities
-  identityAdd(input: IdentityAddInput): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
+  identityAdd(input: IdentityAddInput!): Identity @auth(for: [KNOWLEDGE_KNUPDATE])
   identityEdit(id: ID!): IdentityEditMutations
-  individualAdd(input: IndividualAddInput): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
+  individualAdd(input: IndividualAddInput!): Individual @auth(for: [KNOWLEDGE_KNUPDATE])
   individualEdit(id: ID!): IndividualEditMutations
-  organizationAdd(input: OrganizationAddInput): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
+  organizationAdd(input: OrganizationAddInput!): Organization @auth(for: [KNOWLEDGE_KNUPDATE])
   organizationEdit(id: ID!): OrganizationEditMutations
-  sectorAdd(input: SectorAddInput): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
+  sectorAdd(input: SectorAddInput!): Sector @auth(for: [KNOWLEDGE_KNUPDATE])
   sectorEdit(id: ID!): SectorEditMutations
-  systemAdd(input: SystemAddInput): System @auth(for: [KNOWLEDGE_KNUPDATE])
+  systemAdd(input: SystemAddInput!): System @auth(for: [KNOWLEDGE_KNUPDATE])
   systemEdit(id: ID!): SystemEditMutations
-  indicatorAdd(input: IndicatorAddInput): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
+  indicatorAdd(input: IndicatorAddInput!): Indicator @auth(for: [KNOWLEDGE_KNUPDATE])
   indicatorEdit(id: ID!): IndicatorEditMutations
-  infrastructureAdd(input: InfrastructureAddInput): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
+  infrastructureAdd(input: InfrastructureAddInput!): Infrastructure @auth(for: [KNOWLEDGE_KNUPDATE])
   infrastructureEdit(id: ID!): InfrastructureEditMutations
-  intrusionSetAdd(input: IntrusionSetAddInput): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
+  intrusionSetAdd(input: IntrusionSetAddInput!): IntrusionSet @auth(for: [KNOWLEDGE_KNUPDATE])
   intrusionSetEdit(id: ID!): IntrusionSetEditMutations
   ############### Locations
-  locationAdd(input: LocationAddInput): Location @auth(for: [KNOWLEDGE_KNUPDATE])
+  locationAdd(input: LocationAddInput!): Location @auth(for: [KNOWLEDGE_KNUPDATE])
   locationEdit(id: ID!): LocationEditMutations
-  cityAdd(input: CityAddInput): City @auth(for: [KNOWLEDGE_KNUPDATE])
+  cityAdd(input: CityAddInput!): City @auth(for: [KNOWLEDGE_KNUPDATE])
   cityEdit(id: ID!): CityEditMutations
-  countryAdd(input: CountryAddInput): Country @auth(for: [KNOWLEDGE_KNUPDATE])
+  countryAdd(input: CountryAddInput!): Country @auth(for: [KNOWLEDGE_KNUPDATE])
   countryEdit(id: ID!): CountryEditMutations
-  regionAdd(input: RegionAddInput): Region @auth(for: [KNOWLEDGE_KNUPDATE])
+  regionAdd(input: RegionAddInput!): Region @auth(for: [KNOWLEDGE_KNUPDATE])
   regionEdit(id: ID!): RegionEditMutations
-  positionAdd(input: PositionAddInput): Position @auth(for: [KNOWLEDGE_KNUPDATE])
+  positionAdd(input: PositionAddInput!): Position @auth(for: [KNOWLEDGE_KNUPDATE])
   positionEdit(id: ID!): PositionEditMutations
-  malwareAdd(input: MalwareAddInput): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
+  malwareAdd(input: MalwareAddInput!): Malware @auth(for: [KNOWLEDGE_KNUPDATE])
   malwareEdit(id: ID!): MalwareEditMutations
-  threatActorAdd(input: ThreatActorAddInput): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
+  threatActorAdd(input: ThreatActorAddInput!): ThreatActor @auth(for: [KNOWLEDGE_KNUPDATE])
   threatActorEdit(id: ID!): ThreatActorEditMutations
-  toolAdd(input: ToolAddInput): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
+  toolAdd(input: ToolAddInput!): Tool @auth(for: [KNOWLEDGE_KNUPDATE])
   toolEdit(id: ID!): ToolEditMutations
-  vulnerabilityAdd(input: VulnerabilityAddInput): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
+  vulnerabilityAdd(input: VulnerabilityAddInput!): Vulnerability @auth(for: [KNOWLEDGE_KNUPDATE])
   vulnerabilityEdit(id: ID!): VulnerabilityEditMutations
-  incidentAdd(input: IncidentAddInput): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
+  incidentAdd(input: IncidentAddInput!): Incident @auth(for: [KNOWLEDGE_KNUPDATE])
   incidentEdit(id: ID!): IncidentEditMutations
 
   ######## STIX CYBER OBSERVABLE ENTITIES
@@ -13229,7 +13229,7 @@ type Mutation {
     @auth(for: [KNOWLEDGE_KNUPDATE])
 
   ######## STIX SIGHTING RELATIONSHIPS
-  stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput): StixSightingRelationship
+  stixSightingRelationshipAdd(input: StixSightingRelationshipAddInput!): StixSightingRelationship
     @auth(for: [KNOWLEDGE_KNUPDATE])
   stixSightingRelationshipEdit(id: ID!): StixSightingRelationshipEditMutations @auth(for: [KNOWLEDGE_KNUPDATE])
 }
