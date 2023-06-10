@@ -86,11 +86,9 @@ const RichTextField = (props) => {
     setExternalLink(url);
   };
   const browseLinkWarning = (event) => {
-    if (event.target.localName === 'a') { // if the user clicks on a link
-      event.stopPropagation();
-      event.preventDefault();
-      handleOpenExternalLink(event.target.href);
-    }
+    event.stopPropagation();
+    event.preventDefault();
+    handleOpenExternalLink(event.target.href);
   };
   return (
     <div style={style} className={!R.isNil(meta.error) ? 'error' : 'main'}>
@@ -125,7 +123,6 @@ const RichTextField = (props) => {
             <Typography variant="h6">{t('Content')}</Typography>
           </div>
           <div className={classes.container}>
-            <div onClick={(event) => browseLinkWarning(event)}>
             <CKEditor
               editor={Editor}
               onReady={(editor) => {
@@ -150,24 +147,22 @@ const RichTextField = (props) => {
               onFocus={internalOnFocus}
               disabled={disabled}
             />
-            </div>
-            <ExternalLinkPopover
-              displayExternalLink={displayExternalLink}
-              externalLink={externalLink}
-              setDisplayExternalLink={setDisplayExternalLink}
-              setExternalLink={setExternalLink}
-            ></ExternalLinkPopover>
-            {!R.isNil(meta.error) && (
-              <FormHelperText error={true}>{meta.error}</FormHelperText>
-            )}
           </div>
+          <ExternalLinkPopover
+            displayExternalLink={displayExternalLink}
+            externalLink={externalLink}
+            setDisplayExternalLink={setDisplayExternalLink}
+            setExternalLink={setExternalLink}
+          ></ExternalLinkPopover>
+          {!R.isNil(meta.error) && (
+            <FormHelperText error={true}>{meta.error}</FormHelperText>
+          )}
           <DialogActions>
             <Button onClick={() => setFullScreen(false)}>{t('Close')}</Button>
           </DialogActions>
         </Dialog>
       ) : (
-        <div>
-          <div onClick={(event) => browseLinkWarning(event)}>
+        <>
           <CKEditor
             editor={Editor}
             onReady={(editor) => {
@@ -192,14 +187,13 @@ const RichTextField = (props) => {
             onFocus={internalOnFocus}
             disabled={disabled}
           />
-          </div>
           <ExternalLinkPopover
             displayExternalLink={displayExternalLink}
             externalLink={externalLink}
             setDisplayExternalLink={setDisplayExternalLink}
             setExternalLink={setExternalLink}
-          ></ExternalLinkPopover>
-        </div>
+          />
+        </>
       )}
       {!R.isNil(meta.error) && (
         <FormHelperText error={true}>{meta.error}</FormHelperText>
