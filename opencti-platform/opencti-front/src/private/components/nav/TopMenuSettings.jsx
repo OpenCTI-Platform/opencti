@@ -1,6 +1,5 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import Tooltip from '@mui/material/Tooltip';
 import Button from '@mui/material/Button';
 import makeStyles from '@mui/styles/makeStyles';
 import { useFormatter } from '../../../components/i18n';
@@ -10,11 +9,6 @@ import {
   SETTINGS_SETLABELS,
   SETTINGS_SETMARKINGS,
 } from '../../../utils/hooks/useGranted';
-import useAuth from '../../../utils/hooks/useAuth';
-import {
-  RETENTION_MANAGER,
-  RULE_ENGINE,
-} from '../../../utils/platformModulesHelper';
 
 const useStyles = makeStyles((theme) => ({
   button: {
@@ -30,7 +24,6 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const TopMenuSettings = () => {
-  const { platformModuleHelpers } = useAuth();
   const { t } = useFormatter();
   const location = useLocation();
   const classes = useStyles();

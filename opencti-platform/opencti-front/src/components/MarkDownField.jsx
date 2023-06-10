@@ -20,7 +20,6 @@ const MarkDownField = (props) => {
     label,
     style,
     disabled,
-    maxEditorHeight,
     controlledSelectedTab,
     controlledSetSelectTab,
     height,
