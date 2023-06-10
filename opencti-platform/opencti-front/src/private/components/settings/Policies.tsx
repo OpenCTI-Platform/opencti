@@ -1,8 +1,10 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation } from 'react-relay';
+import { graphql, useFragment, useMutation, useLazyLoadQuery } from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
+import Tooltip from '@mui/material/Tooltip';
+import { InformationOutline } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -19,10 +21,10 @@ import { useFormatter } from '../../../components/i18n';
 import { Option } from '../common/form/ReferenceField';
 import SwitchField from '../../../components/SwitchField';
 import TextField from '../../../components/TextField';
-import useAuth from '../../../utils/hooks/useAuth';
 import { Policies$key } from './__generated__/Policies.graphql';
 import MarkDownField from '../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../components/Subscription';
+import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -75,6 +77,14 @@ const PoliciesFragment = graphql`
   }
 `;
 
+const policiesQuery = graphql`
+  query PoliciesQuery {
+    settings {
+      ...Policies
+    }
+  }
+`;
+
 export const policiesFieldPatch = graphql`
   mutation PoliciesFieldPatchMutation($id: ID!, $input: [EditInput]!) {
     settingsEdit(id: $id) {
@@ -111,8 +121,8 @@ const policiesValidation = () => Yup.object().shape({
 });
 
 const Policies: FunctionComponent = () => {
-  const { settings: rawSettings } = useAuth();
-  const settings = useFragment<Policies$key>(PoliciesFragment, rawSettings);
+  const data = useLazyLoadQuery<PoliciesQuery>(policiesQuery, {});
+  const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
   const [commitFocus] = useMutation(policiesFocus);
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
@@ -142,12 +152,10 @@ const Policies: FunctionComponent = () => {
   };
   const { id, editContext } = settings;
   const initialValues = {
-    platform_organization: settings.platform_organization
-      ? {
-        label: settings.platform_organization?.name,
-        value: settings.platform_organization?.id,
-      }
-      : '',
+    platform_organization: settings.platform_organization ? {
+      label: settings.platform_organization?.name,
+      value: settings.platform_organization?.id,
+    } : '',
     platform_login_message: settings.platform_login_message,
     platform_consent_message: settings.platform_consent_message,
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
@@ -166,11 +174,8 @@ const Policies: FunctionComponent = () => {
       <AccessesMenu />
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
-          <Formik
-            onSubmit={() => {}}
-            initialValues={initialValues}
-            validationSchema={policiesValidation()}
-          >
+          <Formik onSubmit={() => {}} initialValues={initialValues}
+                  enableReinitialize={true} validationSchema={policiesValidation()}>
             {() => (
               <Form>
                 <Grid container={true} spacing={3}>
@@ -358,76 +363,54 @@ const Policies: FunctionComponent = () => {
                       {t('Login messages')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Formik
-                        onSubmit={() => {}}
-                        enableReinitialize={true}
-                        initialValues={initialValues}
-                        validationSchema={policiesValidation()}
-                      >
-                        {() => (
-                          <Form>
-                            <Field
-                              component={MarkDownField}
-                              name="platform_login_message"
-                              label={t('Platform login message')}
-                              fullWidth={true}
-                              multiline={true}
-                              onFocus={(name: string) => handleChangeFocus(id, name)
-                              }
-                              onSubmit={handleSubmitField}
-                              variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_login_message"
-                                />
-                              }
-                            />
-                            <Field
-                              component={MarkDownField}
-                              name="platform_consent_message"
-                              label={t(
-                                'Platform Consent Message - requires acceptance to enable login form when set',
-                              )}
-                              fullWidth={true}
-                              multiline={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={(name: string) => handleChangeFocus(id, name)
-                              }
-                              onSubmit={handleSubmitField}
-                              variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_consent_message"
-                                />
-                              }
-                            />
-                            <Field
-                              component={MarkDownField}
-                              name="platform_consent_confirm_text"
-                              label={`${t(
-                                'Platform Consent Confirm Text - confirm label next to confirm checkbox',
-                              )}. ${t('Default')}: ${t(
-                                'I have read and comply with the above statement',
-                              )}`}
-                              fullWidth={true}
-                              multiline={true}
-                              style={{ marginTop: 20 }}
-                              onFocus={(name: string) => handleChangeFocus(id, name)
-                              }
-                              onSubmit={handleSubmitField}
-                              variant="standard"
-                              helperText={
-                                <SubscriptionFocus
-                                  context={editContext}
-                                  fieldName="platform_consent_confirm_text"
-                                />
-                              }
-                            />
-                          </Form>
-                        )}
-                      </Formik>
+                      <Typography variant="h4" gutterBottom={true}>
+                        {t('Platform login message')}
+                      </Typography>
+                      <Field component={MarkDownField}
+                        name="platform_login_message"
+                        label={t('Platform login message')}
+                        fullWidth
+                        multiline={true}
+                        rows="3"
+                        style={{ marginTop: 20 }}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
+                      />
+                      <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
+                        {t('Platform Consent Message')}
+                      </Typography>
+                      <Field component={MarkDownField}
+                        name="platform_consent_message"
+                        label={t('Requires acceptance to enable login form when set')}
+                        fullWidth
+                        style={{ marginTop: 20 }}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_message"/>}
+                      />
+                      <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
+                        {t('Platform Consent Confirm Text')}
+                      </Typography>
+                      <div style={{ float: 'left', margin: '16px 0 0 8px' }}>
+                        <Tooltip title={`${t('Default')}: I have read and comply with the above statement`}>
+                          <InformationOutline fontSize="small" color="primary" />
+                        </Tooltip>
+                      </div>
+                      <div className="clearfix" />
+                      <Field component={MarkDownField}
+                        name="platform_consent_confirm_text"
+                        label={t('One line confirm label next to confirm checkbox')}
+                        fullWidth
+                        style={{ marginTop: 14 }}
+                        height={38}
+                        onFocus={(name: string) => handleChangeFocus(id, name)}
+                        onSubmit={handleSubmitField}
+                        variant="standard"
+                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
+                      />
                     </Paper>
                   </Grid>
                 </Grid>

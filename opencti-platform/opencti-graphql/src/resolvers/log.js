@@ -32,11 +32,11 @@ const logResolvers = {
     entity_id: 'context_data.*id',
     elementId: 'context_data.*id', // Compatibility with standard filters
     connection_id: 'context_data.*id', // Compatibility with standard filters
-    user_id: 'user_id',
-    creator: 'user_id',
-    group: 'group_ids',
-    organization: 'organization_ids',
     created: 'timestamp',
+    user_id: 'user_id',
+    members_user: 'user_id',
+    members_group: 'group_ids',
+    members_organization: 'organization_ids',
   },
 };
 

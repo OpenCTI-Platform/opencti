@@ -4,8 +4,6 @@ import { graphql } from 'react-relay';
 import { Field, Form, Formik } from 'formik';
 import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
 import MenuItem from '@mui/material/MenuItem';

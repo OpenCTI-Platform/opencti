@@ -210,7 +210,7 @@ class ListLines extends Component {
                 {extraFields}
                 {availableFilterKeys && availableFilterKeys.length > 0 && (
                   <Filters
-                    searchContext={{ entityTypes: [exportEntityType] }}
+                    searchContext={{ entityTypes: exportEntityType ? [exportEntityType] : [] }}
                     availableFilterKeys={availableFilterKeys}
                     handleAddFilter={handleAddFilter}
                     availableEntityTypes={availableEntityTypes}

@@ -93,7 +93,7 @@ const ACCESS_SETTINGS_RESTRICTED_KEYS = [
 export const settingsEditField = async (context, user, settingsId, input) => {
   const hasSetAccessCapability = isUserHasCapability(user, SETTINGS_SET_ACCESSES);
   const data = hasSetAccessCapability ? input : input.filter((i) => !ACCESS_SETTINGS_RESTRICTED_KEYS.includes(i.key));
-  const { element } = await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
+  await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   await publishUserAction({
     user,
     event_type: 'admin',
@@ -101,5 +101,6 @@ export const settingsEditField = async (context, user, settingsId, input) => {
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
     context_data: { entity_type: ENTITY_TYPE_SETTINGS, operation: 'update', input }
   });
-  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, element, user);
+  const updatedSettings = await getSettings(context);
+  return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);
 };

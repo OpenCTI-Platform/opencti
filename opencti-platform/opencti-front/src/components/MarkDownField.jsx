@@ -62,7 +62,6 @@ const MarkDownField = (props) => {
       <ReactMde
         value={field.value}
         readOnly={disabled}
-        maxEditorHeight={maxEditorHeight}
         onChange={(value) => setFieldValue(name, value)}
         selectedTab={controlledSelectedTab || selectedTab}
         onTabChange={(tab) => (controlledSetSelectTab ? controlledSetSelectTab(tab) : setSelectedTab(tab))}

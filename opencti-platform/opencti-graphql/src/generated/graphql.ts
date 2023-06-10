@@ -10770,8 +10770,9 @@ export enum LogsFilter {
   ElementId = 'elementId',
   EntityId = 'entity_id',
   EventType = 'event_type',
-  Group = 'group',
-  Organization = 'organization',
+  MembersGroup = 'members_group',
+  MembersOrganization = 'members_organization',
+  MembersUser = 'members_user',
   UserId = 'user_id'
 }
 

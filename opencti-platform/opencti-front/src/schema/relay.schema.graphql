@@ -344,8 +344,9 @@ enum LogsFilter {
   connection_id
   user_id
   creator
-  group
-  organization
+  members_user
+  members_group
+  members_organization
   applicant_id
 }
 

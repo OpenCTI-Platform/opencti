@@ -101,9 +101,9 @@ const Audit = () => {
             numberOfElements={numberOfElements}
             availableFilterKeys={[
               'elementId',
-              'creator',
-              'organization',
-              'group',
+              'members_user',
+              'members_organization',
+              'members_group',
               'created_start_date',
               'created_end_date',
             ]}>
