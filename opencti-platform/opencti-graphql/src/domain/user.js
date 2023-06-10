@@ -771,7 +771,6 @@ export const loginFromProvider = async (userInfo, opts = {}) => {
     }
   }
   // endregion
-  await publishUserAction({ user, event_type: 'login', status: 'success', context_data: { provider: providedName } });
   return user;
 };
 
@@ -838,13 +837,9 @@ export const logout = async (context, user, req, res) => {
   const withOrigin = userWithOrigin(req, user);
   await publishUserAction({ user: withOrigin, event_type: 'logout', status: 'success', context_data: undefined });
   await delUserContext(user);
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     res.clearCookie(OPENCTI_SESSION);
-    req.session.regenerate((err) => {
-      if (err) {
-        reject(err);
-        return;
-      }
+    req.session.destroy(() => {
       resolve(user.id);
     });
   });
