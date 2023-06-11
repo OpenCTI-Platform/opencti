@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.2">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -1702,13 +1702,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/enrichment.md" class="md-nav__link">
+      <a href="../../usage/merging.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Enrichment connectors
+    Merge objects
   
 
     
@@ -2441,7 +2441,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/users.md" class="md-nav__link">
+      <a href="../../administration/users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3359,13 +3359,14 @@
 <li><code>opencti_stix_cyber_observables</code></li>
 <li><code>opencti_stix_domain_objects</code></li>
 <li><code>opencti_stix_meta_objects</code></li>
+<li><code>opencti_stix_meta_relationships</code></li>
 </ul>
 <p>For your information, the indices which can grow rapidly are:</p>
 <ul>
-<li>Index <code>stix_meta_relationships</code>: it contains all the nested relationships between objects and labels / marking definitions / external references / authors, etc.</li>
+<li>Index <code>opencti_stix_meta_relationships</code>: it contains all the nested relationships between objects and labels / marking definitions / external references / authors, etc.</li>
 <li>Index <code>opencti_history</code>: it contains the history log of all objects in the platform.</li>
-<li>Index <code>stix_cyber_observables</code>: it contains all observables stored in the platform.</li>
-<li>Index <code>stix_core_relationships</code>: it contains all main STIX relationships stored in the platform.</li>
+<li>Index <code>opencti_stix_cyber_observables</code>: it contains all observables stored in the platform.</li>
+<li>Index <code>opencti_stix_core_relationships</code>: it contains all main STIX relationships stored in the platform.</li>
 </ul>
 <h3 id="licecycle-policy">Licecycle policy</h3>
 <p>Here is n example of policy:</p>
@@ -3396,7 +3397,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-19T11:20:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-19</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-11T13:27:47+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-11</span>
       </span>
     
     
@@ -3419,6 +3420,11 @@
             <a href="https://github.com/SamuelHassine" class="md-author" title="@SamuelHassine">
               
               <img src="https://avatars.githubusercontent.com/u/1334279?size=72" alt="SamuelHassine">
+            </a>
+          
+            <a href="https://github.com/oklien" class="md-author" title="@oklien">
+              
+              <img src="https://avatars.githubusercontent.com/u/696906?size=72" alt="oklien">
             </a>
           
           
@@ -3579,9 +3585,13 @@
     
       <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
-        <script src="../../js/timeago.min.js"></script>
+        
+          <script src="../../js/timeago.min.js"></script>
+        
       
-        <script src="../../js/timeago_mkdocs_material.js"></script>
+        
+          <script src="../../js/timeago_mkdocs_material.js"></script>
+        
       
     
   <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>

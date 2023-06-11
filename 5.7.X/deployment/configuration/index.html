@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.2">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -863,13 +863,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#worker" class="md-nav__link">
+  <a href="#worker-and-connector" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Worker
+        Worker and connector
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Worker and connector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worker-specific-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker specific configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connector-specific-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connector specific configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -1874,13 +1902,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../../usage/enrichment.md" class="md-nav__link">
+      <a href="../../usage/merging.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Enrichment connectors
+    Merge objects
   
 
     
@@ -2613,7 +2641,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/users.md" class="md-nav__link">
+      <a href="../../administration/users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3561,13 +3589,41 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#worker" class="md-nav__link">
+  <a href="#worker-and-connector" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Worker
+        Worker and connector
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Worker and connector">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#worker-specific-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Worker specific configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#connector-specific-configuration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Connector specific configuration
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3782,19 +3838,19 @@
 <td align="left">app:https_cert:ca</td>
 <td align="left">APP__HTTPS_CERT__CA</td>
 <td align="left">Empty list []</td>
-<td align="left">Certificate authority paths, only if the client uses a self-signed certificate.</td>
+<td align="left">Certificate authority paths or content, only if the client uses a self-signed certificate.</td>
 </tr>
 <tr>
 <td align="left">app:https_cert:key</td>
 <td align="left">APP__HTTPS_CERT__KEY</td>
 <td align="left"></td>
-<td align="left">Certificate key path</td>
+<td align="left">Certificate key path or content</td>
 </tr>
 <tr>
 <td align="left">app:https_cert:crt</td>
 <td align="left">APP__HTTPS_CERT__CRT</td>
 <td align="left"></td>
-<td align="left">Certificate crt path</td>
+<td align="left">Certificate crt path or content</td>
 </tr>
 <tr>
 <td align="left">app:https_cert:reject_unauthorized</td>
@@ -4011,13 +4067,13 @@
 <td align="left">elasticsearch:ssl:ca</td>
 <td align="left">ELASTICSEARCH__SSL__CA</td>
 <td align="left"></td>
-<td align="left">Custom certificate path</td>
+<td align="left">Custom certificate path or content</td>
 </tr>
 <tr>
-<td align="left">elasticsearch:ssl:ca_plain</td>
+<td align="left">elasticsearch:ssl:ca_plain (depecated)</td>
 <td align="left">ELASTICSEARCH__SSL__CA_PLAIN</td>
 <td align="left"></td>
-<td align="left">Custom certificate (plain texc)</td>
+<td align="left">@depecated, use ca directly</td>
 </tr>
 </tbody>
 </table>
@@ -4118,22 +4174,10 @@
 <td align="left">Port of the RabbitMQ server</td>
 </tr>
 <tr>
-<td align="left">rabbitmq:use_ssl</td>
-<td align="left">RABBITMQ__USE_SSL</td>
-<td align="left"><code>false</code></td>
-<td align="left">Use TLS connection</td>
-</tr>
-<tr>
 <td align="left">rabbitmq:port_management</td>
 <td align="left">RABBITMQ__PORT_MANAGEMENT</td>
 <td align="left">15672</td>
 <td align="left">Port of the RabbitMQ Management Plugin</td>
-</tr>
-<tr>
-<td align="left">rabbitmq:management_ssl</td>
-<td align="left">RABBITMQ__MANAGEMENT_SSL</td>
-<td align="left"><code>false</code></td>
-<td align="left">Is the Management Plugin has TLS enabled</td>
 </tr>
 <tr>
 <td align="left">rabbitmq:username</td>
@@ -4154,10 +4198,70 @@
 <td align="left">RabbitMQ Queue Type ("classic" or "quorum")</td>
 </tr>
 <tr>
-<td align="left">rabbitmq:ca</td>
-<td align="left">RABBITMQ__CA</td>
-<td align="left">Empty list []</td>
-<td align="left">Custom CA certificates files</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl</td>
+<td align="left">RABBITMQ__USE_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Use TLS connection</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_cert</td>
+<td align="left">RABBITMQ__USE_SSL_CERT</td>
+<td align="left"></td>
+<td align="left">Path or cert content</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_key</td>
+<td align="left">RABBITMQ__USE_SSL_KEY</td>
+<td align="left"></td>
+<td align="left">Path or key content</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_pfx</td>
+<td align="left">RABBITMQ__USE_SSL_PFX</td>
+<td align="left"></td>
+<td align="left">Path or pfx content</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_ca</td>
+<td align="left">RABBITMQ__USE_SSL_CA</td>
+<td align="left"></td>
+<td align="left">Path or cacert content</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_passphrase</td>
+<td align="left">RABBITMQ__SSL_PASSPHRASE</td>
+<td align="left"></td>
+<td align="left">Passphrase for the key certificate</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:use_ssl_reject_unauthorized</td>
+<td align="left">RABBITMQ__SSL_REJECT_UNAUTHORIZED</td>
+<td align="left"><code>false</code></td>
+<td align="left">Reject rabbit self signed certificate</td>
+</tr>
+<tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:management_ssl</td>
+<td align="left">RABBITMQ__MANAGEMENT_SSL</td>
+<td align="left"><code>false</code></td>
+<td align="left">Is the Management Plugin has TLS enabled</td>
+</tr>
+<tr>
+<td align="left">rabbitmq:management_ssl_reject_unauthorized</td>
+<td align="left">RABBITMQ__SSL_REJECT_UNAUTHORIZED</td>
+<td align="left"><code>true</code></td>
+<td align="left">Reject management self signed certificate</td>
 </tr>
 </tbody>
 </table>
@@ -4468,8 +4572,8 @@
 <p class="admonition-title">Default file</p>
 <p>It is possible to check all default parameters implemented in the platform in the <a href="https://github.com/OpenCTI-Platform/opencti/blob/master/opencti-platform/opencti-graphql/config/default.json"><code>default.json</code> file</a>.</p>
 </div>
-<h2 id="worker">Worker</h2>
-<p>The Python worker can be configured manually using the configuration file <code>config.yml</code> or through environment variables.</p>
+<h2 id="worker-and-connector">Worker and connector</h2>
+<p>Can be configured manually using the configuration file <code>config.yml</code> or through environment variables.</p>
 <table>
 <thead>
 <tr>
@@ -4493,6 +4597,61 @@
 <td align="left">A token of an administrator account with bypass capability</td>
 </tr>
 <tr>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+<td align="left">-</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl</td>
+<td align="left">/</td>
+<td align="left">/</td>
+<td align="left">Depending of the API configuration (fetch from API)</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl_ca</td>
+<td align="left">MQ_USE_SSL_CA</td>
+<td align="left"></td>
+<td align="left">Path or cacert content</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl_cert</td>
+<td align="left">MQ_USE_SSL_CERT</td>
+<td align="left"></td>
+<td align="left">Path or cert content</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl_key</td>
+<td align="left">MQ_USE_SSL_KEY</td>
+<td align="left"></td>
+<td align="left">Path or key content</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl_passphrase</td>
+<td align="left">MQ_USE_SSL_PASSPHRASE</td>
+<td align="left"></td>
+<td align="left">Passphrase for the key certificate</td>
+</tr>
+<tr>
+<td align="left">mq:use_ssl_reject_unauthorized</td>
+<td align="left">MQ_USE_SSL_REJECT_UNAUTHORIZED</td>
+<td align="left"><code>false</code></td>
+<td align="left">Reject rabbit self signed certificate</td>
+</tr>
+</tbody>
+</table>
+<h3 id="worker-specific-configuration">Worker specific configuration</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Parameter</th>
+<th align="left">Environment variable</th>
+<th align="left">Default value</th>
+<th align="left">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
 <td align="left">worker:log_level</td>
 <td align="left">WORKER_LOG_LEVEL</td>
 <td align="left">info</td>
@@ -4500,9 +4659,11 @@
 </tr>
 </tbody>
 </table>
+<h3 id="connector-specific-configuration">Connector specific configuration</h3>
+<p>For specific connector configuration, you need to check each connector behavior.</p>
 <h2 id="elasticsearch_1">ElasticSearch</h2>
 <p>If you want to adapt the memory consumption of ElasticSearch, you can use theses options:</p>
-<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Add the followiung environment variable:</span>
+<div class="highlight"><pre><span></span><code><span id="__span-3-1"><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="c1"># Add the following environment variable:</span>
 </span><span id="__span-3-2"><a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="s2">&quot;ES_JAVA_OPTS=-Xms8g -Xmx8g&quot;</span>
 </span></code></pre></div>
 <p>This can be done in configuration file in the <code>jvm.conf</code> file.</p>
@@ -4521,7 +4682,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-19T10:48:06+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-19</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-06T13:09:50+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-06</span>
       </span>
     
     
@@ -4704,9 +4865,13 @@
     
       <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
-        <script src="../../js/timeago.min.js"></script>
+        
+          <script src="../../js/timeago.min.js"></script>
+        
       
-        <script src="../../js/timeago_mkdocs_material.js"></script>
+        
+          <script src="../../js/timeago_mkdocs_material.js"></script>
+        
       
     
   <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>

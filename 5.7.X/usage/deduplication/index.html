@@ -25,7 +25,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.2">
+      <meta name="generator" content="mkdocs-1.4.3, mkdocs-material-9.1.15+insiders-4.35.3">
     
     
       
@@ -1165,6 +1165,23 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  <span class="md-ellipsis">
+    
+  
+    Deduplication
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="./" class="md-nav__link md-nav__link--active">
         
   
@@ -1180,6 +1197,86 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creation-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creation behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creation behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -1614,13 +1711,13 @@
   
   
     <li class="md-nav__item">
-      <a href="../enrichment.md" class="md-nav__link">
+      <a href="../merging.md" class="md-nav__link">
         
   
   <span class="md-ellipsis">
     
   
-    Enrichment connectors
+    Merge objects
   
 
     
@@ -2353,7 +2450,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../../administration/users.md" class="md-nav__link">
+      <a href="../../administration/users/" class="md-nav__link">
         
   
   <span class="md-ellipsis">
@@ -3094,6 +3191,75 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#creation-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Creation behavior
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Creation behavior">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#entities" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Entities
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#relationships" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Relationships
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#observables" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Observables
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#update-behavior" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Update behavior
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -3188,7 +3354,182 @@
 
 
 <h1 id="deduplication">Deduplication</h1>
-<p>Under construction</p>
+<p>One of the core concept of the OpenCTI knowledge graph is all underlying mechanisms implemented to accurately de-duplicate and consolidate (aka. <code>upserting</code>) information about entities and relationships.</p>
+<h2 id="creation-behavior">Creation behavior</h2>
+<p>When an object is created in the platform, whether manually by a user or automatically by the connectors / workers chain, the platform checks if something already exist based on some properties of the object. If the object already exists, it will return the existing object and, <a href="">in some cases</a>, update it as well.</p>
+<p>Technically, OpenCTI generates deterministic IDs based on the listed properties below to prevent duplicate (aka "ID Contributing Properties"). Also, it is important to note that there is a special link between <code>name</code> and <code>aliases</code> leading to not have entities with overlaping aliases or an alias already used in the name of another entity.</p>
+<h3 id="entities">Entities</h3>
+<table>
+<thead>
+<tr>
+<th align="left">Type</th>
+<th align="left">Attributes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td align="left">Area</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
+</tr>
+<tr>
+<td align="left">Attack Pattern</td>
+<td align="left">(<code>name</code> OR <code>alias</code>) AND optional <code>x_mitre_id</code></td>
+</tr>
+<tr>
+<td align="left">Campaign</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Channel</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">City</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
+</tr>
+<tr>
+<td align="left">Country</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
+</tr>
+<tr>
+<td align="left">Course Of Action</td>
+<td align="left">(<code>name</code> OR <code>alias</code>) AND optional <code>x_mitre_id</code></td>
+</tr>
+<tr>
+<td align="left">Data Component</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Data Source</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Event</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Feedback Case</td>
+<td align="left"><code>name</code> AND <code>created</code> (date)</td>
+</tr>
+<tr>
+<td align="left">Grouping</td>
+<td align="left"><code>name</code> AND <code>context</code></td>
+</tr>
+<tr>
+<td align="left">Incident</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Incident Response Case</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Indicator</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Individual</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) and <code>identity_class</code></td>
+</tr>
+<tr>
+<td align="left">Infrastructure</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Intrusion Set</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Language</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Malware</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Malware Analysis</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Narrative</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Note</td>
+<td align="left"><em>None</em></td>
+</tr>
+<tr>
+<td align="left">Observed Data</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Opinion</td>
+<td align="left"><em>None</em></td>
+</tr>
+<tr>
+<td align="left">Organization</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) and <code>identity_class</code></td>
+</tr>
+<tr>
+<td align="left">Position</td>
+<td align="left">(<code>name</code> OR <code>x_opencti_alias</code>) AND <code>x_opencti_location_type</code></td>
+</tr>
+<tr>
+<td align="left">Region</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Report</td>
+<td align="left"><code>name</code> AND <code>publised</code> (date)</td>
+</tr>
+<tr>
+<td align="left">RFI Case</td>
+<td align="left"><code>name</code> AND <code>created</code> (date)</td>
+</tr>
+<tr>
+<td align="left">RFT Case</td>
+<td align="left"><code>name</code> AND <code>created</code> (date)</td>
+</tr>
+<tr>
+<td align="left">Sector</td>
+<td align="left">(<code>name</code> OR <code>alias</code>) and <code>identity_class</code></td>
+</tr>
+<tr>
+<td align="left">Task</td>
+<td align="left"><em>None</em></td>
+</tr>
+<tr>
+<td align="left">Threat Actor</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Tool</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+<tr>
+<td align="left">Vulnerability</td>
+<td align="left"><code>name</code> OR <code>alias</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="relationships">Relationships</h3>
+<p>The deduplication process of relationships is based on the following criterias:</p>
+<ul>
+<li>Type</li>
+<li>Source</li>
+<li>Target</li>
+<li>Start time between -30 days / + 30 days</li>
+<li>Stop time between -30 days / + 30 days</li>
+</ul>
+<h3 id="observables">Observables</h3>
+<p>For STIX Cyber Observables, OpenCTI also generate deterministic IDs based on the <a href="https://docs.oasis-open.org/cti/stix/v2.1/csprd01/stix-v2.1-csprd01.html#_Toc16070607">STIX specification</a> using the "ID Contributing Properties" defined for each type of observable.</p>
+<h2 id="update-behavior">Update behavior</h2>
+<p>If an entity already exists in the platform, the <code>attributes</code> may be updated by the incoming creation with the following rule:</p>
+<div class="admonition note">
+<p>If <code>confidence_level</code> of the created entity is &gt;= (greater or equal) then the <code>confidence_level</code> of the existing entity, attributes will be updated. Obviously, the <code>confidence_level</code> will also be increased with the new one.</p>
+</div>
+<p>This logic has been implemented so the platform can converge to the highest confidence and quality levels for the entities and the relationships.</p>
 
   
     
@@ -3204,7 +3545,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-31T19:31:07+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-31</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-11T17:23:01+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-11</span>
       </span>
     
     
@@ -3387,9 +3728,13 @@
     
       <script src="../../assets/javascripts/bundle.10c6cd24.min.js"></script>
       
-        <script src="../../js/timeago.min.js"></script>
+        
+          <script src="../../js/timeago.min.js"></script>
+        
       
-        <script src="../../js/timeago_mkdocs_material.js"></script>
+        
+          <script src="../../js/timeago_mkdocs_material.js"></script>
+        
       
     
   <script>document$.subscribe(() => {const lightbox = GLightbox({"touchNavigation": true, "loop": false, "zoomable": true, "draggable": true, "openEffect": "zoom", "closeEffect": "zoom", "slideEffect": "slide"});})</script></body>
