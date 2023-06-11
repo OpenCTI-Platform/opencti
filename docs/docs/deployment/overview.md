@@ -22,7 +22,8 @@ The workers are standalone Python processes consuming messages from the RabbitMQ
 
 ### Connectors
 
-The connectors are third-party pieces of software (Python processes) that can play four different roles on the platform:
+The connectors are third-party pieces of software (Python processes) that can play five different 
+roles on the platform:
 
 | Type                 | Description                                                                                         | Examples                                                |
 | :------------------- | :-------------------------------------------------------------------------------------------------- | :------------------------------------------------------ |
