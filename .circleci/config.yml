@@ -1,7 +1,7 @@
 ---
 version: 2.1
 orbs:
-  slack: circleci/slack@4.8.3
+  slack: circleci/slack@4.12.5
   ms-teams: cloudradar-monitoring/ms-teams@0.0.1
 jobs:
   ensure_formatting:
