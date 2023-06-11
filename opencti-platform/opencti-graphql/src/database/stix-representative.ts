@@ -1,13 +1,8 @@
-import type { AuthContext } from '../types/user';
-import type { NotificationUser } from '../manager/notificationManager';
 import type { StixObject } from '../types/stix-common';
 import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getStixRepresentativeConverters } from './stix-converter';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
-import { findById as findUser } from '../domain/user';
-import { SYSTEM_USER } from '../utils/access';
 import type * as SRO from '../types/stix-sro';
-import { findById as findStixCoreObject } from '../domain/stixCoreObject';
 import { isStixRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
@@ -55,7 +50,7 @@ import type * as SCO from '../types/stix-sco';
 import { hashValue } from '../utils/format';
 import { UnsupportedError } from '../config/errors';
 
-export const extractStixRepresentative = async (context: AuthContext, user: NotificationUser, stix: StixObject): Promise<string> => {
+export const extractStixRepresentative = (stix: StixObject): string => {
   const entityType = stix.extensions[STIX_EXT_OCTI].type;
   // region Modules
   const convertFn = getStixRepresentativeConverters(entityType);
@@ -65,29 +60,17 @@ export const extractStixRepresentative = async (context: AuthContext, user: Noti
   // endregion
   // region Sighting
   if (isStixSightingRelationship(entityType)) {
-    const authUser = await findUser(context, SYSTEM_USER, user.user_id);
     const sighting = stix as SRO.StixSighting;
-    const fromId = sighting.extensions[STIX_EXT_OCTI].sighting_of_ref;
-    const toIds = sighting.extensions[STIX_EXT_OCTI].where_sighted_refs;
-    const fromInstance = await findStixCoreObject(context, authUser, fromId);
-    const toInstances = await Promise.all(toIds.map((toId) => findStixCoreObject(context, authUser, toId)));
-    const fromValue = fromInstance ? sighting.extensions[STIX_EXT_OCTI].sighting_of_value : 'Restricted';
-    const allTargetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
-    const targetValues = [];
-    for (let index = 0; index < toInstances.length; index += 1) {
-      targetValues.push(toInstances[index] ? allTargetValues[index] : 'Restricted');
-    }
+    const fromValue = sighting.extensions[STIX_EXT_OCTI].sighting_of_value;
+    const targetValues = sighting.extensions[STIX_EXT_OCTI].where_sighted_values;
     return `${fromValue} sighted in/at ${targetValues.join(', ')}`;
   }
   // endregion
   // region Relationship
   if (isStixRelationship(entityType)) {
-    const authUser = await findUser(context, SYSTEM_USER, user.user_id);
     const relation = stix as SRO.StixRelation;
-    const fromInstance = await findStixCoreObject(context, authUser, relation.extensions[STIX_EXT_OCTI].source_ref);
-    const toInstance = await findStixCoreObject(context, authUser, relation.extensions[STIX_EXT_OCTI].target_ref);
-    const fromValue = fromInstance ? relation.extensions[STIX_EXT_OCTI].source_value : 'Restricted';
-    const targetValue = toInstance ? relation.extensions[STIX_EXT_OCTI].target_value : 'Restricted';
+    const fromValue = relation.extensions[STIX_EXT_OCTI].source_value;
+    const targetValue = relation.extensions[STIX_EXT_OCTI].target_value;
     return `${fromValue} ${relation.relationship_type} ${targetValue}`;
   }
   // endregion
