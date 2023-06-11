@@ -64,3 +64,13 @@ As containers can also contain relationships, which are generally linked to the 
 
 ![Graph](assets/graph.png)
 
+### Containers of an entity or a relationship
+
+On the entity or the relationship side, you can always find all containers where the objecti is contained using the top menu `Analysis`:
+
+![Analysis](assets/analysis.png)
+
+In all containers list, you can also filter containers based on one or multiple contained object(s):
+
+![Container filters](assets/container-filters.png)
+

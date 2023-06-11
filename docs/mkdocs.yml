@@ -142,7 +142,7 @@ nav:
     - Enrich knowledge:
       - Inferences and reasoning: usage/inferences.md
       - Enrichment connectors: usage/enrichment.md
-      - Enrichment connectors: usage/enrichment.md
+      - Merge objects: usage/merging.md
     - Act on knowledge:    
       - Case management: usage/case-management.md
       - Notifications and alerting: usage/notifications.md

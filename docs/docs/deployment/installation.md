@@ -6,7 +6,7 @@ All components of OpenCTI are shipped both as [Docker images](https://hub.docker
     
     For production deployment, we recommend to deploy all components in containers, including dependencies, using native cloud services or orchestration systems such as [Kubernetes](https://kubernetes.io).
 
-    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](deployment/clustering).
+    To have more details about deploying OpenCTI and its dependencies in cluster mode, please read the [dedicated section](clustering.md).
 
 <div class="grid cards" markdown>
 
