@@ -24,13 +24,14 @@ We advise to put a rollover policy on all indices used by OpenCTI, here is the l
 * `opencti_stix_cyber_observables`
 * `opencti_stix_domain_objects`
 * `opencti_stix_meta_objects`
+* `opencti_stix_meta_relationships`
 
 For your information, the indices which can grow rapidly are:
 
-* Index `stix_meta_relationships`: it contains all the nested relationships between objects and labels / marking definitions / external references / authors, etc.
+* Index `opencti_stix_meta_relationships`: it contains all the nested relationships between objects and labels / marking definitions / external references / authors, etc.
 * Index `opencti_history`: it contains the history log of all objects in the platform.
-* Index `stix_cyber_observables`: it contains all observables stored in the platform.
-* Index `stix_core_relationships`: it contains all main STIX relationships stored in the platform.
+* Index `opencti_stix_cyber_observables`: it contains all observables stored in the platform.
+* Index `opencti_stix_core_relationships`: it contains all main STIX relationships stored in the platform.
 
 ### Licecycle policy
 
