@@ -2,7 +2,7 @@ black==22.12.0
 build>=0.7
 isort>=5.10
 pre-commit~=2.13
-pytest~=6.2
+pytest~=7.3
 pytest-cases~=3.6
 pytest-cov~=2.12
 pytest_randomly~=3.8
