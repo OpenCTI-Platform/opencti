@@ -1,10 +1,13 @@
 import React, { FunctionComponent } from 'react';
-import { graphql, useFragment, useMutation, useLazyLoadQuery } from 'react-relay';
+import {
+  graphql,
+  useFragment,
+  useMutation,
+  useLazyLoadQuery,
+} from 'react-relay';
 import { Form, Formik, Field } from 'formik';
 import * as Yup from 'yup';
 import Grid from '@mui/material/Grid';
-import Tooltip from '@mui/material/Tooltip';
-import { InformationOutline } from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import Paper from '@mui/material/Paper';
 import Typography from '@mui/material/Typography';
@@ -152,10 +155,12 @@ const Policies: FunctionComponent = () => {
   };
   const { id, editContext } = settings;
   const initialValues = {
-    platform_organization: settings.platform_organization ? {
-      label: settings.platform_organization?.name,
-      value: settings.platform_organization?.id,
-    } : '',
+    platform_organization: settings.platform_organization
+      ? {
+        label: settings.platform_organization?.name,
+        value: settings.platform_organization?.id,
+      }
+      : '',
     platform_login_message: settings.platform_login_message,
     platform_consent_message: settings.platform_consent_message,
     platform_consent_confirm_text: settings.platform_consent_confirm_text,
@@ -174,8 +179,12 @@ const Policies: FunctionComponent = () => {
       <AccessesMenu />
       <Grid container={true} spacing={3}>
         <Grid item={true} xs={12}>
-          <Formik onSubmit={() => {}} initialValues={initialValues}
-                  enableReinitialize={true} validationSchema={policiesValidation()}>
+          <Formik
+            onSubmit={() => {}}
+            initialValues={initialValues}
+            enableReinitialize={true}
+            validationSchema={policiesValidation()}
+          >
             {() => (
               <Form>
                 <Grid container={true} spacing={3}>
@@ -363,53 +372,55 @@ const Policies: FunctionComponent = () => {
                       {t('Login messages')}
                     </Typography>
                     <Paper classes={{ root: classes.paper }} variant="outlined">
-                      <Typography variant="h4" gutterBottom={true}>
-                        {t('Platform login message')}
-                      </Typography>
-                      <Field component={MarkDownField}
+                      <Field
+                        component={MarkDownField}
                         name="platform_login_message"
                         label={t('Platform login message')}
                         fullWidth
                         multiline={true}
                         rows="3"
-                        style={{ marginTop: 20 }}
                         onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_login_message"/>}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="platform_login_message"
+                          />
+                        }
                       />
-                      <Typography variant="h4" gutterBottom={true} style={{ marginTop: '20px' }}>
-                        {t('Platform Consent Message')}
-                      </Typography>
-                      <Field component={MarkDownField}
+                      <Field
+                        component={MarkDownField}
                         name="platform_consent_message"
-                        label={t('Requires acceptance to enable login form when set')}
+                        label={t('Platform consent message')}
                         fullWidth
                         style={{ marginTop: 20 }}
                         onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_message"/>}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="platform_consent_message"
+                          />
+                        }
                       />
-                      <Typography variant="h4" gutterBottom={true} style={{ float: 'left', marginTop: '20px' }}>
-                        {t('Platform Consent Confirm Text')}
-                      </Typography>
-                      <div style={{ float: 'left', margin: '16px 0 0 8px' }}>
-                        <Tooltip title={`${t('Default')}: I have read and comply with the above statement`}>
-                          <InformationOutline fontSize="small" color="primary" />
-                        </Tooltip>
-                      </div>
-                      <div className="clearfix" />
-                      <Field component={MarkDownField}
+                      <Field
+                        component={MarkDownField}
                         name="platform_consent_confirm_text"
-                        label={t('One line confirm label next to confirm checkbox')}
+                        label={t('Platform consent confirm text')}
                         fullWidth
                         style={{ marginTop: 14 }}
                         height={38}
                         onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={<SubscriptionFocus context={editContext} fieldName="platform_consent_confirm_text"/>}
+                        helperText={
+                          <SubscriptionFocus
+                            context={editContext}
+                            fieldName="platform_consent_confirm_text"
+                          />
+                        }
                       />
                     </Paper>
                   </Grid>
