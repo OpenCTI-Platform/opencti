@@ -149,7 +149,13 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                         type={node.from ? node.from.entity_type : 'restricted'}
                       />
                       {node.from
-                        ? t(`entity_${node.from.entity_type}`)
+                        ? t(
+                          node.from.parent_types.includes(
+                            'basic-relationship',
+                          )
+                            ? `relationship_${node.from.entity_type}`
+                            : `entity_${node.from.entity_type}`,
+                        )
                         : t('Restricted')}
                     </>
                   }
@@ -199,7 +205,11 @@ class RelationshipsStixCoreRelationshipLineComponent extends Component {
                         type={node.to ? node.to.entity_type : 'restricted'}
                       />
                       {node.to
-                        ? t(`entity_${node.to.entity_type}`)
+                        ? t(
+                          node.to.parent_types.includes('basic-relationship')
+                            ? `relationship_${node.to.entity_type}`
+                            : `entity_${node.to.entity_type}`,
+                        )
                         : t('Restricted')}
                     </>
                   }
@@ -3063,34 +3073,34 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             name
           }
           ... on Report {
-              name
+            name
           }
           ... on Grouping {
-              name
+            name
           }
           ... on Opinion {
-              opinion
+            opinion
           }
           ... on Channel {
-              name
+            name
           }
           ... on Event {
-              name
+            name
           }
           ... on AdministrativeArea {
-              name
+            name
           }
           ... on Narrative {
-              name
+            name
           }
           ... on CaseIncident {
-              name
+            name
           }
           ... on CaseRfi {
-              name
+            name
           }
           ... on CaseRft {
-              name
+            name
           }
           ... on StixCyberObservable {
             observable_value
@@ -3496,34 +3506,34 @@ const RelationshipsStixCoreRelationshipLineFragment = createFragmentContainer(
             name
           }
           ... on Report {
-              name
+            name
           }
           ... on Grouping {
-              name
+            name
           }
           ... on Opinion {
-              opinion
+            opinion
           }
           ... on Channel {
-              name
+            name
           }
           ... on Event {
-              name
+            name
           }
           ... on AdministrativeArea {
-              name
+            name
           }
           ... on Narrative {
-              name
+            name
           }
           ... on CaseIncident {
-              name
+            name
           }
           ... on CaseRfi {
-              name
+            name
           }
           ... on CaseRft {
-              name
+            name
           }
           ... on StixCyberObservable {
             observable_value
