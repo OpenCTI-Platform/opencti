@@ -86,7 +86,10 @@ class CourseOfActionEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <CourseOfActionEditionContainer courseOfAction={props.courseOfAction} handleClose={this.handleClose.bind(this)} />
+                  <CourseOfActionEditionContainer
+                    courseOfAction={props.courseOfAction}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

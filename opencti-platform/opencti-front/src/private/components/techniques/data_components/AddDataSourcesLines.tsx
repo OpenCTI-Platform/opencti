@@ -24,30 +24,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 export const addDataSourcesLinesMutationAdd = graphql`
-  mutation AddDataSourcesLinesAddMutation(
-    $id: ID!
-    $input: [EditInput]!
-  ) {
-    dataComponentFieldPatch(
-      id: $id
-      input: $input
-    ) {
+  mutation AddDataSourcesLinesAddMutation($id: ID!, $input: [EditInput]!) {
+    dataComponentFieldPatch(id: $id, input: $input) {
       ...DataComponentDataSources_dataComponent
     }
   }
 `;
 
 export const addDataSourcesLinesQuery = graphql`
-  query AddDataSourcesLinesQuery(
-    $search: String
-    $count: Int!
-    $cursor: ID
-  ) {
-    ...AddDataSourcesLines_data @arguments(
-      search: $search,
-      count: $count,
-      cursor: $cursor
-    )
+  query AddDataSourcesLinesQuery($search: String, $count: Int!, $cursor: ID) {
+    ...AddDataSourcesLines_data
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -57,13 +44,10 @@ const addDataSourcesLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-  ) @refetchable(queryName: "AddDataSourcesLinesRefetchQuery") {
-    dataSources(
-      search: $search,
-      first: $count,
-      after: $cursor
-    )
-    @connection(key: "Pagination_dataSources") {
+  )
+  @refetchable(queryName: "AddDataSourcesLinesRefetchQuery") {
+    dataSources(search: $search, first: $count, after: $cursor)
+      @connection(key: "Pagination_dataSources") {
       edges {
         node {
           id
@@ -76,17 +60,19 @@ const addDataSourcesLinesFragment = graphql`
 `;
 
 interface AddDataSourcesLinesContainerProps {
-  dataComponentId: string,
-  queryRef: PreloadedQuery<AddDataSourcesLinesQuery>
+  dataComponentId: string;
+  queryRef: PreloadedQuery<AddDataSourcesLinesQuery>;
 }
 
-const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> = ({
-  dataComponentId,
-  queryRef,
-}) => {
+const AddDataSourcesLines: FunctionComponent<
+AddDataSourcesLinesContainerProps
+> = ({ dataComponentId, queryRef }) => {
   const classes = useStyles();
 
-  const { data } = usePreloadedPaginationFragment<AddDataSourcesLinesQuery, AddDataSourcesLines_data$key>({
+  const { data } = usePreloadedPaginationFragment<
+  AddDataSourcesLinesQuery,
+  AddDataSourcesLines_data$key
+  >({
     linesQuery: addDataSourcesLinesQuery,
     linesFragment: addDataSourcesLinesFragment,
     queryRef,
@@ -94,7 +80,11 @@ const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> 
 
   const [commit] = useMutation(addDataSourcesLinesMutationAdd);
 
-  const addDataSource = (dataSource: { readonly description: string | null; readonly id: string; readonly name: string }) => commit({
+  const addDataSource = (dataSource: {
+    readonly description: string | null;
+    readonly id: string;
+    readonly name: string;
+  }) => commit({
     variables: {
       id: dataComponentId,
       input: {
@@ -106,37 +96,40 @@ const AddDataSourcesLines: FunctionComponent<AddDataSourcesLinesContainerProps> 
 
   return (
     <List>
-      {data?.dataSources?.edges?.map((dataSourceNode) => dataSourceNode?.node)
+      {data?.dataSources?.edges
+        ?.map((dataSourceNode) => dataSourceNode?.node)
         .map((dataSource, idx) => {
           if (dataSource === null || dataSource === undefined) {
-            return <ListItemText
-              key={idx}
-              primary={
-                <Skeleton
-                  animation="wave"
-                  variant="rectangular"
-                  width="90%"
-                  height="100%"
-                />
-              }
-            />;
+            return (
+              <ListItemText
+                key={idx}
+                primary={
+                  <Skeleton
+                    animation="wave"
+                    variant="rectangular"
+                    width="90%"
+                    height="100%"
+                  />
+                }
+              />
+            );
           }
           return (
-              <ListItem
-                key={dataSource.id}
-                classes={{ root: classes.menuItem }}
-                divider={true}
-                button={true}
-                onClick={() => addDataSource(dataSource)}
-              >
-                <ListItemIcon>
-                  <StreamOutlined />
-                </ListItemIcon>
-                <ListItemText
-                  primary={dataSource.name}
-                  secondary={truncate(dataSource.description, 120)}
-                />
-              </ListItem>
+            <ListItem
+              key={dataSource.id}
+              classes={{ root: classes.menuItem }}
+              divider={true}
+              button={true}
+              onClick={() => addDataSource(dataSource)}
+            >
+              <ListItemIcon>
+                <StreamOutlined />
+              </ListItemIcon>
+              <ListItemText
+                primary={dataSource.name}
+                secondary={truncate(dataSource.description, 120)}
+              />
+            </ListItem>
           );
         })}
     </List>

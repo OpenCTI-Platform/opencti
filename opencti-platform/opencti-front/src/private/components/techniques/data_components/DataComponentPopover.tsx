@@ -16,7 +16,9 @@ import { useFormatter } from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
-import DataComponentEditionContainer, { dataComponentEditionQuery } from './DataComponentEditionContainer';
+import DataComponentEditionContainer, {
+  dataComponentEditionQuery,
+} from './DataComponentEditionContainer';
 import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
 import { DataComponentEditionContainerQuery } from './__generated__/DataComponentEditionContainerQuery.graphql';
@@ -45,7 +47,9 @@ const DataComponentPopoverDeletionMutation = graphql`
   }
 `;
 
-const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({ dataComponentId }) => {
+const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({
+  dataComponentId,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const navigate = useNavigate();
@@ -64,7 +68,10 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({ 
   const handleCloseDelete = () => setDisplayDelete(false);
 
   const [commit] = useMutation(DataComponentPopoverDeletionMutation);
-  const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(dataComponentEditionQuery, { id: dataComponentId });
+  const queryRef = useQueryLoading<DataComponentEditionContainerQuery>(
+    dataComponentEditionQuery,
+    { id: dataComponentId },
+  );
 
   const submitDelete = () => {
     setDeleting(true);
@@ -97,18 +104,10 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({ 
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -124,17 +123,10 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({ 
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -148,7 +140,9 @@ const DataComponentPopover: FunctionComponent<{ dataComponentId: string }> = ({ 
         onClose={handleCloseEdit}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <DataComponentEditionContainer
               queryRef={queryRef}
               handleClose={handleCloseEdit}

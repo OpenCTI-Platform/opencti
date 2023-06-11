@@ -29,10 +29,7 @@ const addDataComponentsMutationRelationAdd = graphql`
     $id: ID!
     $dataComponentId: ID!
   ) {
-    dataSourceDataComponentAdd(
-      id: $id
-      dataComponentId: $dataComponentId
-    ) {
+    dataSourceDataComponentAdd(id: $id, dataComponentId: $dataComponentId) {
       ...DataSourceDataComponents_dataSource
     }
   }
@@ -43,10 +40,7 @@ export const addDataComponentsMutationRelationDelete = graphql`
     $id: ID!
     $dataComponentId: ID!
   ) {
-    dataSourceDataComponentDelete(
-      id: $id
-      dataComponentId: $dataComponentId
-    ) {
+    dataSourceDataComponentDelete(id: $id, dataComponentId: $dataComponentId) {
       ...DataSourceDataComponents_dataSource
     }
   }
@@ -58,11 +52,8 @@ export const addDataComponentsLinesQuery = graphql`
     $count: Int!
     $cursor: ID
   ) {
-    ...AddDataComponentsLinesToDataSource_data @arguments(
-      search: $search,
-      count: $count,
-      cursor: $cursor
-    )
+    ...AddDataComponentsLinesToDataSource_data
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -72,13 +63,10 @@ export const addDataComponentsLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int", defaultValue: 25 }
     cursor: { type: "ID" }
-  ) @refetchable(queryName: "AddDataComponentsLinesToDataSourceRefetchQuery") {
-    dataComponents(
-      search: $search,
-      first: $count,
-      after: $cursor
-    )
-    @connection(key: "Pagination_dataComponents") {
+  )
+  @refetchable(queryName: "AddDataComponentsLinesToDataSourceRefetchQuery") {
+    dataComponents(search: $search, first: $count, after: $cursor)
+      @connection(key: "Pagination_dataComponents") {
       edges {
         node {
           id
@@ -91,16 +79,18 @@ export const addDataComponentsLinesFragment = graphql`
 `;
 
 interface AddDataComponentsLinesContainerProps {
-  dataSource: DataSourceDataComponents_dataSource$data,
-  queryRef: PreloadedQuery<AddDataComponentsLinesToDataSourceQuery>,
+  dataSource: DataSourceDataComponents_dataSource$data;
+  queryRef: PreloadedQuery<AddDataComponentsLinesToDataSourceQuery>;
 }
 
-const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerProps> = ({
-  dataSource,
-  queryRef,
-}) => {
+const AddDataComponentsLines: FunctionComponent<
+AddDataComponentsLinesContainerProps
+> = ({ dataSource, queryRef }) => {
   const classes = styles();
-  const { data } = usePreloadedPaginationFragment<AddDataComponentsLinesToDataSourceQuery, AddDataComponentsLinesToDataSource_data$key>({
+  const { data } = usePreloadedPaginationFragment<
+  AddDataComponentsLinesToDataSourceQuery,
+  AddDataComponentsLinesToDataSource_data$key
+  >({
     linesQuery: addDataComponentsLinesQuery,
     linesFragment: addDataComponentsLinesFragment,
     queryRef,
@@ -111,13 +101,17 @@ const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerP
   const [commitDelete] = useMutation(addDataComponentsMutationRelationDelete);
 
   const dataComponents = dataSource.dataComponents?.edges;
-  const dataComponentsIds = dataComponents?.map((dataComponent) => dataComponent?.node.id);
+  const dataComponentsIds = dataComponents?.map(
+    (dataComponent) => dataComponent?.node.id,
+  );
 
   const toggleDataComponent = (dataComponentId: string) => {
     const alreadyAdded = dataComponentsIds?.includes(dataComponentId);
 
     if (!!dataComponents && alreadyAdded) {
-      const existingDataComponent = dataComponents.find((dataComponent) => dataComponent?.node.id === dataComponentId);
+      const existingDataComponent = dataComponents.find(
+        (dataComponent) => dataComponent?.node.id === dataComponentId,
+      );
       if (existingDataComponent) {
         commitDelete({
           variables: {
@@ -143,41 +137,41 @@ const AddDataComponentsLines: FunctionComponent<AddDataComponentsLinesContainerP
       {data?.dataComponents?.edges?.map((dataComponentNode, idx) => {
         const dataComponent = dataComponentNode?.node;
         if (dataComponent === null || dataComponent === undefined) {
-          return <ListItemText
-            key={idx}
-            primary={
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            }
-          />;
-        }
-        const alreadyAdded = dataComponentsIds?.includes(
-          dataComponent.id,
-        );
-        return (
-              <ListItem
-                key={dataComponent.id}
-                classes={{ root: classes.menuItem }}
-                divider={true}
-                button={true}
-                onClick={() => toggleDataComponent(dataComponent.id)}
-              >
-                <ListItemIcon>
-                  {alreadyAdded ? (
-                    <CheckCircle classes={{ root: classes.icon }} />
-                  ) : (
-                    <SourceOutlined />
-                  )}
-                </ListItemIcon>
-                <ListItemText
-                  primary={dataComponent.name}
-                  secondary={truncate(dataComponent.description, 120)}
+          return (
+            <ListItemText
+              key={idx}
+              primary={
+                <Skeleton
+                  animation="wave"
+                  variant="rectangular"
+                  width="90%"
+                  height="100%"
                 />
-              </ListItem>
+              }
+            />
+          );
+        }
+        const alreadyAdded = dataComponentsIds?.includes(dataComponent.id);
+        return (
+          <ListItem
+            key={dataComponent.id}
+            classes={{ root: classes.menuItem }}
+            divider={true}
+            button={true}
+            onClick={() => toggleDataComponent(dataComponent.id)}
+          >
+            <ListItemIcon>
+              {alreadyAdded ? (
+                <CheckCircle classes={{ root: classes.icon }} />
+              ) : (
+                <SourceOutlined />
+              )}
+            </ListItemIcon>
+            <ListItemText
+              primary={dataComponent.name}
+              secondary={truncate(dataComponent.description, 120)}
+            />
+          </ListItem>
         );
       })}
     </List>

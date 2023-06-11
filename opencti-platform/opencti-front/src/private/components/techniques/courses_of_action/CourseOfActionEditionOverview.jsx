@@ -9,7 +9,11 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -92,7 +96,10 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const courseOfActionValidator = useSchemaEditionValidation('Course-Of-Action', basicShape);
+  const courseOfActionValidator = useSchemaEditionValidation(
+    'Course-Of-Action',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: courseOfActionMutationFieldPatch,
@@ -100,7 +107,12 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     relationDelete: courseOfActionMutationRelationDelete,
     editionFocus: courseOfActionEditionOverviewFocus,
   };
-  const editor = useFormEditor(courseOfAction, enableReferences, queries, courseOfActionValidator);
+  const editor = useFormEditor(
+    courseOfAction,
+    enableReferences,
+    queries,
+    courseOfActionValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -173,169 +185,180 @@ const CourseOfActionEditionOverviewComponent = (props) => {
     ]),
   )(courseOfAction);
   return (
-      <Formik enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={courseOfActionValidator}
-        onSubmit={onSubmit}>
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="x_mitre_id"
-              label={t('External ID')}
-              fullWidth={true}
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="x_mitre_id" />
-              }
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
-              }
-            />
-            <Field
-              component={MarkDownField}
-              name="x_opencti_threat_hunting"
-              label={t('Threat hunting techniques')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="x_opencti_threat_hunting" />
-              }
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="x_opencti_log_sources"
-              label={t('Log sources (1 / line)')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="x_opencti_log_sources" />
-              }
-            />
-            {courseOfAction.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Course-Of-Action"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                }
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={courseOfActionValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_mitre_id"
+            label={t('External ID')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="x_mitre_id" />
+            }
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <Field
+            component={MarkDownField}
+            name="x_opencti_threat_hunting"
+            label={t('Threat hunting techniques')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_threat_hunting"
               />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_opencti_log_sources"
+            label={t('Log sources (1 / line)')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_opencti_log_sources"
+              />
+            }
+          />
+          {courseOfAction.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Course-Of-Action"
+              onFocus={editor.changeFocus}
+              onChange={handleSubmitField}
               setFieldValue={setFieldValue}
+              style={{ marginTop: 20 }}
               helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
-              onChange={editor.changeCreated}
             />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
-              onChange={editor.changeMarking}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={courseOfAction.id}
             />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={courseOfAction.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(CourseOfActionEditionOverviewComponent, {
   courseOfAction: graphql`
-      fragment CourseOfActionEditionOverview_courseOfAction on CourseOfAction {
-        id
-        name
-        description
-        x_opencti_threat_hunting
-        x_opencti_log_sources
-        x_mitre_id
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment CourseOfActionEditionOverview_courseOfAction on CourseOfAction {
+      id
+      name
+      description
+      x_opencti_threat_hunting
+      x_opencti_log_sources
+      x_mitre_id
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
           }
         }
-        workflowEnabled
       }
-    `,
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

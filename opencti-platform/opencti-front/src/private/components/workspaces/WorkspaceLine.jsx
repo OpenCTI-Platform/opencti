@@ -4,7 +4,11 @@ import { createFragmentContainer, graphql } from 'react-relay';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import { DashboardCustomizeOutlined, KeyboardArrowRightOutlined, TravelExploreOutlined } from '@mui/icons-material';
+import {
+  DashboardCustomizeOutlined,
+  KeyboardArrowRightOutlined,
+  TravelExploreOutlined,
+} from '@mui/icons-material';
 import Chip from '@mui/material/Chip';
 import IconButton from '@mui/material/IconButton';
 import Skeleton from '@mui/material/Skeleton';
@@ -125,7 +129,7 @@ export const WorkspaceLine = createFragmentContainer(WorkspaceLineComponent, {
       owner {
         id
         name
-        entity_type  
+        entity_type
       }
     }
   `,

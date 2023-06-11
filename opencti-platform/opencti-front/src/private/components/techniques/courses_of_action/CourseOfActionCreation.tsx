@@ -32,9 +32,7 @@ import {
   CourseOfActionCreationMutation,
   CourseOfActionCreationMutation$variables,
 } from './__generated__/CourseOfActionCreationMutation.graphql';
-import {
-  CoursesOfActionLinesPaginationQuery$variables,
-} from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
+import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -91,41 +89,43 @@ const useStyles = makeStyles<Theme>((theme) => ({
 const courseOfActionMutation = graphql`
   mutation CourseOfActionCreationMutation($input: CourseOfActionAddInput!) {
     courseOfActionAdd(input: $input) {
-        id
-        name
-        description
-        entity_type
-        parent_types
-        ...CourseOfActionLine_node
+      id
+      name
+      description
+      entity_type
+      parent_types
+      ...CourseOfActionLine_node
     }
   }
 `;
 
 interface CourseOfActionAddInput {
-  name: string
-  description: string
-  confidence: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface CourseOfActionFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   paginationOptions?: CoursesOfActionLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
-export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormProps> = ({
+export const CourseOfActionCreationForm: FunctionComponent<
+CourseOfActionFormProps
+> = ({
   updater,
   onReset,
   inputValue,
@@ -140,22 +140,30 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const courseOfActionValidator = useSchemaCreationValidation('Course-Of-Action', basicShape);
+  const courseOfActionValidator = useSchemaCreationValidation(
+    'Course-Of-Action',
+    basicShape,
+  );
 
   const initialValues: CourseOfActionAddInput = {
     name: inputValue ?? '',
     description: '',
     confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
     file: undefined,
   };
 
-  const [commit] = useMutation<CourseOfActionCreationMutation>(courseOfActionMutation);
+  const [commit] = useMutation<CourseOfActionCreationMutation>(
+    courseOfActionMutation,
+  );
 
-  const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: CourseOfActionCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -189,88 +197,85 @@ export const CourseOfActionCreationForm: FunctionComponent<CourseOfActionFormPro
     });
   };
 
-  return <Formik
-        initialValues={initialValues}
-        validationSchema={courseOfActionValidator}
-        onSubmit={onSubmit}
-        onReset={onReset}>
-        {({
-          submitForm,
-          handleReset,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Course-Of-Action']}
-                />
-                <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                    name="createdBy"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                    name="objectLabel"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                    name="objectMarking"
-                    style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
-                    name="externalReferences"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                />
-                <Field
-                  component={SimpleFileUpload}
-                  name="file"
-                  label={t('Associated file')}
-                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{ fullWidth: true, variant: 'standard' }}
-                  fullWidth={true}
-                />
-                <div className={classes.buttons}>
-                    <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                    >
-                        {t('Cancel')}
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}
-                    >
-                        {t('Create')}
-                    </Button>
-                </div>
-            </Form>
-        )}
-    </Formik>;
+  return (
+    <Formik
+      initialValues={initialValues}
+      validationSchema={courseOfActionValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Course-Of-Action']}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
 const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
@@ -295,18 +300,22 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderClassic = () => {
     return (
       <div>
-        <Fab onClick={handleOpen}
+        <Fab
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
           className={classes.createButton}
         >
           <Add />
         </Fab>
-        <Drawer open={open}
-          anchor="right" elevation={1}
+        <Drawer
+          open={open}
+          anchor="right"
+          elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
+          onClose={handleClose}
+        >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -322,8 +331,12 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
             </Typography>
           </div>
           <div className={classes.container}>
-              <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
-                                     onCompleted={handleClose} onReset={handleClose}/>
+            <CourseOfActionCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
           </div>
         </Drawer>
       </div>
@@ -333,17 +346,24 @@ const CourseOfActionCreation: FunctionComponent<CourseOfActionFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab onClick={handleOpen}
-          color="secondary" aria-label="Add"
-          className={classes.createButtonContextual}>
+        <Fab
+          onClick={handleOpen}
+          color="secondary"
+          aria-label="Add"
+          className={classes.createButtonContextual}
+        >
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-            <DialogTitle>{t('Create a course of action')}</DialogTitle>
-            <DialogContent>
-                <CourseOfActionCreationForm inputValue={inputValue} updater={updater}
-                                       onCompleted={handleClose} onReset={handleClose}/>
-            </DialogContent>
+          <DialogTitle>{t('Create a course of action')}</DialogTitle>
+          <DialogContent>
+            <CourseOfActionCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
+          </DialogContent>
         </Dialog>
       </div>
     );

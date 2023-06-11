@@ -86,25 +86,45 @@ const DataComponentLine: FunctionComponent<DataComponentLineProps> = ({
   const data = useFragment(dataComponentFragment, node);
 
   return (
-    <ListItem classes={{ root: classes.item }}
-      divider={true} button={true} component={Link}
-      to={`/dashboard/techniques/data_components/${data.id}`}>
+    <ListItem
+      classes={{ root: classes.item }}
+      divider={true}
+      button={true}
+      component={Link}
+      to={`/dashboard/techniques/data_components/${data.id}`}
+    >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
         <ItemIcon type="Data-Component" />
       </ListItemIcon>
       <ListItemText
         primary={
           <div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.name.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.name.width }}
+            >
               {data.name}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.objectLabel.width }}>
-              <StixCoreObjectLabels variant="inList" labels={data.objectLabel} onClick={onLabelClick} />
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.objectLabel.width }}
+            >
+              <StixCoreObjectLabels
+                variant="inList"
+                labels={data.objectLabel}
+                onClick={onLabelClick}
+              />
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.created.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.created.width }}
+            >
               {fd(data.created)}
             </div>
-            <div className={classes.bodyItem} style={{ width: dataColumns.modified?.width }}>
+            <div
+              className={classes.bodyItem}
+              style={{ width: dataColumns.modified?.width }}
+            >
               {fd(data.modified)}
             </div>
           </div>

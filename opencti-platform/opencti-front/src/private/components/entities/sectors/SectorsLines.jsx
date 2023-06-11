@@ -4,7 +4,6 @@ import {
   compose,
   pipe,
   map,
-  propOr,
   pathOr,
   sortBy,
   toLower,
@@ -32,10 +31,10 @@ class SectorsLinesComponent extends Component {
     const filterSubsector = (n) => n.isSubSector === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || propOr('', 'subsectors_text', n)
-        .toLowerCase()
-        .indexOf(keyword.toLowerCase()) !== -1;
+      || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
+        !== -1
+      || (n.subsectors_text ?? '').toLowerCase().indexOf(keyword.toLowerCase())
+        !== -1;
     const sectors = pipe(
       pathOr([], ['sectors', 'edges']),
       map((n) => n.node),

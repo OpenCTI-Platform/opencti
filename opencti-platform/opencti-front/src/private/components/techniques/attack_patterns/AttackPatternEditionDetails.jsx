@@ -112,9 +112,18 @@ const AttackPatternEditionDetailsComponent = (props) => {
   };
 
   const initialValues = R.pipe(
-    R.assoc('x_mitre_platforms', R.propOr([], 'x_mitre_platforms', attackPattern)),
-    R.assoc('x_mitre_permissions_required', R.propOr([], 'x_mitre_permissions_required', attackPattern)),
-    R.assoc('x_mitre_detection', R.propOr('', 'x_mitre_detection', attackPattern)),
+    R.assoc(
+      'x_mitre_platforms',
+      R.propOr([], 'x_mitre_platforms', attackPattern),
+    ),
+    R.assoc(
+      'x_mitre_permissions_required',
+      R.propOr([], 'x_mitre_permissions_required', attackPattern),
+    ),
+    R.assoc(
+      'x_mitre_detection',
+      R.propOr('', 'x_mitre_detection', attackPattern),
+    ),
     R.pick([
       'x_mitre_platforms',
       'x_mitre_permissions_required',
@@ -123,84 +132,84 @@ const AttackPatternEditionDetailsComponent = (props) => {
   )(attackPattern);
 
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={initialValues}
-        validationSchema={attackPatternValidation()}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <OpenVocabField
-              label={t('Platforms')}
-              type="platforms_ov"
-              name="x_mitre_platforms"
-              variant={'edit'}
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
-              editContext={context}
-            />
-            <OpenVocabField
-              label={t('Required permissions')}
-              type="permissions-ov"
-              name="x_mitre_permissions_required"
-              onSubmit={handleSubmitField}
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              variant="edit"
-              multiple={true}
-              editContext={context}
-            />
-            <Field
-              component={TextField}
-              variant="standard"
-              name="x_mitre_detection"
-              label={t('Detection')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-              onFocus={handleChangeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus
-                  context={context}
-                  fieldName="x_mitre_detection"
-                />
-              }
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={attackPattern.id}
+    <Formik
+      enableReinitialize={true}
+      initialValues={initialValues}
+      validationSchema={attackPatternValidation()}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <OpenVocabField
+            label={t('Platforms')}
+            type="platforms_ov"
+            name="x_mitre_platforms"
+            variant={'edit'}
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+            editContext={context}
+          />
+          <OpenVocabField
+            label={t('Required permissions')}
+            type="permissions-ov"
+            name="x_mitre_permissions_required"
+            onSubmit={handleSubmitField}
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            variant="edit"
+            multiple={true}
+            editContext={context}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_mitre_detection"
+            label={t('Detection')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={handleChangeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus
+                context={context}
+                fieldName="x_mitre_detection"
               />
-            )}
-          </Form>
-        )}
-      </Formik>
+            }
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
+              setFieldValue={setFieldValue}
+              open={false}
+              values={values.references}
+              id={attackPattern.id}
+            />
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(AttackPatternEditionDetailsComponent, {
   attackPattern: graphql`
-      fragment AttackPatternEditionDetails_attackPattern on AttackPattern {
-        id
-        x_mitre_platforms
-        x_mitre_permissions_required
-        x_mitre_detection
-      }
-    `,
+    fragment AttackPatternEditionDetails_attackPattern on AttackPattern {
+      id
+      x_mitre_platforms
+      x_mitre_permissions_required
+      x_mitre_detection
+    }
+  `,
 });

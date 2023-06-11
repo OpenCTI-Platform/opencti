@@ -9,7 +9,9 @@ import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddCoursesOfActionLines, { addCoursesOfActionLinesQuery } from './AddCoursesOfActionLines';
+import AddCoursesOfActionLines, {
+  addCoursesOfActionLinesQuery,
+} from './AddCoursesOfActionLines';
 import CourseOfActionCreation from '../courses_of_action/CourseOfActionCreation';
 
 const styles = (theme) => ({
@@ -131,9 +133,7 @@ class AddCoursesOfAction extends Component {
                 return (
                   <AddCoursesOfActionLines
                     attackPattern={attackPattern}
-                    attackPatternCoursesOfAction={
-                      attackPatternCoursesOfAction
-                    }
+                    attackPatternCoursesOfAction={attackPatternCoursesOfAction}
                     data={props}
                   />
                 );

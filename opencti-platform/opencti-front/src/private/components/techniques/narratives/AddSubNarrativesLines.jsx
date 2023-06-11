@@ -2,8 +2,7 @@ import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
 import { createPaginationContainer, graphql } from 'react-relay';
 import { compose } from 'ramda';
-import StixCoreRelationshipCreationFromEntityList
-  from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
+import StixCoreRelationshipCreationFromEntityList from '../../common/stix_core_relationships/StixCoreRelationshipCreationFromEntityList';
 import inject18n from '../../../../components/i18n';
 
 export const addSubNarrativesMutationRelationDelete = graphql`
@@ -45,7 +44,7 @@ AddSubNarrativesLinesContainer.propTypes = {
 export const addSubNarrativesLinesQuery = graphql`
   query AddSubNarrativesLinesQuery($search: String, $count: Int!, $cursor: ID) {
     ...AddSubNarrativesLines_data
-    @arguments(search: $search, count: $count, cursor: $cursor)
+      @arguments(search: $search, count: $count, cursor: $cursor)
   }
 `;
 
@@ -60,7 +59,7 @@ const AddSubNarrativesLines = createPaginationContainer(
         cursor: { type: "ID" }
       ) {
         narratives(search: $search, first: $count, after: $cursor)
-        @connection(key: "Pagination_narratives") {
+          @connection(key: "Pagination_narratives") {
           edges {
             node {
               id

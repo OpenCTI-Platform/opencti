@@ -86,7 +86,10 @@ class NarrativeEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <NarrativeEditionContainer narrative={props.narrative} handleClose={this.handleClose.bind(this)} />
+                  <NarrativeEditionContainer
+                    narrative={props.narrative}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

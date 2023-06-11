@@ -19,7 +19,9 @@ import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted'
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
-import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
+import DataSourceEditionContainer, {
+  dataSourceEditionQuery,
+} from './DataSourceEditionContainer';
 import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -53,7 +55,10 @@ const DataSourcePopover = ({ id }: { id: string }) => {
   const [deleting, setDeleting] = useState<boolean>(false);
 
   const [commit] = useMutation(DataSourcePopoverDeletionMutation);
-  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(dataSourceEditionQuery, { id });
+  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(
+    dataSourceEditionQuery,
+    { id },
+  );
 
   const handleOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -99,18 +104,10 @@ const DataSourcePopover = ({ id }: { id: string }) => {
       >
         <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
         <Security needs={[KNOWLEDGE_KNUPDATE_KNDELETE]}>
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -126,17 +123,10 @@ const DataSourcePopover = ({ id }: { id: string }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -150,7 +140,9 @@ const DataSourcePopover = ({ id }: { id: string }) => {
         onClose={handleCloseEdit}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <DataSourceEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}

@@ -28,7 +28,7 @@ class AddCoursesOfActionLinesContainer extends Component {
         relationshipType={'mitigates'}
         availableDatas={data?.coursesOfAction}
         existingDatas={attackPatternCoursesOfAction}
-        updaterOptions={ { path: 'coursesOfAction' } }
+        updaterOptions={{ path: 'coursesOfAction' }}
         isRelationReversed={true}
       />
     );

@@ -6,7 +6,10 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import { DataSourceDetails_dataSource$data, DataSourceDetails_dataSource$key } from './__generated__/DataSourceDetails_dataSource.graphql';
+import {
+  DataSourceDetails_dataSource$data,
+  DataSourceDetails_dataSource$key,
+} from './__generated__/DataSourceDetails_dataSource.graphql';
 import DataSourceDataComponents from './DataSourceDataComponents';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 
@@ -41,7 +44,7 @@ const DataSourceDetailsFragment = graphql`
 `;
 
 interface DataSourceDetailsProps {
-  dataSource: DataSourceDetails_dataSource$key
+  dataSource: DataSourceDetails_dataSource$key;
 }
 
 const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
@@ -50,7 +53,10 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
   const { t } = useFormatter();
   const classes = styles();
 
-  const data: DataSourceDetails_dataSource$data = useFragment(DataSourceDetailsFragment, dataSource);
+  const data: DataSourceDetails_dataSource$data = useFragment(
+    DataSourceDetailsFragment,
+    dataSource,
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -64,10 +70,7 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               {t('Description')}
             </Typography>
             {data.description && (
-              <ExpandableMarkdown
-                source={data.description}
-                limit={300}
-              />
+              <ExpandableMarkdown source={data.description} limit={300} />
             )}
           </Grid>
           <Grid item={true} xs={6}>
@@ -75,13 +78,27 @@ const DataSourceDetailsComponent: FunctionComponent<DataSourceDetailsProps> = ({
               {t('Platforms')}
             </Typography>
             {data.x_mitre_platforms?.map((platform) => (
-              <ItemOpenVocab key={platform} small={false} type="platforms_ov" value={platform} />
+              <ItemOpenVocab
+                key={platform}
+                small={false}
+                type="platforms_ov"
+                value={platform}
+              />
             ))}
-            <Typography variant="h3" gutterBottom={true} style={{ marginTop: 20 }}>
+            <Typography
+              variant="h3"
+              gutterBottom={true}
+              style={{ marginTop: 20 }}
+            >
               {t('Layers')}
             </Typography>
             {data.collection_layers?.map((layer) => (
-              <ItemOpenVocab key={layer} small={false} type="collection_layers_ov" value={layer} />
+              <ItemOpenVocab
+                key={layer}
+                small={false}
+                type="collection_layers_ov"
+                value={layer}
+              />
             ))}
           </Grid>
           <Grid item={true} xs={12}>

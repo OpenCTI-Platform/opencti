@@ -58,10 +58,7 @@ export const investigationAddStixCoreObjectsLinesRelationAddMutation = graphql`
     $id: ID!
     $input: StixRefRelationshipAddInput!
   ) {
-    workspaceRelationAdd(
-      id: $id
-      input: $input
-    ) {
+    workspaceRelationAdd(id: $id, input: $input) {
       id
       to {
         ... on BasicObject {
@@ -85,7 +82,11 @@ export const investigationAddStixCoreObjectsLinesRelationDeleteMutation = graphq
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    workspaceRelationDelete(id: $id, toId: $toId, relationship_type: $relationship_type) {
+    workspaceRelationDelete(
+      id: $id
+      toId: $toId
+      relationship_type: $relationship_type
+    ) {
       id
     }
   }

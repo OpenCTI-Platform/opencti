@@ -7,7 +7,9 @@ import Typography from '@mui/material/Typography';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import SearchInput from '../../../../components/SearchInput';
-import AddDataComponentsLines, { addDataComponentsLinesQuery } from './AddDataComponentsLines';
+import AddDataComponentsLines, {
+  addDataComponentsLinesQuery,
+} from './AddDataComponentsLines';
 import { AddAttackPatternsLinesToDataComponentQuery$variables } from '../data_components/__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
@@ -60,7 +62,9 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AddDataComponents: FunctionComponent<{ dataSource: DataSourceDataComponents_dataSource$data }> = ({ dataSource }) => {
+const AddDataComponents: FunctionComponent<{
+  dataSource: DataSourceDataComponents_dataSource$data;
+}> = ({ dataSource }) => {
   const { t } = useFormatter();
   const classes = styles();
 
@@ -78,7 +82,10 @@ const AddDataComponents: FunctionComponent<{ dataSource: DataSourceDataComponent
     setSearch('');
   };
 
-  const queryRef = useQueryLoading<AddDataComponentsLinesToDataSourceQuery>(addDataComponentsLinesQuery, { ...paginationOptions });
+  const queryRef = useQueryLoading<AddDataComponentsLinesToDataSourceQuery>(
+    addDataComponentsLinesQuery,
+    { ...paginationOptions },
+  );
 
   return (
     <div>
@@ -122,11 +129,13 @@ const AddDataComponents: FunctionComponent<{ dataSource: DataSourceDataComponent
         </div>
         <div className={classes.container}>
           {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <AddDataComponentsLines
-              dataSource={dataSource}
-              queryRef={queryRef}
-            />
+                dataSource={dataSource}
+                queryRef={queryRef}
+              />
             </React.Suspense>
           )}
         </div>

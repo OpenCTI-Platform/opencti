@@ -8,7 +8,9 @@ import Loader, { LoaderVariant } from '../../../../components/Loader';
 import { Theme } from '../../../../components/Theme';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import { dataSourceEditionOverviewFocus } from './DataSourceEditionOverview';
-import DataSourceEditionContainer, { dataSourceEditionQuery } from './DataSourceEditionContainer';
+import DataSourceEditionContainer, {
+  dataSourceEditionQuery,
+} from './DataSourceEditionContainer';
 import { DataSourceEditionContainerQuery } from './__generated__/DataSourceEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -31,7 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const DataSourceEdition = ({ dataSourceId } : { dataSourceId: string }) => {
+const DataSourceEdition = ({ dataSourceId }: { dataSourceId: string }) => {
   const classes = useStyles();
 
   const [open, setOpen] = useState<boolean>(false);
@@ -48,7 +50,10 @@ const DataSourceEdition = ({ dataSourceId } : { dataSourceId: string }) => {
     setOpen(false);
   };
 
-  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(dataSourceEditionQuery, { id: dataSourceId });
+  const queryRef = useQueryLoading<DataSourceEditionContainerQuery>(
+    dataSourceEditionQuery,
+    { id: dataSourceId },
+  );
 
   return (
     <div>
@@ -69,7 +74,9 @@ const DataSourceEdition = ({ dataSourceId } : { dataSourceId: string }) => {
         onClose={handleClose}
       >
         {queryRef && (
-          <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+          <React.Suspense
+            fallback={<Loader variant={LoaderVariant.inElement} />}
+          >
             <DataSourceEditionContainer
               queryRef={queryRef}
               handleClose={handleClose}

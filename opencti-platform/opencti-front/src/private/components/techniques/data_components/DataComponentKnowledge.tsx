@@ -25,13 +25,13 @@ const DataComponentKnowledgeFragment = graphql`
 `;
 
 interface DataComponentKnowledgeProps {
-  data: DataComponentKnowledge_dataComponent$key
-  enableReferences: boolean
+  data: DataComponentKnowledge_dataComponent$key;
+  enableReferences: boolean;
 }
 
-const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = ({
-  data,
-}) => {
+const DataComponentKnowledge: FunctionComponent<
+DataComponentKnowledgeProps
+> = ({ data }) => {
   const classes = useStyles();
 
   const dataComponent = useFragment(DataComponentKnowledgeFragment, data);
@@ -41,16 +41,15 @@ const DataComponentKnowledge: FunctionComponent<DataComponentKnowledgeProps> = (
       <StixDomainObjectHeader
         entityType={'Data-Component'}
         stixDomainObject={dataComponent}
-        PopoverComponent={<DataComponentPopover dataComponentId={dataComponent.id} />}
+        PopoverComponent={
+          <DataComponentPopover dataComponentId={dataComponent.id} />
+        }
       />
       <Switch>
         <Route
           path="/dashboard/techniques/data_components/:dataComponentId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={dataComponent.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={dataComponent.id} {...routeProps} />
           )}
         />
       </Switch>

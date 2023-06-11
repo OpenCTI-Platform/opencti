@@ -28,7 +28,7 @@ class AddAttackPatternsLinesContainer extends Component {
         relationshipType={'mitigates'}
         availableDatas={data?.attackPatterns}
         existingDatas={courseOfActionAttackPatterns}
-        updaterOptions={ { path: 'attackPatterns' } }
+        updaterOptions={{ path: 'attackPatterns' }}
       />
     );
   }

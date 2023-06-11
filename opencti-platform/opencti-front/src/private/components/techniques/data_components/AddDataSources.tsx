@@ -8,7 +8,9 @@ import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import DataSourceCreation from '../data_sources/DataSourceCreation';
 import SearchInput from '../../../../components/SearchInput';
-import AddDataSourcesLines, { addDataSourcesLinesQuery } from './AddDataSourcesLines';
+import AddDataSourcesLines, {
+  addDataSourcesLinesQuery,
+} from './AddDataSourcesLines';
 import { AddDataSourcesLinesQuery } from './__generated__/AddDataSourcesLinesQuery.graphql';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
@@ -79,7 +81,10 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
     setSearch('');
   };
 
-  const queryRef = useQueryLoading<AddDataSourcesLinesQuery>(addDataSourcesLinesQuery, { ...paginationOptions });
+  const queryRef = useQueryLoading<AddDataSourcesLinesQuery>(
+    addDataSourcesLinesQuery,
+    { ...paginationOptions },
+  );
 
   return (
     <div>
@@ -123,7 +128,9 @@ const AddDataSources: FunctionComponent<{ dataComponentId: string }> = ({
         </div>
         <div className={classes.container}>
           {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <AddDataSourcesLines
                 dataComponentId={dataComponentId}
                 queryRef={queryRef}

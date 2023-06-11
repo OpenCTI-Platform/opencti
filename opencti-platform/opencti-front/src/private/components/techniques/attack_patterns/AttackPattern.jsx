@@ -84,7 +84,9 @@ class AttackPatternComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={attackPattern.id}
-          defaultMarkings={(attackPattern.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(attackPattern.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <AttackPatternEdition attackPatternId={attackPattern.id} />

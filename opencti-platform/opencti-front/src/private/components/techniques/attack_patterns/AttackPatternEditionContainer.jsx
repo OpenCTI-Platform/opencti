@@ -68,10 +68,7 @@ const AttackPatternEditionContainer = (props) => {
       </div>
       <div className={classes.container}>
         <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-          <Tabs
-            value={currentTab}
-            onChange={handleChangeTab}
-          >
+          <Tabs value={currentTab} onChange={handleChangeTab}>
             <Tab label={t('Overview')} />
             <Tab label={t('Details')} />
           </Tabs>

@@ -146,7 +146,10 @@ const RootDataSource = () => {
   });
   return queryRef ? (
     <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-      <RootDataSourceComponent queryRef={queryRef} dataSourceId={dataSourceId}/>
+      <RootDataSourceComponent
+        queryRef={queryRef}
+        dataSourceId={dataSourceId}
+      />
     </React.Suspense>
   ) : (
     <Loader variant={LoaderVariant.inElement} />

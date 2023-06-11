@@ -108,7 +108,7 @@ interface DataSourceAddInput {
   confidence: number;
   x_mitre_platforms: string[];
   collection_layers: string[];
-  file: File | undefined
+  file: File | undefined;
 }
 
 interface DataSourceCreationProps {
@@ -119,17 +119,24 @@ interface DataSourceCreationProps {
 }
 
 interface DataSourceFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  inputValue?: string
-  defaultCreatedBy?: Option
-  defaultMarkingDefinitions?: Option[]
-  defaultConfidence?: number
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: Option;
+  defaultMarkingDefinitions?: Option[];
+  defaultConfidence?: number;
 }
 
-export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({ updater, onReset, inputValue, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
+  updater,
+  onReset,
+  inputValue,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -137,11 +144,14 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const dataSourceValidator = useSchemaCreationValidation('Data-Source', basicShape);
+  const dataSourceValidator = useSchemaCreationValidation(
+    'Data-Source',
+    basicShape,
+  );
   const initialValues: DataSourceAddInput = {
     name: inputValue || '',
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -190,72 +200,68 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     });
   };
 
-  return <Formik<DataSourceAddInput>
+  return (
+    <Formik<DataSourceAddInput>
       initialValues={initialValues}
       validationSchema={dataSourceValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Data-Source']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Data-Source']}
           />
           <ConfidenceField
-              entityType="Data-Source"
-              containerStyle={fieldSpacingContainerStyle}
+            entityType="Data-Source"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <CreatedByField
-              name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <Field
             component={SimpleFileUpload}
@@ -267,43 +273,44 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
             fullWidth={true}
           />
           <OpenVocabField
-              label={t('Platforms')}
-              type="platforms_ov"
-              name="x_mitre_platforms"
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
+            label={t('Platforms')}
+            type="platforms_ov"
+            name="x_mitre_platforms"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
           />
           <OpenVocabField
-              label={t('Layers')}
-              type="collection_layers_ov"
-              name="collection_layers"
-              onChange={(name, value) => setFieldValue(name, value)}
-              containerStyle={fieldSpacingContainerStyle}
-              multiple={true}
+            label={t('Layers')}
+            type="collection_layers_ov"
+            name="collection_layers"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
             >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
@@ -327,31 +334,41 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderClassic = () => (
     <div>
-      <Fab onClick={handleOpen}
+      <Fab
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open}
+      <Drawer
+        open={open}
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
-          <IconButton aria-label="Close"
+          <IconButton
+            aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a data source')}</Typography>
         </div>
         <div className={classes.container}>
-          <DataSourceCreationForm inputValue={inputValue} updater={updater}
-                                  onCompleted={handleClose} onReset={handleClose}/>
+          <DataSourceCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>
@@ -359,15 +376,23 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab onClick={handleOpen} color="secondary" aria-label="Add"
-        className={classes.createButtonContextual}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButtonContextual}
+      >
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <DialogTitle>{t('Create a data source')}</DialogTitle>
         <DialogContent>
-          <DataSourceCreationForm inputValue={inputValue} updater={updater}
-                                 onCompleted={handleClose} onReset={handleClose}/>
+          <DataSourceCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </DialogContent>
       </Dialog>
     </div>

@@ -118,7 +118,9 @@ const StixCyberObservablePopover = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setDisplayDuplicate(false)}>{t('Cancel')}</Button>
+          <Button onClick={() => setDisplayDuplicate(false)}>
+            {t('Cancel')}
+          </Button>
           <Button
             onClick={() => {
               setDisplayDuplicate(false);

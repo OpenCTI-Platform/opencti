@@ -54,11 +54,13 @@ export const dataSourceEditionQuery = graphql`
 `;
 
 interface DataSourceEditionContainerProps {
-  handleClose: () => void
-  queryRef: PreloadedQuery<DataSourceEditionContainerQuery>
+  handleClose: () => void;
+  queryRef: PreloadedQuery<DataSourceEditionContainerQuery>;
 }
 
-const DataSourceEditionContainer: FunctionComponent<DataSourceEditionContainerProps> = ({ handleClose, queryRef }) => {
+const DataSourceEditionContainer: FunctionComponent<
+DataSourceEditionContainerProps
+> = ({ handleClose, queryRef }) => {
   const classes = useStyles();
   const { t } = useFormatter();
 

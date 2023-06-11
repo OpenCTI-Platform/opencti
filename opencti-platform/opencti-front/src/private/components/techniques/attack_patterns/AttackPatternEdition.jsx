@@ -87,7 +87,10 @@ class AttackPatternEdition extends Component {
             render={({ props }) => {
               if (props) {
                 return (
-                  <AttackPatternEditionContainer attackPattern={props.attackPattern} handleClose={this.handleClose.bind(this)} />
+                  <AttackPatternEditionContainer
+                    attackPattern={props.attackPattern}
+                    handleClose={this.handleClose.bind(this)}
+                  />
                 );
               }
               return <Loader variant="inElement" />;

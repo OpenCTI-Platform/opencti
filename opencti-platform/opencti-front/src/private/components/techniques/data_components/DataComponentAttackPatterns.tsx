@@ -17,7 +17,9 @@ import AddAttackPatterns from './AddAttackPatterns';
 import { addAttackPatternsMutationRelationDelete } from './AddAttackPatternsLines';
 import { DataComponentAttackPatterns_dataComponent$data } from './__generated__/DataComponentAttackPatterns_dataComponent.graphql';
 
-const DataComponentAttackPatternsComponent: FunctionComponent<{ dataComponent: DataComponentAttackPatterns_dataComponent$data }> = ({ dataComponent }) => {
+const DataComponentAttackPatternsComponent: FunctionComponent<{
+  dataComponent: DataComponentAttackPatterns_dataComponent$data;
+}> = ({ dataComponent }) => {
   const { t } = useFormatter();
 
   const [commit] = useMutation(addAttackPatternsMutationRelationDelete);
@@ -29,35 +31,45 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{ dataComponent: D
         toId: attackPatternId,
         relationship_type: 'detects',
       },
-      updater: (store) => deleteNodeFromEdge(store, 'attackPatterns', dataComponent.id, attackPatternId),
+      updater: (store) => deleteNodeFromEdge(
+        store,
+        'attackPatterns',
+        dataComponent.id,
+        attackPatternId,
+      ),
     });
   };
 
   return (
-    <div style={{
-      marginTop: 20,
-    }}>
+    <div
+      style={{
+        marginTop: 20,
+      }}
+    >
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t('Attack patterns')}
       </Typography>
       <AddAttackPatterns dataComponent={dataComponent} />
       <div className="clearfix" />
-      {dataComponent.attackPatterns
-        && <List style={{ marginTop: -10 }}>
-          {dataComponent.attackPatterns.edges?.map((attackPatternEdge) => attackPatternEdge?.node)
+      {dataComponent.attackPatterns && (
+        <List style={{ marginTop: -10 }}>
+          {dataComponent.attackPatterns.edges
+            ?.map((attackPatternEdge) => attackPatternEdge?.node)
             .map((attackPattern, idx) => {
               if (!attackPattern) {
-                return <ListItemText
-                  key={idx}
-                  primary={
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height="100%"
-                    />
-                  }
-                />;
+                return (
+                  <ListItemText
+                    key={idx}
+                    primary={
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        width="90%"
+                        height="100%"
+                      />
+                    }
+                  />
+                );
               }
               return (
                 <ListItem
@@ -87,7 +99,7 @@ const DataComponentAttackPatternsComponent: FunctionComponent<{ dataComponent: D
               );
             })}
         </List>
-      }
+      )}
     </div>
   );
 };

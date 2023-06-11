@@ -14,11 +14,16 @@ import { DataSourcesLines_data$key } from './__generated__/DataSourcesLines_data
 const nbOfRowsToLoad = 50;
 
 interface DataSourceLinesProps {
-  queryRef: PreloadedQuery<DataSourcesLinesPaginationQuery>,
-  dataColumns: DataColumns,
-  paginationOptions?: DataSourcesLinesPaginationQuery$variables,
-  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'],
-  onLabelClick: (k: string, id: string, value: Record<string, unknown>, event: React.KeyboardEvent) => void,
+  queryRef: PreloadedQuery<DataSourcesLinesPaginationQuery>;
+  dataColumns: DataColumns;
+  paginationOptions?: DataSourcesLinesPaginationQuery$variables;
+  setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
+  onLabelClick: (
+    k: string,
+    id: string,
+    value: Record<string, unknown>,
+    event: React.KeyboardEvent
+  ) => void;
 }
 
 export const dataSourcesLinesQuery = graphql`
@@ -30,14 +35,15 @@ export const dataSourcesLinesQuery = graphql`
     $orderMode: OrderingMode
     $filters: [DataSourcesFiltering!]
   ) {
-    ...DataSourcesLines_data @arguments(
-      search: $search
-      count: $count
-      cursor: $cursor
-      orderBy: $orderBy
-      orderMode: $orderMode
-      filters: $filters
-    )
+    ...DataSourcesLines_data
+      @arguments(
+        search: $search
+        count: $count
+        cursor: $cursor
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -50,7 +56,8 @@ const dataSourcesLinesFragment = graphql`
     orderBy: { type: "DataSourcesOrdering", defaultValue: name }
     orderMode: { type: "OrderingMode", defaultValue: asc }
     filters: { type: "[DataSourcesFiltering!]" }
-  ) @refetchable(queryName: "DataSourcesLinesRefetchQuery") {
+  )
+  @refetchable(queryName: "DataSourcesLinesRefetchQuery") {
     dataSources(
       search: $search
       first: $count
@@ -76,13 +83,17 @@ const dataSourcesLinesFragment = graphql`
   }
 `;
 
-const DataSourcesLines: FunctionComponent<DataSourceLinesProps> = ({ setNumberOfElements, queryRef, dataColumns, paginationOptions, onLabelClick }) => {
-  const {
-    data,
-    hasMore,
-    loadMore,
-    isLoadingMore,
-  } = usePreloadedPaginationFragment<DataSourcesLinesPaginationQuery, DataSourcesLines_data$key>({
+const DataSourcesLines: FunctionComponent<DataSourceLinesProps> = ({
+  setNumberOfElements,
+  queryRef,
+  dataColumns,
+  paginationOptions,
+  onLabelClick,
+}) => {
+  const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
+  DataSourcesLinesPaginationQuery,
+  DataSourcesLines_data$key
+  >({
     linesQuery: dataSourcesLinesQuery,
     linesFragment: dataSourcesLinesFragment,
     queryRef,
@@ -98,8 +109,8 @@ const DataSourcesLines: FunctionComponent<DataSourceLinesProps> = ({ setNumberOf
       hasMore={hasMore}
       dataList={data?.dataSources?.edges ?? []}
       globalCount={data?.dataSources?.pageInfo?.globalCount ?? nbOfRowsToLoad}
-      LineComponent={ DataSourceLineComponent }
-      DummyLineComponent={ DataSourceLineDummy }
+      LineComponent={DataSourceLineComponent}
+      DummyLineComponent={DataSourceLineDummy}
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}

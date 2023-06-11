@@ -83,7 +83,8 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
       : { widgets: {}, config: {} },
   );
   const [deleting, setDeleting] = useState(false);
-  const userCanEdit = workspace.currentUserAccessRight === 'admin' || workspace.currentUserAccessRight === 'edit';
+  const userCanEdit = workspace.currentUserAccessRight === 'admin'
+    || workspace.currentUserAccessRight === 'edit';
   const saveManifest = (newManifest) => {
     setManifest(newManifest);
     const newManifestEncoded = toB64(JSON.stringify(newManifest));
@@ -622,7 +623,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             </Paper>
           ))}
         </ResponsiveGridLayout>
-        {!noToolbar ? (<WidgetConfig onComplete={handleAddWidget} />) : (<></>)}
+        {!noToolbar ? <WidgetConfig onComplete={handleAddWidget} /> : <></>}
       </Security>
     </div>
   );

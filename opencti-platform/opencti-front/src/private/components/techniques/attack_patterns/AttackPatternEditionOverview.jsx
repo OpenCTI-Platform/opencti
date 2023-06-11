@@ -11,7 +11,12 @@ import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
 import StatusField from '../../common/form/StatusField';
-import { convertCreatedBy, convertKillChainPhases, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertKillChainPhases,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import { adaptFieldValue } from '../../../../utils/String';
 import CommitMessage from '../../common/form/CommitMessage';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
@@ -91,7 +96,10 @@ const AttackPatternEditionOverviewComponent = (props) => {
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const attackPatternValidator = useSchemaEditionValidation('Attack-Pattern', basicShape);
+  const attackPatternValidator = useSchemaEditionValidation(
+    'Attack-Pattern',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: attackPatternMutationFieldPatch,
@@ -99,7 +107,12 @@ const AttackPatternEditionOverviewComponent = (props) => {
     relationDelete: attackPatternMutationRelationDelete,
     editionFocus: attackPatternEditionOverviewFocus,
   };
-  const editor = useFormEditor(attackPattern, enableReferences, queries, attackPatternValidator);
+  const editor = useFormEditor(
+    attackPattern,
+    enableReferences,
+    queries,
+    attackPatternValidator,
+  );
 
   const onSubmit = (values, { setSubmitting }) => {
     const commitMessage = values.message;
@@ -166,160 +179,166 @@ const AttackPatternEditionOverviewComponent = (props) => {
     ]),
   )(attackPattern);
   return (
-      <Formik
-        enableReinitialize={true}
-        initialValues={{ ...initialValues, references: [] }}
-        validationSchema={attackPatternValidator}
-        onSubmit={onSubmit}
-      >
-        {({
-          submitForm,
-          isSubmitting,
-          setFieldValue,
-          values,
-          isValid,
-          dirty,
-        }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
+    <Formik
+      enableReinitialize={true}
+      initialValues={{ ...initialValues, references: [] }}
+      validationSchema={attackPatternValidator}
+      onSubmit={onSubmit}
+    >
+      {({
+        submitForm,
+        isSubmitting,
+        setFieldValue,
+        values,
+        isValid,
+        dirty,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="name" />
+            }
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="x_mitre_id"
+            label={t('External ID')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="x_mitre_id" />
+            }
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+            onFocus={editor.changeFocus}
+            onSubmit={handleSubmitField}
+            helperText={
+              <SubscriptionFocus context={context} fieldName="description" />
+            }
+          />
+          <KillChainPhasesField
+            name="killChainPhases"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus
+                context={context}
+                fieldName="killChainPhases"
+              />
+            }
+            onChange={editor.changeKillChainPhases}
+          />
+          {attackPattern.workflowEnabled && (
+            <StatusField
+              name="x_opencti_workflow_id"
+              type="Attack-Pattern"
               onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="name" />
-              }
-            />
-            <Field
-                component={TextField}
-                variant="standard"
-                name="x_mitre_id"
-                label={t('External ID')}
-                fullWidth={true}
-                style={{ marginTop: 20 }}
-                onFocus={editor.changeFocus}
-                onSubmit={handleSubmitField}
-                helperText={
-                  <SubscriptionFocus context={context} fieldName="x_mitre_id" />
-                }
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
+              onChange={handleSubmitField}
+              setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}
-              onFocus={editor.changeFocus}
-              onSubmit={handleSubmitField}
-              helperText={
-                <SubscriptionFocus context={context} fieldName="description" />
+              helpertext={
+                <SubscriptionFocus
+                  context={context}
+                  fieldName="x_opencti_workflow_id"
+                />
               }
             />
-            <KillChainPhasesField
-              name="killChainPhases"
-              style={fieldSpacingContainerStyle}
+          )}
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            helpertext={
+              <SubscriptionFocus context={context} fieldName="createdBy" />
+            }
+            onChange={editor.changeCreated}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+            helpertext={
+              <SubscriptionFocus context={context} fieldname="objectMarking" />
+            }
+            onChange={editor.changeMarking}
+          />
+          {enableReferences && (
+            <CommitMessage
+              submitForm={submitForm}
+              disabled={isSubmitting || !isValid || !dirty}
               setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="killChainPhases" />
-              }
-              onChange={editor.changeKillChainPhases}
+              open={false}
+              values={values.references}
+              id={attackPattern.id}
             />
-            {attackPattern.workflowEnabled && (
-              <StatusField
-                name="x_opencti_workflow_id"
-                type="Attack-Pattern"
-                onFocus={editor.changeFocus}
-                onChange={handleSubmitField}
-                setFieldValue={setFieldValue}
-                style={{ marginTop: 20 }}
-                helpertext={
-                  <SubscriptionFocus context={context} fieldName="x_opencti_workflow_id" />
-                }
-              />
-            )}
-            <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              helpertext={
-                <SubscriptionFocus context={context} fieldName="createdBy" />
-              }
-              onChange={editor.changeCreated}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-              helpertext={
-                <SubscriptionFocus context={context} fieldname="objectMarking" />
-              }
-              onChange={editor.changeMarking}
-            />
-            {enableReferences && (
-              <CommitMessage
-                submitForm={submitForm}
-                disabled={isSubmitting || !isValid || !dirty}
-                setFieldValue={setFieldValue}
-                open={false}
-                values={values.references}
-                id={attackPattern.id}
-              />
-            )}
-          </Form>
-        )}
-      </Formik>
+          )}
+        </Form>
+      )}
+    </Formik>
   );
 };
 
 export default createFragmentContainer(AttackPatternEditionOverviewComponent, {
   attackPattern: graphql`
-      fragment AttackPatternEditionOverview_attackPattern on AttackPattern {
-        id
-        name
-        x_mitre_id
-        description
-        createdBy {
-          ... on Identity {
-            id
-            name
-            entity_type
-          }
-        }
-        killChainPhases {
-          edges {
-            node {
-              id
-              entity_type
-              kill_chain_name
-              phase_name
-              x_opencti_order
-            }
-          }
-        }
-        objectMarking {
-          edges {
-            node {
-              id
-              definition_type
-              definition
-              x_opencti_order
-              x_opencti_color
-            }
-          }
-        }
-        status {
+    fragment AttackPatternEditionOverview_attackPattern on AttackPattern {
+      id
+      name
+      x_mitre_id
+      description
+      createdBy {
+        ... on Identity {
           id
-          order
-          template {
-            name
-            color
+          name
+          entity_type
+        }
+      }
+      killChainPhases {
+        edges {
+          node {
+            id
+            entity_type
+            kill_chain_name
+            phase_name
+            x_opencti_order
           }
         }
-        workflowEnabled
       }
-    `,
+      objectMarking {
+        edges {
+          node {
+            id
+            definition_type
+            definition
+            x_opencti_order
+            x_opencti_color
+          }
+        }
+      }
+      status {
+        id
+        order
+        template {
+          name
+          color
+        }
+      }
+      workflowEnabled
+    }
+  `,
 });

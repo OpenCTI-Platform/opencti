@@ -31,17 +31,16 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const DataComponentLineDummy = ({ dataColumns }: { dataColumns: DataColumns }) => {
+const DataComponentLineDummy = ({
+  dataColumns,
+}: {
+  dataColumns: DataColumns;
+}) => {
   const classes = useStyles();
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <Skeleton
-          animation="wave"
-          variant="circular"
-          width={30}
-          height={30}
-        />
+        <Skeleton animation="wave" variant="circular" width={30} height={30} />
       </ListItemIcon>
       <ListItemText
         primary={

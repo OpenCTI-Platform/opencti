@@ -97,28 +97,37 @@ const dataComponentMutation = graphql`
 `;
 
 interface DataComponentAddInput {
-  name: string,
-  description: string,
-  createdBy: Option | undefined,
-  objectMarking: Option[],
-  objectLabel: Option[],
-  externalReferences: Option[],
-  confidence: number
-  file: File | undefined
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  confidence: number;
+  file: File | undefined;
 }
 
 interface DataComponentFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
-  onReset?: () => void
-  onCompleted?: () => void
-  inputValue?: string
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
-  defaultConfidence?: number
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
+  onReset?: () => void;
+  onCompleted?: () => void;
+  inputValue?: string;
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
+  defaultConfidence?: number;
 }
 
-export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps> = ({ updater, onReset, inputValue, onCompleted,
-  defaultConfidence, defaultCreatedBy, defaultMarkingDefinitions }) => {
+export const DataComponentCreationForm: FunctionComponent<
+DataComponentFormProps
+> = ({
+  updater,
+  onReset,
+  inputValue,
+  onCompleted,
+  defaultConfidence,
+  defaultCreatedBy,
+  defaultMarkingDefinitions,
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
@@ -126,11 +135,14 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const dataComponentValidator = useSchemaCreationValidation('Data-Component', basicShape);
+  const dataComponentValidator = useSchemaCreationValidation(
+    'Data-Component',
+    basicShape,
+  );
   const initialValues: DataComponentAddInput = {
     name: inputValue || '',
     description: '',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -179,72 +191,68 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     });
   };
 
-  return <Formik<DataComponentAddInput>
+  return (
+    <Formik<DataComponentAddInput>
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-    {({
-      submitForm,
-      handleReset,
-      isSubmitting,
-      setFieldValue,
-      values,
-    }) => (
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Data-Component']}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Data-Component']}
           />
           <ConfidenceField
-              entityType="Data-Component"
-              containerStyle={fieldSpacingContainerStyle}
+            entityType="Data-Component"
+            containerStyle={fieldSpacingContainerStyle}
           />
           <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
           />
           <CreatedByField
-              name="createdBy"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
           />
           <ObjectLabelField
-              name="objectLabel"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
+            name="objectLabel"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
           />
           <ObjectMarkingField
-              name="objectMarking"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
           />
           <ExternalReferencesField
-              name="externalReferences"
-              style={{
-                marginTop: 20,
-                width: '100%',
-              }}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
+            name="externalReferences"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
           />
           <Field
             component={SimpleFileUpload}
@@ -257,36 +265,35 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
           />
           <div className={classes.buttons}>
             <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
               {t('Cancel')}
             </Button>
             <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}>
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
               {t('Create')}
             </Button>
           </div>
         </Form>
-    )}
-  </Formik>;
+      )}
+    </Formik>
+  );
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean,
-  display?: boolean,
-  inputValue?: string,
-  paginationOptions: DataComponentsLinesPaginationQuery$variables }> = ({
-  contextual,
-  display,
-  inputValue,
-  paginationOptions,
-}) => {
+  contextual?: boolean;
+  display?: boolean;
+  inputValue?: string;
+  paginationOptions: DataComponentsLinesPaginationQuery$variables;
+}> = ({ contextual, display, inputValue, paginationOptions }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
@@ -302,30 +309,41 @@ const DataComponentCreation: FunctionComponent<{
 
   const renderClassic = () => (
     <div>
-      <Fab onClick={handleOpen}
+      <Fab
+        onClick={handleOpen}
         color="secondary"
         aria-label="Add"
-        className={classes.createButton}>
+        className={classes.createButton}
+      >
         <Add />
       </Fab>
-      <Drawer open={open} anchor="right"
-        elevation={1} sx={{ zIndex: 1202 }}
+      <Drawer
+        open={open}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
         classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+        onClose={handleClose}
+      >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
             className={classes.closeButton}
             onClick={handleClose}
             size="large"
-            color="primary">
+            color="primary"
+          >
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create a data component')}</Typography>
         </div>
         <div className={classes.container}>
-          <DataComponentCreationForm inputValue={inputValue} updater={updater}
-                                  onCompleted={handleClose} onReset={handleClose}/>
+          <DataComponentCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </div>
       </Drawer>
     </div>
@@ -333,15 +351,23 @@ const DataComponentCreation: FunctionComponent<{
 
   const renderContextual = () => (
     <div style={{ display: display ? 'block' : 'none' }}>
-      <Fab onClick={handleOpen} color="secondary" aria-label="Add"
-        className={classes.createButtonContextual}>
+      <Fab
+        onClick={handleOpen}
+        color="secondary"
+        aria-label="Add"
+        className={classes.createButtonContextual}
+      >
         <Add />
       </Fab>
       <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
         <DialogTitle>{t('Create a data component')}</DialogTitle>
         <DialogContent>
-        <DataComponentCreationForm inputValue={inputValue} updater={updater}
-                                   onCompleted={handleClose} onReset={handleClose}/>
+          <DataComponentCreationForm
+            inputValue={inputValue}
+            updater={updater}
+            onCompleted={handleClose}
+            onReset={handleClose}
+          />
         </DialogContent>
       </Dialog>
     </div>

@@ -6,7 +6,10 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import { DataComponentDetails_dataComponent$data, DataComponentDetails_dataComponent$key } from './__generated__/DataComponentDetails_dataComponent.graphql';
+import {
+  DataComponentDetails_dataComponent$data,
+  DataComponentDetails_dataComponent$key,
+} from './__generated__/DataComponentDetails_dataComponent.graphql';
 import DataComponentDataSource from './DataComponentDataSource';
 import DataComponentAttackPatterns from './DataComponentAttackPatterns';
 
@@ -39,14 +42,19 @@ const DataComponentDetailsFragment = graphql`
 `;
 
 interface DataComponentDetailsProps {
-  dataComponent: DataComponentDetails_dataComponent$key
+  dataComponent: DataComponentDetails_dataComponent$key;
 }
 
-const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({ dataComponent }) => {
+const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({
+  dataComponent,
+}) => {
   const { t } = useFormatter();
   const classes = styles();
 
-  const data: DataComponentDetails_dataComponent$data = useFragment(DataComponentDetailsFragment, dataComponent);
+  const data: DataComponentDetails_dataComponent$data = useFragment(
+    DataComponentDetailsFragment,
+    dataComponent,
+  );
 
   return (
     <div style={{ height: '100%' }}>
@@ -55,17 +63,14 @@ const DataComponentDetails: FunctionComponent<DataComponentDetailsProps> = ({ da
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3}>
-            <Grid item={true} xs={12}>
-              <Typography variant="h3" gutterBottom={true}>
-                {t('Description')}
-              </Typography>
-              {data.description && (
-              <ExpandableMarkdown
-                source={data.description}
-                limit={300}
-              />
-              )}
-            </Grid>
+          <Grid item={true} xs={12}>
+            <Typography variant="h3" gutterBottom={true}>
+              {t('Description')}
+            </Typography>
+            {data.description && (
+              <ExpandableMarkdown source={data.description} limit={300} />
+            )}
+          </Grid>
           <Grid item={true} xs={12}>
             <DataComponentDataSource dataComponent={data} />
             <DataComponentAttackPatterns dataComponent={data} />

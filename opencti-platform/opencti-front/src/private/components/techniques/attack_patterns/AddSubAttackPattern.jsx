@@ -9,7 +9,9 @@ import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSubAttackPatternsLines, { addSubAttackPatternsLinesQuery } from './AddSubAttackPatternsLines';
+import AddSubAttackPatternsLines, {
+  addSubAttackPatternsLinesQuery,
+} from './AddSubAttackPatternsLines';
 import AttackPatternCreation from './AttackPatternCreation';
 
 const styles = (theme) => ({

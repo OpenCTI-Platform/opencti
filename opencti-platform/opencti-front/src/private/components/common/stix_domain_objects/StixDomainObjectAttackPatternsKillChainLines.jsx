@@ -68,7 +68,9 @@ class StixDomainObjectAttackPatternsKillChainLines extends Component {
     // Extract all kill chain phases
     const filterByKeyword = (n) => searchTerm === ''
       || n.to.name.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
-      || n.to.description.toLowerCase().indexOf(searchTerm.toLowerCase()) !== -1
+      || (n.to.description ?? '')
+        .toLowerCase()
+        .indexOf(searchTerm.toLowerCase()) !== -1
       || (n.to.x_mitre_id ?? '')
         .toLowerCase()
         .indexOf(searchTerm.toLowerCase()) !== -1

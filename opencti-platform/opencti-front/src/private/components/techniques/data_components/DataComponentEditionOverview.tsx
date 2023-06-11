@@ -8,11 +8,13 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
-import { useFormatter } from '../../../../components/i18n';
 import {
-  DataComponentEditionOverview_dataComponent$key,
-} from './__generated__/DataComponentEditionOverview_dataComponent.graphql';
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
+import { useFormatter } from '../../../../components/i18n';
+import { DataComponentEditionOverview_dataComponent$key } from './__generated__/DataComponentEditionOverview_dataComponent.graphql';
 import StatusField from '../../common/form/StatusField';
 import CommitMessage from '../../common/form/CommitMessage';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
@@ -42,7 +44,10 @@ const dataComponentMutationFieldPatch = graphql`
 `;
 
 export const dataComponentEditionOverviewFocus = graphql`
-  mutation DataComponentEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation DataComponentEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     dataComponentContextPatch(id: $id, input: $input) {
       id
     }
@@ -115,32 +120,31 @@ const DataComponentEditionOverviewFragment = graphql`
 `;
 
 interface DataComponentEditionOverviewComponentProps {
-  data: DataComponentEditionOverview_dataComponent$key
-  context: readonly ({
+  data: DataComponentEditionOverview_dataComponent$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface DataComponentAddInput {
-  name: string
-  description: string | null
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  x_opencti_workflow_id: Option
-  confidence: number | null
-  message?: string
-  references?: Option[]
+  name: string;
+  description: string | null;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  x_opencti_workflow_id: Option;
+  confidence: number | null;
+  message?: string;
+  references?: Option[];
 }
 
-const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOverviewComponentProps> = ({
-  data,
-  context,
-  enableReferences = false,
-  handleClose,
-}) => {
+const DataComponentEditionOverview: FunctionComponent<
+DataComponentEditionOverviewComponentProps
+> = ({ data, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
 
   const dataComponent = useFragment(DataComponentEditionOverviewFragment, data);
@@ -152,7 +156,10 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const dataComponentValidator = useSchemaEditionValidation('Data-Component', basicShape);
+  const dataComponentValidator = useSchemaEditionValidation(
+    'Data-Component',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: dataComponentMutationFieldPatch,
@@ -160,9 +167,17 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     relationDelete: dataComponentMutationRelationDelete,
     editionFocus: dataComponentEditionOverviewFocus,
   };
-  const editor = useFormEditor(dataComponent, enableReferences, queries, dataComponentValidator);
+  const editor = useFormEditor(
+    dataComponent,
+    enableReferences,
+    queries,
+    dataComponentValidator,
+  );
 
-  const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -178,7 +193,8 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
       variables: {
         id: dataComponent.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -221,10 +237,12 @@ const DataComponentEditionOverview: FunctionComponent<DataComponentEditionOvervi
     references: [],
   };
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues}
       validationSchema={dataComponentValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,

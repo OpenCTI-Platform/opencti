@@ -9,7 +9,11 @@ import { SubscriptionFocus } from '../../../../components/Subscription';
 import CreatedByField from '../../common/form/CreatedByField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import MarkDownField from '../../../../components/MarkDownField';
-import { convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import StatusField from '../../common/form/StatusField';
 import { Option } from '../../common/form/ReferenceField';
 import CommitMessage from '../../common/form/CommitMessage';
@@ -35,14 +39,17 @@ const dataSourceMutationFieldPatch = graphql`
       commitMessage: $commitMessage
       references: $references
     ) {
-        ...DataSourceEditionOverview_dataSource
-        ...DataSource_dataSource
-      }
+      ...DataSourceEditionOverview_dataSource
+      ...DataSource_dataSource
     }
+  }
 `;
 
 export const dataSourceEditionOverviewFocus = graphql`
-  mutation DataSourceEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
+  mutation DataSourceEditionOverviewFocusMutation(
+    $id: ID!
+    $input: EditContext!
+  ) {
     dataSourceContextPatch(id: $id, input: $input) {
       id
     }
@@ -69,13 +76,13 @@ const dataSourceMutationRelationDelete = graphql`
     $relationship_type: String!
   ) {
     dataSourceRelationDelete(
-      id: $id, 
-      toId: $toId, 
+      id: $id
+      toId: $toId
       relationship_type: $relationship_type
     ) {
-        ...DataSourceEditionOverview_dataSource
-      }
+      ...DataSourceEditionOverview_dataSource
     }
+  }
 `;
 
 const dataSourceEditionOverviewFragment = graphql`
@@ -118,34 +125,33 @@ const dataSourceEditionOverviewFragment = graphql`
 `;
 
 interface DataSourceEditionOverviewProps {
-  data: DataSourceEditionOverview_dataSource$key,
-  context: readonly ({
+  data: DataSourceEditionOverview_dataSource$key;
+  context:
+  | readonly ({
     readonly focusOn: string | null;
     readonly name: string;
-  } | null)[] | null
-  enableReferences?: boolean
-  handleClose: () => void
+  } | null)[]
+  | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
 }
 
 interface DataSourceEditionFormValues {
-  name: string,
-  description: string | null,
-  x_opencti_workflow_id: Option,
-  createdBy: Option | undefined,
-  confidence: number | null,
-  x_mitre_platforms: string[] | null,
-  collection_layers: string[],
-  objectMarking: Option[],
-  message?: string,
-  references?: Option[],
+  name: string;
+  description: string | null;
+  x_opencti_workflow_id: Option;
+  createdBy: Option | undefined;
+  confidence: number | null;
+  x_mitre_platforms: string[] | null;
+  collection_layers: string[];
+  objectMarking: Option[];
+  message?: string;
+  references?: Option[];
 }
 
-const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProps> = ({
-  data,
-  context,
-  enableReferences = false,
-  handleClose,
-}) => {
+const DataSourceEditionOverview: FunctionComponent<
+DataSourceEditionOverviewProps
+> = ({ data, context, enableReferences = false, handleClose }) => {
   const { t } = useFormatter();
   const dataSource = useFragment(dataSourceEditionOverviewFragment, data);
 
@@ -158,7 +164,10 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
     references: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const dataSourceValidator = useSchemaEditionValidation('Data-Source', basicShape);
+  const dataSourceValidator = useSchemaEditionValidation(
+    'Data-Source',
+    basicShape,
+  );
 
   const queries = {
     fieldPatch: dataSourceMutationFieldPatch,
@@ -166,9 +175,17 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
     relationDelete: dataSourceMutationRelationDelete,
     editionFocus: dataComponentEditionOverviewFocus,
   };
-  const editor = useFormEditor(dataSource, enableReferences, queries, dataSourceValidator);
+  const editor = useFormEditor(
+    dataSource,
+    enableReferences,
+    queries,
+    dataSourceValidator,
+  );
 
-  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<DataSourceEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, references, ...otherValues } = values;
     const commitMessage = message ?? '';
     const commitReferences = (references ?? []).map(({ value }) => value);
@@ -184,7 +201,8 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
       variables: {
         id: dataSource.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
         references: commitReferences,
       },
       onCompleted: () => {
@@ -194,7 +212,10 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
     });
   };
 
-  const handleSubmitField = (name: string, value: Option | string | string[] | number | number[]) => {
+  const handleSubmitField = (
+    name: string,
+    value: Option | string | string[] | number | number[],
+  ) => {
     if (!enableReferences) {
       let finalValue: unknown = value as string;
       if (name === 'x_opencti_workflow_id') {
@@ -227,10 +248,12 @@ const DataSourceEditionOverview: FunctionComponent<DataSourceEditionOverviewProp
   };
 
   return (
-    <Formik enableReinitialize={true}
+    <Formik
+      enableReinitialize={true}
       initialValues={initialValues as never}
       validationSchema={dataSourceValidator}
-      onSubmit={onSubmit}>
+      onSubmit={onSubmit}
+    >
       {({
         submitForm,
         isSubmitting,

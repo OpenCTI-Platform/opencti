@@ -9,7 +9,9 @@ import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddSubNarrativesLines, { addSubNarrativesLinesQuery } from './AddSubNarrativesLines';
+import AddSubNarrativesLines, {
+  addSubNarrativesLinesQuery,
+} from './AddSubNarrativesLines';
 import NarrativeCreation from './NarrativeCreation';
 
 const styles = (theme) => ({
@@ -129,11 +131,11 @@ class AddSubNarrative extends Component {
               }}
               render={({ props }) => {
                 return (
-                    <AddSubNarrativesLines
-                      narrative={narrative}
-                      narrativeSubNarratives={narrativeSubNarratives}
-                      data={props}
-                    />
+                  <AddSubNarrativesLines
+                    narrative={narrative}
+                    narrativeSubNarratives={narrativeSubNarratives}
+                    data={props}
+                  />
                 );
               }}
             />

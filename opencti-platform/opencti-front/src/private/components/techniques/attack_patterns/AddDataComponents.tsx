@@ -9,8 +9,13 @@ import { useFormatter } from '../../../../components/i18n';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import SearchInput from '../../../../components/SearchInput';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
-import AddDataComponentsLines, { addDataComponentsLinesQuery } from './AddDataComponentsLines';
-import { AddDataComponentsLinesQuery, AddDataComponentsLinesQuery$variables } from './__generated__/AddDataComponentsLinesQuery.graphql';
+import AddDataComponentsLines, {
+  addDataComponentsLinesQuery,
+} from './AddDataComponentsLines';
+import {
+  AddDataComponentsLinesQuery,
+  AddDataComponentsLinesQuery$variables,
+} from './__generated__/AddDataComponentsLinesQuery.graphql';
 import { AttackPatternDataComponents_attackPattern$data } from './__generated__/AttackPatternDataComponents_attackPattern.graphql';
 import DataComponentCreation from '../data_components/DataComponentCreation';
 
@@ -59,9 +64,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AddDataComponents: FunctionComponent<{ attackPattern: AttackPatternDataComponents_attackPattern$data }> = ({
-  attackPattern,
-}) => {
+const AddDataComponents: FunctionComponent<{
+  attackPattern: AttackPatternDataComponents_attackPattern$data;
+}> = ({ attackPattern }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
@@ -79,7 +84,10 @@ const AddDataComponents: FunctionComponent<{ attackPattern: AttackPatternDataCom
     setSearch('');
   };
 
-  const queryRef = useQueryLoading<AddDataComponentsLinesQuery>(addDataComponentsLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<AddDataComponentsLinesQuery>(
+    addDataComponentsLinesQuery,
+    paginationOptions,
+  );
 
   return (
     <div>
@@ -123,7 +131,9 @@ const AddDataComponents: FunctionComponent<{ attackPattern: AttackPatternDataCom
         </div>
         <div className={classes.container}>
           {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <AddDataComponentsLines
                 attackPattern={attackPattern}
                 queryRef={queryRef}

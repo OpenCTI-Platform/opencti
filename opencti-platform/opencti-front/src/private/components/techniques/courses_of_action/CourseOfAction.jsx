@@ -75,7 +75,9 @@ class CourseOfActionComponent extends Component {
           style={{ marginTop: 25 }}
         >
           <Grid item={true} xs={6}>
-            <StixCoreObjectExternalReferences stixCoreObjectId={courseOfAction.id} />
+            <StixCoreObjectExternalReferences
+              stixCoreObjectId={courseOfAction.id}
+            />
           </Grid>
           <Grid item={true} xs={6}>
             <StixCoreObjectLatestHistory stixCoreObjectId={courseOfAction.id} />
@@ -83,7 +85,9 @@ class CourseOfActionComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={courseOfAction.id}
-          defaultMarkings={(courseOfAction.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(courseOfAction.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <CourseOfActionEdition courseOfActionId={courseOfAction.id} />

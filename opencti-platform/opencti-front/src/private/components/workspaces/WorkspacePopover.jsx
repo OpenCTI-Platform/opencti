@@ -40,9 +40,9 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const WorkspacePopoverDeletionMutation = graphql`
-    mutation WorkspacePopoverDeletionMutation($id: ID!) {
-        workspaceDelete(id: $id)
-    }
+  mutation WorkspacePopoverDeletionMutation($id: ID!) {
+    workspaceDelete(id: $id)
+  }
 `;
 
 const WorkspacePopover = ({ workspace }) => {
@@ -85,7 +85,7 @@ const WorkspacePopover = ({ workspace }) => {
   const userCanManage = workspace.currentUserAccessRight === 'admin';
   const userCanEdit = userCanManage || workspace.currentUserAccessRight === 'edit';
   if (!userCanEdit) {
-    return (<></>);
+    return <></>;
   }
   return (
     <div className={classes.container}>
@@ -95,23 +95,12 @@ const WorkspacePopover = ({ workspace }) => {
         size="large"
         style={{ marginTop: 3 }}
       >
-        <MoreVert/>
+        <MoreVert />
       </IconButton>
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-      >
-        <MenuItem onClick={handleOpenEdit}>
-          {t('Update')}
-        </MenuItem>
-        <Security
-          needs={[EXPLORE_EXUPDATE_EXDELETE]}
-          hasAccess={userCanManage}
-        >
-          <MenuItem onClick={handleOpenDelete}>
-            {t('Delete')}
-          </MenuItem>
+      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
+        <MenuItem onClick={handleOpenEdit}>{t('Update')}</MenuItem>
+        <Security needs={[EXPLORE_EXUPDATE_EXDELETE]} hasAccess={userCanManage}>
+          <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
         </Security>
       </Menu>
       <Dialog
@@ -127,17 +116,10 @@ const WorkspacePopover = ({ workspace }) => {
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button
-            onClick={handleCloseDelete}
-            disabled={deleting}
-          >
+          <Button onClick={handleCloseDelete} disabled={deleting}>
             {t('Cancel')}
           </Button>
-          <Button
-            color="secondary"
-            onClick={submitDelete}
-            disabled={deleting}
-          >
+          <Button color="secondary" onClick={submitDelete} disabled={deleting}>
             {t('Delete')}
           </Button>
         </DialogActions>
@@ -162,7 +144,7 @@ const WorkspacePopover = ({ workspace }) => {
                 />
               );
             }
-            return <Loader variant="inElement"/>;
+            return <Loader variant="inElement" />;
           }}
         />
       </Drawer>

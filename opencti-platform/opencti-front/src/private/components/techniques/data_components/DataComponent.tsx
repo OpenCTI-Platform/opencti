@@ -81,7 +81,9 @@ const DataComponentFragment = graphql`
   }
 `;
 
-const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }> = ({ data }) => {
+const DataComponent: FunctionComponent<{
+  data: DataComponent_dataComponent$key;
+}> = ({ data }) => {
   const classes = useStyles();
 
   const dataComponent = useFragment(DataComponentFragment, data);
@@ -91,7 +93,9 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
       <StixDomainObjectHeader
         entityType={'Data-Component'}
         stixDomainObject={dataComponent}
-        PopoverComponent={<DataComponentPopover dataComponentId={dataComponent.id}/>}
+        PopoverComponent={
+          <DataComponentPopover dataComponentId={dataComponent.id} />
+        }
       />
       <Grid
         container={true}
@@ -130,7 +134,9 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
         style={{ marginTop: 25 }}
       >
         <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={dataComponent.id} />
+          <StixCoreObjectExternalReferences
+            stixCoreObjectId={dataComponent.id}
+          />
         </Grid>
         <Grid item={true} xs={6}>
           <StixCoreObjectLatestHistory stixCoreObjectId={dataComponent.id} />
@@ -138,7 +144,9 @@ const DataComponent: FunctionComponent<{ data: DataComponent_dataComponent$key }
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={dataComponent.id}
-        defaultMarkings={(dataComponent.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(dataComponent.objectMarking?.edges ?? []).map(
+          (edge) => edge.node,
+        )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <DataComponentEdition dataComponentId={dataComponent.id} />

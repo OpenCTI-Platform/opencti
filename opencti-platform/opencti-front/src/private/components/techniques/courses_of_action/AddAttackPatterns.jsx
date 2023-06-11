@@ -9,7 +9,9 @@ import { Add, Close } from '@mui/icons-material';
 import inject18n from '../../../../components/i18n';
 import SearchInput from '../../../../components/SearchInput';
 import { QueryRenderer } from '../../../../relay/environment';
-import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
+import AddAttackPatternsLines, {
+  addAttackPatternsLinesQuery,
+} from './AddAttackPatternsLines';
 
 const styles = (theme) => ({
   drawerPaper: {
@@ -129,9 +131,7 @@ class AddAttackPatterns extends Component {
                 return (
                   <AddAttackPatternsLines
                     courseOfAction={courseOfAction}
-                    courseOfActionAttackPatterns={
-                      courseOfActionAttackPatterns
-                    }
+                    courseOfActionAttackPatterns={courseOfActionAttackPatterns}
                     courseOfActionPaginationOptions={
                       courseOfActionPaginationOptions
                     }

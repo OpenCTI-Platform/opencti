@@ -23,10 +23,7 @@ const dataComponentDataSourcesRemoveMutation = graphql`
     $id: ID!
     $input: [EditInput]!
   ) {
-    dataComponentFieldPatch(
-      id: $id
-      input: $input
-    ) {
+    dataComponentFieldPatch(id: $id, input: $input) {
       ...DataComponentEditionOverview_dataComponent
       ...DataComponent_dataComponent
     }
@@ -45,13 +42,18 @@ const DataComponentDataSourceFragment = graphql`
 `;
 
 interface DataComponentDataSourcesProps {
-  dataComponent: DataComponentDataSources_dataComponent$key
+  dataComponent: DataComponentDataSources_dataComponent$key;
 }
 
-const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> = ({ dataComponent }) => {
+const DataComponentDataSource: FunctionComponent<
+DataComponentDataSourcesProps
+> = ({ dataComponent }) => {
   const { t } = useFormatter();
 
-  const data: DataComponentDataSources_dataComponent$data = useFragment(DataComponentDataSourceFragment, dataComponent);
+  const data: DataComponentDataSources_dataComponent$data = useFragment(
+    DataComponentDataSourceFragment,
+    dataComponent,
+  );
 
   const dataSourceId: string | undefined = data.dataSource?.id;
 
@@ -71,13 +73,11 @@ const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> 
       <Typography variant="h3" gutterBottom={true} style={{ float: 'left' }}>
         {t('Data source')}
       </Typography>
-      {!dataSourceId
-        && <AddDataSources dataComponentId={data.id} />
-      }
+      {!dataSourceId && <AddDataSources dataComponentId={data.id} />}
       <div className="clearfix" />
       <List style={{ marginTop: -10 }}>
-        {dataSourceId
-          && <ListItem
+        {dataSourceId && (
+          <ListItem
             key={data.dataSource?.id}
             dense={true}
             divider={true}
@@ -96,13 +96,14 @@ const DataComponentDataSource: FunctionComponent<DataComponentDataSourcesProps> 
                 <IconButton
                   aria-label="Remove"
                   onClick={removeDataSource}
-                  size="large">
+                  size="large"
+                >
                   <LinkOff />
                 </IconButton>
               </Security>
             </ListItemSecondaryAction>
           </ListItem>
-        }
+        )}
       </List>
     </div>
   );

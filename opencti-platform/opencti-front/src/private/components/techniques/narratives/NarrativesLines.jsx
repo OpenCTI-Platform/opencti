@@ -32,8 +32,9 @@ class NarrativesLinesComponent extends Component {
     const filterSubnarrative = (n) => n.isSubNarrative === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || n.description.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
-      || propOr('', 'subnarratives_text', n)
+      || (n.description ?? '').toLowerCase().indexOf(keyword.toLowerCase())
+        !== -1
+      || (n.subnarratives_text ?? '')
         .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;
     const narratives = pipe(

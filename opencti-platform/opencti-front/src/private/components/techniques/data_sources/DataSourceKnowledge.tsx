@@ -25,13 +25,13 @@ const DataSourceKnowledgeFragment = graphql`
 `;
 
 interface DataSourceKnowledgeComponentProps {
-  data: DataSourceKnowledge_dataSource$key
-  enableReferences: boolean
+  data: DataSourceKnowledge_dataSource$key;
+  enableReferences: boolean;
 }
 
-const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeComponentProps> = ({
-  data,
-}) => {
+const DataSourceKnowledgeComponent: FunctionComponent<
+DataSourceKnowledgeComponentProps
+> = ({ data }) => {
   const classes = styles();
 
   const dataSource = useFragment(DataSourceKnowledgeFragment, data);
@@ -47,10 +47,7 @@ const DataSourceKnowledgeComponent: FunctionComponent<DataSourceKnowledgeCompone
         <Route
           path="/dashboard/techniques/data_sources/:dataSourceId/knowledge/relations/:relationId"
           render={(routeProps) => (
-            <StixCoreRelationship
-              entityId={dataSource.id}
-              {...routeProps}
-            />
+            <StixCoreRelationship entityId={dataSource.id} {...routeProps} />
           )}
         />
       </Switch>

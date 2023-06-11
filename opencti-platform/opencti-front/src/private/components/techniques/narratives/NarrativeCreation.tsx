@@ -106,26 +106,26 @@ const narrativeMutation = graphql`
 `;
 
 interface NarrativeAddInput {
-  name: string
-  description: string
-  confidence: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  confidence: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface NarrativeFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   paginationOptions?: NarrativesLinesPaginationQuery$variables;
   display?: boolean;
   contextual?: boolean;
   onReset?: () => void;
   inputValue?: string;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
 }
 
@@ -144,13 +144,16 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const narrativeValidator = useSchemaCreationValidation('Narrative', basicShape);
+  const narrativeValidator = useSchemaCreationValidation(
+    'Narrative',
+    basicShape,
+  );
 
   const initialValues: NarrativeAddInput = {
     name: inputValue ?? '',
     description: '',
     confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     objectLabel: [],
     externalReferences: [],
@@ -159,7 +162,10 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
 
   const [commit] = useMutation<NarrativeCreationMutation>(narrativeMutation);
 
-  const onSubmit: FormikConfig<NarrativeAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<NarrativeAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: NarrativeCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -193,86 +199,85 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     });
   };
 
-  return <Formik
+  return (
+    <Formik
       initialValues={initialValues}
       validationSchema={narrativeValidator}
       onSubmit={onSubmit}
-      onReset={onReset}>
-        {({
-          submitForm,
-          handleReset,
-          isSubmitting,
-          setFieldValue,
-          values,
-        }) => (
-            <Form style={{ margin: '20px 0 20px 0' }}>
-                <Field
-                    component={TextField}
-                    variant="standard"
-                    name="name"
-                    label={t('Name')}
-                    fullWidth={true}
-                    detectDuplicate={['Narrative']}
-                />
-                <Field
-                    component={MarkDownField}
-                    name="description"
-                    label={t('Description')}
-                    fullWidth={true}
-                    multiline={true}
-                    rows="4"
-                    style={{ marginTop: 20 }}
-                />
-                <CreatedByField
-                    name="createdBy"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                />
-                <ObjectLabelField
-                    name="objectLabel"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
-                />
-                <ObjectMarkingField
-                    name="objectMarking"
-                    style={fieldSpacingContainerStyle}
-                />
-                <ExternalReferencesField
-                    name="externalReferences"
-                    style={fieldSpacingContainerStyle}
-                    setFieldValue={setFieldValue}
-                    values={values.externalReferences}
-                />
-                <Field
-                  component={SimpleFileUpload}
-                  name="file"
-                  label={t('Associated file')}
-                  FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-                  InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-                  InputProps={{ fullWidth: true, variant: 'standard' }}
-                  fullWidth={true}
-                />
-                <div className={classes.buttons}>
-                    <Button
-                        variant="contained"
-                        onClick={handleReset}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}>
-                        {t('Cancel')}
-                    </Button>
-                    <Button
-                        variant="contained"
-                        color="secondary"
-                        onClick={submitForm}
-                        disabled={isSubmitting}
-                        classes={{ root: classes.button }}>
-                        {t('Create')}
-                    </Button>
-                </div>
-            </Form>
-        )}
-    </Formik>;
+      onReset={onReset}
+    >
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Narrative']}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
+            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
+            InputProps={{ fullWidth: true, variant: 'standard' }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
+  );
 };
 
 const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
@@ -297,18 +302,22 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
   const renderClassic = () => {
     return (
       <div>
-        <Fab onClick={handleOpen}
+        <Fab
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButton}>
+          className={classes.createButton}
+        >
           <Add />
         </Fab>
-        <Drawer open={open}
+        <Drawer
+          open={open}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}
           classes={{ paper: classes.drawerPaper }}
-          onClose={handleClose}>
+          onClose={handleClose}
+        >
           <div className={classes.header}>
             <IconButton
               aria-label="Close"
@@ -322,8 +331,12 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
             <Typography variant="h6">{t('Create a narrative')}</Typography>
           </div>
           <div className={classes.container}>
-              <NarrativeCreationForm inputValue={inputValue} updater={updater}
-                                     onCompleted={handleClose} onReset={handleClose}/>
+            <NarrativeCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
           </div>
         </Drawer>
       </div>
@@ -333,18 +346,24 @@ const NarrativeCreation: FunctionComponent<NarrativeFormProps> = ({
   const renderContextual = () => {
     return (
       <div style={{ display: display ? 'block' : 'none' }}>
-        <Fab onClick={handleOpen}
+        <Fab
+          onClick={handleOpen}
           color="secondary"
           aria-label="Add"
-          className={classes.createButtonContextual}>
+          className={classes.createButtonContextual}
+        >
           <Add />
         </Fab>
         <Dialog open={open} onClose={handleClose} PaperProps={{ elevation: 1 }}>
-            <DialogTitle>{t('Create a narrative')}</DialogTitle>
-            <DialogContent>
-                <NarrativeCreationForm inputValue={inputValue} updater={updater}
-                                       onCompleted={handleClose} onReset={handleClose}/>
-            </DialogContent>
+          <DialogTitle>{t('Create a narrative')}</DialogTitle>
+          <DialogContent>
+            <NarrativeCreationForm
+              inputValue={inputValue}
+              updater={updater}
+              onCompleted={handleClose}
+              onReset={handleClose}
+            />
+          </DialogContent>
         </Dialog>
       </div>
     );

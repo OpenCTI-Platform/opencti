@@ -14,7 +14,9 @@ import {
   AddAttackPatternsLinesToDataComponentQuery,
   AddAttackPatternsLinesToDataComponentQuery$variables,
 } from './__generated__/AddAttackPatternsLinesToDataComponentQuery.graphql';
-import AddAttackPatternsLines, { addAttackPatternsLinesQuery } from './AddAttackPatternsLines';
+import AddAttackPatternsLines, {
+  addAttackPatternsLinesQuery,
+} from './AddAttackPatternsLines';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -61,7 +63,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const AddAttackPatterns: FunctionComponent<{ dataComponent: DataComponentAttackPatterns_dataComponent$data }> = ({ dataComponent }) => {
+const AddAttackPatterns: FunctionComponent<{
+  dataComponent: DataComponentAttackPatterns_dataComponent$data;
+}> = ({ dataComponent }) => {
   const { t } = useFormatter();
   const classes = useStyles();
 
@@ -79,7 +83,10 @@ const AddAttackPatterns: FunctionComponent<{ dataComponent: DataComponentAttackP
     setSearch('');
   };
 
-  const queryRef = useQueryLoading<AddAttackPatternsLinesToDataComponentQuery>(addAttackPatternsLinesQuery, { ...paginationOptions });
+  const queryRef = useQueryLoading<AddAttackPatternsLinesToDataComponentQuery>(
+    addAttackPatternsLinesQuery,
+    { ...paginationOptions },
+  );
 
   return (
     <div>
@@ -123,7 +130,9 @@ const AddAttackPatterns: FunctionComponent<{ dataComponent: DataComponentAttackP
         </div>
         <div className={classes.container}>
           {queryRef && (
-            <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
               <AddAttackPatternsLines
                 dataComponent={dataComponent}
                 queryRef={queryRef}

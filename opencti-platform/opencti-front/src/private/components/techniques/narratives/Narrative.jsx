@@ -82,7 +82,9 @@ class NarrativeComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={narrative.id}
-          defaultMarkings={(narrative.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(narrative.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <NarrativeEdition narrativeId={narrative.id} />

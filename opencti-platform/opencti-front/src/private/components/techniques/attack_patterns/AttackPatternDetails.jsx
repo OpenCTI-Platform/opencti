@@ -32,11 +32,7 @@ const styles = () => ({
 
 class AttackPatternDetailsComponent extends Component {
   render() {
-    const {
-      t,
-      classes,
-      attackPattern,
-    } = this.props;
+    const { t, classes, attackPattern } = this.props;
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
@@ -82,23 +78,25 @@ class AttackPatternDetailsComponent extends Component {
                   {t('Platforms')}
                 </Typography>
                 <List>
-                  {propOr([], 'x_mitre_platforms', attackPattern)
-                    .map(
-                      (platform) => (
-                        <ListItem key={platform} dense={true} divider={true}>
-                          <ListItemIcon>
-                            <SettingsApplications />
-                          </ListItemIcon>
-                          <ListItemText primary={platform} />
-                        </ListItem>
-                      ),
-                    )}
+                  {propOr([], 'x_mitre_platforms', attackPattern).map(
+                    (platform) => (
+                      <ListItem key={platform} dense={true} divider={true}>
+                        <ListItemIcon>
+                          <SettingsApplications />
+                        </ListItemIcon>
+                        <ListItemText primary={platform} />
+                      </ListItem>
+                    ),
+                  )}
                 </List>
               </div>
               <AttackPatternSubAttackPatterns attackPattern={attackPattern} />
             </Grid>
             <Grid item={true} xs={6}>
-              <StixCoreObjectKillChainPhasesView killChainPhasesEdges={attackPattern.killChainPhases.edges} firstLine={true} />
+              <StixCoreObjectKillChainPhasesView
+                killChainPhasesEdges={attackPattern.killChainPhases.edges}
+                firstLine={true}
+              />
               <Typography
                 variant="h3"
                 gutterBottom={true}
@@ -118,17 +116,16 @@ class AttackPatternDetailsComponent extends Component {
                 {t('Required permissions')}
               </Typography>
               <List>
-                {propOr([], 'x_mitre_permissions_required', attackPattern)
-                  .map(
-                    (permission) => (
-                      <ListItem key={permission} dense={true} divider={true}>
-                        <ListItemIcon>
-                          <PermIdentity />
-                        </ListItemIcon>
-                        <ListItemText primary={permission} />
-                      </ListItem>
-                    ),
-                  )}
+                {propOr([], 'x_mitre_permissions_required', attackPattern).map(
+                  (permission) => (
+                    <ListItem key={permission} dense={true} divider={true}>
+                      <ListItemIcon>
+                        <PermIdentity />
+                      </ListItemIcon>
+                      <ListItemText primary={permission} />
+                    </ListItem>
+                  ),
+                )}
               </List>
               <AttackPatternCoursesOfAction attackPattern={attackPattern} />
               <AttackPatternDataComponents attackPattern={attackPattern} />

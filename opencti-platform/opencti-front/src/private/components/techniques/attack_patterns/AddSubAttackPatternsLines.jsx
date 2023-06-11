@@ -28,7 +28,7 @@ class AddSubAttackPatternsLinesContainer extends Component {
         relationshipType={'subtechnique-of'}
         availableDatas={data?.attackPatterns}
         existingDatas={attackPatternSubAttackPatterns}
-        updaterOptions={ { path: 'subAttackPatterns' } }
+        updaterOptions={{ path: 'subAttackPatterns' }}
         isRelationReversed={true}
       />
     );

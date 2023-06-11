@@ -15,7 +15,9 @@ import AddDataComponents from './AddDataComponents';
 import { addDataComponentsMutationRelationDelete } from './AddDataComponentsLines';
 import { DataSourceDataComponents_dataSource$data } from './__generated__/DataSourceDataComponents_dataSource.graphql';
 
-const DataSourceDataComponentsComponent: FunctionComponent<{ dataSource: DataSourceDataComponents_dataSource$data }> = ({ dataSource }) => {
+const DataSourceDataComponentsComponent: FunctionComponent<{
+  dataSource: DataSourceDataComponents_dataSource$data;
+}> = ({ dataSource }) => {
   const { t } = useFormatter();
 
   const [commit] = useMutation(addDataComponentsMutationRelationDelete);
@@ -34,22 +36,25 @@ const DataSourceDataComponentsComponent: FunctionComponent<{ dataSource: DataSou
       </Typography>
       <AddDataComponents dataSource={dataSource} />
       <div className="clearfix" />
-      {dataSource.dataComponents
-        && <List style={{ marginTop: -10 }}>
-          {dataSource.dataComponents.edges?.map((node) => node?.node)
+      {dataSource.dataComponents && (
+        <List style={{ marginTop: -10 }}>
+          {dataSource.dataComponents.edges
+            ?.map((node) => node?.node)
             .map((dataComponent, idx) => {
               if (!dataComponent) {
-                return <ListItemText
-                  key={idx}
-                  primary={
-                    <Skeleton
-                      animation="wave"
-                      variant="rectangular"
-                      width="90%"
-                      height="100%"
-                    />
-                  }
-                />;
+                return (
+                  <ListItemText
+                    key={idx}
+                    primary={
+                      <Skeleton
+                        animation="wave"
+                        variant="rectangular"
+                        width="90%"
+                        height="100%"
+                      />
+                    }
+                  />
+                );
               }
               return (
                 <ListItem
@@ -79,7 +84,7 @@ const DataSourceDataComponentsComponent: FunctionComponent<{ dataSource: DataSou
               );
             })}
         </List>
-      }
+      )}
     </div>
   );
 };

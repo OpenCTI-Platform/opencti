@@ -13,9 +13,7 @@ import { SimpleFileUpload } from 'formik-mui';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { FormikConfig } from 'formik/dist/types';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  handleErrorInForm,
-} from '../../../../relay/environment';
+import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
 import KillChainPhasesField from '../../common/form/KillChainPhasesField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -32,9 +30,7 @@ import {
   AttackPatternCreationMutation,
   AttackPatternCreationMutation$variables,
 } from './__generated__/AttackPatternCreationMutation.graphql';
-import {
-  AttackPatternsLinesPaginationQuery$variables,
-} from './__generated__/AttackPatternsLinesPaginationQuery.graphql';
+import { AttackPatternsLinesPaginationQuery$variables } from './__generated__/AttackPatternsLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -104,29 +100,31 @@ const attackPatternMutation = graphql`
 `;
 
 interface AttackPatternAddInput {
-  name: string
-  description: string
-  x_mitre_id: string
-  confidence: number
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  killChainPhases: Option[]
-  objectLabel: Option[]
-  externalReferences: { value: string }[]
-  file: File | undefined
+  name: string;
+  description: string;
+  x_mitre_id: string;
+  confidence: number;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  killChainPhases: Option[];
+  objectLabel: Option[];
+  externalReferences: { value: string }[];
+  file: File | undefined;
 }
 
 interface AttackPatternFormProps {
-  updater: (store: RecordSourceSelectorProxy, key: string) => void
+  updater: (store: RecordSourceSelectorProxy, key: string) => void;
   onReset?: () => void;
   onCompleted?: () => void;
-  defaultCreatedBy?: { value: string, label: string }
-  defaultMarkingDefinitions?: { value: string, label: string }[]
+  defaultCreatedBy?: { value: string; label: string };
+  defaultMarkingDefinitions?: { value: string; label: string }[];
   defaultConfidence?: number;
   inputValue?: string;
 }
 
-export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps> = ({
+export const AttackPatternCreationForm: FunctionComponent<
+AttackPatternFormProps
+> = ({
   updater,
   onReset,
   onCompleted,
@@ -151,7 +149,7 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     x_mitre_id: '',
     description: '',
     confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
+    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
     objectMarking: defaultMarkingDefinitions ?? [],
     killChainPhases: [],
     objectLabel: [],
@@ -159,9 +157,14 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
     file: undefined,
   };
 
-  const [commit] = useMutation<AttackPatternCreationMutation>(attackPatternMutation);
+  const [commit] = useMutation<AttackPatternCreationMutation>(
+    attackPatternMutation,
+  );
 
-  const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<AttackPatternAddInput>['onSubmit'] = (
+    values,
+    { setSubmitting, setErrors, resetForm },
+  ) => {
     const input: AttackPatternCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -289,7 +292,11 @@ export const AttackPatternCreationForm: FunctionComponent<AttackPatternFormProps
   );
 };
 
-const AttackPatternCreation = ({ paginationOptions }: { paginationOptions: AttackPatternsLinesPaginationQuery$variables }) => {
+const AttackPatternCreation = ({
+  paginationOptions,
+}: {
+  paginationOptions: AttackPatternsLinesPaginationQuery$variables;
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
