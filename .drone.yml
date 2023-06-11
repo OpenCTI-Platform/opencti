@@ -8,18 +8,24 @@ steps:
     commands:
       - sleep 100
   - name: client-test-38
-    image: python:3.11
+    image: python:3.8
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
   - name: client-test-39
-    image: python:3.11
+    image: python:3.9
     commands:
       - pip3 install -r requirements.txt --user
       - pip3 install -r test-requirements.txt --user
       - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
   - name: client-test-310
+    image: python:3.10
+    commands:
+      - pip3 install -r requirements.txt --user
+      - pip3 install -r test-requirements.txt --user
+      - python3 -m pytest --no-header -vv --disable-warnings --cov=pycti --drone
+  - name: client-test-311
     image: python:3.11
     commands:
       - pip3 install -r requirements.txt --user
