@@ -3,18 +3,16 @@ import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage'
 import type { Filters } from '../../../components/list_lines';
 import ListLines from '../../../components/list_lines/ListLines';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
-import NotificationsLines, {
-  notificationsLinesQuery,
-} from './notifications/NotificationsLines';
+import NotificationsLines, { notificationsLinesQuery } from './notifications/NotificationsLines';
 import {
   NotificationsLinesPaginationQuery,
   NotificationsLinesPaginationQuery$variables,
 } from './notifications/__generated__/NotificationsLinesPaginationQuery.graphql';
 import { NotificationLineDummy } from './notifications/NotificationLine';
-import ToolBar from './notifications/ToolBar';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import { NotificationLine_node$data } from './notifications/__generated__/NotificationLine_node.graphql';
 import useAuth from '../../../utils/hooks/useAuth';
+import NotificationsToolBar from './notifications/NotificationsToolBar';
 
 export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-notifications';
 
@@ -118,13 +116,14 @@ const Notifications: FunctionComponent = () => {
               onToggleEntity={onToggleEntity}
               selectAll={selectAll}
             />
-            <ToolBar
+            <NotificationsToolBar
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
               numberOfSelectedElements={numberOfSelectedElements}
               handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
               filters={{
+                ...filters,
                 entity_type: [{ id: 'Notification', value: 'Notification' }],
                 user_id: [{ id: me.id, value: me.name }],
               }}

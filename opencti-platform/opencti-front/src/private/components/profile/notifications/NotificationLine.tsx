@@ -336,9 +336,9 @@ NotificationLineProps
             disabled={updating}
             onClick={() => handleRead(!data.is_read)}
             size="large"
-            color={data.is_read ? 'warning' : 'success'}
+            color={data.is_read ? 'success' : 'warning'}
           >
-            {data.is_read ? <UnpublishedOutlined /> : <CheckCircleOutlined />}
+            {data.is_read ? <CheckCircleOutlined /> : <UnpublishedOutlined />}
           </IconButton>
           <IconButton
             disabled={updating}
