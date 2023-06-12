@@ -46,9 +46,7 @@ const SwitchField = (props) => {
               <div style={{ display: 'flex' }}>
                 <span>{props.label}</span>
                 <Tooltip
-                  title={t(
-                    'All objects matching the filters that have not been updated since this amount of days will be deleted',
-                  )}
+                  title={t(tooltip)}
                 >
                   <InformationOutline
                     fontSize="small"
