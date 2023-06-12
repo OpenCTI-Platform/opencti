@@ -13024,7 +13024,9 @@ type Mutation {
   ### TASK
   deleteBackgroundTask(id: ID!): ID! @auth(for: [KNOWLEDGE_KNUPDATE])
   listTaskAdd(input: ListTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
+  listNotificationTaskAdd(input: ListTaskAddInput!): Task! @auth
   queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask! @auth(for: [KNOWLEDGE_KNUPDATE])
+  queryNotificationTaskAdd(input: QueryTaskAddInput!): Task! @auth
 
   ### RETENTION RULE
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule! @auth(for: [SETTINGS])

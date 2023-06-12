@@ -12,6 +12,7 @@ import { ENTITY_TYPE_NOTIFICATION } from '../modules/notification/notification-t
 import { isStixCoreObject } from '../schema/stixCoreObject';
 import { isStixCoreRelationship } from '../schema/stixCoreRelationship';
 import { publishUserAction } from '../listener/UserActionListener';
+import { storeLoadById } from '../database/middleware-loader';
 
 export const ACTION_TYPE_DELETE = 'DELETE';
 export const TASK_TYPE_LIST = 'LIST';
@@ -50,9 +51,8 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber) => 
   };
 };
 
-export const createListTask = async (user, input) => {
+const buildListTask = async (user, input) => {
   const { actions, ids } = input;
-  checkActionValidity(user, actions);
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
   const listTask = { ...task, actions, task_ids: ids };
   await publishUserAction({
@@ -64,6 +64,34 @@ export const createListTask = async (user, input) => {
     context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
+  return listTask;
+};
+
+export const createListTask = async (user, input) => {
+  const { actions } = input;
+  checkActionValidity(user, actions);
+  const listTask = await buildListTask(user, input);
+  return listTask;
+};
+
+const isNotification = async (context, user, narrativeId) => {
+  return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION)
+    .then((data) => {
+      if (data) {
+        return true;
+      }
+      return false;
+    });
+};
+
+export const createNotificationListTask = async (context, user, input) => {
+  const { ids } = input;
+  const areNotifications = await Promise.all(ids.map((id) => isNotification(context, user, id)));
+  // the list task should be on notifications (else: call createListTask that check action validity)
+  if (areNotifications.some((n) => !n)) {
+    throw Error('The task should concern notifications.');
+  }
+  const listTask = await buildListTask(user, input);
   return listTask;
 };
 

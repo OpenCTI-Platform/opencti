@@ -11906,6 +11906,7 @@ export type Mutation = {
   languageFieldPatch?: Maybe<Language>;
   languageRelationAdd?: Maybe<StixRefRelationship>;
   languageRelationDelete?: Maybe<Language>;
+  listNotificationTaskAdd: Task;
   listTaskAdd: BackgroundTask;
   locationAdd?: Maybe<Location>;
   locationEdit?: Maybe<LocationEditMutations>;
@@ -11948,6 +11949,7 @@ export type Mutation = {
   pingConnector?: Maybe<Connector>;
   positionAdd?: Maybe<Position>;
   positionEdit?: Maybe<PositionEditMutations>;
+  queryNotificationTaskAdd: Task;
   queryTaskAdd: BackgroundTask;
   regionAdd?: Maybe<Region>;
   regionEdit?: Maybe<RegionEditMutations>;
@@ -12662,6 +12664,11 @@ export type MutationLanguageRelationDeleteArgs = {
 };
 
 
+export type MutationListNotificationTaskAddArgs = {
+  input: ListTaskAddInput;
+};
+
+
 export type MutationListTaskAddArgs = {
   input: ListTaskAddInput;
 };
@@ -12871,6 +12878,11 @@ export type MutationPositionAddArgs = {
 
 export type MutationPositionEditArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationQueryNotificationTaskAddArgs = {
+  input: QueryTaskAddInput;
 };
 
 
@@ -30967,6 +30979,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   languageFieldPatch?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageFieldPatchArgs, 'id' | 'input'>>;
   languageRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationLanguageRelationAddArgs, 'id' | 'input'>>;
   languageRelationDelete?: Resolver<Maybe<ResolversTypes['Language']>, ParentType, ContextType, RequireFields<MutationLanguageRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
+  listNotificationTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationListNotificationTaskAddArgs, 'input'>>;
   listTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationListTaskAddArgs, 'input'>>;
   locationAdd?: Resolver<Maybe<ResolversTypes['Location']>, ParentType, ContextType, RequireFields<MutationLocationAddArgs, 'input'>>;
   locationEdit?: Resolver<Maybe<ResolversTypes['LocationEditMutations']>, ParentType, ContextType, RequireFields<MutationLocationEditArgs, 'id'>>;
@@ -31009,6 +31022,7 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   pingConnector?: Resolver<Maybe<ResolversTypes['Connector']>, ParentType, ContextType, RequireFields<MutationPingConnectorArgs, 'id'>>;
   positionAdd?: Resolver<Maybe<ResolversTypes['Position']>, ParentType, ContextType, RequireFields<MutationPositionAddArgs, 'input'>>;
   positionEdit?: Resolver<Maybe<ResolversTypes['PositionEditMutations']>, ParentType, ContextType, RequireFields<MutationPositionEditArgs, 'id'>>;
+  queryNotificationTaskAdd?: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<MutationQueryNotificationTaskAddArgs, 'input'>>;
   queryTaskAdd?: Resolver<ResolversTypes['BackgroundTask'], ParentType, ContextType, RequireFields<MutationQueryTaskAddArgs, 'input'>>;
   regionAdd?: Resolver<Maybe<ResolversTypes['Region']>, ParentType, ContextType, RequireFields<MutationRegionAddArgs, 'input'>>;
   regionEdit?: Resolver<Maybe<ResolversTypes['RegionEditMutations']>, ParentType, ContextType, RequireFields<MutationRegionEditArgs, 'id'>>;

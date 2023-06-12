@@ -114,9 +114,8 @@ export const createRuleTask = async (context, user, ruleDefinition, input) => {
   return ruleTask;
 };
 
-export const createQueryTask = async (context, user, input) => {
+const buildQueryTask = async (context, user, input) => {
   const { actions, filters, excluded_ids = [], search = null } = input;
-  checkActionValidity(user, actions);
   const queryData = await executeTaskQuery(context, user, filters, search);
   const countExpected = queryData.pageInfo.globalCount - excluded_ids.length;
   const task = createDefaultTask(user, input, TASK_TYPE_QUERY, countExpected);
@@ -130,6 +129,24 @@ export const createQueryTask = async (context, user, input) => {
     context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: queryTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
+  return queryTask;
+};
+
+export const createQueryTask = async (context, user, input) => {
+  const { actions } = input;
+  checkActionValidity(user, actions);
+  const queryTask = await buildQueryTask(context, user, input);
+  return queryTask;
+};
+
+export const createNotificationQueryTask = async (context, user, input) => {
+  const { filters } = input;
+  const entityTypes = JSON.parse(filters).entity_type;
+  // the query task should be on notifications (else: call createQueryTask that check action validity)
+  if (!entityTypes.map((n) => n.id).includes('Notification')) {
+    throw Error('The task should concern notifications.');
+  }
+  const queryTask = await buildQueryTask(context, user, input);
   return queryTask;
 };
 

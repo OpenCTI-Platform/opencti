@@ -8340,7 +8340,9 @@ type Mutation {
   workDelete(connectorId: String!): Boolean
   deleteBackgroundTask(id: ID!): ID!
   listTaskAdd(input: ListTaskAddInput!): BackgroundTask!
+  listNotificationTaskAdd(input: ListTaskAddInput!): Task!
   queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask!
+  queryNotificationTaskAdd(input: QueryTaskAddInput!): Task!
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
