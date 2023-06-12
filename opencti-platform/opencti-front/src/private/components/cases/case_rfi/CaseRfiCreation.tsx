@@ -197,7 +197,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       severity: '',
       priority: '',
       caseTemplates: [],
-      created: '' as unknown as Date,
+      created: null as unknown as Date,
       information_types: [],
       createdBy: defaultCreatedBy ?? ('' as unknown as Option),
       objectMarking: defaultMarkingDefinitions ?? [],

@@ -211,11 +211,11 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues(
+  const initialValues = useDefaultValues<ReportAddInput>(
     REPORT_TYPE,
     {
       name: inputValue ?? '',
-      published: '',
+      published: null as unknown as Date,
       report_types: [],
       confidence: defaultConfidence,
       description: '',
@@ -230,7 +230,7 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<ReportAddInput>
       initialValues={initialValues}
       validationSchema={reportValidator}
       onSubmit={onSubmit}

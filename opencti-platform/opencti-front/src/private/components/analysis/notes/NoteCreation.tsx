@@ -218,7 +218,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   const initialValues = useDefaultValues<NoteAddInput>(
     NOTE_TYPE,
     {
-      created: '' as unknown as Date,
+      created: null as unknown as Date,
       attribute_abstract: '',
       content: inputValue || '',
       note_types: [],
@@ -233,7 +233,7 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   );
 
   return (
-    <Formik
+    <Formik<NoteAddInput>
       initialValues={initialValues}
       validationSchema={noteValidator}
       onSubmit={onSubmit}

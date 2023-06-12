@@ -207,7 +207,7 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       severity: '',
       caseTemplates: [],
       response_types: [],
-      created: '' as unknown as Date,
+      created: null as unknown as Date,
       priority: '',
       createdBy: defaultCreatedBy ?? ('' as unknown as Option),
       objectMarking: defaultMarkingDefinitions ?? [],

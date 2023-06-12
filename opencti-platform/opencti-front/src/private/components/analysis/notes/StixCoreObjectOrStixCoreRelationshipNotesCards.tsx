@@ -286,7 +286,7 @@ const [more, setMore] = useState<boolean>(false);  const initialValues = useDefa
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            <Formik
+            <Formik<NoteAddInput>
               initialValues={initialValues}
               validationSchema={noteValidator}
               onSubmit={onSubmit}

@@ -8,7 +8,7 @@ import ListItemText from '@mui/material/ListItemText';
 import { graphql, useLazyLoadQuery } from 'react-relay';
 import { isEmptyField } from '../../../../../utils/utils';
 import { useFormatter } from '../../../../../components/i18n';
-import { EntitySettingHiddenInRolesQuery } from '../__generated__/EntitySettingHiddenInRolesQuery.graphql';
+import { EntitySettingHiddenInRolesQuery } from './__generated__/EntitySettingHiddenInRolesQuery.graphql';
 
 const entitySettingHiddenInRolesQuery = graphql`
     query EntitySettingHiddenInRolesQuery($search: String) {

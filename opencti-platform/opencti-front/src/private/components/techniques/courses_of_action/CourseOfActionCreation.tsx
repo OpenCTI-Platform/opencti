@@ -197,6 +197,7 @@ CourseOfActionFormProps
     {
       name: inputValue ?? '',
       description: '',
+      confidence: undefined,
       createdBy: defaultCreatedBy ?? ('' as unknown as Option),
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],

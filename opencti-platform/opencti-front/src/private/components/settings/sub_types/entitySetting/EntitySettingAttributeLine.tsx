@@ -9,15 +9,13 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { KeyboardArrowRightOutlined, MoreVertOutlined, ShortTextOutlined } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import { DataColumns } from '../../../../../components/list_lines';
-import {
-  EntitySettingAttributeLine_attribute$key,
-} from '../__generated__/EntitySettingAttributeLine_attribute.graphql';
 import { Theme } from '../../../../../components/Theme';
-import {
-  EntitySettingAttributes_entitySetting$data,
-} from '../__generated__/EntitySettingAttributes_entitySetting.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import EntitySettingAttributeEdition from './EntitySettingAttributeEdition';
+import { EntitySettingAttributeLine_attribute$key } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
+import {
+  EntitySettingAttributes_entitySetting$data,
+} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {

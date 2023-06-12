@@ -1,11 +1,11 @@
 import React from 'react';
 import { DataColumns } from '../../../../../components/list_lines';
-import {
-  EntitySettingAttributes_entitySetting$data,
-} from '../__generated__/EntitySettingAttributes_entitySetting.graphql';
 import EntitySettingAttributeLine, { EntitySettingAttributeLineDummy } from './EntitySettingAttributeLine';
 import ListLinesContent from '../../../../../components/list_lines/ListLinesContent';
 import { useFormatter } from '../../../../../components/i18n';
+import {
+  EntitySettingAttributes_entitySetting$data,
+} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 
 interface AttributeNode {
   label: string | null,

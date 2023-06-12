@@ -233,7 +233,7 @@ DataComponentEditionOverviewComponentProps
     createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
     x_opencti_workflow_id: convertStatus(t, dataComponent) as Option,
-    confidence: dataComponent.confidence,
+    confidence: dataComponent.confidence ?? undefined,
     references: [],
   };
   return (

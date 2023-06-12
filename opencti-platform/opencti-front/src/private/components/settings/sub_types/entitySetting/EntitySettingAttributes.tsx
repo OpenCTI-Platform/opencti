@@ -5,11 +5,11 @@ import ListLines from '../../../../../components/list_lines/ListLines';
 import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import {
-  EntitySettingAttributes_entitySetting$key,
-} from '../__generated__/EntitySettingAttributes_entitySetting.graphql';
-import {
   EntitySettingAttributeLine_attribute$data,
-} from '../__generated__/EntitySettingAttributeLine_attribute.graphql';
+} from './__generated__/EntitySettingAttributeLine_attribute.graphql';
+import {
+  EntitySettingAttributes_entitySetting$key,
+} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
 import {
   DataSourcesLinesPaginationQuery$variables,
@@ -105,9 +105,7 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       },
     },
   };
-  const datas = entitySetting.attributesDefinitions.map((attr: {
-    node: { label: string | null, name: string, type: string, scale: string | null }
-  }) => ({ node: attr }));
+  const datas = entitySetting.attributesDefinitions.map((attr: { label: string | null, name: string, type: string, scale: string | null }) => ({ node: attr }));
 
   return (
     <ListLines

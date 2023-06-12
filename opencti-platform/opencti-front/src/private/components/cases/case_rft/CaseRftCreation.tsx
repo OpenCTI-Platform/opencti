@@ -196,7 +196,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       confidence: defaultConfidence,
       description: '',
       content: '',
-      created: '' as unknown as Date,
+      created: null as unknown as Date,
       takedown_types: [],
       caseTemplates: [],
       severity: '',

@@ -175,7 +175,7 @@ export const revoked: AttributeDefinition = {
 export const confidence: AttributeDefinition = {
   name: 'confidence',
   type: 'numeric',
-  mandatoryType: 'customizable',
+  mandatoryType: 'no',
   multiple: false,
   scalable: true,
   upsert: true,

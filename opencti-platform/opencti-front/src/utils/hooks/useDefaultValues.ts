@@ -26,7 +26,7 @@ export const useComputeDefaultValues = (entityType: string, attributeName: strin
   return head(defaultValues)?.id ?? '';
 };
 
-const useDefaultValues = <Values extends FormikValues = FormikValues>(id: string, initialValues: Values) => {
+const useDefaultValues = <Values extends FormikValues>(id: string, initialValues: Values) => {
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
     throw Error(`Invalid type for setting: ${id}`);
@@ -38,7 +38,7 @@ const useDefaultValues = <Values extends FormikValues = FormikValues>(id: string
   defaultValuesAttributes.forEach((attr: { name: string, defaultValues: readonly { id: string, name: string }[] }) => {
     if (attr.name === 'objectMarking') {
       enableDefaultMarking = head(attr.defaultValues)?.id === 'true';
-    } else if (keys.includes(attr.name) && (initialValues[attr.name] === undefined || isEmpty(initialValues[attr.name]))) {
+    } else if (keys.includes(attr.name) && (initialValues[attr.name] === undefined || initialValues[attr.name] === null || isEmpty(initialValues[attr.name]))) {
       defaultValues[attr.name] = useComputeDefaultValues(entitySettings.target_type, attr.name, Array.isArray(initialValues[attr.name]), attr.defaultValues);
     }
   });

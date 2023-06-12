@@ -206,7 +206,7 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
   );
 
   return (
-    <Formik
+    <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}
@@ -366,7 +366,7 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
   );
 
   return (
-    <Formik
+    <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}

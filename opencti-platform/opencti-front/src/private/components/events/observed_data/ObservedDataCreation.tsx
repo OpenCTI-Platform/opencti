@@ -186,8 +186,8 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
     OBSERVED_DATA_TYPE,
     {
       objects: [],
-      first_observed: '' as unknown as Date,
-      last_observed: '' as unknown as Date,
+      first_observed: null as unknown as Date,
+      last_observed: null as unknown as Date,
       number_observed: 1,
       confidence: defaultConfidence,
       createdBy: defaultCreatedBy ?? ('' as unknown as Option),

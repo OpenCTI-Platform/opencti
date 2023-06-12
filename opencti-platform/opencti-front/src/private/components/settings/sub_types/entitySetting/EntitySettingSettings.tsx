@@ -7,12 +7,12 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { InformationOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../../../components/i18n';
-import { EntitySetting_entitySetting$key } from '../__generated__/EntitySetting_entitySetting.graphql';
 import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
 import { SETTINGS_SETACCESSES } from '../../../../../utils/hooks/useGranted';
 import EntitySettingHiddenInRoles from './EntitySettingHiddenInRoles';
 import Security from '../../../../../utils/Security';
+import { EntitySettingSettings_entitySetting$key } from './__generated__/EntitySettingSettings_entitySetting.graphql';
 
 const entitySettingFragment = graphql`
   fragment EntitySettingSettings_entitySetting on EntitySetting {
@@ -35,7 +35,7 @@ export const entitySettingPatch = graphql`
 
 const EntitySettingSettings = ({ entitySettingsData }: { entitySettingsData: SubType_subType$data['settings'] }) => {
   const { t } = useFormatter();
-  const entitySetting = useFragment<EntitySetting_entitySetting$key>(entitySettingFragment, entitySettingsData);
+  const entitySetting = useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, entitySettingsData);
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
