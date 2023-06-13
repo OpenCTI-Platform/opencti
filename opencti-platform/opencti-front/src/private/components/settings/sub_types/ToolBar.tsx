@@ -35,6 +35,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     height: 50,
     overflow: 'hidden',
+    padding: '0 230px 0 0',
   },
   title: {
     flex: '1 1 100%',

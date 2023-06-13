@@ -125,15 +125,21 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
   const regionValidator = useSchemaCreationValidation(REGION_TYPE, basicShape);
   const [commit] = useMutation(regionMutation);
 
   const onSubmit: FormikConfig<RegionAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm },
+    {
+      setSubmitting,
+      resetForm,
+    },
   ) => {
     const input: RegionCreationMutation$variables['input'] = {
       name: values.name,
@@ -168,7 +174,7 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -178,86 +184,103 @@ export const RegionCreationForm: FunctionComponent<RegionFormProps> = ({
 
   return (
     <Formik<RegionAddInput>
-    initialValues={initialValues}
-    validationSchema={regionValidator}
-    onSubmit={onSubmit}
+      initialValues={initialValues}
+      validationSchema={regionValidator}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Region']}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Region']}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
     </Formik>
   );
@@ -280,26 +303,26 @@ const RegionCreation = ({
     <div>
       <Fab
         onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
+        color="secondary"
+        aria-label="Add"
         className={classes.createButton}
       >
         <Add />
       </Fab>
       <Drawer
         open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
-                      className={classes.closeButton}
-                      onClick={handleClose}
-                      size="large"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />

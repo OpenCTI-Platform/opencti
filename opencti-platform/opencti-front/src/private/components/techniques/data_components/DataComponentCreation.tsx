@@ -134,9 +134,13 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    confidence: Yup.number()
+      .nullable(),
   };
   const dataComponentValidator = useSchemaCreationValidation(
     DATA_COMPONENT_TYPE,
@@ -190,7 +194,7 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
     {
       name: inputValue || '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -201,96 +205,113 @@ export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps
 
   return (
     <Formik<DataComponentAddInput>
-    initialValues={initialValues}
-    validationSchema={dataComponentValidator}
-    onSubmit={onSubmit}
+      initialValues={initialValues}
+      validationSchema={dataComponentValidator}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Data-Component']}
-        />
-        <ConfidenceField
-          entityType="Data-Component"
-          containerStyle={fieldSpacingContainerStyle}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Data-Component']}
+          />
+          <ConfidenceField
+            entityType="Data-Component"
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
               classes={{ root: classes.button }}
             >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
     </Formik>
   );
@@ -324,8 +345,8 @@ const DataComponentCreation: FunctionComponent<{
     <div>
       <Fab
         onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
+        color="secondary"
+        aria-label="Add"
         className={classes.createButton}
       >
         <Add />
@@ -335,7 +356,7 @@ const DataComponentCreation: FunctionComponent<{
         anchor="right"
         elevation={1}
         sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
+        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         <div className={classes.header}>

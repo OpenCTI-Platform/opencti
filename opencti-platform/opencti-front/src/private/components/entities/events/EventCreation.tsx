@@ -126,9 +126,13 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    event_types: Yup.array().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    event_types: Yup.array()
+      .nullable(),
     start_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
@@ -143,7 +147,11 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
 
   const onSubmit: FormikConfig<EventAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: EventCreationMutation$variables['input'] = {
       name: values.name,
@@ -188,7 +196,7 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       event_types: [],
       start_time: null,
       stop_time: null,
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -199,107 +207,124 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   return (
     <Formik
       initialValues={initialValues}
-                 validationSchema={eventValidator}
-                 onSubmit={onSubmit}
+      validationSchema={eventValidator}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Event']}
-        />
-        <OpenVocabField
-          label={t('Event types')}
-          type="event-type-ov"
-          name="event_types"
-          containerStyle={fieldSpacingContainerStyle}
-          multiple={true}
-          onChange={(name, value) => setFieldValue(name, value)}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows={4}
-          style={{ marginTop: 20 }}
-        />
-        <Field
-          component={DateTimePickerField}
-          name="start_time"
-          TextFieldProps={{
-            label: t('Start date'),
-            variant: 'standard',
-            fullWidth: true,
-            style: { marginTop: 20 },
-          }}
-        />
-        <Field
-          component={DateTimePickerField}
-          name="stop_time"
-          TextFieldProps={{
-            label: t('End date'),
-            variant: 'standard',
-            fullWidth: true,
-            style: { marginTop: 20 },
-          }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={fieldSpacingContainerStyle}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Event']}
+          />
+          <OpenVocabField
+            label={t('Event types')}
+            type="event-type-ov"
+            name="event_types"
+            containerStyle={fieldSpacingContainerStyle}
+            multiple
+            onChange={setFieldValue}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="start_time"
+            TextFieldProps={{
+              label: t('Start date'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
+          />
+          <Field
+            component={DateTimePickerField}
+            name="stop_time"
+            TextFieldProps={{
+              label: t('End date'),
+              variant: 'standard',
+              fullWidth: true,
+              style: { marginTop: 20 },
+            }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
     </Formik>
   );
@@ -324,8 +349,8 @@ const EventCreation = ({
     <div>
       <Fab
         onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
+        color="secondary"
+        aria-label="Add"
         className={classes.createButton}
       >
         <Add />

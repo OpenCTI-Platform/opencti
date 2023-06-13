@@ -193,7 +193,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
       severity: '',
       source: '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],

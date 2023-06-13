@@ -112,7 +112,7 @@ export const noteCreationMutation = graphql`
 `;
 
 interface NoteAddInput {
-  created: Date
+  created: Date | null
   attribute_abstract: string
   content: string
   note_types: string[]
@@ -218,13 +218,13 @@ export const NoteCreationForm: FunctionComponent<NoteFormProps> = ({
   const initialValues = useDefaultValues<NoteAddInput>(
     NOTE_TYPE,
     {
-      created: null as unknown as Date,
+      created: null,
       attribute_abstract: '',
       content: inputValue || '',
       note_types: [],
       confidence: defaultConfidence,
       likelihood: 50,
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

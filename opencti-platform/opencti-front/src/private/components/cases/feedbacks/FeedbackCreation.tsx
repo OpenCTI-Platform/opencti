@@ -81,7 +81,7 @@ interface FormikFeedbackAddInput {
   name: string
   description: string
   confidence: number | undefined
-  rating: number
+  rating: number | null
   objects: { value: string }[]
   file: File | undefined
   objectLabel: Option[]
@@ -136,13 +136,14 @@ const FeedbackCreation: FunctionComponent<{
     FEEDBACK_TYPE,
     {
       name: `Feedback from ${me.user_email}`,
-      rating: '' as unknown as number,
+      rating: null,
       description: '',
       confidence: undefined,
       objects: [],
       file: undefined,
       objectLabel: [],
     },
+    { rating: 5 },
   );
 
   return (

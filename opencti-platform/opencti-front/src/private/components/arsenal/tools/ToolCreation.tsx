@@ -181,7 +181,7 @@ export const ToolCreationForm: FunctionComponent<ToolFormProps> = ({
     {
       name: inputValue ?? '',
       description: '',
-      createdBy: defaultCreatedBy ?? '' as unknown as Option,
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       killChainPhases: [],
       objectLabel: [],

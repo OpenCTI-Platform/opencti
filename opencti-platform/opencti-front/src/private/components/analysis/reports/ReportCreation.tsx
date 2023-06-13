@@ -113,8 +113,8 @@ const REPORT_TYPE = 'Report';
 interface ReportAddInput {
   name: string
   description: string
-  content: string;
-  published: Date
+  content: string
+  published: Date | null
   confidence: number | undefined
   report_types: string[]
   createdBy: Option | undefined
@@ -215,12 +215,12 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     REPORT_TYPE,
     {
       name: inputValue ?? '',
-      published: null as unknown as Date,
+      published: null,
       report_types: [],
       confidence: defaultConfidence,
       description: '',
       content: '',
-      createdBy: defaultCreatedBy ?? '' as unknown as Option,
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],

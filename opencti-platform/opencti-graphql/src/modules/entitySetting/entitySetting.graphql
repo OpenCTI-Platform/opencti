@@ -22,6 +22,7 @@ type ScaleAttribute {
 
 type DefaultValueAttribute {
   name: String!
+  type: String!
   defaultValues: [DefaultValue!]!
 }
 

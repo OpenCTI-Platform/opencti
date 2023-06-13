@@ -119,14 +119,21 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
   const individualValidator = useSchemaCreationValidation(INDIVIDUAL_TYPE, basicShape);
 
   const [commit] = useMutation<IndividualCreationMutation>(individualMutation);
 
-  const onSubmit: FormikConfig<IndividualAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<IndividualAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    setErrors,
+    resetForm,
+  }) => {
     const input: IndividualCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -164,7 +171,7 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
     {
       name: '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -227,9 +234,20 @@ export const IndividualCreationForm: FunctionComponent<IndividualFormProps> = ({
           component={SimpleFileUpload}
           name="file"
           label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
+          FormControlProps={{
+            style: {
+              marginTop: 20,
+              width: '100%',
+            },
+          }}
+          InputLabelProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          InputProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
           fullWidth={true}
         />
         <div className={classes.buttons}>

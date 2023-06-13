@@ -51,7 +51,7 @@ const EntitySettingHiddenInRoles = ({ targetType }: { targetType: string }) => {
       >
         {t('Hidden in roles')}
       </Typography>
-      <List>
+      <List style={{ paddingTop: 0 }}>
         {isEmptyField(hiddenInRoles) ? <div>{'-'}</div> : (
           <>
             {hiddenInRoles.map((role) => (

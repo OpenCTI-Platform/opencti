@@ -192,7 +192,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       name: inputValue ?? '',
       channel_types: [],
       description: '',
-      createdBy: defaultCreatedBy ?? '' as unknown as Option,
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

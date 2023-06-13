@@ -175,7 +175,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
       name: inputValue ?? '',
       confidence: defaultConfidence,
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

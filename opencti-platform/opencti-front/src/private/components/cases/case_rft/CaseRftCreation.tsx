@@ -102,11 +102,11 @@ interface FormikCaseRftAddInput {
   objectAssignee: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
-  created: Date;
-  takedown_types: string[];
-  severity: string;
-  priority: string;
-  caseTemplates?: Option[];
+  created: Date | null
+  takedown_types: string[]
+  severity: string
+  priority: string
+  caseTemplates?: Option[]
 }
 
 interface CaseRftFormProps {
@@ -196,12 +196,12 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
       confidence: defaultConfidence,
       description: '',
       content: '',
-      created: null as unknown as Date,
+      created: null,
       takedown_types: [],
       caseTemplates: [],
       severity: '',
       priority: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],

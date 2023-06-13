@@ -93,7 +93,7 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         </Typography>
       </div>
       <Grid container={true} spacing={3} style={{ marginBottom: 20 }}>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={12}>
           <div style={{ height: '100%' }}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Configuration')}
@@ -115,7 +115,6 @@ const SubType = ({ data }: { data: SubType_subType$key }) => {
         </Grid>
         <Grid item={true} xs={12} style={{ marginTop: 25 }}>
           <Typography variant="h4" gutterBottom={true} style={{ marginBottom: 25 }}>
-            {/* I18n */}
             {t('Attributes')}
           </Typography>
           <EntitySettingAttributes entitySettingsData={subType.settings}></EntitySettingAttributes>

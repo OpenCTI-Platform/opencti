@@ -231,7 +231,7 @@ export const IndicatorCreationForm: FunctionComponent<IndicatorFormProps> = ({
       valid_from: null,
       valid_until: null,
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       killChainPhases: [],
       objectLabel: [],

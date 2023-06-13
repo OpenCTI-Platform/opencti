@@ -204,7 +204,7 @@ export const InfrastructureCreationForm: FunctionComponent<InfrastructureFormPro
       infrastructure_types: [],
       confidence: defaultConfidence,
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

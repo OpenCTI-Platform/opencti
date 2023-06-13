@@ -127,13 +127,19 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
   const countryValidator = useSchemaCreationValidation(COUNTRY_TYPE, basicShape);
   const [commit] = useMutation<CountryCreationMutation>(countryMutation);
 
-  const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<CountryAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    resetForm,
+  }) => {
     const input: CountryCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -167,7 +173,7 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
     {
       name: '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -236,9 +242,20 @@ export const CountryCreationForm: FunctionComponent<CountryFormProps> = ({
           component={SimpleFileUpload}
           name="file"
           label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
+          FormControlProps={{
+            style: {
+              marginTop: 20,
+              width: '100%',
+            },
+          }}
+          InputLabelProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          InputProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
           fullWidth={true}
         />
         <div className={classes.buttons}>

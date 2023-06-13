@@ -15,7 +15,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesProps {
   stixCoreObjectOrStixCoreRelationshipId: string;
   marginTop?: number;
   isRelationship?: boolean;
-  defaultMarkings?: { id: string; definition: string | null }[];
+  defaultMarkings?: { id: string; definition: string | null, x_opencti_color: string | null }[];
 }
 
 const StixCoreObjectOrStixCoreRelationshipNotes: FunctionComponent<

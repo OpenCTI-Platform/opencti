@@ -25,6 +25,7 @@ export const entitySettingsFragment = graphql`
         }
         defaultValuesAttributes {
           name
+          type
           defaultValues {
             id
             name

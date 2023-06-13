@@ -122,8 +122,11 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
       .nullable(),
@@ -138,7 +141,10 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
   const [commit] = useMutation(administrativeAreaMutation);
   const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm },
+    {
+      setSubmitting,
+      resetForm,
+    },
   ) => {
     const input: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
@@ -177,7 +183,7 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
       description: '',
       latitude: '',
       longitude: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -187,96 +193,113 @@ export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAre
 
   return (
     <Formik<AdministrativeAreaAddInput>
-    initialValues={initialValues}
-    validationSchema={administrativeAreaValidator}
-    onSubmit={onSubmit}
-    onReset={onReset}
-  >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Administrative-Area']}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows={4}
-          style={{ marginTop: 20 }}
-        />
-        <Field
-          component={TextField}
-          variant="standard"
-          name="latitude"
-          label={t('Latitude')}
-          fullWidth={true}
-          style={{ marginTop: 20 }}
-        />
-        <Field
-          component={TextField}
-          variant="standard"
-          name="longitude"
-          label={t('Longitude')}
-          fullWidth={true}
-          style={{ marginTop: 20 }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={fieldSpacingContainerStyle}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={fieldSpacingContainerStyle}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
+      initialValues={initialValues}
+      validationSchema={administrativeAreaValidator}
+      onSubmit={onSubmit}
+      onReset={onReset}
+    >
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Administrative-Area']}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows={4}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="latitude"
+            label={t('Latitude')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          <Field
+            component={TextField}
+            variant="standard"
+            name="longitude"
+            label={t('Longitude')}
+            fullWidth={true}
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={fieldSpacingContainerStyle}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
     </Formik>
   );

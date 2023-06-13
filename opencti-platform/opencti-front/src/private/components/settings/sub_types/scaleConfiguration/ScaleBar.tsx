@@ -1,7 +1,7 @@
 import makeStyles from '@mui/styles/makeStyles';
 import React from 'react';
 import { Theme } from '../../../../../components/Theme';
-import { ScaleConfig, Tick } from './scale';
+import { ScaleConfig } from './scale';
 
 const useStyles = makeStyles<Theme>(() => ({
   scaleBar: {
@@ -14,7 +14,7 @@ const useStyles = makeStyles<Theme>(() => ({
 const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
   const classes = useStyles();
 
-  const ticks = [scale.min, ...scale.ticks] as Array<Tick>;
+  const ticks = [scale.min, ...scale.ticks];
 
   const getTickRange = (tickIndex: number) => {
     if (tickIndex < 0 || ticks.length <= tickIndex) {
@@ -22,7 +22,9 @@ const ScaleBar = ({ scale }: { scale: ScaleConfig }) => {
     }
     const tick = ticks.at(tickIndex);
     const nextTick = tickIndex < ticks.length - 1 ? ticks.at(tickIndex + 1) : scale.max;
-    return !!nextTick && !!tick ? nextTick.value - tick.value : 0;
+    const tickValue = Number.parseInt((tick?.value ?? 0).toString(), 10);
+    const nextTickValue = Number.parseInt((nextTick?.value ?? 0).toString(), 10);
+    return nextTickValue - tickValue;
   };
 
   return (

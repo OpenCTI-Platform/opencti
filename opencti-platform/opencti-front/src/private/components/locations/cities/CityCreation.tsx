@@ -117,15 +117,25 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    latitude: Yup.number().typeError(t('This field must be a number')).nullable(),
-    longitude: Yup.number().typeError(t('This field must be a number')).nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    latitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
+    longitude: Yup.number()
+      .typeError(t('This field must be a number'))
+      .nullable(),
   };
   const cityValidator = useSchemaCreationValidation(CITY_TYPE, basicShape);
   const [commit] = useMutation(cityMutation);
 
-  const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, { setSubmitting, resetForm }) => {
+  const onSubmit: FormikConfig<CityAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    resetForm,
+  }) => {
     const input: CityCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -163,7 +173,7 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
       description: '',
       latitude: '',
       longitude: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -242,9 +252,20 @@ export const CityCreationForm: FunctionComponent<CityFormProps> = ({
           component={SimpleFileUpload}
           name="file"
           label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
+          FormControlProps={{
+            style: {
+              marginTop: 20,
+              width: '100%',
+            },
+          }}
+          InputLabelProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          InputProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
           fullWidth={true}
         />
         <div className={classes.buttons}>

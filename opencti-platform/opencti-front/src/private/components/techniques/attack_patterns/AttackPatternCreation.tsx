@@ -200,7 +200,7 @@ AttackPatternFormProps
       x_mitre_id: '',
       description: '',
       confidence: undefined,
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       killChainPhases: [],
       objectLabel: [],

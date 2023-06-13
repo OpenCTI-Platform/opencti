@@ -4,8 +4,9 @@ import useEntitySettings from './useEntitySettings';
 import useAuth from './useAuth';
 import { Option } from '../../private/components/common/form/ReferenceField';
 import useVocabularyCategory from './useVocabularyCategory';
+import { isEmptyField } from '../utils';
 
-export const useComputeDefaultValues = (entityType: string, attributeName: string, multiple: boolean, defaultValues: readonly { id: string, name: string }[]) => {
+export const useComputeDefaultValues = (entityType: string, attributeName: string, multiple: boolean, type: string, defaultValues: readonly { id: string, name: string }[]) => {
   const { fieldToCategory } = useVocabularyCategory();
   const ovCategory = fieldToCategory(entityType, attributeName);
   // Handle createdBy
@@ -22,11 +23,16 @@ export const useComputeDefaultValues = (entityType: string, attributeName: strin
   if (multiple) {
     return defaultValues.map((v) => ({ value: v.id, label: v.name } as Option));
   }
+  // Handle boolean
+  if (type === 'boolean') {
+    return Boolean(head(defaultValues)?.id);
+  }
+
   // Handle single numeric & single string
   return head(defaultValues)?.id ?? '';
 };
 
-const useDefaultValues = <Values extends FormikValues>(id: string, initialValues: Values) => {
+const useDefaultValues = <Values extends FormikValues>(id: string, initialValues: Values, notEmptyValues?: Partial<Values>) => {
   const entitySettings = useEntitySettings(id).at(0);
   if (!entitySettings) {
     throw Error(`Invalid type for setting: ${id}`);
@@ -35,16 +41,16 @@ const useDefaultValues = <Values extends FormikValues>(id: string, initialValues
   const keys = Object.keys(initialValues);
   const defaultValues: Record<string, unknown> = {};
   let enableDefaultMarking = false;
-  defaultValuesAttributes.forEach((attr: { name: string, defaultValues: readonly { id: string, name: string }[] }) => {
+  defaultValuesAttributes.forEach((attr: { name: string, type: string, defaultValues: readonly { id: string, name: string }[] }) => {
     if (attr.name === 'objectMarking') {
       enableDefaultMarking = head(attr.defaultValues)?.id === 'true';
-    } else if (keys.includes(attr.name) && (initialValues[attr.name] === undefined || initialValues[attr.name] === null || isEmpty(initialValues[attr.name]))) {
-      defaultValues[attr.name] = useComputeDefaultValues(entitySettings.target_type, attr.name, Array.isArray(initialValues[attr.name]), attr.defaultValues);
+    } else if (keys.includes(attr.name) && isEmptyField(initialValues[attr.name])) {
+      defaultValues[attr.name] = useComputeDefaultValues(entitySettings.target_type, attr.name, Array.isArray(initialValues[attr.name]), attr.type, attr.defaultValues);
     }
   });
 
   // Default confidence
-  if (keys.includes('confidence') && (initialValues.confidence === undefined || isEmpty(initialValues.confidence))) {
+  if (keys.includes('confidence') && isEmptyField(initialValues.confidence)) {
     defaultValues.confidence = 75;
   }
 
@@ -54,6 +60,15 @@ const useDefaultValues = <Values extends FormikValues>(id: string, initialValues
     // Handle only GLOBAL entity type for now
     const defaultMarking = (defaultMarkings ?? []).filter((entry) => entry.entity_type === 'GLOBAL')[0]?.values ?? [];
     defaultValues.objectMarking = defaultMarking.map((o) => ({ label: o.definition, value: o.id }));
+  }
+
+  // Handle not empty values case
+  if (notEmptyValues) {
+    Object.keys(notEmptyValues).forEach((key) => {
+      if (isEmptyField(defaultValues[key])) {
+        defaultValues[key] = notEmptyValues[key];
+      }
+    });
   }
 
   return {

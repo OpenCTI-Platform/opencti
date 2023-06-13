@@ -5300,6 +5300,7 @@ export type DefaultValueAttribute = {
   __typename?: 'DefaultValueAttribute';
   defaultValues: Array<DefaultValue>;
   name: Scalars['String'];
+  type: Scalars['String'];
 };
 
 export type DefinitionRefRelationship = {
@@ -28748,6 +28749,7 @@ export type DefaultValueResolvers<ContextType = any, ParentType extends Resolver
 export type DefaultValueAttributeResolvers<ContextType = any, ParentType extends ResolversParentTypes['DefaultValueAttribute'] = ResolversParentTypes['DefaultValueAttribute']> = ResolversObject<{
   defaultValues?: Resolver<Array<ResolversTypes['DefaultValue']>, ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

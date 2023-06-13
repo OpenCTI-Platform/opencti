@@ -13,15 +13,14 @@ import { Field, Form, Formik } from 'formik';
 import { QueryRenderer } from '../../../../relay/environment';
 import { useFormatter } from '../../../../components/i18n';
 import { markingDefinitionsLinesSearchQuery } from '../marking_definitions/MarkingDefinitionsLines';
-import {
-  MarkingDefinitionsLinesSearchQuery$data,
-} from '../marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
+import { MarkingDefinitionsLinesSearchQuery$data } from '../marking_definitions/__generated__/MarkingDefinitionsLinesSearchQuery.graphql';
 import { Theme } from '../../../../components/Theme';
 import { GroupEditionMarkings_group$data } from './__generated__/GroupEditionMarkings_group.graphql';
 import AutocompleteField from '../../../../components/AutocompleteField';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Option } from '../../common/form/ReferenceField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import { convertMarking } from '../../../../utils/edition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   list: {
@@ -85,24 +84,11 @@ const groupMutationPatchDefaultValues = graphql`
   }
 `;
 
-export const convertMarkings = (elements: {
-  readonly definition: string | null,
-  readonly id: string,
-  readonly x_opencti_color: string | null
-}[]) => elements.map((element) => ({
-  label: element.definition,
-  value: element.id,
-  color: element.x_opencti_color,
-} as Option));
-
 const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_group$data }) => {
   const classes = useStyles();
   const { t } = useFormatter();
-  const groupMarkingDefinitions = (group.allowed_marking || []) as { id: string }[];
-  const groupDefaultMarkingDefinitions = (group.default_marking || []) as unknown as {
-    entity_type: string,
-    values: { id: string }[]
-  }[];
+  const groupMarkingDefinitions = group.allowed_marking || [];
+  const groupDefaultMarkingDefinitions = group.default_marking || [];
   // Handle only GLOBAL entity type for now
   const globalDefaultMarking = (groupDefaultMarkingDefinitions.find((e) => e.entity_type === 'GLOBAL')?.values ?? [])
     .filter((v) => groupMarkingDefinitions.map((m) => m.id).includes(v.id));
@@ -161,8 +147,8 @@ const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_
     });
   };
 
-  const retrieveMarking = (markingIds: { id: string }[], markingDefinitions: Option[]) => {
-    return markingIds.map((g) => markingDefinitions.find((m) => m.value === g.id));
+  const retrieveMarking = (markingIds: readonly { readonly id: string }[] | null, markingDefinitions: Option[]) => {
+    return markingIds?.map((g) => markingDefinitions.find((m) => m.value === g.id));
   };
 
   return (
@@ -178,7 +164,7 @@ const GroupEditionMarkingsComponent = ({ group }: { group: GroupEditionMarkings_
         render={({ props }: { props: MarkingDefinitionsLinesSearchQuery$data }) => {
           if (props) {
             const markingDefinitions = (props.markingDefinitions?.edges ?? []).map((n) => n.node);
-            const markingDefinitionsConverted = convertMarkings(markingDefinitions);
+            const markingDefinitionsConverted = markingDefinitions.map(convertMarking);
             const resolvedGroupMarkingDefinitions = retrieveMarking(groupMarkingDefinitions, markingDefinitionsConverted);
             const resolvedGroupDefaultMarkingDefinitions = retrieveMarking(globalDefaultMarking, markingDefinitionsConverted);
             return (

@@ -77,18 +77,19 @@ interface EntitySettingAttributeLineProps {
 }
 
 const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLineProps> = ({
-  node,
+  node = null,
   dataColumns,
   entitySetting,
 }) => {
-  if (!node) {
-    return <ErrorNotFound />;
-  }
-
   const classes = useStyles();
   const attribute = useFragment(entitySettingAttributeLineFragment, node);
 
   const [displayUpdate, setDisplayUpdate] = useState<boolean>(false);
+
+  if (!node || !attribute) {
+    return <ErrorNotFound />;
+  }
+
   const handleOpenUpdate = () => setDisplayUpdate(true);
   const handleCloseUpdate = () => setDisplayUpdate(false);
 
@@ -130,9 +131,10 @@ const EntitySettingAttributeLine: FunctionComponent<EntitySettingAttributeLinePr
         classes={{ paper: classes.drawerPaper }}
         onClose={handleCloseUpdate}
       >
-        <EntitySettingAttributeEdition attribute={attribute}
-                                       entitySetting={entitySetting}
-                                       handleClose={handleCloseUpdate} />
+        <EntitySettingAttributeEdition
+          attribute={attribute}
+          entitySetting={entitySetting}
+          handleClose={handleCloseUpdate} />
       </Drawer>
     </>
   );

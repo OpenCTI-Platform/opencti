@@ -52,7 +52,7 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
 
   const attributesMandatory = entitySetting.attributesDefinitions
     .filter((attr: { mandatory: boolean, name: string }) => attr.mandatory)
-    .map((attr : { mandatory: boolean, name: string }) => attr.name);
+    .map((attr: { mandatory: boolean, name: string }) => attr.name);
 
   const dataColumns = {
     name: {
@@ -60,8 +60,8 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       width: '25%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
-        const text = data.label ? t(data.label) : t(data.name);
-        return text.charAt(0).toUpperCase() + text.slice(1);
+        const text = data.label ?? data.name;
+        return t(text.charAt(0).toUpperCase() + text.slice(1));
       },
     },
     type: {
@@ -69,8 +69,8 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       width: '25%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
-        const text = t(computeAttributeNodeType(data));
-        return text.charAt(0).toUpperCase() + text.slice(1);
+        const text = computeAttributeNodeType(data);
+        return t(text.charAt(0).toUpperCase() + text.slice(1));
       },
     },
     mandatory: {
@@ -80,11 +80,13 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       render: (data: EntitySettingAttributeLine_attribute$data) => <>
         {attributesMandatory.includes(data.name)
           ? (
-            <CheckCircleOutlined fontSize="small"
-                                 color={data.mandatoryType === 'customizable' ? 'success' : 'disabled'} />
+            <CheckCircleOutlined
+              fontSize="small"
+              color={data.mandatoryType === 'customizable' ? 'success' : 'disabled'} />
           ) : (
-            <DoNotDisturbOnOutlined fontSize="small"
-                                    color={data.mandatoryType === 'customizable' ? 'primary' : 'disabled'} />
+            <DoNotDisturbOnOutlined
+              fontSize="small"
+              color={data.mandatoryType === 'customizable' ? 'primary' : 'disabled'} />
           )
         }
       </>,
@@ -105,7 +107,12 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       },
     },
   };
-  const datas = entitySetting.attributesDefinitions.map((attr: { label: string | null, name: string, type: string, scale: string | null }) => ({ node: attr }));
+  const datas = entitySetting.attributesDefinitions.map((attr: {
+    label: string | null,
+    name: string,
+    type: string,
+    scale: string | null
+  }) => ({ node: attr }));
 
   return (
     <ListLines

@@ -143,9 +143,13 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    confidence: Yup.number()
+      .nullable(),
   };
   const dataSourceValidator = useSchemaCreationValidation(
     DATA_SOURCE_TYPE,
@@ -155,7 +159,11 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const [commit] = useMutation(dataSourceMutation);
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
-    { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    }: FormikHelpers<DataSourceAddInput>,
   ) => {
     const input: DataSourceCreationMutation$variables['input'] = {
       name: values.name,
@@ -197,7 +205,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     {
       name: inputValue || '',
       description: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -210,112 +218,129 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
 
   return (
     <Formik<DataSourceAddInput>
-    initialValues={initialValues}
-    validationSchema={dataSourceValidator}
-    onSubmit={onSubmit}
+      initialValues={initialValues}
+      validationSchema={dataSourceValidator}
+      onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
-      <Form style={{ margin: '20px 0 20px 0' }}>
-        <Field
-          component={TextField}
-          variant="standard"
-          name="name"
-          label={t('Name')}
-          fullWidth={true}
-          detectDuplicate={['Data-Source']}
-        />
-        <ConfidenceField
-          entityType="Data-Source"
-          containerStyle={fieldSpacingContainerStyle}
-        />
-        <Field
-          component={MarkDownField}
-          name="description"
-          label={t('Description')}
-          fullWidth={true}
-          multiline={true}
-          rows="4"
-          style={{ marginTop: 20 }}
-        />
-        <CreatedByField
-          name="createdBy"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-        />
-        <ObjectLabelField
-          name="objectLabel"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.objectLabel}
-        />
-        <ObjectMarkingField
-          name="objectMarking"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-        />
-        <ExternalReferencesField
-          name="externalReferences"
-          style={{
-            marginTop: 20,
-            width: '100%',
-          }}
-          setFieldValue={setFieldValue}
-          values={values.externalReferences}
-        />
-        <Field
-          component={SimpleFileUpload}
-          name="file"
-          label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
-          fullWidth={true}
-        />
-        <OpenVocabField
-          label={t('Platforms')}
-          type="platforms_ov"
-          name="x_mitre_platforms"
-          onChange={(name, value) => setFieldValue(name, value)}
-          containerStyle={fieldSpacingContainerStyle}
-          multiple={true}
-        />
-        <OpenVocabField
-          label={t('Layers')}
-          type="collection_layers_ov"
-          name="collection_layers"
-          onChange={(name, value) => setFieldValue(name, value)}
-          containerStyle={fieldSpacingContainerStyle}
-          multiple={true}
-        />
-        <div className={classes.buttons}>
-          <Button
-            variant="contained"
-            onClick={handleReset}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Cancel')}
-          </Button>
-          <Button
-            variant="contained"
-            color="secondary"
-            onClick={submitForm}
-            disabled={isSubmitting}
-            classes={{ root: classes.button }}
-          >
-            {t('Create')}
-          </Button>
-        </div>
-      </Form>
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth={true}
+            detectDuplicate={['Data-Source']}
+          />
+          <ConfidenceField
+            entityType="Data-Source"
+            containerStyle={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth={true}
+            multiline={true}
+            rows="4"
+            style={{ marginTop: 20 }}
+          />
+          <CreatedByField
+            name="createdBy"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.objectLabel}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+          />
+          <ExternalReferencesField
+            name="externalReferences"
+            style={{
+              marginTop: 20,
+              width: '100%',
+            }}
+            setFieldValue={setFieldValue}
+            values={values.externalReferences}
+          />
+          <Field
+            component={SimpleFileUpload}
+            name="file"
+            label={t('Associated file')}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            fullWidth={true}
+          />
+          <OpenVocabField
+            label={t('Platforms')}
+            type="platforms_ov"
+            name="x_mitre_platforms"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+          />
+          <OpenVocabField
+            label={t('Layers')}
+            type="collection_layers_ov"
+            name="collection_layers"
+            onChange={(name, value) => setFieldValue(name, value)}
+            containerStyle={fieldSpacingContainerStyle}
+            multiple={true}
+          />
+          <div className={classes.buttons}>
+            <Button
+              variant="contained"
+              onClick={handleReset}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
       )}
     </Formik>
   );
@@ -344,26 +369,26 @@ const DataSourceCreation: FunctionComponent<DataSourceCreationProps> = ({
     <div>
       <Fab
         onClick={handleOpen}
-           color="secondary"
-           aria-label="Add"
+        color="secondary"
+        aria-label="Add"
         className={classes.createButton}
       >
         <Add />
       </Fab>
       <Drawer
         open={open}
-              anchor="right"
-              elevation={1}
-              sx={{ zIndex: 1202 }}
-              classes={{ paper: classes.drawerPaper }}
+        anchor="right"
+        elevation={1}
+        sx={{ zIndex: 1202 }}
+        classes={{ paper: classes.drawerPaper }}
         onClose={handleClose}
       >
         <div className={classes.header}>
           <IconButton
             aria-label="Close"
-                      className={classes.closeButton}
-                      onClick={handleClose}
-                      size="large"
+            className={classes.closeButton}
+            onClick={handleClose}
+            size="large"
             color="primary"
           >
             <Close fontSize="small" color="primary" />

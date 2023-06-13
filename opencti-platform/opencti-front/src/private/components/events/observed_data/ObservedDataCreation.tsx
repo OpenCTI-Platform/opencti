@@ -94,8 +94,8 @@ const OBSERVED_DATA_TYPE = 'Observed-Data';
 
 interface ObservedDataAddInput {
   objects: { value: string }[]
-  first_observed: Date
-  last_observed: Date
+  first_observed: Date | null
+  last_observed: Date | null
   number_observed: number
   confidence: number | undefined
   createdBy: Option | undefined
@@ -186,11 +186,11 @@ export const ObservedDataCreationForm: FunctionComponent<ObservedDataFormProps> 
     OBSERVED_DATA_TYPE,
     {
       objects: [],
-      first_observed: null as unknown as Date,
-      last_observed: null as unknown as Date,
+      first_observed: null,
+      last_observed: null,
       number_observed: 1,
       confidence: defaultConfidence,
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

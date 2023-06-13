@@ -210,7 +210,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       context: '',
       description: '',
       content: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],

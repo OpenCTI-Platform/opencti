@@ -110,9 +110,9 @@ interface FormikCaseIncidentAddInput {
   objectAssignee: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
-  created: Date;
-  response_types: string[];
-  caseTemplates?: Option[];
+  created: Date | null
+  response_types: string[]
+  caseTemplates?: Option[]
 }
 
 interface IncidentFormProps {
@@ -207,9 +207,9 @@ export const CaseIncidentCreationForm: FunctionComponent<IncidentFormProps> = ({
       severity: '',
       caseTemplates: [],
       response_types: [],
-      created: null as unknown as Date,
+      created: null,
       priority: '',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],

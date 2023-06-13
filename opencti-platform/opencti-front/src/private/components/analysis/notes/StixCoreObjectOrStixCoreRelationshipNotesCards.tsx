@@ -38,6 +38,7 @@ import {
 import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { convertMarking } from '../../../../utils/edition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   heading: {
@@ -126,10 +127,7 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
 
 const toOptions = (
   objectMarkings: { id: string; definition: string | null }[] = [],
-) => (objectMarkings ?? []).map((objectMarking) => ({
-  label: objectMarking.definition ?? objectMarking.id,
-  value: objectMarking.id,
-}));
+) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
   attribute_abstract: string
@@ -146,7 +144,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  defaultMarkings?: { id: string; definition: string | null }[];
+  defaultMarkings?: { id: string; definition: string | null, x_opencti_color: string | null }[];
   title: string;
 }
 

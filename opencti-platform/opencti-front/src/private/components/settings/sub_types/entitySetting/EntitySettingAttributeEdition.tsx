@@ -115,27 +115,33 @@ const EntitySettingAttributeEdition = ({
 
   const [commit] = useMutation(entitySettingAttributeEditionPatch);
 
+  const isSingleOption = (defaultValues: string | boolean | Option) => {
+    return typeof defaultValues === 'object' && 'value' in (defaultValues as unknown as Option);
+  };
+
+  const isMultipleOption = (defaultValues: string[] | Option[]) => {
+    return defaultValues.some(isSingleOption);
+  };
+
   const onSubmit: FormikConfig<AttributeFormikValues>['onSubmit'] = (
     values,
     { setSubmitting },
   ) => {
     const saveConfiguration = [...attributesConfiguration];
+    const defaultValues: string | boolean | Option | string[] | Option[] | null = values.default_values;
     let default_values: string[] | null = null;
-    if (values.default_values) {
-      if (Array.isArray(values.default_values)) {
+    if (defaultValues) {
+      if (Array.isArray(defaultValues)) {
         // Handle multiple options
-        if (values.default_values.some((v) => typeof v === 'object' && 'value' in (v as Option))) {
-          default_values = values.default_values.map((v) => ((v as Option).value));
+        if (isMultipleOption(defaultValues)) {
+          default_values = defaultValues.map((v) => ((v as Option).value));
         }
-        // Handle single options
-      } else if (typeof values.default_values === 'object' && 'value' in (values.default_values as unknown as Option)) {
-        default_values = [(values.default_values as unknown as Option).value];
-        // Handle boolean : object marking
-      } else if (typeof values.default_values === 'boolean') {
-        default_values = [JSON.stringify(values.default_values as unknown as string)];
-        // Handle single string
+        // Handle single option
+      } else if (isSingleOption(defaultValues)) {
+        default_values = [(defaultValues as Option).value];
+        // Handle single value
       } else {
-        default_values = [values.default_values as string];
+        default_values = [defaultValues.toString()];
       }
     }
     const newValues: AttributeSubmitValues = {
@@ -320,7 +326,7 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'objectMarking') {
       return head(values)?.id ?? false;
     }
-    return useComputeDefaultValues(entitySetting.target_type, attribute.name, attribute.multiple ?? false, values);
+    return useComputeDefaultValues(entitySetting.target_type, attribute.name, attribute.multiple ?? false, attribute.type, values);
   };
 
   const values: AttributeFormikValues = {

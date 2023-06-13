@@ -123,10 +123,15 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    x_opencti_organization_type: Yup.string().nullable(),
-    x_opencti_reliability: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    x_opencti_organization_type: Yup.string()
+      .nullable(),
+    x_opencti_reliability: Yup.string()
+      .nullable(),
   };
   const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
 
@@ -178,7 +183,7 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       description: '',
       x_opencti_reliability: undefined,
       x_opencti_organization_type: 'other',
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectLabel: [],
       externalReferences: [],
@@ -271,9 +276,20 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
           component={SimpleFileUpload}
           name="file"
           label={t('Associated file')}
-          FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-          InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-          InputProps={{ fullWidth: true, variant: 'standard' }}
+          FormControlProps={{
+            style: {
+              marginTop: 20,
+              width: '100%',
+            },
+          }}
+          InputLabelProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          InputProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
           fullWidth={true}
         />
         <div className={classes.buttons}>

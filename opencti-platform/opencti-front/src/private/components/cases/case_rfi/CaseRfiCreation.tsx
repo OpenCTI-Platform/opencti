@@ -102,7 +102,7 @@ interface FormikCaseRfiAddInput {
   objectAssignee: Option[]
   objectLabel: Option[]
   externalReferences: Option[]
-  created: Date;
+  created: Date | null
   information_types: string[];
   severity: string;
   priority: string;
@@ -197,9 +197,9 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
       severity: '',
       priority: '',
       caseTemplates: [],
-      created: null as unknown as Date,
+      created: null,
       information_types: [],
-      createdBy: defaultCreatedBy ?? ('' as unknown as Option),
+      createdBy: defaultCreatedBy,
       objectMarking: defaultMarkingDefinitions ?? [],
       objectAssignee: [],
       objectLabel: [],
