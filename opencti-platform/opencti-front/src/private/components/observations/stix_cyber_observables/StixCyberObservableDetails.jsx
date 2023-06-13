@@ -17,6 +17,7 @@ import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
 import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnalyses';
+import { SCOMalwareAnalyses } from './SCOMalwareAnalyses';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -159,6 +160,9 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
         />
         <StixCyberObservableMalwareAnalyses
             stixCyberObservable={stixCyberObservable}
+        />
+        <SCOMalwareAnalyses
+            stixCyberObservableId={stixCyberObservable.id}
         />
       </Paper>
     </div>
