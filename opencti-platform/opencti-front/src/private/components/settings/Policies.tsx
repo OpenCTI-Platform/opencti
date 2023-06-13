@@ -210,7 +210,7 @@ const Policies: FunctionComponent = () => {
                         onChange={(name: string, value: string) => handleSubmitField(name, value)
                         }
                         tooltip={t(
-                          'When enforcing 2FA, all users will be asked to enable 2FA to be able to login in the platform.',
+                          'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.',
                         )}
                       />
                     </Paper>

@@ -53,6 +53,8 @@ const i18n = {
         'Debe validar su autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
         'Necesitas activar una autenticación de dos factores. Por favor, escriba el código generado en su aplicación.',
+      'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
+        'Al aplicar la autenticación 2FA, se pedirá a todos los usuarios que habiliten 2FA para poder iniciar sesión en la plataforma.',
       Search: 'Buscar',
       Active: 'Activo',
       'Last update': 'Última actualización',
@@ -1972,6 +1974,8 @@ const i18n = {
         'Vous devez valider votre authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
         'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
+      'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
+        'Lors de l’application de l\'authentication à deux facteurs, tous les utilisateurs seront invités à activer l\'authentication à deux facteurs pour pouvoir se connecter à la plate-forme.',
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
@@ -3904,6 +3908,8 @@ const i18n = {
         '二要素認証を検証する必要があります。アプリケーションで生成されたコードを入力してください。',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
         '二要素認証を有効にする必要があります。アプリケーションで生成されたコードを入力してください。',
+      'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
+        '2要素認証を強制する場合、すべてのユーザーは、プラットフォームにログインできるように2要素認証を有効にするように求められます。',
       Search: '検索',
       Active: 'アクティブ',
       'Last update': '最終更新',
@@ -5744,6 +5750,8 @@ const i18n = {
         '您需要验证您的双因素身份验证。请输入在您的应用程序中生成的代码。',
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
         '您需要激活双因素身份验证。请输入在您的应用程序中生成的代码。',
+      'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
+        '強制執行雙因素身份驗證時，將要求所有使用者啟用雙因素身份驗證才能登錄平臺。',
       Search: '搜索',
       Active: '活跃',
       'Last update': '上次更新',
