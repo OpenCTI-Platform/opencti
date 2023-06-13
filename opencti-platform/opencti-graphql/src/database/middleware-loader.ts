@@ -377,7 +377,7 @@ export const buildEntityFilters = <T extends BasicStoreCommon>(args: EntityFilte
   }
   // endregion
   // Override some special filters
-  builtFilters.types = [...(types ?? []), ...entityTypes, ...relationshipTypes];
+  builtFilters.types = R.uniq([...(types ?? []), ...entityTypes, ...relationshipTypes]);
   builtFilters.filters = customFilters;
   return builtFilters;
 };

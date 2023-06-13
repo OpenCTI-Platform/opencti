@@ -27,6 +27,7 @@ export const stixCoreObjectOptions = {
     hasExternalReference: buildRefRelationKey(RELATION_EXTERNAL_REFERENCE),
     killChainPhase: buildRefRelationKey(RELATION_KILL_CHAIN_PHASE),
     indicates: buildRefRelationKey(RELATION_INDICATES),
+    elementId: buildRefRelationKey('*'),
     creator: 'creator_id',
     hashes_MD5: 'hashes.MD5',
     hashes_SHA1: 'hashes.SHA-1',
