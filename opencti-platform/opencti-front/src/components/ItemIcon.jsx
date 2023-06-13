@@ -89,6 +89,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   switch (type) {
     case 'admin':
       return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'search':
+      return <BiotechOutlined style={style} fontSize={fontSize} role="img" />;
     case 'login':
       return <LoginOutlined style={style} fontSize={fontSize} role="img" />;
     case 'logout':

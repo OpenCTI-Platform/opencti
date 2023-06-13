@@ -381,6 +381,7 @@ type Log {
   id: ID!
   entity_type: String
   event_type: String!
+  event_status: String!
   timestamp: DateTime!
   user_id: String!
   user: Creator

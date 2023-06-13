@@ -58,10 +58,11 @@ export const groupDelete = async (context, user, groupId) => {
   const group = await deleteElementById(context, user, groupId, ENTITY_TYPE_GROUP);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'delete', input: group }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, input: group }
   });
   return groupId;
 };
@@ -70,10 +71,11 @@ export const groupEditField = async (context, user, groupId, input) => {
   const { element } = await updateAttribute(context, user, groupId, ENTITY_TYPE_GROUP, input);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for group \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
@@ -96,10 +98,11 @@ export const groupAddRelation = async (context, user, groupId, input) => {
   const created = input.fromId ? createdRelation.from : createdRelation.to;
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `adds ${created.entity_type} \`${extractEntityRepresentative(created)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
@@ -123,10 +126,11 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
   }
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: { groupId, fromId, toId, relationshipType } }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, input: { groupId, fromId, toId, relationshipType } }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);

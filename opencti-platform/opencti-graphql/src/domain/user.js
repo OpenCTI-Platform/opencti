@@ -301,10 +301,11 @@ export const roleDelete = async (context, user, roleId) => {
   const deleted = await deleteElementById(context, user, roleId, ENTITY_TYPE_ROLE);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes role \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, input: deleted }
   });
   return roleId;
 };
@@ -328,10 +329,11 @@ export const assignOrganizationToUser = async (context, user, userId, organizati
   const created = await createRelation(context, user, assignInput);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `adds ${created.toType} \`${extractEntityRepresentative(created.to)}\` to user \`${created.from.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input: assignInput }
+    context_data: { entity_type: ENTITY_TYPE_USER, input: assignInput }
   });
   await userSessionRefresh(userId);
   return user;
@@ -459,10 +461,11 @@ export const addUser = async (context, user, newUser) => {
   if (isCreation) {
     await publishUserAction({
       user,
-      event_type: 'admin',
-      status: 'success',
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
       message: `creates user \`${userEmail}\``,
-      context_data: { entity_type: ENTITY_TYPE_USER, operation: 'create', input: newUser }
+      context_data: { entity_type: ENTITY_TYPE_USER, input: newUser }
     });
   }
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].ADDED_TOPIC, element, user);
@@ -472,10 +475,11 @@ export const roleEditField = async (context, user, roleId, input) => {
   const { element } = await updateAttribute(context, user, roleId, ENTITY_TYPE_ROLE, input);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for role \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, input }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, element, user);
@@ -493,10 +497,11 @@ export const roleAddRelation = async (context, user, roleId, input) => {
   const relationData = await createRelation(context, user, finalInput);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentative(relationData.to)}\` for role \`${role.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
@@ -513,10 +518,11 @@ export const roleDeleteRelation = async (context, user, roleId, toId, relationsh
   const deleted = await deleteRelationsByFromAndTo(context, user, roleId, toId, relationshipType, ABSTRACT_INTERNAL_RELATIONSHIP);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `removes ${deleted.to.entity_type} \`${extractEntityRepresentative(deleted.to)}\` for role \`${role.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'delete', input: { roleId, toId, relationshipType } }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, input: { roleId, toId, relationshipType } }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, role, user);
@@ -536,10 +542,11 @@ export const userEditField = async (context, user, userId, inputs) => {
   const input = updatedInputsToData(element, inputs);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for user \`${element.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);
 };
@@ -614,10 +621,11 @@ export const userDelete = async (context, user, userId) => {
   const deleted = await deleteElementById(context, user, userId, ENTITY_TYPE_USER);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes user \`${deleted.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_USER, input: deleted }
   });
   await killUserSessions(userId);
   return userId;
@@ -635,10 +643,11 @@ export const userAddRelation = async (context, user, userId, input) => {
   const relationData = await createRelation(context, user, finalInput);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `adds ${relationData.toType} \`${extractEntityRepresentative(relationData.to)}\` for user \`${userData.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, relationData, user);
@@ -652,10 +661,11 @@ export const userDeleteRelation = async (context, user, targetUser, toId, relati
   const input = { relationship_type: relationshipType, toId };
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(targetUser.id);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
@@ -681,10 +691,11 @@ export const userDeleteOrganizationRelation = async (context, user, userId, toId
   const input = { relationship_type: RELATION_PARTICIPATE_TO, toId };
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `removes ${to.entity_type} \`${extractEntityRepresentative(to)}\` for user \`${targetUser.user_email}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   await userSessionRefresh(userId);
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, targetUser, user);
@@ -835,7 +846,13 @@ export const otpUserLogin = async (req, user, { code }) => {
 
 export const logout = async (context, user, req, res) => {
   const withOrigin = userWithOrigin(req, user);
-  await publishUserAction({ user: withOrigin, event_type: 'logout', status: 'success', context_data: undefined });
+  await publishUserAction({
+    user: withOrigin,
+    event_type: 'authentication',
+    event_access: 'administration',
+    event_scope: 'logout',
+    context_data: undefined
+  });
   await delUserContext(user);
   return new Promise((resolve) => {
     res.clearCookie(OPENCTI_SESSION);
@@ -957,7 +974,13 @@ export const internalAuthenticateUser = async (context, req, user, provider, tok
   const sessionUser = buildSessionUser(logged, impersonate, provider, settings);
   const userOrigin = userWithOrigin(req, sessionUser);
   if (!isSessionRefresh) {
-    await publishUserAction({ user: userOrigin, event_type: 'login', status: 'success', context_data: { provider } });
+    await publishUserAction({
+      user: userOrigin,
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'administration',
+      context_data: { provider }
+    });
   }
   const hasSetAccessCapability = isUserHasCapability(logged, SETTINGS_SET_ACCESSES);
   if (!hasSetAccessCapability && settings.platform_organization && logged.organizations.length === 0) {

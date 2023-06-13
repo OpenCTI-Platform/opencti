@@ -123,10 +123,11 @@ export const createQueryTask = async (context, user, input) => {
   const queryTask = { ...task, actions, task_filters: filters, task_search: search, task_excluded_ids: excluded_ids };
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'standard',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'create', input: queryTask }
+    context_data: { entity_type: ENTITY_TYPE_TASK, input: queryTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
@@ -143,10 +144,11 @@ export const deleteTask = async (context, user, taskId) => {
   const deleted = await deleteElementById(context, user, taskId, ENTITY_TYPE_TASK);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'standard',
     message: 'deletes `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_TASK, input: deleted }
   });
   return taskId;
 };

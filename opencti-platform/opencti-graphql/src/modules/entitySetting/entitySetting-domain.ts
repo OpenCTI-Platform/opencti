@@ -31,10 +31,11 @@ export const entitySettingEditField = async (context: AuthContext, user: AuthUse
   const { element } = await updateAttribute(context, user, entitySettingId, ENTITY_TYPE_ENTITY_SETTING, input);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for entity setting \`${element.target_type}\``,
-    context_data: { entity_type: element.target_type, operation: 'update', input }
+    context_data: { entity_type: element.target_type, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_ENTITY_SETTING].EDIT_TOPIC, element, user);
 };

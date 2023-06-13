@@ -10742,6 +10742,7 @@ export type Log = {
   context_data?: Maybe<ContextData>;
   context_uri?: Maybe<Scalars['String']>;
   entity_type?: Maybe<Scalars['String']>;
+  event_status: Scalars['String'];
   event_type: Scalars['String'];
   id: Scalars['ID'];
   raw_data?: Maybe<Scalars['String']>;
@@ -30248,6 +30249,7 @@ export type LogResolvers<ContextType = any, ParentType extends ResolversParentTy
   context_data?: Resolver<Maybe<ResolversTypes['ContextData']>, ParentType, ContextType>;
   context_uri?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  event_status?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   raw_data?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

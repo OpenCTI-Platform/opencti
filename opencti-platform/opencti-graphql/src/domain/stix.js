@@ -102,7 +102,14 @@ export const askListExport = async (context, user, format, entityType, selectedI
       const path = `export/${entityType}/`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
-      await publishUserAction({ user, event_type: 'export', status: 'success', context_data: message.event });
+      await publishUserAction({
+        user,
+        event_access: 'standard',
+        explicit_listening: true,
+        event_type: 'mutation',
+        event_scope: 'export',
+        context_data: message.event
+      });
       await pushToConnector(context, connector, message);
       return work;
     }, connectors)
@@ -145,7 +152,14 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(context, connector, message);
-      await publishUserAction({ user, event_type: 'export', status: 'success', context_data: message.event });
+      await publishUserAction({
+        user,
+        event_access: 'standard',
+        explicit_listening: true,
+        event_type: 'mutation',
+        event_scope: 'export',
+        context_data: message.event
+      });
       return work;
     }, connectors)
   );

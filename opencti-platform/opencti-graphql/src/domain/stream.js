@@ -38,10 +38,11 @@ export const createStreamCollection = async (context, user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, data);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
     message: `creates live stream \`${data.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, operation: 'create', input }
+    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   // Create groups relations
   const relBuilder = (g) => ({ fromId: g, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
@@ -58,10 +59,11 @@ export const deleteGroupRelation = async (context, user, collectionId, groupId) 
   const { to } = await deleteRelationsByFromAndTo(context, user, groupId, collectionId, RELATION_ACCESSES_TO, ABSTRACT_INTERNAL_RELATIONSHIP);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`groups\` for live stream \`${to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, operation: 'update', input: { id: groupId, operation: 'remove' } }
+    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: { id: groupId, operation: 'remove' } }
   });
   return findById(context, user, collectionId);
 };
@@ -69,10 +71,11 @@ export const createGroupRelation = async (context, user, collectionId, groupId) 
   const { to } = await createRelation(context, user, { fromId: groupId, toId: collectionId, relationship_type: RELATION_ACCESSES_TO });
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`groups\` for live stream \`${to.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, operation: 'update', input: { id: groupId, operation: 'add' } }
+    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: { id: groupId, operation: 'add' } }
   });
   return findById(context, user, collectionId);
 };
@@ -98,10 +101,11 @@ export const streamCollectionEditField = async (context, user, collectionId, inp
   const { element } = await updateAttribute(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION, input);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for live stream \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].EDIT_TOPIC, element, user);
 };
@@ -109,10 +113,11 @@ export const streamCollectionDelete = async (context, user, collectionId) => {
   const deleted = await deleteElementById(context, user, collectionId, ENTITY_TYPE_STREAM_COLLECTION);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes live stream \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_STREAM_COLLECTION, input: deleted }
   });
   await notify(BUS_TOPICS[ENTITY_TYPE_STREAM_COLLECTION].DELETE_TOPIC, deleted, user);
   return collectionId;

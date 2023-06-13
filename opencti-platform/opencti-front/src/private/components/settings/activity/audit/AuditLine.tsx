@@ -2,6 +2,7 @@ import React, { FunctionComponent, useState } from 'react';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import { Link } from 'react-router-dom';
+import { useTheme } from '@mui/styles';
 import Typography from '@mui/material/Typography';
 import IconButton from '@mui/material/IconButton';
 import Drawer from '@mui/material/Drawer';
@@ -91,6 +92,7 @@ const AuditLineFragment = graphql`
     id
     entity_type
     event_type
+    event_status
     timestamp
     context_uri
     user {
@@ -113,10 +115,12 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const { fldt } = useFormatter();
+  const theme = useTheme<Theme>();
   const [selectedLog, setSelectedLog] = useState<string | null>(null);
   const data = useFragment(AuditLineFragment, node);
   const isHistoryUpdate = data.entity_type === 'History' && data.event_type === 'update' && isNotEmptyField(data.context_data?.entity_name);
   const message = `\`${data.user?.name}\` ${data.context_data?.message} ${isHistoryUpdate ? (`for \`${data.context_data?.entity_name}\` (${data.context_data?.entity_type})`) : ''}`;
+  const color = data.event_status === 'error' ? theme.palette.error.main : undefined;
   return (
     <>
       { selectedLog && <Drawer open={true} anchor="right" elevation={1}
@@ -152,16 +156,18 @@ export const AuditLine: FunctionComponent<AuditLineProps> = ({
       </Drawer>}
       <ListItem classes={{ root: classes.item }} divider={true} button={true} onClick={() => setSelectedLog(data.id)}>
         <ListItemIcon classes={{ root: classes.itemIcon }}>
-          <ItemIcon type={data.context_data?.entity_type ?? data.event_type} />
+          <ItemIcon color={color} type={data.context_data?.entity_type ?? data.event_type} />
         </ListItemIcon>
         <ListItemText
           primary={
             <div>
               <div className={classes.bodyItem} style={{ width: dataColumns.timestamp.width }}>
-                {fldt(data.timestamp)}
+                <span style={{ color }}>{fldt(data.timestamp)}</span>
               </div>
               <div className={classes.bodyItem} style={{ width: dataColumns.message.width }}>
+                <span style={{ color }}>
                 <Markdown remarkPlugins={[remarkGfm, remarkParse]} className="markdown">{message}</Markdown>
+                </span>
               </div>
             </div>
           }

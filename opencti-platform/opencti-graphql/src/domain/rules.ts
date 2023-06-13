@@ -91,10 +91,11 @@ export const setRuleActivation = async (context: AuthContext, user: AuthUser, ru
   }
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `${active ? 'activates' : 'deactivates'} rule \`${resolvedRule?.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_SETTINGS, operation: 'update', input: { id: ruleId, active } }
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input: { id: ruleId, active } }
   });
   return getRule(context, user, ruleId);
 };

@@ -68,10 +68,7 @@ class StixCoreObjectHistory extends Component {
             variables={{
               filters: [
                 { key: 'entity_id', values: [stixCoreObjectId] },
-                {
-                  key: 'event_type',
-                  values: ['create', 'update', 'delete', 'merge'],
-                },
+                { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
               ],
               first: 20,
               orderBy: 'timestamp',
@@ -113,15 +110,8 @@ class StixCoreObjectHistory extends Component {
               query={stixCoreObjectHistoryLinesQuery}
               variables={{
                 filters: [
-                  {
-                    key: 'connection_id',
-                    values: [stixCoreObjectId],
-                    operator: 'wildcard',
-                  },
-                  {
-                    key: 'event_type',
-                    values: ['create', 'delete', 'merge'],
-                  },
+                  { key: 'connection_id', values: [stixCoreObjectId], operator: 'wildcard' },
+                  { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
                 ],
                 first: 20,
                 orderBy: 'timestamp',

@@ -96,10 +96,11 @@ export const settingsEditField = async (context, user, settingsId, input) => {
   await updateAttribute(context, user, settingsId, ENTITY_TYPE_SETTINGS, data);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for \`platform settings\``,
-    context_data: { entity_type: ENTITY_TYPE_SETTINGS, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_SETTINGS, input }
   });
   const updatedSettings = await getSettings(context);
   return notify(BUS_TOPICS.Settings.EDIT_TOPIC, updatedSettings, user);

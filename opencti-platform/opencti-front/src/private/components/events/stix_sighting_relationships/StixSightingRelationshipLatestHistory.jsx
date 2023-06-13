@@ -20,10 +20,7 @@ class StixSightingRelationshipLatestHistory extends Component {
           variables={{
             filters: [
               { key: 'entity_id', values: [stixSightingRelationshipId] },
-              {
-                key: 'event_type',
-                values: ['create', 'update', 'merge'],
-              },
+              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
             ],
             first: 6,
             orderBy: 'timestamp',

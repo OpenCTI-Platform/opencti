@@ -20,10 +20,7 @@ class StixCoreRelationshipLatestHistory extends Component {
           variables={{
             filters: [
               { key: 'entity_id', values: [stixCoreRelationshipId] },
-              {
-                key: 'event_type',
-                values: ['create', 'update', 'merge'],
-              },
+              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
             ],
             first: 7,
             orderBy: 'timestamp',

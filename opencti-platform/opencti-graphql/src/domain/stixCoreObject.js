@@ -59,6 +59,7 @@ import {
   stixObjectOrRelationshipAddRefRelations,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
+import { publishUserAction } from '../listener/UserActionListener';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -84,6 +85,14 @@ export const findAll = async (context, user, args) => {
       filters = [...filters, { key: buildRefRelationKey('*'), values: [args.elementId] }];
     }
   }
+  await publishUserAction({
+    user,
+    event_type: 'read',
+    event_scope: 'search',
+    event_access: 'standard',
+    explicit_listening: true,
+    context_data: { input: args }
+  });
   return listEntities(context, user, types, { ...R.omit(['elementId', 'relationship_type'], args), filters });
 };
 

@@ -116,8 +116,6 @@ const userResolvers = {
           passport.authenticate(auth.provider, {}, (err, authUser, info) => {
             if (err || info) {
               logApp.warn(`[AUTH] ${auth.provider}`, { error: err, info });
-              const auditUser = userWithOrigin(req, { user_email: input.email });
-              publishUserAction({ user: auditUser, event_type: 'login', status: 'error', context_data: { provider: auth.provider } });
             }
             resolve({ user: authUser, provider: auth.provider });
           })({ body });
@@ -132,6 +130,15 @@ const userResolvers = {
       if (loggedUser) {
         return loggedUser.api_token;
       }
+      const auditUser = userWithOrigin(req, { user_email: input.email });
+      await publishUserAction({
+        user: auditUser,
+        event_type: 'authentication',
+        event_scope: 'login',
+        event_access: 'administration',
+        status: 'error',
+        context_data: { username: input.email, provider: 'form' }
+      });
       // User cannot be authenticated in any providers
       throw AuthenticationFailure();
     },
@@ -140,10 +147,11 @@ const userResolvers = {
       const { user } = kill.session;
       await publishUserAction({
         user: context.user,
-        event_type: 'admin',
-        status: 'success',
+        event_type: 'mutation',
+        event_scope: 'delete',
+        event_access: 'administration',
         message: `kills \`specific session\` for user \`${user.user_email}\``,
-        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: user.id, session_id: kill.sessionId } }
+        context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: user.id, session_id: kill.sessionId } }
       });
       return id;
     },
@@ -154,10 +162,11 @@ const userResolvers = {
       const sessionIds = sessions.map((s) => s.sessionId);
       await publishUserAction({
         user: context.user,
-        event_type: 'admin',
-        status: 'success',
+        event_type: 'mutation',
+        event_scope: 'delete',
+        event_access: 'administration',
         message: `kills \`all sessions\` for user \`${user.user_email}\``,
-        context_data: { entity_type: ENTITY_TYPE_USER, operation: 'delete', input: { user_id: id } }
+        context_data: { entity_type: ENTITY_TYPE_USER, input: { user_id: id } }
       });
       return sessionIds;
     },

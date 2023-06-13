@@ -31,6 +31,7 @@ interface HistoryContext {
   id: string;
   entity_type: string;
   entity_name: string;
+  operation: string;
   message: string;
   from_id?: string | undefined;
   to_id?: string | undefined;
@@ -79,6 +80,7 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
+      operation: event.event,
     };
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;
@@ -117,7 +119,8 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       created_at: activityDate,
       updated_at: activityDate,
       entity_type: ENTITY_TYPE_HISTORY,
-      event_type: event.event,
+      event_type: 'mutation',
+      event_scope: event.event,
       user_id: event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],

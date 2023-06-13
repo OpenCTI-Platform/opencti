@@ -297,7 +297,14 @@ export const upload = async (context, user, path, fileUpload, opts) => {
     uploadStatus: 'complete'
   };
   const contextData = buildContextDataForFile(entity, path, filename);
-  await publishUserAction({ user, event_type: 'upload', status: 'success', context_data: contextData });
+  await publishUserAction({
+    user,
+    explicit_listening: true,
+    event_type: 'mutation',
+    event_access: 'standard',
+    event_scope: 'upload',
+    context_data: contextData
+  });
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);

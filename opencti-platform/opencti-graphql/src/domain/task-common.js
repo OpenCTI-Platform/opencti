@@ -57,10 +57,11 @@ export const createListTask = async (user, input) => {
   const listTask = { ...task, actions, task_ids: ids };
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'standard',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, operation: 'create', input: listTask }
+    context_data: { entity_type: ENTITY_TYPE_TASK, input: listTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;

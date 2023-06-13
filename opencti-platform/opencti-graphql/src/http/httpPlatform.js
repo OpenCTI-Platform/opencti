@@ -135,8 +135,10 @@ const createApp = async (app) => {
       const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
       await publishUserAction({
         user: auth,
-        event_type: 'download',
-        status: 'success',
+        explicit_listening: true,
+        event_type: 'read',
+        event_access: 'standard',
+        event_scope: 'download',
         context_data: buildContextDataForFile(entity, file, filename)
       });
       const stream = await downloadFile(executeContext, file);
@@ -163,8 +165,10 @@ const createApp = async (app) => {
       const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
       await publishUserAction({
         user: auth,
-        event_type: 'download',
-        status: 'success',
+        explicit_listening: true,
+        event_type: 'read',
+        event_access: 'standard',
+        event_scope: 'download',
         context_data: buildContextDataForFile(entity, file, filename)
       });
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));

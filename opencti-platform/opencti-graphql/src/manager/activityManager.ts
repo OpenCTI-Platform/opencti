@@ -22,7 +22,7 @@ import { executionContext, SYSTEM_USER } from '../utils/access';
 import type { SseEvent } from '../types/event';
 import { utcDate } from '../utils/format';
 import { listEntities } from '../database/middleware-loader';
-import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
+import { ENTITY_TYPE_ACTIVITY, ENTITY_TYPE_HISTORY, ENTITY_TYPE_SETTINGS } from '../schema/internalObject';
 import type { AuthContext } from '../types/user';
 import { OrderingMode } from '../generated/graphql';
 import type { HistoryData } from './historyManager';
@@ -41,19 +41,23 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<A
   if (isEmptyField(settings.enterprise_edition) || isEmptyField(events) || events.length === 0) {
     return;
   }
-  const historyElements = events.map((event) => {
+  const historyElements = events.map((event: SseEvent<ActivityStreamEvent>) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const contextData = { ...event.data.data, message: event.data.message };
     const activityDate = utcDate(eventDate).toDate();
+    const isAdminEvent = event.data.event_access === 'administration';
     return {
       _index: INDEX_HISTORY,
       internal_id: event.id,
       base_type: BASE_TYPE_ENTITY,
       created_at: activityDate,
       updated_at: activityDate,
-      entity_type: ENTITY_TYPE_ACTIVITY,
+      entity_type: isAdminEvent ? ENTITY_TYPE_ACTIVITY : ENTITY_TYPE_HISTORY,
       event_type: event.event,
+      event_status: event.data.status,
+      event_access: event.data.event_access,
+      event_scope: event.data.event_scope,
       user_id: event.data.origin?.user_id,
       group_ids: event.data.origin?.group_ids ?? [],
       organization_ids: event.data.origin?.organization_ids ?? [],

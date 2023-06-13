@@ -24,10 +24,11 @@ export const addRole = async (context, user, role) => {
   if (isCreation) {
     await publishUserAction({
       user,
-      event_type: 'admin',
-      status: 'success',
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
       message: `creates role \`${role.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_ROLE, operation: 'create', input: role }
+      context_data: { entity_type: ENTITY_TYPE_ROLE, input: role }
     });
   }
   return element;
@@ -43,10 +44,11 @@ export const addGroup = async (context, user, group) => {
   if (isCreation) {
     await publishUserAction({
       user,
-      event_type: 'admin',
-      status: 'success',
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
       message: `creates group \`${group.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_GROUP, operation: 'create', input: group }
+      context_data: { entity_type: ENTITY_TYPE_GROUP, input: group }
     });
   }
   return element;

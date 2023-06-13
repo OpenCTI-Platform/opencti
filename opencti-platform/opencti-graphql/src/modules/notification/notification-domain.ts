@@ -31,20 +31,37 @@ import {
 import { now } from '../../utils/format';
 import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 // Outcomes
 
 // Triggers
-export const addLiveTrigger = async (context: AuthContext, user: AuthUser, trigger: TriggerLiveAddInput): Promise<BasicStoreEntityLiveTrigger> => {
+export const addLiveTrigger = async (context: AuthContext, user: AuthUser, input: TriggerLiveAddInput): Promise<BasicStoreEntityLiveTrigger> => {
   const defaultOpts = { trigger_type: 'live', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
-  const liveTrigger = { ...trigger, ...defaultOpts };
+  const liveTrigger = { ...input, ...defaultOpts };
   const created = await createEntity(context, user, liveTrigger, ENTITY_TYPE_TRIGGER);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'standard',
+    message: `creates live trigger \`${created.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
-export const addDigestTrigger = async (context: AuthContext, user: AuthUser, trigger: TriggerDigestAddInput) => {
+export const addDigestTrigger = async (context: AuthContext, user: AuthUser, input: TriggerDigestAddInput) => {
   const defaultOpts = { trigger_type: 'digest', user_ids: [user.id], group_ids: [], created: now(), updated: now() };
-  const digestTrigger = { ...trigger, ...defaultOpts };
+  const digestTrigger = { ...input, ...defaultOpts };
   const created = await createEntity(context, user, digestTrigger, ENTITY_TYPE_TRIGGER);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'standard',
+    message: `creates digest trigger \`${created.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
 };
 export const triggerGet = (context: AuthContext, user: AuthUser, triggerId: string): BasicStoreEntityTrigger => {

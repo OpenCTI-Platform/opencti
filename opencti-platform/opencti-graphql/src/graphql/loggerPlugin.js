@@ -101,7 +101,17 @@ export default {
           if (isRetryableCall) {
             logApp.warn(API_CALL_MESSAGE, { ...dissoc('variables', callMetaData), error });
           } else if (callError.name === FORBIDDEN_ACCESS) {
-            await publishUserAction({ user: contextUser, event_type: 'unauthorized', status: 'error', context_data: { path } });
+            await publishUserAction({
+              user: contextUser,
+              event_type: isWrite ? 'mutation' : 'read',
+              event_scope: 'unauthorized',
+              event_access: 'administration',
+              status: 'error',
+              context_data: {
+                operation: context.operationName,
+                input: context.request.variables,
+              }
+            });
           } else {
             // Every other uses cases are logged with error level
             logApp.error(API_CALL_MESSAGE, { ...callMetaData, error });

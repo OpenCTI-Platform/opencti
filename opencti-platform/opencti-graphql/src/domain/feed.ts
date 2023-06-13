@@ -43,10 +43,11 @@ export const createFeed = async (context: AuthContext, user: AuthUser, input: Fe
   if (isCreation) {
     await publishUserAction({
       user,
-      event_type: 'admin',
-      status: 'success',
+      event_type: 'mutation',
+      event_scope: 'create',
+      event_access: 'administration',
       message: `creates csv feed \`${element.name}\``,
-      context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'create', input }
+      context_data: { entity_type: ENTITY_TYPE_FEED, input }
     });
   }
   return element;
@@ -63,10 +64,11 @@ export const editFeed = async (context: AuthContext, user: AuthUser, id: string,
   await elReplace(INDEX_INTERNAL_OBJECTS, id, { doc: input });
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`configuration\` for csv feed \`${feed.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_FEED, input }
   });
   return findById(context, user, id);
 };
@@ -77,10 +79,11 @@ export const feedDelete = async (context: AuthContext, user: AuthUser, feedId: s
   const deleted = await deleteElementById(context, user, feedId, ENTITY_TYPE_FEED);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes csv feed \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_FEED, input: deleted }
   });
   return feedId;
 };

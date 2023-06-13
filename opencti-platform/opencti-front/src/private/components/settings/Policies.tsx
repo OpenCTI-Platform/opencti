@@ -26,7 +26,6 @@ import SwitchField from '../../../components/SwitchField';
 import TextField from '../../../components/TextField';
 import { Policies$key } from './__generated__/Policies.graphql';
 import MarkDownField from '../../../components/MarkDownField';
-import { SubscriptionFocus } from '../../../components/Subscription';
 import { PoliciesQuery } from './__generated__/PoliciesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
@@ -73,10 +72,6 @@ const PoliciesFragment = graphql`
       name
     }
     otp_mandatory
-    editContext {
-      name
-      focusOn
-    }
   }
 `;
 
@@ -93,16 +88,6 @@ export const policiesFieldPatch = graphql`
     settingsEdit(id: $id) {
       fieldPatch(input: $input) {
         ...Policies
-      }
-    }
-  }
-`;
-
-const policiesFocus = graphql`
-  mutation PoliciesFocusMutation($id: ID!, $input: EditContext!) {
-    settingsEdit(id: $id) {
-      contextPatch(input: $input) {
-        id
       }
     }
   }
@@ -126,20 +111,9 @@ const policiesValidation = () => Yup.object().shape({
 const Policies: FunctionComponent = () => {
   const data = useLazyLoadQuery<PoliciesQuery>(policiesQuery, {});
   const settings = useFragment<Policies$key>(PoliciesFragment, data.settings);
-  const [commitFocus] = useMutation(policiesFocus);
   const [commitField] = useMutation(policiesFieldPatch);
   const classes = useStyles();
   const { t } = useFormatter();
-  const handleChangeFocus = (id: string, name: string) => {
-    commitFocus({
-      variables: {
-        id,
-        input: {
-          focusOn: name,
-        },
-      },
-    });
-  };
   const handleSubmitField = (name: string, value: unknown) => {
     policiesValidation()
       .validateAt(name, { [name]: value })
@@ -153,7 +127,6 @@ const Policies: FunctionComponent = () => {
       })
       .catch(() => false);
   };
-  const { id, editContext } = settings;
   const initialValues = {
     platform_organization: settings.platform_organization
       ? {
@@ -379,15 +352,8 @@ const Policies: FunctionComponent = () => {
                         fullWidth
                         multiline={true}
                         rows="3"
-                        onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="platform_login_message"
-                          />
-                        }
                       />
                       <Field
                         component={MarkDownField}
@@ -395,15 +361,8 @@ const Policies: FunctionComponent = () => {
                         label={t('Platform consent message')}
                         fullWidth
                         style={{ marginTop: 20 }}
-                        onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="platform_consent_message"
-                          />
-                        }
                       />
                       <Field
                         component={MarkDownField}
@@ -412,15 +371,8 @@ const Policies: FunctionComponent = () => {
                         fullWidth
                         style={{ marginTop: 14 }}
                         height={38}
-                        onFocus={(name: string) => handleChangeFocus(id, name)}
                         onSubmit={handleSubmitField}
                         variant="standard"
-                        helperText={
-                          <SubscriptionFocus
-                            context={editContext}
-                            fieldName="platform_consent_confirm_text"
-                          />
-                        }
                       />
                     </Paper>
                   </Grid>

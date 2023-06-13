@@ -43,10 +43,11 @@ export const createRetentionRule = async (context, user, input) => {
   await elIndex(INDEX_INTERNAL_OBJECTS, retentionRule);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
     message: `creates retention rule \`${retentionRule.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'create', input }
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input }
   });
   return retentionRule;
 };
@@ -55,10 +56,11 @@ export const retentionRuleEditField = async (context, user, retentionRuleId, inp
   const { element } = await updateAttribute(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE, input);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'update',
+    event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for retention rule \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'update', input }
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input }
   });
   return element;
 };
@@ -67,10 +69,11 @@ export const deleteRetentionRule = async (context, user, retentionRuleId) => {
   const deleted = await deleteElementById(context, user, retentionRuleId, ENTITY_TYPE_RETENTION_RULE);
   await publishUserAction({
     user,
-    event_type: 'admin',
-    status: 'success',
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
     message: `deletes retention rule \`${deleted.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, operation: 'delete', input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_RETENTION_RULE, input: deleted }
   });
   return retentionRuleId;
 };
