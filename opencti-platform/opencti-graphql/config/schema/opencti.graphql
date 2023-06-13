@@ -11923,7 +11923,7 @@ type Query {
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): ReportConnection @auth(for: [SETTINGS])
+  ): ReportConnection @auth(for: [KNOWLEDGE])
   reportsTimeSeries(
     objectId: String
     authorId: String
@@ -12738,7 +12738,7 @@ type OpinionEditMutations {
 }
 type ReportEditMutations {
   delete(purgeElements: Boolean): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
-  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [SETTINGS])
+  fieldPatch(input: [EditInput]!, commitMessage: String, references: [String]): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextPatch(input: EditContext): Report @auth(for: [KNOWLEDGE_KNUPDATE])
   contextClean: Report @auth(for: [KNOWLEDGE_KNUPDATE])
   relationAdd(input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
