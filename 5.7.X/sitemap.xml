@@ -76,6 +76,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7.X/development/api-usage/</loc>
+         <lastmod>2023-06-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7.X/development/environment/</loc>
          <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
