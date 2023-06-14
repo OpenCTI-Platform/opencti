@@ -1,67 +1,43 @@
-import React, { Component } from 'react';
-import * as PropTypes from 'prop-types';
-import * as R from 'ramda';
-import withTheme from '@mui/styles/withTheme';
-import withStyles from '@mui/styles/withStyles';
+import { AccountBalanceOutlined, AspectRatio, CenterFocusStrongOutlined, DateRangeOutlined, DeleteOutlined, EditOutlined, FilterAltOffOutlined, FilterListOutlined, Gesture, LinkOutlined, OpenWithOutlined, ScatterPlotOutlined } from '@mui/icons-material';
+import Badge from '@mui/material/Badge';
+import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
+import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogContentText from '@mui/material/DialogContentText';
+import Divider from '@mui/material/Divider';
+import Drawer from '@mui/material/Drawer';
 import IconButton from '@mui/material/IconButton';
-import {
-  ResponsiveContainer,
-  Scatter,
-  ScatterChart,
-  YAxis,
-  ZAxis,
-} from 'recharts';
-import {
-  AccountBalanceOutlined,
-  AspectRatio,
-  CenterFocusStrongOutlined,
-  DateRangeOutlined,
-  DeleteOutlined,
-  EditOutlined,
-  FilterAltOffOutlined,
-  FilterListOutlined,
-  LinkOutlined,
-  OpenWithOutlined,
-  ScatterPlotOutlined,
-} from '@mui/icons-material';
-import {
-  AutoFix,
-  FamilyTree,
-  SelectAll,
-  SelectGroup,
-  SelectionDrag,
-  Video3d,
-} from 'mdi-material-ui';
-import TimeRange from 'react-timeline-range-slider';
 import LinearProgress from '@mui/material/LinearProgress';
-import Tooltip from '@mui/material/Tooltip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Checkbox from '@mui/material/Checkbox';
-import Badge from '@mui/material/Badge';
-import Drawer from '@mui/material/Drawer';
 import Popover from '@mui/material/Popover';
-import DialogContent from '@mui/material/DialogContent';
-import DialogActions from '@mui/material/DialogActions';
-import Button from '@mui/material/Button';
-import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
 import Slide from '@mui/material/Slide';
-import DialogContentText from '@mui/material/DialogContentText';
+import Tooltip from '@mui/material/Tooltip';
+import withStyles from '@mui/styles/withStyles';
+import withTheme from '@mui/styles/withTheme';
+import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d, } from 'mdi-material-ui';
+import * as PropTypes from 'prop-types';
+import * as R from 'ramda';
+import React, { Component } from 'react';
+import TimeRange from 'react-timeline-range-slider';
+import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, } from 'recharts';
 import inject18n from '../../../../components/i18n';
-import { truncate } from '../../../../utils/String';
-import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
-import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
-import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
-import { dateFormat } from '../../../../utils/Time';
-import { parseDomain } from '../../../../utils/Graph';
-import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
-import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
+import { parseDomain } from '../../../../utils/Graph';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';
+import { truncate } from '../../../../utils/String';
+import { dateFormat } from '../../../../utils/Time';
+import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
+import StixCoreRelationshipEdition from '../../common/stix_core_relationships/StixCoreRelationshipEdition';
+import StixDomainObjectEdition from '../../common/stix_domain_objects/StixDomainObjectEdition';
+import StixCyberObservableEdition from '../../observations/stix_cyber_observables/StixCyberObservableEdition';
+import InvestigationAddStixCoreObjects from './InvestigationAddStixCoreObjects';
 
 const styles = () => ({
   bottomNav: {
@@ -233,7 +209,9 @@ class InvestigationGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectRectangleModeFree,
       currentSelectModeFree,
+      selectModeFreeReady,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -241,6 +219,7 @@ class InvestigationGraphBar extends Component {
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
       handleZoomToFit,
+      handleToggleRectangleSelectModeFree,
       handleToggleSelectModeFree,
       stixCoreObjectsTypes,
       createdBy,
@@ -478,13 +457,26 @@ class InvestigationGraphBar extends Component {
               <Tooltip title={t('Free rectangle select')}>
                 <span>
                   <IconButton
-                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    color={currentSelectRectangleModeFree ? 'secondary' : 'primary'}
                     size="large"
-                    onClick={handleToggleSelectModeFree.bind(this)}
+                    onClick={handleToggleRectangleSelectModeFree.bind(this)}
                   >
                     <SelectionDrag />
                   </IconButton>
                 </span>
+              </Tooltip>
+              <Tooltip title={t('Free select')}>
+                {selectModeFreeReady ? (
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <Gesture />
+                  </IconButton>
+                ) : (
+                  <Loader variant={LoaderVariant.inElement} />
+                )}
               </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>
@@ -964,9 +956,13 @@ InvestigationGraphBar.propTypes = {
   handleToggle3DMode: PropTypes.func,
   handleToggleTreeMode: PropTypes.func,
   currentMode3D: PropTypes.bool,
+  handleToggleRectangleSelectModeFree: PropTypes.func,
   handleToggleSelectModeFree: PropTypes.func,
   currentModeTree: PropTypes.string,
   currentModeFixed: PropTypes.bool,
+  currentSelectModeFree: PropTypes.bool,
+  currentSelectRectangleModeFree: PropTypes.bool,
+  selectModeFreeReady: PropTypes.bool,
   handleToggleFixedMode: PropTypes.func,
   handleZoomToFit: PropTypes.func,
   handleToggleStixCoreObjectType: PropTypes.func,

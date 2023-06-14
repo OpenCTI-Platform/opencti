@@ -12,7 +12,7 @@ import {
   DeleteOutlined,
   EditOutlined,
   FilterAltOffOutlined,
-  FilterListOutlined,
+  FilterListOutlined, Gesture,
   LinkOutlined,
   ReadMoreOutlined,
   ScatterPlotOutlined,
@@ -55,6 +55,7 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
+import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { dateFormat } from '../../../../utils/Time';
@@ -315,7 +316,9 @@ class CaseRfiKnowledgeGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectRectangleModeFree,
       currentSelectModeFree,
+      selectModeFreeReady,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
@@ -323,6 +326,7 @@ class CaseRfiKnowledgeGraphBar extends Component {
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
       handleZoomToFit,
+      handleToggleRectangleSelectModeFree,
       handleToggleSelectModeFree,
       stixCoreObjectsTypes,
       createdBy,
@@ -556,13 +560,26 @@ class CaseRfiKnowledgeGraphBar extends Component {
               <Tooltip title={t('Free rectangle select')}>
                 <span>
                   <IconButton
-                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    color={currentSelectRectangleModeFree ? 'secondary' : 'primary'}
                     size="large"
-                    onClick={handleToggleSelectModeFree.bind(this)}
+                    onClick={handleToggleRectangleSelectModeFree.bind(this)}
                   >
                     <SelectionDrag />
                   </IconButton>
                 </span>
+              </Tooltip>
+              <Tooltip title={t('Free select')}>
+                {selectModeFreeReady ? (
+                  <IconButton
+                    color={currentSelectModeFree ? 'secondary' : 'primary'}
+                    size="large"
+                    onClick={handleToggleSelectModeFree.bind(this)}
+                  >
+                    <Gesture />
+                  </IconButton>
+                ) : (
+                  <Loader variant={LoaderVariant.inElement} />
+                )}
               </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>
@@ -1145,11 +1162,15 @@ CaseRfiKnowledgeGraphBar.propTypes = {
   t: PropTypes.func,
   caseData: PropTypes.object,
   handleToggle3DMode: PropTypes.func,
+  handleToggleRectangleSelectModeFree: PropTypes.func,
   handleToggleSelectModeFree: PropTypes.func,
   currentMode3D: PropTypes.bool,
   handleToggleTreeMode: PropTypes.func,
   currentModeTree: PropTypes.string,
   currentModeFixed: PropTypes.bool,
+  currentSelectModeFree: PropTypes.bool,
+  currentSelectRectangleModeFree: PropTypes.bool,
+  selectModeFreeReady: PropTypes.bool,
   handleToggleFixedMode: PropTypes.func,
   handleZoomToFit: PropTypes.func,
   handleToggleStixCoreObjectType: PropTypes.func,
