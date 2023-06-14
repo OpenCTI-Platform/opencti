@@ -2,127 +2,127 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://docs.opencti.io/5.7.X/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/administration/introduction/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/administration/parameters/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/administration/users/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/authentication/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/clustering/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/configuration/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/connectors/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/installation/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/integrations/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/overview/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/resources/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/rollover/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/troubleshooting/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/deployment/upgrade/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/development/environment/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/containers/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/dashboards/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/data-model/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/deduplication/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/getting-started/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/nested/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/notifications/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/overview/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/search/</loc>
-         <lastmod>2023-06-11</lastmod>
+         <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
 </urlset>

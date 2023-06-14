@@ -1338,6 +1338,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#hide-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hide categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hide-categories-globally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories globally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hide-categories-in-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories in roles
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -1351,6 +1390,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Presentation of a typical page in OpenCTI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3242,6 +3298,45 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#hide-categories" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Hide categories">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#hide-categories-globally" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories globally
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#hide-categories-in-roles" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Hide categories in roles
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -3255,6 +3350,23 @@
       
     </span>
   </a>
+  
+    <nav class="md-nav" aria-label="Presentation of a typical page in OpenCTI">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#overview_1" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Overview
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
   
 </li>
       
@@ -3367,8 +3479,42 @@
 </figure>
 <h2 id="structure">Structure</h2>
 <h3 id="the-hot-knowledge">The "hot knowledge"</h3>
+<p>The first part of the platform in the left menu is dedicated to what we call the "hot knowledge", which means this is the entities and relationships which are added on a daily basis in the platform and which generally require work / analysis from the users.</p>
+<ul>
+<li><code>Analysis</code>: all containers which convey relevant knowledge such as reports, groupings and malware analysis.</li>
+<li><code>Cases</code>: all types of case like incident responses, requests for information, for takedown, etc.</li>
+<li><code>Events</code>: all incidents &amp; alerts coming from operational systems as well as sightings.</li>
+<li><code>Observations</code>: all technical data in the platform such as observables, artifacts and indicators.</li>
+</ul>
 <h3 id="the-cold-knowledge">The "cold knowledge"</h3>
+<p>The second part of the platform in the left menu is dedicated to the "cold knowledge", which means this is the entities and relationships used in the hot knowledge. You can see this as the "encyclopedia" of all pieces of knowledge you need to get context: threats, countries, sectors, etc.</p>
+<ul>
+<li><code>Threats</code>: all threats entities from campaigns to threat actors, including intrusion sets.</li>
+<li><code>Arsenal</code>: all tools and pieces of malware used and/or targeted by threats, including vulnerabilities.</li>
+<li><code>Techniques</code>: all objects related to tactics and techniques used by threats (TTPs, etc.).</li>
+<li><code>Entities</code>: all non-geographical contextual information such as sectors, events, organizations, etc.</li>
+<li><code>Locations</code>: all geographical contextual information, from cities to regions, including precise positions.</li>
+</ul>
+<h3 id="hide-categories">Hide categories</h3>
+<p>You can customize the experience in the platform by hiding some categories in the left menu, whether globally or for a specific role.</p>
+<h4 id="hide-categories-globally">Hide categories globally</h4>
+<p>In the <code>Settings &gt; Parameters</code>, it is possible for the platform administrator to hide categories in the platform for all users.</p>
+<p><a class="glightbox" href="../assets/hide-global.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Hide categories globally" src="../assets/hide-global.png" /></a></p>
+<h3 id="hide-categories-in-roles">Hide categories in roles</h3>
+<p>In OpencTI, the different roles are highly customizable. It is possible to defined default dashboards, triggers, etc. but also be able to hide categories in the roles:</p>
+<p><a class="glightbox" href="../assets/hide-roles.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Hide categories in roles" src="../assets/hide-roles.png" /></a></p>
 <h2 id="presentation-of-a-typical-page-in-opencti">Presentation of a typical page in OpenCTI</h2>
+<p>Although there are many different entities in OpenCTI and many different tabs, most of them are quite similar and only have minor differences from the other, mostly due to some of their characteristics, which requires specific fields or do not require some fields which are necessary for the other. </p>
+<p>In this part will only be detailed a general outline of a "typical" OpenCTI page. The specifies of the different entities will be detailed in the corresponding pages below (Activities and Knowledge).</p>
+<figure>
+<p><a class="glightbox" href="../assets/top-menu.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Top menu of an entity" src="../assets/top-menu.png" /></a></p>
+</figure>
+<h3 id="overview_1">Overview</h3>
+<p>In the <code>Overview</code> tab on the entity, you will find all properties of the entity as well as the recent activities.</p>
+<p>First, you will find the <code>Details</code> section, where are displayed all properties specific to the type of entity you are looking at, an example below with a piece of malware:</p>
+<p><a class="glightbox" href="../assets/details.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Details" src="../assets/details.png" /></a></p>
+<p>Thus, in the <code>Basic information</code> section, are displayed all common properties to all objects in OpenCTI, such as the marking definition, the author, the labels (ie. tags), etc.</p>
+<p><a class="glightbox" href="../assets/basic.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Basic information" src="../assets/basic.png" /></a></p>
 
   
     
@@ -3384,7 +3530,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-31T19:54:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-31</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-14T11:35:58+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-14</span>
       </span>
     
     
