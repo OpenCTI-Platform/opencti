@@ -163,6 +163,10 @@ const stixDomainObjectsTimelineQuery = graphql`
           ... on Case {
             name
           }
+          ... on Note {
+            attribute_abstract
+            content
+          }
         }
       }
     }

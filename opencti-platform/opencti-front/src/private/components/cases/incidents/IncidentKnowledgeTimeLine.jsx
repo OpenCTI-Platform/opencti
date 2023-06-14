@@ -345,6 +345,10 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
             ... on CaseTask {
               name
             }
+            ... on Note {
+              attribute_abstract
+              content
+            }
             ... on StixCyberObservable {
               observable_value
               x_opencti_description
@@ -526,6 +530,10 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                 ... on CaseTask {
                   name
                 }
+                ... on Note {
+                  attribute_abstract
+                  content
+                }
                 ... on StixCyberObservable {
                   observable_value
                   x_opencti_description
@@ -698,6 +706,10 @@ export default createFragmentContainer(IncidentKnowledgeTimeLineComponent, {
                 }
                 ... on CaseTask {
                   name
+                }
+                ... on Note {
+                  attribute_abstract
+                  content
                 }
                 ... on StixCyberObservable {
                   observable_value

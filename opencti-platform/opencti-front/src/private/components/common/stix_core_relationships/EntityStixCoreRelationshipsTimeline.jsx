@@ -227,6 +227,10 @@ const entityStixCoreRelationshipsTimelineStixCoreRelationshipQuery = graphql`
             ... on Case {
               name
             }
+            ... on Note {
+              attribute_abstract
+              content
+            }
             ... on StixCyberObservable {
               id
               entity_type
