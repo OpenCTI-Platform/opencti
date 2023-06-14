@@ -59,6 +59,7 @@ const StixCoreObjectsMultiLineChart = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -124,7 +125,7 @@ const StixCoreObjectsMultiLineChart = ({
                 type="line"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

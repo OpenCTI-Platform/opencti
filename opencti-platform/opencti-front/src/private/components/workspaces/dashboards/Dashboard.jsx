@@ -261,6 +261,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'line':
@@ -271,6 +272,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'area':
@@ -281,6 +283,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'timeline':
@@ -301,6 +304,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'horizontal-bar':
@@ -315,6 +319,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               dataSelection={widget.dataSelection}
               parameters={widget.parameters}
               variant="inLine"
+              withExportPopover={true}
             />
           );
         }
@@ -325,6 +330,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'radar':
@@ -335,6 +341,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'heatmap':
@@ -345,6 +352,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'tree':
@@ -355,6 +363,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       default:
@@ -406,6 +415,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'line':
@@ -416,6 +426,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'area':
@@ -426,6 +437,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'timeline':
@@ -446,6 +458,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'horizontal-bar':
@@ -460,6 +473,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
               dataSelection={widget.dataSelection}
               parameters={widget.parameters}
               variant="inLine"
+              withExportPopover={true}
             />
           );
         }
@@ -470,6 +484,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'radar':
@@ -480,6 +495,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'heatmap':
@@ -490,6 +506,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'tree':
@@ -500,6 +517,7 @@ const DashboardComponent = ({ workspace, noToolbar }) => {
             dataSelection={widget.dataSelection}
             parameters={widget.parameters}
             variant="inLine"
+            withExportPopover={true}
           />
         );
       case 'map':

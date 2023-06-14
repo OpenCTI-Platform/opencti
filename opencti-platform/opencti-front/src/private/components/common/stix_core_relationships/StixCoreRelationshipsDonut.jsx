@@ -207,6 +207,7 @@ const StixCoreRelationshipsDonut = ({
   dateAttribute,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -293,7 +294,7 @@ const StixCoreRelationshipsDonut = ({
                 type="donut"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

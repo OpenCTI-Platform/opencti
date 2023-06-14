@@ -59,6 +59,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -129,7 +130,7 @@ const StixCoreRelationshipsMultiAreaChart = ({
                 type="area"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

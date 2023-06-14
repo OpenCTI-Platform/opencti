@@ -59,6 +59,7 @@ const StixCoreObjectsMultiAreaChart = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -124,7 +125,7 @@ const StixCoreObjectsMultiAreaChart = ({
                 type="area"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

@@ -211,6 +211,7 @@ const StixCoreObjectsHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -297,7 +298,7 @@ const StixCoreObjectsHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

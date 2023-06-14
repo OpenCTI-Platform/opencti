@@ -59,6 +59,7 @@ const StixCoreObjectsMultiVerticalBars = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -124,7 +125,7 @@ const StixCoreObjectsMultiVerticalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

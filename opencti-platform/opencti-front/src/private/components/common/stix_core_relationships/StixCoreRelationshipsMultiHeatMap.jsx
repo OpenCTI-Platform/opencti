@@ -86,6 +86,7 @@ const StixCoreRelationshipsMultiHeatMap = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const theme = useTheme();
   const classes = useStyles();
@@ -182,7 +183,7 @@ const StixCoreRelationshipsMultiHeatMap = ({
                 type="heatmap"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }

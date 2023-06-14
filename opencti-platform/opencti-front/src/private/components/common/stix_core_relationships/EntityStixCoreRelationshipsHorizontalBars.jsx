@@ -273,7 +273,6 @@ const EntityStixCoreRelationshipsHorizontalBars = (
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
               />
             );
           }

@@ -376,6 +376,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
   endDate,
   dataSelection,
   parameters = {},
+  withExportPopover = false,
 }) => {
   const classes = useStyles();
   const theme = useTheme();
@@ -493,7 +494,7 @@ const stixCoreObjectsMultiHorizontalBars = ({
                 type="bar"
                 width="100%"
                 height="100%"
-                withExportPopover={true}
+                withExportPopover={withExportPopover}
               />
             );
           }
