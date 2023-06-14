@@ -64,7 +64,7 @@ import {
   stixObjectOrRelationshipAddRefRelations,
   stixObjectOrRelationshipDeleteRefRelation
 } from './stixObjectOrStixRelationship';
-import { publishUserAction } from '../listener/UserActionListener';
+import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
 
 export const findAll = async (context, user, args) => {
   let types = [];
@@ -288,20 +288,16 @@ export const stixCoreObjectExportPush = async (context, user, entityId, file) =>
   if (!previous) {
     throw UnsupportedError('Cant upload a file an none existing element', { entityId });
   }
-  const { internal_id: internalId } = previous;
-  const up = await upload(context, user, `export/${previous.entity_type}/${entityId}`, file, { entity: previous });
-  // Patch the updated_at to force live stream evolution
-  const eventFile = storeFileConverter(user, up);
-  const files = [...(previous.x_opencti_files ?? []).filter((f) => f.id !== up.id), eventFile];
-  await elUpdateElement({
-    _index: previous._index,
-    internal_id: internalId,
-    updated_at: now(),
-    x_opencti_files: files
+  const path = `export/${previous.entity_type}/${entityId}`;
+  const up = await upload(context, user, path, file, { entity: previous });
+  const contextData = buildContextDataForFile(null, path, up.name);
+  await publishUserAction({
+    user,
+    event_type: 'file',
+    event_access: 'extended',
+    event_scope: 'create',
+    context_data: contextData
   });
-  // Stream event generation
-  const instance = { ...previous, x_opencti_files: files };
-  await storeUpdateEvent(context, user, previous, instance, `adds \`${up.name}\` in \`files\``);
   return true;
 };
 
