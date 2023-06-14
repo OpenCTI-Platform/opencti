@@ -48,6 +48,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   && stixCyberObservable.importFiles.edges.length > 0
     ? stixCyberObservable.importFiles.edges[0].node
     : null;
+  const isAnalysableObservable = ['StixFile', 'Domain-Name', 'Url', 'Hostname'].includes(stixCyberObservable.entity_type);
   return (
     <div style={{ height: '100%' }} className="break">
       <Typography variant="h4" gutterBottom={true}>
@@ -157,9 +158,10 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
         <StixCyberObservableIndicators
           stixCyberObservable={stixCyberObservable}
         />
-        <StixCyberObservableMalwareAnalyses
+        {isAnalysableObservable && <StixCyberObservableMalwareAnalyses
           stixCyberObservableId={stixCyberObservable.id}
         />
+        }
       </Paper>
     </div>
   );
