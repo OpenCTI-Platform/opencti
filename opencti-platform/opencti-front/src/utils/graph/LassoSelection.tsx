@@ -79,7 +79,7 @@ const LassoSelection: FunctionComponent<LassoSelectionProps> = ({
     coord = reposition(e);
     currentContext.moveTo(coord.x, coord.y);
     currentContext.lineWidth = 1;
-    currentContext.setLineDash([0.5, 1]);
+    currentContext.setLineDash([1, 3]);
     currentContext.lineCap = 'round';
     currentContext.strokeStyle = (theme.palette.warning as SimplePaletteColorOptions)?.main ?? theme.palette.common.white;
     currentContext.beginPath();
