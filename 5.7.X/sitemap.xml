@@ -81,6 +81,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7.X/references/data-model/</loc>
+         <lastmod>2023-06-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7.X/usage/containers/</loc>
          <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
@@ -101,6 +106,11 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/exploring/</loc>
+         <lastmod>2023-06-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
          <loc>https://docs.opencti.io/5.7.X/usage/getting-started/</loc>
          <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
@@ -117,6 +127,11 @@
     </url>
     <url>
          <loc>https://docs.opencti.io/5.7.X/usage/overview/</loc>
+         <lastmod>2023-06-14</lastmod>
+         <changefreq>daily</changefreq>
+    </url>
+    <url>
+         <loc>https://docs.opencti.io/5.7.X/usage/pivoting/</loc>
          <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
