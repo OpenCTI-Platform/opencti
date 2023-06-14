@@ -21,9 +21,8 @@ export const stixObjectOrRelationshipAddRefRelation = async (context, user, stix
   if (!isStixRefRelationship(finalInput.relationship_type)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
-  return createRelation(context, user, finalInput).then((relationData) => {
-    return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relationData, user);
-  });
+  const relation = await createRelation(context, user, finalInput);
+  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relation, user);
 };
 export const stixObjectOrRelationshipAddRefRelations = async (context, user, stixObjectOrRelationshipId, input, type, opts = {}) => {
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
@@ -49,6 +48,6 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (context, user, s
   if (!isStixRefRelationship(relationshipType)) {
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
   }
-  await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP, opts);
-  return notify(BUS_TOPICS[type].EDIT_TOPIC, stixObjectOrRelationship, user);
+  const { from, to } = await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP, opts);
+  return notify(BUS_TOPICS[type].EDIT_TOPIC, { ...stixObjectOrRelationship, from, to }, user);
 };

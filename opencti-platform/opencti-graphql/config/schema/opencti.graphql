@@ -11653,6 +11653,16 @@ type Query {
     relationship_type: [String]
     elementId: String
   ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
+  globalSearch(
+    first: Int
+    after: ID
+    search: String
+    types: [String]
+    orderBy: StixCoreObjectsOrdering
+    orderMode: OrderingMode
+    filters: [StixCoreObjectsFiltering]
+    filterMode: FilterMode
+  ): StixCoreObjectConnection @auth(for: [KNOWLEDGE])
   stixCoreObjectsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
   stixCoreObjectsTimeSeries(
     authorId: String

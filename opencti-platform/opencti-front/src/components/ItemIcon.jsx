@@ -20,6 +20,7 @@ import {
   LogoutOutlined,
   ManageAccountsOutlined,
   WorkOutline,
+  FactCheckOutlined,
   ReviewsOutlined,
   LocalOfferOutlined,
   WifiTetheringOutlined,
@@ -66,7 +67,7 @@ import {
 import { itemColor } from '../utils/Colors';
 
 const iconSelector = (type, variant, fontSize, color, isReversed) => {
-  let style = {};
+  let style;
   switch (variant) {
     case 'inline':
       style = {
@@ -87,6 +88,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 
   switch (type) {
+    case 'global':
+      return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
     case 'admin':
       return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'search':
@@ -109,6 +112,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <FileDelimitedOutline style={style} fontSize={fontSize} role="img" />;
     case 'Task':
       return <AssignmentOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'work':
     case 'Connector':
       return <ExtensionOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Marking-Definition':
@@ -133,6 +137,7 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <WorkspacesOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Course-Of-Action':
       return <ProgressWrench style={style} fontSize={fontSize} role="img" />;
+    case 'Role':
     case 'Individual':
     case 'User':
       return <PersonOutlined style={style} fontSize={fontSize} role="img" />;
@@ -192,6 +197,8 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
       return <Launch style={style} fontSize={fontSize} role="img" />;
     case 'Artifact':
       return <ArchiveOutline style={style} fontSize={fontSize} role="img" />;
+    case 'StatusTemplate':
+      return <FactCheckOutlined style={style} fontSize={fontSize} role="img" />;
     case 'Case':
       return <WorkOutline style={style} fontSize={fontSize} role="img" />;
     case 'Case-Incident':

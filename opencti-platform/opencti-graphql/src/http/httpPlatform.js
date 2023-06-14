@@ -48,6 +48,19 @@ const extractRefererPathFromReq = (req) => {
   return undefined;
 };
 
+const publishFileRead = async (executeContext, auth, file) => {
+  const { filename, entity_id } = file.metaData;
+  const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
+  const data = buildContextDataForFile(entity, file.id, filename);
+  await publishUserAction({
+    user: auth,
+    event_type: 'file',
+    event_access: 'extended',
+    event_scope: 'read',
+    context_data: data
+  });
+};
+
 const createApp = async (app) => {
   const limiter = rateLimit({
     windowMs: nconf.get('app:rate_protection:time_window') * 1000, // seconds
@@ -131,16 +144,7 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(executeContext, auth, file);
-      const { filename, entity_id } = data.metaData;
-      const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
-      await publishUserAction({
-        user: auth,
-        explicit_listening: true,
-        event_type: 'read',
-        event_access: 'standard',
-        event_scope: 'download',
-        context_data: buildContextDataForFile(entity, file, filename)
-      });
+      await publishFileRead(executeContext, auth, data);
       const stream = await downloadFile(executeContext, file);
       res.attachment(file);
       stream.pipe(res);
@@ -161,16 +165,7 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(executeContext, auth, file);
-      const { filename, entity_id } = data.metaData;
-      const entity = entity_id ? await internalLoadById(executeContext, auth, entity_id) : undefined;
-      await publishUserAction({
-        user: auth,
-        explicit_listening: true,
-        event_type: 'read',
-        event_access: 'standard',
-        event_scope: 'download',
-        context_data: buildContextDataForFile(entity, file, filename)
-      });
+      await publishFileRead(executeContext, auth, data);
       res.set('Content-disposition', contentDisposition(data.name, { type: 'inline' }));
       res.set({ 'Content-Security-Policy': 'sandbox' });
       res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
@@ -199,10 +194,12 @@ const createApp = async (app) => {
       }
       const { file } = req.params;
       const data = await loadFile(executeContext, auth, file);
-      if (data.metaData.mimetype === 'text/markdown') {
+      const { mimetype } = data.metaData;
+      if (mimetype === 'text/markdown') {
         const markDownData = await getFileContent(file);
         const converter = new showdown.Converter();
         const html = converter.makeHtml(markDownData);
+        await publishFileRead(executeContext, auth, data);
         res.set({ 'Content-Security-Policy': 'sandbox' });
         res.set('Cache-Control', 'private, no-cache, no-store, must-revalidate');
         res.send(html);

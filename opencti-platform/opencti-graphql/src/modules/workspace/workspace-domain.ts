@@ -36,6 +36,7 @@ import {
   getUserAccessRight
 } from '../../utils/access';
 import type { BasicStoreEntity } from '../../types/store';
+import { publishUserAction } from '../../listener/UserActionListener';
 
 export const findById = (context: AuthContext, user: AuthUser, workspaceId: string): BasicStoreEntityWorkspace => {
   return storeLoadById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE) as unknown as BasicStoreEntityWorkspace;
@@ -103,19 +104,35 @@ export const objects = async (context: AuthContext, user: AuthUser, workspaceId:
   return listThings(context, user, types, finalArgs);
 };
 
-export const addWorkspace = async (context: AuthContext, user: AuthUser, workspace: WorkspaceAddInput) => {
-  const authorizedMembers = workspace.authorized_members ?? [];
+export const addWorkspace = async (context: AuthContext, user: AuthUser, input: WorkspaceAddInput) => {
+  const authorizedMembers = input.authorized_members ?? [];
   if (!authorizedMembers.some((e) => e.id === user.id)) {
     // add creator to authorized_members on creation
     authorizedMembers.push({ id: user.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN });
   }
-  const workspaceToCreate = { ...workspace, authorized_members: authorizedMembers };
+  const workspaceToCreate = { ...input, authorized_members: authorizedMembers };
   const created = await createEntity(context, user, workspaceToCreate, ENTITY_TYPE_WORKSPACE);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'extended',
+    message: `creates ${created.type} workspace \`${created.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_WORKSPACE, input }
+  });
   return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].ADDED_TOPIC, created, user);
 };
 
 export const workspaceDelete = async (context: AuthContext, user: AuthUser, workspaceId: string) => {
-  await deleteElementById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  const deleted = await deleteElementById(context, user, workspaceId, ENTITY_TYPE_WORKSPACE);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
+    message: `deletes ${deleted.type} workspace \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_WORKSPACE, input: deleted }
+  });
   return workspaceId;
 };
 

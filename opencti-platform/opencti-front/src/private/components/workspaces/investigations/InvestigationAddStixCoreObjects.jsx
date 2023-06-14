@@ -287,7 +287,6 @@ class InvestigationAddStixCoreObjects extends Component {
         </Tooltip>
         <Drawer
           open={this.state.open}
-          keepMounted={true}
           anchor="right"
           elevation={1}
           sx={{ zIndex: 1202 }}

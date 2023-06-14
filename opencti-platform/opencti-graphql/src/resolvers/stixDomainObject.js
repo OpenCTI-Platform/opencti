@@ -12,11 +12,9 @@ import {
   stixDomainObjectEditContext,
   stixDomainObjectEditField,
   stixDomainObjectExportAsk,
-  stixDomainObjectExportPush,
   stixDomainObjectsDelete,
   stixDomainObjectsDistributionByEntity,
   stixDomainObjectsExportAsk,
-  stixDomainObjectsExportPush,
   stixDomainObjectsNumber,
   stixDomainObjectsTimeSeries,
   stixDomainObjectsTimeSeriesByAuthor,
@@ -27,7 +25,7 @@ import withCancel from '../graphql/subscriptionWrapper';
 import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_DOMAIN_OBJECT } from '../schema/general';
 import { stixDomainObjectOptions } from '../schema/stixDomainObjectOptions';
-import { stixCoreObjectImportPush } from '../domain/stixCoreObject';
+import { stixCoreObjectExportPush, stixCoreObjectImportPush, stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 import { batchLoader } from '../database/middleware';
 
 const assigneesLoader = batchLoader(batchAssignees);
@@ -79,12 +77,12 @@ const stixDomainObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType }) => stixDomainObjectDeleteRelation(context, context.user, id, toId, relationshipType),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
       exportAsk: (args) => stixDomainObjectExportAsk(context, context.user, { ...args, stixDomainObjectId: id }),
-      exportPush: ({ file }) => stixDomainObjectExportPush(context, context.user, id, file),
+      exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
     }),
     stixDomainObjectsDelete: (_, { id }, context) => stixDomainObjectsDelete(context, context.user, id),
     stixDomainObjectAdd: (_, { input }, context) => addStixDomainObject(context, context.user, input),
     stixDomainObjectsExportAsk: (_, args, context) => stixDomainObjectsExportAsk(context, context.user, args),
-    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixDomainObjectsExportPush(context, context.user, type, file, listFilters),
+    stixDomainObjectsExportPush: (_, { type, file, listFilters }, context) => stixCoreObjectsExportPush(context, context.user, type, file, listFilters)
   },
   Subscription: {
     stixDomainObject: {

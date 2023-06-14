@@ -44,6 +44,9 @@ export const insertNode = (
         .getRootField(rootField)
         .getLinkedRecord(linkedRecord, { input });
       payload = result.getLinkedRecord(relKey);
+    } else if (relKey) {
+      const result = store.getRootField(rootField);
+      payload = result.getLinkedRecord(relKey);
     } else {
       payload = store.getRootField(rootField);
     }

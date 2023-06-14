@@ -71,7 +71,7 @@ export const resetStateConnector = async (context, user, id) => {
     event_type: 'mutation',
     event_scope: 'update',
     event_access: 'administration',
-    message: `resets \`state\` for connector \`${element.name}\``,
+    message: `resets \`state\` for ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
     context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: { id } }
   });
   return storeLoadById(context, user, id, ENTITY_TYPE_CONNECTOR).then((data) => completeConnector(data));
@@ -108,6 +108,14 @@ export const registerConnector = async (context, user, connectorData) => {
     connector_user_id: user.id,
   };
   const createdConnector = await createEntity(context, user, connectorToCreate, ENTITY_TYPE_CONNECTOR);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'create',
+    event_access: 'administration',
+    message: `creates ${ENTITY_TYPE_CONNECTOR} \`${createdConnector.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: connectorData }
+  });
   // Notify configuration change for caching system
   await notify(BUS_TOPICS[ABSTRACT_INTERNAL_OBJECT].ADDED_TOPIC, createdConnector, user);
   // Return the connector
@@ -122,7 +130,7 @@ export const connectorDelete = async (context, user, connectorId) => {
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'administration',
-    message: `deletes connector \`${element.name}\``,
+    message: `deletes ${ENTITY_TYPE_CONNECTOR} \`${element.name}\``,
     context_data: { entity_type: ENTITY_TYPE_CONNECTOR, input: element }
   });
   // Notify configuration change for caching system

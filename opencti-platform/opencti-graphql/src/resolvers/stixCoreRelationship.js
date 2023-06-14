@@ -23,7 +23,6 @@ import {
   stixCoreRelationshipEditField,
   stixCoreRelationshipsDistribution,
   stixCoreRelationshipsExportAsk,
-  stixCoreRelationshipsExportPush,
   stixCoreRelationshipsMultiTimeSeries,
   stixCoreRelationshipsNumber } from '../domain/stixCoreRelationship';
 import { fetchEditContext, pubSubAsyncIterator } from '../database/redis';
@@ -36,6 +35,7 @@ import { filesListing } from '../database/file-storage';
 import { batchCreators } from '../domain/user';
 import { stixCoreRelationshipOptions } from '../schema/stixCoreRelationship';
 import { addOrganizationRestriction, batchObjectOrganizations, removeOrganizationRestriction } from '../domain/stix';
+import { stixCoreObjectsExportPush } from '../domain/stixCoreObject';
 
 const loadByIdLoader = batchLoader(elBatchIds);
 const createdByLoader = batchLoader(batchCreatedBy);
@@ -104,7 +104,7 @@ const stixCoreRelationshipResolvers = {
     stixCoreRelationshipAdd: (_, { input }, context) => addStixCoreRelationship(context, context.user, input),
     stixCoreRelationshipsExportAsk: (_, args, context) => stixCoreRelationshipsExportAsk(context, context.user, args),
     stixCoreRelationshipsExportPush: (_, { type, file, listFilters }, context) => {
-      return stixCoreRelationshipsExportPush(context, context.user, type, file, listFilters);
+      return stixCoreObjectsExportPush(context, context.user, type, file, listFilters);
     },
     stixCoreRelationshipDelete: (_, { fromId, toId, relationship_type: relationshipType }, context) => {
       return stixCoreRelationshipDeleteByFromAndTo(context, context.user, fromId, toId, relationshipType);

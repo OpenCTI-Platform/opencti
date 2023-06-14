@@ -41,14 +41,12 @@ import {
 } from '../schema/stixMetaObject';
 import {
   buildEntityFilters,
-  internalLoadById,
   listEntities,
   listRelations,
   storeLoadById
 } from '../database/middleware-loader';
-import { askEntityExport, askListExport, exportTransformFilters } from './stix';
+import { askListExport, exportTransformFilters } from './stix';
 import { workToExportFile } from './work';
-import { upload } from '../database/file-storage';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../modules/case/case-types';
 import {
   stixObjectOrRelationshipAddRefRelation,
@@ -202,22 +200,6 @@ export const stixCoreRelationshipsExportAsk = async (context, user, args) => {
   const listParams = { ...initialParams, ...exportTransformFilters(finalArgsFilter, filtersOpts, ordersOpts) };
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
-};
-export const stixCoreRelationshipExportAsk = async (context, user, args) => {
-  const { format, stixCoreRelationshipId = null, exportType = null, maxMarkingDefinition = null } = args;
-  const entity = stixCoreRelationshipId ? await storeLoadById(context, user, stixCoreRelationshipId, ABSTRACT_STIX_CORE_RELATIONSHIP) : null;
-  const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
-  return works.map((w) => workToExportFile(w));
-};
-export const stixCoreRelationshipsExportPush = async (context, user, type, file, listFilters) => {
-  const meta = { list_filters: listFilters };
-  await upload(context, user, `export/${type}`, file, { meta });
-  return true;
-};
-export const stixCoreRelationshipExportPush = async (context, user, entityId, file) => {
-  const entity = await internalLoadById(context, user, entityId);
-  await upload(context, user, `export/${entity.entity_type}/${entityId}`, file, { entity });
-  return true;
 };
 // endregion
 

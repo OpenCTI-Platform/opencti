@@ -20,15 +20,18 @@ import {
   stixCyberObservableEditContext,
   stixCyberObservableEditField,
   stixCyberObservableExportAsk,
-  stixCyberObservableExportPush,
   stixCyberObservablesExportAsk,
-  stixCyberObservablesExportPush,
   stixCyberObservablesNumber,
   stixCyberObservablesTimeSeries
 } from '../domain/stixCyberObservable';
 import { pubSubAsyncIterator } from '../database/redis';
 import withCancel from '../graphql/subscriptionWrapper';
-import { stixCoreObjectImportPush, stixCoreRelationships } from '../domain/stixCoreObject';
+import {
+  stixCoreObjectExportPush,
+  stixCoreObjectImportPush,
+  stixCoreObjectsExportPush,
+  stixCoreRelationships
+} from '../domain/stixCoreObject';
 import { filesListing } from '../database/file-storage';
 import { ABSTRACT_STIX_CYBER_OBSERVABLE } from '../schema/general';
 import { stixHashesToInput } from '../schema/fieldDataAdapter';
@@ -113,7 +116,7 @@ const stixCyberObservableResolvers = {
         return stixCyberObservableDeleteRelation(context, context.user, id, toId, relationshipType);
       },
       exportAsk: (args) => stixCyberObservableExportAsk(context, context.user, { ...args, stixCyberObservableId: id }),
-      exportPush: ({ file }) => stixCyberObservableExportPush(context, context.user, id, file),
+      exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
       importPush: ({ file }) => stixCoreObjectImportPush(context, context.user, id, file),
       promote: () => promoteObservableToIndicator(context, context.user, id),
     }),
@@ -122,7 +125,7 @@ const stixCyberObservableResolvers = {
     stixCyberObservablesExportPush: (_, {
       file,
       listFilters
-    }, context) => stixCyberObservablesExportPush(context, context.user, file, listFilters),
+    }, context) => stixCoreObjectsExportPush(context, context.user, 'Stix-Cyber-Observable', file, listFilters),
     artifactImport: (_, args, context) => artifactImport(context, context.user, args),
   },
   Subscription: {

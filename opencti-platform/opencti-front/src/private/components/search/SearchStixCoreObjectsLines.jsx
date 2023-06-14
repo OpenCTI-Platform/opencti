@@ -333,7 +333,7 @@ export default createPaginationContainer(
         orderMode: { type: "OrderingMode", defaultValue: asc }
         filters: { type: "[StixCoreObjectsFiltering]" }
       ) {
-        stixCoreObjects(
+        globalSearch(
           types: $types
           search: $search
           first: $count
@@ -341,7 +341,7 @@ export default createPaginationContainer(
           orderBy: $orderBy
           orderMode: $orderMode
           filters: $filters
-        ) @connection(key: "Pagination_stixCoreObjects") {
+        ) @connection(key: "Pagination_globalSearch") {
           edges {
             node {
               id

@@ -31,7 +31,6 @@ interface HistoryContext {
   id: string;
   entity_type: string;
   entity_name: string;
-  operation: string;
   message: string;
   from_id?: string | undefined;
   to_id?: string | undefined;
@@ -54,18 +53,8 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
   }
   const markingsById = await getEntitiesMapFromCache<BasicRuleEntity>(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const organizationsById = await getEntitiesMapFromCache<BasicStoreEntity>(context, SYSTEM_USER, ENTITY_TYPE_IDENTITY_ORGANIZATION);
-  const filteredEvents = events.filter((event) => {
-    // Filter update events with only files modification
-    if (event.event === EVENT_TYPE_UPDATE) {
-      const { patch } = (event.data as UpdateEvent).context;
-      const noFilePatches = patch.filter((p) => !p.path.startsWith(`/extensions/${STIX_EXT_OCTI}/files`));
-      return noFilePatches.length > 0;
-    }
-    // Deletion and creation events are not filtered
-    return true;
-  });
   // Build the history data
-  const historyElements = filteredEvents.map((event) => {
+  const historyElements = events.map((event) => {
     const [time] = event.id.split('-');
     const eventDate = utcDate(parseInt(time, 10)).toISOString();
     const stix = event.data.data;
@@ -80,7 +69,6 @@ const eventsApplyHandler = async (context: AuthContext, events: Array<SseEvent<S
       message: event.data.message,
       entity_type: stix.extensions[STIX_EXT_OCTI].type,
       entity_name: extractStixRepresentative(stix),
-      operation: event.event,
     };
     if (event.data.type === EVENT_TYPE_UPDATE) {
       const updateEvent: UpdateEvent = event.data as UpdateEvent;

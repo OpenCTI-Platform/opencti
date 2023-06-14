@@ -93,6 +93,14 @@ export const deleteWork = async (context, user, workId) => {
   const work = await loadWorkById(context, user, workId);
   if (work) {
     await deleteWorksRaw([work]);
+    await publishUserAction({
+      user,
+      event_type: 'mutation',
+      event_scope: 'delete',
+      event_access: 'administration',
+      message: `deletes Connector Work \`${work.name}\``,
+      context_data: { entity_type: ENTITY_TYPE_WORK, input: work }
+    });
   }
   return workId;
 };

@@ -5,55 +5,53 @@ import type { BasicStoreObject } from '../types/store';
 interface BasicUserAction {
   user: AuthUser
   status?: 'success' | 'error' // nothing = success
-  explicit_listening?: boolean
-  event_type: 'authentication' | 'read' | 'mutation'
-  event_access: 'standard' | 'administration'
-  event_scope: 'download' | 'upload' | 'export' | 'unauthorized' | 'login' | 'logout' | 'read' | 'create' | 'update' | 'delete' | 'merge' | 'search'
+  event_type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
+  event_access: 'extended' | 'administration'
 }
 
-// region user explicit listening
-export interface UserReadAction extends BasicUserAction {
-  event_type: 'read'
-  event_scope: 'read' | 'search'
+// region actions
+export interface UserSearchAction extends BasicUserAction {
+  event_type: 'command'
+  event_scope: 'search'
   context_data: {
-    id: string
-    entity_name: string
-    entity_type: string
+    input: unknown,
   }
 }
-export interface UserDownloadAction extends BasicUserAction {
-  event_type: 'read'
-  event_scope: 'download'
+export interface UserEnrichAction extends BasicUserAction {
+  event_type: 'command'
+  event_scope: 'enrich'
   context_data: {
     id: string
-    path: string
     entity_name: string
     entity_type: string
-    file_name: string
+    connector_id: string
+    connector_name: string
   }
 }
-export interface UserUploadAction extends BasicUserAction {
-  event_type: 'mutation'
-  event_scope: 'upload'
+export interface UserImportAction extends BasicUserAction {
+  event_type: 'command'
+  event_scope: 'import'
   context_data: {
-    id: string
-    path: string
-    entity_name: string
+    id: string,
+    file_id: string,
+    file_mime: string,
+    file_name: string,
+    connectors: string[],
+    entity_name: string,
     entity_type: string
-    file_name: string
   }
 }
 export interface UserExportAction extends BasicUserAction {
-  event_type: 'mutation'
+  event_type: 'command'
   event_scope: 'export'
   context_data: {
-    export_scope: 'query' | 'single' | 'selection'
-    export_type: 'simple' | 'full'
     id: string
-    element_id: string // Same as id
+    format: string
     entity_name: string
     entity_type: string
-    file_name: string
+    export_scope: 'query' | 'single' | 'selection'
+    export_type: 'simple' | 'full'
+    element_id: string // Same as id
     max_marking: string
     list_params?: unknown,
     selected_ids?: string[]
@@ -61,7 +59,30 @@ export interface UserExportAction extends BasicUserAction {
 }
 // endregion
 
-// region standard
+// region file
+export interface UserFileAction extends BasicUserAction {
+  event_type: 'file'
+  event_scope: 'read' | 'create' | 'delete'
+  context_data: {
+    id: string
+    path: string
+    entity_name: string
+    entity_type: string
+    file_name: string
+  }
+}
+// endregion
+
+// region read / mutation
+export interface UserReadAction extends BasicUserAction {
+  event_type: 'read'
+  event_scope: 'read'
+  context_data: {
+    id: string
+    entity_name: string
+    entity_type: string
+  }
+}
 export interface UserForbiddenAction extends BasicUserAction {
   event_type: 'read' | 'mutation'
   event_scope: 'unauthorized'
@@ -79,6 +100,9 @@ export interface UserModificationAction extends BasicUserAction {
     input: unknown
   }
 }
+// endregion
+
+// region authentication
 export interface UserLoginAction extends BasicUserAction {
   event_type: 'authentication'
   event_scope: 'login'
@@ -94,8 +118,8 @@ export interface UserLogoutAction extends BasicUserAction {
 }
 // endregion
 
-export type UserAction = UserReadAction | UserDownloadAction | UserUploadAction | UserLoginAction |
-UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction;
+export type UserAction = UserReadAction | UserFileAction | UserLoginAction | UserEnrichAction | UserImportAction |
+UserLogoutAction | UserExportAction | UserModificationAction | UserForbiddenAction | UserSearchAction;
 
 export interface ActionListener {
   id: string

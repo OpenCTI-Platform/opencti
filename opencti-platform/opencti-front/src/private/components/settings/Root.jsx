@@ -231,10 +231,7 @@ const Root = () => (
         exact
         path="/dashboard/settings/vocabularies/caseTemplates/:caseTemplateId"
         render={() => (
-          <Security
-            needs={[SETTINGS_SETLABELS]}
-            placeholder={<Redirect to={'/dashboard/settings'} />}
-          >
+          <Security needs={[SETTINGS_SETLABELS]} placeholder={<Redirect to={'/dashboard/settings'} />}>
             <CaseTemplateTasks />
           </Security>
         )}

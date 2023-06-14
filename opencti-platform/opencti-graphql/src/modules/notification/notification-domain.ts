@@ -44,8 +44,8 @@ export const addLiveTrigger = async (context: AuthContext, user: AuthUser, input
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'standard',
-    message: `creates live trigger \`${created.name}\``,
+    event_access: 'extended',
+    message: `creates trigger \`${created.name}\``,
     context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
@@ -58,8 +58,8 @@ export const addDigestTrigger = async (context: AuthContext, user: AuthUser, inp
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'standard',
-    message: `creates digest trigger \`${created.name}\``,
+    event_access: 'extended',
+    message: `creates trigger \`${created.name}\``,
     context_data: { entity_type: ENTITY_TYPE_TRIGGER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
@@ -77,8 +77,16 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].EDIT_TOPIC, updatedElem, user);
 };
 export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {
-  const element = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
-  await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, element, user);
+  const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+  await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);
+  await publishUserAction({
+    user,
+    event_type: 'mutation',
+    event_scope: 'delete',
+    event_access: 'administration',
+    message: `deletes trigger \`${deleted.name}\``,
+    context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
+  });
   return triggerId;
 };
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {

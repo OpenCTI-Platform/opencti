@@ -8,7 +8,6 @@ import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$vari
 import { CaseTemplateLines_data$key } from './__generated__/CaseTemplateLines_data.graphql';
 import CaseTemplateLine from './CaseTemplateLine';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
-import { CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
 
 const nbOfRowsToLoad = 50;
 
@@ -17,13 +16,6 @@ interface CaseTemplatesLinesProps {
   dataColumns: DataColumns;
   paginationOptions: CaseTemplateLinesPaginationQuery$variables;
   setNumberOfElements: UseLocalStorageHelpers['handleSetNumberOfElements'];
-  selectedElements: Record<string, CaseTemplateLine_node$data>;
-  deSelectedElements: Record<string, CaseTemplateLine_node$data>;
-  onToggleEntity: (
-    entity: CaseTemplateLine_node$data,
-    event: React.SyntheticEvent
-  ) => void;
-  selectAll: boolean;
 }
 
 export const caseTemplatesLinesQuery = graphql`
@@ -81,10 +73,6 @@ const CaseTemplateLines: FunctionComponent<CaseTemplatesLinesProps> = ({
   dataColumns,
   paginationOptions,
   setNumberOfElements,
-  selectedElements,
-  deSelectedElements,
-  selectAll,
-  onToggleEntity,
 }) => {
   const { data, hasMore, loadMore, isLoadingMore } = usePreloadedPaginationFragment<
   CaseTemplateLinesPaginationQuery,
@@ -112,10 +100,6 @@ const CaseTemplateLines: FunctionComponent<CaseTemplatesLinesProps> = ({
       dataColumns={dataColumns}
       nbOfRowsToLoad={nbOfRowsToLoad}
       paginationOptions={paginationOptions}
-      selectedElements={selectedElements}
-      deSelectedElements={deSelectedElements}
-      onToggleEntity={onToggleEntity}
-      selectAll={selectAll}
     />
   );
 };

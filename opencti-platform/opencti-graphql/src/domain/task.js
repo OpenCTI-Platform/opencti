@@ -125,7 +125,7 @@ export const createQueryTask = async (context, user, input) => {
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'standard',
+    event_access: 'extended',
     message: 'creates `background task`',
     context_data: { entity_type: ENTITY_TYPE_TASK, input: queryTask }
   });
@@ -146,7 +146,7 @@ export const deleteTask = async (context, user, taskId) => {
     user,
     event_type: 'mutation',
     event_scope: 'delete',
-    event_access: 'standard',
+    event_access: 'extended',
     message: 'deletes `background task`',
     context_data: { entity_type: ENTITY_TYPE_TASK, input: deleted }
   });

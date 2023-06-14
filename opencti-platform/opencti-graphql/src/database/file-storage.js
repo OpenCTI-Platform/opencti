@@ -10,11 +10,12 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
-import { buildPagination } from './utils';
+import { buildPagination, extractEntityRepresentative } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
-import { buildContextDataForFile, publishUserAction } from '../listener/UserActionListener';
+import { publishUserAction } from '../listener/UserActionListener';
+import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -90,13 +91,14 @@ export const deleteBucket = async () => {
 export const isStorageAlive = () => initializeBucket();
 
 export const deleteFile = async (context, user, id) => {
+  const up = await loadFile(context, user, id);
   logApp.debug(`[FILE STORAGE] delete file ${id} by ${user.user_email}`);
   await s3Client.send(new s3.DeleteObjectCommand({
     Bucket: bucketName,
     Key: id
   }));
   await deleteWorkForFile(context, user, id);
-  return true;
+  return up;
 };
 
 export const deleteFiles = async (context, user, ids) => {
@@ -208,12 +210,25 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
   const { manual = false, connectorId = null, bypassValidation = false } = opts;
+  const file = await loadFile(context, user, fileId);
+  if (!file) {
+    throw FunctionalError('Cannot import, file cannot be found.');
+  }
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
   }
+  let entityName = 'global';
+  let entityType = 'global';
   if (!entityId) {
     connectors = R.filter((n) => !n.only_contextual, connectors);
+  } else {
+    const element = await internalLoadById(context, user, entityId);
+    if (!element) {
+      throw FunctionalError('Cannot import, element cannot be found.');
+    }
+    entityName = extractEntityRepresentative(element);
+    entityType = element.entity_type;
   }
   if (connectors.length > 0) {
     // Create job and send ask to broker
@@ -245,6 +260,21 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
       return pushToConnector(context, connector, message);
     };
     await Promise.all(R.map((data) => pushMessage(data), actionList));
+    await publishUserAction({
+      user,
+      event_access: 'extended',
+      event_type: 'command',
+      event_scope: 'import',
+      context_data: {
+        id: entityId,
+        file_id: fileId,
+        file_name: file.name,
+        file_mime: fileMime,
+        connectors: connectors.map((c) => c.name),
+        entity_name: entityName,
+        entity_type: entityType
+      }
+    });
   }
 };
 
@@ -296,15 +326,6 @@ export const upload = async (context, user, path, fileUpload, opts) => {
     metaData: { ...fullMetadata, messages: [], errors: [] },
     uploadStatus: 'complete'
   };
-  const contextData = buildContextDataForFile(entity, path, filename);
-  await publishUserAction({
-    user,
-    explicit_listening: true,
-    event_type: 'mutation',
-    event_access: 'standard',
-    event_scope: 'upload',
-    context_data: contextData
-  });
   // Trigger a enrich job for import file if needed
   if (!noTriggerImport && path.startsWith('import/') && !path.startsWith('import/pending') && !path.startsWith('import/External-Reference')) {
     await uploadJobImport(context, user, file.id, file.metaData.mimetype, file.metaData.entity_id);

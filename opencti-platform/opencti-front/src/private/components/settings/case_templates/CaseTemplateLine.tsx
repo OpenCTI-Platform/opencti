@@ -6,9 +6,8 @@ import makeStyles from '@mui/styles/makeStyles';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
 import ListItem from '@mui/material/ListItem';
-import Checkbox from '@mui/material/Checkbox';
 import { Theme } from '../../../../components/Theme';
-import { CaseTemplateLine_node$key, CaseTemplateLine_node$data } from './__generated__/CaseTemplateLine_node.graphql';
+import { CaseTemplateLine_node$key } from './__generated__/CaseTemplateLine_node.graphql';
 import { DataColumns } from '../../../../components/list_lines';
 
 const useStyles = makeStyles<Theme>({
@@ -38,6 +37,12 @@ export const CaseTemplateLineFragment = graphql`
     name
     description
     tasks {
+      edges {
+        node {
+          id
+          name
+        } 
+      }
       pageInfo {
         globalCount
       }
@@ -48,31 +53,9 @@ export const CaseTemplateLineFragment = graphql`
 interface CaseTemplateLineProps {
   node: CaseTemplateLine_node$key;
   dataColumns: DataColumns;
-  selectedElements: Record<string, CaseTemplateLine_node$data>;
-  deSelectedElements: Record<string, CaseTemplateLine_node$data>;
-  onToggleEntity: (
-    entity: CaseTemplateLine_node$data,
-    event: React.SyntheticEvent
-  ) => void;
-  selectAll: boolean;
-  onToggleShiftEntity: (
-    index: number,
-    entity: CaseTemplateLine_node$data,
-    event: React.SyntheticEvent
-  ) => void;
-  index: number;
 }
 
-const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
-  node,
-  dataColumns,
-  selectedElements,
-  deSelectedElements,
-  onToggleEntity,
-  selectAll,
-  onToggleShiftEntity,
-  index,
-}) => {
+const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({ node, dataColumns }) => {
   const classes = useStyles();
 
   const data = useFragment(CaseTemplateLineFragment, node);
@@ -83,25 +66,7 @@ const CaseTemplateLine: FunctionComponent<CaseTemplateLineProps> = ({
       component={Link}
       divider
       button
-      to={`/dashboard/settings/vocabularies/caseTemplates/${data.id}`}
-    >
-      <ListItemIcon
-        classes={{ root: classes.itemIcon }}
-        style={{ minWidth: 40 }}
-        onClick={(event) => (event.shiftKey
-          ? onToggleShiftEntity(index, data, event)
-          : onToggleEntity(data, event))
-        }
-      >
-        <Checkbox
-          edge="start"
-          checked={
-            (selectAll && !(data.id in (deSelectedElements || {})))
-            || data.id in (selectedElements || {})
-          }
-          disableRipple={true}
-        />
-      </ListItemIcon>
+      to={`/dashboard/settings/vocabularies/caseTemplates/${data.id}`}>
       <ListItemIcon>
         <CasesOutlined />
       </ListItemIcon>

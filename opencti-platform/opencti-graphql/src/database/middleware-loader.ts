@@ -458,8 +458,7 @@ export const storeLoadById = async <T extends BasicStoreObject>(context: AuthCon
     await publishUserAction({
       user,
       event_type: 'read',
-      explicit_listening: true,
-      event_access: 'standard',
+      event_access: 'extended',
       event_scope: 'read',
       context_data: {
         id,

@@ -38,9 +38,9 @@ const LOGS_SENSITIVE_FIELDS = conf.get('app:app_logs:logs_redacted_inputs') ?? [
 
 export interface ActivityStreamEvent {
   version: string
-  type: 'authentication' | 'read' | 'mutation'
-  event_access: 'standard' | 'administration'
-  event_scope: 'download' | 'upload' | 'export' | 'unauthorized' | 'login' | 'logout' | 'read' | 'create' | 'update' | 'delete' | 'merge' | 'search'
+  type: 'authentication' | 'read' | 'mutation' | 'file' | 'command'
+  event_access: 'extended' | 'administration'
+  event_scope: string
   message: string
   status: 'error' | 'success'
   origin: Partial<UserOrigin>
@@ -87,7 +87,7 @@ const initActivityManager = () => {
     }
     // If extended actions, is action is not for listened user
     const isUserListening = (settings.activity_listeners_users ?? []).includes(action.user.id);
-    if (action.explicit_listening && !isUserListening) {
+    if (action.event_access === 'extended' && !isUserListening) {
       return false;
     }
     // If standard action, log and push to activity stream.
@@ -99,7 +99,11 @@ const initActivityManager = () => {
       event_access: event.event_access,
       data: event.data
     };
-    logAudit._log(level, action.user, message, meta);
+    // In admin case put that to logs/console
+    if (action.event_access === 'administration') {
+      logAudit._log(level, action.user, message, meta);
+    }
+    // In all case, store in history
     await storeActivityEvent(event);
     return true;
   };
@@ -143,10 +147,6 @@ const initActivityManager = () => {
           const message = `tries an \`unauthorized ${action.event_type}\``;
           await activityLogger(action, message);
         }
-        if (action.event_scope === 'search') {
-          const message = 'executes advanced `search`';
-          await activityLogger(action, message);
-        }
         if (action.event_scope === 'read') {
           const { entity_type } = action.context_data;
           const isKnowledgeListening = isStixCoreObject(entity_type) || isStixCoreRelationship(entity_type);
@@ -155,9 +155,48 @@ const initActivityManager = () => {
             await readActivity(action);
           }
         }
-        if (action.event_scope === 'download') {
+      }
+      if (action.event_type === 'file') {
+        if (action.event_scope === 'read') {
           const { file_name, entity_name } = action.context_data;
           const message = `downloads from \`${entity_name}\` the file \`${file_name}\``;
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'create') {
+          const { file_name, entity_name, entity_type, path } = action.context_data;
+          let message = `adds \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
+          if (path.includes('import/pending')) {
+            message = `creates Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
+          }
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'delete') { // General upload
+          const { file_name, entity_name, entity_type, path } = action.context_data;
+          let message = `removes \`${file_name}\` in \`files\` for \`${entity_name}\` (${entity_type})`;
+          if (path.includes('import/pending')) {
+            message = `removes Analyst Workbench \`${file_name}\` for \`${entity_name}\` (${entity_type})`;
+          }
+          await activityLogger(action, message);
+        }
+      }
+      if (action.event_type === 'command') {
+        if (action.event_scope === 'search') {
+          const message = 'asks for `advanced search`';
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'export') {
+          const { format, entity_name } = action.context_data;
+          const message = `asks for \`${format}\` export in \`${entity_name}\``;
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'import') {
+          const { file_name, file_mime, entity_name } = action.context_data;
+          const message = `asks for \`${file_mime}\` import of \`${file_name}\` in \`${entity_name}\``;
+          await activityLogger(action, message);
+        }
+        if (action.event_scope === 'enrich') {
+          const { entity_name, connector_name } = action.context_data;
+          const message = `asks for \`${connector_name}\` enrichment in \`${entity_name}\``;
           await activityLogger(action, message);
         }
       }
@@ -174,19 +213,6 @@ const initActivityManager = () => {
         }
         if (action.event_scope === 'delete') {
           await activityLogger(action, action.message);
-        }
-        if (action.event_scope === 'merge') {
-          await activityLogger(action, action.message);
-        }
-        if (action.event_scope === 'upload') {
-          const { file_name, entity_name } = action.context_data;
-          const message = `uploads in \`${entity_name}\` the file \`${file_name}\``;
-          await activityLogger(action, message);
-        }
-        if (action.event_scope === 'export') {
-          const { file_name, entity_name } = action.context_data;
-          const message = `asks for export generation in \`${entity_name}\` (\`${file_name}\`)`;
-          await activityLogger(action, message);
         }
       }
     }

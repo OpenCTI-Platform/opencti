@@ -58,6 +58,17 @@ export const askListExport = async (context, user, format, entityType, selectedI
     const fileNamePart = `${entityType}_${type}.${mime.extension(format)}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
+  const baseEvent = {
+    format,
+    export_scope: 'query', // query or selection or single
+    id: entity?.id,
+    element_id: entity?.id,
+    entity_name: entity ? extractEntityRepresentative(entity) : 'global',
+    entity_type: entityType, // Exported entity type
+    export_type: type, // Simple or full
+    max_marking: maxMarkingId, // Max marking id
+    list_params: listParams,
+  };
   const buildExportMessage = (work, fileName) => {
     if (selectedIds && selectedIds.length > 0) {
       return {
@@ -83,15 +94,8 @@ export const askListExport = async (context, user, format, entityType, selectedI
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'query', // query or selection or single
-        id: entity?.id,
-        element_id: entity?.id,
-        entity_name: entity ? extractEntityRepresentative(entity) : 'global',
-        entity_type: entityType, // Exported entity type
-        export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
-        max_marking: maxMarkingId, // Max marking id
-        list_params: listParams,
+        ...baseEvent
       },
     };
   };
@@ -102,18 +106,17 @@ export const askListExport = async (context, user, format, entityType, selectedI
       const path = `export/${entityType}/`;
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
-      await publishUserAction({
-        user,
-        event_access: 'standard',
-        explicit_listening: true,
-        event_type: 'mutation',
-        event_scope: 'export',
-        context_data: message.event
-      });
       await pushToConnector(context, connector, message);
       return work;
     }, connectors)
   );
+  await publishUserAction({
+    user,
+    event_access: 'extended',
+    event_type: 'command',
+    event_scope: 'export',
+    context_data: baseEvent
+  });
   return worksForExport;
 };
 
@@ -126,6 +129,16 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
     )}`;
     return `${now()}_${markingLevel?.definition || 'TLP:ALL'}_(${connector.name})_${fileNamePart}`;
   };
+  const baseEvent = {
+    format,
+    export_scope: 'single', // query or selection or single
+    id: entity.id, // Location of the file export = the exported element
+    entity_id: entity.id, // Location of the file export = the exported element
+    entity_name: extractEntityRepresentative(entity),
+    entity_type: entity.entity_type, // Exported entity type
+    export_type: type, // Simple or full
+    max_marking: maxMarkingId, // Max marking id
+  };
   const buildExportMessage = (work, fileName) => {
     return {
       internal: {
@@ -133,14 +146,8 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
         applicant_id: user.id, // User asking for the import
       },
       event: {
-        export_scope: 'single', // query or selection or single
-        id: entity.id, // Location of the file export = the exported element
-        entity_id: entity.id, // Location of the file export = the exported element
-        entity_name: extractEntityRepresentative(entity),
-        entity_type: entity.entity_type, // Exported entity type
-        export_type: type, // Simple or full
         file_name: fileName, // Export expected file name
-        max_marking: maxMarkingId, // Max marking id
+        ...baseEvent
       },
     };
   };
@@ -152,17 +159,16 @@ export const askEntityExport = async (context, user, format, entity, type = 'sim
       const work = await createWork(context, user, connector, fileIdentifier, path);
       const message = buildExportMessage(work, fileIdentifier);
       await pushToConnector(context, connector, message);
-      await publishUserAction({
-        user,
-        event_access: 'standard',
-        explicit_listening: true,
-        event_type: 'mutation',
-        event_scope: 'export',
-        context_data: message.event
-      });
       return work;
     }, connectors)
   );
+  await publishUserAction({
+    user,
+    event_access: 'extended',
+    event_type: 'command',
+    event_scope: 'export',
+    context_data: baseEvent
+  });
   return worksForExport;
 };
 

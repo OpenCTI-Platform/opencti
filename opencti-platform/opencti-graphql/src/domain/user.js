@@ -501,7 +501,7 @@ export const roleAddRelation = async (context, user, roleId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${relationData.to.entity_type} \`${extractEntityRepresentative(relationData.to)}\` for role \`${role.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, input }
+    context_data: { entity_type: ENTITY_TYPE_ROLE, input }
   });
   await roleSessionRefresh(context, user, roleId);
   return notify(BUS_TOPICS[ENTITY_TYPE_ROLE].EDIT_TOPIC, relationData, user);
@@ -540,12 +540,13 @@ export const userEditField = async (context, user, userId, inputs) => {
   }
   const { element } = await updateAttribute(context, user, userId, ENTITY_TYPE_USER, inputs);
   const input = updatedInputsToData(element, inputs);
+  const personalUpdate = user.id === userId;
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'update',
-    event_access: 'administration',
-    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for user \`${element.user_email}\``,
+    event_access: personalUpdate ? 'extended' : 'administration',
+    message: `updates \`${inputs.map((i) => i.key).join(', ')}\` for ${personalUpdate ? '`themselves`' : `user \`${element.user_email}\``}`,
     context_data: { entity_type: ENTITY_TYPE_USER, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_USER].EDIT_TOPIC, element, user);

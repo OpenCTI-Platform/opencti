@@ -102,7 +102,7 @@ export const groupAddRelation = async (context, user, groupId, input) => {
     event_scope: 'update',
     event_access: 'administration',
     message: `adds ${created.entity_type} \`${extractEntityRepresentative(created)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_USER, input }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, input }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, createdRelation, user);
@@ -130,7 +130,7 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     event_scope: 'delete',
     event_access: 'administration',
     message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_ROLE, input: { groupId, fromId, toId, relationshipType } }
+    context_data: { entity_type: ENTITY_TYPE_GROUP, input: { groupId, fromId, toId, relationshipType } }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);

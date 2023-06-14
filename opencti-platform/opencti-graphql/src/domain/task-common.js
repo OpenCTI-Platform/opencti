@@ -59,7 +59,7 @@ export const createListTask = async (user, input) => {
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'standard',
+    event_access: 'extended',
     message: 'creates `background task`',
     context_data: { entity_type: ENTITY_TYPE_TASK, input: listTask }
   });

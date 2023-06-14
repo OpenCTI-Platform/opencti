@@ -11955,6 +11955,8 @@ export type Mutation = {
   caseTaskAdd?: Maybe<CaseTask>;
   caseTaskDelete?: Maybe<Scalars['ID']>;
   caseTaskFieldPatch?: Maybe<CaseTask>;
+  caseTaskRelationAdd?: Maybe<StixRefRelationship>;
+  caseTaskRelationDelete?: Maybe<Channel>;
   caseTemplateAdd?: Maybe<CaseTemplate>;
   caseTemplateDelete?: Maybe<Scalars['ID']>;
   caseTemplateFieldPatch?: Maybe<CaseTemplate>;
@@ -12322,6 +12324,19 @@ export type MutationCaseTaskFieldPatchArgs = {
   id: Scalars['ID'];
   input: Array<EditInput>;
   references?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+};
+
+
+export type MutationCaseTaskRelationAddArgs = {
+  id: Scalars['ID'];
+  input: StixRefRelationshipAddInput;
+};
+
+
+export type MutationCaseTaskRelationDeleteArgs = {
+  id: Scalars['ID'];
+  relationship_type: Scalars['String'];
+  toId: Scalars['StixRef'];
 };
 
 
@@ -16511,6 +16526,7 @@ export type Query = {
   feedbacks?: Maybe<FeedbackConnection>;
   feeds?: Maybe<FeedConnection>;
   file?: Maybe<File>;
+  globalSearch?: Maybe<StixCoreObjectConnection>;
   group?: Maybe<Group>;
   grouping?: Maybe<Grouping>;
   groupingContainsStixObjectOrStixRelationship?: Maybe<Scalars['Boolean']>;
@@ -17137,6 +17153,18 @@ export type QueryFeedsArgs = {
 
 export type QueryFileArgs = {
   id: Scalars['String'];
+};
+
+
+export type QueryGlobalSearchArgs = {
+  after?: InputMaybe<Scalars['ID']>;
+  filterMode?: InputMaybe<FilterMode>;
+  filters?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  first?: InputMaybe<Scalars['Int']>;
+  orderBy?: InputMaybe<StixCoreObjectsOrdering>;
+  orderMode?: InputMaybe<OrderingMode>;
+  search?: InputMaybe<Scalars['String']>;
+  types?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
 };
 
 
@@ -30684,6 +30712,8 @@ export type MutationResolvers<ContextType = any, ParentType extends ResolversPar
   caseTaskAdd?: Resolver<Maybe<ResolversTypes['CaseTask']>, ParentType, ContextType, RequireFields<MutationCaseTaskAddArgs, 'input'>>;
   caseTaskDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTaskDeleteArgs, 'id'>>;
   caseTaskFieldPatch?: Resolver<Maybe<ResolversTypes['CaseTask']>, ParentType, ContextType, RequireFields<MutationCaseTaskFieldPatchArgs, 'id' | 'input'>>;
+  caseTaskRelationAdd?: Resolver<Maybe<ResolversTypes['StixRefRelationship']>, ParentType, ContextType, RequireFields<MutationCaseTaskRelationAddArgs, 'id' | 'input'>>;
+  caseTaskRelationDelete?: Resolver<Maybe<ResolversTypes['Channel']>, ParentType, ContextType, RequireFields<MutationCaseTaskRelationDeleteArgs, 'id' | 'relationship_type' | 'toId'>>;
   caseTemplateAdd?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateAddArgs, 'input'>>;
   caseTemplateDelete?: Resolver<Maybe<ResolversTypes['ID']>, ParentType, ContextType, RequireFields<MutationCaseTemplateDeleteArgs, 'id'>>;
   caseTemplateFieldPatch?: Resolver<Maybe<ResolversTypes['CaseTemplate']>, ParentType, ContextType, RequireFields<MutationCaseTemplateFieldPatchArgs, 'id' | 'input'>>;
@@ -31741,6 +31771,7 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   feedbacks?: Resolver<Maybe<ResolversTypes['FeedbackConnection']>, ParentType, ContextType, Partial<QueryFeedbacksArgs>>;
   feeds?: Resolver<Maybe<ResolversTypes['FeedConnection']>, ParentType, ContextType, Partial<QueryFeedsArgs>>;
   file?: Resolver<Maybe<ResolversTypes['File']>, ParentType, ContextType, RequireFields<QueryFileArgs, 'id'>>;
+  globalSearch?: Resolver<Maybe<ResolversTypes['StixCoreObjectConnection']>, ParentType, ContextType, Partial<QueryGlobalSearchArgs>>;
   group?: Resolver<Maybe<ResolversTypes['Group']>, ParentType, ContextType, RequireFields<QueryGroupArgs, 'id'>>;
   grouping?: Resolver<Maybe<ResolversTypes['Grouping']>, ParentType, ContextType, RequireFields<QueryGroupingArgs, 'id'>>;
   groupingContainsStixObjectOrStixRelationship?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<QueryGroupingContainsStixObjectOrStixRelationshipArgs, 'id' | 'stixObjectOrStixRelationshipId'>>;

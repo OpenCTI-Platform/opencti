@@ -217,4 +217,6 @@ type Mutation {
   caseTaskAdd(input: CaseTaskAddInput!): CaseTask @auth
   caseTaskDelete(id: ID!): ID @auth(for: [SETTINGS])
   caseTaskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTask @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseTaskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  caseTaskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Channel @auth(for: [KNOWLEDGE_KNUPDATE])
 }

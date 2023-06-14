@@ -8,7 +8,7 @@ import {
   READ_STIX_INDICES
 } from '../database/utils';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_FEED, ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
+import { ENTITY_TYPE_TAXII_COLLECTION } from '../schema/internalObject';
 import { deleteElementById, updateAttribute, stixLoadByIds } from '../database/middleware';
 import { listEntities, storeLoadById } from '../database/middleware-loader';
 import { FunctionalError, ResourceNotFoundError } from '../config/errors';
@@ -54,7 +54,7 @@ export const taxiiCollectionEditField = async (context, user, collectionId, inpu
     event_scope: 'update',
     event_access: 'administration',
     message: `updates \`${input.map((i) => i.key).join(', ')}\` for Taxii collection \`${element.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_FEED, input }
+    context_data: { entity_type: ENTITY_TYPE_TAXII_COLLECTION, input }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TAXII_COLLECTION].EDIT_TOPIC, element, user);
 };

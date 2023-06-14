@@ -9,8 +9,6 @@ import { CaseTemplateLinesPaginationQuery, CaseTemplateLinesPaginationQuery$vari
 import CaseTemplateCreation from './CaseTemplateCreation';
 import CaseTemplateLineDummy from './CaseTemplateLineDummy';
 import CaseTemplateLines, { caseTemplatesLinesQuery } from './CaseTemplateLines';
-import useEntityToggle from '../../../../utils/hooks/useEntityToggle';
-import ToolBar from '../../data/ToolBar';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -31,15 +29,6 @@ const CaseTemplates = () => {
       orderAsc: false,
     },
   );
-  const {
-    onToggleEntity,
-    numberOfSelectedElements,
-    handleClearSelectedElements,
-    selectedElements,
-    deSelectedElements,
-    handleToggleSelectAll,
-    selectAll,
-  } = useEntityToggle<CaseTemplateLine_node$data>(LOCAL_STORAGE_KEY_CASE_TEMPLATES);
 
   const renderLines = () => {
     const { sortBy, orderAsc, searchTerm } = viewStorage;
@@ -75,10 +64,6 @@ const CaseTemplates = () => {
         dataColumns={dataColumns}
         handleSort={helpers.handleSort}
         handleSearch={helpers.handleSearch}
-        handleToggleSelectAll={handleToggleSelectAll}
-        selectAll={selectAll}
-        secondaryAction={true}
-        iconExtension={true}
         displayImport={false}
         keyword={searchTerm}
       >
@@ -103,23 +88,8 @@ const CaseTemplates = () => {
                 paginationOptions={paginationOptions}
                 dataColumns={dataColumns}
                 setNumberOfElements={helpers.handleSetNumberOfElements}
-                deSelectedElements={deSelectedElements}
-                selectedElements={selectedElements}
-                onToggleEntity={onToggleEntity}
-                selectAll={selectAll}
               />
             </React.Suspense>
-            <ToolBar
-              selectedElements={selectedElements}
-              deSelectedElements={deSelectedElements}
-              numberOfSelectedElements={numberOfSelectedElements}
-              handleClearSelectedElements={handleClearSelectedElements}
-              selectAll={selectAll}
-              filters={{
-                entity_type: [{ id: 'Case-Template', value: 'Case-Template' }],
-              }}
-              variant="small"
-            />
       </>
         )}
       </ListLines>

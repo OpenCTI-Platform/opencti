@@ -3,6 +3,8 @@ import { buildRefRelationKey } from '../../../schema/general';
 import { RELATION_CREATED_BY, RELATION_OBJECT, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../../schema/stixRefRelationship';
 import {
   caseTaskAdd,
+  caseTaskAddRelation,
+  caseTaskDeleteRelation,
   caseTaskContainsStixObjectOrStixRelationship,
   caseTaskDelete,
   caseTaskEdit,
@@ -28,6 +30,12 @@ const caseTaskResolvers: Resolvers = {
     caseTaskAdd: (_, { input }, context) => caseTaskAdd(context, context.user, input),
     caseTaskDelete: (_, { id }, context) => caseTaskDelete(context, context.user, id),
     caseTaskFieldPatch: (_, { id, input }, context) => caseTaskEdit(context, context.user, id, input),
+    caseTaskRelationAdd: (_, { id, input }, context) => {
+      return caseTaskAddRelation(context, context.user, id, input);
+    },
+    caseTaskRelationDelete: (_, { id, toId, relationship_type: relationshipType }, context) => {
+      return caseTaskDeleteRelation(context, context.user, id, toId, relationshipType);
+    },
   },
 };
 
