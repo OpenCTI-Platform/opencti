@@ -845,19 +845,21 @@ export const otpUserLogin = async (req, user, { code }) => {
   return isValidated;
 };
 
-export const logout = async (context, user, req, res) => {
+export const logout = async (context, user, req, res, regeneration = false) => {
   const withOrigin = userWithOrigin(req, user);
-  await publishUserAction({
-    user: withOrigin,
-    event_type: 'authentication',
-    event_access: 'administration',
-    event_scope: 'logout',
-    context_data: undefined
-  });
+  if (regeneration === false) {
+    await publishUserAction({
+      user: withOrigin,
+      event_type: 'authentication',
+      event_access: 'administration',
+      event_scope: 'logout',
+      context_data: undefined
+    });
+  }
   await delUserContext(user);
   return new Promise((resolve) => {
     res.clearCookie(OPENCTI_SESSION);
-    req.session.destroy(() => {
+    req.session.regenerate(() => {
       resolve(user.id);
     });
   });
@@ -1010,7 +1012,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const currentToken = extractTokenFromBearer(req.headers.authorization);
       if (currentToken !== token) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(context, auth, req, res);
+        await logout(context, auth, req, res, true);
         return await authenticateUserFromRequest(context, req, res);
       }
     }
@@ -1023,7 +1025,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
       const samePassword = passwordCompare && bcrypt.compareSync(password, sessionPassword);
       if (!sameUsername || !samePassword) {
         // Session doesn't match, kill the current session and try to re auth
-        await logout(context, auth, req, res);
+        await logout(context, auth, req, res, true);
         return await authenticateUserFromRequest(context, req, res);
       }
     }
@@ -1035,7 +1037,7 @@ export const authenticateUserFromRequest = async (context, req, res) => {
     const isNowImpersonate = isNotSameUser && !auth.impersonate && isBypassUser(auth) && applicantId;
     if (isImpersonateChange || isNowImpersonate) {
       // Impersonate doesn't match, kill the current session and try to re auth
-      await logout(context, auth, req, res);
+      await logout(context, auth, req, res, true);
       return await authenticateUserFromRequest(context, req, res);
     }
     // If session is marked for refresh, reload the user data in the session

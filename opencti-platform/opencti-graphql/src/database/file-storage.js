@@ -211,9 +211,6 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
   const { manual = false, connectorId = null, bypassValidation = false } = opts;
   const file = await loadFile(context, user, fileId);
-  if (!file) {
-    throw FunctionalError('Cannot import, file cannot be found.');
-  }
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);

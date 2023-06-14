@@ -3,7 +3,7 @@ import { STIX_EXT_OCTI } from '../types/stix-extensions';
 import { getStixRepresentativeConverters } from './stix-converter';
 import { isStixSightingRelationship } from '../schema/stixSightingRelationship';
 import type * as SRO from '../types/stix-sro';
-import { isStixRelationship } from '../schema/stixRelationship';
+import { isBasicRelationship } from '../schema/stixRelationship';
 import {
   ENTITY_TYPE_ATTACK_PATTERN,
   ENTITY_TYPE_CAMPAIGN,
@@ -67,7 +67,7 @@ export const extractStixRepresentative = (stix: StixObject): string => {
   }
   // endregion
   // region Relationship
-  if (isStixRelationship(entityType)) {
+  if (isBasicRelationship(entityType)) {
     const relation = stix as SRO.StixRelation;
     const fromValue = relation.extensions[STIX_EXT_OCTI].source_value;
     const targetValue = relation.extensions[STIX_EXT_OCTI].target_value;
