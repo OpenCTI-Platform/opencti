@@ -9,11 +9,11 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { getEntitiesFromCache } from '../database/cache';
-import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { getEntitiesMapFromCache } from '../database/cache';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../schema/identifier';
 import { defaultValue } from './mailData';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from "../schema/stixDomainObject";
 
 // Resolutions
 export const MARKING_FILTER = 'markedBy';
@@ -71,7 +71,7 @@ export const extractFilterIdsToResolve = (filters) => {
 
 export const convertFiltersFrontendFormat = async (context, user, filters) => {
   // Grab all values that are internal_id that needs to be converted to standard_ids
-  const resolvedMap = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   // Remap the format of specific keys
   const adaptedFilters = [];
   const filterEntries = Object.entries(filters);

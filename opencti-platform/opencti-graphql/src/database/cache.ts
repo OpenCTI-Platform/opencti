@@ -3,7 +3,7 @@ import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { StixId } from '../types/stix-common';
+import type { StixId, StixObject } from '../types/stix-common';
 import {
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
@@ -13,6 +13,7 @@ import {
 import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
 import { ENTITY_TYPE_TRIGGER } from '../modules/notification/notification-types';
 import { convertStoreToStix } from './stix-converter';
+import { STIX_EXT_OCTI } from '../types/stix-extensions';
 
 const STORE_ENTITIES_LINKS: Record<string, string[]> = {
   // Filters must be reset depending on stream and triggers modifications
@@ -25,10 +26,29 @@ const STORE_ENTITIES_LINKS: Record<string, string[]> = {
 
 const cache: any = {};
 
-const buildStoreEntityMap = <T extends BasicStoreIdentifier>(entities: Array<T>) => {
+const buildStoreResolvedFiltersMap = (entities: Array<StixObject>) => {
   const entityById = new Map();
   for (let i = 0; i < entities.length; i += 1) {
     const entity = entities[i];
+    const ids = [entity.extensions[STIX_EXT_OCTI].id];
+    if (entity.extensions[STIX_EXT_OCTI].id) {
+      ids.push(entity.extensions[STIX_EXT_OCTI].id);
+    }
+    for (let index = 0; index < ids.length; index += 1) {
+      const id = ids[index];
+      entityById.set(id, entity);
+    }
+  }
+  return entityById;
+};
+
+const buildStoreEntityMap = <T extends BasicStoreIdentifier | StixObject>(entities: Array<T>, type: string) => {
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
+    return buildStoreResolvedFiltersMap(entities as StixObject[]);
+  }
+  const entityById = new Map();
+  for (let i = 0; i < entities.length; i += 1) {
+    const entity = entities[i] as BasicStoreIdentifier;
     const ids = [entity.internal_id, ...(entity.x_opencti_stix_ids ?? [])];
     if (entity.standard_id) {
       ids.push(entity.standard_id);
@@ -69,7 +89,7 @@ export const dynamicCacheUpdater = (
   }
 };
 
-export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
+export const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
     if (!fromCache) {
@@ -86,9 +106,11 @@ export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(conte
   }, getEntitiesFromCacheFn);
 };
 
-export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Map<string | StixId, T>> => {
-  const data = await getEntitiesFromCache(context, user, type);
-  return buildStoreEntityMap(data);
+export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
+  context: AuthContext, user: AuthUser, type: string
+): Promise<Map<string | StixId, T>> => {
+  const data = await getEntitiesFromCache<BasicStoreIdentifier | StixObject>(context, user, type);
+  return buildStoreEntityMap(data, type);
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {

@@ -13,13 +13,14 @@ import {
 import { executionContext, SYSTEM_USER } from '../utils/access';
 import { connectors as findConnectors } from '../database/repository';
 import type {
+  BasicStoreRelation,
+  BasicStoreSettings,
   BasicStreamEntity,
-  BasicStoreRelation, BasicStoreSettings,
   BasicTriggerEntity,
   BasicWorkflowStatusEntity,
+  BasicWorkflowTemplateEntity,
   StoreEntity,
   StoreRelation,
-  BasicWorkflowTemplateEntity,
 } from '../types/store';
 import { EntityOptions, listAllEntities, listAllRelations } from '../database/middleware-loader';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -34,8 +35,6 @@ import { ES_MAX_CONCURRENCY } from '../database/engine';
 import { resolveUserById } from '../domain/user';
 import { pubSubSubscription } from '../database/redis';
 import { stixLoadByIds } from '../database/middleware';
-import { STIX_EXT_OCTI } from '../types/stix-extensions';
-import type { StixObject } from '../types/stix-common';
 import { RELATION_MEMBER_OF, RELATION_PARTICIPATE_TO } from '../schema/internalRelationship';
 
 const workflowStatuses = (context: AuthContext) => {
@@ -60,9 +59,9 @@ const platformResolvedFilters = (context: AuthContext) => {
     if (filteringIds.length > 0) {
       const resolvingIds = R.uniq(filteringIds);
       const loadedDependencies = await stixLoadByIds(context, SYSTEM_USER, resolvingIds);
-      return new Map(loadedDependencies.map((l: StixObject) => [l.extensions[STIX_EXT_OCTI].id, l]));
+      return loadedDependencies;
     }
-    return new Map();
+    return [];
   };
   return { values: null, fn: reloadFilters };
 };
@@ -159,7 +158,7 @@ const initCacheManager = () => {
     // Invalid cache if any entity has changed.
     resetCacheForEntity(instance.entity_type);
     // Smart dynamic cache loading (for filtering ...)
-    await dynamicCacheUpdater(context, SYSTEM_USER, instance);
+    dynamicCacheUpdater(context, SYSTEM_USER, instance);
   };
   return {
     init: () => initCacheContent(), // Use for testing
