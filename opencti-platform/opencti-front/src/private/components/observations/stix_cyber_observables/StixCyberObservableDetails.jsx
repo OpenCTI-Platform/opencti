@@ -16,8 +16,7 @@ import { dateAttributes, ignoredAttributes } from '../../../../utils/hooks/useAt
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
-import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnalyses';
-import { SCOMalwareAnalyses } from './SCOMalwareAnalyses';
+import { StixCyberObservableMalwareAnalyses } from './StixCyberObservableMalwareAnalyses';
 
 const useStyles = makeStyles(() => ({
   paper: {
@@ -46,7 +45,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
     ),
   )(stixCyberObservable);
   const file = stixCyberObservable.importFiles
-    && stixCyberObservable.importFiles.edges.length > 0
+  && stixCyberObservable.importFiles.edges.length > 0
     ? stixCyberObservable.importFiles.edges[0].node
     : null;
   return (
@@ -68,7 +67,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 variant="outlined"
                 color="secondary"
                 size="small"
-                startIcon={<GetAppOutlined />}
+                startIcon={<GetAppOutlined/>}
               >
                 {t('Download')} ({b(file.size)})
               </Button>
@@ -91,7 +90,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                     {hash.algorithm} - hashes
                   </Typography>
                   <pre>
-                    <ItemCopy content={hash.hash} />
+                    <ItemCopy content={hash.hash}/>
                   </pre>
                 </Grid>
               ));
@@ -103,7 +102,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                     {hash.key} - startup_info
                   </Typography>
                   <pre>
-                    <ItemCopy content={hash.value} />
+                    <ItemCopy content={hash.value}/>
                   </pre>
                 </Grid>
               ));
@@ -148,21 +147,18 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                   {t(observableAttribute.key.replace('attribute_', ''))}
                 </Typography>
                 <pre>
-                  <ItemCopy content={finalValue || '-'} />
+                  <ItemCopy content={finalValue || '-'}/>
                 </pre>
               </Grid>
             );
           })}
         </Grid>
-        <Divider />
+        <Divider/>
         <StixCyberObservableIndicators
           stixCyberObservable={stixCyberObservable}
         />
         <StixCyberObservableMalwareAnalyses
-            stixCyberObservable={stixCyberObservable}
-        />
-        <SCOMalwareAnalyses
-            stixCyberObservableId={stixCyberObservable.id}
+          stixCyberObservableId={stixCyberObservable.id}
         />
       </Paper>
     </div>
