@@ -18,7 +18,6 @@ import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
-import Slide, { SlideProps } from '@mui/material/Slide';
 import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
@@ -30,32 +29,12 @@ import { defaultValue } from '../../../../utils/Graph';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import { NotificationLine_node$data } from './__generated__/NotificationLine_node.graphql';
+import Transition from '../../../../components/Transition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   bottomNav: {
     padding: 0,
     zIndex: 1100,
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithLargePadding: {
-    zIndex: 1100,
-    padding: '0 230px 0 0',
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithMediumPadding: {
-    zIndex: 1100,
-    padding: '0 200px 0 0',
-    display: 'flex',
-    height: 50,
-    overflow: 'hidden',
-  },
-  bottomNavWithSmallPadding: {
-    zIndex: 1100,
-    padding: '0 180px 0 0',
     display: 'flex',
     height: 50,
     overflow: 'hidden',
@@ -78,31 +57,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     backgroundColor: theme.palette.background.accent,
     margin: '5px 10px 5px 0',
   },
-  step: {
-    position: 'relative',
-    width: '100%',
-    margin: '0 0 20px 0',
-    padding: 15,
-    verticalAlign: 'middle',
-    border: `1px solid ${theme.palette.background.accent}`,
-    borderRadius: 5,
-    display: 'flex',
-  },
-  icon: {
-    paddingTop: 4,
-    display: 'inline-block',
-  },
-  text: {
-    display: 'inline-block',
-    flexGrow: 1,
-    marginLeft: 10,
-  },
 }));
-
-const Transition = React.forwardRef((props: SlideProps, ref) => (
-  <Slide direction="up" ref={ref} {...props} />
-));
-Transition.displayName = 'TransitionSlide';
 
 const notificationsToolBarListTaskAddMutation = graphql`
   mutation NotificationsToolBarListTaskAddMutation($input: ListTaskAddInput!) {
@@ -140,8 +95,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
   filters,
 }) => {
   const classes = useStyles();
-  const { t } = useFormatter();
-  const { n } = useFormatter();
+  const { t, n } = useFormatter();
   const theme = useTheme<Theme>();
 
   const isOpen = numberOfSelectedElements > 0;
@@ -192,6 +146,19 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
     setActions([{ type: 'DELETE', context: null }]);
     handleOpenTask();
   };
+  const onSubmitCompleted = () => {
+    handleClearSelectedElements();
+    MESSAGING$.notifySuccess(
+      <span>
+        {t(
+          'The background task has been executed. You can monitor it on',
+        )}{' '}
+        <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
+      </span>,
+    );
+    setProcessing(false);
+    handleCloseTask();
+  };
   const submitTask = () => {
     setProcessing(true);
     if (numberOfSelectedElements === 0) return;
@@ -217,17 +184,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           },
         },
         onCompleted: () => {
-          handleClearSelectedElements();
-          MESSAGING$.notifySuccess(
-            <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
-            </span>,
-          );
-          setProcessing(false);
-          handleCloseTask();
+          onSubmitCompleted();
         },
       });
     } else {
@@ -239,17 +196,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           },
         },
         onCompleted: () => {
-          handleClearSelectedElements();
-          MESSAGING$.notifySuccess(
-            <span>
-              {t(
-                'The background task has been executed. You can monitor it on',
-              )}{' '}
-              <Link to="/dashboard/data/tasks">{t('the dedicated page')}</Link>.
-            </span>,
-          );
-          setProcessing(false);
-          handleCloseTask();
+          onSubmitCompleted();
         },
       });
     }
@@ -503,11 +450,11 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                         <Chip label={o.type} />
                       </TableCell>
                       <TableCell>
-                        {o?.context?.field ?? t('N/A')}
+                        {o.context?.field ?? t('N/A')}
                       </TableCell>
                       <TableCell>
                         {truncate(
-                          (o?.context?.values ?? [])
+                          (o.context?.values ?? [])
                             .map((p) => (typeof p === 'string' ? p : defaultValue(p)))
                             .join(', '),
                           80,
