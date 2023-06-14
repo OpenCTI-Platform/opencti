@@ -81,7 +81,7 @@
          <changefreq>daily</changefreq>
     </url>
     <url>
-         <loc>https://docs.opencti.io/5.7.X/references/data-model/</loc>
+         <loc>https://docs.opencti.io/5.7.X/reference/data-model/</loc>
          <lastmod>2023-06-14</lastmod>
          <changefreq>daily</changefreq>
     </url>
