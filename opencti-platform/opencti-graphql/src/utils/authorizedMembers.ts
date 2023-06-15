@@ -1,13 +1,13 @@
 import type { AuthContext, AuthUser } from '../types/user';
 import type { BasicStoreEntity } from '../types/store';
 import type { MemberAccess } from '../generated/graphql';
-import { validateUserAccessOperation } from '../utils/access';
-import { findAllMembers } from './user';
+import { AuthorizedMember, validateUserAccessOperation } from './access';
+import { findAllMembers } from '../domain/user';
 
 export const getAuthorizedMembers = async (
   context: AuthContext,
   user: AuthUser,
-  entity: BasicStoreEntity & { authorized_members: Array<{ id: string, access_right: string }> }
+  entity: BasicStoreEntity & { authorized_members: Array<AuthorizedMember> }
 ): Promise<MemberAccess[]> => {
   let authorizedMembers: MemberAccess[] = [];
   if (!entity.authorized_members?.length) {

@@ -39,8 +39,7 @@ export const findById = (context: AuthContext, user: AuthUser, workspaceId: stri
 };
 
 export const findAll = (context: AuthContext, user: AuthUser, args: QueryWorkspacesArgs) => {
-  const listArgs = { ...args, adminBypassUserAccess: args.adminBypassUserAccess ?? false };
-  return listEntitiesPaginated<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], listArgs);
+  return listEntitiesPaginated<BasicStoreEntityWorkspace>(context, user, [ENTITY_TYPE_WORKSPACE], args);
 };
 
 export const editAuthorizedMembers = async (context: AuthContext, user: AuthUser, workspaceId: string, input: MemberAccessInput[]) => {

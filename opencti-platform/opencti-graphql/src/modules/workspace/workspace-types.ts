@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixDomainObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { AuthorizedMember } from '../../utils/access';
 
 export const ENTITY_TYPE_WORKSPACE = 'Workspace';
 
@@ -12,7 +13,7 @@ export interface BasicStoreEntityWorkspace extends BasicStoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<{ id: string, access_right: string }>;
+  authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
 }
 
@@ -23,7 +24,7 @@ export interface StoreEntityWorkspace extends StoreEntity {
   manifest: string;
   tags: Array<string>;
   type: string;
-  authorized_members: Array<{ id: string, access_right: string }>;
+  authorized_members: Array<AuthorizedMember>;
   object_refs: Array<string>;
 }
 // endregion

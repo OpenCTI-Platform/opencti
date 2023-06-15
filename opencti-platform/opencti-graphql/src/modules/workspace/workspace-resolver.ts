@@ -22,7 +22,7 @@ import { ENTITY_TYPE_WORKSPACE } from './workspace-types';
 import type { Resolvers } from '../../generated/graphql';
 import { batchLoader } from '../../database/middleware';
 import { batchCreator } from '../../domain/user';
-import { getAuthorizedMembers } from '../../domain/authorizedMembers';
+import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const creatorLoader = batchLoader(batchCreator);
 

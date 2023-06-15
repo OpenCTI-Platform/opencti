@@ -84,6 +84,8 @@ export const RULE_MANAGER_USER: AuthUser = {
   api_token: '',
 };
 
+export interface AuthorizedMember { id: string, access_right: string }
+
 class TracingContext {
   ctx: Context | undefined;
 
