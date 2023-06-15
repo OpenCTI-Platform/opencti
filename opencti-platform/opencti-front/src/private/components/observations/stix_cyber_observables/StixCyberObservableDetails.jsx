@@ -158,10 +158,9 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
         <StixCyberObservableIndicators
           stixCyberObservable={stixCyberObservable}
         />
-        {isAnalysableObservable && <StixCyberObservableMalwareAnalyses
-          stixCyberObservableId={stixCyberObservable.id}
-        />
-        }
+        {isAnalysableObservable && (
+          <StixCyberObservableMalwareAnalyses observableId={stixCyberObservable.id}/>
+        )}
       </Paper>
     </div>
   );
