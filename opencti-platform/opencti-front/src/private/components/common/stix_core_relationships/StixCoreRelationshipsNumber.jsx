@@ -61,6 +61,8 @@ const stixCoreRelationshipsNumberNumberQuery = graphql`
     $search: String
     $filters: [StixCoreRelationshipsFiltering]
     $filterMode: FilterMode
+    $dynamicFrom: [StixCoreObjectsFiltering]
+    $dynamicTo: [StixCoreObjectsFiltering]
   ) {
     stixCoreRelationshipsNumber(
       noDirection: $noDirection
@@ -79,6 +81,8 @@ const stixCoreRelationshipsNumberNumberQuery = graphql`
       search: $search
       filters: $filters
       filterMode: $filterMode
+      dynamicFrom: $dynamicFrom
+      dynamicTo: $dynamicTo
     ) {
       total
       count
@@ -130,6 +134,8 @@ const StixCoreRelationshipsNumber = ({
           filters: finalFilters,
           startDate,
           endDate: dayAgo(),
+          dynamicFrom: convertFilters(selection.dynamicFrom),
+          dynamicTo: convertFilters(selection.dynamicTo),
         }}
         render={({ props }) => {
           if (props && props.stixCoreRelationshipsNumber) {

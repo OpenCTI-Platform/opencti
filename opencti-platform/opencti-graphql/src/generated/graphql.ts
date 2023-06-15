@@ -18165,6 +18165,8 @@ export type QueryStixCoreRelationshipsMultiTimeSeriesArgs = {
 export type QueryStixCoreRelationshipsNumberArgs = {
   authorId?: InputMaybe<Scalars['String']>;
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
@@ -18185,6 +18187,8 @@ export type QueryStixCoreRelationshipsNumberArgs = {
 
 export type QueryStixCoreRelationshipsTimeSeriesArgs = {
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   endDate?: InputMaybe<Scalars['DateTime']>;
@@ -20862,6 +20866,8 @@ export enum StixCoreRelationshipsOrdering {
 
 export type StixCoreRelationshipsTimeSeriesParameters = {
   confidences?: InputMaybe<Array<InputMaybe<Scalars['Int']>>>;
+  dynamicFrom?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
+  dynamicTo?: InputMaybe<Array<InputMaybe<StixCoreObjectsFiltering>>>;
   elementId?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   elementWithTargetTypes?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   field: Scalars['String'];

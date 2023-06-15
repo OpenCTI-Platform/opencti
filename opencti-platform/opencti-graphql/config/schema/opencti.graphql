@@ -268,6 +268,8 @@ input StixCoreRelationshipsTimeSeriesParameters {
   search: String
   filters: [StixCoreRelationshipsFiltering]
   filterMode: FilterMode
+  dynamicFrom: [StixCoreObjectsFiltering]
+  dynamicTo: [StixCoreObjectsFiltering]
 }
 type Distribution {
   label: String!
@@ -12340,6 +12342,8 @@ type Query {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
   ): [TimeSeries] @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsMultiTimeSeries(
     operation: StatsOperation!
@@ -12392,6 +12396,8 @@ type Query {
     search: String
     filters: [StixCoreRelationshipsFiltering]
     filterMode: FilterMode
+    dynamicFrom: [StixCoreObjectsFiltering]
+    dynamicTo: [StixCoreObjectsFiltering]
   ): Number @auth(for: [KNOWLEDGE, EXPLORE])
   stixCoreRelationshipsExportFiles(first: Int, type: String!): FileConnection @auth(for: [KNOWLEDGE_KNGETEXPORT])
 

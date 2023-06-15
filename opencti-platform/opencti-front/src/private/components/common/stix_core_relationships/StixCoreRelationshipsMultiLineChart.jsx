@@ -93,6 +93,8 @@ const StixCoreRelationshipsMultiLineChart = ({
         toTypes: dataSelectionToTypes,
         field: dataSelectionDateAttribute,
         filters: finalFilters,
+        dynamicFrom: convertFilters(selection.dynamicFrom),
+        dynamicTo: convertFilters(selection.dynamicTo),
       };
     });
     return (
