@@ -2056,6 +2056,9 @@ class OpenCTIStix2:
                             "Note",
                             "Observed-Data",
                             "Opinion",
+                            "Case-Incident",
+                            "Case-Rfi",
+                            "Case-Rft",
                         ],
                     }
                 )
@@ -2069,6 +2072,9 @@ class OpenCTIStix2:
                             "Note",
                             "Observed-Data",
                             "Opinion",
+                            "Case-Incident",
+                            "Case-Rfi",
+                            "Case-Rft",
                         ],
                     }
                 ]
