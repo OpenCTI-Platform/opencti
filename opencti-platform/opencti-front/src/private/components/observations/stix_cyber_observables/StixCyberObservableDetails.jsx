@@ -16,7 +16,7 @@ import { dateAttributes, ignoredAttributes } from '../../../../utils/hooks/useAt
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import ItemCopy from '../../../../components/ItemCopy';
 import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
-import { StixCyberObservableMalwareAnalyses } from './StixCyberObservableMalwareAnalyses';
+import StixCyberObservableMalwareAnalyses from './StixCyberObservableMalwareAnalyses';
 
 const useStyles = makeStyles(() => ({
   paper: {
