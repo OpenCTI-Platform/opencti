@@ -19,14 +19,40 @@ export const TASK_TYPE_LIST = 'LIST';
 export const ACTION_TYPE_SHARE = 'SHARE';
 export const ACTION_TYPE_UNSHARE = 'UNSHARE';
 
-export const checkActionValidity = (user, actions) => {
-  const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
-  if (askForDeletion) {
-    // If deletion action available, user need to have the right capability
-    const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
-    const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
-    if (!isAuthorized) {
-      throw ForbiddenAccess();
+const isNotification = async (context, user, narrativeId) => {
+  return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION)
+    .then((data) => {
+      if (data) {
+        return true;
+      }
+      return false;
+    });
+};
+
+export const checkActionValidity = async (context, user, args) => {
+  const { actions, ids = undefined, filters = undefined, notifications, taskType } = args;
+  if (notifications) { // the list task should be on notifications
+    if (taskType === 'query') { // query task
+      const entityTypes = JSON.parse(filters).entity_type;
+      // the query task should be on notifications (else: call createQueryTask that check action validity)
+      if (!entityTypes.map((n) => n.id).includes('Notification')) {
+        throw Error('The task should concern notifications.');
+      }
+    } else if (taskType === 'list') { // list task
+      const areNotifications = await Promise.all(ids.map((id) => isNotification(context, user, id)));
+      if (areNotifications.some((n) => !n)) {
+        throw Error('The task should concern notifications.');
+      }
+    }
+  } else {
+    const askForDeletion = actions.filter((a) => a.type === ACTION_TYPE_DELETE).length > 0;
+    if (askForDeletion) {
+      // If deletion action available, user need to have the right capability
+      const userCapabilities = R.flatten(user.capabilities.map((c) => c.name.split('_')));
+      const isAuthorized = userCapabilities.includes(BYPASS) || userCapabilities.includes(KNOWLEDGE_DELETE);
+      if (!isAuthorized) {
+        throw ForbiddenAccess();
+      }
     }
   }
 };
@@ -51,8 +77,9 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber) => 
   };
 };
 
-const buildListTask = async (user, input) => {
+export const createListTask = async (context, user, input, notifications = false) => {
   const { actions, ids } = input;
+  await checkActionValidity(context, user, { ...input, notifications, taskType: 'list' });
   const task = createDefaultTask(user, input, TASK_TYPE_LIST, ids.length);
   const listTask = { ...task, actions, task_ids: ids };
   await publishUserAction({
@@ -64,34 +91,6 @@ const buildListTask = async (user, input) => {
     context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
-  return listTask;
-};
-
-export const createListTask = async (user, input) => {
-  const { actions } = input;
-  checkActionValidity(user, actions);
-  const listTask = await buildListTask(user, input);
-  return listTask;
-};
-
-const isNotification = async (context, user, narrativeId) => {
-  return storeLoadById(context, user, narrativeId, ENTITY_TYPE_NOTIFICATION)
-    .then((data) => {
-      if (data) {
-        return true;
-      }
-      return false;
-    });
-};
-
-export const createNotificationListTask = async (context, user, input) => {
-  const { ids } = input;
-  const areNotifications = await Promise.all(ids.map((id) => isNotification(context, user, id)));
-  // the list task should be on notifications (else: call createListTask that check action validity)
-  if (areNotifications.some((n) => !n)) {
-    throw Error('The task should concern notifications.');
-  }
-  const listTask = await buildListTask(user, input);
   return listTask;
 };
 

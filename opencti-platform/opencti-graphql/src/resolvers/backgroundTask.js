@@ -1,5 +1,5 @@
-import { deleteTask, createQueryTask, findAll, findById, createNotificationQueryTask } from '../domain/backgroundTask';
-import { createListTask, createNotificationListTask } from '../domain/backgroundTask-common';
+import { createQueryTask, deleteTask, findAll, findById } from '../domain/backgroundTask';
+import { createListTask } from '../domain/backgroundTask-common';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 
@@ -11,10 +11,10 @@ const taskResolvers = {
     backgroundTasks: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
-    listTaskAdd: (_, { input }, context) => createListTask(context.user, input),
-    listNotificationTaskAdd: (_, { input }, context) => createNotificationListTask(context, context.user, input),
+    listTaskAdd: (_, { input }, context) => createListTask(context, context.user, input),
+    listNotificationTaskAdd: (_, { input }, context) => createListTask(context, context.user, input, true),
     queryTaskAdd: (_, { input }, context) => createQueryTask(context, context.user, input),
-    queryNotificationTaskAdd: (_, { input }, context) => createNotificationQueryTask(context, context.user, input),
+    queryNotificationTaskAdd: (_, { input }, context) => createQueryTask(context, context.user, input, true),
     deleteBackgroundTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
   BackgroundTask: {
