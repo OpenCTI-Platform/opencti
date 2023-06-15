@@ -83,7 +83,6 @@ const initActivityManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
-  let syncListening = true;
   let running = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -97,12 +96,13 @@ const initActivityManager = () => {
       lock = await lockResource([ACTIVITY_ENGINE_KEY], { retryCount: 0 });
       running = true;
       logApp.info('[OPENCTI-MODULE] Running activity manager');
-      const streamOpts = { streamName: ACTIVITY_STREAM_NAME, withInternal: false };
+      const streamOpts = { streamName: ACTIVITY_STREAM_NAME };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
-      while (syncListening) {
+      while (streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
+      logApp.info('[OPENCTI-MODULE] End of Activity manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Activity manager already started by another API');
@@ -134,7 +134,7 @@ const initActivityManager = () => {
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        if (syncListening) {
+        if (running) {
           await activityHandler(lastEventId);
         }
       }, SCHEDULE_TIME);
@@ -147,7 +147,7 @@ const initActivityManager = () => {
       };
     },
     shutdown: async () => {
-      syncListening = false;
+      running = false;
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

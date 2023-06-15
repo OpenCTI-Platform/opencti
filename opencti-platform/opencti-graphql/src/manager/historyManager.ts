@@ -146,7 +146,6 @@ const initHistoryManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
-  let syncListening = true;
   let running = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -162,9 +161,10 @@ const initHistoryManager = () => {
       logApp.info('[OPENCTI-MODULE] Running history manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
       await streamProcessor.start(lastEventId);
-      while (syncListening) {
+      while (streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
+      logApp.info('[OPENCTI-MODULE] End of history manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] History manager already started by another API');
@@ -197,7 +197,7 @@ const initHistoryManager = () => {
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        if (syncListening) {
+        if (running) {
           await historyHandler(lastEventId);
         }
       }, SCHEDULE_TIME);
@@ -210,7 +210,7 @@ const initHistoryManager = () => {
       };
     },
     shutdown: async () => {
-      syncListening = false;
+      running = false;
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

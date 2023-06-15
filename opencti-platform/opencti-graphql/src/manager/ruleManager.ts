@@ -314,7 +314,6 @@ const initRuleManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
-  let syncListening = true;
   let running = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -326,17 +325,18 @@ const initRuleManager = () => {
     try {
       // Lock the manager
       lock = await lockResource([RULE_ENGINE_KEY], { retryCount: 0 });
+      running = true;
       const ruleManager = await getInitRuleManager();
       const { lastEventId } = ruleManager;
-      running = true;
       logApp.info(`[OPENCTI-MODULE] Running rule manager from ${lastEventId ?? 'start'}`);
       // Start the stream listening
       const opts = { withInternal: true, streamName: REDIS_STREAM_NAME };
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, opts);
       await streamProcessor.start(lastEventId);
-      while (syncListening) {
+      while (streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
+      logApp.info('[OPENCTI-MODULE] End of rule manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Rule engine already started by another API');
@@ -363,7 +363,7 @@ const initRuleManager = () => {
       };
     },
     shutdown: async () => {
-      syncListening = false;
+      running = false;
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }

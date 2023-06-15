@@ -305,6 +305,7 @@ const createSseMiddleware = () => {
         return;
       }
       const { client } = createSseChannel(req, res, startStreamId);
+      const opts = { autoReconnect: true };
       const processor = createStreamProcessor(sessionUser, sessionUser.user_email, async (elements, lastEventId) => {
         // Process the event messages
         for (let index = 0; index < elements.length; index += 1) {
@@ -315,7 +316,7 @@ const createSseMiddleware = () => {
           }
         }
         client.setLastEventId(lastEventId);
-      });
+      }, opts);
       await initBroadcasting(req, res, client, processor);
       await processor.start(startStreamId);
     } catch (err) {
@@ -535,6 +536,7 @@ const createSseMiddleware = () => {
       // Init stream and broadcasting
       const userEmail = user.user_email;
       let error;
+      const opts = { autoReconnect: true };
       const processor = createStreamProcessor(user, userEmail, async (elements, lastEventId) => {
         // Default Live collection doesn't have a stored Object associated
         if (!error && (!collection || collection.stream_live)) {
@@ -615,7 +617,7 @@ const createSseMiddleware = () => {
         streamFilters = newComputed.streamFilters;
         collection = newComputed.collection;
         error = newComputed.error;
-      });
+      }, opts);
       await initBroadcasting(req, res, client, processor);
       // After recovery start the stream listening
       const startMessage = startStreamId ? `${startStreamId} / ${startIsoDate}` : 'now';
