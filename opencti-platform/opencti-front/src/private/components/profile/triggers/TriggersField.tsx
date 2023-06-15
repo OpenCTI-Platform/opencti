@@ -105,9 +105,13 @@ const TriggersField: FunctionComponent<TriggersFieldProps> = ({
     setTriggerCreation(false);
   };
   const searchTriggers = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const filters = [{ key: 'trigger_type', values: ['live'] }];
+    if (recipientId) {
+      filters.push({ key: 'user_ids', values: [recipientId] });
+    }
     fetchQuery(triggersQueriesSearchQuery, {
       search: event && event.target.value,
-      filters: [{ key: 'trigger_type', values: ['live'] }, { key: 'user_ids', values: [recipientId] }],
+      filters,
     })
       .toPromise()
       .then((data) => {
