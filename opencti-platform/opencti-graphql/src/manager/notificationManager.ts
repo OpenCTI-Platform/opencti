@@ -22,7 +22,7 @@ import type { DataEvent, SseEvent, StreamNotifEvent, UpdateEvent } from '../type
 import type { AuthContext, AuthUser } from '../types/user';
 import { utcDate } from '../utils/format';
 import { EVENT_TYPE_CREATE, EVENT_TYPE_DELETE, EVENT_TYPE_UPDATE } from '../database/utils';
-import type { StixCoreObject, StixObject, StixRelationshipObject } from '../types/stix-common';
+import type { StixCoreObject, StixRelationshipObject } from '../types/stix-common';
 import {
   BasicStoreEntityDigestTrigger,
   BasicStoreEntityLiveTrigger,
@@ -30,7 +30,7 @@ import {
   ENTITY_TYPE_TRIGGER
 } from '../modules/notification/notification-types';
 import { convertFiltersFrontendFormat, isStixMatchFilters } from '../utils/filtering';
-import { getEntitiesFromCache, getEntitiesMapFromCache } from '../database/cache';
+import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 import { STIX_TYPE_RELATION, STIX_TYPE_SIGHTING } from '../schema/general';
 import { resolvedRefsExtractor, stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
@@ -413,7 +413,7 @@ const isStixMatchEvents = async (
       ? ['update', 'create', 'delete'] // extends trigger event types for side events search
       : [...event_types, 'create'];
   }
-  const resolvedMap = await getEntitiesMapFromCache<StixObject>(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const resolvedMap = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   const targets: Array<{ user: NotificationUser, type: string, message: string }> = [];
   if (eventType === EVENT_TYPE_UPDATE) {
     const { context: dataContext } = streamEvent.data as UpdateEvent;
@@ -429,7 +429,7 @@ const isStixMatchEvents = async (
         .map((n) => ({
           id: n.id,
           object: resolvedMap.get(n.id),
-        })) as { id: any, object: StixCoreObject }[];
+        }));
       const isPreviousMatch = await isStixMatchFilters(context, user, previous, adaptedFilters, extendedElementId);
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, extendedElementId);
       const entityType = data.extensions[STIX_EXT_OCTI].type;
@@ -477,7 +477,7 @@ const isStixMatchEvents = async (
         .map((n) => ({
           id: n.id,
           object: resolvedMap.get(n.id),
-        })) as { id: any, object: StixCoreObject }[];
+        }));
       const isCurrentlyMatch = await isStixMatchFilters(context, user, data, adaptedFilters, extendedElementId);
       const entityType = data.extensions[STIX_EXT_OCTI].type;
       const refsLabelsMap = resolvedRefsExtractor(data);
