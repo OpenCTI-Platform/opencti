@@ -24,10 +24,18 @@ import Configuration from './configuration/Configuration';
 
 const RootActivity = () => {
   return (
-      <Switch>
-          <Route exact path="/dashboard/settings/activity/audit" render={() => <Audit/>}/>
-          <Route exact path="/dashboard/settings/activity/configuration" render={() => <Configuration/>}/>
-      </Switch>
+    <Switch>
+      <Route
+        exact
+        path="/dashboard/settings/activity/audit"
+        render={() => <Audit />}
+      />
+      <Route
+        exact
+        path="/dashboard/settings/activity/configuration"
+        render={() => <Configuration />}
+      />
+    </Switch>
   );
 };
 

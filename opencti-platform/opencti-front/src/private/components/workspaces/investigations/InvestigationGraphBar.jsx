@@ -52,7 +52,6 @@ import {
   ZAxis,
 } from 'recharts';
 import inject18n from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
 import { parseDomain } from '../../../../utils/Graph';
 import { EXPLORE_EXUPDATE } from '../../../../utils/hooks/useGranted';

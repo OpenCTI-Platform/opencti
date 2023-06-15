@@ -104,7 +104,8 @@ const ObjectOrganizationField = (props) => {
       />
     );
   }
-  const FieldElement = <Field
+  const FieldElement = (
+    <Field
       component={AutocompleteField}
       name={name}
       multiple={multiple}
@@ -122,26 +123,27 @@ const ObjectOrganizationField = (props) => {
       onInputChange={searchOrganizations}
       onChange={typeof onChange === 'function' ? onChange : null}
       renderOption={(renderProps, option) => (
-          <li {...renderProps}>
-              <div className={classes.icon}>
-                  <ItemIcon type="Organization" />
-              </div>
-              <div className={classes.text}>{option.label}</div>
-          </li>
+        <li {...renderProps}>
+          <div className={classes.icon}>
+            <ItemIcon type="Organization" />
+          </div>
+          <div className={classes.text}>{option.label}</div>
+        </li>
       )}
-  />;
+    />
+  );
   if (!alert) {
     return FieldElement;
   }
   return (
-    <Alert severity="warning"
+    <Alert
+      severity="warning"
       variant="outlined"
       style={style}
-      classes={{ message: classes.message }}>
+      classes={{ message: classes.message }}
+    >
       <AlertTitle>{t(label ?? 'Organizations restriction')}</AlertTitle>
-        <div style={{ marginTop: 10 }}>
-            {FieldElement}
-        </div>
+      <div style={{ marginTop: 10 }}>{FieldElement}</div>
     </Alert>
   );
 };
