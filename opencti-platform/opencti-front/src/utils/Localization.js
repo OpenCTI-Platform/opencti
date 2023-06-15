@@ -1394,6 +1394,7 @@ const i18n = {
         'Ninguna entidad fue encontrada en esta búsqueda.',
       'No reports about this entity.': 'Ningún informe sobre esta entidad.',
       'No Malware analysis on this observable.': 'Ningún análisis de malware sobre esta observable.',
+      'Malware Analyses run on this observable': 'Análisis de malware ejecutados en este observable',
       'API access': 'Acceso a la API',
       Example: 'Ejemplo',
       'API key': 'Clave de API',
@@ -3339,6 +3340,7 @@ const i18n = {
         'Aucun rapport à propos de cette entité.',
       'No Malware analysis on this observable.':
         'Aucune analyse de code malveillant sur cet observable.',
+      'Malware Analyses run on this observable': 'Analyses de codes malveillants effectuées à partir de cet observable',
       'API access': "Accès à l'API",
       Example: 'Exemple',
       'API key': "Clé d'API",
