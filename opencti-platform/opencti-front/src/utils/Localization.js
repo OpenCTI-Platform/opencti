@@ -5245,6 +5245,9 @@ const i18n = {
         'エンティティは見つかりませんでした。',
       'No reports about this entity.':
         'このエンティティに関するレポートはありません。',
+      'No Malware analysis on this observable.':
+        'この観測点では、マルウェアの解析は行われていません。',
+      'Malware Analyses run on this observable': 'この観測値で実行されるマルウェア分析',
       'API access': 'APIアクセス',
       Example: '例',
       'API key': 'APIキー',
@@ -5409,6 +5412,7 @@ const i18n = {
       entity_Region: '地域',
       entity_Position: '位置',
       entity_Malware: 'マルウェア',
+      Maliciousness: '悪意がある',
       'entity_Malware-Analysis': 'マルウェア分析',
       'entity_Threat-Actor': '脅威アクター',
       entity_Tool: 'ツール',
@@ -7020,6 +7024,9 @@ const i18n = {
       '30 days': '30天',
       'No entities were found for this search.': '未找到此搜索的实体。',
       'No reports about this entity.': '没有关于此实体的报告。',
+      'No Malware analysis on this observable.':
+        '没有对这个可观察到的恶意软件进行分析。',
+      'Malware Analyses run on this observable': '对该观察点进行的恶意软件分析',
       'API access': 'API访问',
       Example: '示例',
       'API key': 'API密钥',
@@ -7176,6 +7183,7 @@ const i18n = {
       entity_Region: '区域',
       entity_Position: '位置',
       entity_Malware: '恶意软件',
+      Maliciousness: '恶意行为',
       'entity_Malware-Analysis': '恶意软件分析',
       'entity_Threat-Actor': '威胁源',
       entity_Tool: '攻击工具',
