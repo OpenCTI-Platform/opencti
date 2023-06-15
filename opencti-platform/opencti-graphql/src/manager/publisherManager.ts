@@ -149,7 +149,8 @@ const initPublisherManager = () => {
   const WAIT_TIME_ACTION = 2000;
   let streamScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
-  let publisherListening = true;
+  let running = false;
+  let shutdown = false;
   let isSmtpActive = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -157,18 +158,19 @@ const initPublisherManager = () => {
     });
   };
   const notificationHandler = async () => {
-    if (!publisherListening) return;
     let lock;
     try {
       // Lock the manager
       lock = await lockResource([PUBLISHER_ENGINE_KEY], { retryCount: 0 });
+      running = true;
       logApp.info('[OPENCTI-MODULE] Running publisher manager');
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
       await streamProcessor.start('live');
-      while (publisherListening) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
+      logApp.info('[OPENCTI-MODULE] End of publisher manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
         logApp.debug('[OPENCTI-MODULE] Publisher manager already started by another API');
@@ -190,11 +192,11 @@ const initPublisherManager = () => {
         id: 'PUBLISHER_MANAGER',
         enable: booleanConf('publisher_manager:enabled', false),
         is_smtp_active: isSmtpActive,
-        running: false,
+        running,
       };
     },
     shutdown: async () => {
-      publisherListening = false;
+      shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;
     },

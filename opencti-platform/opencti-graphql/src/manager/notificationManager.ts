@@ -27,7 +27,8 @@ import { isStixMatchFilters } from '../utils/filtering';
 import { getEntitiesFromCache } from '../database/cache';
 import { ENTITY_TYPE_USER } from '../schema/internalObject';
 
-const NOTIFICATION_ENGINE_KEY = conf.get('notification_manager:lock_key');
+const NOTIFICATION_LIVE_KEY = conf.get('notification_manager:lock_live_key');
+const NOTIFICATION_DIGEST_KEY = conf.get('notification_manager:lock_digest_key');
 const EVENT_NOTIFICATION_VERSION = '1';
 const CRON_SCHEDULE_TIME = 60000; // 1 minute
 const STREAM_SCHEDULE_TIME = 10000;
@@ -266,6 +267,9 @@ const eventTypeTranslater = (isPreviousMatch: boolean, isCurrentlyMatch: boolean
 
 const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>>) => {
   try {
+    if (streamEvents.length === 0) {
+      return;
+    }
     const context = executionContext('notification_manager');
     const liveNotifications = await getLiveNotifications(context);
     for (let index = 0; index < streamEvents.length; index += 1) {
@@ -317,10 +321,13 @@ const notificationStreamHandler = async (streamEvents: Array<SseEvent<DataEvent>
 const notificationDigestHandler = async () => {
   const context = executionContext('notification_manager');
   const baseDate = utcDate().startOf('minutes');
+  let lock;
   try {
+    // Lock the manager
+    lock = await lockResource([NOTIFICATION_DIGEST_KEY], { retryCount: 0 });
     // Get digest that need to be executed
     const digestNotifications = await getDigestNotifications(context, baseDate);
-    // Iter on each digest an generate the output
+    // Iter on each digest and generate the output
     for (let index = 0; index < digestNotifications.length; index += 1) {
       const { trigger, users } = digestNotifications[index];
       const { period, trigger_ids: triggerIds, outcomes, internal_id: notification_id, trigger_type: type } = trigger;
@@ -347,8 +354,14 @@ const notificationDigestHandler = async () => {
         }
       }
     }
-  } catch (e) {
-    logApp.error('[OPENCTI-MODULE] Error executing notification manager (digest)', { error: e });
+  } catch (e: any) {
+    if (e.name === TYPE_LOCK_ERROR) {
+      logApp.debug('[OPENCTI-MODULE] Notification manager (digest) already started by another API');
+    } else {
+      logApp.error('[OPENCTI-MODULE] Error executing notification manager (digest)', { error: e });
+    }
+  } finally {
+    if (lock) await lock.unlock();
   }
 };
 
@@ -357,27 +370,29 @@ const initNotificationManager = () => {
   let streamScheduler: SetIntervalAsyncTimer<[]>;
   let cronScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
-  let notificationListening = true;
+  let running = false;
+  let shutdown = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
     });
   };
   const notificationHandler = async () => {
-    if (!notificationListening) return;
     let lock;
     try {
       // Lock the manager
-      lock = await lockResource([NOTIFICATION_ENGINE_KEY], { retryCount: 0 });
-      logApp.info('[OPENCTI-MODULE] Running notification manager');
+      lock = await lockResource([NOTIFICATION_LIVE_KEY], { retryCount: 0 });
+      running = true;
+      logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationStreamHandler);
       await streamProcessor.start('live');
-      while (notificationListening) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
+      logApp.info('[OPENCTI-MODULE] End of notification manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
+        logApp.info('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Notification manager failed to start', { error: e });
       }
@@ -389,7 +404,7 @@ const initNotificationManager = () => {
   return {
     start: async () => {
       streamScheduler = setIntervalAsync(async () => {
-        if (notificationListening) {
+        if (running) {
           await notificationHandler();
         }
       }, STREAM_SCHEDULE_TIME);
@@ -401,11 +416,11 @@ const initNotificationManager = () => {
       return {
         id: 'NOTIFICATION_MANAGER',
         enable: booleanConf('notification_manager:enabled', false),
-        running: false,
+        running,
       };
     },
     shutdown: async () => {
-      notificationListening = false;
+      shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
       return true;

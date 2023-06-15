@@ -52,19 +52,24 @@ const isStreamPublishable = (opts: EventOpts) => {
   return opts.publishStreamEvent === undefined || opts.publishStreamEvent;
 };
 
-const redisOptions = (): RedisOptions => ({
+const redisOptions = (autoReconnect = false): RedisOptions => ({
   keyPrefix: REDIS_PREFIX,
   username: conf.get('redis:username'),
   password: conf.get('redis:password'),
   tls: USE_SSL ? { ...configureCA(REDIS_CA), servername: conf.get('redis:hostname') } : undefined,
   retryStrategy: /* istanbul ignore next */ (times) => {
-    if (getStoppingState()) return null;
-    return Math.min(times * 50, 2000);
+    if (getStoppingState()) {
+      return null;
+    }
+    if (autoReconnect) {
+      return Math.min(times * 50, 2000);
+    }
+    return null;
   },
   lazyConnect: true,
   enableAutoPipelining: false,
   enableOfflineQueue: true,
-  maxRetriesPerRequest: null, // Retry forever
+  maxRetriesPerRequest: autoReconnect ? null : 1,
   showFriendlyErrorStack: DEV_MODE,
 });
 
@@ -99,14 +104,14 @@ const clusterOptions = (): ClusterOptions => ({
   showFriendlyErrorStack: DEV_MODE,
 });
 
-export const createRedisClient = (provider: string): Cluster | Redis => {
+export const createRedisClient = (provider: string, autoReconnect = false): Cluster | Redis => {
   let client: Cluster | Redis;
   const isCluster = conf.get('redis:mode') === 'cluster';
   if (isCluster) {
     const clusterNodes = generateClusterNodes(conf.get('redis:hostnames') ?? []);
     client = new Redis.Cluster(clusterNodes, clusterOptions());
   } else {
-    const singleOptions = redisOptions();
+    const singleOptions = redisOptions(autoReconnect);
     client = new Redis({ ...singleOptions, port: conf.get('redis:port'), host: conf.get('redis:hostname') });
   }
   client.on('close', () => logApp.info(`[REDIS] Redis '${provider}' client closed`));
@@ -120,11 +125,11 @@ export const createRedisClient = (provider: string): Cluster | Redis => {
 type RedisConnection = Cluster | Redis ;
 interface RedisClients { base: RedisConnection, lock: RedisConnection, pubsub: RedisPubSub }
 const redisClients: RedisClients = {
-  base: createRedisClient('base'),
-  lock: createRedisClient('lock'),
+  base: createRedisClient('base', true),
+  lock: createRedisClient('lock', true),
   pubsub: new RedisPubSub({
-    publisher: createRedisClient('publisher'),
-    subscriber: createRedisClient('subscriber'),
+    publisher: createRedisClient('publisher', true),
+    subscriber: createRedisClient('subscriber', true),
     connectionListener: (err) => {
       logApp.info('[REDIS] Redis pubsub client closed', { error: err });
     }
@@ -586,7 +591,7 @@ export const fetchStreamInfo = async () => {
   return { lastEventId: lastId, firstEventId: firstId, firstEventDate, lastEventDate, streamSize: info.length };
 };
 
-const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean) => {
+const processStreamResult = async (results: Array<any>, callback: any, withInternal: boolean | undefined) => {
   const streamData = R.map((r) => mapStreamToJS(r), results);
   const filteredEvents = streamData.filter((s) => {
     return withInternal ? true : (s.data.scope ?? 'external') === 'external';
@@ -603,23 +608,26 @@ export interface StreamProcessor {
   info: () => Promise<object>;
   start: (from: string | undefined) => Promise<void>;
   shutdown: () => Promise<void>;
+  running: () => boolean;
 }
 
 interface StreamOption {
-  withInternal: boolean;
-  streamName: string;
+  withInternal?: boolean;
+  autoReconnect?: boolean;
+  streamName?: string;
 }
 
 export const createStreamProcessor = <T extends BaseEvent> (
   user: AuthUser,
   provider: string,
   callback: (events: Array<SseEvent<T>>, lastEventId: string) => void,
-  opts: StreamOption = { withInternal: false, streamName: REDIS_STREAM_NAME }
+  opts: StreamOption = {}
 ): StreamProcessor => {
   let client: Cluster | Redis;
   let startEventId: string;
   let processingLoopPromise: Promise<void>;
   let streamListening = true;
+  const streamName = opts.streamName ?? REDIS_STREAM_NAME;
   const processInfo = async () => {
     return fetchStreamInfo();
   };
@@ -637,7 +645,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
         'BLOCK',
         STREAM_BATCH_TIME,
         'STREAMS',
-        opts.streamName,
+        streamName,
         startEventId
       ) as any[];
       // Process the event results
@@ -650,19 +658,25 @@ export const createStreamProcessor = <T extends BaseEvent> (
       }
     } catch (err) {
       logApp.error(`Error in redis streams read for ${provider}`, { error: err });
-      await waitInSec(2);
+      if (opts.autoReconnect) {
+        await waitInSec(2);
+      } else {
+        return false;
+      }
     }
     return streamListening;
   };
   const processingLoop = async () => {
     while (streamListening) {
       if (!(await processStep())) {
+        streamListening = false;
         break;
       }
     }
   };
   return {
     info: async () => processInfo(),
+    running: () => streamListening,
     start: async (start = 'live') => {
       let fromStart = start;
       if (isEmptyField(fromStart)) {
@@ -670,7 +684,7 @@ export const createStreamProcessor = <T extends BaseEvent> (
       }
       startEventId = fromStart === 'live' ? '$' : fromStart;
       logApp.info(`[STREAM] Starting stream processor at ${startEventId} for ${provider}`);
-      client = await createRedisClient(provider); // Create client for this processing loop
+      client = await createRedisClient(provider, opts.autoReconnect); // Create client for this processing loop
       processingLoopPromise = processingLoop();
     },
     shutdown: async () => {
