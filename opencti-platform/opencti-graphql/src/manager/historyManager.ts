@@ -147,6 +147,7 @@ const initHistoryManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
+  let shutdown = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -161,7 +162,7 @@ const initHistoryManager = () => {
       logApp.info('[OPENCTI-MODULE] Running history manager');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'History manager', historyStreamHandler);
       await streamProcessor.start(lastEventId);
-      while (streamProcessor.running()) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of history manager processing');
@@ -210,7 +211,7 @@ const initHistoryManager = () => {
       };
     },
     shutdown: async () => {
-      running = false;
+      shutdown = true;
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

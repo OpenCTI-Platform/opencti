@@ -150,6 +150,7 @@ const initPublisherManager = () => {
   let streamScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
+  let shutdown = false;
   let isSmtpActive = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
@@ -166,7 +167,7 @@ const initPublisherManager = () => {
       const opts = { withInternal: false, streamName: NOTIFICATION_STREAM_NAME };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Publisher manager', publisherStreamHandler, opts);
       await streamProcessor.start('live');
-      while (streamProcessor.running()) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of publisher manager processing');
@@ -195,7 +196,7 @@ const initPublisherManager = () => {
       };
     },
     shutdown: async () => {
-      running = false;
+      shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;
     },

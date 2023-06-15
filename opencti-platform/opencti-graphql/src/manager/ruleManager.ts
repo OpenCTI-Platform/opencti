@@ -315,6 +315,7 @@ const initRuleManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
+  let shutdown = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -333,7 +334,7 @@ const initRuleManager = () => {
       const opts = { withInternal: true, streamName: REDIS_STREAM_NAME };
       streamProcessor = createStreamProcessor(RULE_MANAGER_USER, 'Rule manager', ruleStreamHandler, opts);
       await streamProcessor.start(lastEventId);
-      while (streamProcessor.running()) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of rule manager processing');
@@ -363,7 +364,7 @@ const initRuleManager = () => {
       };
     },
     shutdown: async () => {
-      running = false;
+      shutdown = true;
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }

@@ -84,6 +84,7 @@ const initActivityManager = () => {
   let scheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
+  let shutdown = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -99,7 +100,7 @@ const initActivityManager = () => {
       const streamOpts = { streamName: ACTIVITY_STREAM_NAME };
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Activity manager', activityStreamHandler, streamOpts);
       await streamProcessor.start(lastEventId);
-      while (streamProcessor.running()) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of Activity manager processing');
@@ -110,7 +111,7 @@ const initActivityManager = () => {
         logApp.error('[OPENCTI-MODULE] Activity manager failed to start', { error: e });
       }
     } finally {
-      running = false;
+      shutdown = true;
       if (streamProcessor) await streamProcessor.shutdown();
       if (lock) await lock.unlock();
     }

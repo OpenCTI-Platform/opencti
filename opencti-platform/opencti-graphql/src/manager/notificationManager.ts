@@ -371,6 +371,7 @@ const initNotificationManager = () => {
   let cronScheduler: SetIntervalAsyncTimer<[]>;
   let streamProcessor: StreamProcessor;
   let running = false;
+  let shutdown = false;
   const wait = (ms: number) => {
     return new Promise((resolve) => {
       setTimeout(resolve, ms);
@@ -385,7 +386,7 @@ const initNotificationManager = () => {
       logApp.info('[OPENCTI-MODULE] Running notification manager (live)');
       streamProcessor = createStreamProcessor(SYSTEM_USER, 'Notification manager', notificationStreamHandler);
       await streamProcessor.start('live');
-      while (streamProcessor.running()) {
+      while (!shutdown && streamProcessor.running()) {
         await wait(WAIT_TIME_ACTION);
       }
       logApp.info('[OPENCTI-MODULE] End of notification manager processing');
@@ -419,7 +420,7 @@ const initNotificationManager = () => {
       };
     },
     shutdown: async () => {
-      running = false;
+      shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       if (cronScheduler) await clearIntervalAsync(cronScheduler);
       return true;
