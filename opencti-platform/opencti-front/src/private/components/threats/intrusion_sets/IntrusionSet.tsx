@@ -5,8 +5,6 @@ import makeStyles from '@mui/styles/makeStyles';
 import IntrusionSetDetails from './IntrusionSetDetails';
 import IntrusionSetEdition from './IntrusionSetEdition';
 import IntrusionSetPopover from './IntrusionSetPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports
-  from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -17,6 +15,8 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships
   from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { IntrusionSet_intrusionSet$key } from './__generated__/IntrusionSet_intrusionSet.graphql';
+import StixCoreObjectOrStixRelationshipLastContainers
+  from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -108,37 +108,23 @@ const IntrusionSetComponent = ({ intrusionSet }: { intrusionSet: IntrusionSet_in
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={intrusionSetData} />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={intrusionSetData.id}
             stixObjectOrStixRelationshipLink={`/dashboard/threats/intrusion_sets/${intrusionSetData.id}/knowledge`}
           />
         </Grid>
-        <Grid item={true} xs={6}>
-          <StixCoreObjectOrStixCoreRelationshipLastReports
-            stixCoreObjectOrStixCoreRelationshipId={intrusionSetData.id}
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <StixCoreObjectOrStixRelationshipLastContainers
+            stixCoreObjectOrStixRelationshipId={intrusionSetData.id}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={intrusionSetData.id}
           />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={intrusionSetData.id} />
         </Grid>
       </Grid>

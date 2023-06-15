@@ -159,7 +159,7 @@ const initCacheManager = () => {
     // Invalid cache if any entity has changed.
     resetCacheForEntity(instance.entity_type);
     // Smart dynamic cache loading (for filtering ...)
-    await dynamicCacheUpdater(context, SYSTEM_USER, instance);
+    dynamicCacheUpdater(context, SYSTEM_USER, instance);
   };
   return {
     init: () => initCacheContent(), // Use for testing

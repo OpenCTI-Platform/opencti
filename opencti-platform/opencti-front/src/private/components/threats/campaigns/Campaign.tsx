@@ -5,8 +5,6 @@ import { makeStyles } from '@mui/styles';
 import CampaignDetails from './CampaignDetails';
 import CampaignEdition from './CampaignEdition';
 import CampaignPopover from './CampaignPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports
-  from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -17,6 +15,8 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships
   from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import { Campaign_campaign$key } from './__generated__/Campaign_campaign.graphql';
+import StixCoreObjectOrStixRelationshipLastContainers
+  from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -109,36 +109,22 @@ const CampaignComponent = ({ campaign }: { campaign: Campaign_campaign$key }) =>
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={campaignData} />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={campaignData.id}
             stixObjectOrStixRelationshipLink={`/dashboard/threats/campaigns/${campaignData.id}/knowledge`}
           />
         </Grid>
-        <Grid item={true} xs={6}>
-          <StixCoreObjectOrStixCoreRelationshipLastReports
-            stixCoreObjectOrStixCoreRelationshipId={campaignData.id}
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <StixCoreObjectOrStixRelationshipLastContainers
+            stixCoreObjectOrStixRelationshipId={campaignData.id}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
         <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={campaignData.id} />
+          <StixCoreObjectExternalReferences stixCoreObjectId={campaignData.id} style={{ marginTop: 30 }}/>
         </Grid>
         <Grid item={true} xs={6}>
-          <StixCoreObjectLatestHistory stixCoreObjectId={campaignData.id} />
+          <StixCoreObjectLatestHistory stixCoreObjectId={campaignData.id} style={{ marginTop: 30 }}/>
         </Grid>
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes

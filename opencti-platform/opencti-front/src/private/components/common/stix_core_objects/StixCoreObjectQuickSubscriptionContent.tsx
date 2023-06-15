@@ -21,15 +21,10 @@ import ListItem from '@mui/material/ListItem';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import List from '@mui/material/List';
 import { useFormatter } from '../../../../components/i18n';
-import {
-  TriggerLiveCreationLiveMutation,
-} from '../../profile/triggers/__generated__/TriggerLiveCreationLiveMutation.graphql';
-import { triggerLiveAddMutation } from '../../profile/triggers/TriggerLiveCreation';
 import { triggerMutationFieldPatch } from '../../profile/triggers/TriggerEditionOverview';
 import { TriggerPopoverDeletionMutation } from '../../profile/triggers/TriggerPopover';
 import TextField from '../../../../components/TextField';
 import { deleteNode, insertNode } from '../../../../utils/store';
-import { TriggerLiveAddInput } from '../../profile/triggers/__generated__/TriggerCreationLiveMutation.graphql';
 import { Theme } from '../../../../components/Theme';
 import { fetchQuery, MESSAGING$ } from '../../../../relay/environment';
 import {
@@ -43,16 +38,21 @@ import { convertEventTypes, convertOutcomes } from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import FilterIconButton from '../../../../components/FilterIconButton';
 import { TriggerLine_node$data } from '../../profile/triggers/__generated__/TriggerLine_node.graphql';
+import { triggerLiveCreationMutation } from '../../profile/triggers/TriggerLiveCreation';
+import {
+  TriggerLiveAddInput,
+  TriggerLiveCreationMutation,
+} from '../../profile/triggers/__generated__/TriggerLiveCreationMutation.graphql';
 
 export const stixCoreObjectQuickSubscriptionContentQuery = graphql`
     query StixCoreObjectQuickSubscriptionContentPaginationQuery(
         $filters: [TriggersFiltering!]
         $first: Int
     ) {
-        myTriggers(
+        triggers(
             filters: $filters
             first: $first
-        ) @connection(key: "Pagination_myTriggers") {
+        ) @connection(key: "Pagination_triggers") {
             edges {
                 node {
                     id
@@ -198,14 +198,14 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
       stixCoreObjectQuickSubscriptionContentQuery,
       queryRef,
     );
-    return existingInstanceTriggersData?.myTriggers?.edges ?? [];
+    return existingInstanceTriggersData?.triggers?.edges ?? [];
   };
   const [existingInstanceTriggersEdges, setExistingInstanceTriggersEdges] = useState(initialExistingInstanceTriggersEdges());
 
   const triggerUpdate = existingInstanceTriggersEdges.length > 0;
 
-  const [commitAddTrigger] = useMutation<TriggerLiveCreationLiveMutation>(
-    triggerLiveAddMutation,
+  const [commitAddTrigger] = useMutation<TriggerLiveCreationMutation>(
+    triggerLiveCreationMutation,
   );
   const [commitFieldPatch] = useMutation(triggerMutationFieldPatch);
   const [commitDeleteTrigger] = useMutation(TriggerPopoverDeletionMutation);
@@ -214,7 +214,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
     fetchQuery(stixCoreObjectQuickSubscriptionContentQuery, paginationOptions)
       .toPromise()
       .then((data) => {
-        setExistingInstanceTriggersEdges((data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)?.myTriggers?.edges ?? []);
+        setExistingInstanceTriggersEdges((data as StixCoreObjectQuickSubscriptionContentPaginationQuery$data)?.triggers?.edges ?? []);
       });
   };
 
@@ -260,7 +260,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         input: finalValues,
       },
       updater: (store) => {
-        insertNode(store, 'Pagination_myTriggers', paginationOptions, 'triggerLiveAdd');
+        insertNode(store, 'Pagination_triggers', paginationOptions, 'triggerLiveAdd');
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -307,7 +307,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         id: triggerIdToDelete,
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_myTriggers', paginationOptions, triggerIdToDelete);
+        deleteNode(store, 'Pagination_triggers', paginationOptions, triggerIdToDelete);
       },
       onCompleted: () => {
         searchInstanceTriggers();
@@ -331,10 +331,12 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
         ],
       },
       updater: (store) => {
-        deleteNode(store, 'Pagination_myTriggers', paginationOptions, triggerIdToUpdate);
+        deleteNode(store, 'Pagination_triggers', paginationOptions, triggerIdToUpdate);
       },
       onCompleted: () => {
+        searchInstanceTriggers();
         setDeleting(false);
+        handleClose();
       },
     });
   };
@@ -408,7 +410,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                 )}
               />
               {multiple
-                && <div style={fieldSpacingContainerStyle}>
+                && <div style={{ ...fieldSpacingContainerStyle }}>
                   <FilterIconButton
                     filters={JSON.parse(instanceTrigger.filters ?? '[]')}
                     classNameNumber={3}
@@ -425,7 +427,7 @@ const StixCoreObjectQuickSubscriptionContent: FunctionComponent<StixCoreObjectQu
                   disabled={deleting}
                   classes={{ root: classes.deleteButton }}
                 >
-                  {t('Delete')}
+                  {multiple ? t('Remove') : t('Delete')}
                 </Button>
                 <Button
                   variant="contained"

@@ -9,11 +9,11 @@ import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { isUserCanAccessStixElement, SYSTEM_USER } from './access';
 import { STIX_EXT_OCTI, STIX_EXT_OCTI_SCO } from '../types/stix-extensions';
 import { generateInternalType, getParentTypes } from '../schema/schemaUtils';
-import { getEntitiesFromCache } from '../database/cache';
-import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { getEntitiesMapFromCache } from '../database/cache';
 import { stixRefsExtractor } from '../schema/stixEmbeddedRelationship';
 import { generateStandardId } from '../schema/identifier';
-import { defaultValue } from './mailData';
+import { ENTITY_TYPE_RESOLVED_FILTERS } from '../schema/stixDomainObject';
+import { extractStixRepresentative } from '../database/stix-representative';
 
 // Resolutions
 export const MARKING_FILTER = 'markedBy';
@@ -71,7 +71,7 @@ export const extractFilterIdsToResolve = (filters) => {
 
 export const convertFiltersFrontendFormat = async (context, user, filters) => {
   // Grab all values that are internal_id that needs to be converted to standard_ids
-  const resolvedMap = await getEntitiesFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
+  const resolvedMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_RESOLVED_FILTERS);
   // Remap the format of specific keys
   const adaptedFilters = [];
   const filterEntries = Object.entries(filters);
@@ -80,11 +80,16 @@ export const convertFiltersFrontendFormat = async (context, user, filters) => {
     const values = [];
     for (let vIndex = 0; vIndex < rawValues.length; vIndex += 1) {
       const v = rawValues[vIndex];
-      if (resolvedMap.has(v.id)) {
-        const instance = resolvedMap.get(v.id);
-        const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, instance);
-        values.push({ id: isUserHasAccessToElement ? v.id : '<invalid access>', value: defaultValue(instance) });
-        values.push({ id: isUserHasAccessToElement ? instance.id : '<invalid access>', value: defaultValue(instance) }); // add standard id if user has access to the element
+      if (RESOLUTION_FILTERS.includes(key) && resolvedMap.has(v.id)) {
+        const stixInstance = resolvedMap.get(v.id);
+        const isUserHasAccessToElement = await isUserCanAccessStixElement(context, user, stixInstance);
+        const value = extractStixRepresentative(stixInstance);
+        // add id if user has access to the element
+        values.push({ id: isUserHasAccessToElement ? v.id : '<invalid access>', value });
+        // add standard id if user has access to the element
+        values.push({ id: isUserHasAccessToElement ? stixInstance.id : '<invalid access>', value });
+      } else {
+        values.push(v);
       }
     }
     if (key.endsWith('start_date') || key.endsWith('_gt')) {

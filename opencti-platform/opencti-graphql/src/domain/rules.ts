@@ -56,7 +56,7 @@ if (DEV_MODE) {
 }
 
 export const getRules = async (context: AuthContext, user: AuthUser): Promise<Array<RuleRuntime>> => {
-  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE);
+  const rules = await getEntitiesFromCache<BasicRuleEntity>(context, user, ENTITY_TYPE_RULE) as BasicRuleEntity[];
   return RULES_DECLARATION.map((def: RuleRuntime) => {
     const esRule = rules.find((e) => e.internal_id === def.id);
     const isActivated = esRule?.active === true;

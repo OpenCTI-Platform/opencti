@@ -1,6 +1,12 @@
 import * as R from 'ramda';
 import type { AuthContext, AuthUser } from '../../types/user';
-import { batchLoader, createEntity, deleteElementById, patchAttribute, updateAttribute } from '../../database/middleware';
+import {
+  batchLoader,
+  createEntity,
+  deleteElementById,
+  patchAttribute,
+  updateAttribute
+} from '../../database/middleware';
 import { notify } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import type {
@@ -11,9 +17,15 @@ import type {
   TriggerLiveAddInput,
   TriggerType
 } from '../../generated/graphql';
-import { TriggerFilter } from '../../generated/graphql';
-import { internalFindByIds,internalLoadById, listEntitiesPaginated, storeLoadById, } from '../../database/middleware-loader';
+import { TriggerFilter, TriggerType as TriggerTypeValue } from '../../generated/graphql';
 import {
+  internalFindByIds,
+  internalLoadById,
+  listEntitiesPaginated,
+  storeLoadById,
+} from '../../database/middleware-loader';
+import {
+  BasicStoreEntityLiveTrigger,
   BasicStoreEntityNotification,
   BasicStoreEntityTrigger,
   ENTITY_TYPE_NOTIFICATION,
@@ -26,7 +38,7 @@ import { elCount, elFindByIds } from '../../database/engine';
 import { isNotEmptyField, READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { ENTITY_FILTERS } from '../../utils/filtering';
 import { defaultValue } from '../../utils/mailData';
-import type { BasicStoreObject } from '../../types/store';
+import type { BasicStoreEntity, BasicStoreObject } from '../../types/store';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
   AuthorizedMember,
@@ -37,7 +49,6 @@ import {
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_USER } from '../../schema/internalObject';
-import type { BasicStoreEntity } from '../../types/store';
 
 // Outcomes
 
@@ -69,6 +80,9 @@ export const addTrigger = async (
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
   type: TriggerType
 ): Promise<BasicStoreEntityTrigger> => {
+  if (type === TriggerTypeValue.Live && (triggerInput as TriggerLiveAddInput).event_types.length === 0) {
+    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
+  }
   let authorizedMembers;
   const recipient = await extractUniqRecipient(context, user, triggerInput, type);
   const isSelfTrigger = recipient.id === user.id;
@@ -79,11 +93,14 @@ export const addTrigger = async (
   } else {
     throw UnsupportedError(`Cannot add a recipient with type ${type}`);
   }
-  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, created: now(), updated: now() };
+  const defaultOpts = {
+    trigger_type: type,
+    authorized_members: authorizedMembers,
+    created: now(),
+    updated: now(),
+    instance_trigger: type === TriggerTypeValue.Digest ? false : (triggerInput as TriggerLiveAddInput).instance_trigger,
+  };
   const trigger = { ...triggerInput, ...defaultOpts };
-  if (trigger.event_types.length === 0) {
-    throw Error('Attribute "trigger_events" of a live trigger should have at least one event.');
-  }
   delete trigger.recipients;
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({

@@ -22,7 +22,8 @@ export const stixObjectOrRelationshipAddRefRelation = async (context, user, stix
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be added through this method.`);
   }
   const relation = await createRelation(context, user, finalInput);
-  return notify(BUS_TOPICS[ABSTRACT_STIX_REF_RELATIONSHIP].ADDED_TOPIC, relation, user);
+  await notify(BUS_TOPICS[type].EDIT_TOPIC, relation.from, user);
+  return relation;
 };
 export const stixObjectOrRelationshipAddRefRelations = async (context, user, stixObjectOrRelationshipId, input, type, opts = {}) => {
   const stixObjectOrRelationship = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
@@ -35,9 +36,10 @@ export const stixObjectOrRelationshipAddRefRelations = async (context, user, sti
   const finalInput = input.toIds.map(
     (n) => ({ fromId: stixObjectOrRelationshipId, toId: n, relationship_type: input.relationship_type })
   );
-  await createRelations(context, user, finalInput, opts);
+  const relations = await createRelations(context, user, finalInput, opts);
   const entity = await storeLoadById(context, user, stixObjectOrRelationshipId, type);
-  return notify(BUS_TOPICS[type].EDIT_TOPIC, entity, user);
+  await notify(BUS_TOPICS[type].EDIT_TOPIC, entity, user);
+  return relations;
 };
 
 export const stixObjectOrRelationshipDeleteRefRelation = async (context, user, stixObjectOrRelationshipId, toId, relationshipType, type, opts = {}) => {
@@ -49,5 +51,6 @@ export const stixObjectOrRelationshipDeleteRefRelation = async (context, user, s
     throw FunctionalError(`Only ${ABSTRACT_STIX_REF_RELATIONSHIP} can be deleted through this method.`);
   }
   const { from, to } = await deleteRelationsByFromAndTo(context, user, stixObjectOrRelationshipId, toId, relationshipType, ABSTRACT_STIX_REF_RELATIONSHIP, opts);
-  return notify(BUS_TOPICS[type].EDIT_TOPIC, { ...stixObjectOrRelationship, from, to }, user);
+  await notify(BUS_TOPICS[type].EDIT_TOPIC, from, user);
+  return { ...stixObjectOrRelationship, from, to };
 };

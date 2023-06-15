@@ -4,7 +4,6 @@ import { TriggerType } from '../../generated/graphql';
 import {
   addTrigger,
   myNotificationsFind,
-  myTriggersFind,
   myUnreadNotificationsCount,
   notificationDelete,
   notificationEditRead,

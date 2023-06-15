@@ -3,7 +3,7 @@ import type { BasicStoreIdentifier, StoreEntity, StoreRelation } from '../types/
 import { UnsupportedError } from '../config/errors';
 import { telemetry } from '../config/tracing';
 import type { AuthContext, AuthUser } from '../types/user';
-import type { StixId } from '../types/stix-common';
+import type { StixId, StixObject } from '../types/stix-common';
 import {
   ENTITY_TYPE_GROUP,
   ENTITY_TYPE_ROLE,
@@ -69,7 +69,9 @@ export const dynamicCacheUpdater = (
   }
 };
 
-export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Array<T>> => {
+export const getEntitiesFromCache = async <T extends BasicStoreIdentifier | StixObject>(
+  context: AuthContext, user: AuthUser, type: string
+): Promise<Array<T> | Map<string, T>> => {
   const getEntitiesFromCacheFn = async (): Promise<Array<T> | Map<string, T>> => {
     const fromCache = cache[type];
     if (!fromCache) {
@@ -78,7 +80,7 @@ export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(conte
     if (!fromCache.values) {
       fromCache.values = await fromCache.fn();
     }
-    return fromCache.values ?? [];
+    return fromCache.values ?? (type === ENTITY_TYPE_RESOLVED_FILTERS ? new Map() : []);
   };
   return telemetry(context, user, `CACHE ${type}`, {
     [SemanticAttributes.DB_NAME]: 'cache_engine',
@@ -86,12 +88,20 @@ export const getEntitiesFromCache = async <T extends BasicStoreIdentifier>(conte
   }, getEntitiesFromCacheFn);
 };
 
-export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<Map<string | StixId, T>> => {
-  const data = await getEntitiesFromCache(context, user, type);
+export const getEntitiesMapFromCache = async <T extends BasicStoreIdentifier | StixObject>(
+  context: AuthContext, user: AuthUser, type: string
+): Promise<Map<string | StixId, T>> => {
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
+    return await getEntitiesFromCache(context, user, type) as Map<string, T>;
+  }
+  const data = await getEntitiesFromCache(context, user, type) as BasicStoreIdentifier[];
   return buildStoreEntityMap(data);
 };
 
 export const getEntityFromCache = async <T extends BasicStoreIdentifier>(context: AuthContext, user: AuthUser, type: string): Promise<T> => {
-  const data = await getEntitiesFromCache<T>(context, user, type);
+  if (type === ENTITY_TYPE_RESOLVED_FILTERS) {
+    throw Error('Can\'t fetch an entity from a map.');
+  }
+  const data = await getEntitiesFromCache<T>(context, user, type) as T[];
   return data[0];
 };

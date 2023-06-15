@@ -2889,6 +2889,7 @@ export const createRelationRaw = async (context, user, input, opts = {}) => {
           external_references: references.map((ref) => convertExternalReferenceToStix(ref))
         } : undefined;
         event = await storeUpdateEvent(context, user, previous, instance, message, { ...opts, commit });
+        dataRel.element.from = instance; // dynamically update the from to have an up to date relation
       } else {
         const createdRelation = { ...resolvedInput, ...dataRel.element };
         event = await storeCreateRelationEvent(context, user, createdRelation, opts);
@@ -3293,7 +3294,6 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
           references: opts.references
         });
       }
-
       const targetElement = { ...element.to, i_relation: element };
       const previous = await storeLoadByIdWithRefs(context, user, element.fromId);
       const instance = R.clone(previous);
@@ -3321,6 +3321,7 @@ export const internalDeleteElementById = async (context, user, id, opts = {}) =>
       const deletePromise = elDeleteElements(context, user, [element], storeLoadByIdWithRefs);
       const [, , updateEvent] = await Promise.all([taskPromise, deletePromise, eventPromise]);
       event = updateEvent;
+      element.from = instance; // dynamically update the from to have an up to date relation
     } else {
       // Start by deleting external files
       const importDeletePromise = deleteAllFiles(context, user, `import/${element.entity_type}/${element.internal_id}/`);
