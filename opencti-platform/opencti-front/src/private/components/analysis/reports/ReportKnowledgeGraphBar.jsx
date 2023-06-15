@@ -247,10 +247,10 @@ class ReportKnowledgeGraphBar extends Component {
     } else if (
       (this.props.numberOfSelectedLinks === 1
         && this.props.selectedLinks[0].entity_type
-          === 'stix-sighting-relationship')
+        === 'stix-sighting-relationship')
       || (this.props.numberOfSelectedNodes === 1
         && this.props.selectedNodes[0].entity_type
-          === 'stix-sighting-relationship')
+        === 'stix-sighting-relationship')
     ) {
       this.setState({ openEditSighting: true });
     } else if (
@@ -374,7 +374,7 @@ class ReportKnowledgeGraphBar extends Component {
       deleteObject,
     } = this.state;
     const isInferred = selectedNodes.filter((n) => n.inferred || n.isNestedInferred).length
-        > 0
+      > 0
       || selectedLinks.filter((n) => n.inferred || n.isNestedInferred).length > 0;
     const editionEnabled = (!isInferred
         && numberOfSelectedNodes === 1
@@ -658,7 +658,7 @@ class ReportKnowledgeGraphBar extends Component {
                     <Badge
                       badgeContent={Math.abs(
                         currentStixCoreObjectsTypes.length
-                          - stixCoreObjectsTypes.length,
+                        - stixCoreObjectsTypes.length,
                       )}
                       color="secondary"
                     >
@@ -825,17 +825,19 @@ class ReportKnowledgeGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
-              <Tooltip title={t('Clear all filters')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={resetAllFilters.bind(this)}
-                    size="large"
-                  >
-                    <FilterAltOffOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              {resetAllFilters && (
+                <Tooltip title={t('Clear all filters')}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      onClick={resetAllFilters.bind(this)}
+                      size="large"
+                    >
+                      <FilterAltOffOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
               <Divider className={classes.divider} orientation="vertical" />
               <div style={{ margin: '9px 0 0 10px' }}>
                 <SearchInput

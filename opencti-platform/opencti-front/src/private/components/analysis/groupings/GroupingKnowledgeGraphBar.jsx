@@ -809,17 +809,19 @@ class GroupingKnowledgeGraphBar extends Component {
                   ))}
                 </List>
               </Popover>
-              <Tooltip title={t('Clear all filters')}>
-                <span>
-                  <IconButton
-                    color="primary"
-                    onClick={resetAllFilters.bind(this)}
-                    size="large"
-                  >
-                    <FilterAltOffOutlined />
-                  </IconButton>
-                </span>
-              </Tooltip>
+              {resetAllFilters && (
+                <Tooltip title={t('Clear all filters')}>
+                  <span>
+                    <IconButton
+                      color="primary"
+                      onClick={resetAllFilters.bind(this)}
+                      size="large"
+                    >
+                      <FilterAltOffOutlined />
+                    </IconButton>
+                  </span>
+                </Tooltip>
+              )}
               <Divider className={classes.divider} orientation="vertical" />
               <div style={{ margin: '9px 0 0 10px' }}>
                 <SearchInput
