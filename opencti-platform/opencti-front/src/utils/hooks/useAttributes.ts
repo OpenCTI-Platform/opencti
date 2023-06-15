@@ -34,6 +34,7 @@ export const workbenchAttributes = [
   'stop_time',
   'published',
   'content',
+  'context',
 ];
 
 export const ignoredAttributesInFeeds = [
@@ -122,6 +123,8 @@ export const multipleAttributes = [
 ];
 
 export const markdownAttributes = ['description', 'x_opencti_description'];
+
+export const htmlAttributes = ['content'];
 
 export const typesWithOpenCTIAliases = [
   'Course-Of-Action',
@@ -230,7 +233,6 @@ export const typesContainers = [
 
 const useAttributes = () => {
   const vocabularies = useVocabularyCategory();
-
   return {
     ignoredAttributes,
     workbenchAttributes,
@@ -241,6 +243,7 @@ const useAttributes = () => {
     booleanAttributes,
     multipleAttributes,
     markdownAttributes,
+    htmlAttributes,
     typesWithOpenCTIAliases,
     typesWithoutAliases,
     stixDomainObjectTypes,

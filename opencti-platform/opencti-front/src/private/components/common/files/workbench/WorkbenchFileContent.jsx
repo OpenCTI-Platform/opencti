@@ -1,4 +1,12 @@
-import { Add, ArrowDropDown, ArrowDropUp, CheckCircleOutlined, Close, DeleteOutlined, DoubleArrow } from '@mui/icons-material';
+import {
+  Add,
+  ArrowDropDown,
+  ArrowDropUp,
+  CheckCircleOutlined,
+  Close,
+  DeleteOutlined,
+  DoubleArrow,
+} from '@mui/icons-material';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -40,12 +48,29 @@ import StixItemLabels from '../../../../../components/StixItemLabels';
 import StixItemMarkings from '../../../../../components/StixItemMarkings';
 import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
-import { APP_BASE_PATH, commitMutation, MESSAGING$, QueryRenderer } from '../../../../../relay/environment';
-import { observableValue, resolveIdentityClass, resolveIdentityType, resolveLink, resolveLocationType } from '../../../../../utils/Entity';
+import {
+  APP_BASE_PATH,
+  commitMutation,
+  MESSAGING$,
+  QueryRenderer,
+} from '../../../../../relay/environment';
+import {
+  observableValue,
+  resolveIdentityClass,
+  resolveIdentityType,
+  resolveLink,
+  resolveLocationType,
+} from '../../../../../utils/Entity';
 import { defaultKey, defaultValue } from '../../../../../utils/Graph';
 import useAttributes from '../../../../../utils/hooks/useAttributes';
 import useVocabularyCategory from '../../../../../utils/hooks/useVocabularyCategory';
-import { computeDuplicates, convertFromStixType, convertToStixType, truncate, uniqWithByFields } from '../../../../../utils/String';
+import {
+  computeDuplicates,
+  convertFromStixType,
+  convertToStixType,
+  truncate,
+  uniqWithByFields,
+} from '../../../../../utils/String';
 import { buildDate, now } from '../../../../../utils/Time';
 import { isEmptyField, isNotEmptyField } from '../../../../../utils/utils';
 import { stixCyberObservablesLinesSearchQuery } from '../../../observations/stix_cyber_observables/StixCyberObservablesLines';
@@ -60,6 +85,7 @@ import { fileManagerAskJobImportMutation } from '../FileManager';
 import WorkbenchFilePopover from './WorkbenchFilePopover';
 import WorkbenchFileToolbar from './WorkbenchFileToolbar';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
+import RichTextField from '../../../../../components/RichTextField';
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -251,6 +277,7 @@ const WorkbenchFileContentComponent = ({
     dateAttributes,
     ignoredAttributes,
     markdownAttributes,
+    htmlAttributes,
     multipleAttributes,
     numberAttributes,
     workbenchAttributes,
@@ -361,12 +388,15 @@ const WorkbenchFileContentComponent = ({
   };
 
   useEffect(() => loadFileContent(), []);
-  useEffect(() => saveFile(), [
-    JSON.stringify(stixDomainObjects),
-    JSON.stringify(stixCyberObservables),
-    JSON.stringify(stixCoreRelationships),
-    JSON.stringify(containers),
-  ]);
+  useEffect(
+    () => saveFile(),
+    [
+      JSON.stringify(stixDomainObjects),
+      JSON.stringify(stixCyberObservables),
+      JSON.stringify(stixCoreRelationships),
+      JSON.stringify(containers),
+    ],
+  );
   // endregion
 
   // region utils
@@ -608,7 +638,7 @@ const WorkbenchFileContentComponent = ({
       'object_refs',
       (n.object_refs || []).filter(
         (o) => !objectsToBeDeletedIds.includes(o)
-          && !stixCoreRelationshipsToRemove.includes(o),
+            && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -681,9 +711,7 @@ const WorkbenchFileContentComponent = ({
       ...uniqWithByFields(
         observableDefaultKey ? [observableDefaultKey, 'type'] : ['id'],
         R.uniqBy(R.prop('id'), [
-          ...observablesOfSameTypeAndKey.filter(
-            (n) => n.id !== observable.id,
-          ),
+          ...observablesOfSameTypeAndKey.filter((n) => n.id !== observable.id),
           updatedObservable,
         ]),
       ),
@@ -815,10 +843,9 @@ const WorkbenchFileContentComponent = ({
         n,
       ));
     }
-    setStixDomainObjects(R.uniqBy(R.prop('id'), [
-      ...finalStixDomainObjects,
-      ...markingDefinitions,
-    ]));
+    setStixDomainObjects(
+      R.uniqBy(R.prop('id'), [...finalStixDomainObjects, ...markingDefinitions]),
+    );
     setStixCyberObservables(finalStixCyberObservables);
     setStixCoreRelationships(finalStixCoreRelationships);
     setContainers(finalContainers);
@@ -837,10 +864,18 @@ const WorkbenchFileContentComponent = ({
     );
     let finalContainers = containers.filter((n) => n.id !== toDeleteObject.id);
     if (toDeleteObject.type === 'identity') {
-      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
-      finalContainers = finalContainers.map((n) => (n.created_by_ref === toDeleteObject.id ? R.dissoc('created_by_ref', n) : n));
+      finalStixDomainObjects = finalStixDomainObjects.map((n) => (n.created_by_ref === toDeleteObject.id
+        ? R.dissoc('created_by_ref', n)
+        : n));
+      finalStixCyberObservables = finalStixCyberObservables.map((n) => (n.created_by_ref === toDeleteObject.id
+        ? R.dissoc('created_by_ref', n)
+        : n));
+      finalStixCoreRelationships = finalStixCoreRelationships.map((n) => (n.created_by_ref === toDeleteObject.id
+        ? R.dissoc('created_by_ref', n)
+        : n));
+      finalContainers = finalContainers.map((n) => (n.created_by_ref === toDeleteObject.id
+        ? R.dissoc('created_by_ref', n)
+        : n));
     } else if (toDeleteObject.type === 'marking-definition') {
       finalStixDomainObjects = finalStixDomainObjects.map((n) => R.assoc(
         'object_marking_refs',
@@ -865,12 +900,16 @@ const WorkbenchFileContentComponent = ({
     }
     // Impact
     const stixCoreRelationshipsToRemove = finalStixCoreRelationships
-      .filter((n) => n.source_ref === toDeleteObject.id || n.target_ref === toDeleteObject.id)
+      .filter(
+        (n) => n.source_ref === toDeleteObject.id
+          || n.target_ref === toDeleteObject.id,
+      )
       .map((n) => n.id);
     finalContainers = finalContainers.map((n) => R.assoc(
       'object_refs',
       (n.object_refs || []).filter(
-        (o) => o !== toDeleteObject.id && !stixCoreRelationshipsToRemove.includes(o),
+        (o) => o !== toDeleteObject.id
+            && !stixCoreRelationshipsToRemove.includes(o),
       ),
       n,
     ));
@@ -929,15 +968,17 @@ const WorkbenchFileContentComponent = ({
     ) {
       updatedEntity.x_opencti_location_type = entityType;
     }
-    setStixDomainObjects(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
-        ...markingDefinitions,
-        ...(identity ? [identity] : []),
-        updatedEntity,
-      ]),
-    ));
+    setStixDomainObjects(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects.filter((n) => n.id !== updatedEntity.id),
+          ...markingDefinitions,
+          ...(identity ? [identity] : []),
+          updatedEntity,
+        ]),
+      ),
+    );
     setEntityId(updatedEntity.id);
     setEntityStep(1);
   };
@@ -959,7 +1000,7 @@ const WorkbenchFileContentComponent = ({
           newEntity.identity_class = resolveIdentityClass(currentEntityType);
         } else if (
           newEntity.type === 'location'
-          && !newEntity.x_opencti_location_type
+            && !newEntity.x_opencti_location_type
         ) {
           newEntity.x_opencti_location_type = currentEntityType;
         }
@@ -1034,24 +1075,28 @@ const WorkbenchFileContentComponent = ({
     const stixDomainObjectsToDeleteIds = stixDomainObjectsToDelete.map(
       (n) => n.id,
     );
-    setStixDomainObjects(uniqWithByFields(
-      ['name', 'type', 'identity_class', 'x_opencti_location_type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixDomainObjects.filter(
-          (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
-        ),
-        ...newEntities,
-      ]),
-    ));
-    setStixCoreRelationships(uniqWithByFields(
-      ['source_ref', 'target_ref', 'relationship_type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixCoreRelationships.filter(
-          (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
-        ),
-        ...newRelationships,
-      ]),
-    ));
+    setStixDomainObjects(
+      uniqWithByFields(
+        ['name', 'type', 'identity_class', 'x_opencti_location_type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects.filter(
+            (n) => !stixDomainObjectsToDeleteIds.includes(n.id),
+          ),
+          ...newEntities,
+        ]),
+      ),
+    );
+    setStixCoreRelationships(
+      uniqWithByFields(
+        ['source_ref', 'target_ref', 'relationship_type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixCoreRelationships.filter(
+            (n) => !stixCoreRelationshipsToDeleteIds.includes(n.id),
+          ),
+          ...newRelationships,
+        ]),
+      ),
+    );
     handleCloseEntity();
   };
 
@@ -1091,23 +1136,27 @@ const WorkbenchFileContentComponent = ({
       ...finalValues,
       id: relationship.id ? relationship.id : `relationship--${uuid()}`,
     };
-    setStixCoreRelationships(uniqWithByFields(
-      ['source_ref', 'target_ref', 'relationship_type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixCoreRelationships.filter(
-          (n) => n.id !== updatedRelationship.id,
-        ),
-        updatedRelationship,
-      ]),
-    ));
-    setStixDomainObjects(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixDomainObjects,
-        ...markingDefinitions,
-        ...(identity ? [identity] : []),
-      ]),
-    ));
+    setStixCoreRelationships(
+      uniqWithByFields(
+        ['source_ref', 'target_ref', 'relationship_type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixCoreRelationships.filter(
+            (n) => n.id !== updatedRelationship.id,
+          ),
+          updatedRelationship,
+        ]),
+      ),
+    );
+    setStixDomainObjects(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects,
+          ...markingDefinitions,
+          ...(identity ? [identity] : []),
+        ]),
+      ),
+    );
     handleCloseRelationship();
   };
 
@@ -1183,7 +1232,11 @@ const WorkbenchFileContentComponent = ({
       ...finalValues,
       id: observable.id ? observable.id : `${stixType}--${uuid()}`,
       type: stixType,
-      observable_value: observableValue({ ...observable, ...finalValues, entity_type: stixType }),
+      observable_value: observableValue({
+        ...observable,
+        ...finalValues,
+        entity_type: stixType,
+      }),
     };
     const observableDefaultKey = defaultKey(updatedObservable);
     const observablesOfSameTypeAndKey = stixCyberObservables.filter(
@@ -1215,14 +1268,16 @@ const WorkbenchFileContentComponent = ({
       ...deduplicatedObservablesOfSameTypeAndKey,
       ...otherObservables.filter((n) => n.id !== updatedObservable.id),
     ]);
-    setStixDomainObjects(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixDomainObjects,
-        ...markingDefinitions,
-        ...(identity ? [identity] : []),
-      ]),
-    ));
+    setStixDomainObjects(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects,
+          ...markingDefinitions,
+          ...(identity ? [identity] : []),
+        ]),
+      ),
+    );
     handleCloseObservable();
   };
 
@@ -1268,31 +1323,39 @@ const WorkbenchFileContentComponent = ({
       id: container.id ? container.id : `${stixType}--${uuid()}`,
       type: stixType,
     };
-    setContainers(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...containers.filter((n) => n.id !== updatedContainer.id),
-        updatedContainer,
-      ]),
-    ));
+    setContainers(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...containers.filter((n) => n.id !== updatedContainer.id),
+          updatedContainer,
+        ]),
+      ),
+    );
     setContainerId(updatedContainer.id);
-    setContainerSelectedElements(R.indexBy(
-      R.prop('id'),
-      (container.object_refs || [])
-        .map((n) => indexedStixObjects[n] || null)
-        .filter((n) => n !== null),
-    ));
-    setContainerSelectAll((container.object_refs || []).length
-      >= Object.keys(indexedStixObjects).length);
+    setContainerSelectedElements(
+      R.indexBy(
+        R.prop('id'),
+        (container.object_refs || [])
+          .map((n) => indexedStixObjects[n] || null)
+          .filter((n) => n !== null),
+      ),
+    );
+    setContainerSelectAll(
+      (container.object_refs || []).length
+        >= Object.keys(indexedStixObjects).length,
+    );
     setContainerStep(1);
-    setStixDomainObjects(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...stixDomainObjects,
-        ...markingDefinitions,
-        ...(identity ? [identity] : []),
-      ]),
-    ));
+    setStixDomainObjects(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...stixDomainObjects,
+          ...markingDefinitions,
+          ...(identity ? [identity] : []),
+        ]),
+      ),
+    );
   };
   const onSubmitContainerContext = () => {
     const container = R.head(containers.filter((n) => n.id === containerId)) || {};
@@ -1319,13 +1382,15 @@ const WorkbenchFileContentComponent = ({
       ...container,
       object_refs: containerElementsIds,
     };
-    setContainers(uniqWithByFields(
-      ['name', 'type'],
-      R.uniqBy(R.prop('id'), [
-        ...containers.filter((n) => n.id !== updatedContainer.id),
-        updatedContainer,
-      ]),
-    ));
+    setContainers(
+      uniqWithByFields(
+        ['name', 'type'],
+        R.uniqBy(R.prop('id'), [
+          ...containers.filter((n) => n.id !== updatedContainer.id),
+          updatedContainer,
+        ]),
+      ),
+    );
     setContainerId(null);
     setContainerType(null);
     setContainerSelectedElements(null);
@@ -1595,6 +1660,19 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
+                        if (R.includes(attribute, htmlAttributes)) {
+                          return (
+                            <Field
+                              component={RichTextField}
+                              key={attribute}
+                              name={attribute}
+                              label={attribute}
+                              fullWidth
+                              multiline
+                              style={{ marginTop: 20, height: 150 }}
+                            />
+                          );
+                        }
                         if (R.includes(attribute, vocabularyAttributes)) {
                           return (
                             <OpenVocabField
@@ -1604,7 +1682,9 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
+                              multiple={
+                                getFieldDefinition(attribute)?.multiple ?? false
+                              }
                               type={fieldToCategory(type, attribute)}
                             />
                           );
@@ -2045,6 +2125,19 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
+                        if (R.includes(attribute, htmlAttributes)) {
+                          return (
+                            <Field
+                              component={RichTextField}
+                              key={attribute}
+                              name={attribute}
+                              label={attribute}
+                              fullWidth={true}
+                              multiline={true}
+                              style={{ marginTop: 20, height: 150 }}
+                            />
+                          );
+                        }
                         return (
                           <Field
                             component={TextField}
@@ -2295,6 +2388,19 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
+                        if (R.includes(attribute, htmlAttributes)) {
+                          return (
+                            <Field
+                              component={RichTextField}
+                              key={attribute}
+                              name={attribute}
+                              label={attribute}
+                              fullWidth
+                              multiline
+                              style={{ marginTop: 20, height: 150 }}
+                            />
+                          );
+                        }
                         if (R.includes(attribute, vocabularyAttributes)) {
                           return (
                             <OpenVocabField
@@ -2304,7 +2410,9 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
+                              multiple={
+                                getFieldDefinition(attribute)?.multiple ?? false
+                              }
                               type={fieldToCategory(observableType, attribute)}
                             />
                           );
@@ -2479,6 +2587,19 @@ const WorkbenchFileContentComponent = ({
                             />
                           );
                         }
+                        if (R.includes(attribute, htmlAttributes)) {
+                          return (
+                            <Field
+                              component={RichTextField}
+                              key={attribute}
+                              name={attribute}
+                              label={attribute}
+                              fullWidth
+                              multiline
+                              style={{ marginTop: 20, height: 150 }}
+                            />
+                          );
+                        }
                         if (R.includes(attribute, vocabularyAttributes)) {
                           return (
                             <OpenVocabField
@@ -2488,7 +2609,9 @@ const WorkbenchFileContentComponent = ({
                               fullWidth
                               containerStyle={{ marginTop: 20 }}
                               onChange={setFieldValue}
-                              multiple={getFieldDefinition(attribute)?.multiple ?? false}
+                              multiple={
+                                getFieldDefinition(attribute)?.multiple ?? false
+                              }
                               type={fieldToCategory(containerType, attribute)}
                             />
                           );
@@ -2648,7 +2771,8 @@ const WorkbenchFileContentComponent = ({
                 classes={{ root: classes.item }}
                 divider
                 button
-                onClick={(event) => handleToggleContainerSelectObject(object, event)}
+                onClick={(event) => handleToggleContainerSelectObject(object, event)
+                }
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -2863,7 +2987,8 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value && object.type !== 'marking-definition' ? (
+                        {object.default_value
+                        && object.type !== 'marking-definition' ? (
                           <QueryRenderer
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
@@ -2886,19 +3011,20 @@ const WorkbenchFileContentComponent = ({
                             }}
                             render={({ props }) => {
                               if (props && props.stixDomainObjects) {
-                                return props.stixDomainObjects.edges.length > 0 ? (
+                                return props.stixDomainObjects.edges.length
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
                                     label={t('Yes')}
                                   />
-                                ) : (
+                                  ) : (
                                   <ItemBoolean
                                     variant="inList"
                                     status={false}
                                     label={t('No')}
                                   />
-                                );
+                                  );
                               }
                               return (
                                 <ItemBoolean
@@ -2909,13 +3035,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                        ) : (
+                          ) : (
                           <ItemBoolean
                             variant="inList"
                             status={null}
                             label={t('Not applicable')}
                           />
-                        )}
+                          )}
                       </div>
                     </div>
                   }
@@ -3040,10 +3166,7 @@ const WorkbenchFileContentComponent = ({
                 onClick={
                   object.type === 'marking-definition'
                     ? null
-                    : () => handleOpenObservable(
-                      object.type,
-                      object.id,
-                    )
+                    : () => handleOpenObservable(object.type, object.id)
                 }
               >
                 <ListItemIcon
@@ -3123,7 +3246,8 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value && object.type !== 'marking-definition' ? (
+                        {object.default_value
+                        && object.type !== 'marking-definition' ? (
                           <QueryRenderer
                             query={stixCyberObservablesLinesSearchQuery}
                             variables={{
@@ -3144,19 +3268,20 @@ const WorkbenchFileContentComponent = ({
                             }}
                             render={({ props }) => {
                               if (props && props.stixCyberObservables) {
-                                return props.stixCyberObservables.edges.length > 0 ? (
+                                return props.stixCyberObservables.edges.length
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
                                     label={t('Yes')}
                                   />
-                                ) : (
+                                  ) : (
                                   <ItemBoolean
                                     variant="inList"
                                     status={false}
                                     label={t('No')}
                                   />
-                                );
+                                  );
                               }
                               return (
                                 <ItemBoolean
@@ -3167,13 +3292,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                        ) : (
+                          ) : (
                           <ItemBoolean
                             variant="inList"
                             status={null}
                             label={t('Not applicable')}
                           />
-                        )}
+                          )}
                       </div>
                     </div>
                   }
@@ -3393,9 +3518,15 @@ const WorkbenchFileContentComponent = ({
     const sortByLabel = R.sortBy(R.compose(R.toLower, R.prop('tlabel')));
     const translatedOrderedList = R.pipe(
       R.map((n) => n.node),
-      R.filter((n) => ['report', 'note', 'grouping', 'feedback', 'case-incident', 'case-rfi', 'case-rft'].includes(
-        convertToStixType(n.label),
-      )),
+      R.filter((n) => [
+        'report',
+        'note',
+        'grouping',
+        'feedback',
+        'case-incident',
+        'case-rfi',
+        'case-rft',
+      ].includes(convertToStixType(n.label))),
       R.map((n) => R.assoc('tlabel', t(`entity_${n.label}`), n)),
       sortByLabel,
     )(subTypesEdges);
@@ -3475,10 +3606,7 @@ const WorkbenchFileContentComponent = ({
                 classes={{ root: classes.item }}
                 divider
                 button={object.type !== 'marking-definition'}
-                onClick={() => handleOpenContainer(
-                  object.type,
-                  object.id,
-                )}
+                onClick={() => handleOpenContainer(object.type, object.id)}
               >
                 <ListItemIcon
                   classes={{ root: classes.itemIcon }}
@@ -3536,7 +3664,8 @@ const WorkbenchFileContentComponent = ({
                         className={classes.bodyItem}
                         style={inlineStyles.in_platform}
                       >
-                        {object.default_value && object.type !== 'marking-definition' ? (
+                        {object.default_value
+                        && object.type !== 'marking-definition' ? (
                           <QueryRenderer
                             query={stixDomainObjectsLinesSearchQuery}
                             variables={{
@@ -3560,19 +3689,20 @@ const WorkbenchFileContentComponent = ({
                             }}
                             render={({ props }) => {
                               if (props && props.stixDomainObjects) {
-                                return props.stixDomainObjects.edges.length > 0 ? (
+                                return props.stixDomainObjects.edges.length
+                                  > 0 ? (
                                   <ItemBoolean
                                     variant="inList"
                                     status={true}
                                     label={t('Yes')}
                                   />
-                                ) : (
+                                  ) : (
                                   <ItemBoolean
                                     variant="inList"
                                     status={false}
                                     label={t('No')}
                                   />
-                                );
+                                  );
                               }
                               return (
                                 <ItemBoolean
@@ -3583,13 +3713,13 @@ const WorkbenchFileContentComponent = ({
                               );
                             }}
                           />
-                        ) : (
+                          ) : (
                           <ItemBoolean
                             variant="inList"
                             status={null}
                             label={t('Not applicable')}
                           />
-                        )}
+                          )}
                       </div>
                     </div>
                   }
@@ -3637,9 +3767,7 @@ const WorkbenchFileContentComponent = ({
           <div className={classes.container}>
             {!containerType && renderContainerTypesList()}
             {containerType && containerStep === 0 && renderContainerForm()}
-            {containerType
-              && containerStep === 1
-              && renderContainerContext()}
+            {containerType && containerStep === 1 && renderContainerContext()}
           </div>
         </Drawer>
       </div>
@@ -3673,9 +3801,7 @@ const WorkbenchFileContentComponent = ({
       <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
         <Tabs value={currentTab} onChange={handleChangeTab}>
           <Tab label={`${t('Entities')} (${stixDomainObjects.length})`} />
-          <Tab
-            label={`${t('Observables')} (${stixCyberObservables.length})`}
-          />
+          <Tab label={`${t('Observables')} (${stixCyberObservables.length})`} />
           <Tab
             label={`${t('Relationships')} (${stixCoreRelationships.length})`}
           />
@@ -3699,13 +3825,8 @@ const WorkbenchFileContentComponent = ({
           </DialogContentText>
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleCloseDeleteObject}>
-            {t('Cancel')}
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => submitDeleteObject()}
-          >
+          <Button onClick={handleCloseDeleteObject}>{t('Cancel')}</Button>
+          <Button color="secondary" onClick={() => submitDeleteObject()}>
             {t('Remove')}
           </Button>
         </DialogActions>
