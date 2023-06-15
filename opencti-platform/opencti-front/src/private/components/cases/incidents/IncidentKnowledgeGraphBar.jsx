@@ -6,13 +6,14 @@ import withStyles from '@mui/styles/withStyles';
 import IconButton from '@mui/material/IconButton';
 import {
   AccountBalanceOutlined,
-  AspectRatio,
+  AspectRatioOutlined,
   CenterFocusStrongOutlined,
   DateRangeOutlined,
   DeleteOutlined,
   EditOutlined,
   FilterAltOffOutlined,
-  FilterListOutlined, Gesture,
+  FilterListOutlined,
+  GestureOutlined,
   LinkOutlined,
   ReadMoreOutlined,
   ScatterPlotOutlined,
@@ -55,7 +56,6 @@ import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import Slide from '@mui/material/Slide';
 import inject18n from '../../../../components/i18n';
-import Loader, { LoaderVariant } from '../../../../components/Loader';
 import ContainerAddStixCoreObjects from '../../common/containers/ContainerAddStixCoreObjects';
 import StixCoreRelationshipCreation from '../../common/stix_core_relationships/StixCoreRelationshipCreation';
 import { dateFormat } from '../../../../utils/Time';
@@ -303,8 +303,6 @@ class IncidentKnowledgeGraphBar extends Component {
     this.handleCloseSelectByType();
   }
 
-  handleClearFilter() {}
-
   render() {
     const {
       t,
@@ -542,7 +540,7 @@ class IncidentKnowledgeGraphBar extends Component {
                     onClick={handleZoomToFit.bind(this)}
                     size="large"
                   >
-                    <AspectRatio />
+                    <AspectRatioOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -562,26 +560,26 @@ class IncidentKnowledgeGraphBar extends Component {
               <Tooltip title={t('Free rectangle select')}>
                 <span>
                   <IconButton
-                    color={currentSelectRectangleModeFree ? 'secondary' : 'primary'}
+                    color={
+                      currentSelectRectangleModeFree ? 'secondary' : 'primary'
+                    }
                     size="large"
                     onClick={handleToggleRectangleSelectModeFree.bind(this)}
+                    disabled={currentMode3D}
                   >
                     <SelectionDrag />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title={t('Free select')}>
-                {selectModeFreeReady ? (
-                  <IconButton
-                    color={currentSelectModeFree ? 'secondary' : 'primary'}
-                    size="large"
-                    onClick={handleToggleSelectModeFree.bind(this)}
-                  >
-                    <Gesture />
-                  </IconButton>
-                ) : (
-                  <Loader variant={LoaderVariant.inElement} />
-                )}
+                <IconButton
+                  color={currentSelectModeFree ? 'secondary' : 'primary'}
+                  size="large"
+                  onClick={handleToggleSelectModeFree.bind(this)}
+                  disabled={!selectModeFreeReady || currentMode3D}
+                >
+                  <GestureOutlined />
+                </IconButton>
               </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>

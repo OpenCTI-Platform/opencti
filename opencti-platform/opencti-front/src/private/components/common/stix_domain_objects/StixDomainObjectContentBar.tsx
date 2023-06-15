@@ -2,9 +2,9 @@ import React, { FunctionComponent } from 'react';
 import IconButton from '@mui/material/IconButton';
 import {
   CloudDownloadOutlined,
-  EditOutlined,
   ZoomInOutlined,
   ZoomOutOutlined,
+  SaveOutlined,
 } from '@mui/icons-material';
 import Drawer from '@mui/material/Drawer';
 import Slide, { SlideProps } from '@mui/material/Slide';
@@ -33,8 +33,8 @@ interface StixDomainObjectContentBarProps {
   handleDownload?: () => void;
   directDownload: string;
   handleDownloadPdf?: () => void;
-  handleSwitchReadOnly?: () => void;
-  readOnly?: boolean;
+  handleSave?: () => void;
+  changed?: boolean;
   navOpen: boolean;
 }
 
@@ -47,8 +47,8 @@ StixDomainObjectContentBarProps
   handleDownload,
   directDownload,
   handleDownloadPdf,
-  handleSwitchReadOnly,
-  readOnly,
+  handleSave,
+  changed,
   navOpen,
 }) => {
   const classes = useStyles();
@@ -76,13 +76,14 @@ StixDomainObjectContentBarProps
             display: 'flex',
           }}
         >
-          {handleSwitchReadOnly && (
+          {handleSave && (
             <IconButton
-              color={readOnly ? 'primary' : 'secondary'}
-              onClick={handleSwitchReadOnly}
+              color="primary"
+              onClick={handleSave}
               size="large"
+              disabled={!changed}
             >
-              <EditOutlined />
+              <SaveOutlined />
             </IconButton>
           )}
           {enableZoom && (

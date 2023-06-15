@@ -1,4 +1,17 @@
-import { AccountBalanceOutlined, AspectRatio, CenterFocusStrongOutlined, DateRangeOutlined, DeleteOutlined, EditOutlined, FilterAltOffOutlined, FilterListOutlined, Gesture, LinkOutlined, OpenWithOutlined, ScatterPlotOutlined } from '@mui/icons-material';
+import {
+  AccountBalanceOutlined,
+  AspectRatioOutlined,
+  CenterFocusStrongOutlined,
+  DateRangeOutlined,
+  DeleteOutlined,
+  EditOutlined,
+  FilterAltOffOutlined,
+  FilterListOutlined,
+  GestureOutlined,
+  LinkOutlined,
+  OpenWithOutlined,
+  ScatterPlotOutlined,
+} from '@mui/icons-material';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import Checkbox from '@mui/material/Checkbox';
@@ -19,12 +32,25 @@ import Slide from '@mui/material/Slide';
 import Tooltip from '@mui/material/Tooltip';
 import withStyles from '@mui/styles/withStyles';
 import withTheme from '@mui/styles/withTheme';
-import { AutoFix, FamilyTree, SelectAll, SelectGroup, SelectionDrag, Video3d, } from 'mdi-material-ui';
+import {
+  AutoFix,
+  FamilyTree,
+  SelectAll,
+  SelectGroup,
+  SelectionDrag,
+  Video3d,
+} from 'mdi-material-ui';
 import * as PropTypes from 'prop-types';
 import * as R from 'ramda';
 import React, { Component } from 'react';
 import TimeRange from 'react-timeline-range-slider';
-import { ResponsiveContainer, Scatter, ScatterChart, YAxis, ZAxis, } from 'recharts';
+import {
+  ResponsiveContainer,
+  Scatter,
+  ScatterChart,
+  YAxis,
+  ZAxis,
+} from 'recharts';
 import inject18n from '../../../../components/i18n';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import SearchInput from '../../../../components/SearchInput';
@@ -437,7 +463,7 @@ class InvestigationGraphBar extends Component {
                     onClick={handleZoomToFit.bind(this)}
                     size="large"
                   >
-                    <AspectRatio />
+                    <AspectRatioOutlined />
                   </IconButton>
                 </span>
               </Tooltip>
@@ -457,26 +483,26 @@ class InvestigationGraphBar extends Component {
               <Tooltip title={t('Free rectangle select')}>
                 <span>
                   <IconButton
-                    color={currentSelectRectangleModeFree ? 'secondary' : 'primary'}
+                    color={
+                      currentSelectRectangleModeFree ? 'secondary' : 'primary'
+                    }
                     size="large"
                     onClick={handleToggleRectangleSelectModeFree.bind(this)}
+                    disabled={currentMode3D}
                   >
                     <SelectionDrag />
                   </IconButton>
                 </span>
               </Tooltip>
               <Tooltip title={t('Free select')}>
-                {selectModeFreeReady ? (
-                  <IconButton
-                    color={currentSelectModeFree ? 'secondary' : 'primary'}
-                    size="large"
-                    onClick={handleToggleSelectModeFree.bind(this)}
-                  >
-                    <Gesture />
-                  </IconButton>
-                ) : (
-                  <Loader variant={LoaderVariant.inElement} />
-                )}
+                <IconButton
+                  color={currentSelectModeFree ? 'secondary' : 'primary'}
+                  size="large"
+                  onClick={handleToggleSelectModeFree.bind(this)}
+                  disabled={!selectModeFreeReady || currentMode3D}
+                >
+                  <GestureOutlined />
+                </IconButton>
               </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>

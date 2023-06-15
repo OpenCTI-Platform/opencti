@@ -1,18 +1,6 @@
 import React, { Component } from 'react';
 import * as PropTypes from 'prop-types';
-import {
-  compose,
-  pipe,
-  map,
-  propOr,
-  pathOr,
-  sortBy,
-  toLower,
-  prop,
-  filter,
-  join,
-  assoc,
-} from 'ramda';
+import * as R from 'ramda';
 import { graphql, createPaginationContainer } from 'react-relay';
 import withStyles from '@mui/styles/withStyles';
 import List from '@mui/material/List';
@@ -28,7 +16,9 @@ const styles = () => ({
 class NarrativesLinesComponent extends Component {
   render() {
     const { data, keyword, classes } = this.props;
-    const sortByNameCaseInsensitive = sortBy(compose(toLower, prop('name')));
+    const sortByNameCaseInsensitive = R.sortBy(
+      R.compose(R.toLower, R.prop('name')),
+    );
     const filterSubnarrative = (n) => n.isSubNarrative === false;
     const filterByKeyword = (n) => keyword === ''
       || n.name.toLowerCase().indexOf(keyword.toLowerCase()) !== -1
@@ -37,19 +27,19 @@ class NarrativesLinesComponent extends Component {
       || (n.subnarratives_text ?? '')
         .toLowerCase()
         .indexOf(keyword.toLowerCase()) !== -1;
-    const narratives = pipe(
-      pathOr([], ['narratives', 'edges']),
-      map((n) => n.node),
-      map((n) => assoc(
+    const narratives = R.pipe(
+      R.pathOr([], ['narratives', 'edges']),
+      R.map((n) => n.node),
+      R.map((n) => R.assoc(
         'subnarratives_text',
-        pipe(
-          map((o) => `${o.node.name} ${o.node.description}`),
-          join(' | '),
-        )(pathOr([], ['subNarratives', 'edges'], n)),
+        R.pipe(
+          R.map((o) => `${o.node.name} ${o.node.description}`),
+          R.join(' | '),
+        )(R.pathOr([], ['subNarratives', 'edges'], n)),
         n,
       )),
-      filter(filterSubnarrative),
-      filter(filterByKeyword),
+      R.filter(filterSubnarrative),
+      R.filter(filterByKeyword),
       sortByNameCaseInsensitive,
     )(data);
     return (
@@ -59,11 +49,11 @@ class NarrativesLinesComponent extends Component {
         className={classes.root}
       >
         {data
-          ? map((narrative) => {
-            const subNarratives = pipe(
-              pathOr([], ['subNarratives', 'edges']),
-              map((n) => n.node),
-              filter(filterByKeyword),
+          ? R.map((narrative) => {
+            const subNarratives = R.pipe(
+              R.pathOr([], ['subNarratives', 'edges']),
+              R.map((n) => n.node),
+              R.filter(filterByKeyword),
               sortByNameCaseInsensitive,
             )(narrative);
             return (
@@ -150,4 +140,7 @@ const NarrativesLinesFragment = createPaginationContainer(
   },
 );
 
-export default compose(inject18n, withStyles(styles))(NarrativesLinesFragment);
+export default R.compose(
+  inject18n,
+  withStyles(styles),
+)(NarrativesLinesFragment);

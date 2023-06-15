@@ -11,16 +11,39 @@ import { Subject, timer } from 'rxjs';
 import { debounce } from 'rxjs/operators';
 import SpriteText from 'three-spritetext';
 import inject18n from '../../../../components/i18n';
-import { commitMutation, fetchQuery, MESSAGING$ } from '../../../../relay/environment';
+import {
+  commitMutation,
+  fetchQuery,
+  MESSAGING$,
+} from '../../../../relay/environment';
 import { hexToRGB } from '../../../../utils/Colors';
-import { applyFilters, buildGraphData, computeTimeRangeInterval, computeTimeRangeValues, decodeGraphData, encodeGraphData, linkPaint, nodeAreaPaint, nodePaint, nodeThreePaint } from '../../../../utils/Graph';
+import {
+  applyFilters,
+  buildGraphData,
+  computeTimeRangeInterval,
+  computeTimeRangeValues,
+  decodeGraphData,
+  encodeGraphData,
+  linkPaint,
+  nodeAreaPaint,
+  nodePaint,
+  nodeThreePaint,
+} from '../../../../utils/Graph';
 import EntitiesDetailsRightsBar from '../../../../utils/graph/EntitiesDetailsRightBar';
-import LassoSelection from "../../../../utils/graph/LassoSelection";
-import { buildViewParamsFromUrlAndStorage, saveViewParameters } from '../../../../utils/ListParameters';
+import LassoSelection from '../../../../utils/graph/LassoSelection';
+import {
+  buildViewParamsFromUrlAndStorage,
+  saveViewParameters,
+} from '../../../../utils/ListParameters';
 import ContainerHeader from '../../common/containers/ContainerHeader';
 import { reportMutationFieldPatch } from './ReportEditionOverview';
 import ReportKnowledgeGraphBar from './ReportKnowledgeGraphBar';
-import { reportKnowledgeGraphMutationRelationDeleteMutation, reportKnowledgeGraphQueryStixObjectDeleteMutation, reportKnowledgeGraphQueryStixRelationshipDeleteMutation, reportKnowledgeGraphtMutationRelationAddMutation } from './ReportKnowledgeGraphQuery';
+import {
+  reportKnowledgeGraphMutationRelationDeleteMutation,
+  reportKnowledgeGraphQueryStixObjectDeleteMutation,
+  reportKnowledgeGraphQueryStixRelationshipDeleteMutation,
+  reportKnowledgeGraphtMutationRelationAddMutation,
+} from './ReportKnowledgeGraphQuery';
 import ReportPopover from './ReportPopover';
 
 const ignoredStixCoreObjectsTypes = ['Report', 'Note', 'Opinion'];
@@ -494,7 +517,11 @@ class ReportKnowledgeGraphComponent extends Component {
     const timeRangeInterval = computeTimeRangeInterval(this.graphObjects);
     this.state = {
       mode3D: R.propOr(false, 'mode3D', params),
-      selectRectangleModeFree: R.propOr(false, 'selectRectangleModeFree', params),
+      selectRectangleModeFree: R.propOr(
+        false,
+        'selectRectangleModeFree',
+        params,
+      ),
       selectModeFree: params.selectModeFree ?? false,
       selectModeFreeReady: false,
       modeFixed: R.propOr(false, 'modeFixed', params),
@@ -621,21 +648,27 @@ class ReportKnowledgeGraphComponent extends Component {
   }
 
   handleToggleRectangleSelectModeFree() {
-    this.setState({
-      selectRectangleModeFree: !this.state.selectRectangleModeFree,
-      selectModeFree: false,
-    }, () => {
-      this.saveParameters();
-    });
+    this.setState(
+      {
+        selectRectangleModeFree: !this.state.selectRectangleModeFree,
+        selectModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
   }
 
   handleToggleSelectModeFree() {
-    this.setState({
-      selectModeFree: !this.state.selectModeFree,
-      selectRectangleModeFree: false,
-    }, () => {
-      this.saveParameters();
-    });
+    this.setState(
+      {
+        selectModeFree: !this.state.selectModeFree,
+        selectRectangleModeFree: false,
+      },
+      () => {
+        this.saveParameters();
+      },
+    );
   }
 
   handleToggleTreeMode(modeTree) {
@@ -1342,7 +1375,7 @@ class ReportKnowledgeGraphComponent extends Component {
       this.graphObjects,
     );
     return (
-      <div>
+      <>
         <ContainerHeader
           container={report}
           PopoverComponent={<ReportPopover />}
@@ -1363,10 +1396,16 @@ class ReportKnowledgeGraphComponent extends Component {
           currentModeFixed={modeFixed}
           handleZoomToFit={this.handleZoomToFit.bind(this)}
           handleToggleCreatedBy={this.handleToggleCreateBy.bind(this)}
-          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(this)}
+          handleToggleStixCoreObjectType={this.handleToggleStixCoreObjectType.bind(
+            this,
+          )}
           handleToggleMarkedBy={this.handleToggleMarkedBy.bind(this)}
-          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(this)}
-          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(this)}
+          handleToggleRectangleSelectModeFree={this.handleToggleRectangleSelectModeFree.bind(
+            this,
+          )}
+          handleToggleSelectModeFree={this.handleToggleSelectModeFree.bind(
+            this,
+          )}
           stixCoreObjectsTypes={allStixCoreObjectsTypes}
           currentStixCoreObjectsTypes={stixCoreObjectsTypes}
           currentSelectRectangleModeFree={selectRectangleModeFree}
@@ -1543,7 +1582,9 @@ class ReportKnowledgeGraphComponent extends Component {
                 onZoom={this.onZoom.bind(this)}
                 onZoomEnd={this.handleZoomEnd.bind(this)}
                 nodeRelSize={4}
-                enablePanInteraction={!selectRectangleModeFree && !selectModeFree}
+                enablePanInteraction={
+                  !selectRectangleModeFree && !selectModeFree
+                }
                 nodeCanvasObject={(node, ctx) => nodePaint(
                   {
                     selected: theme.palette.secondary.main,
@@ -1623,7 +1664,8 @@ class ReportKnowledgeGraphComponent extends Component {
                 onLinkClick={this.handleLinkClick.bind(this)}
                 onBackgroundClick={this.handleBackgroundClick.bind(this)}
                 cooldownTicks={modeFixed ? 0 : 100}
-                onEngineStop={() => this.setState({ selectModeFreeReady: true })}
+                onEngineStop={() => this.setState({ selectModeFreeReady: true })
+                }
                 dagMode={
                   // eslint-disable-next-line no-nested-ternary
                   modeTree === 'horizontal'
@@ -1637,7 +1679,7 @@ class ReportKnowledgeGraphComponent extends Component {
             </RectangleSelection>
           </>
         )}
-      </div>
+      </>
     );
   }
 }

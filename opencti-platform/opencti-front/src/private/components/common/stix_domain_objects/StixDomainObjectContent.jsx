@@ -19,8 +19,6 @@ import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkParse from 'remark-parse';
 import ReactMde from 'react-mde';
-import { Subject, timer } from 'rxjs';
-import { debounce } from 'rxjs/operators';
 import inject18n from '../../../../components/i18n';
 import StixDomainObjectContentFiles, {
   stixDomainObjectContentFilesUploadStixDomainObjectMutation,
@@ -39,8 +37,6 @@ import StixDomainObjectContentBar from './StixDomainObjectContentBar';
 import { isEmptyField } from '../../../../utils/utils';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `${APP_BASE_PATH}/static/ext/pdf.worker.js`;
-
-const SAVE$ = new Subject().pipe(debounce(() => timer(2000)));
 
 const styles = () => ({
   container: {
@@ -183,7 +179,7 @@ class StixDomainObjectContentComponent extends Component {
       initialContent: props.t('Write something awesome...'),
       currentContent: props.t('Write something awesome...'),
       navOpen: localStorage.getItem('navOpen') === 'true',
-      readOnly: true,
+      changed: false,
     };
   }
 
@@ -226,9 +222,6 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   componentDidMount() {
-    this.subscription = SAVE$.subscribe({
-      next: () => this.saveFile(),
-    });
     this.subscriptionToggle = MESSAGING$.toggleNav.subscribe({
       next: () => this.setState({ navOpen: localStorage.getItem('navOpen') === 'true' }),
     });
@@ -236,12 +229,11 @@ class StixDomainObjectContentComponent extends Component {
   }
 
   componentWillUnmount() {
-    this.subscription.unsubscribe();
     this.subscriptionToggle.unsubscribe();
   }
 
   handleSelectFile(fileId) {
-    this.setState({ currentFileId: fileId }, () => {
+    this.setState({ currentFileId: fileId, changed: false }, () => {
       this.loadFileContent();
       this.saveView();
     });
@@ -301,31 +293,24 @@ class StixDomainObjectContentComponent extends Component {
         ? stixDomainObjectContentUploadExternalReferenceMutation
         : stixDomainObjectContentFilesUploadStixDomainObjectMutation,
       variables: { file, id: currentId },
+      onCompleted: () => this.setState({ changed: false }),
     });
   }
 
-  handleSwitchReadOnly() {
-    this.setState({ readOnly: !this.state.readOnly });
-  }
-
   onTextFieldChange(event) {
-    this.setState({ currentContent: event.target.value });
-    SAVE$.next({ action: 'SaveFile' });
+    this.setState({ currentContent: event.target.value, changed: true });
   }
 
   onHtmlFieldChange(content) {
-    this.setState({ currentContent: content });
-    SAVE$.next({ action: 'SaveFile' });
+    this.setState({ currentContent: content, changed: true });
   }
 
   onMarkDownFieldChange(value) {
-    this.setState({ currentContent: value });
-    SAVE$.next({ action: 'SaveFile' });
+    this.setState({ currentContent: value, changed: true });
   }
 
   onMarkdownChangeTab(tab) {
     this.setState({ markdownSelectedTab: tab });
-    SAVE$.next({ action: 'SaveFile' });
   }
 
   handleDownloadPdf() {
@@ -414,7 +399,7 @@ class StixDomainObjectContentComponent extends Component {
       currentContent,
       markdownSelectedTab,
       navOpen,
-      readOnly,
+      changed,
     } = this.state;
     const files = getFiles(stixDomainObject);
     const currentUrl = currentFileId
@@ -440,6 +425,8 @@ class StixDomainObjectContentComponent extends Component {
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
               navOpen={navOpen}
+              handleSave={this.saveFile.bind(this)}
+              changed={changed}
             />
             <div
               className={classes.editorContainer}
@@ -454,7 +441,6 @@ class StixDomainObjectContentComponent extends Component {
                   id={currentFile.id}
                   value={currentContent}
                   multiline={true}
-                  onBlur={this.saveFile.bind(this)}
                   onChange={this.onTextFieldChange.bind(this)}
                   fullWidth={true}
                 />
@@ -467,8 +453,8 @@ class StixDomainObjectContentComponent extends Component {
             <StixDomainObjectContentBar
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
-              handleSwitchReadOnly={this.handleSwitchReadOnly.bind(this)}
-              readOnly={readOnly}
+              handleSave={this.saveFile.bind(this)}
+              changed={changed}
               navOpen={navOpen}
             />
             <div
@@ -488,8 +474,6 @@ class StixDomainObjectContentComponent extends Component {
                 onChange={(event, editor) => {
                   this.onHtmlFieldChange(editor.getData());
                 }}
-                onBlur={this.saveFile.bind(this)}
-                disabled={readOnly}
               />
             </div>
           </div>
@@ -500,11 +484,12 @@ class StixDomainObjectContentComponent extends Component {
               directDownload={currentGetUrl}
               handleDownloadPdf={this.handleDownloadPdf.bind(this)}
               navOpen={navOpen}
+              handleSave={this.saveFile.bind(this)}
+              changed={changed}
             />
             <div
               className={classes.editorContainer}
               style={{ minHeight: height, height }}
-              onBlur={this.saveFile.bind(this)}
             >
               {isLoading ? (
                 <Loader variant="inElement" />

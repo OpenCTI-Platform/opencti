@@ -1361,7 +1361,7 @@ class IncidentKnowledgeGraphComponent extends Component {
       this.graphObjects,
     );
     return (
-      <div>
+      <>
         <ContainerHeader
           container={caseData}
           PopoverComponent={<CaseIncidentPopover id={caseData.id} />}
@@ -1656,7 +1656,7 @@ class IncidentKnowledgeGraphComponent extends Component {
             </RectangleSelection>
           </>
         )}
-      </div>
+      </>
     );
   }
 }

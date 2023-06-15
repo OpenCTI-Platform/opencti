@@ -13,6 +13,7 @@ import {
   EditOutlined,
   FilterAltOffOutlined,
   FilterListOutlined,
+  GestureOutlined,
   LinkOutlined,
   ReadMoreOutlined,
   ScatterPlotOutlined,
@@ -23,6 +24,7 @@ import {
   FamilyTree,
   SelectAll,
   SelectGroup,
+  SelectionDrag,
   Video3d,
 } from 'mdi-material-ui';
 import Tooltip from '@mui/material/Tooltip';
@@ -302,12 +304,16 @@ class GroupingKnowledgeGraphBar extends Component {
       currentCreatedBy,
       currentMarkedBy,
       currentStixCoreObjectsTypes,
+      currentSelectRectangleModeFree,
+      currentSelectModeFree,
       handleToggle3DMode,
       handleToggleTreeMode,
       handleToggleFixedMode,
       handleToggleCreatedBy,
       handleToggleMarkedBy,
       handleToggleStixCoreObjectType,
+      handleToggleRectangleSelectModeFree,
+      handleToggleSelectModeFree,
       handleZoomToFit,
       stixCoreObjectsTypes,
       createdBy,
@@ -334,6 +340,7 @@ class GroupingKnowledgeGraphBar extends Component {
       theme,
       navOpen,
       resetAllFilters,
+      selectModeFreeReady,
     } = this.props;
     const {
       openStixCoreObjectsTypes,
@@ -534,6 +541,30 @@ class GroupingKnowledgeGraphBar extends Component {
                 </span>
               </Tooltip>
               <Divider className={classes.divider} orientation="vertical" />
+              <Tooltip title={t('Free rectangle select')}>
+                <span>
+                  <IconButton
+                    color={
+                      currentSelectRectangleModeFree ? 'secondary' : 'primary'
+                    }
+                    size="large"
+                    onClick={handleToggleRectangleSelectModeFree.bind(this)}
+                    disabled={currentMode3D}
+                  >
+                    <SelectionDrag />
+                  </IconButton>
+                </span>
+              </Tooltip>
+              <Tooltip title={t('Free select')}>
+                <IconButton
+                  color={currentSelectModeFree ? 'secondary' : 'primary'}
+                  size="large"
+                  onClick={handleToggleSelectModeFree.bind(this)}
+                  disabled={!selectModeFreeReady || currentMode3D}
+                >
+                  <GestureOutlined />
+                </IconButton>
+              </Tooltip>
               <Tooltip title={t('Select by entity type')}>
                 <span>
                   <IconButton
