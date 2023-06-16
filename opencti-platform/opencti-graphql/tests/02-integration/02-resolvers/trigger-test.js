@@ -19,11 +19,6 @@ const LIST_QUERY = gql`
                     created
                     modified
                     outcomes
-                    authorizedMembers {
-                        name
-                        id
-                        access_right
-                    }
                 }
             }
         }
