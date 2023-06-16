@@ -101,7 +101,7 @@ export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => 
         return {
           entity_type: d.entity_type,
           values: await cleanMarkingValues(context, d.values),
-        }
+        };
       }));
     });
 };
