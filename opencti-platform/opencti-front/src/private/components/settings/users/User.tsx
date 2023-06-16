@@ -61,6 +61,7 @@ import TriggerDigestCreation from '../../profile/triggers/TriggerDigestCreation'
 import { UserSessionKillMutation } from './__generated__/UserSessionKillMutation.graphql';
 import { UserUserSessionsKillMutation } from './__generated__/UserUserSessionsKillMutation.graphql';
 import { UserOtpDeactivationMutation } from './__generated__/UserOtpDeactivationMutation.graphql';
+import TriggerLineTitles from '../../profile/TriggerLineTitles';
 
 Transition.displayName = 'TransitionSlide';
 
@@ -620,9 +621,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Paper>
         </Grid>
       </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 10, marginTop: 35 }}>
+        <Grid item={true} xs={6} style={{ paddingTop: 20, marginTop: 35 }}>
           <div style={{ height: '100%', marginBottom: 10 }}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left', paddingBottom: '11px' }}>
+            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
               {t('Triggers and Digests')}
             </Typography>
             <Tooltip title={t('Add a live trigger')}>
@@ -630,8 +631,9 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 aria-label="Add"
                 className={classes.createButton}
                 onClick={handleOpenCreateLive}
-                size="large"
+                size="medium"
                 color="secondary"
+                style={{ marginLeft: 7 }}
               >
                 <CampaignOutlined />
               </IconButton>
@@ -647,7 +649,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 aria-label="Add"
                 className={classes.createButton}
                 onClick={handleOpenCreateDigest}
-                size="large"
+                size="medium"
                 color="secondary"
               >
                 <BackupTableOutlined />
@@ -660,7 +662,8 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
               recipientId={user.id}
             />
           </div>
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 35 }}>
+          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 30 }}>
+            <TriggerLineTitles dataColumns={dataColumns}/>
             {queryRef && (
                 <TriggersLines
                   queryRef={queryRef}
