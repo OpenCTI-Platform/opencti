@@ -2915,7 +2915,7 @@ export const createRelations = async (context, user, inputs, opts = {}) => {
 // endregion
 
 // region mutation entity
-const buildEntityData = async (context, user, input, type, participantIds, opts = {}) => {
+const buildEntityData = async (context, user, input, type, opts = {}) => {
   const { fromRule } = opts;
   const internalId = input.internal_id || generateInternalId();
   const standardId = input.standard_id || generateStandardId(type, input);
@@ -3015,7 +3015,6 @@ const buildEntityData = async (context, user, input, type, participantIds, opts 
     const path = `import/${type}/${internalId}`;
     const file = await upload(context, user, path, input.file, { entity: { internal_id: internalId } });
     data.x_opencti_files = [storeFileConverter(user, file)];
-
     // Add external references from files if necessary
     const entitySetting = await getEntitySettingFromCache(context, type);
     if (entitySetting.platform_entity_files_ref) {
@@ -3161,7 +3160,7 @@ const createEntityRaw = async (context, user, input, type, opts = {}) => {
       }
     } else {
       // Create the object
-      dataEntity = await buildEntityData(context, user, resolvedInput, type, participantIds, opts);
+      dataEntity = await buildEntityData(context, user, resolvedInput, type, opts);
     }
     // Index the created element
     await indexCreatedElement(context, user, dataEntity);
