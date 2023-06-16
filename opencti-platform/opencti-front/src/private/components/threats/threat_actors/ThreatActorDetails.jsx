@@ -1,4 +1,5 @@
-import React, { Component } from 'react';
+import React from 'react';
+import * as R from 'ramda';
 import * as PropTypes from 'prop-types';
 import * as Yup from 'yup';
 import { compose } from 'ramda';
@@ -11,7 +12,7 @@ import Chip from '@mui/material/Chip';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import { BullseyeArrow, ArmFlexOutline, DramaMasks, InformationOutline } from 'mdi-material-ui';
+import { BullseyeArrow, ArmFlexOutline, DramaMasks, InformationOutline, ArrowUpBoldOutline, ArrowDownBoldOutline } from 'mdi-material-ui';
 import ListItemText from '@mui/material/ListItemText';
 // Support for Photo Carousel and added Tool Tips
 import Carousel from 'react-material-ui-carousel';
@@ -20,16 +21,15 @@ import Dialog from '@mui/material/Dialog';
 import DialogContentText from '@mui/material/DialogContentText';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import Button from '@mui/material/Button';
 import { SimpleFileUpload } from 'formik-mui';
 import { Formik, Form, Field } from 'formik';
-import { CloudUploadOutlined } from '@mui/icons-material';
+import { CloudUploadOutlined, EditOutlined, CloseOutlined } from '@mui/icons-material';
 import IconButton from '@mui/material/IconButton';
 import { threatActorMutationFieldPatch } from './ThreatActorEditionDetails';
-import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
 import ItemOpenVocab from '../../../../components/ItemOpenVocab';
 import inject18n from '../../../../components/i18n';
-import { ThreatActorDetailsFileUploaderWithCommentEntityMutation$data } from './__generated__/ThreatActorDetailsFileUploaderWithCommentEntityMutation.graphql';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import MarkdownField from '../../../../components/MarkdownField';
 import { commitMutation, MESSAGING$ } from '../../../../relay/environment';
@@ -63,29 +63,207 @@ export const fileUploaderWithCommentEntityMutation = graphql`
     }
   }
 `;
-class ThreatActorDetailsComponent extends Component {
+
+/**
+ * @typedef {object} ImageAttributes attributes for uploaded images
+ * @property {string} id id for an uploaded image
+ * @property {string} name filename for an uploaded image
+ * @property {string} comment optional comment describing an uploaded image
+ */
+
+/**
+ * Returns the storage path for the given image.
+ * 
+ * @param {ImageAttributes} image
+ */
+function imagePath(image) {
+  return `/storage/view/${image.id}`;
+}
+
+function extractFileId(fileRef, sep = '::') {
+  const parts = String(fileRef).split(sep);
+  return parts[parts.length - 1];
+}
+
+function padZero(n, digits = 2) {
+  const num = String(n);
+  const padLen = digits > num.length ? digits - num.length : 0;
+  return R.repeat('0', padLen).concat([num]).join('');
+}
+
+class ThreatActorDetailsComponent extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
       showDialog: false,
       open: false,
+      /** @type {ImageAttributes[]} */
+      images: [],
+      editingImageOrder: false,
     };
   }
 
+  componentDidMount() {
+    this.resyncImages();
+    this.initializeImageState();
+  }
+
+  componentDidUpdate() {
+    this.resyncImages();
+    const { images } = this.state;
+    const { threatActor } = this.props;
+    if (images.length !== threatActor.x_opencti_photo_refs.length) {
+      this.initializeImageState();
+    }
+  }
+
+  /**
+   * Updates threatActor.x_opencti_photo_refs in case photos were added or deleted in the Data tab.
+   */
+  resyncImages() {
+    const { threatActor } = this.props;
+    const x_opencti_photo_refs = (threatActor.x_opencti_photo_refs || []).map((ref) => extractFileId(ref));
+    const importFiles = threatActor.importFiles?.edges || [];
+
+    if (importFiles.length > 0) {
+      const existing_files = importFiles.map((attached_file) => attached_file.node.id);
+      const added = existing_files.filter((fileID) => !x_opencti_photo_refs.includes(fileID));
+      const deleted = x_opencti_photo_refs.filter((fileID) => !existing_files.includes(fileID));
+
+      if (added.length || deleted.length) {
+        // Need to update as photos have been either added or removed on the Data tab.
+        // A mutation is called below to correct profile photo list to uploaded photos.
+        // The data tab doesn't know about the entity, so syncing actions from that tab is not very straight forward.
+        // This approach is a bit of a "workaround" to accommodate for that.
+        this.commitPhotoRefs(existing_files, this.initializeImageState);
+      }
+    } else {
+      if (x_opencti_photo_refs.length) {
+        this.commitPhotoRefs([], this.updateImageState);
+      }
+    }
+  }
+
+  /**
+   * Refreshes image list component state based on latest values in importFiles and x_opencti_photo_refs.
+   */
+  initializeImageState() {
+    const { threatActor, t } = this.props;
+    const importFiles = threatActor.importFiles?.edges ?? [];
+    const x_opencti_photo_refs = threatActor.x_opencti_photo_refs ?? [];
+    if (importFiles.length > 0 && x_opencti_photo_refs.length > 0) {
+      /** @type {ImageAttributes[]} */
+      const newImages = [];
+      x_opencti_photo_refs.forEach((fileId) => {
+        const imageFile = importFiles.find((imgFile) => imgFile.node.id === extractFileId(fileId))
+        if (imageFile) {
+          // Example path: storage/view/import/Threat-Actor/d2d0a901-697c-4e9f-9abd-614349bd6e0c/some_x_photo.png
+          newImages.push(
+            {
+              id: imageFile.node.id,
+              name: imageFile.node.name,
+              comment: imageFile.node.comment || t('No Comments on Photo'),
+            },
+          );
+        }
+      });
+      this.updateImageState(newImages);
+    }
+  }
+
+  /**
+   * Updates the images state variable with a new list of images.
+   * Will commit to database only if commit = true.
+   * 
+   * @param {ImageAttributes[]} images 
+   * @param {boolean} commit will commit to database if true
+   */
+  updateImageState(images, commit = false) {
+    if (!images) return;
+    const { images: sImages } = this.state
+    let changed = false;
+    if (images.length !== sImages.length) {
+      changed = true;
+    } else {
+      images.forEach((img, i) => {
+        if (img.id !== sImages[i].id) {
+          changed = true;
+        }
+      });
+    }
+    if (changed) {
+      this.setState({ images: images }, () => {
+        if (commit) {
+          this.commitImageState()
+        }
+      });
+    }
+  }
+
+  /**
+   * Appends an image to the image list stored in component state.
+   * 
+   * @param {ImageAttributes} image 
+   */
+  addImage(image) {
+    const newImage = {
+      ...image,
+      comment: image.comment || 'No Comments on Photo',
+    };
+    this.updateImageState(this.state.images.concat([newImage]));
+  }
+
   handleClickToOpen() {
-    this.setState({ open: true });
-    this.setState({ showDialog: true });
+    this.setState({
+      open: true,
+      showDialog: true,
+    });
   }
 
   handleToClose() {
-    this.setState({ open: false });
-    this.setState({ showDialog: false });
+    this.setState({
+      open: false,
+      showDialog: false,
+    });
   }
 
-  onSubmit(values, { resetForm }) {
+  toggleImageOrderEditing() {
+    this.setState({ editingImageOrder: !this.state.editingImageOrder });
+  }
+
+  /**
+   * Commits the list of images in component state to the database.
+   */
+  commitImageState() {
+    const imageIDs = this.state.images.map((img) => img.id);
+    this.commitPhotoRefs(imageIDs);
+  }
+
+  /**
+   * Updates the list of photo file UUIDs for the threatActor object in the database.
+   * 
+   * @param {string[]} photoRefs 
+   * @param {() => void | null} callback
+   */
+  commitPhotoRefs(photoRefs, callback = null) {
+    const { threatActor } = this.props;
+    const photoRefIds = photoRefs.map((photoID, i) => {
+      return `${padZero(i)}::${photoID}`;
+    });
+    commitMutation({
+      mutation: threatActorMutationFieldPatch,
+      variables: {
+        id: threatActor.id,
+        input: { key: 'x_opencti_photo_refs', value: photoRefIds, operation: 'replace' },
+      },
+      onCompleted: callback,
+    });
+  }
+
+  onSubmit(values, { resetForm, setSubmitting }) {
     this.setState({ open: false });
     this.setState({ showDialog: false });
-    const { entityId } = values; // 'd5a32e61-785a-4ef2-9d08-46a5989e363e';
+    const { entityId } = values; // Example: 'd5a32e61-785a-4ef2-9d08-46a5989e363e';
     const x_opencti_photo_refs = values.x_opencti_photo_refs || [];
     const uploadedFile = values.profile_photo;
 
@@ -95,9 +273,6 @@ class ThreatActorDetailsComponent extends Component {
         file: uploadedFile,
         comment: values.x_opencti_photo_ref_comment,
         id: entityId,
-      },
-      optimisticUpdater: () => {
-        // setUpload(uploadedFile.name);
       },
       onCompleted: (result) => {
         const fileId = result.stixCoreObjectEdit?.importPush?.id;
@@ -111,21 +286,18 @@ class ThreatActorDetailsComponent extends Component {
 
         // Call mutation even if photo already in x_opencti_photo_refs, as an update to the record
         // will trigger a redraw of the comments, possibly user was just updating the comment.
-        commitMutation({
-          mutation: threatActorMutationFieldPatch,
-          variables: {
-            id: entityId,
-            input: { key: 'x_opencti_photo_refs', value: x_opencti_photo_refs, operation: 'replace' },
-          },
+        this.commitPhotoRefs(x_opencti_photo_refs);
+        this.addImage({
+          id: fileId,
+          name: uploadedFile.name,
+          comment: values.x_opencti_photo_ref_comment,
         });
 
         MESSAGING$.notifySuccess('Photo File successfully uploaded');
 
         // Reset the modal form, so you can upload another file.
         resetForm();
-
-        // Reload to show new photos
-        window.location.href = `/dashboard/threats/threat_actors/${entityId}`;
+        setSubmitting(false);
       },
       updater: undefined,
       optimisticResponse: undefined,
@@ -138,98 +310,54 @@ class ThreatActorDetailsComponent extends Component {
     this.handleToClose();
   }
 
-  render() {
-    const { t, classes, threatActor, fldt } = this.props;
-    const threatActor_id = threatActor.id;
-    const threatActor_x_opencti_photo_refs = threatActor.x_opencti_photo_refs;
+  moveImageUp(imageID) {
+    const { images } = this.state;
+    if (images.length > 0) {
+      const targetIndex = images.findIndex((image) => image.id === imageID);
+      // Don't move up if index not found or first image
+      if (targetIndex <= 0) return;
+      const newImages = [].concat(
+        images.slice(0, targetIndex - 1),
+        images[targetIndex],
+        images.slice(targetIndex - 1, targetIndex),
+        images.slice(targetIndex + 1),
+      );
+      this.updateImageState(newImages, true);
+    }
+  }
+
+  moveImageDown(imageID) {
+    const { images } = this.state;
+    if (images.length > 0) {
+      const targetIndex = images.findIndex((image) => image.id === imageID);
+      // Don't move down if index not found or last image
+      if (targetIndex === -1 || targetIndex === images.length - 1) return;
+      const newImages = [].concat(
+        images.slice(0, targetIndex),
+        images.slice(targetIndex + 1, targetIndex + 2),
+        images[targetIndex],
+        images.slice(targetIndex + 2),
+      );
+      this.updateImageState(newImages, true);
+    }
+  }
+
+  validationSchema() {
     const SUPPORTED_FORMATS = ['image/bmp', 'image/gif', 'image/jpg', 'image/jpeg', 'image/png'];
     const FILE_SIZE = 10000000;
-    const validationSchema = Yup.object({
+    return Yup.object({
       profile_photo: Yup.mixed()
         .test('fileSize', 'File size too large, Max file size is 1 Mb', (profile_photo) => (profile_photo ? profile_photo.size <= FILE_SIZE : true))
         .test('fileType', 'Incorrect file type - Only allowed types are bmp, gif, jpg, jpeg, and png ', (profile_photo) => (profile_photo
           ? SUPPORTED_FORMATS.includes(profile_photo.type)
           : true)),
     });
+  }
 
-    /* Stub to populate Photo Carousel data with an anonymous default photo */
-    let images = [
-      {
-        name: 'Unknown',
-        comment: 'No known photos of entity have been uploaded',
-        image: '/static/ext/silhouettes/Man_Silhouette_clip_art_large.png',
-      },
-      // ,
-      // {
-      //     name: "Default Silhouette",
-      //     comment: "Default Silhouette of an Actor",
-      //     image: "/static/ext/silhouettes/Female_Silhouette_clip_art_large.png"
-      // }
-    ];
-
-    if (threatActor.x_opencti_photo_refs !== undefined && threatActor.x_opencti_photo_refs !== null && threatActor.x_opencti_photo_refs.length > 0) {
-      const existing_files = [];
-      if (threatActor.importFiles !== undefined && threatActor.importFiles !== null
-        && threatActor.importFiles.edges !== undefined && threatActor.importFiles.edges !== null
-        && threatActor.importFiles.edges.length > 0) {
-        const new_images = [];
-        threatActor.importFiles.edges.forEach((attached_file) => {
-          existing_files.push(attached_file.node.id);
-          if (threatActor.x_opencti_photo_refs.includes(attached_file.node.id)) {
-            // storage/view/import/Threat-Actor/d2d0a901-697c-4e9f-9abd-614349bd6e0c/some_x_photo.png
-            const storage_path = `/storage/view/${attached_file.node.id}`;
-            new_images.push(
-              {
-                name: attached_file.node.name,
-                comment: attached_file.node.comment || 'No Comments on Photo',
-                image: storage_path,
-              },
-            );
-          }
-        });
-
-        if (new_images.length > 0) {
-          images = new_images;
-        }
-
-        //
-        // START - Cleanup for deleted profile data files
-        //
-        const good_profile_files = [];
-        threatActor.x_opencti_photo_refs.forEach((attached_file) => {
-          if (existing_files.includes(attached_file)) {
-            good_profile_files.push(attached_file);
-          }
-        });
-
-        if (good_profile_files.length < threatActor.x_opencti_photo_refs.length) {
-          // Need to update as photos have been removed on the data tab
-          // Call mutation to correct profile photo list to actually available photos.
-          // The data tab doesn't know about the entity - so removing on actual remove from that screen is not
-          // very straight forward. This approach is a bit of a "workaround" to accommodate for that
-          commitMutation({
-            mutation: threatActorMutationFieldPatch,
-            variables: {
-              id: threatActor_id,
-              input: { key: 'x_opencti_photo_refs', value: good_profile_files, operation: 'replace' },
-            },
-          });
-        }
-        //
-        // END - Cleanup for deleted profile data files
-        //
-      } else {
-        // All data object have been deleted, but x_opencti_photo_refs has something in it - clear it out
-        commitMutation({
-          mutation: threatActorMutationFieldPatch,
-          variables: {
-            id: threatActor_id,
-            input: { key: 'x_opencti_photo_refs', value: [], operation: 'replace' },
-          },
-        });
-        threatActor.x_opencti_photo_refs = [];
-      }
-    }
+  render() {
+    const { t, classes, threatActor, fldt } = this.props;
+    const threatActor_id = threatActor.id;
+    const threatActor_x_opencti_photo_refs = threatActor.x_opencti_photo_refs;
 
     return (
       <div style={{ height: '100%' }}>
@@ -243,11 +371,7 @@ class ThreatActorDetailsComponent extends Component {
                 {t('Photo Carousel')}
               </Typography>
               <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t(
-                    'Enriching photos of the Threat Actor.',
-                  )}
-                >
+                <Tooltip title={t('Enriching photos of the Threat Actor.')}>
                   <InformationOutline fontSize="small" color="primary" />
                 </Tooltip>
               </div>
@@ -270,12 +394,22 @@ class ThreatActorDetailsComponent extends Component {
                 {t('Photo Data')}
               </Typography>
               <div style={{ float: 'left', margin: '-3px 0 0 8px' }}>
-                <Tooltip
-                  title={t(
-                    'Data/Information about the photos in the carousel.',
-                  )}
-                >
+                <Tooltip title={t('Information about the photos in the carousel.')}>
                   <InformationOutline fontSize="small" color="primary" />
+                </Tooltip>
+              </div>
+              <div style={{ float: 'left', marginTop: -12 }}>
+                <Tooltip
+                  title={this.state.editingImageOrder ? t('Toggle editing off') : t('Toggle editing on')}
+                  aria-label={`Toggle editing ${this.state.editingImageOrder ? 'off' : 'on'} for photo order`}
+                >
+                  <IconButton
+                    onClick={this.toggleImageOrderEditing.bind(this)}
+                    color='primary'
+                    size='medium'
+                  >
+                    {this.state.editingImageOrder ? <CloseOutlined /> : <EditOutlined />}
+                  </IconButton>
                 </Tooltip>
               </div>
             </Grid>
@@ -283,9 +417,26 @@ class ThreatActorDetailsComponent extends Component {
               {/* Photo Carousel */}
               <Carousel autoPlay={false} interval={10000}>
                 {
-                  images.map((item, i) => (
-                    <img style={{ backgroundColor: 'white', height: '300px', maxHeight: '300px', width: 'auto' }} title={item.name} key={i} src={item.image} />
-                  ))
+                  (this.state.images.length > 0) ?
+                    this.state.images.map((item) => (
+                      <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                        <img
+                          style={{ backgroundColor: 'white', height: '300px', maxHeight: '300px', width: 'auto' }}
+                          alt={item.name}
+                          title={item.name}
+                          key={item.name}
+                          src={imagePath(item)}
+                        />
+                      </div>
+                    ))
+                    : <div style={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                      <img
+                        style={{ backgroundColor: 'white', height: '300px', maxHeight: '300px', width: 'auto' }}
+                        alt='Placeholder image'
+                        title={t('Unknown')}
+                        src='/static/ext/silhouettes/Man_Silhouette_clip_art_large.png'
+                      />
+                    </div>
                 }
               </Carousel>
 
@@ -299,14 +450,12 @@ class ThreatActorDetailsComponent extends Component {
                 }}
                 onSubmit={this.onSubmit.bind(this)}
                 onReset={this.onReset.bind(this)}
-                validationSchema={validationSchema}
+                validationSchema={this.validationSchema()}
               >
                 {({
                   submitForm,
                   handleReset,
                   isSubmitting,
-                  // setFieldValue,
-                  // values,
                 }) => (
                   <Form style={{ margin: '20px 0 20px 0' }}>
                     <input type="hidden" value="{entityId}" name="entityId" />
@@ -314,7 +463,7 @@ class ThreatActorDetailsComponent extends Component {
                       <DialogTitle>{t('Add Profile Photo')}</DialogTitle>
                       <DialogContent>
                         <DialogContentText>
-                          Select a file to upload and provide a comment to describe it. <br />
+                          {t('Select a file to upload and provide a comment to describe it.')}
                         </DialogContentText>
                         <br />
                         <Field
@@ -326,6 +475,7 @@ class ThreatActorDetailsComponent extends Component {
                           InputProps={{
                             fullWidth: true,
                             variant: 'standard',
+                            marginTop: 20,
                           }}
                           fullWidth={true}
                         />
@@ -340,15 +490,7 @@ class ThreatActorDetailsComponent extends Component {
                           style={{ marginTop: 20 }}
                         />
                       </DialogContent>
-                      {/* <DialogActions>
-                                <Button onClick={onProfilePhotoFormSubmit} color="primary" autoFocus>
-                                {t('Save')}
-                                </Button>
-                                <Button onClick={handleToClose} color="primary" autoFocus>
-                                {t('Cancel')}
-                                </Button>
-                              </DialogActions> */}
-                      <div className={classes.buttons} style={{ width: '30%', margin: 'auto', paddingBottom: '10px' }}>
+                      <DialogActions style={{ justifyContent: 'center' }}>
                         <Button
                           variant="contained"
                           onClick={handleReset}
@@ -357,7 +499,6 @@ class ThreatActorDetailsComponent extends Component {
                         >
                           {t('Cancel')}
                         </Button>
-                        &nbsp;&nbsp;
                         <Button
                           variant="contained"
                           color="secondary"
@@ -367,7 +508,7 @@ class ThreatActorDetailsComponent extends Component {
                         >
                           {t('Save')}
                         </Button>
-                      </div>
+                      </DialogActions>
                     </Dialog>
                   </Form>
                 )}
@@ -378,9 +519,43 @@ class ThreatActorDetailsComponent extends Component {
             <Grid item={true} xs={6} style={{ margin: '-20px 0 0 0' }}>
               {/* Photo Data */}
               {
-                images.map((item, i) => (
-                  <pre key={i}>{item.name} - {item.comment}</pre>
+                (this.state.images.length > 0) ? this.state.images.map((item, i) => (
+                  <div style={{ display: 'flex', alignItems: 'center', width: '100%' }}>
+                    {(this.state.editingImageOrder) && (<div style={{ flex: '1' }}>
+                      {i === 0 ?
+                        <Tooltip
+                          title={t('The first photo is the primary photo')}
+                          placement='left'
+                          style={{ padding: '0 auto', width: '100%' }}
+                        >
+                          <InformationOutline fontSize="small" color="primary" />
+                        </Tooltip>
+                        :
+                        <Tooltip title={t('Move photo up')} placement='left' >
+                          <IconButton
+                            onClick={() => this.moveImageUp(item.id)}
+                            color='primary'
+                            size='small'
+                            disabled={i === 0}
+                          >
+                            <ArrowUpBoldOutline />
+                          </IconButton>
+                        </Tooltip>}
+                      <Tooltip title={t('Move photo down')} placement='left' >
+                        <IconButton
+                          onClick={() => this.moveImageDown(item.id)}
+                          color='primary'
+                          size='small'
+                          disabled={i === this.state.images.length - 1}
+                        >
+                          <ArrowDownBoldOutline />
+                        </IconButton>
+                      </Tooltip>
+                    </div>)}
+                    <pre style={{ flex: 'auto', margin: '5px' }} key={item.name}>{item.name} - {item.comment}</pre>
+                  </div>
                 ))
+                  : <pre>{t('Unknown')} - {t('No known photos of entity have been uploaded')}</pre>
               }
             </Grid>
 
