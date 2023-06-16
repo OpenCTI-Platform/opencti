@@ -25,7 +25,7 @@ type Workspace implements InternalObject & BasicObject {
         all: Boolean
     ): StixObjectOrStixRelationshipRefConnection
     graph_data: String
-    authorizedMembers: [MemberAccess!]
+    authorizedMembers: [MemberAccess!]!
     currentUserAccessRight: String
 }
 

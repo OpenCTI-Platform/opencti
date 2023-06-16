@@ -47,7 +47,6 @@ type Trigger implements InternalObject & BasicObject {
     triggers: [Trigger]
     period: DigestPeriod
     trigger_time: String
-    authorizedMembers: [MemberAccess!]!
 }
 
 type TriggerConnection {

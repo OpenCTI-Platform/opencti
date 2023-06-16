@@ -23743,7 +23743,6 @@ export enum ToolsOrdering {
 
 export type Trigger = BasicObject & InternalObject & {
   __typename?: 'Trigger';
-  authorizedMembers: Array<MemberAccess>;
   created?: Maybe<Scalars['DateTime']>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
@@ -25433,7 +25432,7 @@ export enum WorksOrdering {
 
 export type Workspace = BasicObject & InternalObject & {
   __typename?: 'Workspace';
-  authorizedMembers?: Maybe<Array<MemberAccess>>;
+  authorizedMembers: Array<MemberAccess>;
   created_at?: Maybe<Scalars['DateTime']>;
   currentUserAccessRight?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
@@ -33579,7 +33578,6 @@ export type ToolEditMutationsResolvers<ContextType = any, ParentType extends Res
 }>;
 
 export type TriggerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Trigger'] = ResolversParentTypes['Trigger']> = ResolversObject<{
-  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
@@ -34093,7 +34091,7 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Workspace'] = ResolversParentTypes['Workspace']> = ResolversObject<{
-  authorizedMembers?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

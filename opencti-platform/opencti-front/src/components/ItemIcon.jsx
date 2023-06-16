@@ -8,6 +8,8 @@ import {
   AccountBalanceOutlined,
   DomainOutlined,
   PublicOutlined,
+  ReportProblemOutlined,
+  CampaignOutlined,
   HelpOutlined,
   BugReportOutlined,
   DescriptionOutlined,
@@ -88,8 +90,12 @@ const iconSelector = (type, variant, fontSize, color, isReversed) => {
   }
 
   switch (type) {
+    case 'unauthorized':
+      return <ReportProblemOutlined style={style} fontSize={fontSize} role="img" />;
     case 'global':
       return <PublicOutlined style={style} fontSize={fontSize} role="img" />;
+    case 'Trigger':
+      return <CampaignOutlined style={style} fontSize={fontSize} role="img" />;
     case 'admin':
       return <ManageAccountsOutlined style={style} fontSize={fontSize} role="img" />;
     case 'search':

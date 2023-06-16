@@ -9192,7 +9192,6 @@ type Trigger implements InternalObject & BasicObject {
   triggers: [Trigger]
   period: DigestPeriod
   trigger_time: String
-  authorizedMembers: [MemberAccess!]!
 }
 
 type TriggerConnection {
@@ -10600,7 +10599,7 @@ type Workspace implements InternalObject & BasicObject {
   editContext: [EditUserContext!]
   objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
   graph_data: String
-  authorizedMembers: [MemberAccess!]
+  authorizedMembers: [MemberAccess!]!
   currentUserAccessRight: String
 }
 

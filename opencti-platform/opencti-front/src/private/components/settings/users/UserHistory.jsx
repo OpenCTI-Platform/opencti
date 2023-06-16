@@ -42,6 +42,7 @@ class UserHistory extends Component {
           variables={{
             filters: [
               { key: 'user_id', values: [userId], operator: 'wildcard' },
+              { key: 'event_type', values: ['mutation', 'create', 'update', 'delete', 'merge'] },
             ],
             first: 10,
             orderBy: 'timestamp',

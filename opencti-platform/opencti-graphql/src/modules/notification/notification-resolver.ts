@@ -18,7 +18,6 @@ import {
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
-import { getAuthorizedMembers } from '../../utils/authorizedMembers';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -32,7 +31,6 @@ const notificationResolvers: Resolvers = {
     myUnreadNotificationsCount: (_, __, context) => myUnreadNotificationsCount(context, context.user),
   },
   Trigger: {
-    authorizedMembers: (trigger, _, context) => getAuthorizedMembers(context, context.user, trigger),
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
   },
   Mutation: {

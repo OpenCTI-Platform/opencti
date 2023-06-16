@@ -72,7 +72,8 @@ import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stix
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
 import {
-  computeUserMemberAccessIds, INTERNAL_USERS,
+  computeUserMemberAccessIds,
+  INTERNAL_USERS,
   isBypassUser,
   isUserHasCapability,
   MEMBER_ACCESS_ALL,
@@ -278,10 +279,12 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
-  // check user access
-  if (!INTERNAL_USERS[user.id]) {
-    must.push(...buildUserMemberAccessFilter(user, opts?.adminBypassUserAccess));
+  // If internal users of the system, we cancel rights checking
+  if (INTERNAL_USERS[user.id]) {
+    return { must, must_not };
   }
+  // check user access
+  must.push(...buildUserMemberAccessFilter(user, opts?.adminBypassUserAccess));
   // If user have bypass, no need to check restrictions
   if (!isBypassUser(user)) {
     // region Handle marking restrictions
@@ -391,7 +394,7 @@ export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = false)
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const memberAccessFilter = [{
+  return [{
     bool: {
       should: [
         {
@@ -405,7 +408,6 @@ export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = false)
       ]
     }
   }];
-  return memberAccessFilter;
 };
 
 export const elIndexExists = async (indexName) => {
@@ -889,7 +891,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       };
       mustTerms.push(shouldType);
     }
-    const markingRestrictions = await buildDataRestrictions(context, user, { adminBypassUserAccess: true });
+    const restrictionOptions = { adminBypassUserAccess: true }; // Bypass the members restrictions if possible
+    // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
+    const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
     const body = {
       query: {

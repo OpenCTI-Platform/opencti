@@ -126,6 +126,7 @@ const initActivityManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
+        filters: [{ key: ['event_access'], values: ['EXISTS'] }]
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

@@ -170,6 +170,7 @@ NotificationLineProps
   const [updating, setUpdating] = useState<boolean>(false);
   const data = useFragment(notificationLineFragment, node);
   const events = data.content.map((n) => n.events).flat();
+  const isDigest = data.notification_type === 'digest';
   const firstEvent = events.at(0);
   const [commitMarkRead] = useMutation(
     notificationLineNotificationMarkReadMutation,
@@ -236,7 +237,7 @@ NotificationLineProps
         return <BellOutline style={{ color: colors[operation] }} />;
     }
   };
-  const firstOperation = events.length > 1 ? 'multiple' : firstEvent?.operation ?? 'none';
+  const firstOperation = isDigest ? 'multiple' : firstEvent?.operation ?? 'none';
   return (
     <div>
       <ListItem

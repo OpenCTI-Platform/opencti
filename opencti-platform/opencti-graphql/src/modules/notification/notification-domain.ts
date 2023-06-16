@@ -29,24 +29,26 @@ import { elCount } from '../../database/engine';
 import { READ_INDEX_INTERNAL_OBJECTS } from '../../database/utils';
 import { publishUserAction } from '../../listener/UserActionListener';
 import {
+  AuthorizedMember,
   isUserHasCapability,
   MEMBER_ACCESS_RIGHT_ADMIN,
-  SETTINGS_SET_ACCESSES,
+  SETTINGS_SET_ACCESSES, SYSTEM_USER,
 } from '../../utils/access';
 import { ForbiddenAccess, UnsupportedError } from '../../config/errors';
 import { ENTITY_TYPE_USER } from '../../schema/internalObject';
 import { TriggerFilter } from '../../generated/graphql';
+import type { BasicStoreEntity } from '../../types/store';
 
 // Outcomes
 
 // Triggers
-export const addTrigger = async (
+// Due to engine limitation we restrict the recipient to only one user for now
+const extractUniqRecipient = async (
   context: AuthContext,
   user: AuthUser,
   triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
   type: TriggerType
-): Promise<BasicStoreEntityTrigger> => {
-  let recipientId = user.id;
+): Promise<{ id: string, name: string }> => {
   if (triggerInput.recipients && triggerInput.recipients.length > 0) {
     if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
       throw ForbiddenAccess();
@@ -54,22 +56,34 @@ export const addTrigger = async (
     if (triggerInput.recipients.length > 1) {
       throw UnsupportedError(`Cannot create ${type} trigger for more than one recipient`);
     }
-    [recipientId] = triggerInput.recipients;
-    const recipientUser = await internalLoadById(context, user, recipientId, { type: ENTITY_TYPE_USER });
+    const [recipientId] = triggerInput.recipients;
+    const recipientUser = await internalLoadById<BasicStoreEntity>(context, user, recipientId, { type: ENTITY_TYPE_USER });
     if (!recipientUser) {
       throw UnsupportedError('Recipient user not found');
     }
+    return recipientUser;
   }
-  const authorizedMembers = [{ id: recipientId, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
-  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, user_ids: [recipientId], group_ids: [], created: now(), updated: now() };
+  return user;
+};
+
+export const addTrigger = async (
+  context: AuthContext,
+  user: AuthUser,
+  triggerInput: TriggerDigestAddInput | TriggerLiveAddInput,
+  type: TriggerType
+): Promise<BasicStoreEntityTrigger> => {
+  const recipient = await extractUniqRecipient(context, user, triggerInput, type);
+  const isSelfTrigger = recipient.id === user.id;
+  const authorizedMembers = [{ id: recipient.id, access_right: MEMBER_ACCESS_RIGHT_ADMIN }];
+  const defaultOpts = { trigger_type: type, authorized_members: authorizedMembers, user_ids: [recipient.id], group_ids: [], created: now(), updated: now() };
   const trigger = { ...triggerInput, ...defaultOpts };
   const created = await createEntity(context, user, trigger, ENTITY_TYPE_TRIGGER);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'create',
-    event_access: 'extended',
-    message: `creates ${type} trigger \`${created.name}\``,
+    event_access: isSelfTrigger ? 'extended' : 'administration',
+    message: `creates ${type} trigger \`${created.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipient.name}\``}`,
     context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: triggerInput }
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].ADDED_TOPIC, created, user);
@@ -89,13 +103,24 @@ export const triggerEdit = async (context: AuthContext, user: AuthUser, triggerI
 };
 export const triggerDelete = async (context: AuthContext, user: AuthUser, triggerId: string) => {
   const deleted = await deleteElementById(context, user, triggerId, ENTITY_TYPE_TRIGGER);
+  // region compute recipients
+  const adminIds = (deleted.authorized_members ?? [])
+    .filter((a: AuthorizedMember) => a.access_right === 'admin')
+    .map((a: AuthorizedMember) => a.id);
+  const isSelfTrigger = adminIds.includes(user.id);
+  const recipientNames = [];
+  if (!isSelfTrigger) {
+    const recipients = await internalFindByIds<BasicStoreEntity>(context, SYSTEM_USER, adminIds);
+    recipientNames.push(...recipients.map((r) => r.name));
+  }
+  // region
   await notify(BUS_TOPICS[ENTITY_TYPE_TRIGGER].DELETE_TOPIC, deleted, user);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
-    event_access: 'administration',
-    message: `deletes trigger \`${deleted.name}\``,
+    event_access: isSelfTrigger ? 'extended' : 'administration',
+    message: `deletes trigger \`${deleted.name}\` for ${isSelfTrigger ? '`themselves`' : `user \`${recipientNames.join(', ')}\``}`,
     context_data: { entity_type: ENTITY_TYPE_TRIGGER, input: deleted }
   });
   return triggerId;
@@ -103,6 +128,9 @@ export const triggerDelete = async (context: AuthContext, user: AuthUser, trigge
 export const triggersFind = (context: AuthContext, user: AuthUser, opts: QueryTriggersArgs) => {
   let queryArgs = { ...opts };
   if (opts.filters?.some((f) => f.key.includes(TriggerFilter.UserIds))) {
+    if (!isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
+      throw UnsupportedError(`${TriggerFilter.UserIds} filter is only accessible for administration users (set access)`);
+    }
     queryArgs = { ...queryArgs, adminBypassUserAccess: true };
   }
   return listEntitiesPaginated<BasicStoreEntityTrigger>(context, user, [ENTITY_TYPE_TRIGGER], queryArgs);
