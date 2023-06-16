@@ -109,6 +109,7 @@ export default {
               status: 'error',
               context_data: {
                 operation: context.operationName,
+                entity_type: 'unauthorized',
                 input: context.request.variables,
               }
             });

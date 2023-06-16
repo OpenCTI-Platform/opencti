@@ -11,7 +11,12 @@ import { BYPASS, executionContext, ROLE_ADMINISTRATOR } from '../../src/utils/ac
 import '../../src/modules/index';
 import type { AuthUser } from '../../src/types/user';
 import type { StoreMarkingDefinition } from '../../src/types/store';
-import { generateStandardId, MARKING_TLP_AMBER, MARKING_TLP_GREEN } from '../../src/schema/identifier';
+import {
+  generateStandardId,
+  MARKING_TLP_AMBER,
+  MARKING_TLP_AMBER_STRICT,
+  MARKING_TLP_GREEN
+} from '../../src/schema/identifier';
 import {
   ENTITY_TYPE_CAPABILITY,
   ENTITY_TYPE_GROUP,
@@ -90,6 +95,13 @@ export const ROLE_EDITOR: Role = {
   description: 'Knowledge/exploration edit/delete',
   capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE']
 };
+
+export const ROLE_SECURITY: Role = {
+  id: generateStandardId(ENTITY_TYPE_ROLE, { name: 'Access knowledge/exploration/settings and edit/delete' }),
+  name: 'Access knowledge/exploration/settings and edit/delete',
+  description: 'Knowledge/exploration/settings edit/delete',
+  capabilities: ['KNOWLEDGE_KNUPDATE_KNDELETE', 'EXPLORE_EXUPDATE_EXDELETE', 'SETTINGS_SETACCESSES']
+};
 // Groups
 interface Group { id: string, name: string, markings: string[], roles: Role[] }
 export const GREEN_GROUP: Group = {
@@ -103,6 +115,13 @@ export const AMBER_GROUP: Group = {
   name: 'AMBER GROUP',
   markings: [MARKING_TLP_AMBER],
   roles: [ROLE_EDITOR],
+};
+
+export const AMBER_STRICT_GROUP: Group = {
+  id: generateStandardId(ENTITY_TYPE_GROUP, { name: 'AMBER STRICT GROUP' }),
+  name: 'AMBER STRICT GROUP',
+  markings: [MARKING_TLP_AMBER_STRICT],
+  roles: [ROLE_SECURITY],
 };
 // Users
 interface User { id: string, email: string, password: string, roles?: Role[], groups: Group[], client: AxiosInstance }
@@ -140,6 +159,15 @@ export const USER_EDITOR: User = {
   client: createHttpClient('editor@opencti.io', 'editor')
 };
 TESTING_USERS.push(USER_EDITOR);
+
+export const USER_SECURITY: User = {
+  id: generateStandardId(ENTITY_TYPE_USER, { user_email: 'security@opencti.io' }),
+  email: 'security@opencti.io',
+  password: 'security',
+  groups: [AMBER_STRICT_GROUP],
+  client: createHttpClient('security@opencti.io', 'security')
+};
+TESTING_USERS.push(USER_SECURITY);
 
 // region group management
 const GROUP_CREATION_MUTATION = `
@@ -206,6 +234,10 @@ const assignGroupToUser = async (group: Group, user: User) => {
 
 export const editorQuery = async (request: any) => {
   return executeInternalQuery(USER_EDITOR.client, print(request.query), request.variables);
+};
+
+export const securityQuery = async (request: any) => {
+  return executeInternalQuery(USER_SECURITY.client, print(request.query), request.variables);
 };
 export const participantQuery = async (request: any) => {
   return executeInternalQuery(USER_PARTICIPATE.client, print(request.query), request.variables);

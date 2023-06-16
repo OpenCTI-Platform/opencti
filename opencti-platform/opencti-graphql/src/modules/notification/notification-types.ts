@@ -1,6 +1,7 @@
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 import type { StixObject, StixOpenctiExtensionSDO } from '../../types/stix-common';
 import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { AuthorizedMember } from '../../utils/access';
 
 // Outcomes
 
@@ -16,6 +17,7 @@ export interface BasicStoreEntityTrigger extends BasicStoreEntity {
   user_ids: string[]
   group_ids: string[]
   trigger_ids: string[]
+  authorized_members: Array<AuthorizedMember>;
 }
 
 export interface BasicStoreEntityLiveTrigger extends BasicStoreEntityTrigger {
@@ -38,6 +40,7 @@ export interface StoreEntityTrigger extends StoreEntity {
   outcomes: string[]
   user_ids: string[]
   group_ids: string[]
+  authorized_members: Array<AuthorizedMember>;
 }
 
 export interface StixTrigger extends StixObject {

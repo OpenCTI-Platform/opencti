@@ -40,6 +40,7 @@ const TRIGGER_DEFINITION: ModuleDefinition<StoreEntityTrigger, StixTrigger> = {
     { name: 'trigger_ids', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
     { name: 'period', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'trigger_time', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
+    { name: 'authorized_members', type: 'json', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [],
   representative: (stix: StixTrigger) => {

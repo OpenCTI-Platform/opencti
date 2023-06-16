@@ -102,7 +102,7 @@ class UserHistoryLineComponent extends Component {
     this.setState({ open: false });
   }
 
-  renderIcon(eventType, isRelation, eventMesage, commit) {
+  renderIcon(eventType, isRelation, eventMessage, commit) {
     if (isRelation) {
       if (eventType === 'create') {
         return (
@@ -169,7 +169,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('replaces')) {
+      if (eventType === 'update' && (eventMessage.includes('replaces') || eventMessage.includes('updates'))) {
         return (
           <Avatar
             sx={{
@@ -185,7 +185,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('changes')) {
+      if (eventType === 'update' && eventMessage.includes('changes')) {
         return (
           <Avatar
             sx={{
@@ -201,7 +201,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('adds')) {
+      if (eventType === 'update' && eventMessage.includes('adds')) {
         return (
           <Avatar
             sx={{
@@ -217,7 +217,7 @@ class UserHistoryLineComponent extends Component {
           </Avatar>
         );
       }
-      if (eventType === 'update' && eventMesage.includes('removes')) {
+      if (eventType === 'update' && eventMessage.includes('removes')) {
         return (
           <Avatar
             sx={{

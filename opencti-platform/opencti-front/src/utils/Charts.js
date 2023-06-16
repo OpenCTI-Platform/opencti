@@ -120,6 +120,15 @@ export const lineChartOptions = (
   },
 });
 
+/**
+ * @param {Theme} theme
+ * @param {boolean} isTimeSeries
+ * @param {function} xFormatter
+ * @param {function} yFormatter
+ * @param {number} tickAmount
+ * @param {boolean} isStacked
+ * @param {boolean} legend
+ */
 export const areaChartOptions = (
   theme,
   isTimeSeries = false,

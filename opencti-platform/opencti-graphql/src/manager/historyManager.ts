@@ -189,7 +189,7 @@ const initHistoryManager = () => {
         connectionFormat: false,
         orderBy: ['timestamp'],
         orderMode: OrderingMode.Desc,
-        filters: [{ key: 'event_type', values: ['create'] }]
+        filters: [{ key: ['event_access'], values: [null] }]
       });
       let lastEventId = '0-0';
       if (histoElements.length > 0) {

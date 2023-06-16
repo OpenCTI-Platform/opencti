@@ -6,7 +6,7 @@ export const triggersQueriesSearchQuery = graphql`
     $search: String
     $filters: [TriggersFiltering!]
   ) {
-    myTriggers(search: $search, filters: $filters) {
+    triggers(search: $search, filters: $filters) {
       edges {
         node {
           id

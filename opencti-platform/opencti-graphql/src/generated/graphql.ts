@@ -16573,7 +16573,6 @@ export type Query = {
   members?: Maybe<MemberConnection>;
   myNotifications?: Maybe<NotificationConnection>;
   myOpinion?: Maybe<Opinion>;
-  myTriggers?: Maybe<TriggerConnection>;
   myUnreadNotificationsCount?: Maybe<Scalars['Int']>;
   narrative?: Maybe<Narrative>;
   narratives?: Maybe<NarrativeConnection>;
@@ -17554,17 +17553,6 @@ export type QueryMyNotificationsArgs = {
 
 export type QueryMyOpinionArgs = {
   id: Scalars['String'];
-};
-
-
-export type QueryMyTriggersArgs = {
-  after?: InputMaybe<Scalars['ID']>;
-  filterMode?: InputMaybe<FilterMode>;
-  filters?: InputMaybe<Array<TriggersFiltering>>;
-  first?: InputMaybe<Scalars['Int']>;
-  orderBy?: InputMaybe<TriggersOrdering>;
-  orderMode?: InputMaybe<OrderingMode>;
-  search?: InputMaybe<Scalars['String']>;
 };
 
 
@@ -18660,6 +18648,7 @@ export type QueryTriggerArgs = {
 
 
 export type QueryTriggersArgs = {
+  adminBypassUserAccess?: InputMaybe<Scalars['Boolean']>;
   after?: InputMaybe<Scalars['ID']>;
   filterMode?: InputMaybe<FilterMode>;
   filters?: InputMaybe<Array<TriggersFiltering>>;
@@ -23790,6 +23779,7 @@ export type TriggerDigestAddInput = {
   name: Scalars['String'];
   outcomes: Array<Scalars['StixRef']>;
   period: DigestPeriod;
+  recipients?: InputMaybe<Array<Scalars['String']>>;
   trigger_ids: Array<Scalars['String']>;
   trigger_time?: InputMaybe<Scalars['String']>;
 };
@@ -23809,7 +23799,8 @@ export enum TriggerEventType {
 export enum TriggerFilter {
   Created = 'created',
   EventTypes = 'event_types',
-  TriggerType = 'trigger_type'
+  TriggerType = 'trigger_type',
+  UserIds = 'user_ids'
 }
 
 export type TriggerLiveAddInput = {
@@ -23818,6 +23809,7 @@ export type TriggerLiveAddInput = {
   filters?: InputMaybe<Scalars['String']>;
   name: Scalars['String'];
   outcomes: Array<Scalars['StixRef']>;
+  recipients?: InputMaybe<Array<Scalars['String']>>;
 };
 
 export enum TriggerType {
@@ -25446,7 +25438,7 @@ export enum WorksOrdering {
 
 export type Workspace = BasicObject & InternalObject & {
   __typename?: 'Workspace';
-  authorizedMembers?: Maybe<Array<MemberAccess>>;
+  authorizedMembers: Array<MemberAccess>;
   created_at?: Maybe<Scalars['DateTime']>;
   currentUserAccessRight?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
@@ -31824,7 +31816,6 @@ export type QueryResolvers<ContextType = any, ParentType extends ResolversParent
   members?: Resolver<Maybe<ResolversTypes['MemberConnection']>, ParentType, ContextType, Partial<QueryMembersArgs>>;
   myNotifications?: Resolver<Maybe<ResolversTypes['NotificationConnection']>, ParentType, ContextType, Partial<QueryMyNotificationsArgs>>;
   myOpinion?: Resolver<Maybe<ResolversTypes['Opinion']>, ParentType, ContextType, RequireFields<QueryMyOpinionArgs, 'id'>>;
-  myTriggers?: Resolver<Maybe<ResolversTypes['TriggerConnection']>, ParentType, ContextType, Partial<QueryMyTriggersArgs>>;
   myUnreadNotificationsCount?: Resolver<Maybe<ResolversTypes['Int']>, ParentType, ContextType>;
   narrative?: Resolver<Maybe<ResolversTypes['Narrative']>, ParentType, ContextType, RequireFields<QueryNarrativeArgs, 'id'>>;
   narratives?: Resolver<Maybe<ResolversTypes['NarrativeConnection']>, ParentType, ContextType, Partial<QueryNarrativesArgs>>;
@@ -34106,7 +34097,7 @@ export type WorkTrackingResolvers<ContextType = any, ParentType extends Resolver
 }>;
 
 export type WorkspaceResolvers<ContextType = any, ParentType extends ResolversParentTypes['Workspace'] = ResolversParentTypes['Workspace']> = ResolversObject<{
-  authorizedMembers?: Resolver<Maybe<Array<ResolversTypes['MemberAccess']>>, ParentType, ContextType>;
+  authorizedMembers?: Resolver<Array<ResolversTypes['MemberAccess']>, ParentType, ContextType>;
   created_at?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;

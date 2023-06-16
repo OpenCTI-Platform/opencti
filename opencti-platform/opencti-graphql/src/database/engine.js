@@ -71,7 +71,14 @@ import { isStixObject } from '../schema/stixCoreObject';
 import { isBasicRelationship, isStixRelationshipExceptRef } from '../schema/stixRelationship';
 import { RELATION_INDICATES } from '../schema/stixCoreRelationship';
 import { INTERNAL_FROM_FIELD, INTERNAL_TO_FIELD } from '../schema/identifier';
-import { computeUserMemberAccessIds, isBypassUser, MEMBER_ACCESS_ALL } from '../utils/access';
+import {
+  computeUserMemberAccessIds,
+  INTERNAL_USERS,
+  isBypassUser,
+  isUserHasCapability,
+  MEMBER_ACCESS_ALL,
+  SETTINGS_SET_ACCESSES
+} from '../utils/access';
 import { isSingleRelationsRef, } from '../schema/stixEmbeddedRelationship';
 import { now, runtimeFieldObservableValueScript } from '../utils/format';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
@@ -272,6 +279,10 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
   const must = [];
   // eslint-disable-next-line camelcase
   const must_not = [];
+  // If internal users of the system, we cancel rights checking
+  if (INTERNAL_USERS[user.id]) {
+    return { must, must_not };
+  }
   // check user access
   must.push(...buildUserMemberAccessFilter(user, opts?.adminBypassUserAccess));
   // If user have bypass, no need to check restrictions
@@ -377,13 +388,13 @@ const buildDataRestrictions = async (context, user, opts = {}) => {
   return { must, must_not };
 };
 
-export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = true) => {
-  if (adminBypassUserAccess && isBypassUser(user)) {
+export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = false) => {
+  if (adminBypassUserAccess && isUserHasCapability(user, SETTINGS_SET_ACCESSES)) {
     return [];
   }
   const userAccessIds = computeUserMemberAccessIds(user);
   // if access_users exists, it should have the user access ids
-  const memberAccessFilter = [{
+  return [{
     bool: {
       should: [
         {
@@ -397,7 +408,6 @@ export const buildUserMemberAccessFilter = (user, adminBypassUserAccess = true) 
       ]
     }
   }];
-  return memberAccessFilter;
 };
 
 export const elIndexExists = async (indexName) => {
@@ -881,7 +891,9 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       };
       mustTerms.push(shouldType);
     }
-    const markingRestrictions = await buildDataRestrictions(context, user);
+    const restrictionOptions = { adminBypassUserAccess: true }; // Bypass the members restrictions if possible
+    // If an admin ask for a specific element, there is no need to ask him to explicitly extends his visibility to doing it.
+    const markingRestrictions = await buildDataRestrictions(context, user, restrictionOptions);
     mustTerms.push(...markingRestrictions.must);
     const body = {
       query: {
@@ -1060,7 +1072,7 @@ const elQueryBodyBuilder = async (context, user, options) => {
   const dateFilter = [];
   const searchAfter = after ? cursorToOffset(after) : undefined;
   let ordering = [];
-  const { adminBypassUserAccess = true } = options;
+  const { adminBypassUserAccess = false } = options;
   const markingRestrictions = await buildDataRestrictions(context, user, { adminBypassUserAccess });
   const accessMust = markingRestrictions.must;
   const accessMustNot = markingRestrictions.must_not;
