@@ -115,6 +115,10 @@ const EntitySettingAttributeEdition = ({
 
   const [commit] = useMutation(entitySettingAttributeEditionPatch);
 
+  const isBoolean = (defaultValues: string | boolean | Option) => {
+    return typeof defaultValues === 'boolean';
+  };
+
   const isSingleOption = (defaultValues: string | boolean | Option) => {
     return typeof defaultValues === 'object' && 'value' in (defaultValues as unknown as Option);
   };
@@ -140,8 +144,10 @@ const EntitySettingAttributeEdition = ({
       } else if (isSingleOption(defaultValues)) {
         default_values = [(defaultValues as Option).value];
         // Handle single value
-      } else {
+      } else if (isBoolean(defaultValues)) {
         default_values = [defaultValues.toString()];
+      } else { // Default case -> string
+        default_values = [defaultValues as string];
       }
     }
     const newValues: AttributeSubmitValues = {
@@ -180,6 +186,10 @@ const EntitySettingAttributeEdition = ({
   };
 
   const field = () => {
+    const text = attribute.label ?? attribute.name;
+    const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
+    const label = t('Default value of : ') + attributeName;
+
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attribute.name === 'objectMarking') {
       return (
@@ -209,7 +219,7 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'createdBy') {
       return (
         <CreatedByField
-          label={t('Default value')}
+          label={label}
           name="default_values"
           style={fieldSpacingContainerStyle}
         />
@@ -219,7 +229,7 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'objectAssignee') {
       return (
         <ObjectAssigneeField
-          label={t('Default value')}
+          label={label}
           name="default_values"
           style={fieldSpacingContainerStyle}
         />
@@ -229,7 +239,7 @@ const EntitySettingAttributeEdition = ({
     if (ovCategory) {
       return (
         <OpenVocabField
-          label={t('Default value')}
+          label={label}
           type={ovCategory}
           name="default_values"
           multiple={attribute.multiple ?? false}
@@ -241,10 +251,11 @@ const EntitySettingAttributeEdition = ({
     if (attribute.type === 'date') {
       return (
         <Field
+          label={label}
           component={DateTimePickerField}
           name="default_values"
           TextFieldProps={{
-            label: t('Default value'),
+            label,
             variant: 'standard',
             fullWidth: true,
             style: { marginTop: 20 },
@@ -259,7 +270,7 @@ const EntitySettingAttributeEdition = ({
           component={SwitchField}
           type="checkbox"
           name="default_values"
-          label={t('Default value')}
+          label={label}
           containerstyle={fieldSpacingContainerStyle}
         />
       );
@@ -272,7 +283,7 @@ const EntitySettingAttributeEdition = ({
           type="number"
           variant="standard"
           name="default_values"
-          label={t('Default value')}
+          label={label}
           fullWidth={true}
           style={{ marginTop: 20 }}
         />
@@ -284,7 +295,7 @@ const EntitySettingAttributeEdition = ({
         <Field
           component={MarkDownField}
           name="default_values"
-          label={t('Default value')}
+          label={label}
           fullWidth={true}
           multiline={true}
           rows="4"
@@ -298,7 +309,7 @@ const EntitySettingAttributeEdition = ({
         <Field
           component={RichTextField}
           name="default_values"
-          label={t('Default value')}
+          label={label}
           fullWidth={true}
           style={{
             ...fieldSpacingContainerStyle,
@@ -313,7 +324,7 @@ const EntitySettingAttributeEdition = ({
         component={TextField}
         variant="standard"
         name="default_values"
-        label={t('Default value')}
+        label={label}
         fullWidth={true}
         style={{ marginTop: 20 }}
       />

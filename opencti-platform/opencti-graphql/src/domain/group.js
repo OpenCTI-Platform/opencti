@@ -65,8 +65,24 @@ export const defaultMarkingDefinitions = async (context, group) => {
   });
 };
 
-export const defaultMarkingDefinitionsByGroups = async (context, groupIds) => {
+export const mergeDefaultMarking = async (context, defaultMarkings) => {
+  const results = [];
+  defaultMarkings.filter((d) => !!d.entity_type)
+    .forEach((d) => {
+      const existing = results.find((r) => r.entity_type === d.entity_type);
+      if (existing) {
+        existing.values = [...(d.values ?? []), ...existing.values];
+      } else {
+        results.push(d);
+      }
+    });
+
+  return results;
+};
+
+export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  // Retrieve default marking by groups
   return internalFindByIds(context, SYSTEM_USER, groupIds)
     .then((groups) => groups.map((group) => {
       const defaultMarking = group.default_marking ?? [];
@@ -76,7 +92,18 @@ export const defaultMarkingDefinitionsByGroups = async (context, groupIds) => {
           values: entry.values?.map((d) => markingsMap.get(d)),
         };
       });
-    }).flat());
+    }).flat())
+    // Merge default marking by group
+    .then((defaultMarkings) => mergeDefaultMarking(context, defaultMarkings))
+    // Clean default marking by entity type
+    .then((defaultMarkings) => {
+      return Promise.all(defaultMarkings.map(async (d) => {
+        return {
+          entity_type: d.entity_type,
+          values: await cleanMarkingValues(context, d.values),
+        }
+      }));
+    });
 };
 
 export const batchRoles = async (context, user, groupIds) => {
@@ -174,18 +201,19 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
 
 // -- DEFAULT MARKING --
 
-const cleanDefaultMarkingValues = async (context, values) => {
+const cleanMarkingValues = async (context, values) => {
   const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
   const defaultMarkingValues = values?.map((d) => markingsMap.get(d) ?? d) ?? [];
   const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
   return Object.entries(defaultGroupedMarkings).map(([_, key]) => {
     const max = Math.max(...key.map((m) => m.x_opencti_order));
-    return key.filter((m) => m.x_opencti_order === max);
-  }).flat().map((m) => m.id);
+    const results = key.filter((m) => m.x_opencti_order === max);
+    return R.uniqWith((a, b) => a.id === b.id, results);
+  }).flat();
 };
 
 export const groupEditDefaultMarking = async (context, user, groupId, defaultMarking) => {
-  const values = await cleanDefaultMarkingValues(context, defaultMarking.values);
+  const values = (await cleanMarkingValues(context, defaultMarking.values)).map((m) => m.id);
 
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
   const existingDefaultMarking = group.default_marking ?? [];
