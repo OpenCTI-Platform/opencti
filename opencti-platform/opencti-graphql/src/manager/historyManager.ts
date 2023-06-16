@@ -198,9 +198,7 @@ const initHistoryManager = () => {
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        if (running) {
-          await historyHandler(lastEventId);
-        }
+        await historyHandler(lastEventId);
       }, SCHEDULE_TIME);
     },
     status: () => {

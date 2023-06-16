@@ -270,9 +270,9 @@ export const stixCoreObjectsExportAsk = async (context, user, args) => {
   const works = await askListExport(context, user, format, type, selectedIds, listParams, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };
-export const stixCoreObjectExportAsk = async (context, user, args) => {
-  const { format, stixCoreObjectId = null, exportType = null, maxMarkingDefinition = null } = args;
-  const entity = stixCoreObjectId ? await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT) : null;
+export const stixCoreObjectExportAsk = async (context, user, stixCoreObjectId, args) => {
+  const { format, exportType = null, maxMarkingDefinition = null } = args;
+  const entity = await storeLoadById(context, user, stixCoreObjectId, ABSTRACT_STIX_CORE_OBJECT);
   const works = await askEntityExport(context, user, format, entity, exportType, maxMarkingDefinition);
   return works.map((w) => workToExportFile(w));
 };

@@ -95,6 +95,7 @@ const connectorHandler = async () => {
   try {
     // Lock the manager
     lock = await lockResource([CONNECTOR_MANAGER_KEY], { retryCount: 0 });
+    logApp.info('[OPENCTI-MODULE] Running connector manager');
     running = true;
     const context = executionContext('connector_manager');
     // Execute the cleaning
@@ -123,7 +124,6 @@ const initConnectorManager = () => {
   let scheduler;
   return {
     start: () => {
-      logApp.info('[OPENCTI-MODULE] Running connector manager');
       scheduler = setIntervalAsync(async () => {
         await connectorHandler();
       }, SCHEDULE_TIME);

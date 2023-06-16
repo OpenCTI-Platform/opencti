@@ -61,7 +61,6 @@ const initExpiredManager = () => {
   let scheduler;
   return {
     start: () => {
-      logApp.info('[OPENCTI-MODULE] Running Expiration manager');
       scheduler = setIntervalAsync(async () => {
         await expireHandler();
       }, SCHEDULE_TIME);

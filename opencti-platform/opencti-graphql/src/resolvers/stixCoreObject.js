@@ -121,7 +121,7 @@ const stixCoreObjectResolvers = {
       relationDelete: ({ toId, relationship_type: relationshipType, commitMessage, references }) => stixCoreObjectDeleteRelation(context, context.user, id, toId, relationshipType, { commitMessage, references }),
       askEnrichment: ({ connectorId }) => askElementEnrichmentForConnector(context, context.user, id, connectorId),
       importPush: ({ file, noTriggerImport = false }) => stixCoreObjectImportPush(context, context.user, id, file, noTriggerImport),
-      exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, { ...args, stixCoreObjectId: id }),
+      exportAsk: (args) => stixCoreObjectExportAsk(context, context.user, id, args),
       exportPush: ({ file }) => stixCoreObjectExportPush(context, context.user, id, file),
     }),
     stixCoreObjectsExportAsk: (_, args, context) => stixCoreObjectsExportAsk(context, context.user, args),

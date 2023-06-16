@@ -107,7 +107,8 @@
   },
   "notification_manager": {
     "enabled": true,
-    "lock_key": "notification_manager_lock",
+    "lock_live_key": "notification_live_manager_lock",
+    "lock_digest_key": "notification_digest_manager_lock",
     "interval": 10000
   },
   "publisher_manager": {

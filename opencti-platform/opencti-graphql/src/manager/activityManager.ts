@@ -135,9 +135,7 @@ const initActivityManager = () => {
       }
       // Start the listening of events
       scheduler = setIntervalAsync(async () => {
-        if (running) {
-          await activityHandler(lastEventId);
-        }
+        await activityHandler(lastEventId);
       }, SCHEDULE_TIME);
     },
     status: (settings?: BasicStoreSettings) => {

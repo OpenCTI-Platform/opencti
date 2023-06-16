@@ -404,9 +404,7 @@ const initNotificationManager = () => {
   return {
     start: async () => {
       streamScheduler = setIntervalAsync(async () => {
-        if (running) {
-          await notificationHandler();
-        }
+        await notificationHandler();
       }, STREAM_SCHEDULE_TIME);
       cronScheduler = setIntervalAsync(async () => {
         await notificationDigestHandler();

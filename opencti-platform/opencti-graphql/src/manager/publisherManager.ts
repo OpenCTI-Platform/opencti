@@ -185,7 +185,9 @@ const initPublisherManager = () => {
   return {
     start: async () => {
       isSmtpActive = await smtpIsAlive();
-      streamScheduler = setIntervalAsync(() => notificationHandler(), STREAM_SCHEDULE_TIME);
+      streamScheduler = setIntervalAsync(async () => {
+        await notificationHandler();
+      }, STREAM_SCHEDULE_TIME);
     },
     status: () => {
       return {
