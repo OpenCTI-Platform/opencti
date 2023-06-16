@@ -30,6 +30,7 @@ import {
 } from './__generated__/SystemCreationMutation.graphql';
 import { SystemsLinesPaginationQuery$variables } from './__generated__/SystemsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -87,6 +88,8 @@ const systemMutation = graphql`
   }
 `;
 
+const SYSTEM_TYPE = 'System';
+
 interface SystemAddInput {
   name: string;
   description: string;
@@ -117,26 +120,23 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
-  const systemValidator = useSchemaCreationValidation('System', basicShape);
-
-  const initialValues: SystemAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const systemValidator = useSchemaCreationValidation(SYSTEM_TYPE, basicShape);
 
   const [commit] = useMutation<SystemCreationMutation>(systemMutation);
 
   const onSubmit: FormikConfig<SystemAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: SystemCreationMutation$variables['input'] = {
       name: values.name,
@@ -170,6 +170,19 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues(
+    SYSTEM_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -177,7 +190,13 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -221,9 +240,20 @@ export const SystemCreationForm: FunctionComponent<SystemFormProps> = ({
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>

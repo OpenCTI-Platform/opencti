@@ -24,6 +24,7 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { FeedbackCreationMutation$variables } from './__generated__/FeedbackCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -79,12 +80,14 @@ const feedbackMutation = graphql`
 interface FormikFeedbackAddInput {
   name: string
   description: string
-  confidence: number
-  rating: number
+  confidence: number | undefined
+  rating: number | null
   objects: { value: string }[]
   file: File | undefined
   objectLabel: Option[]
 }
+
+const FEEDBACK_TYPE = 'Feedback';
 
 const FeedbackCreation: FunctionComponent<{
   openDrawer: boolean;
@@ -101,7 +104,7 @@ const FeedbackCreation: FunctionComponent<{
     confidence: Yup.number(),
     rating: Yup.number(),
   };
-  const feedbackValidator = useSchemaCreationValidation('Feedback', basicShape);
+  const feedbackValidator = useSchemaCreationValidation(FEEDBACK_TYPE, basicShape);
 
   const onSubmit: FormikConfig<FormikFeedbackAddInput>['onSubmit'] = (
     values,
@@ -128,6 +131,21 @@ const FeedbackCreation: FunctionComponent<{
       },
     });
   };
+
+  const initialValues = useDefaultValues<FormikFeedbackAddInput>(
+    FEEDBACK_TYPE,
+    {
+      name: `Feedback from ${me.user_email}`,
+      rating: null,
+      description: '',
+      confidence: undefined,
+      objects: [],
+      file: undefined,
+      objectLabel: [],
+    },
+    { rating: 5 },
+  );
+
   return (
     <div>
       <Drawer
@@ -152,15 +170,7 @@ const FeedbackCreation: FunctionComponent<{
         </div>
         <div className={classes.container}>
           <Formik<FormikFeedbackAddInput>
-            initialValues={{
-              name: `Feedback from ${me.user_email}`,
-              rating: 5,
-              description: '',
-              confidence: 75,
-              objects: [],
-              file: undefined,
-              objectLabel: [],
-            }}
+            initialValues={initialValues}
             validationSchema={feedbackValidator}
             onSubmit={onSubmit}
             onReset={handleCloseDrawer}

@@ -24,6 +24,7 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
 import {
@@ -88,15 +89,17 @@ const campaignMutation = graphql`
   }
 `;
 
+const CAMPAIGN_TYPE = 'Campaign';
+
 interface CampaignAddInput {
-  name: string;
-  description: string;
-  confidence: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  confidence: number | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface CampaignFormProps {
@@ -125,18 +128,7 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
     confidence: Yup.number().nullable(),
     description: Yup.string().nullable(),
   };
-  const campaignValidator = useSchemaCreationValidation('Campaign', basicShape);
-
-  const initialValues = {
-    name: inputValue ?? '',
-    confidence: defaultConfidence ?? 75,
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const campaignValidator = useSchemaCreationValidation(CAMPAIGN_TYPE, basicShape);
 
   const [commit] = useMutation<CampaignCreationMutation>(campaignMutation);
 
@@ -176,6 +168,21 @@ export const CampaignCreationForm: FunctionComponent<CampaignFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    CAMPAIGN_TYPE,
+    {
+      name: inputValue ?? '',
+      confidence: defaultConfidence,
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}

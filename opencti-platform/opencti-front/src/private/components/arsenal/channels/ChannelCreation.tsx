@@ -24,6 +24,7 @@ import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { insertNode } from '../../../../utils/store';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import {
@@ -102,16 +103,18 @@ const channelMutation = graphql`
   }
 `;
 
+const CHANNEL_TYPE = 'Channel';
+
 interface ChannelAddInput {
-  name: string;
-  channel_types: string[];
-  description: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  confidence: number;
-  file: File | undefined;
+  name: string
+  channel_types: string[]
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  confidence: number | undefined
+  file: File | undefined
 }
 
 interface ChannelFormProps {
@@ -141,19 +144,7 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
     description: Yup.string().nullable(),
     confidence: Yup.number().nullable(),
   };
-  const channelValidator = useSchemaCreationValidation('Channel', basicShape);
-
-  const initialValues: ChannelAddInput = {
-    name: inputValue ?? '',
-    channel_types: [],
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    confidence: defaultConfidence ?? 75,
-    file: undefined,
-  };
+  const channelValidator = useSchemaCreationValidation(CHANNEL_TYPE, basicShape);
 
   const [commit] = useMutation<ChannelCreationMutation>(channelMutation);
 
@@ -194,6 +185,21 @@ export const ChannelCreationForm: FunctionComponent<ChannelFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    CHANNEL_TYPE,
+    {
+      name: inputValue ?? '',
+      channel_types: [],
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      confidence: defaultConfidence,
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

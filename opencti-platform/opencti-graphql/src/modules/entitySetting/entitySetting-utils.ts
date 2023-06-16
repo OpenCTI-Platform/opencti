@@ -1,5 +1,5 @@
 import type { JSONSchemaType } from 'ajv';
-import * as R from 'ramda';
+import { head } from 'ramda';
 import {
   ABSTRACT_STIX_CORE_RELATIONSHIP,
   ABSTRACT_STIX_CYBER_OBSERVABLE,
@@ -11,17 +11,14 @@ import {
   ENTITY_TYPE_CONTAINER_OPINION,
   isStixDomainObject
 } from '../../schema/stixDomainObject';
-import { UnsupportedError, ValidationError } from '../../config/errors';
-import type { AttributeConfiguration, BasicStoreEntityEntitySetting, Scale, ScaleConfig } from './entitySetting-types';
+import { UnsupportedError } from '../../config/errors';
+import type { AttributeConfiguration, BasicStoreEntityEntitySetting, ScaleConfig } from './entitySetting-types';
 import { ENTITY_TYPE_ENTITY_SETTING } from './entitySetting-types';
 import { getEntitiesFromCache } from '../../database/cache';
 import { SYSTEM_USER } from '../../utils/access';
 import type { AuthContext } from '../../types/user';
 import { isStixCoreRelationship } from '../../schema/stixCoreRelationship';
 import { isStixCyberObservable } from '../../schema/stixCyberObservable';
-import { schemaAttributesDefinition } from '../../schema/schema-attributes';
-import { schemaRelationsRefDefinition } from '../../schema/schema-relationsRef';
-import type { RelationRefDefinition } from '../../schema/relationRef-definition';
 import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_CASE_TASK } from '../case/case-task/case-task-types';
 
@@ -66,8 +63,6 @@ export const availableSettings: Record<string, Array<string>> = {
   [ENTITY_TYPE_CONTAINER_CASE_TASK]: [],
 };
 
-const keyAvailableSetting = R.uniq(Object.values(availableSettings).flat());
-
 export const getAvailableSettings = (targetType: string) => {
   let settings;
   if (isStixDomainObject(targetType)) {
@@ -108,105 +103,14 @@ export const getAttributesConfiguration = (entitySetting: BasicStoreEntityEntity
   return null;
 };
 
-// -- VALIDATOR --
-
-const optionsValidation = async (targetType: string, input: BasicStoreEntityEntitySetting) => {
-  const settings = getAvailableSettings(targetType);
-  const inputSettings = Object.entries(input);
-  inputSettings.forEach(([key]) => {
-    if (keyAvailableSetting.includes(key) && !settings.includes(key)) {
-      throw UnsupportedError('This setting is not available for this entity', {
-        setting: key,
-        entity: targetType
-      });
+export const getDefaultValues = (attributeConfiguration: AttributeConfiguration, multiple: boolean) => {
+  if (attributeConfiguration.default_values) {
+    if (multiple) {
+      return attributeConfiguration.default_values;
     }
-  });
-};
-
-const scaleValidation = (scale: Scale) => {
-  if (scale?.local_config) {
-    const minValue = scale.local_config.min.value;
-    const maxValue = scale.local_config.max.value;
-    const valuesOfTick = scale.local_config.ticks.sort().map(({ value }) => value);
-    if (minValue < 0 || minValue > 100) {
-      throw ValidationError(minValue, {
-        message: 'The min value must be between 0 and 100',
-      });
-    } else if (maxValue > 100 || maxValue < 0) {
-      throw ValidationError(maxValue, {
-        message: 'The max value must be between 0 and 100',
-      });
-    }
-    if (minValue > maxValue) {
-      throw ValidationError(minValue, {
-        message: 'The min value cannot be greater than max value'
-      });
-    } else if (maxValue < minValue) {
-      throw ValidationError(maxValue, {
-        message: 'The max value cannot be lower than min value'
-      });
-    }
-    valuesOfTick.forEach((tick) => {
-      if (tick < minValue || tick > maxValue) {
-        throw ValidationError(tick, {
-          message: 'Each tick value must be between min and max value'
-        });
-      }
-    });
+    return head(attributeConfiguration.default_values);
   }
-};
-
-const customizableAttributesValidation = (targetType: string, input: BasicStoreEntityEntitySetting) => {
-  const attributesConfiguration = getAttributesConfiguration(input);
-
-  if (attributesConfiguration) {
-    const attributesDefinition = schemaAttributesDefinition.getAttributes(targetType);
-    const customizableMandatoryAttributeNames = Array.from((attributesDefinition).values())
-      .filter((attr) => attr.mandatoryType === 'customizable')
-      .map((attr) => attr.name);
-
-    // From schema relations ref
-    const relationsRef: RelationRefDefinition[] = schemaRelationsRefDefinition.getRelationsRef(targetType);
-    customizableMandatoryAttributeNames.push(...relationsRef.map((rel) => rel.inputName));
-
-    attributesConfiguration.forEach((attr) => {
-      if (attr.mandatory && !customizableMandatoryAttributeNames.includes(attr.name)) {
-        throw ValidationError(attr.name, {
-          message: 'This attribute is not customizable for this entity',
-          data: { attribute: attr.name, entityType: targetType }
-        });
-      }
-      if (attr.scale) {
-        const attributeDefinition = attributesDefinition.get(attr.name);
-        if (!attributeDefinition?.scalable) {
-          throw ValidationError(attr.name, {
-            message: 'This attribute is not scalable for this entity',
-            data: { attribute: attr.name, entityType: targetType }
-          });
-        }
-        scaleValidation(attr.scale);
-      }
-    });
-  }
-};
-
-export const validateEntitySettingCreation = async (input: Record<string, unknown>) => {
-  const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
-
-  await optionsValidation(entitySetting.target_type, input as unknown as BasicStoreEntityEntitySetting);
-  customizableAttributesValidation(entitySetting.target_type, entitySetting);
-
-  return true;
-};
-
-export const validateEntitySettingUpdate = async (input: Record<string, unknown>, initial: Record<string, unknown> | undefined) => {
-  const entitySetting = (input as unknown as BasicStoreEntityEntitySetting);
-  const entitySettingInitial = (initial as unknown as BasicStoreEntityEntitySetting);
-
-  await optionsValidation(entitySettingInitial.target_type, input as unknown as BasicStoreEntityEntitySetting);
-  customizableAttributesValidation(entitySettingInitial.target_type, entitySetting);
-
-  return true;
+  return undefined;
 };
 
 // -- AJV --
@@ -256,6 +160,11 @@ export const attributeConfiguration: JSONSchemaType<AttributeConfiguration[]> = 
     properties: {
       name: { type: 'string', minLength: 1 },
       mandatory: { type: 'boolean' },
+      default_values: {
+        type: 'array',
+        nullable: true,
+        items: { type: 'string' }
+      },
       scale: {
         type: 'object',
         properties: {

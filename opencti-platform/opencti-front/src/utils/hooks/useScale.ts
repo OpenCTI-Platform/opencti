@@ -1,9 +1,5 @@
-import {
-  Scale,
-  ScaleConfig,
-  Tick,
-} from '../../private/components/settings/sub_types/EntitySettingAttributesConfigurationScale';
 import useEntitySettings from './useEntitySettings';
+import { Scale, ScaleConfig, Tick } from '../../private/components/settings/sub_types/scaleConfiguration/scale';
 
 const defaultScale: ScaleConfig = {
   better_side: 'min',

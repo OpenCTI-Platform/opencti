@@ -333,7 +333,7 @@ export const generateUpdateMessage = (entityType, inputs) => {
     return `${type}s ${operations.slice(0, 3).map(({ key, value }) => {
       let message = 'nothing';
       let convertedKey;
-      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationsRefByInputName(entityType, key);
+      const relationsRefDefinition = schemaRelationsRefDefinition.getRelationRef(entityType, key);
       if (relationsRefDefinition) {
         convertedKey = relationsRefDefinition.label ?? relationsRefDefinition.stixName;
       } else {

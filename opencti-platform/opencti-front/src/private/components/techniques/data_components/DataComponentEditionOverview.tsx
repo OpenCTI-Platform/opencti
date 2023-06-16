@@ -132,14 +132,14 @@ interface DataComponentEditionOverviewComponentProps {
 }
 
 interface DataComponentAddInput {
-  name: string;
-  description: string | null;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  x_opencti_workflow_id: Option;
-  confidence: number | null;
-  message?: string;
-  references?: Option[];
+  name: string
+  description: string | null
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  x_opencti_workflow_id: Option
+  confidence: number | undefined
+  message?: string
+  references?: Option[]
 }
 
 const DataComponentEditionOverview: FunctionComponent<
@@ -233,7 +233,7 @@ DataComponentEditionOverviewComponentProps
     createdBy: convertCreatedBy(dataComponent) as Option,
     objectMarking: convertMarkings(dataComponent),
     x_opencti_workflow_id: convertStatus(t, dataComponent) as Option,
-    confidence: dataComponent.confidence,
+    confidence: dataComponent.confidence ?? undefined,
     references: [],
   };
   return (

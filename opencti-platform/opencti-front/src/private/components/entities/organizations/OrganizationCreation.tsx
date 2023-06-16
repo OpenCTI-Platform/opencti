@@ -32,6 +32,7 @@ import {
 } from './__generated__/OrganizationCreationMutation.graphql';
 import { OrganizationsLinesPaginationQuery$variables } from './__generated__/OrganizationsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,6 +90,8 @@ const organizationMutation = graphql`
   }
 `;
 
+const ORGANIZATION_TYPE = 'Organization';
+
 interface OrganizationAddInput {
   name: string
   description: string
@@ -120,28 +123,25 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    x_opencti_organization_type: Yup.string().nullable(),
-    x_opencti_reliability: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    x_opencti_organization_type: Yup.string()
+      .nullable(),
+    x_opencti_reliability: Yup.string()
+      .nullable(),
   };
-  const organizationValidator = useSchemaCreationValidation('Organization', basicShape);
-
-  const initialValues: OrganizationAddInput = {
-    name: '',
-    description: '',
-    x_opencti_reliability: undefined,
-    x_opencti_organization_type: 'other',
-    createdBy: defaultCreatedBy ?? '' as unknown as Option,
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const organizationValidator = useSchemaCreationValidation(ORGANIZATION_TYPE, basicShape);
 
   const [commit] = useMutation<OrganizationCreationMutation>(organizationMutation);
 
-  const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (values, { setSubmitting, setErrors, resetForm }) => {
+  const onSubmit: FormikConfig<OrganizationAddInput>['onSubmit'] = (values, {
+    setSubmitting,
+    setErrors,
+    resetForm,
+  }) => {
     const input: OrganizationCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
@@ -176,11 +176,26 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
     });
   };
 
+  const initialValues = useDefaultValues(
+    ORGANIZATION_TYPE,
+    {
+      name: '',
+      description: '',
+      x_opencti_reliability: undefined,
+      x_opencti_organization_type: 'other',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return <Formik
-      initialValues={initialValues}
-      validationSchema={organizationValidator}
-      onSubmit={onSubmit}
-      onReset={onReset}>
+    initialValues={initialValues}
+    validationSchema={organizationValidator}
+    onSubmit={onSubmit}
+    onReset={onReset}>
     {({
       submitForm,
       handleReset,
@@ -188,109 +203,122 @@ export const OrganizationCreationForm: FunctionComponent<OrganizationFormProps> 
       setFieldValue,
       values,
     }) => (
-        <Form style={{ margin: '20px 0 20px 0' }}>
-          <Field
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth={true}
-              detectDuplicate={['Organization']}
-          />
-          <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth={true}
-              multiline={true}
-              rows="4"
-              style={{ marginTop: 20 }}
-          />
-          { /* TODO Improve customization (vocab with letter range) 2662 */}
-          <Field
-              component={SelectField}
-              variant="standard"
-              name="x_opencti_organization_type"
-              label={t('Organization type')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
+      <Form style={{ margin: '20px 0 20px 0' }}>
+        <Field
+          component={TextField}
+          variant="standard"
+          name="name"
+          label={t('Name')}
+          fullWidth={true}
+          detectDuplicate={['Organization']}
+        />
+        <Field
+          component={MarkDownField}
+          name="description"
+          label={t('Description')}
+          fullWidth={true}
+          multiline={true}
+          rows="4"
+          style={{ marginTop: 20 }}
+        />
+        { /* TODO Improve customization (vocab with letter range) 2662 */}
+        <Field
+          component={SelectField}
+          variant="standard"
+          name="x_opencti_organization_type"
+          label={t('Organization type')}
+          fullWidth={true}
+          containerstyle={fieldSpacingContainerStyle}
+        >
+          <MenuItem value="constituent">{t('Constituent')}</MenuItem>
+          <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
+          <MenuItem value="partner">{t('Partner')}</MenuItem>
+          <MenuItem value="vendor">{t('Vendor')}</MenuItem>
+          <MenuItem value="other">{t('Other')}</MenuItem>
+        </Field>
+        <Field
+          component={SelectField}
+          variant="standard"
+          name="x_opencti_reliability"
+          label={t('Reliability')}
+          fullWidth={true}
+          containerstyle={fieldSpacingContainerStyle}
+        >
+          <MenuItem value="A">{t('reliability_A')}</MenuItem>
+          <MenuItem value="B">{t('reliability_B')}</MenuItem>
+          <MenuItem value="C">{t('reliability_C')}</MenuItem>
+          <MenuItem value="D">{t('reliability_D')}</MenuItem>
+          <MenuItem value="E">{t('reliability_E')}</MenuItem>
+          <MenuItem value="F">{t('reliability_F')}</MenuItem>
+        </Field>
+        <CreatedByField
+          name="createdBy"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+        />
+        <ObjectLabelField
+          name="objectLabel"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.objectLabel}
+        />
+        <ObjectMarkingField
+          name="objectMarking"
+          style={fieldSpacingContainerStyle}
+        />
+        <ExternalReferencesField
+          name="externalReferences"
+          style={fieldSpacingContainerStyle}
+          setFieldValue={setFieldValue}
+          values={values.externalReferences}
+        />
+        <Field
+          component={SimpleFileUpload}
+          name="file"
+          label={t('Associated file')}
+          FormControlProps={{
+            style: {
+              marginTop: 20,
+              width: '100%',
+            },
+          }}
+          InputLabelProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          InputProps={{
+            fullWidth: true,
+            variant: 'standard',
+          }}
+          fullWidth={true}
+        />
+        <div className={classes.buttons}>
+          <Button
+            variant="contained"
+            onClick={handleReset}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
           >
-            <MenuItem value="constituent">{t('Constituent')}</MenuItem>
-            <MenuItem value="csirt">{t('CSIRT')}</MenuItem>
-            <MenuItem value="partner">{t('Partner')}</MenuItem>
-            <MenuItem value="vendor">{t('Vendor')}</MenuItem>
-            <MenuItem value="other">{t('Other')}</MenuItem>
-          </Field>
-          <Field
-              component={SelectField}
-              variant="standard"
-              name="x_opencti_reliability"
-              label={t('Reliability')}
-              fullWidth={true}
-              containerstyle={fieldSpacingContainerStyle}
+            {t('Cancel')}
+          </Button>
+          <Button
+            variant="contained"
+            color="secondary"
+            onClick={submitForm}
+            disabled={isSubmitting}
+            classes={{ root: classes.button }}
           >
-            <MenuItem value="A">{t('reliability_A')}</MenuItem>
-            <MenuItem value="B">{t('reliability_B')}</MenuItem>
-            <MenuItem value="C">{t('reliability_C')}</MenuItem>
-            <MenuItem value="D">{t('reliability_D')}</MenuItem>
-            <MenuItem value="E">{t('reliability_E')}</MenuItem>
-            <MenuItem value="F">{t('reliability_F')}</MenuItem>
-          </Field>
-          <CreatedByField
-              name="createdBy"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-          />
-          <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.objectLabel}
-          />
-          <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-          />
-          <ExternalReferencesField
-              name="externalReferences"
-              style={fieldSpacingContainerStyle}
-              setFieldValue={setFieldValue}
-              values={values.externalReferences}
-          />
-          <Field
-            component={SimpleFileUpload}
-            name="file"
-            label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
-            fullWidth={true}
-          />
-          <div className={classes.buttons}>
-            <Button
-                variant="contained"
-                onClick={handleReset}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Cancel')}
-            </Button>
-            <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-            >
-              {t('Create')}
-            </Button>
-          </div>
-        </Form>
+            {t('Create')}
+          </Button>
+        </div>
+      </Form>
     )}
   </Formik>;
 };
 
-const OrganizationCreation = ({ paginationOptions }: { paginationOptions: OrganizationsLinesPaginationQuery$variables }) => {
+const OrganizationCreation = ({ paginationOptions }: {
+  paginationOptions: OrganizationsLinesPaginationQuery$variables
+}) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const [open, setOpen] = useState(false);
@@ -309,32 +337,32 @@ const OrganizationCreation = ({ paginationOptions }: { paginationOptions: Organi
   return (
     <div>
       <Fab onClick={handleOpen}
-        color="secondary"
-        aria-label="Add"
-        className={classes.createButton}>
+           color="secondary"
+           aria-label="Add"
+           className={classes.createButton}>
         <Add />
       </Fab>
       <Drawer open={open}
-        anchor="right"
-        elevation={1}
-        sx={{ zIndex: 1202 }}
-        classes={{ paper: classes.drawerPaper }}
-        onClose={handleClose}>
+              anchor="right"
+              elevation={1}
+              sx={{ zIndex: 1202 }}
+              classes={{ paper: classes.drawerPaper }}
+              onClose={handleClose}>
         <div className={classes.header}>
           <IconButton aria-label="Close"
-            className={classes.closeButton}
-            onClick={handleClose}
-            size="large"
-            color="primary">
+                      className={classes.closeButton}
+                      onClick={handleClose}
+                      size="large"
+                      color="primary">
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6">{t('Create an organization')}</Typography>
         </div>
         <div className={classes.container}>
           <OrganizationCreationForm
-              updater={updater}
-              onCompleted={() => handleClose()}
-              onReset={onReset}
+            updater={updater}
+            onCompleted={() => handleClose()}
+            onReset={onReset}
           />
         </div>
       </Drawer>

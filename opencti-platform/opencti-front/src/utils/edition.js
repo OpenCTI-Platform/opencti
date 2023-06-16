@@ -10,11 +10,13 @@ export const convertStatus = (t, element) => ((element?.status?.template?.name ?
     order: element?.status?.order ?? null,
   });
 
-export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => ({
-  label: n.node.definition,
-  value: n.node.id,
-  color: n.node.x_opencti_color,
-}));
+export const convertMarking = (element) => ({
+  label: element.definition ?? element.id,
+  value: element.id,
+  color: element.x_opencti_color,
+});
+
+export const convertMarkings = (element) => (element?.objectMarking?.edges ?? []).map((n) => convertMarking(n.node));
 
 export const convertTriggers = (element) => (element?.triggers ?? []).map((n) => ({
   label: n.name,

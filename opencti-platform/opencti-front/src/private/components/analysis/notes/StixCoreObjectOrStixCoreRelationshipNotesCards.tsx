@@ -5,17 +5,13 @@ import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
-import {
-  EditOutlined,
-  ExpandMoreOutlined,
-  RateReviewOutlined,
-} from '@mui/icons-material';
+import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
 import { Field, Form, Formik } from 'formik';
 import Button from '@mui/material/Button';
-import { noteCreationUserMutation } from './NoteCreation';
+import { NOTE_TYPE, noteCreationUserMutation } from './NoteCreation';
 import { insertNode } from '../../../../utils/store';
 import usePreloadedFragment from '../../../../utils/hooks/usePreloadedFragment';
 import { Theme } from '../../../../components/Theme';
@@ -36,9 +32,13 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import {
+  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
+} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
+import { convertMarking } from '../../../../utils/edition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   heading: {
@@ -127,19 +127,16 @@ const toFinalValues = (values: NoteAddInput, id: string) => {
 
 const toOptions = (
   objectMarkings: { id: string; definition: string | null }[] = [],
-) => (objectMarkings ?? []).map((objectMarking) => ({
-  label: objectMarking.definition ?? objectMarking.id,
-  value: objectMarking.id,
-}));
+) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
-  attribute_abstract: string;
-  content: string;
-  confidence: number;
-  note_types: string[];
-  likelihood?: number;
-  objectMarking: Option[];
-  objectLabel: Option[];
+  attribute_abstract: string
+  content: string
+  confidence: number | undefined
+  note_types: string[]
+  likelihood?: number
+  objectMarking: Option[]
+  objectLabel: Option[]
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
@@ -147,7 +144,7 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  defaultMarkings?: { id: string; definition: string | null }[];
+  defaultMarkings?: { id: string; definition: string | null, x_opencti_color: string | null }[];
   title: string;
 }
 
@@ -186,16 +183,20 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const notes = data?.notes?.edges ?? [];
   const bottomRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
+
   const [more, setMore] = useState<boolean>(false);
-  const initialValues: NoteAddInput = {
-    attribute_abstract: '',
-    content: '',
-    likelihood: 50,
-    confidence: 75,
-    note_types: [],
-    objectMarking: toOptions(defaultMarkings),
-    objectLabel: [],
-  };
+  const initialValues = useDefaultValues<NoteAddInput>(
+    NOTE_TYPE,
+    {
+      attribute_abstract: '',
+      content: '',
+      likelihood: 50,
+      confidence: undefined,
+      note_types: [],
+      objectMarking: toOptions(defaultMarkings),
+      objectLabel: [],
+    },
+  );
   const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -284,7 +285,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
             </Typography>
           </AccordionSummary>
           <AccordionDetails style={{ width: '100%' }}>
-            <Formik
+            <Formik<NoteAddInput>
               initialValues={initialValues}
               validationSchema={noteValidator}
               onSubmit={onSubmit}

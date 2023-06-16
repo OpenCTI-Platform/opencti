@@ -1,4 +1,4 @@
-import React, { useState, FunctionComponent } from 'react';
+import React, { FunctionComponent, useState } from 'react';
 import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
@@ -13,7 +13,6 @@ import { SimpleFileUpload } from 'formik-mui';
 import { FormikConfig } from 'formik/dist/types';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
 import { useHistory } from 'react-router-dom';
-import { dayStartDate } from '../../../../utils/Time';
 import { useFormatter } from '../../../../components/i18n';
 import { handleErrorInForm } from '../../../../relay/environment';
 import TextField from '../../../../components/TextField';
@@ -36,6 +35,7 @@ import {
   ReportCreationMutation,
   ReportCreationMutation$variables,
 } from './__generated__/ReportCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -108,19 +108,21 @@ export const reportCreationMutation = graphql`
   }
 `;
 
+const REPORT_TYPE = 'Report';
+
 interface ReportAddInput {
-  name: string;
-  description: string;
-  content: string;
-  published: Date;
-  confidence: number;
-  report_types: string[];
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  objectAssignee: { value: string }[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  content: string
+  published: Date | null
+  confidence: number | undefined
+  report_types: string[]
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  objectAssignee: { value: string }[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface ReportFormProps {
@@ -160,21 +162,8 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
-  const reportValidator = useSchemaCreationValidation('Report', basicShape);
-  const initialValues: ReportAddInput = {
-    name: inputValue ?? '',
-    published: dayStartDate(),
-    report_types: [],
-    confidence: defaultConfidence ?? 75,
-    description: '',
-    content: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectAssignee: [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const reportValidator = useSchemaCreationValidation(REPORT_TYPE, basicShape);
+
   const [commit] = useMutation<ReportCreationMutation>(reportCreationMutation);
   const onSubmit: FormikConfig<ReportAddInput>['onSubmit'] = (
     values,
@@ -221,8 +210,27 @@ export const ReportCreationForm: FunctionComponent<ReportFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues<ReportAddInput>(
+    REPORT_TYPE,
+    {
+      name: inputValue ?? '',
+      published: null,
+      report_types: [],
+      confidence: defaultConfidence,
+      description: '',
+      content: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
-    <Formik
+    <Formik<ReportAddInput>
       initialValues={initialValues}
       validationSchema={reportValidator}
       onSubmit={onSubmit}

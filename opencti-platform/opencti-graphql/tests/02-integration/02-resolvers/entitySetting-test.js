@@ -4,6 +4,8 @@ import { queryAsAdmin } from '../../utils/testQuery';
 import { initCreateEntitySettings } from '../../../src/modules/entitySetting/entitySetting-domain';
 import { executionContext } from '../../../src/utils/access';
 import { ENTITY_TYPE_CONTAINER_NOTE } from '../../../src/schema/stixDomainObject';
+import { schemaAttributesDefinition } from '../../../src/schema/schema-attributes';
+import { schemaRelationsRefDefinition } from '../../../src/schema/schema-relationsRef';
 
 const LIST_QUERY = gql`
   query entitySettings {
@@ -50,6 +52,7 @@ const UPDATE_QUERY = gql`
       platform_entity_files_ref
       platform_hidden_type
       enforce_reference
+      attributes_configuration
     }
   }
 `;
@@ -80,7 +83,7 @@ describe('EntitySetting resolver standard behavior', () => {
     expect(queryResult.data.entitySettingByType.platform_hidden_type).toBeFalsy();
     expect(queryResult.data.entitySettingByType.enforce_reference).toSatisfy((s) => s === null || s === undefined);
   });
-  it('should update entity settings by ids - valid', async () => {
+  it('should update entity settings by ids - valid option setting', async () => {
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
       variables: { ids: [entitySettingIdNote], input: { key: 'platform_entity_files_ref', value: ['true'] } },
@@ -99,13 +102,78 @@ describe('EntitySetting resolver standard behavior', () => {
       variables: { ids: [entitySettingIdNote], input: { key: 'enforce_reference', value: ['true'] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
+    expect(queryResult.errors[0].originalError.data.reason).toEqual('This setting is not available for this entity');
+  });
+  it('should update entity settings by ids - valid mandatory attributes', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'attribute_abstract', mandatory: true }]);
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
+    });
+    const entityTypeDataComponent = queryResult.data.entitySettingsFieldPatch.filter((entityType) => entityType.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(entityTypeDataComponent.attributes_configuration).not.toBeNull();
+    // Clean
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
+    });
   });
   it('should update entity settings by ids - invalid mandatory attributes', async () => {
     const attributesConfiguration = JSON.stringify([{ name: 'newfield', mandatory: true }]);
     const queryResult = await queryAsAdmin({
       query: UPDATE_QUERY,
-      variables: { ids: [entitySettingIdNote], input: { attributes_configuration: attributesConfiguration } },
+      variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
     });
     expect(queryResult.errors.length > 0).toBeTruthy();
+    expect(queryResult.errors[0].originalError.data.message).toEqual('This attribute is not customizable for this entity');
+  });
+  it('should update entity settings by ids - valid default value', async () => {
+    const attributesConfiguration = JSON.stringify([{ name: 'createdBy', default_values: ['identity--d37acc64-4a6f-4dc2-879a-a4c138d0a27f'] }]);
+    const queryResult = await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [attributesConfiguration] } },
+    });
+    const entityTypeDataComponent = queryResult.data.entitySettingsFieldPatch.filter((entityType) => entityType.target_type === ENTITY_TYPE_CONTAINER_NOTE)[0];
+    expect(entityTypeDataComponent.attributes_configuration).not.toBeNull();
+    // Clean
+    await queryAsAdmin({
+      query: UPDATE_QUERY,
+      variables: { ids: [entitySettingIdNote], input: { key: 'attributes_configuration', value: [] } },
+    });
+  });
+});
+
+// -- ATTRIBUTES DEFINITIONS --
+
+const READ_ATTRIBUTES_DEFINITION_QUERY_BY_TARGET_TYPE = gql`
+  query entitySettingsByTargetType($targetType: String!) {
+    entitySettingByType(targetType: $targetType) {
+      id
+      attributesDefinitions {
+        name
+        type
+        mandatoryType
+        multiple
+        mandatory
+        label
+        defaultValues {
+          id
+          name
+        }
+        scale
+      }
+    }
+  }
+`;
+
+describe('EntitySetting resolver - attributes definitions', () => {
+  it('should retrieve attributes definition', async () => {
+    const queryResult = await queryAsAdmin({ query: READ_ATTRIBUTES_DEFINITION_QUERY_BY_TARGET_TYPE, variables: { targetType: ENTITY_TYPE_CONTAINER_NOTE } });
+    const { attributesDefinitions } = queryResult.data.entitySettingByType;
+    const attributes = [...schemaAttributesDefinition.getAttributes(ENTITY_TYPE_CONTAINER_NOTE).values()]
+      .filter((attr) => attr.mandatoryType === 'customizable' || attr.mandatoryType === 'external' || attr.scalable);
+    const refs = schemaRelationsRefDefinition.getRelationsRef(ENTITY_TYPE_CONTAINER_NOTE)
+      .filter((ref) => ref.mandatoryType === 'customizable' || ref.mandatoryType === 'external');
+    expect(attributesDefinitions.length).toEqual(attributes.length + refs.length);
   });
 });

@@ -30,6 +30,7 @@ import {
   SectorCreationMutation$variables,
 } from './__generated__/SectorCreationMutation.graphql';
 import { SectorsLinesPaginationQuery$variables } from './__generated__/SectorsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,6 +97,8 @@ const sectorMutation = graphql`
   }
 `;
 
+const SECTOR_TYPE = 'Sector';
+
 interface SectorAddInput {
   name: string;
   description: string;
@@ -126,23 +129,22 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
-  const sectorValidator = useSchemaCreationValidation('Sector', basicShape);
-  const initialValues: SectorAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const sectorValidator = useSchemaCreationValidation(SECTOR_TYPE, basicShape);
+
   const [commit] = useMutation<SectorCreationMutation>(sectorMutation);
   const onSubmit: FormikConfig<SectorAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: SectorCreationMutation$variables['input'] = {
       name: values.name,
@@ -175,6 +177,20 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    SECTOR_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -182,7 +198,13 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -226,9 +248,20 @@ export const SectorCreationForm: FunctionComponent<SectorFormProps> = ({
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>

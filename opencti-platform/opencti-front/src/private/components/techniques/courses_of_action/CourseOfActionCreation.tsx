@@ -33,6 +33,7 @@ import {
   CourseOfActionCreationMutation$variables,
 } from './__generated__/CourseOfActionCreationMutation.graphql';
 import { CoursesOfActionLinesPaginationQuery$variables } from './__generated__/CoursesOfActionLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -99,15 +100,17 @@ const courseOfActionMutation = graphql`
   }
 `;
 
+const COURSE_OF_ACTION_TYPE = 'Course-Of-Action';
+
 interface CourseOfActionAddInput {
-  name: string;
-  description: string;
-  confidence: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  confidence: number | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface CourseOfActionFormProps {
@@ -132,29 +135,20 @@ CourseOfActionFormProps
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
   };
   const courseOfActionValidator = useSchemaCreationValidation(
-    'Course-Of-Action',
+    COURSE_OF_ACTION_TYPE,
     basicShape,
   );
-
-  const initialValues: CourseOfActionAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation<CourseOfActionCreationMutation>(
     courseOfActionMutation,
@@ -162,7 +156,11 @@ CourseOfActionFormProps
 
   const onSubmit: FormikConfig<CourseOfActionAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: CourseOfActionCreationMutation$variables['input'] = {
       name: values.name,
@@ -197,6 +195,20 @@ CourseOfActionFormProps
     });
   };
 
+  const initialValues = useDefaultValues(
+    COURSE_OF_ACTION_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      confidence: undefined,
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -204,7 +216,13 @@ CourseOfActionFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -248,9 +266,20 @@ CourseOfActionFormProps
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>

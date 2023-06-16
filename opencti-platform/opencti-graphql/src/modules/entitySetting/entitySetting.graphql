@@ -1,14 +1,29 @@
+type DefaultValue {
+  id: String!
+  name: String!
+}
+
 type TypeAttribute {
   name: String!
-  mandatoryType: String!
+  type: String!
   mandatory: Boolean!
+  mandatoryType: String!
+  multiple: Boolean
   label: String
+  defaultValues: [DefaultValue!]
   scale: String
 }
+
 
 type ScaleAttribute {
   name: String!
   scale: String!
+}
+
+type DefaultValueAttribute {
+  name: String!
+  type: String!
+  defaultValues: [DefaultValue!]!
 }
 
 type EntitySetting implements InternalObject & BasicObject {
@@ -25,6 +40,7 @@ type EntitySetting implements InternalObject & BasicObject {
   attributesDefinitions: [TypeAttribute!]! @auth(for: [SETTINGS])
   mandatoryAttributes: [String!]! @auth
   scaleAttributes: [ScaleAttribute!]! @auth
+  defaultValuesAttributes: [DefaultValueAttribute!]! @auth
   availableSettings: [String!]! @auth
   created_at: DateTime! @auth
   updated_at: DateTime! @auth

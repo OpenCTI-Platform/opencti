@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState } from 'react';
-import { Form, Formik, Field } from 'formik';
+import { Field, Form, Formik } from 'formik';
 import Drawer from '@mui/material/Drawer';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -33,6 +33,7 @@ import {
 } from './__generated__/GroupingCreationMutation.graphql';
 import { GroupingsLinesPaginationQuery$variables } from './__generated__/GroupingsLinesPaginationQuery.graphql';
 import { Theme } from '../../../../components/Theme';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -105,17 +106,19 @@ const groupingMutation = graphql`
   }
 `;
 
+const GROUPING_TYPE = 'Grouping';
+
 interface GroupingAddInput {
-  name: string;
-  confidence: number;
-  context: string;
-  description: string;
+  name: string
+  confidence: number | undefined
+  context: string
+  description: string
   content: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface GroupingFormProps {
@@ -151,20 +154,7 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
-  const groupingValidator = useSchemaCreationValidation('Grouping', basicShape);
-
-  const initialValues: GroupingAddInput = {
-    name: '',
-    confidence: defaultConfidence ?? 75,
-    context: '',
-    description: '',
-    content: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const groupingValidator = useSchemaCreationValidation(GROUPING_TYPE, basicShape);
 
   const [commit] = useMutation<GroupingCreationMutation>(groupingMutation);
 
@@ -211,6 +201,22 @@ export const GroupingCreationForm: FunctionComponent<GroupingFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    GROUPING_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      context: '',
+      description: '',
+      content: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

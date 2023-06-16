@@ -44,6 +44,7 @@ export const SYSTEM_USER: AuthUser = {
   organizations: [],
   allowed_organizations: [],
   allowed_marking: [],
+  default_marking: [],
   all_marking: [],
   api_token: '',
 };
@@ -62,6 +63,7 @@ export const RETENTION_MANAGER_USER: AuthUser = {
   organizations: [],
   allowed_organizations: [],
   allowed_marking: [],
+  default_marking: [],
   all_marking: [],
   api_token: '',
 };
@@ -80,6 +82,7 @@ export const RULE_MANAGER_USER: AuthUser = {
   organizations: [],
   allowed_organizations: [],
   allowed_marking: [],
+  default_marking: [],
   all_marking: [],
   api_token: '',
 };

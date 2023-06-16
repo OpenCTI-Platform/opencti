@@ -33,6 +33,7 @@ import {
   EventCreationMutation$variables,
 } from './__generated__/EventCreationMutation.graphql';
 import { EventsLinesPaginationQuery$variables } from './__generated__/EventsLinesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -90,6 +91,8 @@ const eventMutation = graphql`
   }
 `;
 
+const EVENT_TYPE = 'Event';
+
 interface EventAddInput {
   name: string;
   description: string;
@@ -123,37 +126,32 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    event_types: Yup.array().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    event_types: Yup.array()
+      .nullable(),
     start_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
       .nullable(),
     stop_time: Yup.date()
       .typeError(t('The value must be a datetime (yyyy-MM-dd hh:mm (a|p)m)'))
-      .min(Yup.ref('start_time'), "The end date can't be before start date")
+      .min(Yup.ref('start_time'), 'The end date can\'t be before start date')
       .nullable(),
   };
-  const eventValidator = useSchemaCreationValidation('Event', basicShape);
-
-  const initialValues: EventAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    event_types: [],
-    start_time: null,
-    stop_time: null,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
+  const eventValidator = useSchemaCreationValidation(EVENT_TYPE, basicShape);
 
   const [commit] = useMutation<EventCreationMutation>(eventMutation);
 
   const onSubmit: FormikConfig<EventAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, setErrors, resetForm },
+    {
+      setSubmitting,
+      setErrors,
+      resetForm,
+    },
   ) => {
     const input: EventCreationMutation$variables['input'] = {
       name: values.name,
@@ -190,6 +188,22 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues(
+    EVENT_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      event_types: [],
+      start_time: null,
+      stop_time: null,
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik
       initialValues={initialValues}
@@ -197,7 +211,13 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -212,8 +232,8 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             type="event-type-ov"
             name="event_types"
             containerStyle={fieldSpacingContainerStyle}
-            multiple={true}
-            onChange={(name, value) => setFieldValue(name, value)}
+            multiple
+            onChange={setFieldValue}
           />
           <Field
             component={MarkDownField}
@@ -269,9 +289,20 @@ export const EventCreationForm: FunctionComponent<EventFormProps> = ({
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>

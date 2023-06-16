@@ -21,7 +21,6 @@ import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { dayStartDate } from '../../../../utils/Time';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -31,11 +30,9 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CaseRfiAddInput,
-  CaseRfiCreationCaseMutation,
-} from './__generated__/CaseRfiCreationCaseMutation.graphql';
+import { CaseRfiAddInput, CaseRfiCreationCaseMutation } from './__generated__/CaseRfiCreationCaseMutation.graphql';
 import { CaseRfiLinesCasesPaginationQuery$variables } from './__generated__/CaseRfiLinesCasesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -95,17 +92,17 @@ const caseRfiMutation = graphql`
 `;
 
 interface FormikCaseRfiAddInput {
-  name: string;
-  confidence: number;
-  description: string;
+  name: string
+  confidence: number | undefined
+  description: string
   content: string;
-  file: File | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectAssignee: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
-  created: Date;
+  file: File | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
+  created: Date | null
   information_types: string[];
   severity: string;
   priority: string;
@@ -125,6 +122,8 @@ interface CaseRfiFormProps {
   defaultMarkingDefinitions?: { value: string; label: string }[];
 }
 
+const CASE_RFI_TYPE = 'Case-Rfi';
+
 export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
   updater,
   onReset,
@@ -141,7 +140,7 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable(),
   };
-  const caseRfiValidator = useSchemaCreationValidation('Case-Rfi', basicShape);
+  const caseRfiValidator = useSchemaCreationValidation(CASE_RFI_TYPE, basicShape);
   const [commit] = useMutation<CaseRfiCreationCaseMutation>(caseRfiMutation);
   const onSubmit: FormikConfig<FormikCaseRfiAddInput>['onSubmit'] = (
     values,
@@ -188,25 +187,30 @@ export const CaseRfiCreationForm: FunctionComponent<CaseRfiFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues<FormikCaseRfiAddInput>(
+    CASE_RFI_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      description: '',
+      content: '',
+      severity: '',
+      priority: '',
+      caseTemplates: [],
+      created: null,
+      information_types: [],
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<FormikCaseRfiAddInput>
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        content: '',
-        severity: '',
-        priority: '',
-        caseTemplates: [],
-        created: dayStartDate(),
-        information_types: [],
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
+    initialValues={initialValues}
       validationSchema={caseRfiValidator}
       onSubmit={onSubmit}
       onReset={onReset}

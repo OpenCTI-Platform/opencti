@@ -1,3 +1,4 @@
+import * as R from 'ramda';
 import {
   batchListThroughGetFrom,
   batchListThroughGetTo,
@@ -5,9 +6,10 @@ import {
   deleteElementById,
   deleteRelationsByFromAndTo,
   listThroughGetFrom,
+  patchAttribute,
   updateAttribute,
 } from '../database/middleware';
-import { listEntities, storeLoadById } from '../database/middleware-loader';
+import { internalFindByIds, listEntities, storeLoadById } from '../database/middleware-loader';
 import { BUS_TOPICS } from '../config/conf';
 import { delEditContext, notify, setEditContext } from '../database/redis';
 import { ENTITY_TYPE_GROUP, ENTITY_TYPE_ROLE, ENTITY_TYPE_USER } from '../schema/internalObject';
@@ -21,6 +23,9 @@ import { FunctionalError } from '../config/errors';
 import { ABSTRACT_INTERNAL_RELATIONSHIP } from '../schema/general';
 import { ENTITY_TYPE_MARKING_DEFINITION } from '../schema/stixMetaObject';
 import { findSessionsForUsers, markSessionForRefresh } from '../database/session';
+import { ENTITY_TYPE_WORKSPACE } from '../modules/workspace/workspace-types';
+import { getEntitiesMapFromCache } from '../database/cache';
+import { SYSTEM_USER } from '../utils/access';
 import { publishUserAction } from '../listener/UserActionListener';
 import { extractEntityRepresentative } from '../database/utils';
 
@@ -47,6 +52,58 @@ export const batchMembers = async (context, user, groupIds, opts = {}) => {
 export const batchMarkingDefinitions = async (context, user, groupIds) => {
   const opts = { paginate: false };
   return batchListThroughGetTo(context, user, groupIds, RELATION_ACCESSES_TO, ENTITY_TYPE_MARKING_DEFINITION, opts);
+};
+
+export const defaultMarkingDefinitions = async (context, group) => {
+  const defaultMarking = group.default_marking ?? [];
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  return defaultMarking.map((entry) => {
+    return {
+      entity_type: entry.entity_type,
+      values: entry.values?.map((d) => markingsMap.get(d)),
+    };
+  });
+};
+
+export const mergeDefaultMarking = async (context, defaultMarkings) => {
+  const results = [];
+  defaultMarkings.filter((d) => !!d.entity_type)
+    .forEach((d) => {
+      const existing = results.find((r) => r.entity_type === d.entity_type);
+      if (existing) {
+        existing.values = [...(d.values ?? []), ...existing.values];
+      } else {
+        results.push(d);
+      }
+    });
+
+  return results;
+};
+
+export const defaultMarkingDefinitionsFromGroups = async (context, groupIds) => {
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  // Retrieve default marking by groups
+  return internalFindByIds(context, SYSTEM_USER, groupIds)
+    .then((groups) => groups.map((group) => {
+      const defaultMarking = group.default_marking ?? [];
+      return defaultMarking.map((entry) => {
+        return {
+          entity_type: entry.entity_type,
+          values: entry.values?.map((d) => markingsMap.get(d)),
+        };
+      });
+    }).flat())
+    // Merge default marking by group
+    .then((defaultMarkings) => mergeDefaultMarking(context, defaultMarkings))
+    // Clean default marking by entity type
+    .then((defaultMarkings) => {
+      return Promise.all(defaultMarkings.map(async (d) => {
+        return {
+          entity_type: d.entity_type,
+          values: await cleanMarkingValues(context, d.values),
+        };
+      }));
+    });
 };
 
 export const batchRoles = async (context, user, groupIds) => {
@@ -79,6 +136,8 @@ export const groupEditField = async (context, user, groupId, input) => {
   });
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, element, user);
 };
+
+// -- RELATIONS --
 
 export const groupAddRelation = async (context, user, groupId, input) => {
   const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
@@ -130,11 +189,46 @@ export const groupDeleteRelation = async (context, user, groupId, fromId, toId, 
     event_scope: 'delete',
     event_access: 'administration',
     message: `removes ${target.entity_type} \`${extractEntityRepresentative(target)}\` for group \`${group.name}\``,
-    context_data: { entity_type: ENTITY_TYPE_GROUP, input: { groupId, fromId, toId, relationshipType } }
+    context_data: {
+      entity_type: ENTITY_TYPE_GROUP,
+
+      input: { groupId, fromId, toId, relationshipType }
+    }
   });
   await groupSessionRefresh(context, user, groupId);
   return notify(BUS_TOPICS[ENTITY_TYPE_GROUP].EDIT_TOPIC, group, user);
 };
+
+// -- DEFAULT MARKING --
+
+const cleanMarkingValues = async (context, values) => {
+  const markingsMap = await getEntitiesMapFromCache(context, SYSTEM_USER, ENTITY_TYPE_MARKING_DEFINITION);
+  const defaultMarkingValues = values?.map((d) => markingsMap.get(d) ?? d) ?? [];
+  const defaultGroupedMarkings = R.groupBy((m) => m.definition_type, defaultMarkingValues);
+  return Object.entries(defaultGroupedMarkings).map(([_, key]) => {
+    const max = Math.max(...key.map((m) => m.x_opencti_order));
+    const results = key.filter((m) => m.x_opencti_order === max);
+    return R.uniqWith((a, b) => a.id === b.id, results);
+  }).flat();
+};
+
+export const groupEditDefaultMarking = async (context, user, groupId, defaultMarking) => {
+  const values = (await cleanMarkingValues(context, defaultMarking.values)).map((m) => m.id);
+
+  const group = await storeLoadById(context, user, groupId, ENTITY_TYPE_GROUP);
+  const existingDefaultMarking = group.default_marking ?? [];
+  const existing = existingDefaultMarking.find((r) => r.entity_type === defaultMarking.entity_type);
+  if (existing) {
+    existing.values = values;
+  } else {
+    existingDefaultMarking.push({ entity_type: defaultMarking.entity_type, values });
+  }
+  const patch = { default_marking: existingDefaultMarking };
+  const { element } = await patchAttribute(context, user, groupId, ENTITY_TYPE_GROUP, patch);
+  return notify(BUS_TOPICS[ENTITY_TYPE_WORKSPACE].EDIT_TOPIC, element, user);
+};
+
+// -- CONTEXT --
 
 export const groupCleanContext = async (context, user, groupId) => {
   await delEditContext(user, groupId);

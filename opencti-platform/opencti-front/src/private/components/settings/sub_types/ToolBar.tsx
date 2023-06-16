@@ -24,7 +24,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import FormGroup from '@mui/material/FormGroup';
 import { Theme } from '../../../../components/Theme';
 import { useFormatter } from '../../../../components/i18n';
-import { entitySettingsPatch } from './EntitySetting';
+import { entitySettingPatch } from './entitySetting/EntitySettingSettings';
 import useEntitySettings from '../../../../utils/hooks/useEntitySettings';
 import type { EntitySetting } from '../../../../utils/hooks/useEntitySettings';
 import { MESSAGING$ } from '../../../../relay/environment';
@@ -35,6 +35,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     display: 'flex',
     height: 50,
     overflow: 'hidden',
+    padding: '0 230px 0 0',
   },
   title: {
     flex: '1 1 100%',
@@ -132,7 +133,7 @@ const ToolBar: FunctionComponent<{
   const [notAvailableSetting, setNotAvailableSetting] = useState<
   EntitySetting[]
   >([]);
-  const [commit] = useMutation(entitySettingsPatch);
+  const [commit] = useMutation(entitySettingPatch);
   const handleOpen = () => setDisplay(true);
   const handleClose = () => {
     setDisplay(false);

@@ -176,6 +176,62 @@ describe('Group resolver standard behavior', () => {
     });
     expect(queryResult.data.groupEdit.relationDelete.members.edges.length).toEqual(0);
   });
+  it('should add default marking in group', async () => {
+    const EDIT_DEFAULT_VALUES_QUERY = gql`
+      mutation GroupEdit($id: ID!, $input: DefaultMarkingInput!) {
+        groupEdit(id: $id) {
+          editDefaultMarking(input: $input) {
+            id
+            default_marking {
+              entity_type
+              values {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: EDIT_DEFAULT_VALUES_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          entity_type: 'GLOBAL',
+          values: ['marking-definition--78ca4366-f5b8-4764-83f7-34ce38198e27'],
+        },
+      },
+    });
+    expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(1);
+  });
+  it('should delete default marking in group', async () => {
+    const EDIT_DEFAULT_VALUES_QUERY = gql`
+      mutation GroupEdit($id: ID!, $input: DefaultMarkingInput!) {
+        groupEdit(id: $id) {
+          editDefaultMarking(input: $input) {
+            id
+            default_marking {
+              entity_type
+              values {
+                id
+              }
+            }
+          }
+        }
+      }
+    `;
+    const queryResult = await queryAsAdmin({
+      query: EDIT_DEFAULT_VALUES_QUERY,
+      variables: {
+        id: groupInternalId,
+        input: {
+          entity_type: 'GLOBAL',
+          values: [],
+        },
+      },
+    });
+    expect(queryResult.data.groupEdit.editDefaultMarking.default_marking[0].values.length).toEqual(0);
+  });
   it('should group deleted', async () => {
     const DELETE_QUERY = gql`
       mutation groupDelete($id: ID!) {

@@ -15,7 +15,6 @@ import { ENTITY_TYPE_EVENT } from '../event/event-types';
 import { ENTITY_TYPE_CHANNEL } from '../channel/channel-types';
 import type { StixObject } from '../../types/stix-common';
 import type { VocabularyCategory } from '../../generated/graphql';
-import { ENTITY_TYPE_CONTAINER_CASE } from '../case/case-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFI } from '../case/case-rfi/case-rfi-types';
 import { ENTITY_TYPE_CONTAINER_CASE_RFT } from '../case/case-rft/case-rft-types';
 import { ENTITY_TYPE_MALWARE_ANALYSIS } from '../malwareAnalysis/malwareAnalysis-types';
@@ -73,7 +72,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   },
   // C
   case_severity_ov: {
-    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
     fields: [{
       key: 'severity',
       required: false,
@@ -81,7 +80,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
     }]
   },
   case_priority_ov: {
-    entity_types: [ENTITY_TYPE_CONTAINER_CASE],
+    entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT, ENTITY_TYPE_CONTAINER_CASE_RFI, ENTITY_TYPE_CONTAINER_CASE_RFT], // Fill entire list
     fields: [{
       key: 'priority',
       required: false,
@@ -141,7 +140,7 @@ export const vocabularyDefinitions: Record<VocabularyCategory, VocabularyDefinit
   incident_response_types_ov: {
     entity_types: [ENTITY_TYPE_CONTAINER_CASE_INCIDENT],
     fields: [{
-      key: 'incident_response_types',
+      key: 'response_types',
       required: false,
       multiple: true,
     }]

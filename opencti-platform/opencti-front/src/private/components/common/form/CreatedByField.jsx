@@ -100,6 +100,7 @@ class CreatedByField extends Component {
       t,
       name,
       style,
+      label,
       classes,
       setFieldValue,
       onChange,
@@ -116,7 +117,7 @@ class CreatedByField extends Component {
           disabled={disabled}
           textfieldprops={{
             variant: 'standard',
-            label: t('Author'),
+            label: label ?? t('Author'),
             helperText: helpertext,
             onFocus: this.searchIdentities.bind(this),
           }}

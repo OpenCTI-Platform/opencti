@@ -21,7 +21,6 @@ import { Theme } from '../../../../components/Theme';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { insertNode } from '../../../../utils/store';
-import { dayStartDate } from '../../../../utils/Time';
 import CaseTemplateField from '../../common/form/CaseTemplateField';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import CreatedByField from '../../common/form/CreatedByField';
@@ -31,11 +30,9 @@ import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CaseRftAddInput,
-  CaseRftCreationCaseMutation,
-} from './__generated__/CaseRftCreationCaseMutation.graphql';
+import { CaseRftAddInput, CaseRftCreationCaseMutation } from './__generated__/CaseRftCreationCaseMutation.graphql';
 import { CaseRftLinesCasesPaginationQuery$variables } from './__generated__/CaseRftLinesCasesPaginationQuery.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import RichTextField from '../../../../components/RichTextField';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -95,21 +92,21 @@ const caseRftMutation = graphql`
 `;
 
 interface FormikCaseRftAddInput {
-  name: string;
-  confidence: number;
-  description: string;
+  name: string
+  confidence: number | undefined
+  description: string
   content: string;
-  file: File | undefined;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectAssignee: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
-  created: Date;
-  takedown_types: string[];
-  severity: string;
-  priority: string;
-  caseTemplates?: Option[];
+  file: File | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectAssignee: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
+  created: Date | null
+  takedown_types: string[]
+  severity: string
+  priority: string
+  caseTemplates?: Option[]
 }
 
 interface CaseRftFormProps {
@@ -124,6 +121,8 @@ interface CaseRftFormProps {
   defaultCreatedBy?: { value: string; label: string };
   defaultMarkingDefinitions?: { value: string; label: string }[];
 }
+
+const CASE_RFT_TYPE = 'Case-Rft';
 
 export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
   updater,
@@ -142,7 +141,7 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     description: Yup.string().nullable(),
     content: Yup.string().nullable(),
   };
-  const caseRftValidator = useSchemaCreationValidation('Case-Rft', basicShape);
+  const caseRftValidator = useSchemaCreationValidation(CASE_RFT_TYPE, basicShape);
   const [commit] = useMutation<CaseRftCreationCaseMutation>(caseRftMutation);
 
   const onSubmit: FormikConfig<FormikCaseRftAddInput>['onSubmit'] = (
@@ -190,25 +189,30 @@ export const CaseRftCreationForm: FunctionComponent<CaseRftFormProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues<FormikCaseRftAddInput>(
+    CASE_RFT_TYPE,
+    {
+      name: '',
+      confidence: defaultConfidence,
+      description: '',
+      content: '',
+      created: null,
+      takedown_types: [],
+      caseTemplates: [],
+      severity: '',
+      priority: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<FormikCaseRftAddInput>
-      initialValues={{
-        name: '',
-        confidence: defaultConfidence ?? 75,
-        description: '',
-        content: '',
-        created: dayStartDate(),
-        takedown_types: [],
-        caseTemplates: [],
-        severity: '',
-        priority: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
+    initialValues={initialValues}
       validationSchema={caseRftValidator}
       onSubmit={onSubmit}
       onReset={onReset}

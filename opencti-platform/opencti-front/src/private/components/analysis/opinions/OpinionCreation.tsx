@@ -27,10 +27,9 @@ import { OpinionsLinesPaginationQuery$variables } from './__generated__/Opinions
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
-import useGranted, {
-  KNOWLEDGE_KNUPDATE,
-} from '../../../../utils/hooks/useGranted';
+import useGranted, { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import { OpinionCreationMutation$variables } from './__generated__/OpinionCreationMutation.graphql';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -108,13 +107,13 @@ export const opinionCreationMutation = graphql`
 `;
 
 interface OpinionAddInput {
-  opinion: string;
-  explanation: string;
-  confidence: number;
-  createdBy?: Option;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
+  opinion: string
+  explanation: string
+  confidence: number | undefined
+  createdBy?: Option
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
   file: File | undefined
 }
 
@@ -130,6 +129,8 @@ interface OpinionFormProps {
   defaultMarkingDefinitions?: Option[];
   defaultConfidence?: number;
 }
+
+const OPINION_TYPE = 'Opinion';
 
 export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormProps> = ({
   updater,
@@ -147,20 +148,10 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     confidence: Yup.number(),
   };
   const opinionValidator = useSchemaCreationValidation(
-    'Opinion',
+    OPINION_TYPE,
     basicShape,
     ['createdBy'],
   );
-  const initialValues: OpinionAddInput = {
-    opinion: '',
-    explanation: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation(opinionCreationMutation);
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
@@ -200,8 +191,22 @@ export const OpinionCreationFormKnowledgeEditor: FunctionComponent<OpinionFormPr
     });
   };
 
+  const initialValues = useDefaultValues<OpinionAddInput>(
+    OPINION_TYPE,
+    {
+      opinion: '',
+      explanation: '',
+      confidence: defaultConfidence,
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
-    <Formik
+    <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}
@@ -301,20 +306,10 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     confidence: Yup.number(),
   };
   const opinionValidator = useSchemaCreationValidation(
-    'Opinion',
+    OPINION_TYPE,
     basicShape,
     ['createdBy'],
   );
-  const initialValues: OpinionAddInput = {
-    opinion: '',
-    explanation: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation(opinionCreationUserMutation);
   const onSubmit: FormikConfig<OpinionAddInput>['onSubmit'] = (
@@ -356,8 +351,22 @@ export const OpinionCreationFormKnowledgeParticipant: FunctionComponent<OpinionF
     });
   };
 
+  const initialValues = useDefaultValues<OpinionAddInput>(
+    OPINION_TYPE,
+    {
+      opinion: '',
+      explanation: '',
+      confidence: defaultConfidence,
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
-    <Formik
+    <Formik<OpinionAddInput>
       initialValues={initialValues}
       validationSchema={opinionValidator}
       onSubmit={onSubmit}

@@ -6,8 +6,8 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import { SecurityOutlined } from '@mui/icons-material';
 import ListItemText from '@mui/material/ListItemText';
 import { graphql, useLazyLoadQuery } from 'react-relay';
-import { isEmptyField } from '../../../../utils/utils';
-import { useFormatter } from '../../../../components/i18n';
+import { isEmptyField } from '../../../../../utils/utils';
+import { useFormatter } from '../../../../../components/i18n';
 import { EntitySettingHiddenInRolesQuery } from './__generated__/EntitySettingHiddenInRolesQuery.graphql';
 
 const entitySettingHiddenInRolesQuery = graphql`
@@ -51,7 +51,7 @@ const EntitySettingHiddenInRoles = ({ targetType }: { targetType: string }) => {
       >
         {t('Hidden in roles')}
       </Typography>
-      <List>
+      <List style={{ paddingTop: 0 }}>
         {isEmptyField(hiddenInRoles) ? <div>{'-'}</div> : (
           <>
             {hiddenInRoles.map((role) => (

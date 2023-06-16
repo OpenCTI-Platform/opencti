@@ -78,7 +78,7 @@ export const schemaRelationsRefDefinition = {
     return this.relationsRefCacheArray.get(entityType) ?? [];
   },
 
-  getRelationsRefByInputName(entityType: string, inputName: string): RelationRefDefinition | null {
+  getRelationRef(entityType: string, inputName: string): RelationRefDefinition | null {
     this.computeCache(entityType);
     return this.relationsRefCacheMap.get(entityType)?.get(inputName) ?? null;
   },
@@ -113,7 +113,7 @@ export const schemaRelationsRefDefinition = {
     if (!inputName) {
       throw UnsupportedError('Relation Ref not found');
     }
-    return this.getRelationsRefByInputName(entityType, inputName)?.datable;
+    return this.getRelationRef(entityType, inputName)?.datable;
   },
 
   getDatables() : string[] {

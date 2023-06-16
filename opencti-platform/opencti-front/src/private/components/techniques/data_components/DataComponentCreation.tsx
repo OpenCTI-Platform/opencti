@@ -24,11 +24,14 @@ import MarkDownField from '../../../../components/MarkDownField';
 import { Theme } from '../../../../components/Theme';
 import { ExternalReferencesField } from '../../common/form/ExternalReferencesField';
 import { insertNode } from '../../../../utils/store';
-import { DataComponentsLinesPaginationQuery$variables } from './__generated__/DataComponentsLinesPaginationQuery.graphql';
+import {
+  DataComponentsLinesPaginationQuery$variables,
+} from './__generated__/DataComponentsLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import ConfidenceField from '../../common/form/ConfidenceField';
 import { Option } from '../../common/form/ReferenceField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 import { DataComponentCreationMutation$variables } from './__generated__/DataComponentCreationMutation.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -97,14 +100,14 @@ const dataComponentMutation = graphql`
 `;
 
 interface DataComponentAddInput {
-  name: string;
-  description: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: Option[];
-  confidence: number;
-  file: File | undefined;
+  name: string
+  description: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: Option[]
+  confidence: number | undefined
+  file: File | undefined
 }
 
 interface DataComponentFormProps {
@@ -117,9 +120,9 @@ interface DataComponentFormProps {
   defaultConfidence?: number;
 }
 
-export const DataComponentCreationForm: FunctionComponent<
-DataComponentFormProps
-> = ({
+const DATA_COMPONENT_TYPE = 'Data-Component';
+
+export const DataComponentCreationForm: FunctionComponent<DataComponentFormProps> = ({
   updater,
   onReset,
   inputValue,
@@ -131,24 +134,19 @@ DataComponentFormProps
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
-    confidence: Yup.number().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
+    confidence: Yup.number()
+      .nullable(),
   };
   const dataComponentValidator = useSchemaCreationValidation(
-    'Data-Component',
+    DATA_COMPONENT_TYPE,
     basicShape,
   );
-  const initialValues: DataComponentAddInput = {
-    name: inputValue || '',
-    description: '',
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    confidence: defaultConfidence ?? 75,
-    file: undefined,
-  };
+
   const [commit] = useMutation(dataComponentMutation);
   const onSubmit: FormikConfig<DataComponentAddInput>['onSubmit'] = (
     values: DataComponentAddInput,
@@ -191,6 +189,20 @@ DataComponentFormProps
     });
   };
 
+  const initialValues = useDefaultValues<DataComponentAddInput>(
+    DATA_COMPONENT_TYPE,
+    {
+      name: inputValue || '',
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      confidence: defaultConfidence,
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<DataComponentAddInput>
       initialValues={initialValues}
@@ -198,7 +210,13 @@ DataComponentFormProps
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -258,9 +276,20 @@ DataComponentFormProps
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>
@@ -289,11 +318,16 @@ DataComponentFormProps
 };
 
 const DataComponentCreation: FunctionComponent<{
-  contextual?: boolean;
-  display?: boolean;
-  inputValue?: string;
-  paginationOptions: DataComponentsLinesPaginationQuery$variables;
-}> = ({ contextual, display, inputValue, paginationOptions }) => {
+  contextual?: boolean,
+  display?: boolean,
+  inputValue?: string,
+  paginationOptions: DataComponentsLinesPaginationQuery$variables
+}> = ({
+  contextual,
+  display,
+  inputValue,
+  paginationOptions,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
 

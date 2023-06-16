@@ -33,6 +33,7 @@ import {
 } from './__generated__/NarrativeCreationMutation.graphql';
 import { NarrativesLinesPaginationQuery$variables } from './__generated__/NarrativesLinesPaginationQuery.graphql';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -105,15 +106,17 @@ const narrativeMutation = graphql`
   }
 `;
 
+const NARRATIVE_TYPE = 'Narrative';
+
 interface NarrativeAddInput {
-  name: string;
-  description: string;
-  confidence: number;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  externalReferences: { value: string }[];
-  file: File | undefined;
+  name: string
+  description: string
+  confidence: number | undefined
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  externalReferences: { value: string }[]
+  file: File | undefined
 }
 
 interface NarrativeFormProps {
@@ -136,7 +139,6 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
   onCompleted,
   defaultCreatedBy,
   defaultMarkingDefinitions,
-  defaultConfidence,
 }) => {
   const classes = useStyles();
   const { t } = useFormatter();
@@ -145,20 +147,9 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
     description: Yup.string().nullable(),
   };
   const narrativeValidator = useSchemaCreationValidation(
-    'Narrative',
+    NARRATIVE_TYPE,
     basicShape,
   );
-
-  const initialValues: NarrativeAddInput = {
-    name: inputValue ?? '',
-    description: '',
-    confidence: defaultConfidence ?? 75,
-    createdBy: defaultCreatedBy ?? ('' as unknown as Option),
-    objectMarking: defaultMarkingDefinitions ?? [],
-    objectLabel: [],
-    externalReferences: [],
-    file: undefined,
-  };
 
   const [commit] = useMutation<NarrativeCreationMutation>(narrativeMutation);
 
@@ -198,6 +189,20 @@ export const NarrativeCreationForm: FunctionComponent<NarrativeFormProps> = ({
       },
     });
   };
+
+  const initialValues = useDefaultValues(
+    NARRATIVE_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      confidence: undefined,
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
 
   return (
     <Formik

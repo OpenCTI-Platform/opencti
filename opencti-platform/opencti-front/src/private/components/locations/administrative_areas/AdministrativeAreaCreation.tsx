@@ -21,11 +21,14 @@ import { ExternalReferencesField } from '../../common/form/ExternalReferencesFie
 import { Theme } from '../../../../components/Theme';
 import { insertNode } from '../../../../utils/store';
 import { AdministrativeAreasLinesPaginationQuery$variables } from './__generated__/AdministrativeAreasLinesPaginationQuery.graphql';
-import { AdministrativeAreaCreationMutation$variables } from './__generated__/AdministrativeAreaCreationMutation.graphql';
+import {
+  AdministrativeAreaCreationMutation$variables,
+} from './__generated__/AdministrativeAreaCreationMutation.graphql';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import { Option } from '../../common/form/ReferenceField';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -106,9 +109,9 @@ interface AdministrativeAreaFormProps {
   inputValue?: string;
 }
 
-export const AdministrativeAreaCreationForm: FunctionComponent<
-AdministrativeAreaFormProps
-> = ({
+const ADMINISTRATIVE_AREA_TYPE = 'Administrative-Area';
+
+export const AdministrativeAreaCreationForm: FunctionComponent<AdministrativeAreaFormProps> = ({
   updater,
   onReset,
   onCompleted,
@@ -119,8 +122,11 @@ AdministrativeAreaFormProps
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string().min(2).required(t('This field is required')),
-    description: Yup.string().nullable(),
+    name: Yup.string()
+      .min(2)
+      .required(t('This field is required')),
+    description: Yup.string()
+      .nullable(),
     latitude: Yup.number()
       .typeError(t('This field must be a number'))
       .nullable(),
@@ -129,13 +135,16 @@ AdministrativeAreaFormProps
       .nullable(),
   };
   const administrativeAreaValidator = useSchemaCreationValidation(
-    'Administrative-Area',
+    ADMINISTRATIVE_AREA_TYPE,
     basicShape,
   );
   const [commit] = useMutation(administrativeAreaMutation);
   const onSubmit: FormikConfig<AdministrativeAreaAddInput>['onSubmit'] = (
     values,
-    { setSubmitting, resetForm },
+    {
+      setSubmitting,
+      resetForm,
+    },
   ) => {
     const input: AdministrativeAreaCreationMutation$variables['input'] = {
       name: values.name,
@@ -166,24 +175,36 @@ AdministrativeAreaFormProps
       },
     });
   };
+
+  const initialValues = useDefaultValues<AdministrativeAreaAddInput>(
+    ADMINISTRATIVE_AREA_TYPE,
+    {
+      name: inputValue ?? '',
+      description: '',
+      latitude: '',
+      longitude: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<AdministrativeAreaAddInput>
-      initialValues={{
-        name: inputValue ?? '',
-        description: '',
-        latitude: '',
-        longitude: '',
-        createdBy: defaultCreatedBy ?? undefined,
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
+      initialValues={initialValues}
       validationSchema={administrativeAreaValidator}
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
+      {({
+        submitForm,
+        handleReset,
+        isSubmitting,
+        setFieldValue,
+        values,
+      }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}
@@ -243,9 +264,20 @@ AdministrativeAreaFormProps
             component={SimpleFileUpload}
             name="file"
             label={t('Associated file')}
-            FormControlProps={{ style: { marginTop: 20, width: '100%' } }}
-            InputLabelProps={{ fullWidth: true, variant: 'standard' }}
-            InputProps={{ fullWidth: true, variant: 'standard' }}
+            FormControlProps={{
+              style: {
+                marginTop: 20,
+                width: '100%',
+              },
+            }}
+            InputLabelProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
+            InputProps={{
+              fullWidth: true,
+              variant: 'standard',
+            }}
             fullWidth={true}
           />
           <div className={classes.buttons}>

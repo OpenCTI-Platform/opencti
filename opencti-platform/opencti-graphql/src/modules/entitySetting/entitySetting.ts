@@ -4,12 +4,9 @@ import { ABSTRACT_INTERNAL_OBJECT } from '../../schema/general';
 import entitySettingResolvers from './entitySetting-resolvers';
 import entitySettingTypeDefs from './entitySetting.graphql';
 import convertEntitySettingToStix from './entitySetting-converter';
-import {
-  attributeConfiguration,
-  validateEntitySettingCreation,
-  validateEntitySettingUpdate
-} from './entitySetting-utils';
+import { attributeConfiguration, } from './entitySetting-utils';
 import { ModuleDefinition, registerDefinition } from '../../schema/module';
+import { validateEntitySettingCreation, validateEntitySettingUpdate } from './entitySetting-validators';
 
 const TARGET_TYPE = 'target_type';
 

@@ -29,8 +29,11 @@ import { isEmptyField } from '../../../../utils/utils';
 import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import { Theme } from '../../../../components/Theme';
 import { Option } from '../../common/form/ReferenceField';
-import { IncidentsCardsAndLinesPaginationQuery$variables } from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
+import {
+  IncidentsCardsAndLinesPaginationQuery$variables,
+} from './__generated__/IncidentsCardsAndLinesPaginationQuery.graphql';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
+import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -89,18 +92,18 @@ const IncidentMutation = graphql`
 `;
 
 interface IncidentAddInput {
-  name: string;
-  description: string;
-  confidence: number;
-  incident_type: string;
-  severity: string;
-  source: string;
-  createdBy: Option | undefined;
-  objectMarking: Option[];
-  objectLabel: Option[];
-  objectAssignee: Option[];
-  externalReferences: Option[];
-  file: File | undefined;
+  name: string
+  description: string
+  confidence: number | undefined
+  incident_type: string
+  severity: string
+  source: string
+  createdBy: Option | undefined
+  objectMarking: Option[]
+  objectLabel: Option[]
+  objectAssignee: Option[]
+  externalReferences: Option[]
+  file: File | undefined
 }
 
 interface IncidentCreationProps {
@@ -112,6 +115,8 @@ interface IncidentCreationProps {
   defaultConfidence?: number;
   inputValue?: string;
 }
+
+const INCIDENT_TYPE = 'Incident';
 
 export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
   updater,
@@ -135,7 +140,7 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     source: Yup.string().nullable(),
     description: Yup.string().nullable(),
   };
-  const incidentValidator = useSchemaCreationValidation('Incident', basicShape);
+  const incidentValidator = useSchemaCreationValidation(INCIDENT_TYPE, basicShape);
 
   const onSubmit: FormikConfig<IncidentAddInput>['onSubmit'] = (
     values,
@@ -179,22 +184,27 @@ export const IncidentCreationForm: FunctionComponent<IncidentCreationProps> = ({
     });
   };
 
+  const initialValues = useDefaultValues<IncidentAddInput>(
+    INCIDENT_TYPE,
+    {
+      name: inputValue ?? '',
+      confidence: defaultConfidence,
+      incident_type: '',
+      severity: '',
+      source: '',
+      description: '',
+      createdBy: defaultCreatedBy,
+      objectMarking: defaultMarkingDefinitions ?? [],
+      objectAssignee: [],
+      objectLabel: [],
+      externalReferences: [],
+      file: undefined,
+    },
+  );
+
   return (
     <Formik<IncidentAddInput>
-      initialValues={{
-        name: inputValue ?? '',
-        confidence: defaultConfidence ?? 75,
-        incident_type: '',
-        severity: '',
-        source: '',
-        description: '',
-        createdBy: defaultCreatedBy ?? { value: '', label: '' },
-        objectMarking: defaultMarkingDefinitions ?? [],
-        objectAssignee: [],
-        objectLabel: [],
-        externalReferences: [],
-        file: undefined,
-      }}
+      initialValues={initialValues}
       validationSchema={incidentValidator}
       onSubmit={onSubmit}
       onReset={onReset}
