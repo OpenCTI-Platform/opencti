@@ -2,13 +2,13 @@ import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import Button from '@mui/material/Button';
 import {
-  BiotechOutlined,
-  TipsAndUpdatesOutlined,
-  PowerSettingsNewOutlined,
-} from '@mui/icons-material';
+  BriefcaseEyeOutline,
+  BriefcaseSearchOutline,
+  BriefcaseRemoveOutline,
+  BriefcaseEditOutline,
+} from 'mdi-material-ui';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
-import { Brain } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 
@@ -48,7 +48,7 @@ const TopMenuCases = () => {
           }
           classes={{ root: classes.button }}
         >
-          <BiotechOutlined className={classes.icon} fontSize="small" />
+          <BriefcaseEyeOutline className={classes.icon} fontSize="small" />
           {t('Incident response')}
         </Button>
       )}
@@ -67,7 +67,7 @@ const TopMenuCases = () => {
           }
           classes={{ root: classes.button }}
         >
-          <Brain className={classes.icon} fontSize="small" />
+          <BriefcaseSearchOutline className={classes.icon} fontSize="small" />
           {t('Requests for information')}
         </Button>
       )}
@@ -86,7 +86,7 @@ const TopMenuCases = () => {
           }
           classes={{ root: classes.button }}
         >
-          <PowerSettingsNewOutlined className={classes.icon} fontSize="small" />
+          <BriefcaseRemoveOutline className={classes.icon} fontSize="small" />
           {t('Requests for takedown')}
         </Button>
       )}
@@ -107,7 +107,7 @@ const TopMenuCases = () => {
           }
           classes={{ root: classes.button }}
         >
-          <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
+          <BriefcaseEditOutline className={classes.icon} fontSize="small" />
           {t('Feedbacks')}
         </Button>
       )}

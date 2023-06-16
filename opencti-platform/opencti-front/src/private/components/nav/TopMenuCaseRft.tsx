@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, PowerSettingsNewOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { BriefcaseRemoveOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 
@@ -44,7 +45,7 @@ const TopMenuCaseRft: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <PowerSettingsNewOutlined className={classes.icon} fontSize="small" />
+        <BriefcaseRemoveOutline className={classes.icon} fontSize="small" />
         {t('Requests for takedown')}
       </Button>
       <ArrowForwardIosOutlined
@@ -131,15 +132,13 @@ const TopMenuCaseRft: FunctionComponent = () => {
         component={Link}
         to={`/dashboard/cases/rfts/${caseId}/observables`}
         variant={
-          location.pathname
-          === `/dashboard/cases/rfts/${caseId}/observables`
+          location.pathname === `/dashboard/cases/rfts/${caseId}/observables`
             ? 'contained'
             : 'text'
         }
         size="small"
         color={
-          location.pathname
-          === `/dashboard/cases/rfts/${caseId}/observables`
+          location.pathname === `/dashboard/cases/rfts/${caseId}/observables`
             ? 'secondary'
             : 'primary'
         }

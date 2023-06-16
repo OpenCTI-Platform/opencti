@@ -1,11 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import {
-  ArrowForwardIosOutlined,
-  TipsAndUpdatesOutlined,
-} from '@mui/icons-material';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { BriefcaseEditOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 
@@ -47,7 +45,7 @@ const TopMenuCaseFeedback: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <TipsAndUpdatesOutlined className={classes.icon} fontSize="small" />
+        <BriefcaseEditOutline className={classes.icon} fontSize="small" />
         {t('Feedbacks')}
       </Button>
       <ArrowForwardIosOutlined

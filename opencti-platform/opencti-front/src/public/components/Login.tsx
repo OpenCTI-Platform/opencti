@@ -16,6 +16,7 @@ import { Theme } from "../../components/Theme";
 import { LoginRootPublicQuery$data } from "../__generated__/LoginRootPublicQuery.graphql";
 import { useFormatter } from "../../components/i18n";
 import { isNotEmptyField } from "../../utils/utils";
+import useDimensions from "../../utils/hooks/useDimensions";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -100,19 +101,7 @@ const Login: FunctionComponent<LoginProps> = ({ type, settings }) => {
   const classes = useStyles();
   const theme = useTheme<Theme>();
   const { t } = useFormatter();
-
-  // eslint-disable-next-line max-len
-  const [dimension, setDimension] = useState({
-    width: window.innerWidth,
-    height: window.innerHeight,
-  });
-  const updateWindowDimensions = () => {
-    setDimension({ width: window.innerWidth, height: window.innerHeight });
-  };
-  useEffect(() => {
-    window.addEventListener("resize", updateWindowDimensions);
-    return () => window.removeEventListener("resize", updateWindowDimensions);
-  });
+  const { dimension } = useDimensions();
   const renderExternalAuthButton = (provider: string | null) => {
     switch (provider) {
       case "facebook":

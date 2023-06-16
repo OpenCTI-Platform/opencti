@@ -405,7 +405,9 @@ const CaseIncidentCreation = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">{t('Create a case incident')}</Typography>
+          <Typography variant="h6">
+            {t('Create an incident response')}
+          </Typography>
         </div>
         <div className={classes.container}>
           <CaseIncidentCreationForm

@@ -81,7 +81,7 @@ CaseIncidentEditionContainerProps
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update a case incident')}
+          {t('Update an incident response')}
         </Typography>
         <SubscriptionAvatars context={queryData.caseIncident.editContext} />
         <div className="clearfix" />

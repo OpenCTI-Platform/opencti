@@ -1,8 +1,9 @@
 import React, { FunctionComponent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import Button from '@mui/material/Button';
-import { ArrowForwardIosOutlined, BiotechOutlined } from '@mui/icons-material';
+import { ArrowForwardIosOutlined } from '@mui/icons-material';
 import makeStyles from '@mui/styles/makeStyles';
+import { BriefcaseEyeOutline } from 'mdi-material-ui';
 import { useFormatter } from '../../../components/i18n';
 import { Theme } from '../../../components/Theme';
 import Security from '../../../utils/Security';
@@ -49,7 +50,7 @@ const TopMenuCaseIncident: FunctionComponent = () => {
         color="primary"
         classes={{ root: classes.buttonHome }}
       >
-        <BiotechOutlined className={classes.icon} fontSize="small" />
+        <BriefcaseEyeOutline className={classes.icon} fontSize="small" />
         {t('Incident response')}
       </Button>
       <ArrowForwardIosOutlined

@@ -76,6 +76,7 @@ export const graphImages = {
   'Case-Rfi': genImage(CaseRfi),
   'Case-Rft': genImage(CaseRft),
   'Case-Task': genImage(CaseTask),
+  'Malware-Analysis': genImage(MalwareAnalysis),
   Campaign: genImage(Campaign),
   Note: genImage(Note),
   'Observed-Data': genImage(ObservedData),
@@ -1204,9 +1205,14 @@ export const pointInPolygon = (polygon, point) => {
   // For each edge (In this case for each point of the polygon and the previous one)
   for (let i = 0, j = polygon.length - 1; i < polygon.length; i += 1) {
     // If a line from the point into infinity crosses this edge
-    if (((polygon[i][1] > point[1]) !== (polygon[j][1] > point[1])) // One point needs to be above, one below our y coordinate
+    if (
+      polygon[i][1] > point[1] !== polygon[j][1] > point[1] // One point needs to be above, one below our y coordinate
       // ...and the edge doesn't cross our Y corrdinate before our x coordinate (but between our x coordinate and infinity)
-      && (point[0] < (((polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1])) / (polygon[j][1] - polygon[i][1]) + polygon[i][0]))) {
+      && point[0]
+        < ((polygon[j][0] - polygon[i][0]) * (point[1] - polygon[i][1]))
+          / (polygon[j][1] - polygon[i][1])
+          + polygon[i][0]
+    ) {
       // Invert odd
       odd = !odd;
     }

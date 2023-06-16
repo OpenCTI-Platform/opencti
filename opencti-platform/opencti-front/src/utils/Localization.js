@@ -397,8 +397,8 @@ const i18n = {
       'Update a subscription': 'Actualizar una suscripción',
       'Create a synchronizer': 'Crear un sincronizador',
       'Update a synchronizer': 'Actualizar un sincronizador',
-      'Create a case incident': 'Crear un incidente de caso',
-      'Update a case incident': 'Actualizar un incidente de caso',
+      'Create an incident response': 'Crear una respuesta a incidentes',
+      'Update an incident response': 'Actualizar la respuesta a un incidente',
       'Create a feedback': 'Crear un comentario',
       'Update a feedback': 'Actualizar un comentario',
       'Submit a feedback': 'Enviar un comentario',
@@ -1913,12 +1913,15 @@ const i18n = {
       'suggestion_threats-indicators':
         'La acción de crear `indica` reñacopmes emtre los indicadores y la amenaza seleccionada, después añade todas las relaciones al contenedor.',
       Collapse: 'Colapso',
-      'Platform Message Configuration': 'Configuración de mensajes de la plataforma',
+      'Platform Message Configuration':
+        'Configuración de mensajes de la plataforma',
       'Platform Consent Message': 'Mensaje de consentimiento de la plataforma',
-      'Platform Consent Confirm Text': 'Texto de confirmación de consentimiento de la plataforma',
+      'Platform Consent Confirm Text':
+        'Texto de confirmación de consentimiento de la plataforma',
       'Requires acceptance to enable login form when set':
         'Requiere aceptación para habilitar el formulario de inicio de sesión cuando se establece',
-      'One line confirm label next to confirm checkbox': 'Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación',
+      'One line confirm label next to confirm checkbox':
+        'Etiqueta de confirmación de una línea junto a la casilla de verificación de confirmación',
     },
     'fr-fr': {
       // Titles
@@ -1975,7 +1978,7 @@ const i18n = {
       'You need to activate a two-factor authentication. Please type the code generated in your application.':
         'Vous devez activer une authentification à deux facteurs. Veuillez saisir le code généré dans votre application.',
       'When enforcing 2FA authentication, all users will be asked to enable 2FA to be able to login in the platform.':
-        'Lors de l’application de l\'authentication à deux facteurs, tous les utilisateurs seront invités à activer l\'authentication à deux facteurs pour pouvoir se connecter à la plate-forme.',
+        "Lors de l’application de l'authentication à deux facteurs, tous les utilisateurs seront invités à activer l'authentication à deux facteurs pour pouvoir se connecter à la plate-forme.",
       Search: 'Rechercher',
       Active: 'Actif',
       'Last update': 'Dernière mise à jour',
@@ -2336,8 +2339,8 @@ const i18n = {
       'Update a subscription': 'Modifier une souscription',
       'Create a synchronizer': 'Créer un synchroniseur',
       'Update a synchronizer': 'Modifier un synchroniseur',
-      'Create a case incident': 'Créer un incident',
-      'Update a case incident': 'Mettre à jour un incident',
+      'Create an incident response': 'Créer une réponse à incident',
+      'Update an incident response': 'Mettre à jour une réponse à incident',
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
@@ -3820,7 +3823,7 @@ const i18n = {
       GRAPHQL_API: 'API GraphQL',
       EXPIRATION_SCHEDULER: "Planificateur d'expiration",
       TASK_MANAGER: 'Manager des tâches',
-      ACTIVITY_MANAGER: 'Manager d\'activité',
+      ACTIVITY_MANAGER: "Manager d'activité",
       RULE_ENGINE: 'Moteur de règles',
       SYNC_MANAGER: 'Manager de synchronisation',
       SUBSCRIPTION_MANAGER: 'Manager des souscriptions',
@@ -3841,7 +3844,7 @@ const i18n = {
       neutral: 'neutre',
       agree: 'approuve',
       'Automatic references at file upload':
-        'Références automatiques lors du téléchargement du fichier',
+        'Références auto sur upload du fichier',
       'suggestion_threats-indicators':
         'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':
@@ -3849,12 +3852,15 @@ const i18n = {
       'suggestion_threats-targets':
         'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
       Collapse: 'Réduire',
-      'Platform Message Configuration': 'Configuration des messages de la plate-forme',
+      'Platform Message Configuration':
+        'Configuration des messages de la plate-forme',
       'Platform Consent Message': 'Message de consentement de la plateforme',
-      'Platform Consent Confirm Text': 'Texte de confirmation du consentement de la plateforme',
+      'Platform Consent Confirm Text':
+        'Texte de confirmation du consentement de la plateforme',
       'Requires acceptance to enable login form when set':
         "Nécessite une acceptation pour activer le formulaire de connexion lorsqu'il est défini",
-      'One line confirm label next to confirm checkbox': 'Texte monoligne de confirmation à côté de la case à cocher de confirmation',
+      'One line confirm label next to confirm checkbox':
+        'Texte monoligne de confirmation à côté de la case à cocher de confirmation',
     },
     'ja-jp': {
       // Titles
@@ -4232,8 +4238,8 @@ const i18n = {
       'Update a subscription': 'サブスクリプションを更新',
       'Create a synchronizer': '同期処理を作成',
       'Update a synchronizer': '同期処理を更新',
-      'Create a case incident': 'ケース インシデントの作成',
-      'Update a case incident': 'ケース インシデントの更新',
+      'Create an incident response': 'ケース インシデントの作成',
+      'Update an incident response': 'ケース インシデントの更新',
       'Create a feedback': 'フィードバックを作成する',
       'Update a feedback': 'フィードバックを更新する',
       'Submit a feedback': 'フィードバックを送信する',
@@ -5701,8 +5707,10 @@ const i18n = {
       'Platform Message Configuration': 'プラットフォームメッセージの構成',
       'Platform Consent Message': 'プラットフォーム同意メッセージ',
       'Platform Consent Confirm Text': 'プラットフォーム同意確認テキスト',
-      'Requires acceptance to enable login form when set': '設定時にログインフォームを有効にするには同意が必要です',
-      'One line confirm label next to confirm checkbox': '確認チェックボックスの横にある 1 行の確認ラベル',
+      'Requires acceptance to enable login form when set':
+        '設定時にログインフォームを有効にするには同意が必要です',
+      'One line confirm label next to confirm checkbox':
+        '確認チェックボックスの横にある 1 行の確認ラベル',
     },
     'zh-cn': {
       // Titles
@@ -6034,8 +6042,8 @@ const i18n = {
       'Update a subscription': '更新一个订阅',
       'Create a synchronizer': '创建一个同步器',
       'Update a synchronizer': '更新一个同步器',
-      'Create a case incident': '创建个案事件',
-      'Update a case incident': '更新案例事件',
+      'Create an incident response': '创建个案事件',
+      'Update an incident response': '更新案例事件',
       'Create a feedback': '创建反馈',
       'Update a feedback': '更新一个反馈',
       'Submit a feedback': '提交反馈',
@@ -7449,8 +7457,10 @@ const i18n = {
       'Platform Message Configuration': '平台消息配置',
       'Platform Consent Message': '我已阅读并遵守以上声明',
       'Platform Consent Confirm Text': '平台同意確認文本',
-      'Requires acceptance to enable login form when set': '設置後需要接受才能啟用登錄表單',
-      'One line confirm label next to confirm checkbox': '確認複選框旁邊的一行確認標籤',
+      'Requires acceptance to enable login form when set':
+        '設置後需要接受才能啟用登錄表單',
+      'One line confirm label next to confirm checkbox':
+        '確認複選框旁邊的一行確認標籤',
     },
     'en-us': {
       gt: 'Greater than',
@@ -7827,11 +7837,11 @@ const i18n = {
       NOTIFICATION_MANAGER: 'Notification generation manager',
       HISTORY_MANAGER: 'History manager',
       'suggestion_threats-indicators':
-          'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
+        'Create `indicates` relationships between indicators and the selected threat, then add all relations to the container.',
       'suggestion_threats-arsenal':
-          'Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.',
+        'Create `uses` relationships between the selected threat and arsenal objects (TTPs, tools, channels, etc.), then add all relations to the container.',
       'suggestion_threats-targets':
-          'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
+        'Create `targets` relationships between the selected threat and victim objects (countries, sectors, etc.), then add all relations to the container.',
     },
   },
 };
