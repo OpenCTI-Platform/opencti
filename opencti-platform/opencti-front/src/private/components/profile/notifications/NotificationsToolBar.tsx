@@ -22,7 +22,6 @@ import Chip from '@mui/material/Chip';
 import DialogTitle from '@mui/material/DialogTitle';
 import Alert from '@mui/material/Alert';
 import makeStyles from '@mui/styles/makeStyles';
-import { useTheme } from '@mui/styles';
 import { truncate } from '../../../../utils/String';
 import { MESSAGING$ } from '../../../../relay/environment';
 import { defaultValue } from '../../../../utils/Graph';
@@ -56,6 +55,21 @@ const useStyles = makeStyles<Theme>((theme) => ({
     fontFamily: 'Consolas, monaco, monospace',
     backgroundColor: theme.palette.background.accent,
     margin: '5px 10px 5px 0',
+  },
+  selectedElementsNumber: {
+    padding: '2px 5px 2px 5px',
+    marginRight: 5,
+    backgroundColor: theme.palette.secondary.main,
+    color: '#ffffff',
+  },
+  filtersNumber: {
+    padding: '2px 5px 2px 5px',
+    marginRight: 5,
+    color:
+      theme.palette.mode === 'dark'
+        ? '#000000'
+        : '#ffffff',
+    backgroundColor: theme.palette.primary.main,
   },
 }));
 
@@ -96,7 +110,6 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
 }) => {
   const classes = useStyles();
   const { t, n } = useFormatter();
-  const theme = useTheme<Theme>();
 
   const isOpen = numberOfSelectedElements > 0;
 
@@ -220,14 +233,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
           color="inherit"
           variant="subtitle1"
         >
-            <span
-              style={{
-                padding: '2px 5px 2px 5px',
-                marginRight: 5,
-                backgroundColor: theme.palette.secondary.main,
-                color: '#ffffff',
-              }}
-            >
+            <span className={classes.selectedElementsNumber}>
               {numberOfSelectedElements}
             </span>{' '}
           {t('selected')}{' '}
@@ -298,14 +304,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
         <DialogTitle>
           <div style={{ float: 'left' }}>{t('Launch a background task')}</div>
           <div style={{ float: 'right' }}>
-              <span
-                style={{
-                  padding: '2px 5px 2px 5px',
-                  marginRight: 5,
-                  backgroundColor: theme.palette.secondary.main,
-                  color: '#ffffff',
-                }}
-              >
+              <span className={classes.selectedElementsNumber}>
                 {n(numberOfSelectedElements)}
               </span>{' '}
             {t('selected element(s)')}
@@ -333,17 +332,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                 <TableRow>
                   <TableCell>
                     {' '}
-                    <span
-                      style={{
-                        padding: '2px 5px 2px 5px',
-                        marginRight: 5,
-                        color:
-                          theme.palette.mode === 'dark'
-                            ? '#000000'
-                            : '#ffffff',
-                        backgroundColor: theme.palette.primary.main,
-                      }}
-                    >
+                    <span className={classes.filtersNumber}>
                         1
                       </span>
                   </TableCell>
@@ -432,17 +421,7 @@ const NotificationsToolBar: FunctionComponent<NotificationsToolBarProps> = ({
                     <TableRow key={o.type}>
                       <TableCell>
                         {' '}
-                        <span
-                          style={{
-                            padding: '2px 5px 2px 5px',
-                            marginRight: 5,
-                            color:
-                              theme.palette.mode === 'dark'
-                                ? '#000000'
-                                : '#ffffff',
-                            backgroundColor: theme.palette.primary.main,
-                          }}
-                        >
+                        <span className={classes.filtersNumber}>
                             {number + 2}
                           </span>
                       </TableCell>
