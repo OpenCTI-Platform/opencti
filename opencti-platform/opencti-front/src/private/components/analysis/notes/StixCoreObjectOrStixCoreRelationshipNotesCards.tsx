@@ -41,19 +41,17 @@ import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 
 const useStyles = makeStyles<Theme>((theme) => ({
-  paper: {
-    margin: 0,
-    padding: '20px 20px 20px 20px',
-    borderRadius: 6,
-  },
   heading: {
     display: 'flex',
   },
   buttons: {
-    marginTop: 20,
-    textAlign: 'right',
+    margin: '20px 0 5px 0',
   },
-  button: {
+  buttonMore: {
+    float: 'left',
+  },
+  buttonAction: {
+    float: 'right',
     marginLeft: theme.spacing(2),
   },
   createButton: {
@@ -70,7 +68,12 @@ export const stixCoreObjectOrStixCoreRelationshipNotesCardsQuery = graphql`
     $filters: [NotesFiltering!]
   ) {
     ...StixCoreObjectOrStixCoreRelationshipNotesCards_data
-      @arguments(count: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
+      @arguments(
+        count: $count
+        orderBy: $orderBy
+        orderMode: $orderMode
+        filters: $filters
+      )
   }
 `;
 
@@ -82,8 +85,12 @@ const stixCoreObjectOrStixCoreRelationshipNotesCardsFragment = graphql`
     orderMode: { type: "OrderingMode" }
     filters: { type: "[NotesFiltering!]" }
   ) {
-    notes(first: $count, orderBy: $orderBy, orderMode: $orderMode, filters: $filters)
-      @connection(key: "Pagination_notes") {
+    notes(
+      first: $count
+      orderBy: $orderBy
+      orderMode: $orderMode
+      filters: $filters
+    ) @connection(key: "Pagination_notes") {
       edges {
         node {
           id
@@ -146,7 +153,14 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
 
 const StixCoreObjectOrStixCoreRelationshipNotesCards: FunctionComponent<
 StixCoreObjectOrStixCoreRelationshipNotesCardsProps
-> = ({ id, marginTop, queryRef, paginationOptions, defaultMarkings, title }) => {
+> = ({
+  id,
+  marginTop,
+  queryRef,
+  paginationOptions,
+  defaultMarkings,
+  title,
+}) => {
   const { t } = useFormatter();
   const classes = useStyles();
   const basicShape = {
@@ -172,6 +186,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const notes = data?.notes?.edges ?? [];
   const bottomRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
+  const [more, setMore] = useState<boolean>(false);
   const initialValues: NoteAddInput = {
     attribute_abstract: '',
     content: '',
@@ -184,7 +199,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }, 400);
+    }, 300);
   };
   const handleToggleWrite = () => {
     setOpen((oldValue) => {
@@ -194,6 +209,9 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
       }
       return newValue;
     });
+  };
+  const handleToggleMore = () => {
+    setMore(!more);
   };
   const [commit] = useMutation(noteCreationUserMutation);
   const onSubmit: FormikConfig<NoteAddInput>['onSubmit'] = (
@@ -251,7 +269,7 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
         })}
       <Security needs={[KNOWLEDGE_KNPARTICIPATE]}>
         <Accordion
-          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 30px 0` }}
+          style={{ margin: `${notes.length > 0 ? '30' : '0'}px 0 80px 0` }}
           expanded={open}
           variant="outlined"
         >
@@ -281,69 +299,85 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
               }) => (
                 <Form style={{ width: '100%' }}>
                   <Field
-                    component={TextField}
-                    variant="standard"
-                    name="attribute_abstract"
-                    label={t('Abstract')}
-                    fullWidth={true}
-                  />
-                  <Field
                     component={MarkDownField}
                     name="content"
                     label={t('Content')}
                     fullWidth={true}
                     multiline={true}
                     rows="4"
-                    style={{ marginTop: 20 }}
-                  />
-                  <OpenVocabField
-                    label={t('Note types')}
-                    type="note_types_ov"
-                    name="note_types"
-                    onChange={(name, value) => setFieldValue(name, value)}
-                    containerStyle={fieldSpacingContainerStyle}
-                    multiple={true}
-                  />
-                  <ConfidenceField
-                    entityType="Note"
-                    containerStyle={fieldSpacingContainerStyle}
-                  />
-                  <Field
-                    component={SliderField}
-                    variant="standard"
-                    name="likelihood"
-                    label={t('Likelihood')}
-                    fullWidth={true}
-                    style={{ marginTop: 20 }}
-                  />
-                  <ObjectLabelField
-                    name="objectLabel"
-                    style={{ marginTop: 10, width: '100%' }}
-                    setFieldValue={setFieldValue}
-                    values={values.objectLabel}
                   />
                   <ObjectMarkingField
                     name="objectMarking"
                     style={fieldSpacingContainerStyle}
                   />
+                  {more && (
+                    <>
+                      <Field
+                        component={TextField}
+                        variant="standard"
+                        name="attribute_abstract"
+                        label={t('Abstract')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                      />
+                      <OpenVocabField
+                        label={t('Note types')}
+                        type="note_types_ov"
+                        name="note_types"
+                        onChange={(name, value) => setFieldValue(name, value)}
+                        containerStyle={fieldSpacingContainerStyle}
+                        multiple={true}
+                      />
+                      <ConfidenceField
+                        entityType="Note"
+                        containerStyle={fieldSpacingContainerStyle}
+                      />
+                      <Field
+                        component={SliderField}
+                        variant="standard"
+                        name="likelihood"
+                        label={t('Likelihood')}
+                        fullWidth={true}
+                        style={{ marginTop: 20 }}
+                      />
+                      <ObjectLabelField
+                        name="objectLabel"
+                        style={{ marginTop: 10, width: '100%' }}
+                        setFieldValue={setFieldValue}
+                        values={values.objectLabel}
+                      />
+                    </>
+                  )}
                   <div className={classes.buttons}>
-                    <Button
-                      variant="contained"
-                      onClick={handleReset}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
                     <Button
                       variant="contained"
                       color="secondary"
                       onClick={submitForm}
                       disabled={isSubmitting}
-                      classes={{ root: classes.button }}
+                      classes={{ root: classes.buttonAction }}
+                      size="small"
                     >
                       {t('Create')}
                     </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleToggleMore}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.buttonMore }}
+                      size="small"
+                    >
+                      {t('More fields')}
+                    </Button>
+                    <Button
+                      variant="contained"
+                      onClick={handleReset}
+                      disabled={isSubmitting}
+                      classes={{ root: classes.buttonAction }}
+                      size="small"
+                    >
+                      {t('Cancel')}
+                    </Button>
+                    <div className="clearfix" />
                   </div>
                 </Form>
               )}

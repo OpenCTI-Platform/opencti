@@ -89,6 +89,13 @@ const ThemeDark = (
     },
   },
   components: {
+    MuiAccordion: {
+      defaultProps: {
+        TransitionProps: {
+          unmountOnExit: true,
+        },
+      },
+    },
     MuiTooltip: {
       styleOverrides: {
         tooltip: {

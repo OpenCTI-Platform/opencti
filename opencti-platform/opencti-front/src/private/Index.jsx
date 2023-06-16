@@ -39,7 +39,7 @@ const Index = () => {
   const theme = useTheme();
   const classes = useStyles();
   return (
-    <Box sx={{ display: 'flex', minWidth: 1600 }}>
+    <Box sx={{ display: 'flex', minWidth: 1400 }}>
       <CssBaseline />
       {!noTopBarLocations.includes(location.pathname) && <TopBar />}
       <LeftBar />

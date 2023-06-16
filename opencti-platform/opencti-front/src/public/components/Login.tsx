@@ -1,4 +1,4 @@
-import React, { FunctionComponent, useEffect, useState } from "react";
+import React, { FunctionComponent, useState } from "react";
 import Button from "@mui/material/Button";
 import { useTheme } from "@mui/styles";
 import { Facebook, Github, Google, KeyOutline } from "mdi-material-ui";

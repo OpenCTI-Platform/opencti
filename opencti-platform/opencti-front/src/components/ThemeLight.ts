@@ -94,6 +94,13 @@ const ThemeLight = (
         },
       },
     },
+    MuiAccordion: {
+      defaultProps: {
+        TransitionProps: {
+          unmountOnExit: true,
+        },
+      },
+    },
     MuiCssBaseline: {
       styleOverrides: {
         body: {
