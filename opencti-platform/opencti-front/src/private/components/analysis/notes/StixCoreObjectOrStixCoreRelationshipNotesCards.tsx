@@ -184,7 +184,8 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const bottomRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState<boolean>(false);
 
-const [more, setMore] = useState<boolean>(false);  const initialValues = useDefaultValues<NoteAddInput>(
+  const [more, setMore] = useState<boolean>(false);
+  const initialValues = useDefaultValues<NoteAddInput>(
     NOTE_TYPE,
     {
       attribute_abstract: '',
