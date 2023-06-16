@@ -1252,6 +1252,11 @@ class ToolBar extends Component {
       R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
       notMergableTypes,
     );
+    const notAddableTypes = ['Label', 'Vocabulary', 'Case-Template'];
+    const typesAreNotAddableInContainer = R.includes(
+      R.uniq(R.map((o) => o.entity_type, R.values(selectedElements || {})))[0],
+      notAddableTypes,
+    );
     const selectedElementsList = R.values(selectedElements || {});
     const titleCopy = this.titleCopy();
     let keptElement = null;
@@ -1446,8 +1451,9 @@ class ToolBar extends Component {
               </Tooltip>
             )}
           </Security>
-          <Security needs={[KNOWLEDGE_KNUPDATE]}>
-            <Tooltip title={t('Add in container')}>
+          {!typesAreNotAddableInContainer && (
+            <Security needs={[KNOWLEDGE_KNUPDATE]}>
+              <Tooltip title={t('Add in container')}>
                 <span>
                   <IconButton
                     aria-label="input"
@@ -1461,8 +1467,9 @@ class ToolBar extends Component {
                     <Input fontSize="small" />
                   </IconButton>
                 </span>
-            </Tooltip>
-          </Security>
+              </Tooltip>
+            </Security>
+          )}
           {container && (
             <Security needs={[KNOWLEDGE_KNUPDATE]}>
               <Tooltip title={t('Remove from the container')}>
