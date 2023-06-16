@@ -209,6 +209,7 @@ const initHistoryManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping history manager');
       shutdown = true;
       if (scheduler) {
         await clearIntervalAsync(scheduler);

@@ -122,6 +122,11 @@ const shutdownModules = async () => {
     stoppingPromises.push(expiredManager.shutdown());
   }
   // endregion
+  // region Connector manager
+  if (ENABLED_CONNECTOR_MANAGER) {
+    stoppingPromises.push(connectorManager.shutdown());
+  }
+  // endregion
   // region Retention manager
   if (ENABLED_RETENTION_MANAGER) {
     stoppingPromises.push(retentionManager.shutdown());

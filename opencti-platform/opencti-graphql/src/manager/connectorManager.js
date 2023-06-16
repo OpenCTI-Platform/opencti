@@ -136,6 +136,7 @@ const initConnectorManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping connector manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }

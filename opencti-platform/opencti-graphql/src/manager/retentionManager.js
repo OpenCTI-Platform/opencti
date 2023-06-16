@@ -97,6 +97,7 @@ const initRetentionManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping retention manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }

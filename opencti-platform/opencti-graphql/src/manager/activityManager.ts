@@ -146,7 +146,8 @@ const initActivityManager = () => {
       };
     },
     shutdown: async () => {
-      running = false;
+      logApp.info('[OPENCTI-MODULE] Stopping activity manager');
+      shutdown = true;
       if (scheduler) {
         await clearIntervalAsync(scheduler);
       }

@@ -198,6 +198,7 @@ const initPublisherManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping publisher manager');
       shutdown = true;
       if (streamScheduler) await clearIntervalAsync(streamScheduler);
       return true;

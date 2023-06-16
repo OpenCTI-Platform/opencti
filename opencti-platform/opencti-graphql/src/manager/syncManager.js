@@ -243,6 +243,7 @@ const initSyncManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping Sync manager');
       syncListening = false;
       if (scheduler) {
         return clearIntervalAsync(scheduler);

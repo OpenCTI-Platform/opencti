@@ -73,6 +73,7 @@ const initExpiredManager = () => {
       };
     },
     shutdown: async () => {
+      logApp.info('[OPENCTI-MODULE] Stopping expiration manager');
       if (scheduler) {
         return clearIntervalAsync(scheduler);
       }
