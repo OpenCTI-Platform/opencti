@@ -10,12 +10,10 @@ import conf, { booleanConf, logApp } from '../config/conf';
 import { now, sinceNowInMinutes } from '../utils/format';
 import { DatabaseError, FunctionalError } from '../config/errors';
 import { createWork, deleteWorkForFile, loadExportWorksAsProgressFiles } from '../domain/work';
-import { buildPagination, extractEntityRepresentative } from './utils';
+import { buildPagination } from './utils';
 import { connectorsForImport } from './repository';
 import { pushToConnector } from './rabbitmq';
 import { telemetry } from '../config/tracing';
-import { publishUserAction } from '../listener/UserActionListener';
-import { internalLoadById } from './middleware-loader';
 
 // Minio configuration
 const clientEndpoint = conf.get('minio:endpoint');
@@ -210,22 +208,12 @@ export const rawFilesListing = async (context, user, directory, recursive = fals
 
 export const uploadJobImport = async (context, user, fileId, fileMime, entityId, opts = {}) => {
   const { manual = false, connectorId = null, bypassValidation = false } = opts;
-  const file = await loadFile(context, user, fileId);
   let connectors = await connectorsForImport(context, user, fileMime, true, !manual);
   if (connectorId) {
     connectors = R.filter((n) => n.id === connectorId, connectors);
   }
-  let entityName = 'global';
-  let entityType = 'global';
   if (!entityId) {
     connectors = R.filter((n) => !n.only_contextual, connectors);
-  } else {
-    const element = await internalLoadById(context, user, entityId);
-    if (!element) {
-      throw FunctionalError('Cannot import, element cannot be found.');
-    }
-    entityName = extractEntityRepresentative(element);
-    entityType = element.entity_type;
   }
   if (connectors.length > 0) {
     // Create job and send ask to broker
@@ -257,22 +245,8 @@ export const uploadJobImport = async (context, user, fileId, fileMime, entityId,
       return pushToConnector(context, connector, message);
     };
     await Promise.all(R.map((data) => pushMessage(data), actionList));
-    await publishUserAction({
-      user,
-      event_access: 'extended',
-      event_type: 'command',
-      event_scope: 'import',
-      context_data: {
-        id: entityId,
-        file_id: fileId,
-        file_name: file.name,
-        file_mime: fileMime,
-        connectors: connectors.map((c) => c.name),
-        entity_name: entityName,
-        entity_type: entityType
-      }
-    });
   }
+  return connectors;
 };
 
 export const upload = async (context, user, path, fileUpload, opts) => {

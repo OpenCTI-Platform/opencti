@@ -108,7 +108,7 @@ import {
   buildRefRelationKey,
   ID_INTERNAL,
   ID_STANDARD,
-  IDS_STIX,
+  IDS_STIX, INPUT_EXTERNAL_REFS,
   INPUT_GRANTED_REFS,
   INPUT_LABELS,
   INPUT_MARKINGS,
@@ -3010,6 +3010,21 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
       }
     }
   };
+  // If file directly attached
+  if (!isEmptyField(input.file)) {
+    const path = `import/${type}/${internalId}`;
+    const file = await upload(context, user, path, input.file, { entity: { internal_id: internalId } });
+    data.x_opencti_files = [storeFileConverter(user, file)];
+    // Add external references from files if necessary
+    const entitySetting = await getEntitySettingFromCache(context, type);
+    if (entitySetting.platform_entity_files_ref) {
+      // Create external ref + link to current entity
+      const createExternal = { source_name: file.name, url: `/storage/get/${file.id}`, fileId: file.id };
+      const externalRef = await createEntity(context, user, createExternal, ENTITY_TYPE_EXTERNAL_REFERENCE);
+      const newExternalRefs = [...(input[INPUT_EXTERNAL_REFS] ?? []), externalRef];
+      data = { ...data, [INPUT_EXTERNAL_REFS]: newExternalRefs };
+    }
+  }
   // For meta stix core && meta observables
   if (isStixCoreObject(type) || isStixCyberObservable(type)) {
     const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
@@ -3025,12 +3040,6 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     R.assoc('base_type', BASE_TYPE_ENTITY),
     R.assoc('parent_types', getParentTypes(type))
   )(data);
-  // If file directly attached
-  if (!isEmptyField(input.file)) {
-    const path = `import/${entity.entity_type}/${entity.internal_id}`;
-    const file = await upload(context, user, path, input.file, { entity });
-    entity.x_opencti_files = [storeFileConverter(user, file)];
-  }
 
   // Simply return the data
   return {
