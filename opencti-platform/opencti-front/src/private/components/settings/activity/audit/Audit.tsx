@@ -36,7 +36,7 @@ const LOCAL_STORAGE_KEY = 'view-audit';
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+      padding: '0 200px 50px 0',
   },
 }));
 

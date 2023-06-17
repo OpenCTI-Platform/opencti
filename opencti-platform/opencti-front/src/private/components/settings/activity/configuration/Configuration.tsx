@@ -55,7 +55,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
   container: {
     margin: 0,
-    padding: '0 200px 0 0',
+    padding: '0 200px 50px 0',
   },
   paper: {
     height: '100%',
@@ -132,7 +132,7 @@ ConfigurationComponentProps
     <div className={classes.container}>
       <ActivityMenu />
       <Grid container={true} spacing={3}>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={12}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Extended activity logging')}
           </Typography>
