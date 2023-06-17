@@ -26,16 +26,26 @@ const entitySettingFragment = graphql`
 `;
 
 export const entitySettingPatch = graphql`
-  mutation EntitySettingSettingsPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
+  mutation EntitySettingSettingsPatchMutation(
+    $ids: [ID!]!
+    $input: [EditInput!]!
+  ) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySettingSettings_entitySetting
     }
   }
 `;
 
-const EntitySettingSettings = ({ entitySettingsData }: { entitySettingsData: SubType_subType$data['settings'] }) => {
+const EntitySettingSettings = ({
+  entitySettingsData,
+}: {
+  entitySettingsData: SubType_subType$data['settings'];
+}) => {
   const { t } = useFormatter();
-  const entitySetting = useFragment<EntitySettingSettings_entitySetting$key>(entitySettingFragment, entitySettingsData);
+  const entitySetting = useFragment<EntitySettingSettings_entitySetting$key>(
+    entitySettingFragment,
+    entitySettingsData,
+  );
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
