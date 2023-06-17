@@ -36,13 +36,17 @@ const LOCAL_STORAGE_KEY = 'view-audit';
 const useStyles = makeStyles<Theme>(() => ({
   container: {
     margin: 0,
-      padding: '0 200px 50px 0',
+    padding: '0 200px 50px 0',
   },
 }));
 
 const Audit = () => {
   const classes = useStyles();
-  const { viewStorage, paginationOptions, helpers: storageHelpers } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(
+  const {
+    viewStorage,
+    paginationOptions,
+    helpers: storageHelpers,
+  } = usePaginationLocalStorage<AuditLinesPaginationQuery$variables>(
     LOCAL_STORAGE_KEY,
     {
       numberOfElements: { number: 0, symbol: '', original: 0 },
@@ -70,60 +74,84 @@ const Audit = () => {
       isSortable: false,
     },
   };
-  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(AuditLinesQuery, paginationOptions);
+  const queryRef = useQueryLoading<AuditLinesPaginationQuery>(
+    AuditLinesQuery,
+    paginationOptions,
+  );
 
-  const extraFields = <div style={{ float: 'left' }}>
-      <FormControlLabel value="start"
-        control={<Checkbox style={{ padding: 7 }} onChange={() => {
-          const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
-          storageHelpers.handleAddProperty('types', newTypes);
-        }} checked={types?.length === 2}/>}
+  const extraFields = (
+    <div style={{ float: 'left' }}>
+      <FormControlLabel
+        value="start"
+        control={
+          <Checkbox
+            style={{ padding: 7 }}
+            onChange={() => {
+              const newTypes = types?.length === 1 ? ['History', 'Activity'] : ['Activity'];
+              storageHelpers.handleAddProperty('types', newTypes);
+            }}
+            checked={types?.length === 2}
+          />
+        }
         label="Include knowledge"
         labelPlacement="end"
-    />
-  </div>;
+      />
+    </div>
+  );
 
   return (
-      <div className={classes.container}>
-        <ActivityMenu />
-        <ListLines sortBy={sortBy}
-            orderAsc={orderAsc}
-            dataColumns={dataColumns}
-            handleSort={storageHelpers.handleSort}
-            handleSearch={storageHelpers.handleSearch}
-            handleAddFilter={storageHelpers.handleAddFilter}
-            handleRemoveFilter={storageHelpers.handleRemoveFilter}
-            selectAll={selectAll}
-            extraFields={extraFields}
-            keyword={searchTerm}
-            filters={filters}
-            paginationOptions={paginationOptions}
-            numberOfElements={numberOfElements}
-            availableFilterKeys={[
-              'elementId',
-              'members_user',
-              'members_organization',
-              'members_group',
-              'created_start_date',
-              'created_end_date',
-            ]}>
-          {queryRef && (
-              <React.Suspense fallback={<>{Array(20).fill(0).map((idx) => (<AuditLineDummy key={idx} dataColumns={dataColumns}/>))}</>}>
-                <AuditLines
-                    queryRef={queryRef}
-                    paginationOptions={paginationOptions}
-                    dataColumns={dataColumns}
-                    onLabelClick={storageHelpers.handleAddFilter}
-                    selectedElements={selectedElements}
-                    deSelectedElements={deSelectedElements}
-                    onToggleEntity={onToggleEntity}
-                    selectAll={selectAll}
-                    setNumberOfElements={storageHelpers.handleSetNumberOfElements}
-                />
-              </React.Suspense>
-          )}
-        </ListLines>
-      </div>
+    <div className={classes.container}>
+      <ActivityMenu />
+      <ListLines
+        sortBy={sortBy}
+        orderAsc={orderAsc}
+        dataColumns={dataColumns}
+        handleSort={storageHelpers.handleSort}
+        handleSearch={storageHelpers.handleSearch}
+        handleAddFilter={storageHelpers.handleAddFilter}
+        handleRemoveFilter={storageHelpers.handleRemoveFilter}
+        selectAll={selectAll}
+        extraFields={extraFields}
+        keyword={searchTerm}
+        filters={filters}
+        paginationOptions={paginationOptions}
+        numberOfElements={numberOfElements}
+        availableFilterKeys={[
+          'elementId',
+          'members_user',
+          'members_organization',
+          'members_group',
+          'created_start_date',
+          'created_end_date',
+        ]}
+      >
+        {queryRef && (
+          <React.Suspense
+            fallback={
+              <>
+                {Array(20)
+                  .fill(0)
+                  .map((idx) => (
+                    <AuditLineDummy key={idx} dataColumns={dataColumns} />
+                  ))}
+              </>
+            }
+          >
+            <AuditLines
+              queryRef={queryRef}
+              paginationOptions={paginationOptions}
+              dataColumns={dataColumns}
+              onLabelClick={storageHelpers.handleAddFilter}
+              selectedElements={selectedElements}
+              deSelectedElements={deSelectedElements}
+              onToggleEntity={onToggleEntity}
+              selectAll={selectAll}
+              setNumberOfElements={storageHelpers.handleSetNumberOfElements}
+            />
+          </React.Suspense>
+        )}
+      </ListLines>
+    </div>
   );
 };
 
