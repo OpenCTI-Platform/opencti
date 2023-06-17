@@ -4,8 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import PositionEdition from './PositionEdition';
 import PositionPopover from './PositionPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports
-  from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -13,16 +11,16 @@ import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/Stix
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
-import SimpleStixObjectOrStixRelationshipStixCoreRelationships
-  from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
-import PositionDetails, { positionDetailsLocationRelationshipsLinesQuery } from './PositionDetails';
+import PositionDetails, {
+  positionDetailsLocationRelationshipsLinesQuery,
+} from './PositionDetails';
 import { Position_position$data } from './__generated__/Position_position.graphql';
 import Loader, { LoaderVariant } from '../../../../components/Loader';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
-import {
-  PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery,
-} from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
+import { PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery } from './__generated__/PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery.graphql';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -34,17 +32,22 @@ const useStyles = makeStyles(() => ({
 }));
 
 interface PositionComponentProps {
-  position: Position_position$data
+  position: Position_position$data;
 }
 
-const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position }) => {
+const PositionComponent: FunctionComponent<PositionComponentProps> = ({
+  position,
+}) => {
   const classes = useStyles();
 
-  const queryRef = useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(positionDetailsLocationRelationshipsLinesQuery, {
-    count: 20,
-    elementId: [position.id],
-    relationship_type: ['located-at'],
-  });
+  const queryRef = useQueryLoading<PositionDetailsLocationRelationshipsLinesQueryLinesPaginationQuery>(
+    positionDetailsLocationRelationshipsLinesQuery,
+    {
+      count: 20,
+      elementId: [position.id],
+      relationship_type: ['located-at'],
+    },
+  );
 
   return (
     <div className={classes.container}>
@@ -61,11 +64,13 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position
         classes={{ container: classes.gridContainer }}
       >
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
-          {queryRef && <React.Suspense
-            fallback={<Loader variant={LoaderVariant.inElement}/>}
-          >
-            <PositionDetails position={position} queryRef={queryRef}/>
-          </React.Suspense>}
+          {queryRef && (
+            <React.Suspense
+              fallback={<Loader variant={LoaderVariant.inElement} />}
+            >
+              <PositionDetails position={position} queryRef={queryRef} />
+            </React.Suspense>
+          )}
         </Grid>
         <Grid item={true} xs={4} style={{ paddingTop: 10 }}>
           <LocationMiniMap
@@ -95,8 +100,8 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position
           />
         </Grid>
         <Grid item={true} xs={6}>
-          <StixCoreObjectOrStixCoreRelationshipLastReports
-            stixCoreObjectOrStixCoreRelationshipId={position.id}
+          <StixCoreObjectOrStixRelationshipLastContainers
+            stixCoreObjectOrStixRelationshipId={position.id}
           />
         </Grid>
       </Grid>
@@ -115,7 +120,9 @@ const PositionComponent: FunctionComponent<PositionComponentProps> = ({ position
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={position.id}
-        defaultMarkings={(position.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(position.objectMarking?.edges ?? []).map(
+          (edge) => edge.node,
+        )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <PositionEdition positionId={position.id} />
@@ -176,9 +183,9 @@ const Position = createFragmentContainer(PositionComponent, {
       street_address
       postal_code
       city {
-          id
-          name
-          description
+        id
+        name
+        description
       }
       x_opencti_aliases
       status {

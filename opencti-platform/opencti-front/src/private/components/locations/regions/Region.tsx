@@ -4,7 +4,6 @@ import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
 import RegionEdition from './RegionEdition';
 import RegionPopover from './RegionPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -15,6 +14,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import LocationMiniMap from '../../common/location/LocationMiniMap';
 import { Region_region$key } from './__generated__/Region_region.graphql';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -142,8 +142,8 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
           />
         </Grid>
         <Grid item={true} xs={6}>
-          <StixCoreObjectOrStixCoreRelationshipLastReports
-            stixCoreObjectOrStixCoreRelationshipId={region.id}
+          <StixCoreObjectOrStixRelationshipLastContainers
+            stixCoreObjectOrStixRelationshipId={region.id}
           />
         </Grid>
       </Grid>
@@ -162,7 +162,9 @@ const RegionComponent = ({ regionData }: { regionData: Region_region$key }) => {
       </Grid>
       <StixCoreObjectOrStixCoreRelationshipNotes
         stixCoreObjectOrStixCoreRelationshipId={region.id}
-        defaultMarkings={(region.objectMarking?.edges ?? []).map((edge) => edge.node)}
+        defaultMarkings={(region.objectMarking?.edges ?? []).map(
+          (edge) => edge.node,
+        )}
       />
       <Security needs={[KNOWLEDGE_KNUPDATE]}>
         <RegionEdition regionId={region.id} />

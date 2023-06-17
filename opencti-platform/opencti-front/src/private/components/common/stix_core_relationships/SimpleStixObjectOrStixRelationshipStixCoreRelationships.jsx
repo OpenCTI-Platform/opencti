@@ -57,7 +57,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
     const dataColumns = {
       relationship_type: {
         label: 'Relationship type',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       entity_type: {
@@ -67,17 +67,23 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationships extends Component 
       },
       name: {
         label: 'Name',
-        width: '35%',
+        width: '30%',
         isSortable: true,
       },
       created_at: {
         label: 'Creation date',
-        width: '15%',
+        width: '12%',
         isSortable: true,
       },
       confidence: {
         label: 'Confidence',
+        width: '12%',
         isSortable: false,
+      },
+      markings: {
+        label: 'Markings',
+        isSortable: false,
+        width: '12%',
       },
     };
     const paginationOptions = {

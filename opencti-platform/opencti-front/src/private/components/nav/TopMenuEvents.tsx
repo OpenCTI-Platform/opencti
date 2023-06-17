@@ -33,13 +33,13 @@ const TopMenuEvents = () => {
             component={Link}
             to="/dashboard/events/incidents"
             variant={
-              location.pathname.includes('/dashboard/events/incidents')
+              location.pathname.includes('/dashboard/events/case_incident')
                 ? 'contained'
                 : 'text'
             }
             size="small"
             color={
-              location.pathname.includes('/dashboard/events/incidents')
+              location.pathname.includes('/dashboard/events/case_incident')
                 ? 'secondary'
                 : 'primary'
             }

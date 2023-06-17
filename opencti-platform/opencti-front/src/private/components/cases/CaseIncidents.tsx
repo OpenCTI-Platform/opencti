@@ -4,19 +4,19 @@ import ListLines from '../../../components/list_lines/ListLines';
 import { usePaginationLocalStorage } from '../../../utils/hooks/useLocalStorage';
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import { Filters } from '../../../components/list_lines';
-import CaseIncidentsLines, { caseIncidentsLinesQuery } from './incidents/CaseIncidentsLines';
-import { CaseIncidentLineDummy } from './incidents/CaseIncidentLine';
+import CaseIncidentsLines, { caseIncidentsLinesQuery } from './case_incident/CaseIncidentsLines';
+import { CaseIncidentLineDummy } from './case_incident/CaseIncidentLine';
 import useAuth from '../../../utils/hooks/useAuth';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import Security from '../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import CaseIncidentCreation from './incidents/CaseIncidentCreation';
+import CaseIncidentCreation from './case_incident/CaseIncidentCreation';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import {
   CaseIncidentsLinesCasesPaginationQuery, CaseIncidentsLinesCasesPaginationQuery$variables,
-} from './incidents/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
-import { CaseIncidentLineCase_node$data } from './incidents/__generated__/CaseIncidentLineCase_node.graphql';
+} from './case_incident/__generated__/CaseIncidentsLinesCasesPaginationQuery.graphql';
+import { CaseIncidentLineCase_node$data } from './case_incident/__generated__/CaseIncidentLineCase_node.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {
@@ -28,7 +28,7 @@ interface CaseIncidentsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-cases-incidents';
+export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-cases-case_incident';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const classes = useStyles();

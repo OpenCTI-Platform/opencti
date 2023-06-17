@@ -44,7 +44,7 @@ const useStyles = makeStyles(() => ({
     marginTop: '-13px',
   },
   manageAccess: {
-    margin: '-8px 0 0 0',
+    margin: '-8px 4px 0 0',
     float: 'right',
   },
   export: {

@@ -36,13 +36,13 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/incidents"
           variant={
-            location.pathname === '/dashboard/cases/incidents'
+            location.pathname === '/dashboard/cases/case_incident'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/cases/incidents'
+            location.pathname === '/dashboard/cases/case_incident'
               ? 'secondary'
               : 'primary'
           }

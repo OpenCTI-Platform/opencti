@@ -53,6 +53,10 @@ const inlineStylesDark = {
   orange: {
     backgroundColor: '#d84315',
   },
+  transparent: {
+    color: '#ffffff',
+    border: '2px solid #ffffff',
+  },
 };
 
 const inlineStylesLight = {
@@ -76,6 +80,10 @@ const inlineStylesLight = {
   orange: {
     backgroundColor: '#d84315',
     color: '#ffffff',
+  },
+  transparent: {
+    color: '#2b2b2b',
+    border: '2px solid #2b2b2b',
   },
 };
 
@@ -178,6 +186,16 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
             label={markingDefinition.definition}
           />
         );
+      case 'NONE':
+        return (
+          <Chip
+            key={markingDefinition.definition}
+            className={className}
+            style={inlineStyles.transparent}
+            label={markingDefinition.definition}
+            variant="outlined"
+          />
+        );
       default:
         return (
           <Chip
@@ -192,7 +210,9 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
   if (!limit || markings.length <= 1) {
     return (
       <span>
-        {markings.map((markingDefinition) => renderChip(markingDefinition, false))}
+        {markings.length === 0
+          ? renderChip({ definition: 'NONE' }, false)
+          : markings.map((markingDefinition) => renderChip(markingDefinition, false))}
       </span>
     );
   }
@@ -200,19 +220,22 @@ const ItemMarkings = ({ variant, markingDefinitionsEdges, limit }) => {
     <EnrichedTooltip
       title={
         <Grid container={true} spacing={3}>
-          { markings.length > 0
-            ? markings.map((markingDefinition) => (
-            <Grid key={markingDefinition.id} item={true} xs={6}>
-              {renderChip(markingDefinition, true)}
-            </Grid>
-            )) : '-'}
+          {markings.length === 0
+            ? renderChip({ definition: 'NONE' }, false)
+            : markings.map((markingDefinition) => (
+                <Grid key={markingDefinition.id} item={true} xs={6}>
+                  {renderChip(markingDefinition, true)}
+                </Grid>
+            ))}
         </Grid>
       }
       placement="bottom"
     >
       <span>
         <StyledBadge variant="dot" color="primary">
-          {R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
+          {markings.length === 0
+            ? renderChip({ definition: 'NONE' }, false)
+            : R.take(limit, markings).map((markingDefinition) => renderChip(markingDefinition, false))}
         </StyledBadge>
       </span>
     </EnrichedTooltip>

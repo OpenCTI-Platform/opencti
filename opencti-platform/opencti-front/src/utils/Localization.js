@@ -214,10 +214,9 @@ const i18n = {
       'You have no subscription for the moment.':
         'No tienes ninguna suscripción por el momento.',
       'Last notes': 'Últimas notas',
-      'Latest reports written by this entity':
-        'Últimos informes escritos por esta entidad',
-      'Latest reports about this entity': 'Últimos informes sobre esta entidad',
-      'Last reports about the entity': 'Últimos informes sobre esta entidad',
+      'Latest containers authored by this entity':
+        'Últimos contenedores creados por esta entidad',
+      'Latest containers about the object': 'Últimos contenedores sobre el objeto',
       'Last observables': 'Últimos observables',
       'observable(s)': 'observable(s)',
       'Last modified entities': 'Últimas entidades modificadas',
@@ -2178,11 +2177,9 @@ const i18n = {
       'You have no subscription for the moment.':
         "Vous n'avez aucune souscription pour le moment.",
       'Last notes': 'Dernières notes',
-      'Latest reports written by this entity':
-        'Derniers rapports écrits par cette entité',
-      'Latest reports about this entity':
-        "Derniers rapports à propos de l'élément",
-      'Last reports about the entity': "Derniers rapports à propos de l'entité",
+      'Latest containers authored by this entity':
+        'Derniers conteneurs créés par cette entité',
+      'Latest containers about the object': "Derniers conteneurs à propos de l'object",
       'Last observables': 'Derniers observables',
       'observable(s)': 'observable(s)',
       'Last modified entities': 'Dernières entités modifiées',
@@ -2775,7 +2772,7 @@ const i18n = {
       entity_Feedback: 'Commentaire',
       'entity_Case-Rfi': "Demande d'information",
       'entity_Case-Rft': 'Demande de retrait',
-      'entity_Case-Incident': 'Réponse aux incidents',
+      'entity_Case-Incident': 'Réponse aux case_incident',
       'entity_Case-Task': 'Tâches',
       entity_Arsenal: 'Arsenal',
       entity_Entities: 'Entité',
@@ -3381,7 +3378,7 @@ const i18n = {
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les arsenal, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
       'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
-        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les case_incident.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':
@@ -4092,8 +4089,8 @@ const i18n = {
         'このエンティティによって作成された最新のレポート',
       'Latest reports about this entity':
         'このエンティティに関連する最新のレポート',
-      'Last reports about the entity':
-        'このエンティティに関連する最新のレポート',
+      'Latest containers about the object':
+        'オブジェクトに関する最後のコンテナ',
       'Last observables': '最新の観測結果',
       'observable(s)': '観測結果',
       'Last modified entities': '最後に変更されたエンティティ',
@@ -5928,9 +5925,8 @@ const i18n = {
       Disable: '禁用',
       Rescan: '重新扫描',
       'Last notes': '最后注释',
-      'Latest reports written by this entity': '该实体编写的最新报告',
-      'Latest reports about this entity': '关于该实体的最新报告',
-      'Last reports about the entity': '关于该实体的最后报告',
+      'Latest containers authored by this entity': '该实体编写的最新报告',
+      'Latest containers about the object': '关于对象的最后一个容器',
       'Last observables': '最后的可观测数据',
       'observable(s)': '可观测数据',
       'Last modified entities': '最后修改的实体',

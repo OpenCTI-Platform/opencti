@@ -98,7 +98,7 @@ class StixCoreObjectIncidentsAreaChart extends Component {
                 )}
                 series={[
                   {
-                    name: t('Number of incidents'),
+                    name: t('Number of case_incident'),
                     data: chartData,
                   },
                 ]}

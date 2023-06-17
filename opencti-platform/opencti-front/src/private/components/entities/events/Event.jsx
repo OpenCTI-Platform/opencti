@@ -7,7 +7,6 @@ import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import EventEdition from './EventEdition';
 import EventPopover from './EventPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -17,6 +16,7 @@ import StixCoreObjectExternalReferences from '../../analysis/external_references
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import EventDetails from './EventDetails';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
   container: {
@@ -62,8 +62,8 @@ class EventComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={event.id}
+            <StixCoreObjectOrStixRelationshipLastContainers
+              stixCoreObjectOrStixRelationshipId={event.id}
             />
           </Grid>
         </Grid>
@@ -82,7 +82,9 @@ class EventComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={event.id}
-          defaultMarkings={(event.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(event.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <EventEdition eventId={event.id} />

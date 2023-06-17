@@ -22,6 +22,7 @@ import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import ItemIcon from '../../../../components/ItemIcon';
 import { hexToRGB, itemColor } from '../../../../utils/Colors';
 import { defaultValue } from '../../../../utils/Graph';
+import ItemMarkings from '../../../../components/ItemMarkings';
 
 const styles = (theme) => ({
   item: {
@@ -91,7 +92,7 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
         </ListItemIcon>
         <ListItemText
           primary={
-            <div>
+            <>
               <div
                 className={classes.bodyItem}
                 style={{ width: dataColumns.relationship_type.width }}
@@ -112,7 +113,10 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                   classes={{ root: classes.chipInList }}
                   style={{
                     width: 140,
-                    backgroundColor: hexToRGB(itemColor(element.entity_type), 0.08),
+                    backgroundColor: hexToRGB(
+                      itemColor(element.entity_type),
+                      0.08,
+                    ),
                     color: itemColor(element.entity_type),
                     border: `1px solid ${itemColor(element.entity_type)}`,
                   }}
@@ -142,9 +146,23 @@ class SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineComponent extend
                 className={classes.bodyItem}
                 style={{ width: dataColumns.confidence.width }}
               >
-                <ItemConfidence confidence={node.confidence} entityType={node.entity_type} variant="inList" />
+                <ItemConfidence
+                  confidence={node.confidence}
+                  entityType={node.entity_type}
+                  variant="inList"
+                />
               </div>
-            </div>
+              <div
+                className={classes.bodyItem}
+                style={{ width: dataColumns.markings.width }}
+              >
+                <ItemMarkings
+                  variant="inList"
+                  markingDefinitionsEdges={node.objectMarking.edges}
+                  limit={1}
+                />
+              </div>
+            </>
           }
         />
         <ListItemSecondaryAction>
@@ -203,6 +221,17 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
             rule {
               id
               name
+            }
+          }
+          objectMarking {
+            edges {
+              node {
+                id
+                definition_type
+                definition
+                x_opencti_order
+                x_opencti_color
+              }
             }
           }
           from {
@@ -360,20 +389,20 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
             }
             ... on Report {
-                name
+              name
             }
             ... on Grouping {
-                name
+              name
             }
             ... on Note {
-                attribute_abstract
-                content
+              attribute_abstract
+              content
             }
             ... on Opinion {
-                opinion
+              opinion
             }
             ... on ObservedData {
-                name
+              name
             }
             ... on StixCyberObservable {
               id
@@ -599,20 +628,20 @@ const SimpleStixObjectOrStixRelationshipStixCoreRelationshipLineFragment = creat
               name
             }
             ... on Report {
-                name
+              name
             }
             ... on Grouping {
-                name
+              name
             }
             ... on Note {
-                attribute_abstract
-                content
+              attribute_abstract
+              content
             }
             ... on Opinion {
-                opinion
+              opinion
             }
             ... on ObservedData {
-                name
+              name
             }
             ... on StixCyberObservable {
               id

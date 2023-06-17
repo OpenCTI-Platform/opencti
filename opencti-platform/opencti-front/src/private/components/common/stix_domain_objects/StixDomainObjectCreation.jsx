@@ -45,7 +45,7 @@ import { DataSourceCreationForm } from '../../techniques/data_sources/DataSource
 import { DataComponentCreationForm } from '../../techniques/data_components/DataComponentCreation';
 import { CourseOfActionCreationForm } from '../../techniques/courses_of_action/CourseOfActionCreation';
 import { NoteCreationForm } from '../../analysis/notes/NoteCreation';
-import { CaseIncidentCreationForm } from '../../cases/incidents/CaseIncidentCreation';
+import { CaseIncidentCreationForm } from '../../cases/case_incident/CaseIncidentCreation';
 import useGranted, {
   KNOWLEDGE_KNUPDATE,
 } from '../../../../utils/hooks/useGranted';

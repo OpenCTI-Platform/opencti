@@ -8,7 +8,6 @@ import inject18n from '../../../../components/i18n';
 import ChannelDetails from './ChannelDetails';
 import ChannelEdition from './ChannelEdition';
 import ChannelPopover from './ChannelPopover';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -17,6 +16,7 @@ import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomai
 import StixCoreObjectExternalReferences from '../../analysis/external_references/StixCoreObjectExternalReferences';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
   container: {
@@ -62,8 +62,8 @@ class ChannelComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={channel.id}
+            <StixCoreObjectOrStixRelationshipLastContainers
+              stixCoreObjectOrStixRelationshipId={channel.id}
             />
           </Grid>
         </Grid>
@@ -82,7 +82,9 @@ class ChannelComponent extends Component {
         </Grid>
         <StixCoreObjectOrStixCoreRelationshipNotes
           stixCoreObjectOrStixCoreRelationshipId={channel.id}
-          defaultMarkings={(channel.objectMarking?.edges ?? []).map((edge) => edge.node)}
+          defaultMarkings={(channel.objectMarking?.edges ?? []).map(
+            (edge) => edge.node,
+          )}
         />
         <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <ChannelEdition channelId={channel.id} />

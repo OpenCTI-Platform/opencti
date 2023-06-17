@@ -13,7 +13,7 @@ import CaseRfis from './CaseRfis';
 import CaseRfts from './CaseRfts';
 import Feedbacks from './Feedbacks';
 import RootFeedback from './feedbacks/Root';
-import RootIncident from './incidents/Root';
+import RootIncident from './case_incident/Root';
 import Resolver from './Resolver';
 
 const Root = () => {

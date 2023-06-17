@@ -7,7 +7,6 @@ import Grid from '@mui/material/Grid';
 import inject18n from '../../../../components/i18n';
 import StixCyberObservableDetails from './StixCyberObservableDetails';
 import StixCyberObservableEdition from './StixCyberObservableEdition';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import StixCoreObjectOrStixCoreRelationshipNotes from '../../analysis/notes/StixCoreObjectOrStixCoreRelationshipNotes';
@@ -16,6 +15,7 @@ import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCore
 import SimpleStixObjectOrStixRelationshipStixCoreRelationships from '../../common/stix_core_relationships/SimpleStixObjectOrStixRelationshipStixCoreRelationships';
 import StixCyberObservableOverview from './StixCyberObservableOverview';
 import StixCyberObservableHeader from './StixCyberObservableHeader';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const styles = () => ({
   container: {
@@ -64,8 +64,8 @@ class StixCyberObservableComponent extends Component {
             />
           </Grid>
           <Grid item={true} xs={6}>
-            <StixCoreObjectOrStixCoreRelationshipLastReports
-              stixCoreObjectOrStixCoreRelationshipId={stixCyberObservable.id}
+            <StixCoreObjectOrStixRelationshipLastContainers
+              stixCoreObjectOrStixRelationshipId={stixCyberObservable.id}
             />
           </Grid>
         </Grid>

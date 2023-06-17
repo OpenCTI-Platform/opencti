@@ -100,15 +100,15 @@ const dataSourceMutation = graphql`
 `;
 
 interface DataSourceAddInput {
-  name: string
-  description: string
-  createdBy: Option | undefined
-  objectMarking: Option[]
-  objectLabel: Option[]
-  externalReferences: Option[]
-  confidence: number | undefined
-  x_mitre_platforms: string[]
-  collection_layers: string[]
+  name: string;
+  description: string;
+  createdBy: Option | undefined;
+  objectMarking: Option[];
+  objectLabel: Option[];
+  externalReferences: Option[];
+  confidence: number | undefined;
+  x_mitre_platforms: string[];
+  collection_layers: string[];
   file: File | undefined;
 }
 
@@ -143,13 +143,9 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const classes = useStyles();
   const { t } = useFormatter();
   const basicShape = {
-    name: Yup.string()
-      .min(2)
-      .required(t('This field is required')),
-    description: Yup.string()
-      .nullable(),
-    confidence: Yup.number()
-      .nullable(),
+    name: Yup.string().min(2).required(t('This field is required')),
+    description: Yup.string().nullable(),
+    confidence: Yup.number().nullable(),
   };
   const dataSourceValidator = useSchemaCreationValidation(
     DATA_SOURCE_TYPE,
@@ -159,11 +155,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
   const [commit] = useMutation(dataSourceMutation);
   const onSubmit: FormikConfig<DataSourceAddInput>['onSubmit'] = (
     values: DataSourceAddInput,
-    {
-      setSubmitting,
-      setErrors,
-      resetForm,
-    }: FormikHelpers<DataSourceAddInput>,
+    { setSubmitting, setErrors, resetForm }: FormikHelpers<DataSourceAddInput>,
   ) => {
     const input: DataSourceCreationMutation$variables['input'] = {
       name: values.name,
@@ -200,21 +192,18 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
     });
   };
 
-  const initialValues = useDefaultValues<DataSourceAddInput>(
-    DATA_SOURCE_TYPE,
-    {
-      name: inputValue || '',
-      description: '',
-      createdBy: defaultCreatedBy,
-      objectMarking: defaultMarkingDefinitions ?? [],
-      objectLabel: [],
-      externalReferences: [],
-      confidence: defaultConfidence,
-      x_mitre_platforms: [],
-      collection_layers: [],
-      file: undefined,
-    },
-  );
+  const initialValues = useDefaultValues<DataSourceAddInput>(DATA_SOURCE_TYPE, {
+    name: inputValue || '',
+    description: '',
+    createdBy: defaultCreatedBy,
+    objectMarking: defaultMarkingDefinitions ?? [],
+    objectLabel: [],
+    externalReferences: [],
+    confidence: defaultConfidence,
+    x_mitre_platforms: [],
+    collection_layers: [],
+    file: undefined,
+  });
 
   return (
     <Formik<DataSourceAddInput>
@@ -223,13 +212,7 @@ export const DataSourceCreationForm: FunctionComponent<DataSourceFormProps> = ({
       onSubmit={onSubmit}
       onReset={onReset}
     >
-      {({
-        submitForm,
-        handleReset,
-        isSubmitting,
-        setFieldValue,
-        values,
-      }) => (
+      {({ submitForm, handleReset, isSubmitting, setFieldValue, values }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}

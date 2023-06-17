@@ -99,7 +99,7 @@ const IncidentPopover = ({ id }: { id: string }) => {
       onCompleted: () => {
         setDeleting(false);
         handleClose();
-        navigate('/dashboard/events/incidents');
+        navigate('/dashboard/events/case_incident');
       },
     });
   };

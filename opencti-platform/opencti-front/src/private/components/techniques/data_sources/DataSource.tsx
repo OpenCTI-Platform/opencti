@@ -2,7 +2,6 @@ import React from 'react';
 import { graphql, useFragment } from 'react-relay';
 import Grid from '@mui/material/Grid';
 import makeStyles from '@mui/styles/makeStyles';
-import StixCoreObjectOrStixCoreRelationshipLastReports from '../../analysis/reports/StixCoreObjectOrStixCoreRelationshipLastReports';
 import StixDomainObjectHeader from '../../common/stix_domain_objects/StixDomainObjectHeader';
 import Security from '../../../../utils/Security';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
@@ -15,6 +14,7 @@ import { DataSource_dataSource$key } from './__generated__/DataSource_dataSource
 import DataSourcePopover from './DataSourcePopover';
 import DataSourceEdition from './DataSourceEdition';
 import DataSourceDetailsComponent from './DataSourceDetails';
+import StixCoreObjectOrStixRelationshipLastContainers from '../../common/containers/StixCoreObjectOrStixRelationshipLastContainers';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {
@@ -121,8 +121,8 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
           />
         </Grid>
         <Grid item={true} xs={6}>
-          <StixCoreObjectOrStixCoreRelationshipLastReports
-            stixCoreObjectOrStixCoreRelationshipId={dataSource.id}
+          <StixCoreObjectOrStixRelationshipLastContainers
+            stixCoreObjectOrStixRelationshipId={dataSource.id}
           />
         </Grid>
       </Grid>

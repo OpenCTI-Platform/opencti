@@ -300,7 +300,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             || location.pathname.match('/dashboard/cases/[a-z_]+$')) && (
             <TopMenuCases />
           )}
-          {location.pathname.includes('/dashboard/cases/incidents/') && (
+          {location.pathname.includes('/dashboard/cases/case_incident/') && (
             <TopMenuCaseIncident />
           )}
           {location.pathname.includes('/dashboard/cases/rfis/') && (
@@ -334,7 +334,7 @@ const TopBar: FunctionComponent<TopBarProps> = ({
             || location.pathname.match('/dashboard/events/[a-z_]+$')) && (
             <TopMenuEvents />
           )}
-          {location.pathname.includes('/dashboard/events/incidents/') && (
+          {location.pathname.includes('/dashboard/events/case_incident/') && (
             <TopMenuIncident />
           )}
           {location.pathname.includes('/dashboard/events/observed_data/') && (

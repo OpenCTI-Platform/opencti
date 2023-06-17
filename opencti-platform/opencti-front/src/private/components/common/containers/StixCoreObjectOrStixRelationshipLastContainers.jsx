@@ -12,11 +12,13 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Skeleton from '@mui/material/Skeleton';
 import Tooltip from '@mui/material/Tooltip';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import { QueryRenderer } from '../../../../relay/environment';
 import ItemIcon from '../../../../components/ItemIcon';
 import ItemMarkings from '../../../../components/ItemMarkings';
 import { resolveLink } from '../../../../utils/Entity';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   paper: {
@@ -32,11 +34,14 @@ const styles = (theme) => ({
     maxHeight: 50,
     paddingRight: 0,
   },
-  itemText: {
+  bodyItem: {
+    height: 20,
+    fontSize: 13,
+    float: 'left',
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 10,
+    paddingRight: 5,
   },
   itemIcon: {
     marginRight: 0,
@@ -50,31 +55,10 @@ const styles = (theme) => ({
     fontSize: 12,
     height: 20,
     float: 'left',
-    width: 120,
+    textTransform: 'uppercase',
+    borderRadius: 0,
   },
 });
-
-const inlineStyles = {
-  itemAuthor: {
-    width: 100,
-    minWidth: 100,
-    maxWidth: 100,
-    marginRight: 24,
-    marginLeft: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-  itemDate: {
-    width: 100,
-    minWidth: 100,
-    maxWidth: 100,
-    marginRight: 24,
-    whiteSpace: 'nowrap',
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-  },
-};
 
 const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
   query StixCoreObjectOrStixRelationshipLastContainersQuery(
@@ -340,8 +324,14 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
 
 class StixCoreObjectOrStixRelationshipLastContainers extends Component {
   render() {
-    const { t, fsd, classes, stixCoreObjectOrStixRelationshipId } = this.props;
-    const filters = [];
+    const { t, fsd, classes, stixCoreObjectOrStixRelationshipId, authorId } = this.props;
+    const filters = [
+      {
+        key: 'entity_type',
+        values: ['Report', 'Case', 'Observed-Data', 'Grouping'],
+      },
+    ];
+    if (authorId) filters.push({ key: 'createdBy', values: [authorId] });
     if (stixCoreObjectOrStixRelationshipId) {
       filters.push({
         key: 'objectContains',
@@ -351,7 +341,9 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
     return (
       <div style={{ height: '100%' }}>
         <Typography variant="h4" gutterBottom={true}>
-          {t('Latest containers about this entity')}
+          {authorId
+            ? t('Latest containers authored by this entity')
+            : t('Latest containers about the object')}
         </Typography>
         <Paper classes={{ root: classes.paper }} variant="outlined">
           <QueryRenderer
@@ -386,28 +378,64 @@ class StixCoreObjectOrStixRelationshipLastContainers extends Component {
                             </ListItemIcon>
                             <ListItemText
                               primary={
-                                <Tooltip title={container.name}>
-                                  <div className={classes.itemText}>
-                                    {container.name}
+                                <>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={{ width: '12%' }}
+                                  >
+                                    <Chip
+                                      classes={{ root: classes.chipInList }}
+                                      style={{
+                                        width: 120,
+                                        backgroundColor: hexToRGB(
+                                          itemColor(container.entity_type),
+                                          0.08,
+                                        ),
+                                        color: itemColor(container.entity_type),
+                                        border: `1px solid ${itemColor(
+                                          container.entity_type,
+                                        )}`,
+                                      }}
+                                      label={t(
+                                        `entity_${container.entity_type}`,
+                                      )}
+                                    />
                                   </div>
-                                </Tooltip>
+                                  <Tooltip title={container.name}>
+                                    <div
+                                      className={classes.bodyItem}
+                                      style={{ width: '37%' }}
+                                    >
+                                      {container.name}
+                                    </div>
+                                  </Tooltip>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={{ width: '20%' }}
+                                  >
+                                    {container.createdBy?.name ?? ''}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={{ width: '12%' }}
+                                  >
+                                    {fsd(container.created)}
+                                  </div>
+                                  <div
+                                    className={classes.bodyItem}
+                                    style={{ width: '15%' }}
+                                  >
+                                    <ItemMarkings
+                                      variant="inList"
+                                      markingDefinitionsEdges={
+                                        container.objectMarking.edges
+                                      }
+                                      limit={1}
+                                    />
+                                  </div>
+                                </>
                               }
                             />
-                            <div style={inlineStyles.itemAuthor}>
-                              {R.pathOr('', ['createdBy', 'name'], container)}
-                            </div>
-                            <div style={inlineStyles.itemDate}>
-                              {fsd(container.created)}
-                            </div>
-                            <div style={{ width: 110, paddingRight: 20 }}>
-                              <ItemMarkings
-                                variant="inList"
-                                markingDefinitionsEdges={
-                                  container.objectMarking.edges
-                                }
-                                limit={1}
-                              />
-                            </div>
                           </ListItem>
                         );
                       })}

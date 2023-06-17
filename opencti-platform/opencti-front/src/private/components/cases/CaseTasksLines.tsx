@@ -29,6 +29,7 @@ import CaseTaskCreation from './case_task/CaseTaskCreation';
 import CaseTasksLineTitles from './case_task/CaseTasksLineTitles';
 import CaseTasksLine from './CaseTasksLine';
 import { caseSetTemplateQuery, generateConnectionId } from './CaseUtils';
+import Transition from '../../../components/Transition';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -193,8 +194,12 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           </IconButton>
         </Tooltip>
         <Dialog
+          PaperProps={{ elevation: 1 }}
           open={openCaseTemplate}
           onClose={() => setOpenCaseTemplate(false)}
+          TransitionComponent={Transition}
+          fullWidth={true}
+          maxWidth="md"
         >
           <DialogTitle>{t('Apply case templates')}</DialogTitle>
           <DialogContent>
