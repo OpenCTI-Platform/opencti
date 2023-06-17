@@ -11222,11 +11222,14 @@ export type MalwareAddInput = {
 };
 
 export enum MalwareAnalysesFilter {
+  AnalysisSco = 'analysisSco',
   Confidence = 'confidence',
   Created = 'created',
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
+  HostVm = 'hostVm',
+  InstalledSoftware = 'installedSoftware',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
@@ -11235,6 +11238,7 @@ export enum MalwareAnalysesFilter {
   OperatingSystem = 'operatingSystem',
   Product = 'product',
   ResultName = 'result_name',
+  Sample = 'sample',
   Submitted = 'submitted',
   UpdatedAt = 'updated_at',
   XOpenctiWorkflowId = 'x_opencti_workflow_id'

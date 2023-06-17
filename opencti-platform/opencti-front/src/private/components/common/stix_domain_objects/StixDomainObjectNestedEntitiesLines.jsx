@@ -8,11 +8,13 @@ import { Link } from 'react-router-dom';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
+import Chip from '@mui/material/Chip';
 import inject18n from '../../../../components/i18n';
 import ItemIcon from '../../../../components/ItemIcon';
 import StixNestedRefRelationshipPopover from '../stix_nested_ref_relationships/StixNestedRefRelationshipPopover';
 import { resolveLink } from '../../../../utils/Entity';
 import { defaultValue } from '../../../../utils/Graph';
+import { hexToRGB, itemColor } from '../../../../utils/Colors';
 
 const styles = (theme) => ({
   item: {
@@ -47,6 +49,13 @@ const styles = (theme) => ({
     height: '1em',
     backgroundColor: theme.palette.grey[700],
   },
+  chipInList: {
+    fontSize: 12,
+    height: 20,
+    float: 'left',
+    textTransform: 'uppercase',
+    borderRadius: 0,
+  },
 });
 
 class StixDomainObjectNestedEntitiesLinesComponent extends Component {
@@ -56,65 +65,92 @@ class StixDomainObjectNestedEntitiesLinesComponent extends Component {
       <div>
         {data
           && data.stixNestedRefRelationships
-          && data.stixNestedRefRelationships.edges.map(
-            (edge) => {
-              const { node } = edge;
-              const stixCoreObject = node.from.id === stixDomainObjectId
-                ? node.to
-                : node.from;
-              const link = `${resolveLink(stixCoreObject.entity_type)}/${
-                stixCoreObject.id
-              }`;
-              return (
-                <ListItem
-                  key={stixCoreObject.id}
-                  classes={{ root: classes.item }}
-                  divider={true}
-                  button={true}
-                  component={Link}
-                  to={link}
-                >
-                  <ListItemIcon classes={{ root: classes.itemIcon }}>
-                    <ItemIcon type={stixCoreObject.entity_type} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={
-                      <div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '20%' }}
-                        >
-                          {t(
-                            `relationship_${node.relationship_type}`,
-                          )}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '20%' }}
-                        >
-                          {t(`entity_${stixCoreObject.entity_type}`)}
-                        </div>
-                        <div
-                          className={classes.bodyItem}
-                          style={{ width: '40%' }}
-                        >
-                          {defaultValue(stixCoreObject)}
-                        </div>
-                        <div className={classes.bodyItem}>
-                          {fsd(node.start_time)}
-                        </div>
+          && data.stixNestedRefRelationships.edges.map((edge) => {
+            const { node } = edge;
+            const stixCoreObject = node.from.id === stixDomainObjectId ? node.to : node.from;
+            const link = `${resolveLink(stixCoreObject.entity_type)}/${
+              stixCoreObject.id
+            }`;
+            return (
+              <ListItem
+                key={stixCoreObject.id}
+                classes={{ root: classes.item }}
+                divider={true}
+                button={true}
+                component={Link}
+                to={link}
+              >
+                <ListItemIcon classes={{ root: classes.itemIcon }}>
+                  <ItemIcon type={stixCoreObject.entity_type} />
+                </ListItemIcon>
+                <ListItemText
+                  primary={
+                    <div>
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: '20%' }}
+                      >
+                        <Chip
+                          variant="outlined"
+                          classes={{ root: classes.chipInList }}
+                          style={{ width: 120 }}
+                          color="primary"
+                          label={t(`relationship_${node.relationship_type}`)}
+                        />
                       </div>
-                    }
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: '20%' }}
+                      >
+                        <Chip
+                          classes={{ root: classes.chipInList }}
+                          style={{
+                            width: 140,
+                            backgroundColor: hexToRGB(
+                              itemColor(stixCoreObject.entity_type),
+                              0.08,
+                            ),
+                            color: itemColor(stixCoreObject.entity_type),
+                            border: `1px solid ${itemColor(
+                              stixCoreObject.entity_type,
+                            )}`,
+                          }}
+                          label={
+                            <>
+                              <ItemIcon
+                                variant="inline"
+                                type={stixCoreObject.entity_type}
+                              />
+                              {stixCoreObject.relationship_type
+                                ? t(
+                                  `relationship_${stixCoreObject.entity_type}`,
+                                )
+                                : t(`entity_${stixCoreObject.entity_type}`)}
+                            </>
+                          }
+                        />
+                      </div>
+                      <div
+                        className={classes.bodyItem}
+                        style={{ width: '40%' }}
+                      >
+                        {defaultValue(stixCoreObject)}
+                      </div>
+                      <div className={classes.bodyItem}>
+                        {fsd(node.start_time)}
+                      </div>
+                    </div>
+                  }
+                />
+                <ListItemSecondaryAction>
+                  <StixNestedRefRelationshipPopover
+                    stixNestedRefRelationshipId={node.id}
+                    paginationOptions={paginationOptions}
                   />
-                  <ListItemSecondaryAction>
-                    <StixNestedRefRelationshipPopover stixNestedRefRelationshipId={ node.id }
-                                                      paginationOptions={paginationOptions}
-                    />
-                  </ListItemSecondaryAction>
-                </ListItem>
-              );
-            },
-          )}
+                </ListItemSecondaryAction>
+              </ListItem>
+            );
+          })}
       </div>
     );
   }

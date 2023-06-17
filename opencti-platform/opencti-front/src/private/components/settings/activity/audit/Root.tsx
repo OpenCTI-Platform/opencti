@@ -23,34 +23,36 @@ import { RootQuery } from './__generated__/RootQuery.graphql';
 import EnterpriseEdition from '../../../common/EnterpriseEdition';
 
 export const rootQuery = graphql`
-    query RootQuery {
-        settings {
-            id
-            enterprise_edition
-        }
+  query RootQuery {
+    settings {
+      id
+      enterprise_edition
     }
+  }
 `;
 
 interface ConfigurationComponentProps {
-  queryRef: PreloadedQuery<RootQuery>,
+  queryRef: PreloadedQuery<RootQuery>;
 }
 
-const AuditComponent: FunctionComponent<ConfigurationComponentProps> = ({ queryRef }) => {
+const AuditComponent: FunctionComponent<ConfigurationComponentProps> = ({
+  queryRef,
+}) => {
   const { settings } = usePreloadedQuery<RootQuery>(rootQuery, queryRef);
   if (isEmptyField(settings.enterprise_edition)) {
-    return <EnterpriseEdition/>;
+    return <EnterpriseEdition />;
   }
-  return <Audit/>;
+  return <Audit />;
 };
 
 const Root = () => {
   const queryRef = useQueryLoading<RootQuery>(rootQuery, {});
   return queryRef ? (
-        <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
-            <AuditComponent queryRef={queryRef} />
-        </React.Suspense>
+    <React.Suspense fallback={<Loader variant={LoaderVariant.inElement} />}>
+      <AuditComponent queryRef={queryRef} />
+    </React.Suspense>
   ) : (
-        <Loader variant={LoaderVariant.inElement} />
+    <Loader variant={LoaderVariant.inElement} />
   );
 };
 

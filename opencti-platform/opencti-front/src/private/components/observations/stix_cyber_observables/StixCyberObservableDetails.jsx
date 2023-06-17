@@ -1,28 +1,32 @@
-import React from 'react';
-import { dissoc, filter, includes, map, pipe, toPairs } from 'ramda';
-import { createFragmentContainer, graphql } from 'react-relay';
-import Paper from '@mui/material/Paper';
-import Typography from '@mui/material/Typography';
-import Grid from '@mui/material/Grid';
-import { GetAppOutlined } from '@mui/icons-material';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import makeStyles from '@mui/styles/makeStyles';
-import { useFormatter } from '../../../../components/i18n';
-import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
-import { APP_BASE_PATH } from '../../../../relay/environment';
-import StixCyberObservableIndicators from './StixCyberObservableIndicators';
-import { dateAttributes, ignoredAttributes } from '../../../../utils/hooks/useAttributes';
-import ItemOpenVocab from '../../../../components/ItemOpenVocab';
-import ItemCopy from '../../../../components/ItemCopy';
-import useVocabularyCategory from '../../../../utils/hooks/useVocabularyCategory';
+import React from "react";
+import { dissoc, filter, includes, map, pipe, toPairs } from "ramda";
+import { createFragmentContainer, graphql } from "react-relay";
+import Paper from "@mui/material/Paper";
+import Typography from "@mui/material/Typography";
+import Grid from "@mui/material/Grid";
+import { GetAppOutlined } from "@mui/icons-material";
+import Button from "@mui/material/Button";
+import Divider from "@mui/material/Divider";
+import makeStyles from "@mui/styles/makeStyles";
+import { useFormatter } from "../../../../components/i18n";
+import ExpandableMarkdown from "../../../../components/ExpandableMarkdown";
+import { APP_BASE_PATH } from "../../../../relay/environment";
+import StixCyberObservableIndicators from "./StixCyberObservableIndicators";
+import {
+  dateAttributes,
+  ignoredAttributes,
+} from "../../../../utils/hooks/useAttributes";
+import ItemOpenVocab from "../../../../components/ItemOpenVocab";
+import ItemCopy from "../../../../components/ItemCopy";
+import useVocabularyCategory from "../../../../utils/hooks/useVocabularyCategory";
+import StixCyberObservableMalwareAnalyses from "./StixCyberObservableMalwareAnalyses";
 
 const useStyles = makeStyles(() => ({
   paper: {
-    height: '100%',
-    minHeight: '100%',
-    margin: '10px 0 0 0',
-    padding: '15px',
+    height: "100%",
+    minHeight: "100%",
+    margin: "10px 0 0 0",
+    padding: "15px",
     borderRadius: 6,
   },
 }));
@@ -32,49 +36,59 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
   const { t, b, fldt } = useFormatter();
   const { isVocabularyField, fieldToCategory } = useVocabularyCategory();
   const observableAttributes = pipe(
-    dissoc('id'),
-    dissoc('entity_type'),
-    dissoc('obsContent'),
+    dissoc("id"),
+    dissoc("entity_type"),
+    dissoc("obsContent"),
     toPairs,
     map((n) => ({ key: n[0], value: n[1] })),
     filter(
-      (n) => n.value
-        && !includes(n.key, ignoredAttributes)
-        && !n.key.startsWith('__'),
-    ),
+      (n) =>
+        n.value &&
+        !includes(n.key, ignoredAttributes) &&
+        !n.key.startsWith("__")
+    )
   )(stixCyberObservable);
-  const file = stixCyberObservable.importFiles
-    && stixCyberObservable.importFiles.edges.length > 0
-    ? stixCyberObservable.importFiles.edges[0].node
-    : null;
+  const file =
+    stixCyberObservable.importFiles &&
+    stixCyberObservable.importFiles.edges.length > 0
+      ? stixCyberObservable.importFiles.edges[0].node
+      : null;
+  const isObservableAnalysable = [
+    "StixFile",
+    "Domain-Name",
+    "Url",
+    "Hostname",
+    "Artifact",
+    "Network-Traffic",
+  ].includes(stixCyberObservable.entity_type);
   return (
-    <div style={{ height: '100%' }} className="break">
+    <div style={{ height: "100%" }} className="break">
       <Typography variant="h4" gutterBottom={true}>
-        {t('Details')}
+        {t("Details")}
       </Typography>
       <Paper classes={{ root: classes.paper }} variant="outlined">
         <Grid container={true} spacing={3} style={{ marginBottom: 10 }}>
           {file && (
             <Grid item={true} xs={6}>
               <Typography variant="h3" gutterBottom={true}>
-                {t('File')}
+                {t("File")}
               </Typography>
               <Button
                 href={`${APP_BASE_PATH}/storage/get/${encodeURIComponent(
-                  file.id,
+                  file.id
                 )}`}
                 variant="outlined"
                 color="secondary"
                 size="small"
                 startIcon={<GetAppOutlined />}
               >
-                {t('Download')} ({b(file.size)})
+                {t("Download")} ({b(file.size)})
               </Button>
             </Grid>
           )}
           <Grid item={true} xs={6}>
             <Typography variant="h3" gutterBottom={true}>
-              {t('Description')}
+              {t("Description")}
             </Typography>
             <ExpandableMarkdown
               source={stixCyberObservable.x_opencti_description}
@@ -82,7 +96,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             />
           </Grid>
           {observableAttributes.map((observableAttribute) => {
-            if (observableAttribute.key === 'hashes') {
+            if (observableAttribute.key === "hashes") {
               return observableAttribute.value.map((hash) => (
                 <Grid key={hash.algorithm} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -94,7 +108,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                 </Grid>
               ));
             }
-            if (observableAttribute.key === 'startup_info') {
+            if (observableAttribute.key === "startup_info") {
               return observableAttribute.value.map((hash) => (
                 <Grid key={hash.key} item={true} xs={6}>
                   <Typography variant="h3" gutterBottom={true}>
@@ -109,7 +123,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
             if (
               isVocabularyField(
                 stixCyberObservable.entity_type,
-                observableAttribute.key,
+                observableAttribute.key
               )
             ) {
               return (
@@ -121,7 +135,7 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
                     small={false}
                     type={fieldToCategory(
                       stixCyberObservable.entity_type,
-                      observableAttribute.key,
+                      observableAttribute.key
                     )}
                     value={observableAttribute.value}
                   />
@@ -133,20 +147,20 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
               finalValue = fldt(finalValue);
             }
             if (finalValue === true) {
-              finalValue = 'TRUE';
+              finalValue = "TRUE";
             } else if (finalValue === false) {
-              finalValue = 'FALSE';
+              finalValue = "FALSE";
             }
             if (Array.isArray(finalValue)) {
-              finalValue = finalValue.join('\n');
+              finalValue = finalValue.join("\n");
             }
             return (
               <Grid key={observableAttribute.key} item={true} xs={6}>
                 <Typography variant="h3" gutterBottom={true}>
-                  {t(observableAttribute.key.replace('attribute_', ''))}
+                  {t(observableAttribute.key.replace("attribute_", ""))}
                 </Typography>
                 <pre>
-                  <ItemCopy content={finalValue || '-'} />
+                  <ItemCopy content={finalValue || "-"} />
                 </pre>
               </Grid>
             );
@@ -156,6 +170,11 @@ const StixCyberObservableDetailsComponent = ({ stixCyberObservable }) => {
         <StixCyberObservableIndicators
           stixCyberObservable={stixCyberObservable}
         />
+        {isObservableAnalysable && (
+          <StixCyberObservableMalwareAnalyses
+            observableId={stixCyberObservable.id}
+          />
+        )}
       </Paper>
     </div>
   );
@@ -405,7 +424,7 @@ const StixCyberObservableDetails = createFragmentContainer(
         ...StixCyberObservableIndicators_stixCyberObservable
       }
     `,
-  },
+  }
 );
 
 export default StixCyberObservableDetails;
