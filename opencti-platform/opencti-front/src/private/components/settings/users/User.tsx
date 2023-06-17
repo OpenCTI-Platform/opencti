@@ -44,7 +44,9 @@ import UserHistory from './UserHistory';
 import { areaChartOptions } from '../../../../utils/Charts';
 import { simpleNumberFormat } from '../../../../utils/Number';
 import Transition from '../../../../components/Transition';
-import TriggersLines, { triggersLinesQuery } from '../../profile/triggers/TriggersLines';
+import TriggersLines, {
+  triggersLinesQuery,
+} from '../../profile/triggers/TriggersLines';
 import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import {
   TriggerFilter,
@@ -171,73 +173,67 @@ const userLogsTimeSeriesQuery = graphql`
 `;
 
 const userFragment = graphql`
-    fragment User_user on User
-    @argumentDefinitions(
-        rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
-        rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
-        groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
-        groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
-        organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
-        organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
-    ) {
-        id
-        name
-        description
-        external
-        user_email
-        firstname
-        lastname
-        language
-        api_token
-        otp_activated
-        roles(
-            orderBy: $rolesOrderBy,
-            orderMode: $rolesOrderMode,
-        ) {
-            id
-            name
-            description
-        }
-        capabilities {
-            id
-            name
-        }
-        groups(
-            orderBy: $groupsOrderBy,
-            orderMode: $groupsOrderMode,
-        ) {
-            edges {
-                node {
-                    id
-                    name
-                    description
-                }
-            }
-        }
-        default_hidden_types
-        objectOrganization(
-            orderBy: $organizationsOrderBy,
-            orderMode: $organizationsOrderMode,
-        ) {
-            edges {
-                node {
-                    id
-                    name
-                }
-            }
-        }
-        sessions {
-            id
-            created
-            ttl
-        }
+  fragment User_user on User
+  @argumentDefinitions(
+    rolesOrderBy: { type: "RolesOrdering", defaultValue: name }
+    rolesOrderMode: { type: "OrderingMode", defaultValue: asc }
+    groupsOrderBy: { type: "GroupsOrdering", defaultValue: name }
+    groupsOrderMode: { type: "OrderingMode", defaultValue: asc }
+    organizationsOrderBy: { type: "OrganizationsOrdering", defaultValue: name }
+    organizationsOrderMode: { type: "OrderingMode", defaultValue: asc }
+  ) {
+    id
+    name
+    description
+    external
+    user_email
+    firstname
+    lastname
+    language
+    api_token
+    otp_activated
+    roles(orderBy: $rolesOrderBy, orderMode: $rolesOrderMode) {
+      id
+      name
+      description
     }
-    `;
+    capabilities {
+      id
+      name
+    }
+    groups(orderBy: $groupsOrderBy, orderMode: $groupsOrderMode) {
+      edges {
+        node {
+          id
+          name
+          description
+        }
+      }
+    }
+    default_hidden_types
+    objectOrganization(
+      orderBy: $organizationsOrderBy
+      orderMode: $organizationsOrderMode
+    ) {
+      edges {
+        node {
+          id
+          name
+        }
+      }
+    }
+    sessions {
+      id
+      created
+      ttl
+    }
+  }
+`;
 
 type Session = {
   id: string;
   created?: string;
-  ttl?: number
+  ttl?: number;
 };
 
 interface UserProps {
@@ -257,9 +253,13 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
 
   const user = useFragment(userFragment, userData);
 
-  const [commitUserSessionKill] = useMutation<UserSessionKillMutation>(userSessionKillMutation);
+  const [commitUserSessionKill] = useMutation<UserSessionKillMutation>(
+    userSessionKillMutation,
+  );
   const [commitUserUserSessionsKill] = useMutation<UserUserSessionsKillMutation>(userUserSessionsKillMutation);
-  const [commitUserOtpDeactivation] = useMutation<UserOtpDeactivationMutation>(userOtpDeactivationMutation);
+  const [commitUserOtpDeactivation] = useMutation<UserOtpDeactivationMutation>(
+    userOtpDeactivationMutation,
+  );
 
   useEffect(() => {
     // Refresh the export viewer every interval
@@ -383,8 +383,14 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
   };
 
   const orderedSessions: Session[] = (user.sessions ?? [])
-    .map((s) => ({ created: s?.created ?? '', id: s?.id ?? '', ttl: s?.ttl ?? 0 }))
-    .sort((a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created));
+    .map((s) => ({
+      created: s?.created ?? '',
+      id: s?.id ?? '',
+      ttl: s?.ttl ?? 0,
+    }))
+    .sort(
+      (a: Session, b: Session) => timestamp(a?.created) - timestamp(b?.created),
+    );
 
   const [openLive, setOpenLive] = useState(false);
   const [openDigest, setOpenDigest] = useState(false);
@@ -488,22 +494,21 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   {t('Roles')}
                 </Typography>
                 <List>
-                  {(user.roles ?? [])
-                    .map((role) => (
-                      <ListItem
-                        key={role?.id}
-                        dense={true}
-                        divider={true}
-                        button={true}
-                        component={Link}
-                        to={`/dashboard/settings/accesses/roles/${role?.id}`}
-                      >
-                        <ListItemIcon>
-                          <SecurityOutlined color="primary" />
-                        </ListItemIcon>
-                        <ListItemText primary={role?.name} />
-                      </ListItem>
-                    ))}
+                  {(user.roles ?? []).map((role) => (
+                    <ListItem
+                      key={role?.id}
+                      dense={true}
+                      divider={true}
+                      button={true}
+                      component={Link}
+                      to={`/dashboard/settings/accesses/roles/${role?.id}`}
+                    >
+                      <ListItemIcon>
+                        <SecurityOutlined color="primary" />
+                      </ListItemIcon>
+                      <ListItemText primary={role?.name} />
+                    </ListItem>
+                  ))}
                 </List>
               </Grid>
               <Grid item={true} xs={6}>
@@ -511,21 +516,22 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   {t('Groups')}
                 </Typography>
                 <List>
-                  {user.groups?.edges && user.groups.edges.map((groupEdge) => (
-                    <ListItem
-                      key={groupEdge?.node.id}
-                      dense={true}
-                      divider={true}
-                      button={true}
-                      component={Link}
-                      to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
-                    >
-                      <ListItemIcon>
-                        <GroupOutlined color="primary" />
-                      </ListItemIcon>
-                      <ListItemText primary={groupEdge?.node.name} />
-                    </ListItem>
-                  ))}
+                  {user.groups?.edges
+                    && user.groups.edges.map((groupEdge) => (
+                      <ListItem
+                        key={groupEdge?.node.id}
+                        dense={true}
+                        divider={true}
+                        button={true}
+                        component={Link}
+                        to={`/dashboard/settings/accesses/groups/${groupEdge?.node.id}`}
+                      >
+                        <ListItemIcon>
+                          <GroupOutlined color="primary" />
+                        </ListItemIcon>
+                        <ListItemText primary={groupEdge?.node.name} />
+                      </ListItem>
+                    ))}
                 </List>
               </Grid>
               <Grid item={true} xs={6}>
@@ -569,39 +575,41 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                 </IconButton>
                 <div className="clearfix" />
                 <List>
-                  {orderedSessions && orderedSessions.map((session: Session) => (
-                    <ListItem
-                      key={session.id}
-                      dense={true}
-                      divider={true}
-                      button={false}
-                    >
-                      <ListItemIcon>
-                        <ReceiptOutlined color="primary" fontSize="small" />
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={
-                          <div>
-                            <div style={{ float: 'left', width: '50%' }}>
-                              {nsdt(session.created)}
+                  {orderedSessions
+                    && orderedSessions.map((session: Session) => (
+                      <ListItem
+                        key={session.id}
+                        dense={true}
+                        divider={true}
+                        button={false}
+                      >
+                        <ListItemIcon>
+                          <ReceiptOutlined color="primary" fontSize="small" />
+                        </ListItemIcon>
+                        <ListItemText
+                          primary={
+                            <div>
+                              <div style={{ float: 'left', width: '50%' }}>
+                                {nsdt(session.created)}
+                              </div>
+                              <div style={{ float: 'left', width: '20%' }}>
+                                {session.ttl ? Math.round(session.ttl / 60) : 0}{' '}
+                                {t('minutes')}
+                              </div>
                             </div>
-                            <div style={{ float: 'left', width: '20%' }}>
-                              {session.ttl ? Math.round(session.ttl / 60) : 0} {t('minutes')}
-                            </div>
-                          </div>
-                        }
-                      />
-                      <ListItemSecondaryAction>
-                        <IconButton
-                          aria-label="Kill"
-                          onClick={() => handleOpenKillSession(session.id)}
-                          size="large"
-                        >
-                          <Delete fontSize="small" />
-                        </IconButton>
-                      </ListItemSecondaryAction>
-                    </ListItem>
-                  ))}
+                          }
+                        />
+                        <ListItemSecondaryAction>
+                          <IconButton
+                            aria-label="Kill"
+                            onClick={() => handleOpenKillSession(session.id)}
+                            size="large"
+                          >
+                            <Delete fontSize="small" />
+                          </IconButton>
+                        </ListItemSecondaryAction>
+                      </ListItem>
+                    ))}
                 </List>
               </Grid>
               <Grid item={true} xs={12}>
@@ -621,65 +629,67 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
           </Paper>
         </Grid>
       </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 20, marginTop: 35 }}>
-          <div style={{ height: '100%', marginBottom: 10 }}>
-            <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-              {t('Triggers and Digests')}
-            </Typography>
-            <Tooltip title={t('Add a live trigger')}>
-              <IconButton
-                aria-label="Add"
-                className={classes.createButton}
-                onClick={handleOpenCreateLive}
-                size="medium"
-                color="secondary"
-                style={{ marginLeft: 7 }}
-              >
-                <CampaignOutlined />
-              </IconButton>
-            </Tooltip>
-            <TriggerLiveCreation
+      <div style={{ marginTop: 50 }}>
+        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
+          {t('Triggers and Digests')}
+        </Typography>
+        <Tooltip title={t('Add a live trigger')}>
+          <IconButton
+            aria-label="Add"
+            className={classes.createButton}
+            onClick={handleOpenCreateLive}
+            size="large"
+            color="secondary"
+          >
+            <CampaignOutlined fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <TriggerLiveCreation
+          paginationOptions={paginationOptions}
+          open={openLive}
+          handleClose={() => setOpenLive(false)}
+          recipientId={user.id}
+        />
+        <Tooltip title={t('Add a  regular digest')}>
+          <IconButton
+            aria-label="Add"
+            className={classes.createButton}
+            onClick={handleOpenCreateDigest}
+            size="large"
+            color="secondary"
+          >
+            <BackupTableOutlined fontSize="small" />
+          </IconButton>
+        </Tooltip>
+        <div className="clearfix" />
+        <Paper
+          classes={{ root: classes.paper }}
+          variant="outlined"
+          style={{ marginTop: 0 }}
+        >
+          <TriggerLineTitles dataColumns={dataColumns} />
+          {queryRef && (
+            <TriggersLines
+              queryRef={queryRef}
               paginationOptions={paginationOptions}
-              open={openLive}
-              handleClose={() => setOpenLive(false)}
-              recipientId={user.id}
+              dataColumns={dataColumns}
             />
-            <Tooltip title={t('Add a  regular digest')}>
-              <IconButton
-                aria-label="Add"
-                className={classes.createButton}
-                onClick={handleOpenCreateDigest}
-                size="medium"
-                color="secondary"
-              >
-                <BackupTableOutlined />
-              </IconButton>
-            </Tooltip>
-            <TriggerDigestCreation
-              paginationOptions={paginationOptions}
-              open={openDigest}
-              handleClose={() => setOpenDigest(false)}
-              recipientId={user.id}
-            />
-          </div>
-          <Paper classes={{ root: classes.paper }} variant="outlined" style={{ marginTop: 30 }}>
-            <TriggerLineTitles dataColumns={dataColumns}/>
-            {queryRef && (
-                <TriggersLines
-                  queryRef={queryRef}
-                  paginationOptions={paginationOptions}
-                  dataColumns={dataColumns}
-                />
-            )}
-          </Paper>
-        </Grid>
+          )}
+        </Paper>
+        <TriggerDigestCreation
+          paginationOptions={paginationOptions}
+          open={openDigest}
+          handleClose={() => setOpenDigest(false)}
+          recipientId={user.id}
+        />
+      </div>
       <Grid
         container={true}
         spacing={3}
         classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 35 }}
+        style={{ marginTop: 5 }}
       >
-        <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
+        <Grid item={true} xs={6}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}
           </Typography>
@@ -706,13 +716,15 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
                   }));
                   return (
                     <Chart
-                      options={areaChartOptions(
-                        theme,
-                        true,
-                        fsd,
-                        simpleNumberFormat,
-                        undefined,
-                      ) as ApexOptions}
+                      options={
+                        areaChartOptions(
+                          theme,
+                          true,
+                          fsd,
+                          simpleNumberFormat,
+                          undefined,
+                        ) as ApexOptions
+                      }
                       series={[
                         {
                           name: t('Number of operations'),
@@ -730,7 +742,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             />
           </Paper>
         </Grid>
-        <Grid item={true} xs={6} style={{ marginBottom: 25 }}>
+        <Grid item={true} xs={6}>
           <UserHistory userId={user.id} />
         </Grid>
       </Grid>
@@ -829,29 +841,29 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
 };
 
 export const userQuery = graphql`
-    query UserQuery(
-        $id: String!
-        $rolesOrderBy: RolesOrdering
-        $rolesOrderMode: OrderingMode
-        $groupsOrderBy: GroupsOrdering
-        $groupsOrderMode: OrderingMode
-        $organizationsOrderBy: OrganizationsOrdering
-        $organizationsOrderMode: OrderingMode
-    ) {
-        user(id: $id) {
-            id
-            name
-            ...User_user
-            @arguments(
-                rolesOrderBy: $rolesOrderBy
-                rolesOrderMode: $rolesOrderMode
-                groupsOrderBy: $groupsOrderBy
-                groupsOrderMode: $groupsOrderMode
-                organizationsOrderBy: $organizationsOrderBy
-                organizationsOrderMode: $organizationsOrderMode
-            )
-        }
+  query UserQuery(
+    $id: String!
+    $rolesOrderBy: RolesOrdering
+    $rolesOrderMode: OrderingMode
+    $groupsOrderBy: GroupsOrdering
+    $groupsOrderMode: OrderingMode
+    $organizationsOrderBy: OrganizationsOrdering
+    $organizationsOrderMode: OrderingMode
+  ) {
+    user(id: $id) {
+      id
+      name
+      ...User_user
+        @arguments(
+          rolesOrderBy: $rolesOrderBy
+          rolesOrderMode: $rolesOrderMode
+          groupsOrderBy: $groupsOrderBy
+          groupsOrderMode: $groupsOrderMode
+          organizationsOrderBy: $organizationsOrderBy
+          organizationsOrderMode: $organizationsOrderMode
+        )
     }
+  }
 `;
 
 export default User;

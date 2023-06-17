@@ -1,20 +1,17 @@
 import React from 'react';
 import { graphql, useFragment } from 'react-relay';
-import { CheckCircleOutlined, DoNotDisturbOnOutlined } from '@mui/icons-material';
+import {
+  CheckCircleOutlined,
+  DoNotDisturbOnOutlined,
+} from '@mui/icons-material';
 import ListLines from '../../../../../components/list_lines/ListLines';
 import { SubType_subType$data } from '../__generated__/SubType_subType.graphql';
 import ErrorNotFound from '../../../../../components/ErrorNotFound';
-import {
-  EntitySettingAttributeLine_attribute$data,
-} from './__generated__/EntitySettingAttributeLine_attribute.graphql';
-import {
-  EntitySettingAttributes_entitySetting$key,
-} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
-import { usePaginationLocalStorage } from '../../../../../utils/hooks/useLocalStorage';
-import {
-  DataSourcesLinesPaginationQuery$variables,
-} from '../../../techniques/data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
-import EntitySettingAttributeLines, { computeAttributeNodeType } from './EntitySettingAttributeLines';
+import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
+import { EntitySettingAttributes_entitySetting$key } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
+import EntitySettingAttributeLines, {
+  computeAttributeNodeType,
+} from './EntitySettingAttributeLines';
 import { useFormatter } from '../../../../../components/i18n';
 import { isNotEmptyField } from '../../../../../utils/utils';
 
@@ -34,25 +31,24 @@ const entitySettingAttributesFragment = graphql`
   }
 `;
 
-const LOCAL_STORAGE_KEY_ATTRIBUTES = 'view-attributes';
-
-const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: SubType_subType$data['settings'] }) => {
+const EntitySettingAttributes = ({
+  entitySettingsData,
+  searchTerm,
+}: {
+  entitySettingsData: SubType_subType$data['settings'];
+  searchTerm: string | undefined;
+}) => {
   const { t } = useFormatter();
-
-  const entitySetting = useFragment<EntitySettingAttributes_entitySetting$key>(entitySettingAttributesFragment, entitySettingsData);
+  const entitySetting = useFragment<EntitySettingAttributes_entitySetting$key>(
+    entitySettingAttributesFragment,
+    entitySettingsData,
+  );
   if (!entitySetting) {
     return <ErrorNotFound />;
   }
-
-  const { viewStorage, helpers } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
-    LOCAL_STORAGE_KEY_ATTRIBUTES,
-    { searchTerm: '' },
-  );
-  const { searchTerm } = viewStorage;
-
   const attributesMandatory = entitySetting.attributesDefinitions
-    .filter((attr: { mandatory: boolean, name: string }) => attr.mandatory)
-    .map((attr: { mandatory: boolean, name: string }) => attr.name);
+    .filter((attr: { mandatory: boolean; name: string }) => attr.mandatory)
+    .map((attr: { mandatory: boolean; name: string }) => attr.name);
 
   const dataColumns = {
     name: {
@@ -77,48 +73,49 @@ const EntitySettingAttributes = ({ entitySettingsData }: { entitySettingsData: S
       label: 'Mandatory',
       width: '25%',
       isSortable: false,
-      render: (data: EntitySettingAttributeLine_attribute$data) => <>
-        {attributesMandatory.includes(data.name)
-          ? (
+      render: (data: EntitySettingAttributeLine_attribute$data) => (
+        <>
+          {attributesMandatory.includes(data.name) ? (
             <CheckCircleOutlined
               fontSize="small"
-              color={data.mandatoryType === 'customizable' ? 'success' : 'disabled'} />
+              color={
+                data.mandatoryType === 'customizable' ? 'success' : 'disabled'
+              }
+            />
           ) : (
             <DoNotDisturbOnOutlined
               fontSize="small"
-              color={data.mandatoryType === 'customizable' ? 'primary' : 'disabled'} />
-          )
-        }
-      </>,
+              color={
+                data.mandatoryType === 'customizable' ? 'primary' : 'disabled'
+              }
+            />
+          )}
+        </>
+      ),
     },
     default_value: {
       label: 'Default value(s)',
       width: '25%',
       isSortable: false,
       render: (data: EntitySettingAttributeLine_attribute$data) => {
-        return (
-          isNotEmptyField(data.defaultValues)
-            ? (
-              <CheckCircleOutlined fontSize="small" color="success" />
-            ) : (
-              <DoNotDisturbOnOutlined fontSize="small" color="primary" />
-            )
+        return isNotEmptyField(data.defaultValues) ? (
+          <CheckCircleOutlined fontSize="small" color="success" />
+        ) : (
+          <DoNotDisturbOnOutlined fontSize="small" color="primary" />
         );
       },
     },
   };
-  const datas = entitySetting.attributesDefinitions.map((attr: {
-    label: string | null,
-    name: string,
-    type: string,
-    scale: string | null
-  }) => ({ node: attr }));
-
+  const datas = entitySetting.attributesDefinitions.map(
+    (attr: {
+      label: string | null;
+      name: string;
+      type: string;
+      scale: string | null;
+    }) => ({ node: attr }),
+  );
   return (
-    <ListLines
-      handleSearch={helpers.handleSearch}
-      keyword={searchTerm}
-      dataColumns={dataColumns}>
+    <ListLines dataColumns={dataColumns} noFilters={true}>
       <EntitySettingAttributeLines
         datas={datas}
         dataColumns={dataColumns}
