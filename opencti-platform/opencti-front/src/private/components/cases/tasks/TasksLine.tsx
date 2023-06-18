@@ -8,10 +8,12 @@ import Checkbox from '@mui/material/Checkbox';
 import { Link } from 'react-router-dom';
 import Skeleton from '@mui/material/Skeleton';
 import { KeyboardArrowRightOutlined } from '@mui/icons-material';
-import Chip from '@mui/material/Chip';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
-import { TasksLine_node$data, TasksLine_node$key } from './__generated__/TasksLine_node.graphql';
+import {
+  TasksLine_node$data,
+  TasksLine_node$key,
+} from './__generated__/TasksLine_node.graphql';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 import StixCoreObjectLabels from '../../common/stix_core_objects/StixCoreObjectLabels';
@@ -32,17 +34,17 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingRight: 10,
   },
   goIcon: {
     position: 'absolute',
     right: -10,
   },
-  labelInList: {
+  chipInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
-    marginRight: 7,
+    width: 120,
   },
 }));
 
@@ -101,15 +103,12 @@ export const tasksDataColumns: DataColumns = {
     label: 'Due Date',
     width: '15%',
     isSortable: true,
-    render: (task: TasksLine_node$data, { fldt, classes }) => {
-      const isoDate = (new Date()).toISOString();
+    render: (task: TasksLine_node$data, { fld }) => {
+      const isoDate = new Date().toISOString();
       return (
-        <Chip
-          variant="outlined"
-          label={fldt(task.due_date)}
-          classes={{ root: classes.labelInList }}
-          color={task.due_date < isoDate ? 'error' : undefined}
-        />
+        <span color={task.due_date < isoDate ? 'error' : undefined}>
+          {fld(task.due_date)}
+        </span>
       );
     },
   },
@@ -175,7 +174,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
   index,
 }) => {
   const classes = useStyles();
-  const { fldt } = useFormatter();
+  const { fld } = useFormatter();
   const data = useFragment(TaskFragment, node);
 
   return (
@@ -204,7 +203,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type='Task'></ItemIcon>
+        <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
         primary={
@@ -215,7 +214,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(data, { fldt, classes })}
+                {value.render?.(data, { fld, classes })}
               </div>
             ))}
           </div>

@@ -48,35 +48,21 @@ class EventComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={event} />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={event.id}
               stixObjectOrStixRelationshipLink={`/dashboard/entities/events/${event.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={event.id}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences stixCoreObjectId={event.id} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={event.id} />
           </Grid>
         </Grid>

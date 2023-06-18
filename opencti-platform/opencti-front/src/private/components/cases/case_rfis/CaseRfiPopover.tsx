@@ -126,7 +126,7 @@ const CaseRfiPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this request for information case ?')}
+            {t('Do you want to delete this request for information?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

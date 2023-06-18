@@ -58,7 +58,7 @@ StixCoreObjectOrStixCoreRelationshipNotesProps
       {queryRef && (
         <React.Suspense
           fallback={
-            <div style={{ height: '100%', marginTop: marginTop || 50 }}>
+            <div style={{ height: '100%', marginTop: marginTop || 55 }}>
               <Typography
                 variant="h4"
                 gutterBottom={true}

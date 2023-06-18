@@ -98,37 +98,6 @@ class Stream extends Component {
         displayImport={false}
         secondaryAction={true}
         keyword={searchTerm}
-        message={
-          <>
-            <div>
-              {t('Built-in streams are available for granted users: live at')}{' '}
-              <a
-                href="/stream/live"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
-                <i>/stream/live</i>
-              </a>{' '}
-              {t('and raw at')}{' '}
-              <a
-                href="/stream"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
-                <i>/stream</i>
-              </a>
-              . {t('Public streams list is accessible for anyone at')}{' '}
-              <a
-                href="/public"
-                target="_blank"
-                style={{ color: theme.palette.secondary.main }}
-              >
-                <i>/public</i>
-              </a>
-              .
-            </div>
-          </>
-        }
       >
         <QueryRenderer
           query={StreamLinesQuery}

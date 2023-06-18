@@ -1,4 +1,8 @@
-import { Add, Close, ContentPasteGoOutlined } from '@mui/icons-material';
+import {
+  AddOutlined,
+  CloseOutlined,
+  ContentPasteGoOutlined,
+} from '@mui/icons-material';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';
 import DialogContent from '@mui/material/DialogContent';
@@ -25,7 +29,10 @@ import ListLines from '../../../../components/list_lines/ListLines';
 import CaseTasksLine from './CaseTasksLine';
 import { tasksDataColumns } from './TasksLine';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
-import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
+import {
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -96,10 +103,10 @@ export const caseTasksLinesQuery = graphql`
   ) {
     ...CaseTasksLines_data
       @arguments(
-        count: $count, 
-        filters: $filters, 
-        cursor: $cursor, 
-        orderBy: $orderBy, 
+        count: $count
+        filters: $filters
+        cursor: $cursor
+        orderBy: $orderBy
         orderMode: $orderMode
       )
   }
@@ -116,13 +123,12 @@ const caseTasksLinesFragment = graphql`
   )
   @refetchable(queryName: "TasksRefetch") {
     tasks(
-      first: $count, 
-      filters: $filters, 
-      after: $cursor, 
-      orderBy: $orderBy, 
+      first: $count
+      filters: $filters
+      after: $cursor
+      orderBy: $orderBy
       orderMode: $orderMode
-    )
-      @connection(key: "Pagination_tasks") {
+    ) @connection(key: "Pagination_tasks") {
       edges {
         node {
           ...CaseTasksLine_data
@@ -137,9 +143,9 @@ interface CaseTasksLinesProps {
   queryRef: PreloadedQuery<CaseTasksLinesQuery>;
   paginationOptions: CaseTasksLinesQuery$variables;
   defaultMarkings?: Option[];
-  sortBy: string | undefined
-  orderAsc: boolean | undefined
-  handleSort?: (field: string, order: boolean) => void
+  sortBy: string | undefined;
+  orderAsc: boolean | undefined;
+  handleSort?: (field: string, order: boolean) => void;
 }
 
 const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
@@ -186,83 +192,87 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           classes={{ root: classes.createButton }}
           size="large"
         >
-          <Add fontSize="small" />
+          <AddOutlined fontSize="small" />
         </IconButton>
       </Tooltip>
-      <>
-        <Tooltip title={t('Apply a new case template')}>
-          <IconButton
-            color="primary"
-            aria-label="Apply"
-            onClick={() => setOpenCaseTemplate(true)}
-            classes={{ root: classes.applyButton }}
-            size="large"
-          >
-            <ContentPasteGoOutlined fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <Dialog
-          PaperProps={{ elevation: 1 }}
-          open={openCaseTemplate}
-          onClose={() => setOpenCaseTemplate(false)}
-          fullWidth={true}
-          maxWidth="md"
+      <Tooltip title={t('Apply a new case template')}>
+        <IconButton
+          color="secondary"
+          aria-label="Apply"
+          onClick={() => setOpenCaseTemplate(true)}
+          classes={{ root: classes.applyButton }}
+          size="large"
         >
-          <DialogTitle>{t('Apply case templates')}</DialogTitle>
-          <DialogContent>
-            <Formik
-              initialValues={{ caseTemplates: [] }}
-              onSubmit={(values, { setSubmitting, setErrors }) => {
-                commit({
-                  variables: {
-                    id: caseId,
-                    caseTemplatesId: values.caseTemplates.map(({ value }) => value),
-                    connections: [
-                      generateConnectionId({
-                        key: 'Pagination_tasks',
-                        params: tasksFilters,
-                      }),
-                    ],
-                  },
-                  onCompleted: () => {
-                    setSubmitting(false);
-                    setOpenCaseTemplate(false);
-                  },
-                  onError: (error: Error) => {
-                    handleErrorInForm(error, setErrors);
-                    setSubmitting(false);
-                  },
-                });
-              }}>
-              {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
-                <Form style={{ minWidth: 400 }}>
-                  <CaseTemplateField onChange={setFieldValue} label="Case templates"/>
-                  <div className={classes.buttons}>
-                    <Button
-                      onClick={() => {
-                        handleReset();
-                        setOpenCaseTemplate(false);
-                      }}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Cancel')}
-                    </Button>
-                    <Button
-                      color="secondary"
-                      onClick={submitForm}
-                      disabled={isSubmitting}
-                      classes={{ root: classes.button }}
-                    >
-                      {t('Apply')}
-                    </Button>
-                  </div>
-                </Form>
-              )}
-            </Formik>
-          </DialogContent>
-        </Dialog>
-      </>
+          <ContentPasteGoOutlined fontSize="small" />
+        </IconButton>
+      </Tooltip>
+      <Dialog
+        PaperProps={{ elevation: 1 }}
+        open={openCaseTemplate}
+        onClose={() => setOpenCaseTemplate(false)}
+        fullWidth={true}
+        maxWidth="md"
+      >
+        <DialogTitle>{t('Apply case templates')}</DialogTitle>
+        <DialogContent>
+          <Formik
+            initialValues={{ caseTemplates: [] }}
+            onSubmit={(values, { setSubmitting, setErrors }) => {
+              commit({
+                variables: {
+                  id: caseId,
+                  caseTemplatesId: values.caseTemplates.map(
+                    ({ value }) => value,
+                  ),
+                  connections: [
+                    generateConnectionId({
+                      key: 'Pagination_tasks',
+                      params: tasksFilters,
+                    }),
+                  ],
+                },
+                onCompleted: () => {
+                  setSubmitting(false);
+                  setOpenCaseTemplate(false);
+                },
+                onError: (error: Error) => {
+                  handleErrorInForm(error, setErrors);
+                  setSubmitting(false);
+                },
+              });
+            }}
+          >
+            {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
+              <Form style={{ minWidth: 400 }}>
+                <CaseTemplateField
+                  onChange={setFieldValue}
+                  label="Case templates"
+                />
+                <div className={classes.buttons}>
+                  <Button
+                    onClick={() => {
+                      handleReset();
+                      setOpenCaseTemplate(false);
+                    }}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Cancel')}
+                  </Button>
+                  <Button
+                    color="secondary"
+                    onClick={submitForm}
+                    disabled={isSubmitting}
+                    classes={{ root: classes.button }}
+                  >
+                    {t('Apply')}
+                  </Button>
+                </div>
+              </Form>
+            )}
+          </Formik>
+        </DialogContent>
+      </Dialog>
       <Drawer
         open={open}
         anchor="right"
@@ -279,10 +289,10 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             size="large"
             color="primary"
           >
-            <Close fontSize="small" color="primary" />
+            <CloseOutlined fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a task for case')}
+            {t('Create a task')}
           </Typography>
         </div>
         <div className={classes.container}>
@@ -301,7 +311,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           orderAsc={orderAsc}
           handleSort={handleSort}
           dataColumns={tasksDataColumns}
-          noPadding={true}
           inline={true}
           secondaryAction={true}
         >

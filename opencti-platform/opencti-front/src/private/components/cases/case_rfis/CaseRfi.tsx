@@ -65,10 +65,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
     tasksFilters.filters,
   );
 
-  const {
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const { sortBy, orderAsc } = viewStorage;
 
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
@@ -96,14 +93,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             displayAssignees={true}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -120,38 +110,32 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
             </React.Suspense>
           )}
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRfiData}
             types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t('Origin of the Case')}
+            title={t('Origin of the case')}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseRfiData}
+            types={['Stix-Cyber-Observable']}
+            title={t('Observables')}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRfiData}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={caseRfiData.id} />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseRfiData.id} />
         </Grid>
       </Grid>

@@ -49,17 +49,10 @@ class ReportComponent extends Component {
               displayAssignees={true}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences stixCoreObjectId={report.id} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={report.id} />
           </Grid>
         </Grid>

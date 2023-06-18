@@ -52,35 +52,21 @@ class IndicatorComponent extends Component {
               withPattern={true}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={indicator.id}
               stixObjectOrStixRelationshipLink={`/dashboard/observations/indicators/${indicator.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={indicator.id}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences stixCoreObjectId={indicator.id} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={indicator.id} />
           </Grid>
         </Grid>

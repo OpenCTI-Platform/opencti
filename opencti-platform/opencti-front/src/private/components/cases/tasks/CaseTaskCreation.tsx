@@ -40,19 +40,19 @@ const caseTaskAddMutation = graphql`
 `;
 
 interface FormikCaseTaskAddInput {
-  name: string
-  due_date?: Date | null
-  description?: string
-  objectAssignee?: Option[]
-  objectLabel?: Option[]
-  objectMarking: Option[]
+  name: string;
+  due_date?: Date | null;
+  description?: string;
+  objectAssignee?: Option[];
+  objectLabel?: Option[];
+  objectMarking: Option[];
 }
 
 interface CaseTaskCreationProps {
-  caseId: string
-  onClose: () => void
-  paginationOptions: CaseTasksLinesQuery$variables
-  defaultMarkings?: { value: string, label: string }[]
+  caseId: string;
+  onClose: () => void;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  defaultMarkings?: { value: string; label: string }[];
 }
 
 const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
@@ -87,18 +87,15 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       variables: {
         input: {
           ...values,
-          objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
+          objectAssignee: (values.objectAssignee ?? []).map(
+            ({ value }) => value,
+          ),
           objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
           objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
           objects: [caseId],
         },
       },
-      updater: (store: RecordSourceSelectorProxy) => insertNode(
-        store,
-        'Pagination_tasks',
-        paginationOptions,
-        'taskAdd',
-      ),
+      updater: (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks', paginationOptions, 'taskAdd'),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);
         setSubmitting(false);
@@ -111,80 +108,80 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     });
   };
   return (
-      <Formik<FormikCaseTaskAddInput>
-        initialValues={{
-          name: '',
-          description: '',
-          due_date: null,
-          objectAssignee: [],
-          objectMarking: defaultMarkings ?? [],
-        }}
-        onSubmit={onSubmit}
-        onReset={onClose}
-        validationSchema={taskValidator}
-      >
-        {({ isSubmitting, handleReset, submitForm }) => (
-          <Form style={{ margin: '20px 0 20px 0' }}>
-            <Field
-              style={{ marginBottom: 20 }}
-              component={TextField}
-              variant="standard"
-              name="name"
-              label={t('Name')}
-              fullWidth
-            />
-            <Field
-              component={DateTimePickerField}
-              name="due_date"
-              TextFieldProps={{
-                label: t('Due Date'),
-                variant: 'standard',
-                fullWidth: true,
-              }}
-            />
-            <ObjectAssigneeField
-              name="objectAssignee"
-              style={fieldSpacingContainerStyle}
-            />
-            <ObjectLabelField
-              name="objectLabel"
-              style={fieldSpacingContainerStyle}
-            />
-            <ObjectMarkingField
-              name="objectMarking"
-              style={fieldSpacingContainerStyle}
-            />
-            <Field
-              component={MarkDownField}
-              name="description"
-              label={t('Description')}
-              fullWidth
-              multiline
-              rows="4"
-              style={fieldSpacingContainerStyle}
-            />
-            <div className={classes.buttons}>
-              <Button
-                onClick={handleReset}
-                disabled={isSubmitting}
-                variant="contained"
-                classes={{ root: classes.button }}
-              >
-                {t('Cancel')}
-              </Button>
-              <Button
-                variant="contained"
-                color="secondary"
-                onClick={submitForm}
-                disabled={isSubmitting}
-                classes={{ root: classes.button }}
-              >
-                {t('Create')}
-              </Button>
-            </div>
-          </Form>
-        )}
-      </Formik>
+    <Formik<FormikCaseTaskAddInput>
+      initialValues={{
+        name: '',
+        description: '',
+        due_date: null,
+        objectAssignee: [],
+        objectMarking: defaultMarkings ?? [],
+      }}
+      onSubmit={onSubmit}
+      onReset={onClose}
+      validationSchema={taskValidator}
+    >
+      {({ isSubmitting, handleReset, submitForm }) => (
+        <Form style={{ margin: '20px 0 20px 0' }}>
+          <Field
+            style={{ marginBottom: 20 }}
+            component={TextField}
+            variant="standard"
+            name="name"
+            label={t('Name')}
+            fullWidth
+          />
+          <Field
+            component={DateTimePickerField}
+            name="due_date"
+            TextFieldProps={{
+              label: t('Due Date'),
+              variant: 'standard',
+              fullWidth: true,
+            }}
+          />
+          <ObjectAssigneeField
+            name="objectAssignee"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectLabelField
+            name="objectLabel"
+            style={fieldSpacingContainerStyle}
+          />
+          <ObjectMarkingField
+            name="objectMarking"
+            style={fieldSpacingContainerStyle}
+          />
+          <Field
+            component={MarkDownField}
+            name="description"
+            label={t('Description')}
+            fullWidth
+            multiline
+            rows="4"
+            style={fieldSpacingContainerStyle}
+          />
+          <div className={classes.buttons}>
+            <Button
+              onClick={handleReset}
+              disabled={isSubmitting}
+              variant="contained"
+              classes={{ root: classes.button }}
+            >
+              {t('Cancel')}
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={submitForm}
+              disabled={isSubmitting}
+              classes={{ root: classes.button }}
+            >
+              {t('Create')}
+            </Button>
+          </div>
+        </Form>
+      )}
+    </Formik>
   );
 };
 

@@ -1220,7 +1220,7 @@ const i18n = {
       'Update the case template': 'Actualizar la plantilla de caso',
       Apply: 'Aplicar',
       Unlink: 'Desconectar',
-      'Do you want to unlink this task ?': '¿Quieres desvincular esta tarea?',
+      'Do you want to unlink this task?': '¿Quieres desvincular esta tarea?',
       'Source name': 'Nombre de la fuente',
       'External ID': 'ID externo',
       'Log sources': 'Origen de los registros',
@@ -2372,13 +2372,13 @@ const i18n = {
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
-      'Do you want to delete this case incident ?':
-        "Voulez-vous supprimer ce cas d'incident ?",
+      'Do you want to delete this incident response?':
+        'Voulez-vous supprimer cette réponse à incident ?',
       'Do you want to delete this feedback ?':
         'Voulez-vous supprimer ce commentaire ?',
-      'Do you want to delete this request for information case ?':
+      'Do you want to delete this request for request for information?':
         "Voulez-vous supprimer ce dossier de demande d'information ?",
-      'Do you want to delete this request for takedown case ?':
+      'Do you want to delete this request for request for takedown?':
         'Voulez-vous supprimer ce dossier de demande de retrait ?',
       'Create a request for information': "Créer une demande d'informations",
       'Update a request for information':

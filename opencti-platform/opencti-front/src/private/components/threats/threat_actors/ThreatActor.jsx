@@ -48,37 +48,23 @@ class ThreatActorComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={threatActor} />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={threatActor.id}
               stixObjectOrStixRelationshipLink={`/dashboard/threats/threat_actors/${threatActor.id}/knowledge`}
             />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectOrStixRelationshipLastContainers
               stixCoreObjectOrStixRelationshipId={threatActor.id}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={threatActor.id}
             />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={threatActor.id} />
           </Grid>
         </Grid>

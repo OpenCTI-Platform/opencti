@@ -13,8 +13,11 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { TasksFilter,
-  CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
+import {
+  TasksFilter,
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
@@ -62,10 +65,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
     tasksFilters.filters,
   );
 
-  const {
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const { sortBy, orderAsc } = viewStorage;
 
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
@@ -92,14 +92,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
             displayAssignees={true}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -116,14 +109,7 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
             </React.Suspense>
           )}
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
@@ -131,23 +117,24 @@ const CaseRftComponent: FunctionComponent<CaseRftProps> = ({ data }) => {
             title={t('Origin of the Case')}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <ContainerStixObjectsOrStixRelationships
+            isSupportParticipation={false}
+            container={caseRftData}
+            types={['Stix-Cyber-Observable']}
+            title={t('Observables')}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseRftData}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={caseRftData.id} />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseRftData.id} />
         </Grid>
       </Grid>

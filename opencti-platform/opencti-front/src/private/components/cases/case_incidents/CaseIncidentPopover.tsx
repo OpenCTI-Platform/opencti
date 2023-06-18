@@ -126,7 +126,7 @@ const CaseIncidentPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this case incident ?')}
+            {t('Do you want to delete this incident response?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

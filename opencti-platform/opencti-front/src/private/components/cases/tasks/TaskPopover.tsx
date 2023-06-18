@@ -128,7 +128,7 @@ const TaskPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this case task ?')}
+            {t('Do you want to delete this task?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

@@ -43,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 interface CaseIncidentEditionContainerProps {
-  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>
-  handleClose: () => void
+  queryRef: PreloadedQuery<CaseIncidentEditionContainerCaseQuery>;
+  handleClose: () => void;
 }
 
 export const caseIncidentEditionQuery = graphql`

@@ -56,19 +56,12 @@ ExternalReferenceComponentProps
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <ExternalReferenceDetails externalReference={externalReference} />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ExternalReferenceStixCoreObjects
             externalReference={externalReference}
           />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ExternalReferenceFileImportViewer
             externalReference={externalReference}
             connectorsImport={connectorsImport}

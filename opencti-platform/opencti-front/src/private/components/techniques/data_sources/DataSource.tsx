@@ -107,35 +107,21 @@ const DataSourceComponent = ({ data }: { data: DataSource_dataSource$key }) => {
         <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
           <StixDomainObjectOverview stixDomainObject={dataSource} />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <SimpleStixObjectOrStixRelationshipStixCoreRelationships
             stixObjectOrStixRelationshipId={dataSource.id}
             stixObjectOrStixRelationshipLink={`/dashboard/techniques/data_sources/${dataSource.id}/knowledge`}
           />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectOrStixRelationshipLastContainers
             stixCoreObjectOrStixRelationshipId={dataSource.id}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences stixCoreObjectId={dataSource.id} />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={dataSource.id} />
         </Grid>
       </Grid>

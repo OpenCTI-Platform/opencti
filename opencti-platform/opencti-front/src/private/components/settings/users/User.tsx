@@ -628,68 +628,65 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             </Grid>
           </Paper>
         </Grid>
-      </Grid>
-      <div style={{ marginTop: 50 }}>
-        <Typography variant="h4" gutterBottom={true} style={{ float: 'left' }}>
-          {t('Triggers and Digests')}
-        </Typography>
-        <Tooltip title={t('Add a live trigger')}>
-          <IconButton
-            aria-label="Add"
-            className={classes.createButton}
-            onClick={handleOpenCreateLive}
-            size="large"
-            color="secondary"
+        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
+          <Typography
+            variant="h4"
+            gutterBottom={true}
+            style={{ float: 'left' }}
           >
-            <CampaignOutlined fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <TriggerLiveCreation
-          paginationOptions={paginationOptions}
-          open={openLive}
-          handleClose={() => setOpenLive(false)}
-          recipientId={user.id}
-        />
-        <Tooltip title={t('Add a  regular digest')}>
-          <IconButton
-            aria-label="Add"
-            className={classes.createButton}
-            onClick={handleOpenCreateDigest}
-            size="large"
-            color="secondary"
+            {t('Triggers and Digests')}
+          </Typography>
+          <Tooltip title={t('Add a live trigger')}>
+            <IconButton
+              aria-label="Add"
+              className={classes.createButton}
+              onClick={handleOpenCreateLive}
+              size="large"
+              color="secondary"
+            >
+              <CampaignOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <TriggerLiveCreation
+            paginationOptions={paginationOptions}
+            open={openLive}
+            handleClose={() => setOpenLive(false)}
+            recipientId={user.id}
+          />
+          <Tooltip title={t('Add a  regular digest')}>
+            <IconButton
+              aria-label="Add"
+              className={classes.createButton}
+              onClick={handleOpenCreateDigest}
+              size="large"
+              color="secondary"
+            >
+              <BackupTableOutlined fontSize="small" />
+            </IconButton>
+          </Tooltip>
+          <div className="clearfix" />
+          <Paper
+            classes={{ root: classes.paper }}
+            variant="outlined"
+            style={{ marginTop: 0 }}
           >
-            <BackupTableOutlined fontSize="small" />
-          </IconButton>
-        </Tooltip>
-        <div className="clearfix" />
-        <Paper
-          classes={{ root: classes.paper }}
-          variant="outlined"
-          style={{ marginTop: 0 }}
-        >
-          <TriggerLineTitles dataColumns={dataColumns} />
-          {queryRef && (
-            <TriggersLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              dataColumns={dataColumns}
-            />
-          )}
-        </Paper>
-        <TriggerDigestCreation
-          paginationOptions={paginationOptions}
-          open={openDigest}
-          handleClose={() => setOpenDigest(false)}
-          recipientId={user.id}
-        />
-      </div>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 5 }}
-      >
-        <Grid item={true} xs={6}>
+            <TriggerLineTitles dataColumns={dataColumns} />
+            {queryRef && (
+              <TriggersLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                dataColumns={dataColumns}
+              />
+            )}
+          </Paper>
+          <TriggerDigestCreation
+            paginationOptions={paginationOptions}
+            open={openDigest}
+            handleClose={() => setOpenDigest(false)}
+            recipientId={user.id}
+          />
+        </Grid>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <Typography variant="h4" gutterBottom={true}>
             {t('Operations')}
           </Typography>
@@ -742,7 +739,7 @@ const User: FunctionComponent<UserProps> = ({ userData, refetch }) => {
             />
           </Paper>
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <UserHistory userId={user.id} />
         </Grid>
       </Grid>

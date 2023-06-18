@@ -48,14 +48,7 @@ class NarrativeComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={narrative} />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <SimpleStixObjectOrStixRelationshipStixCoreRelationships
               stixObjectOrStixRelationshipId={narrative.id}
               stixObjectOrStixRelationshipLink={`/dashboard/techniques/narratives/${narrative.id}/knowledge`}
@@ -66,17 +59,10 @@ class NarrativeComponent extends Component {
               stixCoreObjectOrStixRelationshipId={narrative.id}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences stixCoreObjectId={narrative.id} />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={narrative.id} />
           </Grid>
         </Grid>

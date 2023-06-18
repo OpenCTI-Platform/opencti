@@ -56,39 +56,29 @@ class IndividualComponent extends Component {
           <Grid item={true} xs={6} style={{ paddingTop: 10 }}>
             <StixDomainObjectOverview stixDomainObject={individual} />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
           {viewAs === 'knowledge' && (
-            <Grid item={true} xs={6}>
+            <Grid item={true} xs={6} style={{ marginTop: 30 }}>
               <SimpleStixObjectOrStixRelationshipStixCoreRelationships
                 stixObjectOrStixRelationshipId={individual.id}
                 stixObjectOrStixRelationshipLink={`/dashboard/entities/individuals/${individual.id}/knowledge`}
               />
             </Grid>
           )}
-          <Grid item={true} xs={viewAs === 'knowledge' ? 6 : 12}>
+          <Grid
+            item={true}
+            xs={viewAs === 'knowledge' ? 6 : 12}
+            style={{ marginTop: 30 }}
+          >
             <StixCoreObjectOrStixRelationshipLastContainers
               {...lastReportsProps}
             />
           </Grid>
-        </Grid>
-        <Grid
-          container={true}
-          spacing={3}
-          classes={{ container: classes.gridContainer }}
-          style={{ marginTop: 25 }}
-        >
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectExternalReferences
               stixCoreObjectId={individual.id}
             />
           </Grid>
-          <Grid item={true} xs={6}>
+          <Grid item={true} xs={6} style={{ marginTop: 30 }}>
             <StixCoreObjectLatestHistory stixCoreObjectId={individual.id} />
           </Grid>
         </Grid>

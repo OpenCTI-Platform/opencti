@@ -126,7 +126,7 @@ const CaseRftPopover = ({ id }: { id: string }) => {
       >
         <DialogContent>
           <DialogContentText>
-            {t('Do you want to delete this request for takedown case ?')}
+            {t('Do you want to delete this request for takedown?')}
           </DialogContentText>
         </DialogContent>
         <DialogActions>

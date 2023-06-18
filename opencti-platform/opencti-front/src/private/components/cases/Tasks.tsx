@@ -9,9 +9,6 @@ import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
 import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
-import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
-import Security from '../../../utils/Security';
-import TaskCreation from './tasks/TaskCreation';
 import {
   TasksLinesPaginationQuery,
   TasksLinesPaginationQuery$variables,
@@ -96,37 +93,37 @@ const Tasks = () => {
       >
         {queryRef && (
           <>
-          <React.Suspense
-            fallback={
-              <>
-                {Array(20)
-                  .fill(0)
-                  .map((idx) => (
-                    <TasksLineDummy key={idx} />
-                  ))}
-              </>
-            }
-          >
-            <TasksLines
-              queryRef={queryRef}
-              paginationOptions={paginationOptions}
-              setNumberOfElements={helpers.handleSetNumberOfElements}
+            <React.Suspense
+              fallback={
+                <>
+                  {Array(20)
+                    .fill(0)
+                    .map((idx) => (
+                      <TasksLineDummy key={idx} />
+                    ))}
+                </>
+              }
+            >
+              <TasksLines
+                queryRef={queryRef}
+                paginationOptions={paginationOptions}
+                setNumberOfElements={helpers.handleSetNumberOfElements}
+                selectedElements={selectedElements}
+                deSelectedElements={deSelectedElements}
+                onToggleEntity={onToggleEntity}
+                selectAll={selectAll}
+              />
+            </React.Suspense>
+            <ToolBar
               selectedElements={selectedElements}
               deSelectedElements={deSelectedElements}
-              onToggleEntity={onToggleEntity}
+              numberOfSelectedElements={numberOfSelectedElements}
+              handleClearSelectedElements={handleClearSelectedElements}
               selectAll={selectAll}
+              filters={{
+                entity_type: [{ id: 'Task', value: 'Task' }],
+              }}
             />
-          </React.Suspense>
-          <ToolBar
-            selectedElements={selectedElements}
-            deSelectedElements={deSelectedElements}
-            numberOfSelectedElements={numberOfSelectedElements}
-            handleClearSelectedElements={handleClearSelectedElements}
-            selectAll={selectAll}
-            filters={{
-              entity_type: [{ id: 'Task', value: 'Task' }],
-            }}
-          />
           </>
         )}
       </ListLines>
@@ -136,9 +133,10 @@ const Tasks = () => {
     <ExportContextProvider>
       <div className={classes.container}>
         {renderLines()}
-        <Security needs={[KNOWLEDGE_KNUPDATE]}>
+        {/* TODO Add task creation when it will be possible to assign a task to something
+           <Security needs={[KNOWLEDGE_KNUPDATE]}>
           <TaskCreation paginationOptions={paginationOptions} />
-        </Security>
+        </Security> */}
       </div>
     </ExportContextProvider>
   );

@@ -14,7 +14,11 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import { TasksFilter, CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
+import {
+  TasksFilter,
+  CaseTasksLinesQuery,
+  CaseTasksLinesQuery$variables,
+} from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
@@ -64,10 +68,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
     tasksFilters.filters,
   );
 
-  const {
-    sortBy,
-    orderAsc,
-  } = viewStorage;
+  const { sortBy, orderAsc } = viewStorage;
 
   const queryRef = useQueryLoading<CaseTasksLinesQuery>(
     caseTasksLinesQuery,
@@ -95,14 +96,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             displayAssignees={true}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           {queryRef && (
             <React.Suspense
               fallback={<Loader variant={LoaderVariant.inElement} />}
@@ -119,29 +113,15 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             </React.Suspense>
           )}
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
             types={['Incident', 'stix-sighting-relationship', 'Report']}
-            title={t('Origin of the Case')}
+            title={t('Origin of the case')}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
@@ -149,7 +129,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             title={t('Observables')}
           />
         </Grid>
-        <Grid item={true} xs={6} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={caseIncidentData}
@@ -166,19 +146,12 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
             title={t('Other entities')}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectExternalReferences
             stixCoreObjectId={caseIncidentData.id}
           />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={caseIncidentData.id} />
         </Grid>
       </Grid>

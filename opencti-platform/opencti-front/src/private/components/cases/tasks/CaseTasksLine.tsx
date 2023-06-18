@@ -20,6 +20,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
   itemIcon: {
     color: theme.palette.primary.main,
+    minWidth: 52,
   },
   bodyItem: {
     height: 20,
@@ -28,13 +29,12 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingRight: 10,
   },
   labelInList: {
     fontSize: 12,
     height: 20,
     float: 'left',
-    marginRight: 7,
   },
 }));
 
@@ -89,7 +89,6 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
   const classes = useStyles();
   const { fldt } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
-
   return (
     <ListItem
       classes={{ root: classes.item }}
@@ -99,7 +98,7 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
       to={`/dashboard/cases/tasks/${task.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type="Task"></ItemIcon>
+        <ItemIcon type="Task" />
       </ListItemIcon>
       <ListItemText
         primary={

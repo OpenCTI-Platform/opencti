@@ -123,30 +123,18 @@ const FeedbackComponent: FunctionComponent<FeedbackProps> = ({ data }) => {
             displayAssignees={true}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={12} style={{ paddingTop: 24 }}>
+        <Grid item={true} xs={12} style={{ marginTop: 30 }}>
           <ContainerStixObjectsOrStixRelationships
             isSupportParticipation={false}
             container={feedbackData}
           />
         </Grid>
-      </Grid>
-      <Grid
-        container={true}
-        spacing={3}
-        classes={{ container: classes.gridContainer }}
-        style={{ marginTop: 25 }}
-      >
-        <Grid item={true} xs={6}>
-          <StixCoreObjectExternalReferences stixCoreObjectId={feedbackData.id} />
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
+          <StixCoreObjectExternalReferences
+            stixCoreObjectId={feedbackData.id}
+          />
         </Grid>
-        <Grid item={true} xs={6}>
+        <Grid item={true} xs={6} style={{ marginTop: 30 }}>
           <StixCoreObjectLatestHistory stixCoreObjectId={feedbackData.id} />
         </Grid>
       </Grid>
