@@ -7,7 +7,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import TaskDetails from './TaskDetails';
-import TasksPopover from './TasksPopover';
+import TasksPopover from './TaskPopover';
 import { Tasks_tasks$key } from './__generated__/Tasks_tasks.graphql';
 import { KNOWLEDGE_KNUPDATE } from '../../../../utils/hooks/useGranted';
 import Security from '../../../../utils/Security';

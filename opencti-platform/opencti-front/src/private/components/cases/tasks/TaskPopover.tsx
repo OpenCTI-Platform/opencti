@@ -21,7 +21,9 @@ import useQueryLoading from '../../../../utils/hooks/useQueryLoading';
 import Transition from '../../../../components/Transition';
 import { KNOWLEDGE_KNUPDATE_KNDELETE } from '../../../../utils/hooks/useGranted';
 import useDeletion from '../../../../utils/hooks/useDeletion';
-import TasksEditionContainer, { tasksEditionQuery } from './TasksEditionContainer';
+import TasksEditionContainer, {
+  tasksEditionQuery,
+} from './TasksEditionContainer';
 import { TasksEditionContainerQuery } from './__generated__/TasksEditionContainerQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
@@ -41,8 +43,8 @@ const useStyles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const tasksPopoverDeletionMutation = graphql`
-  mutation TasksPopoverDeletionMutation($id: ID!) {
+const taskPopoverDeletionMutation = graphql`
+  mutation TaskPopoverDeletionMutation($id: ID!) {
     taskDelete(id: $id)
   }
 `;
@@ -56,7 +58,7 @@ const TaskPopover = ({ id }: { id: string }) => {
   const [anchorEl, setAnchorEl] = useState<PopoverProps['anchorEl']>();
   const [displayEdit, setDisplayEdit] = useState<boolean>(false);
 
-  const [commit] = useMutation(tasksPopoverDeletionMutation);
+  const [commit] = useMutation(taskPopoverDeletionMutation);
   const queryRef = useQueryLoading<TasksEditionContainerQuery>(
     tasksEditionQuery,
     { id },

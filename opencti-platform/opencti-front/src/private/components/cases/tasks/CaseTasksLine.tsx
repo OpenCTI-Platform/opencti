@@ -11,6 +11,8 @@ import { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './TasksLine';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
+import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
+import TaskPopover from "./TaskPopover";
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -121,9 +123,9 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
           </div>
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
-        <KeyboardArrowRightOutlined />
-      </ListItemIcon>
+      <ListItemSecondaryAction>
+        <TaskPopover id={task.id} />
+      </ListItemSecondaryAction>
     </ListItem>
   );
 };

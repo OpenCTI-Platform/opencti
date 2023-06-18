@@ -216,7 +216,8 @@ const i18n = {
       'Last notes': 'Últimas notas',
       'Latest containers authored by this entity':
         'Últimos contenedores creados por esta entidad',
-      'Latest containers about the object': 'Últimos contenedores sobre el objeto',
+      'Latest containers about the object':
+        'Últimos contenedores sobre el objeto',
       'Last observables': 'Últimos observables',
       'observable(s)': 'observable(s)',
       'Last modified entities': 'Últimas entidades modificadas',
@@ -1397,8 +1398,10 @@ const i18n = {
       'No entities were found for this search.':
         'Ninguna entidad fue encontrada en esta búsqueda.',
       'No reports about this entity.': 'Ningún informe sobre esta entidad.',
-      'No Malware analysis on this observable.': 'Ningún análisis de malware sobre esta observable.',
-      'Malware Analyses run on this observable': 'Análisis de malware ejecutados en este observable',
+      'No Malware analysis on this observable.':
+        'Ningún análisis de malware sobre esta observable.',
+      'Malware Analyses run on this observable':
+        'Análisis de malware ejecutados en este observable',
       'API access': 'Acceso a la API',
       Example: 'Ejemplo',
       'API key': 'Clave de API',
@@ -2184,7 +2187,8 @@ const i18n = {
       'Last notes': 'Dernières notes',
       'Latest containers authored by this entity':
         'Derniers conteneurs créés par cette entité',
-      'Latest containers about the object': "Derniers conteneurs à propos de l'object",
+      'Latest containers about the object':
+        "Derniers conteneurs à propos de l'object",
       'Last observables': 'Derniers observables',
       'observable(s)': 'observable(s)',
       'Last modified entities': 'Dernières entités modifiées',
@@ -2364,7 +2368,7 @@ const i18n = {
       'Update a synchronizer': 'Modifier un synchroniseur',
       'Create an incident response': 'Créer une réponse à incident',
       'Update an incident response': 'Mettre à jour une réponse à incident',
-      'Origin of the Case': 'Origine de l\'affaire',
+      'Origin of the Case': "Origine de l'affaire",
       'Create a feedback': 'Créer un commentaire',
       'Update a feedback': 'Mettre à jour un commentaire',
       'Submit a feedback': 'Soumettre un commentaire',
@@ -2389,7 +2393,7 @@ const i18n = {
       'Update a task': 'Mettre à jour une tâche',
       'Add a task to this container': 'Ajouter une tâche à ce conteneur',
       'Incident response': 'Réponse aux incidents',
-      'Requests for information': 'Demandes d\'informations',
+      'Requests for information': "Demandes d'informations",
       'Requests for takedown': 'Demandes de retrait',
       Feedbacks: 'Commentaires',
       takedown_types: 'types de retraits',
@@ -3159,7 +3163,7 @@ const i18n = {
       References: 'Références',
       'Case priority': 'Priorité',
       'Case severity': 'Sévérité',
-      'Task': 'Tâche',
+      Task: 'Tâche',
       'Due Date': "Date d'échéance",
       'Apply case templates': 'Appliquer des modèles de case',
       'Case templates': 'Template de case',
@@ -3210,7 +3214,7 @@ const i18n = {
       'Request For Takedown Date': 'Date de la demande de Retrait',
       'Information type': "Type d'informations",
       'Takedown type': 'Type de retrait',
-      'Tasks': 'Tâches',
+      Tasks: 'Tâches',
       Ticks: 'Marqueurs',
       Likelihood: 'Probabilité',
       'Relation type': 'Type de relation',
@@ -3349,7 +3353,8 @@ const i18n = {
         'Aucun rapport à propos de cette entité.',
       'No Malware analysis on this observable.':
         'Aucune analyse de code malveillant sur cet observable.',
-      'Malware Analyses run on this observable': 'Analyses de codes malveillants effectuées à partir de cet observable',
+      'Malware Analyses run on this observable':
+        'Analyses de codes malveillants effectuées à partir de cet observable',
       'API access': "Accès à l'API",
       Example: 'Exemple',
       'API key': "Clé d'API",
@@ -5261,7 +5266,8 @@ const i18n = {
         'このエンティティに関するレポートはありません。',
       'No Malware analysis on this observable.':
         'この観測点では、マルウェアの解析は行われていません。',
-      'Malware Analyses run on this observable': 'この観測値で実行されるマルウェア分析',
+      'Malware Analyses run on this observable':
+        'この観測値で実行されるマルウェア分析',
       'API access': 'APIアクセス',
       Example: '例',
       'API key': 'APIキー',
