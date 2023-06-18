@@ -21,7 +21,8 @@ import { IncidentLine_node$data } from './incidents/__generated__/IncidentLine_n
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
 
-export const LOCAL_STORAGE_KEY = 'view-case_incident';
+export const LOCAL_STORAGE_KEY = 'view-incidents';
+
 const Incidents: FunctionComponent = () => {
   const { platformModuleHelpers: { isRuntimeFieldEnable } } = useAuth();
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<IncidentsCardsAndLinesPaginationQuery$variables>(

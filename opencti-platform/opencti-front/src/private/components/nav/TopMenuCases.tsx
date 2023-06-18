@@ -36,20 +36,20 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/incidents"
           variant={
-            location.pathname === '/dashboard/cases/case_incident'
+            location.pathname === '/dashboard/cases/incidents'
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname === '/dashboard/cases/case_incident'
+            location.pathname === '/dashboard/cases/incidents'
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
           <BriefcaseEyeOutline className={classes.icon} fontSize="small" />
-          {t('Incident response')}
+          {t('Incident responses')}
         </Button>
       )}
       {!useIsHiddenEntity('Case-Rfi') && (

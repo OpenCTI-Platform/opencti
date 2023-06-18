@@ -19,7 +19,7 @@ import {
 } from './observed_data/__generated__/ObservedDatasLinesPaginationQuery.graphql';
 import { ModuleHelper } from '../../../utils/platformModulesHelper';
 
-const LOCAL_STORAGE_KEY = 'view-observed-data';
+const LOCAL_STORAGE_KEY = 'view-observedDatas';
 
 interface ObservedDatasProps {
   objectId: string;

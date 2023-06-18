@@ -27,69 +27,69 @@ const TopMenuEvents = () => {
   const { t } = useFormatter();
 
   return (
-      <div>
-        {!useIsHiddenEntity('Incident') && (
-          <Button
-            component={Link}
-            to="/dashboard/events/incidents"
-            variant={
-              location.pathname.includes('/dashboard/events/case_incident')
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname.includes('/dashboard/events/case_incident')
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-          >
-            <Fire className={classes.icon} fontSize="small" />
-            {t('Incidents')}
-          </Button>
-        )}
+    <div>
+      {!useIsHiddenEntity('Incident') && (
         <Button
           component={Link}
-          to="/dashboard/events/sightings"
+          to="/dashboard/events/incidents"
           variant={
-            location.pathname.includes('/dashboard/events/sightings')
+            location.pathname.includes('/dashboard/events/incidents')
               ? 'contained'
               : 'text'
           }
           size="small"
           color={
-            location.pathname.includes('/dashboard/events/sightings')
+            location.pathname.includes('/dashboard/events/incidents')
               ? 'secondary'
               : 'primary'
           }
           classes={{ root: classes.button }}
         >
-          <VisibilityOutlined className={classes.icon} fontSize="small" />
-          {t('Sightings')}
+          <Fire className={classes.icon} fontSize="small" />
+          {t('Incidents')}
         </Button>
-        {!useIsHiddenEntity('Observed-Data') && (
-          <Button
-            component={Link}
-            to="/dashboard/events/observed_data"
-            variant={
-              location.pathname.includes('/dashboard/events/observed_data')
-                ? 'contained'
-                : 'text'
-            }
-            size="small"
-            color={
-              location.pathname.includes('/dashboard/events/observed_data')
-                ? 'secondary'
-                : 'primary'
-            }
-            classes={{ root: classes.button }}
-          >
-            <WifiTetheringOutlined className={classes.icon} fontSize="small" />
-            {t('Observed datas')}
-          </Button>
-        )}
-      </div>
+      )}
+      <Button
+        component={Link}
+        to="/dashboard/events/sightings"
+        variant={
+          location.pathname.includes('/dashboard/events/sightings')
+            ? 'contained'
+            : 'text'
+        }
+        size="small"
+        color={
+          location.pathname.includes('/dashboard/events/sightings')
+            ? 'secondary'
+            : 'primary'
+        }
+        classes={{ root: classes.button }}
+      >
+        <VisibilityOutlined className={classes.icon} fontSize="small" />
+        {t('Sightings')}
+      </Button>
+      {!useIsHiddenEntity('Observed-Data') && (
+        <Button
+          component={Link}
+          to="/dashboard/events/observed_data"
+          variant={
+            location.pathname.includes('/dashboard/events/observed_data')
+              ? 'contained'
+              : 'text'
+          }
+          size="small"
+          color={
+            location.pathname.includes('/dashboard/events/observed_data')
+              ? 'secondary'
+              : 'primary'
+          }
+          classes={{ root: classes.button }}
+        >
+          <WifiTetheringOutlined className={classes.icon} fontSize="small" />
+          {t('Observed datas')}
+        </Button>
+      )}
+    </div>
   );
 };
 

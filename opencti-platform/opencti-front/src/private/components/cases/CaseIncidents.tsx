@@ -28,7 +28,7 @@ interface CaseIncidentsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-cases-case_incident';
+export const LOCAL_STORAGE_KEY_CASE_INCIDENT = 'view-caseIncidents';
 
 const CaseIncidents: FunctionComponent<CaseIncidentsProps> = () => {
   const classes = useStyles();

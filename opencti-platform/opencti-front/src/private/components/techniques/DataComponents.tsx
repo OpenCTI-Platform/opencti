@@ -15,7 +15,7 @@ import {
 import useQueryLoading from '../../../utils/hooks/useQueryLoading';
 import DataComponentLineDummy from './data_components/DataComponentLineDummy';
 
-const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'view-data-component';
+const LOCAL_STORAGE_KEY_DATA_COMPONENTS = 'view-dataComponents';
 
 const DataComponents: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataComponentsLinesPaginationQuery$variables>(

@@ -29,7 +29,7 @@ interface CaseRfisProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_RFI = 'view-cases-casesRfis';
+export const LOCAL_STORAGE_KEY_CASE_RFI = 'view-caseRfis';
 
 const CaseRfis: FunctionComponent<CaseRfisProps> = () => {
   const classes = useStyles();

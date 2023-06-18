@@ -2772,7 +2772,7 @@ const i18n = {
       entity_Feedback: 'Commentaire',
       'entity_Case-Rfi': "Demande d'information",
       'entity_Case-Rft': 'Demande de retrait',
-      'entity_Case-Incident': 'Réponse aux case_incident',
+      'entity_Case-Incident': 'Réponse aux incidents',
       'entity_Case-Task': 'Tâches',
       entity_Arsenal: 'Arsenal',
       entity_Entities: 'Entité',
@@ -3378,7 +3378,7 @@ const i18n = {
       'Explore the techniques, tactics and procedures of the dataset through time and entities who used its.':
         'Explorer les arsenal, tactiques et procédures des données à travers le temps et les entités qui les utilisent.',
       'Explore the kill chains of entities through time and other contextual information like campaigns or incidents.':
-        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les case_incident.",
+        "Explorer les kill chains des entités à travers le temps et d'autres informations contextuelles comme les campagnes ou les incidents.",
       'Explore the vulnerabilities used by entities through time and kill chain phases.':
         'Explorer les vulnérabilités utilisées par les entités à travers le temps et les phases de la kill chain.',
       'Explore the observables of the dataset though time to visualize clusters and correlations.':

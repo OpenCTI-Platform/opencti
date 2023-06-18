@@ -35,7 +35,7 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-const LOCAL_STORAGE_KEY = 'view-stix-cyber-observables';
+const LOCAL_STORAGE_KEY = 'view-stixCyberObservables';
 
 const StixCyberObservables: FunctionComponent = () => {
   const classes = useStyles();

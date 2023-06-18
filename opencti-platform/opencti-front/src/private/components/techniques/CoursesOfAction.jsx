@@ -23,7 +23,7 @@ class CoursesOfAction extends Component {
     const params = buildViewParamsFromUrlAndStorage(
       props.history,
       props.location,
-      'view-courses_of_action',
+      'view-coursesOfAction',
     );
     this.state = {
       sortBy: propOr('name', 'sortBy', params),
@@ -40,7 +40,7 @@ class CoursesOfAction extends Component {
     saveViewParameters(
       this.props.history,
       this.props.location,
-      'view-courses_of_action',
+      'view-coursesOfAction',
       this.state,
     );
   }

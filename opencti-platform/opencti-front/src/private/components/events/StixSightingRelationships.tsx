@@ -64,7 +64,7 @@ const dataColumns = {
   },
 };
 
-const LOCAL_STORAGE_KEY = 'view-stix-sighting-relationships';
+const LOCAL_STORAGE_KEY = 'view-stixSightingRelationships';
 
 const StixSightingRelationships = () => {
   const {

@@ -29,7 +29,7 @@ interface CaseRftsProps {
   inputValue?: string;
 }
 
-export const LOCAL_STORAGE_KEY_CASE_RFT = 'view-cases-casesRfts';
+export const LOCAL_STORAGE_KEY_CASE_RFT = 'view-caseRfts';
 
 const CaseRfts: FunctionComponent<CaseRftsProps> = () => {
   const classes = useStyles();

@@ -57,7 +57,7 @@ export const resolveLink = (type: string): string | null => {
     case 'Vulnerability':
       return '/dashboard/arsenal/vulnerabilities';
     case 'Incident':
-      return '/dashboard/events/case_incident';
+      return '/dashboard/events/incidents';
     case 'Artifact':
       return '/dashboard/observations/artifacts';
     case 'Data-Component':
@@ -65,7 +65,7 @@ export const resolveLink = (type: string): string | null => {
     case 'Data-Source':
       return '/dashboard/techniques/data_sources';
     case 'Case-Incident':
-      return '/dashboard/cases/case_incident';
+      return '/dashboard/cases/incidents';
     case 'Feedback':
       return '/dashboard/cases/feedbacks';
     case 'Case-Rfi':

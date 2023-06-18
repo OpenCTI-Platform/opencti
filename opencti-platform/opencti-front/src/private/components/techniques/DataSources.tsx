@@ -15,7 +15,7 @@ import {
 } from './data_sources/__generated__/DataSourcesLinesPaginationQuery.graphql';
 import { DataSourceLineDummy } from './data_sources/DataSourceLine';
 
-export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-data_sources';
+export const LOCAL_STORAGE_KEY_DATA_SOURCES = 'view-dataSources';
 
 const DataSources: FunctionComponent = () => {
   const { viewStorage, helpers, paginationOptions } = usePaginationLocalStorage<DataSourcesLinesPaginationQuery$variables>(
