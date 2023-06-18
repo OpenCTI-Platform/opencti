@@ -302,7 +302,8 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           handleSort={handleSort}
           dataColumns={tasksDataColumns}
           noPadding={true}
-          inline
+          inline={true}
+          secondaryAction={true}
         >
           <ListLinesContent
             dataColumns={tasksDataColumns}

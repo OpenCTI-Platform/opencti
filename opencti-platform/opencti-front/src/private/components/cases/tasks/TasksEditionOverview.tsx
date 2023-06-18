@@ -8,7 +8,12 @@ import { useFormatter } from '../../../../components/i18n';
 import MarkDownField from '../../../../components/MarkDownField';
 import { SubscriptionFocus } from '../../../../components/Subscription';
 import TextField from '../../../../components/TextField';
-import { convertAssignees, convertCreatedBy, convertMarkings, convertStatus } from '../../../../utils/edition';
+import {
+  convertAssignees,
+  convertCreatedBy,
+  convertMarkings,
+  convertStatus,
+} from '../../../../utils/edition';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
 import useFormEditor from '../../../../utils/hooks/useFormEditor';
@@ -20,7 +25,7 @@ import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { TasksEditionOverview_task$key } from './__generated__/TasksEditionOverview_task.graphql';
 import { buildDate, formatDate } from '../../../../utils/Time';
-import { CaseTasksFiltering } from './__generated__/CaseTasksRefetch.graphql';
+import { TasksFiltering } from './__generated__/TasksRefetch.graphql';
 
 export const tasksMutationFieldPatch = graphql`
   mutation TasksEditionOverviewFieldPatchMutation(
@@ -29,10 +34,7 @@ export const tasksMutationFieldPatch = graphql`
     $commitMessage: String
   ) {
     stixDomainObjectEdit(id: $id) {
-      fieldPatch(
-        input: $input
-        commitMessage: $commitMessage
-      ) {
+      fieldPatch(input: $input, commitMessage: $commitMessage) {
         ...TasksEditionOverview_task
         ...Tasks_tasks
       }
@@ -41,10 +43,7 @@ export const tasksMutationFieldPatch = graphql`
 `;
 
 export const tasksEditionOverviewFocus = graphql`
-  mutation TasksEditionOverviewFocusMutation(
-    $id: ID!
-    $input: EditContext!
-  ) {
+  mutation TasksEditionOverviewFocusMutation($id: ID!, $input: EditContext!) {
     stixDomainObjectEdit(id: $id) {
       contextPatch(input: $input) {
         id
@@ -125,11 +124,8 @@ const tasksMutationRelationDelete = graphql`
     $toId: StixRef!
     $relationship_type: String!
   ) {
-    stixDomainObjectEdit(id: $id){
-      relationDelete(
-        toId: $toId
-        relationship_type: $relationship_type
-      ) {
+    stixDomainObjectEdit(id: $id) {
+      relationDelete(toId: $toId, relationship_type: $relationship_type) {
         ...TasksEditionOverview_task
       }
     }
@@ -137,25 +133,25 @@ const tasksMutationRelationDelete = graphql`
 `;
 
 interface TasksEditionOverviewProps {
-  taskRef: TasksEditionOverview_task$key
+  taskRef: TasksEditionOverview_task$key;
   context: ReadonlyArray<{
-    readonly focusOn: string | null
-    readonly name: string
-  }> | null
-  enableReferences?: boolean
-  handleClose: () => void
-  tasksPaginationOptions?: { filters: CaseTasksFiltering[] }
+    readonly focusOn: string | null;
+    readonly name: string;
+  }> | null;
+  enableReferences?: boolean;
+  handleClose: () => void;
+  tasksPaginationOptions?: { filters: TasksFiltering[] };
 }
 
 interface TasksEditionFormValues {
-  name: string
-  description: string | null
-  dueDate: Date | null
-  message?: string
-  createdBy?: Option
-  objectMarking?: Option[]
-  objectAssignee?: Option[]
-  x_opencti_workflow_id: Option
+  name: string;
+  description: string | null;
+  dueDate: Date | null;
+  message?: string;
+  createdBy?: Option;
+  objectMarking?: Option[];
+  objectAssignee?: Option[];
+  x_opencti_workflow_id: Option;
 }
 
 const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
@@ -180,9 +176,17 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     relationDelete: tasksMutationRelationDelete,
     editionFocus: tasksEditionOverviewFocus,
   };
-  const editor = useFormEditor(taskData, enableReferences, queries, taskValidator);
+  const editor = useFormEditor(
+    taskData,
+    enableReferences,
+    queries,
+    taskValidator,
+  );
 
-  const onSubmit: FormikConfig<TasksEditionFormValues>['onSubmit'] = (values, { setSubmitting }) => {
+  const onSubmit: FormikConfig<TasksEditionFormValues>['onSubmit'] = (
+    values,
+    { setSubmitting },
+  ) => {
     const { message, ...otherValues } = values;
     const commitMessage = message ?? '';
     const inputValues = Object.entries({
@@ -197,7 +201,8 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       variables: {
         id: taskData.id,
         input: inputValues,
-        commitMessage: commitMessage && commitMessage.length > 0 ? commitMessage : null,
+        commitMessage:
+          commitMessage && commitMessage.length > 0 ? commitMessage : null,
       },
       onCompleted: () => {
         setSubmitting(false);
@@ -222,9 +227,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
       validationSchema={taskValidator}
       onSubmit={onSubmit}
     >
-      {({
-        setFieldValue,
-      }) => (
+      {({ setFieldValue }) => (
         <Form style={{ margin: '20px 0 20px 0' }}>
           <Field
             component={TextField}

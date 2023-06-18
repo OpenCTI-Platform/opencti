@@ -5,14 +5,13 @@ import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
 import { Link } from 'react-router-dom';
-import { KeyboardArrowRightOutlined } from '@mui/icons-material';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import ItemIcon from '../../../../components/ItemIcon';
 import { Theme } from '../../../../components/Theme';
 import { tasksDataColumns } from './TasksLine';
 import { useFormatter } from '../../../../components/i18n';
 import { CaseTasksLine_data$key } from './__generated__/CaseTasksLine_data.graphql';
-import ListItemSecondaryAction from "@mui/material/ListItemSecondaryAction";
-import TaskPopover from "./TaskPopover";
+import TaskPopover from './TaskPopover';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   item: {
@@ -30,10 +29,6 @@ const useStyles = makeStyles<Theme>((theme) => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
     paddingRight: 5,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
   },
   labelInList: {
     fontSize: 12,
@@ -90,9 +85,7 @@ interface CaseTasksLineProps {
   node: CaseTasksLine_data$key;
 }
 
-const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
-  node,
-}) => {
+const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
   const classes = useStyles();
   const { fldt } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
@@ -106,7 +99,7 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
       to={`/dashboard/cases/tasks/${task.id}`}
     >
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type='Task'></ItemIcon>
+        <ItemIcon type="Task"></ItemIcon>
       </ListItemIcon>
       <ListItemText
         primary={
