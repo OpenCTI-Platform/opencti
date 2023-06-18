@@ -40,7 +40,6 @@ export const ENTITY_TYPE_LOCATION_COUNTRY = 'Country';
 export const ENTITY_TYPE_LOCATION_REGION = 'Region';
 export const ENTITY_TYPE_LOCATION_POSITION = 'Position';
 export const ENTITY_TYPE_MALWARE = 'Malware';
-export const ENTITY_TYPE_MALWARE_ANALYSIS = 'Malware-Analysis';
 export const ENTITY_TYPE_THREAT_ACTOR = 'Threat-Actor';
 export const ENTITY_TYPE_TOOL = 'Tool';
 export const ENTITY_TYPE_VULNERABILITY = 'Vulnerability';

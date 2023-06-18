@@ -392,7 +392,7 @@ const initNotificationManager = () => {
       logApp.info('[OPENCTI-MODULE] End of notification manager processing');
     } catch (e: any) {
       if (e.name === TYPE_LOCK_ERROR) {
-        logApp.info('[OPENCTI-MODULE] Notification manager already started by another API');
+        logApp.debug('[OPENCTI-MODULE] Notification manager already started by another API');
       } else {
         logApp.error('[OPENCTI-MODULE] Notification manager failed to start', { error: e });
       }

@@ -1316,11 +1316,8 @@ const elQueryBodyBuilder = async (context, user, options) => {
       const orderCriteria = orderCriterion[index];
       const isDateOrNumber = isDateNumericOrBooleanAttribute(orderCriteria);
       const orderKeyword = isDateOrNumber || orderCriteria.startsWith('_') ? orderCriteria : `${orderCriteria}.keyword`;
-      const order = { [orderKeyword]: orderMode };
+      const order = { [orderKeyword]: { order: orderMode, missing: '_last' } };
       ordering = R.append(order, ordering);
-      if (!orderKeyword.startsWith('_')) {
-        mustFilters.push({ exists: { field: orderKeyword } });
-      }
     }
     // Add standard_id if not specify to ensure ordering uniqueness
     if (!orderCriterion.includes('standard_id')) {
