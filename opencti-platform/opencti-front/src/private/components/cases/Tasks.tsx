@@ -79,7 +79,7 @@ const Tasks = () => {
         dataColumns={tasksDataColumns}
         selectAll={selectAll}
         openExports={openExports}
-        exportEntityType="Case-Task"
+        exportEntityType="Task"
         keyword={searchTerm}
         filters={filters}
         paginationOptions={paginationOptions}
@@ -124,7 +124,7 @@ const Tasks = () => {
             handleClearSelectedElements={handleClearSelectedElements}
             selectAll={selectAll}
             filters={{
-              entity_type: [{ id: 'Case-Task', value: 'Case-Task' }],
+              entity_type: [{ id: 'Task', value: 'Task' }],
             }}
           />
           </>

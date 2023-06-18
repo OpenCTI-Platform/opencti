@@ -47,7 +47,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const TaskFragment = graphql`
-  fragment TasksLine_node on CaseTask {
+  fragment TasksLine_node on Task {
     id
     name
     dueDate
@@ -204,7 +204,7 @@ export const TasksLine: FunctionComponent<TasksLineProps> = ({
         />
       </ListItemIcon>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type='Case-Task'></ItemIcon>
+        <ItemIcon type='Task'></ItemIcon>
       </ListItemIcon>
       <ListItemText
         primary={

@@ -54,7 +54,7 @@ export const tasksEditionOverviewFocus = graphql`
 `;
 
 const tasksEditionOverviewFragment = graphql`
-  fragment TasksEditionOverview_task on CaseTask {
+  fragment TasksEditionOverview_task on Task {
     id
     name
     description
@@ -172,7 +172,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     description: Yup.string().nullable(),
     x_opencti_workflow_id: Yup.object().nullable(),
   };
-  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
+  const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
   const queries = {
     fieldPatch: tasksMutationFieldPatch,
@@ -279,7 +279,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
           {taskData.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Case-Task"
+              type="Task"
               onFocus={editor.changeFocus}
               onChange={editor.changeField}
               setFieldValue={setFieldValue}

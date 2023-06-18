@@ -62,7 +62,7 @@ import globalTypeDefs from '../../config/schema/opencti.graphql';
 import organizationOrIndividualResolvers from '../resolvers/organizationOrIndividual';
 import taxiiResolvers from '../resolvers/taxii';
 import feedResolvers from '../resolvers/feed';
-import taskResolvers from '../resolvers/task';
+import taskResolvers from '../resolvers/backgroundTask';
 import retentionResolvers from '../resolvers/retentionRule';
 import streamResolvers from '../resolvers/stream';
 import statusResolvers from '../resolvers/status';

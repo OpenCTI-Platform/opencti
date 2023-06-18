@@ -211,7 +211,7 @@ import {
 } from './middleware-loader';
 import { checkRelationConsistency, isRelationConsistent } from '../utils/modelConsistency';
 import { getEntitiesFromCache } from './cache';
-import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/task-common';
+import { ACTION_TYPE_SHARE, ACTION_TYPE_UNSHARE, createListTask } from '../domain/backgroundTask-common';
 import { ENTITY_TYPE_VOCABULARY, vocabularyDefinitions } from '../modules/vocabulary/vocabulary-types';
 import {
   getVocabulariesCategories,
@@ -3061,12 +3061,10 @@ const buildEntityData = async (context, user, input, type, opts = {}) => {
     }
   }
   // For meta stix core && meta observables
-  if (isStixCoreObject(type) || isStixCyberObservable(type)) {
-    const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
-    for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
-      const inputField = inputFields[fieldIndex];
-      appendMetaRelationships(inputField.inputName, inputField.databaseName);
-    }
+  const inputFields = schemaRelationsRefDefinition.getRelationsRef(input.entity_type);
+  for (let fieldIndex = 0; fieldIndex < inputFields.length; fieldIndex += 1) {
+    const inputField = inputFields[fieldIndex];
+    appendMetaRelationships(inputField.inputName, inputField.databaseName);
   }
 
   // Transaction succeed, complete the result to send it back

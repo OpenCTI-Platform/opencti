@@ -272,7 +272,7 @@ export const ContainerStixCoreObjectsMappingLine = createFragmentContainer(
         ... on Case {
           name
         }
-        ... on CaseTask {
+        ... on Task {
           name
         }
         ... on StixCyberObservable {

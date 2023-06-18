@@ -14,10 +14,7 @@ import ContainerHeader from '../../common/containers/ContainerHeader';
 import ContainerStixObjectsOrStixRelationships from '../../common/containers/ContainerStixObjectsOrStixRelationships';
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
-import {
-  CaseTasksFilter,
-  CaseTasksLinesQuery, CaseTasksLinesQuery$variables,
-} from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
+import { TasksFilter, CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
 import CaseTasksLines, { caseTasksLinesQuery } from '../case_task/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
@@ -49,7 +46,7 @@ const CaseIncidentComponent: FunctionComponent<CaseIncidentProps> = ({
   const tasksFilters = {
     filters: [
       {
-        key: ['objectContains' as CaseTasksFilter],
+        key: ['objectContains' as TasksFilter],
         values: [caseIncidentData.id],
       },
     ],

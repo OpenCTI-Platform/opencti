@@ -1,5 +1,5 @@
-import { deleteTask, createQueryTask, findAll, findById } from '../domain/task';
-import { createListTask } from '../domain/task-common';
+import { deleteTask, createQueryTask, findAll, findById } from '../domain/backgroundTask';
+import { createListTask } from '../domain/backgroundTask-common';
 import { batchLoader } from '../database/middleware';
 import { batchCreator } from '../domain/user';
 
@@ -7,15 +7,15 @@ const creatorLoader = batchLoader(batchCreator);
 
 const taskResolvers = {
   Query: {
-    task: (_, { id }, context) => findById(context, context.user, id),
-    tasks: (_, args, context) => findAll(context, context.user, args),
+    backgroundTask: (_, { id }, context) => findById(context, context.user, id),
+    backgroundTasks: (_, args, context) => findAll(context, context.user, args),
   },
   Mutation: {
     listTaskAdd: (_, { input }, context) => createListTask(context.user, input),
     queryTaskAdd: (_, { input }, context) => createQueryTask(context, context.user, input),
-    deleteTask: (_, { id }, context) => deleteTask(context, context.user, id),
+    deleteBackgroundTask: (_, { id }, context) => deleteTask(context, context.user, id),
   },
-  Task: {
+  BackgroundTask: {
     // eslint-disable-next-line
     __resolveType(obj) {
       if (obj.type === 'QUERY') return 'QueryTask';

@@ -15,7 +15,7 @@ export const ENTITY_TYPE_CONNECTOR = 'Connector';
 export const ENTITY_TYPE_HISTORY = 'History';
 export const ENTITY_TYPE_ACTIVITY = 'Activity';
 export const ENTITY_TYPE_WORK = 'work';
-export const ENTITY_TYPE_TASK = 'Task';
+export const ENTITY_TYPE_BACKGROUND_TASK = 'BackgroundTask';
 export const ENTITY_TYPE_RETENTION_RULE = 'RetentionRule';
 export const ENTITY_TYPE_SYNC = 'Sync';
 export const ENTITY_TYPE_TAXII_COLLECTION = 'TaxiiCollection';
@@ -40,7 +40,7 @@ const INTERNAL_OBJECTS = [
   ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STATUS,
-  ENTITY_TYPE_TASK,
+  ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_RETENTION_RULE,
   ENTITY_TYPE_SYNC,
   ENTITY_TYPE_MIGRATION_STATUS,

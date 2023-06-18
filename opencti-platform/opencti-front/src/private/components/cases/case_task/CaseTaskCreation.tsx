@@ -19,9 +19,7 @@ import ObjectAssigneeField from '../../common/form/ObjectAssigneeField';
 import ObjectLabelField from '../../common/form/ObjectLabelField';
 import ObjectMarkingField from '../../common/form/ObjectMarkingField';
 import { Option } from '../../common/form/ReferenceField';
-import {
-  CaseTemplateTasksLines_DataQuery$variables,
-} from '../../settings/case_templates/__generated__/CaseTemplateTasksLines_DataQuery.graphql';
+import { CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   buttons: {
@@ -34,18 +32,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const caseTaskAddMutation = graphql`
-  mutation CaseTaskCreationMutation($input: CaseTaskAddInput!) {
-    caseTaskAdd(input: $input) {
+  mutation CaseTaskCreationMutation($input: TaskAddInput!) {
+    taskAdd(input: $input) {
       ...CaseTasksLine_data
-      ... on CaseTask {
-        objects {
-          edges {
-            node {
-              ...CaseUtils_case
-            }
-          }
-        }
-      }
     }
   }
 `;
@@ -62,7 +51,7 @@ interface FormikCaseTaskAddInput {
 interface CaseTaskCreationProps {
   caseId: string
   onClose: () => void
-  paginationOptions: CaseTemplateTasksLines_DataQuery$variables
+  paginationOptions: CaseTasksLinesQuery$variables
   defaultMarkings?: { value: string, label: string }[]
 }
 
@@ -84,7 +73,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
     objectAssignee: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
+  const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
   const [addTask] = useMutation(caseTaskAddMutation);
 
@@ -106,9 +95,9 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
       },
       updater: (store: RecordSourceSelectorProxy) => insertNode(
         store,
-        'Pagination_caseTasks',
+        'Pagination_tasks',
         paginationOptions,
-        'caseTaskAdd',
+        'taskAdd',
       ),
       onError: (error: Error) => {
         handleErrorInForm(error, setErrors);

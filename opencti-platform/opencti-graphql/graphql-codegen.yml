@@ -22,9 +22,9 @@ generates:
         DataComponent: ../modules/dataComponent/dataComponent-types#BasicStoreEntityDataComponent
         Vocabulary: ../modules/vocabulary/vocabulary-types#BasicStoreEntityVocabulary
         AdministrativeArea: ../modules/administrativeArea/administrativeArea-types#BasicStoreEntityAdministrativeArea
+        Task: ../modules/task/task-types#BasicStoreEntityTask
         Case: ../modules/case/case-types#BasicStoreEntityCase
         CaseTemplate: ../modules/case/case-template/case-template-types#BasicStoreEntityCaseTemplate
-        CaseTask: ../modules/case/case-task/case-task-types#BasicStoreEntityCaseTask
         CaseIncident: ../modules/case/case-incident/case-incident-types#BasicStoreEntityCaseIncident
         CaseRfi: ../modules/case/case-rfi/case-rfi-types#BasicStoreEntityCaseRfi
         CaseRft: ../modules/case/case-rft/case-rft-types#BasicStoreEntityCaseRft

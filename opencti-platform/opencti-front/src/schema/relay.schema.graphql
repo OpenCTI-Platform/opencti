@@ -801,19 +801,19 @@ type FileConnection {
   edges: [FileEdge]
 }
 
-enum TaskType {
+enum BackgroundTaskType {
   QUERY
   LIST
   RULE
 }
 
-type TaskError {
+type BackgroundTaskError {
   id: ID!
   timestamp: DateTime
   message: String
 }
 
-enum TaskActionType {
+enum BackgroundTaskActionType {
   DELETE
   ADD
   REMOVE
@@ -826,13 +826,13 @@ enum TaskActionType {
   UNSHARE
 }
 
-enum TaskContextType {
+enum BackgroundTaskContextType {
   ATTRIBUTE
   RELATION
   REVERSED_RELATION
 }
 
-enum TasksOrdering {
+enum BackgroundTasksOrdering {
   id
   type
   completed
@@ -840,118 +840,118 @@ enum TasksOrdering {
   last_execution_date
 }
 
-enum TasksFilter {
+enum BackgroundTasksFilter {
   type
   initiator
   completed
 }
 
-input TasksFiltering {
-  key: [TasksFilter!]!
+input BackgroundTasksFiltering {
+  key: [BackgroundTasksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
-type TaskContext {
+type BackgroundTaskContext {
   field: String
-  type: TaskContextType
+  type: BackgroundTaskContextType
   values: [String]!
 }
 
-type TaskAction {
-  type: TaskActionType
-  context: TaskContext
+type BackgroundTaskAction {
+  type: BackgroundTaskActionType
+  context: BackgroundTaskContext
 }
 
-interface Task {
+interface BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
 }
 
-type RuleTask implements Task {
+type RuleTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   rule: ID!
   enable: Boolean
 }
 
-type ListTask implements Task {
+type ListTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   task_ids: [ID!]
 }
 
-type QueryTask implements Task {
+type QueryTask implements BackgroundTask {
   id: ID!
-  type: TaskType
+  type: BackgroundTaskType
   initiator: Creator
-  actions: [TaskAction]
+  actions: [BackgroundTaskAction]
   created_at: DateTime
   last_execution_date: DateTime
   completed: Boolean
   task_expected_number: Int
   task_processed_number: Int
-  errors: [TaskError]
+  errors: [BackgroundTaskError]
   task_filters: String!
   task_search: String
 }
 
-type TaskConnectionEdge {
+type BackgroundTaskConnectionEdge {
   cursor: String!
-  node: Task!
+  node: BackgroundTask!
 }
 
-type TaskConnection {
+type BackgroundTaskConnection {
   pageInfo: PageInfo!
-  edges: [TaskConnectionEdge]
+  edges: [BackgroundTaskConnectionEdge]
 }
 
-input TaskContextInput {
+input BackgroundTaskContextInput {
   field: String
-  type: TaskContextType
+  type: BackgroundTaskContextType
   values: [String]!
 }
 
-input TaskActionInput {
-  type: TaskActionType!
-  context: TaskContextInput
+input BackgroundTaskActionInput {
+  type: BackgroundTaskActionType!
+  context: BackgroundTaskContextInput
 }
 
 input ListTaskAddInput {
   ids: [ID!]
-  actions: [TaskActionInput]!
+  actions: [BackgroundTaskActionInput]!
 }
 
 input QueryTaskAddInput {
   filters: String!
   search: String
   excluded_ids: [ID]
-  actions: [TaskActionInput]!
+  actions: [BackgroundTaskActionInput]!
 }
 
 input RetentionRuleAddInput {
@@ -7194,11 +7194,11 @@ type StixObjectOrStixRelationshipRefEdge {
   node: StixObjectOrStixRelationship!
 }
 
-union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Creator | Workspace
+union StixObjectOrStixRelationshipOrCreator = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | Task | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | EntitySetting | Creator | Workspace
 
-union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
+union StixObjectOrStixRelationship = MarkingDefinition | Label | KillChainPhase | ExternalReference | AttackPattern | Campaign | Channel | Event | Narrative | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | System | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | StixSightingRelationship | StixRefRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
 
-union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | CaseTask | EntitySetting | Workspace
+union StixCoreObjectOrStixCoreRelationship = AttackPattern | Campaign | Channel | Event | Note | ObservedData | Opinion | Report | Grouping | CourseOfAction | Individual | Organization | Sector | Indicator | Infrastructure | IntrusionSet | Language | City | AdministrativeArea | Country | Region | Position | Malware | MalwareAnalysis | Narrative | ThreatActor | Tool | Vulnerability | Incident | AutonomousSystem | Directory | DomainName | EmailAddr | EmailMessage | EmailMimePartType | Artifact | StixFile | X509Certificate | IPv4Addr | IPv6Addr | MacAddr | Mutex | NetworkTraffic | Process | Software | Url | UserAccount | WindowsRegistryKey | WindowsRegistryValueType | CryptographicKey | CryptocurrencyWallet | Hostname | Text | UserAgent | BankAccount | PhoneNumber | PaymentCard | MediaContent | StixCoreRelationship | DataComponent | DataSource | CaseIncident | CaseRfi | CaseRft | Feedback | CaseTemplate | Task | EntitySetting | Workspace
 
 enum StixRelationshipsOrdering {
   entity_type
@@ -7686,8 +7686,8 @@ type Query {
   statusTemplates(first: Int, after: ID, orderBy: StatusTemplateOrdering, orderMode: OrderingMode, search: String): StatusTemplateConnection
   status(id: String!): Status
   statuses(first: Int, after: ID, orderBy: StatusOrdering, orderMode: OrderingMode, filters: [StatusesFiltering!], filterMode: FilterMode, search: String): StatusConnection
-  task(id: String!): Task
-  tasks(first: Int, after: ID, orderBy: TasksOrdering, orderMode: OrderingMode, filters: [TasksFiltering], filterMode: FilterMode, search: String): TaskConnection
+  backgroundTask(id: String!): BackgroundTask
+  backgroundTasks(first: Int, after: ID, orderBy: BackgroundTasksOrdering, orderMode: OrderingMode, filters: [BackgroundTasksFiltering], filterMode: FilterMode, search: String): BackgroundTaskConnection
   rule(id: String!): Rule
   rules: [Rule]
   ruleManagerInfo: RuleManager
@@ -7852,11 +7852,15 @@ type Query {
   vocabularies(category: VocabularyCategory, first: Int, after: ID, orderBy: VocabularyOrdering, orderMode: OrderingMode, filters: [VocabularyFiltering!], filterMode: FilterMode, search: String): VocabularyConnection
   administrativeArea(id: String!): AdministrativeArea
   administrativeAreas(first: Int, after: ID, orderBy: AdministrativeAreasOrdering, orderMode: OrderingMode, filters: [AdministrativeAreasFiltering!], filterMode: FilterMode, search: String): AdministrativeAreaConnection
+  task(id: String!): Task
+  tasks(first: Int, after: ID, orderBy: TasksOrdering, orderMode: OrderingMode, filters: [TasksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): TaskConnection
+  taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  taskTemplate(id: String!): TaskTemplate
+  taskTemplates(first: Int, after: ID, orderBy: TaskTemplatesOrdering, orderMode: OrderingMode, filters: [TaskTemplatesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): TaskTemplateConnection
   case(id: String!): Case
   cases(first: Int, after: ID, orderBy: CasesOrdering, orderMode: OrderingMode, filters: [CasesFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseConnection
-  feedback(id: String!): Feedback
-  feedbacks(first: Int, after: ID, orderBy: FeedbacksOrdering, orderMode: OrderingMode, filters: [FeedbacksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): FeedbackConnection
-  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  caseTemplate(id: String!): CaseTemplate
+  caseTemplates(first: Int, after: ID, orderBy: CaseTemplatesOrdering, orderMode: OrderingMode, search: String): CaseTemplateConnection
   caseIncident(id: String!): CaseIncident
   caseIncidents(first: Int, after: ID, orderBy: CaseIncidentsOrdering, orderMode: OrderingMode, filters: [CaseIncidentsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseIncidentConnection
   caseIncidentContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
@@ -7866,11 +7870,9 @@ type Query {
   caseRft(id: String!): CaseRft
   caseRfts(first: Int, after: ID, orderBy: CaseRftsOrdering, orderMode: OrderingMode, filters: [CaseRftsFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseRftConnection
   caseRftContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
-  caseTemplate(id: String!): CaseTemplate
-  caseTemplates(first: Int, after: ID, orderBy: CaseTemplatesOrdering, orderMode: OrderingMode, search: String): CaseTemplateConnection
-  caseTask(id: String!): CaseTask
-  caseTasks(first: Int, after: ID, orderBy: CaseTasksOrdering, orderMode: OrderingMode, filters: [CaseTasksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): CaseTaskConnection
-  caseTaskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
+  feedback(id: String!): Feedback
+  feedbacks(first: Int, after: ID, orderBy: FeedbacksOrdering, orderMode: OrderingMode, filters: [FeedbacksFiltering!], filterMode: FilterMode, search: String, toStix: Boolean): FeedbackConnection
+  feedbackContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean
   entitySetting(id: String!): EntitySetting
   entitySettingByType(targetType: String!): EntitySetting
   entitySettings(first: Int, after: ID, orderBy: EntitySettingsOrdering, orderMode: OrderingMode, filters: [EntitySettingsFiltering!], filterMode: FilterMode, search: String): EntitySettingConnection
@@ -8336,9 +8338,9 @@ type Mutation {
   workAdd(connectorId: String!, friendlyName: String): Work!
   workEdit(id: ID!): WorkEditMutations
   workDelete(connectorId: String!): Boolean
-  deleteTask(id: ID!): ID!
-  listTaskAdd(input: ListTaskAddInput!): Task!
-  queryTaskAdd(input: QueryTaskAddInput!): Task!
+  deleteBackgroundTask(id: ID!): ID!
+  listTaskAdd(input: ListTaskAddInput!): BackgroundTask!
+  queryTaskAdd(input: QueryTaskAddInput!): BackgroundTask!
   retentionRuleAdd(input: RetentionRuleAddInput!): RetentionRule!
   retentionRuleCheck(input: RetentionRuleAddInput): Int!
   retentionRuleEdit(id: ID!): RetentionRuleEditMutations
@@ -8534,24 +8536,29 @@ type Mutation {
   administrativeAreaContextClean(id: ID!): AdministrativeArea
   administrativeAreaRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
   administrativeAreaRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): AdministrativeArea
+  taskAdd(input: TaskAddInput!): Task
+  taskDelete(id: ID!): ID
+  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task
+  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
+  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task
+  taskTemplateAdd(input: TaskTemplateAddInput!): TaskTemplate
+  taskTemplateDelete(id: ID!): ID
+  taskTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): TaskTemplate
   caseDelete(id: ID!): ID
   caseSetTemplate(id: ID!, caseTemplatesId: [ID!]!): Case
-  feedbackAdd(input: FeedbackAddInput!): Feedback
-  feedbackDelete(id: ID!): ID
+  caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate
+  caseTemplateDelete(id: ID!): ID
+  caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate
+  caseTemplateRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): CaseTemplate
+  caseTemplateRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTemplate
   caseIncidentAdd(input: CaseIncidentAddInput!): CaseIncident
   caseIncidentDelete(id: ID!): ID
   caseRfiAdd(input: CaseRfiAddInput!): CaseRfi
   caseRfiDelete(id: ID!): ID
   caseRftAdd(input: CaseRftAddInput!): CaseRft
   caseRftDelete(id: ID!): ID
-  caseTemplateAdd(input: CaseTemplateAddInput!): CaseTemplate
-  caseTemplateDelete(id: ID!): ID
-  caseTemplateFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTemplate
-  caseTaskAdd(input: CaseTaskAddInput!): CaseTask
-  caseTaskDelete(id: ID!): ID
-  caseTaskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTask
-  caseTaskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship
-  caseTaskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTask
+  feedbackAdd(input: FeedbackAddInput!): Feedback
+  feedbackDelete(id: ID!): ID
   entitySettingsFieldPatch(ids: [ID!]!, input: [EditInput!]!, commitMessage: String, references: [String]): [EntitySetting]
   workspaceAdd(input: WorkspaceAddInput!): Workspace
   workspaceDelete(id: ID!): ID
@@ -9765,6 +9772,178 @@ input AdministrativeAreaAddInput {
   file: Upload
 }
 
+type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  x_opencti_stix_ids: [StixId]
+  is_inferred: Boolean!
+  spec_version: String!
+  created_at: DateTime!
+  updated_at: DateTime!
+  x_opencti_inferences: [Inference]
+  createdBy: Identity
+  objectMarking: MarkingDefinitionConnection
+  objectOrganization: OrganizationConnection
+  objectLabel: LabelConnection
+  externalReferences(first: Int): ExternalReferenceConnection
+  reports(first: Int): ReportConnection
+  notes(first: Int): NoteConnection
+  opinions(first: Int): OpinionConnection
+  observedData(first: Int): ObservedDataConnection
+  groupings(first: Int): GroupingConnection
+  cases(first: Int): CaseConnection
+  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
+  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
+  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
+  revoked: Boolean!
+  confidence: Int
+  lang: String
+  created: DateTime
+  modified: DateTime
+  x_opencti_graph_data: String
+  objectAssignee: AssigneeConnection
+  representative: String!
+  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
+  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
+  creators: [Creator!]
+  toStix: String
+  importFiles(first: Int): FileConnection
+  pendingFiles(first: Int): FileConnection
+  exportFiles(first: Int): FileConnection
+  editContext: [EditUserContext!]
+  connectors(onlyAlive: Boolean): [Connector]
+  jobs(first: Int): [Work]
+  status: Status
+  workflowEnabled: Boolean
+  name: String!
+  description: String
+  dueDate: DateTime
+}
+
+enum TasksOrdering {
+  name
+  description
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  dueDate
+  assigneeTo
+}
+
+enum TasksFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  markedBy
+  labelledBy
+  assigneeTo
+  objectContains
+  x_opencti_workflow_id
+  dueDate
+}
+
+type TaskEdge {
+  cursor: String!
+  node: Task!
+}
+
+type TaskConnection {
+  pageInfo: PageInfo!
+  edges: [TaskEdge!]!
+}
+
+input TasksFiltering {
+  key: [TasksFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+input TaskAddInput {
+  name: name_String_NotNull_minLength_2!
+  description: String
+  created: DateTime
+  dueDate: DateTime
+  objectAssignee: [String]
+  objectLabel: [String]
+  objectMarking: [String]
+  objects: [String]
+  update: Boolean
+}
+
+type TaskTemplate implements InternalObject & BasicObject {
+  id: ID!
+  standard_id: String!
+  entity_type: String!
+  parent_types: [String]!
+  created: DateTime
+  modified: DateTime
+  name: String!
+  description: String
+}
+
+enum TaskTemplatesOrdering {
+  name
+  description
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  createdBy
+  x_opencti_workflow_id
+  confidence
+  dueDate
+  assigneeTo
+}
+
+enum TaskTemplatesFilter {
+  name
+  created
+  modified
+  context
+  created_at
+  updated_at
+  creator
+  taskContains
+}
+
+type TaskTemplateConnection {
+  pageInfo: PageInfo!
+  edges: [TaskTemplateEdge!]!
+}
+
+type TaskTemplateEdge {
+  cursor: String!
+  node: TaskTemplate!
+}
+
+input TaskTemplatesFiltering {
+  key: [TaskTemplatesFilter!]!
+  values: [String]
+  operator: String
+  filterMode: FilterMode
+}
+
+input TaskTemplateAddInput {
+  name: name_String_NotNull_minLength_2!
+  description: String
+}
+
 interface Case implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container {
   id: ID!
   standard_id: String!
@@ -9814,7 +9993,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
 }
 
 enum CasesOrdering {
@@ -9864,131 +10043,39 @@ type CaseEdge {
   node: Case!
 }
 
-type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
+type CaseTemplate implements InternalObject & BasicObject {
   id: ID!
   standard_id: String!
   entity_type: String!
   parent_types: [String]!
-  x_opencti_stix_ids: [StixId]
-  is_inferred: Boolean!
-  spec_version: String!
-  created_at: DateTime!
-  updated_at: DateTime!
-  x_opencti_inferences: [Inference]
-  createdBy: Identity
-  objectMarking: MarkingDefinitionConnection
-  objectOrganization: OrganizationConnection
-  objectLabel: LabelConnection
-  externalReferences(first: Int): ExternalReferenceConnection
-  reports(first: Int): ReportConnection
-  notes(first: Int): NoteConnection
-  opinions(first: Int): OpinionConnection
-  observedData(first: Int): ObservedDataConnection
-  groupings(first: Int): GroupingConnection
-  cases(first: Int): CaseConnection
-  stixCoreRelationships(first: Int, after: ID, orderBy: StixCoreRelationshipsOrdering, orderMode: OrderingMode, fromId: StixRef, toId: StixRef, fromTypes: [String], toTypes: [String], relationship_type: String, startTimeStart: DateTime, startTimeStop: DateTime, stopTimeStart: DateTime, stopTimeStop: DateTime, firstSeenStart: DateTime, firstSeenStop: DateTime, lastSeenStart: DateTime, lastSeenStop: DateTime, confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): StixCoreRelationshipConnection
-  stixCoreObjectsDistribution(relationship_type: [String], toTypes: [String], field: String!, startDate: DateTime, endDate: DateTime, dateAttribute: String, operation: StatsOperation!, limit: Int, order: String, types: [String], filters: [StixCoreObjectsFiltering], filterMode: FilterMode, search: String): [Distribution]
-  stixCoreRelationshipsDistribution(field: String!, operation: StatsOperation!, startDate: DateTime, endDate: DateTime, dateAttribute: String, isTo: Boolean, limit: Int, order: String, elementWithTargetTypes: [String], fromId: [String], fromRole: String, fromTypes: [String], toId: [String], toRole: String, toTypes: [String], relationship_type: [String], confidences: [Int], search: String, filters: [StixCoreRelationshipsFiltering], filterMode: FilterMode): [Distribution]
-  revoked: Boolean!
-  confidence: Int
-  lang: String
   created: DateTime
   modified: DateTime
-  x_opencti_graph_data: String
-  objectAssignee: AssigneeConnection
-  representative: String!
-  objects(first: Int, after: ID, orderBy: StixObjectOrStixRelationshipsOrdering, orderMode: OrderingMode, filters: [StixObjectOrStixRelationshipsFiltering], filterMode: FilterMode, search: String, types: [String], all: Boolean): StixObjectOrStixRelationshipRefConnection
-  relatedContainers(first: Int, after: ID, orderBy: ContainersOrdering, orderMode: OrderingMode, filters: [ContainersFiltering], filterMode: FilterMode, search: String, types: [String], viaTypes: [String]): ContainerConnection
-  creators: [Creator!]
-  toStix: String
-  importFiles(first: Int): FileConnection
-  pendingFiles(first: Int): FileConnection
-  exportFiles(first: Int): FileConnection
-  editContext: [EditUserContext!]
-  connectors(onlyAlive: Boolean): [Connector]
-  jobs(first: Int): [Work]
-  status: Status
-  workflowEnabled: Boolean
   name: String!
   description: String
-  content: String
-  content_mapping: String
-  tasks: CaseTaskConnection!
-  rating: Int
+  tasks: TaskTemplateConnection!
 }
 
-enum FeedbacksOrdering {
+enum CaseTemplatesOrdering {
   name
+  description
   created
-  modified
-  context
-  rating
-  created_at
-  updated_at
-  creator
-  createdBy
-  x_opencti_workflow_id
-  confidence
-  objectMarking
 }
 
-enum FeedbacksFilter {
-  name
-  created
-  modified
-  context
-  created_at
-  updated_at
-  creator
-  createdBy
-  markedBy
-  labelledBy
-  assigneeTo
-  x_opencti_workflow_id
-  rating
-  confidence
-}
-
-input FeedbacksFiltering {
-  key: [FeedbacksFilter!]!
-  values: [String]
-  operator: String
-  filterMode: FilterMode
-}
-
-type FeedbackConnection {
+type CaseTemplateConnection {
   pageInfo: PageInfo!
-  edges: [FeedbackEdge]
+  edges: [CaseTemplateEdge!]!
 }
 
-type FeedbackEdge {
+type CaseTemplateEdge {
   cursor: String!
-  node: Feedback!
+  node: CaseTemplate!
 }
 
-input FeedbackAddInput {
-  stix_id: StixId
-  x_opencti_stix_ids: [StixId]
+input CaseTemplateAddInput {
   name: name_String_NotNull_minLength_2!
   description: String
-  content: String
-  content_mapping: String
-  confidence: Int
-  revoked: Boolean
-  lang: String
-  objects: [String]
-  createdBy: String
-  objectMarking: [String]
-  objectAssignee: [String]
-  objectOrganization: [String]
-  objectLabel: [String]
-  externalReferences: [String]
   created: DateTime
-  modified: DateTime
-  file: Upload
-  clientMutationId: String
-  update: Boolean
-  rating: Int
+  tasks: [StixRef!]!
 }
 
 type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
@@ -10040,7 +10127,7 @@ type CaseIncident implements BasicObject & StixObject & StixCoreObject & StixDom
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   rating: Int
   response_types: [String!]
   severity: String
@@ -10175,7 +10262,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   information_types: [String!]
   severity: String
   priority: String
@@ -10307,7 +10394,7 @@ type CaseRft implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   takedown_types: [String!]
   severity: String
   priority: String
@@ -10392,42 +10479,7 @@ input CaseRftAddInput {
   caseTemplates: [String!]
 }
 
-type CaseTemplate implements InternalObject & BasicObject {
-  id: ID!
-  standard_id: String!
-  entity_type: String!
-  parent_types: [String]!
-  created: DateTime
-  modified: DateTime
-  name: String!
-  description: String
-  tasks: CaseTaskConnection!
-}
-
-enum CaseTemplatesOrdering {
-  name
-  description
-  created
-}
-
-type CaseTemplateConnection {
-  pageInfo: PageInfo!
-  edges: [CaseTemplateEdge!]!
-}
-
-type CaseTemplateEdge {
-  cursor: String!
-  node: CaseTemplate!
-}
-
-input CaseTemplateAddInput {
-  name: name_String_NotNull_minLength_2!
-  description: String
-  created: DateTime
-  tasks: [StixRef!]!
-}
-
-type CaseTask implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Feedback implements BasicObject & StixObject & StixCoreObject & StixDomainObject & Container & Case {
   id: ID!
   standard_id: String!
   entity_type: String!
@@ -10474,27 +10526,28 @@ type CaseTask implements Container & StixDomainObject & StixCoreObject & StixObj
   workflowEnabled: Boolean
   name: String!
   description: String
-  dueDate: DateTime
-  useAsTemplate: Boolean!
+  content: String
+  content_mapping: String
+  tasks: TaskConnection!
+  rating: Int
 }
 
-enum CaseTasksOrdering {
+enum FeedbacksOrdering {
   name
-  description
   created
   modified
   context
+  rating
   created_at
   updated_at
   creator
   createdBy
   x_opencti_workflow_id
   confidence
-  dueDate
-  assigneeTo
+  objectMarking
 }
 
-enum CaseTasksFilter {
+enum FeedbacksFilter {
   name
   created
   modified
@@ -10506,40 +10559,51 @@ enum CaseTasksFilter {
   markedBy
   labelledBy
   assigneeTo
-  objectContains
   x_opencti_workflow_id
-  useAsTemplate
-  dueDate
+  rating
+  confidence
 }
 
-type CaseTaskConnection {
-  pageInfo: PageInfo!
-  edges: [CaseTaskEdge!]!
-}
-
-type CaseTaskEdge {
-  cursor: String!
-  node: CaseTask!
-}
-
-input CaseTasksFiltering {
-  key: [CaseTasksFilter!]!
+input FeedbacksFiltering {
+  key: [FeedbacksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
 }
 
-input CaseTaskAddInput {
+type FeedbackConnection {
+  pageInfo: PageInfo!
+  edges: [FeedbackEdge]
+}
+
+type FeedbackEdge {
+  cursor: String!
+  node: Feedback!
+}
+
+input FeedbackAddInput {
+  stix_id: StixId
+  x_opencti_stix_ids: [StixId]
   name: name_String_NotNull_minLength_2!
   description: String
-  created: DateTime
-  dueDate: DateTime
-  objectAssignee: [String]
-  objectLabel: [String]
-  objectMarking: [String]
+  content: String
+  content_mapping: String
+  confidence: Int
+  revoked: Boolean
+  lang: String
   objects: [String]
-  useAsTemplate: Boolean
+  createdBy: String
+  objectMarking: [String]
+  objectAssignee: [String]
+  objectOrganization: [String]
+  objectLabel: [String]
+  externalReferences: [String]
+  created: DateTime
+  modified: DateTime
+  file: Upload
+  clientMutationId: String
   update: Boolean
+  rating: Int
 }
 
 type DefaultValue {

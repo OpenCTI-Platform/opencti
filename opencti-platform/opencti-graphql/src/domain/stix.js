@@ -28,7 +28,7 @@ import {
 import { extractEntityRepresentative, UPDATE_OPERATION_ADD, UPDATE_OPERATION_REMOVE } from '../database/utils';
 import { notify } from '../database/redis';
 import { BUS_TOPICS } from '../config/conf';
-import { createQueryTask } from './task';
+import { createQueryTask } from './backgroundTask';
 import { getParentTypes } from '../schema/schemaUtils';
 import { internalLoadById, storeLoadById } from '../database/middleware-loader';
 import { schemaTypesDefinition } from '../schema/schema-types';

@@ -11,7 +11,7 @@ export const caseSetTemplateQuery = graphql`
       ...CaseUtils_case
       tasks {
         edges {
-          node @appendNode(connections: $connections, edgeTypeName: "Case-Task") {
+          node @appendNode(connections: $connections, edgeTypeName: "Task") {
             ...CaseTasksLine_data
           }
         }
@@ -28,7 +28,7 @@ export const caseMutationFieldPatch = graphql`
     stixDomainObjectEdit(id: $id) {
       fieldPatch(input: $input) {
         ...CaseTasksLine_data
-        ... on CaseTask {
+        ... on Task {
           objects {
             edges {
               node {

@@ -38,7 +38,7 @@ interface TasksEditionContainerProps {
 
 export const tasksEditionQuery = graphql`
   query TasksEditionContainerQuery($id: String!) {
-    caseTask(id: $id) {
+    task(id: $id) {
       ...TasksEditionOverview_task
       editContext {
         name
@@ -54,7 +54,7 @@ TasksEditionContainerProps
   const classes = useStyles();
   const { t } = useFormatter();
   const queryData = usePreloadedQuery(tasksEditionQuery, queryRef);
-  if (queryData.caseTask === null) {
+  if (queryData.task === null) {
     return <ErrorNotFound />;
   }
   return (
@@ -72,14 +72,14 @@ TasksEditionContainerProps
         <Typography variant="h6" classes={{ root: classes.title }}>
           {t('Update a task')}
         </Typography>
-        <SubscriptionAvatars context={queryData.caseTask.editContext} />
+        <SubscriptionAvatars context={queryData.task.editContext} />
         <div className="clearfix" />
       </div>
       <div className={classes.container}>
         <TasksEditionOverview
-          taskRef={queryData.caseTask}
-          context={queryData.caseTask.editContext}
-          enableReferences={useIsEnforceReference('Case-Task')}
+          taskRef={queryData.task}
+          context={queryData.task.editContext}
+          enableReferences={useIsEnforceReference('Task')}
           handleClose={handleClose}
         />
       </div>

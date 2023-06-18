@@ -2,11 +2,10 @@ import * as R from 'ramda';
 import { Promise } from 'bluebird';
 import { RELATION_OBJECT } from '../schema/stixRefRelationship';
 import { paginateAllThings, listThings, listAllThings } from '../database/middleware';
-import { listEntities, listRelations, storeLoadById, storeLoadByIds } from '../database/middleware-loader';
+import { listEntities, listRelations, storeLoadById } from '../database/middleware-loader';
 import { buildRefRelationKey, ENTITY_TYPE_CONTAINER, ID_INFERRED, ID_INTERNAL } from '../schema/general';
 import { isStixDomainObjectContainer } from '../schema/stixDomainObject';
 import { buildPagination } from '../database/utils';
-import { ES_MAX_CONCURRENCY } from '../database/engine';
 
 const MANUAL_OBJECT = 'manual';
 const INFERRED_OBJECT = 'inferred';
@@ -62,27 +61,14 @@ export const relatedContainers = async (context, user, containerId, args) => {
 export const containersObjectsOfObject = async (context, user, { id, types, filters = [], search = null }) => {
   const queryFilters = [...filters, { key: buildRefRelationKey(RELATION_OBJECT), values: [id] }];
   const containerConnection = await findAll(context, user, { first: 1000, search, filters: queryFilters });
-  const listRelationPromises = (async (n) => await listRelations(context, user, RELATION_OBJECT, {
+  const listRelationPromises = containerConnection.edges.map((n) => listRelations(context, user, RELATION_OBJECT, {
     first: 1000,
     fromId: n.node.id,
     toTypes: types,
   }));
-  const containersObjectsRelationshipsEdges = await Promise.map(containerConnection.edges, listRelationPromises, { concurrency: ES_MAX_CONCURRENCY });
+  const containersObjectsRelationshipsEdges = await Promise.all(listRelationPromises);
   const containersObjectsRelationships = R.flatten(R.map((n) => n.edges, containersObjectsRelationshipsEdges));
-  const containerTypedObjectsRelationships = {};
-  containersObjectsRelationships.forEach(({ node }) => {
-    if (!containerTypedObjectsRelationships[node.toType]) {
-      containerTypedObjectsRelationships[node.toType] = [];
-    }
-    if (!containerTypedObjectsRelationships[node.toType].includes(node.toId)) {
-      containerTypedObjectsRelationships[node.toType].push(node.toId);
-    }
-  });
-  const containersObjects = R.flatten(await Promise.map(
-    Object.entries(containerTypedObjectsRelationships),
-    (async ([type, ids]) => await storeLoadByIds(context, user, ids, type)),
-    { concurrency: ES_MAX_CONCURRENCY }
-  ));
+  const containersObjects = await Promise.all(containersObjectsRelationships.map((n) => storeLoadById(context, user, n.node.toId, n.node.toType)));
   const containersObjectsResult = R.uniqBy(R.path(['node', 'id']), [
     ...containerConnection.edges,
     ...containersObjectsRelationships,

@@ -42,7 +42,7 @@ const styles = makeStyles<Theme>((theme) => ({
 }));
 
 const TaskDetailsFragment = graphql`
-  fragment TaskDetails_task on CaseTask {
+  fragment TaskDetails_task on Task {
     id
     name
     dueDate

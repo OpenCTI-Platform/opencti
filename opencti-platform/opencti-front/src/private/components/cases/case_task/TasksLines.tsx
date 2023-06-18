@@ -18,9 +18,9 @@ export const tasksLinesQuery = graphql`
     $search: String
     $count: Int
     $cursor: ID
-    $orderBy: CaseTasksOrdering
+    $orderBy: TasksOrdering
     $orderMode: OrderingMode
-    $filters: [CaseTasksFiltering!]
+    $filters: [TasksFiltering!]
   ) {
     ...TasksLines_data
     @arguments(
@@ -40,19 +40,19 @@ const tasksLinesFragment = graphql`
     search: { type: "String" }
     count: { type: "Int" }
     cursor: { type: "ID" }
-    orderBy: { type: "CaseTasksOrdering" }
+    orderBy: { type: "TasksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
-    filters: { type: "[CaseTasksFiltering!]" }
+    filters: { type: "[TasksFiltering!]" }
   )
   @refetchable(queryName: "TasksLinesRefetchQuery") {
-    caseTasks(
+    tasks(
       search: $search
       first: $count
       after: $cursor
       orderBy: $orderBy
       orderMode: $orderMode
       filters: $filters
-    ) @connection(key: "Pagination_tasks__caseTasks") {
+    ) @connection(key: "Pagination_tasks__tasks") {
       edges {
         node {
           ...TasksLine_node
@@ -96,7 +96,7 @@ const TasksLines: FunctionComponent<TasksLinesProps> = ({
     linesQuery: tasksLinesQuery,
     linesFragment: tasksLinesFragment,
     queryRef,
-    nodePath: ['caseTasks', 'pageInfo', 'globalCount'],
+    nodePath: ['tasks', 'pageInfo', 'globalCount'],
     setNumberOfElements,
   });
   return (
@@ -106,8 +106,8 @@ const TasksLines: FunctionComponent<TasksLinesProps> = ({
       loadMore={loadMore}
       isLoading={isLoadingMore}
       dataColumns={tasksDataColumns}
-      dataList={data?.caseTasks?.edges ?? []}
-      globalCount={data?.caseTasks?.pageInfo?.globalCount ?? nbOfRowsToLoad}
+      dataList={data?.tasks?.edges ?? []}
+      globalCount={data?.tasks?.pageInfo?.globalCount ?? nbOfRowsToLoad}
       LineComponent={TasksLine}
       DummyLineComponent={TasksLineDummy}
       nbOfRowsToLoad={nbOfRowsToLoad}

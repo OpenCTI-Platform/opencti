@@ -23,7 +23,7 @@ const useStyles = makeStyles(() => ({
 }));
 
 export const taskFragment = graphql`
-  fragment Tasks_tasks on CaseTask {
+  fragment Tasks_tasks on Task {
     id
     name
     dueDate
@@ -47,6 +47,7 @@ export const taskFragment = graphql`
           definition
           definition_type
           id
+          x_opencti_color
         }
       }
     }

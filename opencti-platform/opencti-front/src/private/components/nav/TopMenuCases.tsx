@@ -6,8 +6,8 @@ import {
   BriefcaseSearchOutline,
   BriefcaseRemoveOutline,
   BriefcaseEditOutline,
-  TaskAltOutlined,
 } from 'mdi-material-ui';
+import { TaskAltOutlined } from '@mui/icons-material';
 import { makeStyles } from '@mui/styles';
 import { Theme } from '@mui/material/styles/createTheme';
 import { useFormatter } from '../../../components/i18n';
@@ -91,7 +91,7 @@ const TopMenuCases = () => {
           {t('Requests for takedown')}
         </Button>
       )}
-      {!useIsHiddenEntity('Case-Task') && (
+      {!useIsHiddenEntity('Task') && (
         <Button
           component={Link}
           to="/dashboard/cases/tasks"

@@ -1,9 +1,9 @@
-import { buildStixDomain, cleanObject, convertObjectReferences } from '../../../database/stix-converter';
-import { INPUT_OBJECTS } from '../../../schema/general';
-import { STIX_EXT_OCTI } from '../../../types/stix-extensions';
-import type { StixCaseTask, StoreEntityCaseTask } from './case-task-types';
+import { buildStixDomain, cleanObject, convertObjectReferences } from '../../database/stix-converter';
+import { INPUT_OBJECTS } from '../../schema/general';
+import { STIX_EXT_OCTI } from '../../types/stix-extensions';
+import type { StixTask, StoreEntityTask } from './task-types';
 
-const convertCaseTaskToStix = (instance: StoreEntityCaseTask): StixCaseTask => {
+const convertCaseTaskToStix = (instance: StoreEntityTask): StixTask => {
   const caseTask = buildStixDomain(instance);
   return {
     ...caseTask,

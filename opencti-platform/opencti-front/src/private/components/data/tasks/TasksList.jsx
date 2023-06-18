@@ -100,7 +100,7 @@ Transition.displayName = 'TransitionSlide';
 
 export const tasksListTaskDeletionMutation = graphql`
   mutation TasksListTaskDeletionMutation($id: ID!) {
-    deleteTask(id: $id)
+    deleteBackgroundTask(id: $id)
   }
 `;
 
@@ -156,7 +156,7 @@ class TasksListComponent extends Component {
 
   render() {
     const { classes, data, t, nsdt, n } = this.props;
-    const tasks = R.pathOr([], ['tasks', 'edges'], data);
+    const tasks = R.pathOr([], ['backgroundTasks', 'edges'], data);
     return (
       <div>
         {tasks.length === 0 && (
@@ -517,9 +517,9 @@ TasksListComponent.propTypes = {
 export const tasksListQuery = graphql`
   query TasksListQuery(
     $count: Int
-    $orderBy: TasksOrdering
+    $orderBy: BackgroundTasksOrdering
     $orderMode: OrderingMode
-    $filters: [TasksFiltering]
+    $filters: [BackgroundTasksFiltering]
   ) {
     ...TasksList_data
       @arguments(
@@ -538,11 +538,11 @@ const TasksList = createRefetchContainer(
       fragment TasksList_data on Query
       @argumentDefinitions(
         count: { type: "Int" }
-        orderBy: { type: "TasksOrdering", defaultValue: created_at }
+        orderBy: { type: "BackgroundTasksOrdering", defaultValue: created_at }
         orderMode: { type: "OrderingMode", defaultValue: desc }
-        filters: { type: "[TasksFiltering]" }
+        filters: { type: "[BackgroundTasksFiltering]" }
       ) {
-        tasks(
+        backgroundTasks(
           first: $count
           orderBy: $orderBy
           orderMode: $orderMode

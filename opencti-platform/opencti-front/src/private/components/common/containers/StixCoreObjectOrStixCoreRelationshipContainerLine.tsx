@@ -219,7 +219,7 @@ const StixCoreObjectOrStixCoreRelationshipContainerLineFragment = createFragment
             name
             created
           }
-          ... on CaseTask {
+          ... on Task {
             name
           }
           createdBy {

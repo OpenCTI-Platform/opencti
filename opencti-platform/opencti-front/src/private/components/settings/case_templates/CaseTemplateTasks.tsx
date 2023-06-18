@@ -170,7 +170,7 @@ const CaseTemplateTasks = () => {
   const classes = useStyles();
   const { caseTemplateId } = useParams() as { caseTemplateId: string };
   const caseTemplateQueryRef = useQueryLoading<CaseTemplateEditionQuery>(caseTemplateQuery, { id: caseTemplateId });
-  const taskFilters : BackendFilters = [{ key: 'objectContains', values: [caseTemplateId] }, { key: 'useAsTemplate', values: ['true'] }];
+  const taskFilters : BackendFilters = [{ key: 'taskContains', values: [caseTemplateId] }];
   const { viewStorage, paginationOptions, helpers } = usePaginationLocalStorage<CaseTemplateTasksLines_DataQuery$variables>(
     'view-case-template-tasks',
     {

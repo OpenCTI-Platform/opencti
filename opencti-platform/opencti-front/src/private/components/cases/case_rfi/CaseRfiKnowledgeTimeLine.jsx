@@ -342,7 +342,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
               name
               description
             }
-            ... on CaseTask {
+            ... on Task {
               name
             }
             ... on Note {
@@ -527,7 +527,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   name
                   description
                 }
-                ... on CaseTask {
+                ... on Task {
                   name
                 }
                 ... on Note {
@@ -704,7 +704,7 @@ export default createFragmentContainer(CaseRfiKnowledgeTimeLineComponent, {
                   name
                   description
                 }
-                ... on CaseTask {
+                ... on Task {
                   name
                 }
                 ... on Note {

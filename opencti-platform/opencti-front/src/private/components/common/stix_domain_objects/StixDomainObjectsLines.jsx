@@ -347,7 +347,7 @@ export const stixDomainObjectsLinesSearchQuery = graphql`
             name
             description
           }
-          ... on CaseTask {
+          ... on Task {
             name
             description
           }
@@ -567,7 +567,7 @@ const StixDomainObjectsLines = createPaginationContainer(
               ... on CaseRft {
                 name
               }
-              ... on CaseTask {
+              ... on Task {
                 name
               }
               objectLabel {

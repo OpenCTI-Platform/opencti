@@ -24,12 +24,8 @@ import ListLinesContent from '../../../../components/list_lines/ListLinesContent
 import ListLines from '../../../../components/list_lines/ListLines';
 import CaseTasksLine from './CaseTasksLine';
 import { tasksDataColumns } from './TasksLine';
-import {
-  CaseTasksFiltering,
-  CaseTasksLinesQuery,
-  CaseTasksLinesQuery$variables,
-} from './__generated__/CaseTasksLinesQuery.graphql';
 import { CaseTasksLines_data$key } from './__generated__/CaseTasksLines_data.graphql';
+import { CaseTasksLinesQuery, CaseTasksLinesQuery$variables } from './__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   drawerPaper: {
@@ -93,9 +89,9 @@ const useStyles = makeStyles<Theme>((theme) => ({
 export const caseTasksLinesQuery = graphql`
   query CaseTasksLinesQuery(
     $count: Int
-    $filters: [CaseTasksFiltering!]
+    $filters: [TasksFiltering!]
     $cursor: ID
-    $orderBy: CaseTasksOrdering
+    $orderBy: TasksOrdering
     $orderMode: OrderingMode
   ) {
     ...CaseTasksLines_data
@@ -113,20 +109,20 @@ const caseTasksLinesFragment = graphql`
   fragment CaseTasksLines_data on Query
   @argumentDefinitions(
     count: { type: "Int", defaultValue: 25 }
-    filters: { type: "[CaseTasksFiltering!]" }
+    filters: { type: "[TasksFiltering!]" }
     cursor: { type: "ID" }
-    orderBy: { type: "CaseTasksOrdering" }
+    orderBy: { type: "TasksOrdering" }
     orderMode: { type: "OrderingMode", defaultValue: desc }
   )
-  @refetchable(queryName: "CaseTasksRefetch") {
-    caseTasks(
+  @refetchable(queryName: "TasksRefetch") {
+    tasks(
       first: $count, 
       filters: $filters, 
       after: $cursor, 
       orderBy: $orderBy, 
       orderMode: $orderMode
     )
-      @connection(key: "Pagination_caseTasks") {
+      @connection(key: "Pagination_tasks") {
       edges {
         node {
           ...CaseTasksLine_data
@@ -209,7 +205,6 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
           PaperProps={{ elevation: 1 }}
           open={openCaseTemplate}
           onClose={() => setOpenCaseTemplate(false)}
-          TransitionComponent={Transition}
           fullWidth={true}
           maxWidth="md"
         >
@@ -221,12 +216,10 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                 commit({
                   variables: {
                     id: caseId,
-                    caseTemplatesId: values.caseTemplates.map(
-                      ({ value }) => value,
-                    ),
+                    caseTemplatesId: values.caseTemplates.map(({ value }) => value),
                     connections: [
                       generateConnectionId({
-                        key: 'Pagination_caseTasks',
+                        key: 'Pagination_tasks',
                         params: tasksFilters,
                       }),
                     ],
@@ -240,14 +233,10 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
                     setSubmitting(false);
                   },
                 });
-              }}
-            >
+              }}>
               {({ setFieldValue, submitForm, handleReset, isSubmitting }) => (
-                <Form>
-                  <CaseTemplateField
-                    onChange={setFieldValue}
-                    label="Case templates"
-                  />
+                <Form style={{ minWidth: 400 }}>
+                  <CaseTemplateField onChange={setFieldValue} label="Case templates"/>
                   <div className={classes.buttons}>
                     <Button
                       onClick={() => {
@@ -293,7 +282,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
             <Close fontSize="small" color="primary" />
           </IconButton>
           <Typography variant="h6" classes={{ root: classes.title }}>
-            {t('Create a task')}
+            {t('Create a task for case')}
           </Typography>
         </div>
         <div className={classes.container}>
@@ -317,7 +306,7 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
         >
           <ListLinesContent
             dataColumns={tasksDataColumns}
-            dataList={data?.caseTasks?.edges ?? []}
+            dataList={data?.tasks?.edges ?? []}
             LineComponent={CaseTasksLine}
             isLoading={() => false}
           />

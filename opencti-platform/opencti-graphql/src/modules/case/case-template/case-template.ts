@@ -2,10 +2,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { ModuleDefinition, registerDefinition } from '../../../schema/module';
 import { ABSTRACT_INTERNAL_OBJECT } from '../../../schema/general';
 import type { StixCaseTemplate, StoreEntityCaseTemplate } from './case-template-types';
-import { ENTITY_TYPE_CASE_TEMPLATE } from './case-template-types';
+import { ENTITY_TYPE_CASE_TEMPLATE, TEMPLATE_TASK_RELATION } from './case-template-types';
 import caseTemplateTypeDefs from './case-template.graphql';
 import convertCaseTemplateToStix from './case-template-converter';
 import caseTemplateResolvers from './case-template-resolvers';
+import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
 
 const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
   type: {
@@ -28,6 +29,15 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
     { name: 'tasks', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [],
+  relationsRefs: [{
+    inputName: 'tasks',
+    databaseName: TEMPLATE_TASK_RELATION,
+    stixName: 'task_refs',
+    mandatoryType: 'internal',
+    multiple: true,
+    checker: (_, toType) => toType === ENTITY_TYPE_TASK_TEMPLATE,
+    datable: false,
+  }],
   representative: (stix: StixCaseTemplate) => {
     return stix.name;
   },

@@ -131,7 +131,7 @@ interface Case implements BasicObject & StixObject & StixCoreObject & StixDomain
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
 }
 
 # Ordering

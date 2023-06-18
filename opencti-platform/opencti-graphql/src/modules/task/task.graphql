@@ -1,4 +1,4 @@
-type CaseTask implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
+type Task implements Container & StixDomainObject & StixCoreObject & StixObject & BasicObject {
   id: ID! # internal_id
   standard_id: String!
   entity_type: String!
@@ -129,11 +129,10 @@ type CaseTask implements Container & StixDomainObject & StixCoreObject & StixObj
   name: String!
   description: String
   dueDate: DateTime
-  useAsTemplate: Boolean!
 }
 
 # Ordering
-enum CaseTasksOrdering {
+enum TasksOrdering {
   name
   description
   created
@@ -149,7 +148,7 @@ enum CaseTasksOrdering {
   assigneeTo
 }
 # Filtering
-enum CaseTasksFilter {
+enum TasksFilter {
   name
   created
   modified
@@ -163,21 +162,21 @@ enum CaseTasksFilter {
   assigneeTo
   objectContains
   x_opencti_workflow_id
-  useAsTemplate
   dueDate
 }
 
-type CaseTaskConnection {
-  pageInfo: PageInfo!
-  edges: [CaseTaskEdge!]!
-}
-type CaseTaskEdge {
+type TaskEdge {
   cursor: String!
-  node: CaseTask!
+  node: Task!
 }
 
-input CaseTasksFiltering {
-  key: [CaseTasksFilter!]!
+type TaskConnection {
+  pageInfo: PageInfo!
+  edges: [TaskEdge!]!
+}
+
+input TasksFiltering {
+  key: [TasksFilter!]!
   values: [String]
   operator: String
   filterMode: FilterMode
@@ -185,22 +184,22 @@ input CaseTasksFiltering {
 
 # Queries
 type Query {
-  caseTask(id: String!): CaseTask @auth
-  caseTasks(
+  task(id: String!): Task @auth
+  tasks(
     first: Int
     after: ID
-    orderBy: CaseTasksOrdering
+    orderBy: TasksOrdering
     orderMode: OrderingMode
-    filters: [CaseTasksFiltering!]
+    filters: [TasksFiltering!]
     filterMode: FilterMode
     search: String
     toStix: Boolean
-  ): CaseTaskConnection @auth
-  caseTaskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
+  ): TaskConnection @auth
+  taskContainsStixObjectOrStixRelationship(id: String!, stixObjectOrStixRelationshipId: String!): Boolean @auth(for: [KNOWLEDGE])
 }
 
 # Mutations
-input CaseTaskAddInput {
+input TaskAddInput {
   name: String! @constraint(minLength: 2)
   description: String
   created: DateTime
@@ -209,14 +208,13 @@ input CaseTaskAddInput {
   objectLabel: [String]
   objectMarking: [String]
   objects: [String]
-  useAsTemplate: Boolean
   update: Boolean
 }
 
 type Mutation {
-  caseTaskAdd(input: CaseTaskAddInput!): CaseTask @auth
-  caseTaskDelete(id: ID!): ID @auth(for: [SETTINGS])
-  caseTaskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): CaseTask @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseTaskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
-  caseTaskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): CaseTask @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskAdd(input: TaskAddInput!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskDelete(id: ID!): ID @auth(for: [KNOWLEDGE_KNUPDATE_KNDELETE])
+  taskFieldPatch(id: ID!, input: [EditInput!]!, commitMessage: String, references: [String]): Task @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskRelationAdd(id: ID!, input: StixRefRelationshipAddInput!): StixRefRelationship @auth(for: [KNOWLEDGE_KNUPDATE])
+  taskRelationDelete(id: ID!, toId: StixRef!, relationship_type: String!): Task @auth(for: [KNOWLEDGE_KNUPDATE])
 }

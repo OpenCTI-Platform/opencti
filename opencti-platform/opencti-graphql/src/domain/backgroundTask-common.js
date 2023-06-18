@@ -1,7 +1,7 @@
 import * as R from 'ramda';
 import { ENTITY_TYPE_CASE_TEMPLATE } from '../modules/case/case-template/case-template-types';
 import { generateInternalId, generateStandardId } from '../schema/identifier';
-import { ENTITY_TYPE_TASK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { now } from '../utils/format';
 import { BYPASS } from '../utils/access';
 import { KNOWLEDGE_DELETE } from '../schema/general';
@@ -35,8 +35,8 @@ export const createDefaultTask = (user, input, taskType, taskExpectedNumber) => 
   return {
     id: taskId,
     internal_id: taskId,
-    standard_id: generateStandardId(ENTITY_TYPE_TASK, input),
-    entity_type: ENTITY_TYPE_TASK,
+    standard_id: generateStandardId(ENTITY_TYPE_BACKGROUND_TASK, input),
+    entity_type: ENTITY_TYPE_BACKGROUND_TASK,
     initiator_id: user.internal_id,
     created_at: now(),
     completed: false,
@@ -61,7 +61,7 @@ export const createListTask = async (user, input) => {
     event_scope: 'create',
     event_access: 'extended',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, input: listTask }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: listTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, listTask);
   return listTask;

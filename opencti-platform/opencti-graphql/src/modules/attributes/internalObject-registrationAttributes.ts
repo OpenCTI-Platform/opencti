@@ -16,7 +16,7 @@ import {
   ENTITY_TYPE_STATUS_TEMPLATE,
   ENTITY_TYPE_STREAM_COLLECTION,
   ENTITY_TYPE_SYNC,
-  ENTITY_TYPE_TASK,
+  ENTITY_TYPE_BACKGROUND_TASK,
   ENTITY_TYPE_TAXII_COLLECTION,
   ENTITY_TYPE_USER,
 } from '../../schema/internalObject';
@@ -142,7 +142,7 @@ const internalObjectsAttributes: { [k: string]: Array<AttributeDefinition> } = {
     { name: 'type', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'order', type: 'numeric', mandatoryType: 'external', multiple: false, upsert: false },
   ],
-  [ENTITY_TYPE_TASK]: [
+  [ENTITY_TYPE_BACKGROUND_TASK]: [
     { name: 'task_position', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'task_processed_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },
     { name: 'task_expected_number', type: 'string', mandatoryType: 'no', multiple: false, upsert: false },

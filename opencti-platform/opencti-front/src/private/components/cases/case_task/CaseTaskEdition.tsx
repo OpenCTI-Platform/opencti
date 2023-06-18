@@ -29,7 +29,7 @@ const CaseTaskEdition = ({ task }: { task: CaseTasksLine_data$data }) => {
     objectAssignee: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
+  const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
   const editor = useFormEditor(
     task,
@@ -111,7 +111,7 @@ const CaseTaskEdition = ({ task }: { task: CaseTasksLine_data$data }) => {
           {task.workflowEnabled && (
             <StatusField
               name="x_opencti_workflow_id"
-              type="Case-Task"
+              type="Task"
               onChange={onSubmit}
               setFieldValue={setFieldValue}
               style={{ marginTop: 20 }}

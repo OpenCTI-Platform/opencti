@@ -1,4 +1,5 @@
 import { Field, Form, Formik } from 'formik';
+import { graphql, useMutation } from 'react-relay';
 import React from 'react';
 import * as Yup from 'yup';
 import { useFormatter } from '../../../../components/i18n';
@@ -6,10 +7,16 @@ import MarkDownField from '../../../../components/MarkDownField';
 import TextField from '../../../../components/TextField';
 import { fieldSpacingContainerStyle } from '../../../../utils/field';
 import { useSchemaEditionValidation } from '../../../../utils/hooks/useEntitySettings';
-import useFormEditor from '../../../../utils/hooks/useFormEditor';
-import { caseEditionOverviewFocus, caseMutationFieldPatch, caseMutationRelationAdd, caseMutationRelationDelete } from '../../cases/CaseUtils';
 import { Option } from '../../common/form/ReferenceField';
 import { CaseTemplateTasksLine_node$data } from './__generated__/CaseTemplateTasksLine_node.graphql';
+
+const caseTemplateMutationFieldPatch = graphql`
+    mutation CaseTemplateTasksEditionFieldPatchMutation($id: ID!$input: [EditInput!]!) {
+        taskTemplateFieldPatch(id: $id, input: $input) {
+            ...CaseTemplateTasksLine_node
+        }
+    }
+`;
 
 const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$data }) => {
   const { t } = useFormatter();
@@ -18,25 +25,13 @@ const CaseTemplateTasksEdition = ({ task }: { task: CaseTemplateTasksLine_node$d
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
   };
-  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
-
-  const editor = useFormEditor(
-    task,
-    false,
-    {
-      fieldPatch: caseMutationFieldPatch,
-      editionFocus: caseEditionOverviewFocus,
-      relationAdd: caseMutationRelationAdd,
-      relationDelete: caseMutationRelationDelete,
-    },
-    taskValidator,
-  );
-
+  const taskValidator = useSchemaEditionValidation('Task', basicShape);
+  const [commitFieldPatch] = useMutation(caseTemplateMutationFieldPatch);
   const onSubmit = (name: string, value: Option | Option[] | string) => {
     taskValidator
       .validateAt(name, { [name]: value })
       .then(() => {
-        editor.fieldPatch({
+        commitFieldPatch({
           variables: {
             id: task.id,
             input: [{ key: name, value: Array.isArray(value) ? value.map((o) => o.value) : [value ?? ''] }],

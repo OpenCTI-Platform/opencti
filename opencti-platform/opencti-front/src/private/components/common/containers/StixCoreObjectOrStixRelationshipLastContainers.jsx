@@ -115,7 +115,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
             name
             created
           }
-          ... on CaseTask {
+          ... on Task {
             name
           }
           createdBy {
@@ -305,7 +305,7 @@ const stixCoreObjectOrStixRelationshipLastContainersQuery = graphql`
                   ... on Case {
                     name
                   }
-                  ... on CaseTask {
+                  ... on Task {
                     name
                   }
                   ... on StixCyberObservable {

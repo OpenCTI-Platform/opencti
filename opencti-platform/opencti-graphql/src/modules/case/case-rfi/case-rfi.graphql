@@ -131,7 +131,7 @@ type CaseRfi implements BasicObject & StixObject & StixCoreObject & StixDomainOb
   description: String
   content: String
   content_mapping: String
-  tasks: CaseTaskConnection!
+  tasks: TaskConnection!
   # Request For Information
   information_types: [String!]
   severity: String

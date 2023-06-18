@@ -240,7 +240,7 @@ const caseRftKnowledgeGraphStixCoreObjectQuery = graphql`
       ... on CaseRft {
         name
       }
-      ... on CaseTask {
+      ... on Task {
         name
       }
       ... on Narrative {
@@ -1856,7 +1856,7 @@ const CaseRftKnowledgeGraph = createFragmentContainer(
               ... on Feedback {
                 name
               }
-              ... on CaseTask {
+              ... on Task {
                 name
               }
               ... on StixCyberObservable {

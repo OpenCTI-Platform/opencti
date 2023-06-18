@@ -22,7 +22,7 @@ import CaseRfiPopover from './CaseRfiPopover';
 import { useFormatter } from '../../../../components/i18n';
 import { usePaginationLocalStorage } from '../../../../utils/hooks/useLocalStorage';
 import {
-  CaseTasksFilter,
+  TasksFilter,
   CaseTasksLinesQuery,
   CaseTasksLinesQuery$variables,
 } from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
@@ -48,7 +48,7 @@ const CaseRfiComponent: FunctionComponent<CaseRfiProps> = ({ data }) => {
   const tasksFilters = {
     filters: [
       {
-        key: ['objectContains' as CaseTasksFilter],
+        key: ['objectContains' as TasksFilter],
         values: [caseRfiData.id],
       },
     ],

@@ -259,7 +259,7 @@ const entityDetailsQuery = graphql`
         name
         description
       }
-      ... on CaseTask {
+      ... on Task {
         name
         description
       }

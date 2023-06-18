@@ -70,10 +70,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const taskAddMutation = graphql`
-  mutation TaskCreationMutation($input: CaseTaskAddInput!) {
-    caseTaskAdd(input: $input) {
+  mutation TaskCreationMutation($input: TaskAddInput!) {
+    taskAdd(input: $input) {
       ...TasksLine_node
-      ... on CaseTask {
+      ... on Task {
         objects {
           edges {
             node {
@@ -121,7 +121,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     objectAssignee: Yup.array(),
     x_opencti_workflow_id: Yup.object(),
   };
-  const taskValidator = useSchemaEditionValidation('Case-Task', basicShape);
+  const taskValidator = useSchemaEditionValidation('Task', basicShape);
 
   const [commit] = useMutation<TaskCreationMutation>(taskAddMutation);
 
@@ -151,7 +151,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
       },
       updater: (store: RecordSourceSelectorProxy) => {
         if (updater) {
-          updater(store, 'caseTaskAdd');
+          updater(store, 'taskAdd');
         }
       },
       onError: (error: Error) => {
@@ -246,7 +246,7 @@ const TaskCreation = ({
   const [open, setOpen] = useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
-  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'caseTaskAdd');
+  const updater = (store: RecordSourceSelectorProxy) => insertNode(store, 'Pagination_tasks__caseTasks', paginationOptions, 'taskAdd');
   return (
     <div>
       <Fab

@@ -23,7 +23,7 @@ import { RootTaskSubscription } from './__generated__/RootTaskSubscription.graph
 const subscription = graphql`
   subscription RootTaskSubscription($id: ID!) {
     stixDomainObject(id: $id) {
-      ... on CaseTask {
+      ... on Task {
         ...Tasks_tasks
       }
       ...FileImportViewer_entity
@@ -36,7 +36,7 @@ const subscription = graphql`
 
 const TaskQuery = graphql`
   query RootTaskQuery($id: String!) {
-    caseTask(id: $id) {
+    task(id: $id) {
       id
       standard_id
       name
@@ -68,7 +68,7 @@ const RootTaskComponent = ({ queryRef, caseId }) => {
   );
   useSubscription(subConfig);
   const {
-    caseTask: data,
+    task: data,
     connectorsForExport,
     connectorsForImport,
   } = usePreloadedQuery<RootTaskQuery>(TaskQuery, queryRef);

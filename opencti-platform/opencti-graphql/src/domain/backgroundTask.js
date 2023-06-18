@@ -1,12 +1,12 @@
 import { elIndex, elPaginate } from '../database/engine';
 import { INDEX_INTERNAL_OBJECTS, READ_DATA_INDICES, READ_DATA_INDICES_WITHOUT_INFERRED, } from '../database/utils';
-import { ENTITY_TYPE_TASK } from '../schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK } from '../schema/internalObject';
 import { deleteElementById, patchAttribute } from '../database/middleware';
 import { convertFiltersFrontendFormat, GlobalFilters, TYPE_FILTER } from '../utils/filtering';
 import { SYSTEM_USER } from '../utils/access';
 import { ABSTRACT_STIX_DOMAIN_OBJECT, RULE_PREFIX } from '../schema/general';
 import { buildEntityFilters, listEntities, storeLoadById } from '../database/middleware-loader';
-import { checkActionValidity, createDefaultTask, isTaskEnabledEntity } from './task-common';
+import { checkActionValidity, createDefaultTask, isTaskEnabledEntity } from './backgroundTask-common';
 import { publishUserAction } from '../listener/UserActionListener';
 
 export const MAX_TASK_ELEMENTS = 500;
@@ -25,11 +25,11 @@ export const ACTION_TYPE_RULE_CLEAR = 'RULE_CLEAR';
 export const ACTION_TYPE_RULE_ELEMENT_RESCAN = 'RULE_ELEMENT_RESCAN';
 
 export const findById = async (context, user, taskId) => {
-  return storeLoadById(context, user, taskId, ENTITY_TYPE_TASK);
+  return storeLoadById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
 };
 
 export const findAll = (context, user, args) => {
-  return listEntities(context, user, [ENTITY_TYPE_TASK], args);
+  return listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
 };
 
 const buildQueryFilters = async (context, rawFilters, search, taskPosition) => {
@@ -127,7 +127,7 @@ export const createQueryTask = async (context, user, input) => {
     event_scope: 'create',
     event_access: 'extended',
     message: 'creates `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, input: queryTask }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: queryTask }
   });
   await elIndex(INDEX_INTERNAL_OBJECTS, queryTask);
   return queryTask;
@@ -136,23 +136,23 @@ export const createQueryTask = async (context, user, input) => {
 export const deleteRuleTasks = async (context, user, ruleId) => {
   const tasksFilters = [{ key: 'type', values: ['RULE'] }, { key: 'rule', values: [ruleId] }];
   const args = { filters: tasksFilters, connectionFormat: false };
-  const tasks = await listEntities(context, user, [ENTITY_TYPE_TASK], args);
-  await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_TASK)));
+  const tasks = await listEntities(context, user, [ENTITY_TYPE_BACKGROUND_TASK], args);
+  await Promise.all(tasks.map((t) => deleteElementById(context, user, t.internal_id, ENTITY_TYPE_BACKGROUND_TASK)));
 };
 
 export const deleteTask = async (context, user, taskId) => {
-  const deleted = await deleteElementById(context, user, taskId, ENTITY_TYPE_TASK);
+  const deleted = await deleteElementById(context, user, taskId, ENTITY_TYPE_BACKGROUND_TASK);
   await publishUserAction({
     user,
     event_type: 'mutation',
     event_scope: 'delete',
     event_access: 'extended',
     message: 'deletes `background task`',
-    context_data: { entity_type: ENTITY_TYPE_TASK, input: deleted }
+    context_data: { entity_type: ENTITY_TYPE_BACKGROUND_TASK, input: deleted }
   });
   return taskId;
 };
 
 export const updateTask = async (context, taskId, patch) => {
-  await patchAttribute(context, SYSTEM_USER, taskId, ENTITY_TYPE_TASK, patch);
+  await patchAttribute(context, SYSTEM_USER, taskId, ENTITY_TYPE_BACKGROUND_TASK, patch);
 };

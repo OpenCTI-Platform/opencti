@@ -208,7 +208,7 @@ const styles = (theme) => ({
   },
 });
 
-const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Case-Task'];
+const notMergableTypes = ['Indicator', 'Note', 'Opinion', 'Label', 'Case-Template', 'Task'];
 
 const Transition = React.forwardRef((props, ref) => (
   <Slide direction="up" ref={ref} {...props} />
@@ -1199,7 +1199,7 @@ class ToolBar extends Component {
     const preventMerge = selectedTypes.at(0) === 'Vocabulary'
       && Object.values(selectedElements).some(({ builtIn }) => Boolean(builtIn));
     // region update
-    const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Case-Task'];
+    const notUpdatableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const typesAreNotUpdatable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1210,7 +1210,7 @@ class ToolBar extends Component {
         && notUpdatableTypes.includes(R.head(filters.entity_type).id));
     // endregion
     // region rules
-    const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Case-Task'];
+    const notScannableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const typesAreNotScannable = R.includes(
       R.uniq(
         R.map((o) => o.entity_type, R.values(selectedElements || {})),
@@ -1234,7 +1234,7 @@ class ToolBar extends Component {
     const promoteDisable = !isManualPromoteSelect && !isAllPromoteSelect;
     // endregion
     // region enrich
-    const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Case-Task'];
+    const notEnrichableTypes = ['Label', 'Vocabulary', 'Case-Template', 'Task'];
     const isManualEnrichSelect = !selectAll && selectedTypes.length === 1;
     const isAllEnrichSelect = selectAll && (filters?.entity_type ?? []).length === 1;
     const enrichDisable = notEnrichableTypes.includes(R.head(selectedTypes))

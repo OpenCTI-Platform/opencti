@@ -3,7 +3,7 @@ import gql from 'graphql-tag';
 import { listThings } from '../../src/database/middleware';
 import { SYSTEM_USER } from '../../src/utils/access';
 import { READ_INDEX_INFERRED_ENTITIES, READ_INDEX_INFERRED_RELATIONSHIPS, wait } from '../../src/database/utils';
-import { ENTITY_TYPE_TASK } from '../../src/schema/internalObject';
+import { ENTITY_TYPE_BACKGROUND_TASK } from '../../src/schema/internalObject';
 import { internalLoadById, listEntities } from '../../src/database/middleware-loader';
 import { queryAsAdmin, testContext } from './testQuery';
 import { fetchStreamInfo } from '../../src/database/redis';
@@ -44,7 +44,7 @@ export const changeRule = async (ruleId, active) => {
   // Wait for rule to finish activation
   let ruleActivated = false;
   while (ruleActivated !== true) {
-    const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_TASK], { connectionFormat: false });
+    const tasks = await listEntities(testContext, SYSTEM_USER, [ENTITY_TYPE_BACKGROUND_TASK], { connectionFormat: false });
     const allDone = tasks.filter((t) => !t.completed).length === 0;
     tasks.forEach((t) => {
       expect(t.errors.length).toBe(0);

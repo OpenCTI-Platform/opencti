@@ -43,7 +43,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
 
 const tasksPopoverDeletionMutation = graphql`
   mutation TasksPopoverDeletionMutation($id: ID!) {
-    caseTaskDelete(id: $id)
+    taskDelete(id: $id)
   }
 `;
 

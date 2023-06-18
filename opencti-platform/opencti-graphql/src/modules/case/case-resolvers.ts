@@ -1,11 +1,18 @@
 import { Promise as BluePromise } from 'bluebird';
-import { containersObjectsOfObject } from '../../domain/container';
 import { stixDomainObjectDelete } from '../../domain/stixDomainObject';
 import type { Resolvers } from '../../generated/graphql';
 import { buildRefRelationKey } from '../../schema/general';
-import { RELATION_CREATED_BY, RELATION_OBJECT_ASSIGNEE, RELATION_OBJECT_LABEL, RELATION_OBJECT_MARKING } from '../../schema/stixRefRelationship';
+import {
+  RELATION_CREATED_BY,
+  RELATION_OBJECT_ASSIGNEE,
+  RELATION_OBJECT_LABEL,
+  RELATION_OBJECT_MARKING
+} from '../../schema/stixRefRelationship';
 import { findAll, findById, upsertTemplateForCase } from './case-domain';
-import { ENTITY_TYPE_CONTAINER_CASE_TASK } from './case-task/case-task-types';
+import { batchLoader } from '../../database/middleware';
+import { batchTasks } from '../task/task-domain';
+
+const taskLoader = batchLoader(batchTasks);
 
 const caseResolvers: Resolvers = {
   Query: {
@@ -21,7 +28,7 @@ const caseResolvers: Resolvers = {
       }
       return 'Unknown';
     },
-    tasks: (current, _, context) => containersObjectsOfObject(context, context.user, { id: current.id, types: [ENTITY_TYPE_CONTAINER_CASE_TASK] }),
+    tasks: (current, _, context) => taskLoader.load(current.id, context, context.user),
   },
   CasesFilter: {
     createdBy: buildRefRelationKey(RELATION_CREATED_BY),
