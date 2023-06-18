@@ -7,6 +7,17 @@ import caseTemplateTypeDefs from './case-template.graphql';
 import convertCaseTemplateToStix from './case-template-converter';
 import caseTemplateResolvers from './case-template-resolvers';
 import { ENTITY_TYPE_TASK_TEMPLATE } from '../../task/task-template/task-template-types';
+import type { RelationRefDefinition } from '../../../schema/relationRef-definition';
+
+const CaseTemplateToTaskTemplateRelation: RelationRefDefinition = {
+  inputName: 'tasks',
+  databaseName: TEMPLATE_TASK_RELATION,
+  stixName: 'task_refs',
+  mandatoryType: 'internal',
+  multiple: true,
+  checker: (_, toType) => toType === ENTITY_TYPE_TASK_TEMPLATE,
+  datable: false,
+};
 
 const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCaseTemplate> = {
   type: {
@@ -29,15 +40,7 @@ const CASE_TEMPLATE_DEFINITION: ModuleDefinition<StoreEntityCaseTemplate, StixCa
     { name: 'tasks', type: 'string', mandatoryType: 'no', multiple: true, upsert: false },
   ],
   relations: [],
-  relationsRefs: [{
-    inputName: 'tasks',
-    databaseName: TEMPLATE_TASK_RELATION,
-    stixName: 'task_refs',
-    mandatoryType: 'internal',
-    multiple: true,
-    checker: (_, toType) => toType === ENTITY_TYPE_TASK_TEMPLATE,
-    datable: false,
-  }],
+  relationsRefs: [CaseTemplateToTaskTemplateRelation],
   representative: (stix: StixCaseTemplate) => {
     return stix.name;
   },
