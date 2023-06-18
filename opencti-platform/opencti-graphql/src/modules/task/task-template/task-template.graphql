@@ -15,22 +15,15 @@ enum TaskTemplatesOrdering {
   description
   created
   modified
-  context
   created_at
   updated_at
   creator
-  createdBy
-  x_opencti_workflow_id
-  confidence
-  dueDate
-  assigneeTo
 }
 # Filtering
 enum TaskTemplatesFilter {
   name
   created
   modified
-  context
   created_at
   updated_at
   creator

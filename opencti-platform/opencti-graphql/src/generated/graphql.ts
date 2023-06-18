@@ -22781,7 +22781,7 @@ export type Task = BasicObject & Container & StixCoreObject & StixDomainObject &
   created_at: Scalars['DateTime'];
   creators?: Maybe<Array<Creator>>;
   description?: Maybe<Scalars['String']>;
-  dueDate?: Maybe<Scalars['DateTime']>;
+  due_date?: Maybe<Scalars['DateTime']>;
   editContext?: Maybe<Array<EditUserContext>>;
   entity_type: Scalars['String'];
   exportFiles?: Maybe<FileConnection>;
@@ -22976,12 +22976,14 @@ export type TaskStixCoreRelationshipsDistributionArgs = {
 
 export type TaskAddInput = {
   created?: InputMaybe<Scalars['DateTime']>;
+  createdBy?: InputMaybe<Scalars['String']>;
   description?: InputMaybe<Scalars['String']>;
-  dueDate?: InputMaybe<Scalars['DateTime']>;
+  due_date?: InputMaybe<Scalars['DateTime']>;
   name: Scalars['String'];
   objectAssignee?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectLabel?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objectMarking?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
+  objectOrganization?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   objects?: InputMaybe<Array<InputMaybe<Scalars['String']>>>;
   update?: InputMaybe<Scalars['Boolean']>;
 };
@@ -23028,7 +23030,6 @@ export type TaskTemplateEdge = {
 };
 
 export enum TaskTemplatesFilter {
-  Context = 'context',
   Created = 'created',
   CreatedAt = 'created_at',
   Creator = 'creator',
@@ -23046,19 +23047,13 @@ export type TaskTemplatesFiltering = {
 };
 
 export enum TaskTemplatesOrdering {
-  AssigneeTo = 'assigneeTo',
-  Confidence = 'confidence',
-  Context = 'context',
   Created = 'created',
-  CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
   Description = 'description',
-  DueDate = 'dueDate',
   Modified = 'modified',
   Name = 'name',
-  UpdatedAt = 'updated_at',
-  XOpenctiWorkflowId = 'x_opencti_workflow_id'
+  UpdatedAt = 'updated_at'
 }
 
 export enum TasksFilter {
@@ -23068,7 +23063,7 @@ export enum TasksFilter {
   CreatedBy = 'createdBy',
   CreatedAt = 'created_at',
   Creator = 'creator',
-  DueDate = 'dueDate',
+  DueDate = 'due_date',
   LabelledBy = 'labelledBy',
   MarkedBy = 'markedBy',
   Modified = 'modified',
@@ -23094,7 +23089,7 @@ export enum TasksOrdering {
   CreatedAt = 'created_at',
   Creator = 'creator',
   Description = 'description',
-  DueDate = 'dueDate',
+  DueDate = 'due_date',
   Modified = 'modified',
   Name = 'name',
   UpdatedAt = 'updated_at',
@@ -33505,7 +33500,7 @@ export type TaskResolvers<ContextType = any, ParentType extends ResolversParentT
   created_at?: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   creators?: Resolver<Maybe<Array<ResolversTypes['Creator']>>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
-  dueDate?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  due_date?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   editContext?: Resolver<Maybe<Array<ResolversTypes['EditUserContext']>>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   exportFiles?: Resolver<Maybe<ResolversTypes['FileConnection']>, ParentType, ContextType, Partial<TaskExportFilesArgs>>;

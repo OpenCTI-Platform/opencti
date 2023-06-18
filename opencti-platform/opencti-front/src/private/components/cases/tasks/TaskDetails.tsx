@@ -45,7 +45,7 @@ const TaskDetailsFragment = graphql`
   fragment TaskDetails_task on Task {
     id
     name
-    dueDate
+    due_date
     description
     workflowEnabled
     creators {
@@ -133,11 +133,11 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({
             <Typography variant="h3" gutterBottom={true}>
               {t('Due Date')}
             </Typography>
-            <FieldOrEmpty source={data.dueDate}>
-              {data.dueDate && (
+            <FieldOrEmpty source={data.due_date}>
+              {data.due_date && (
                 <Chip
-                  label={fldt(data.dueDate)}
-                  classes={{ root: data.dueDate < isoDate ? classes.labelErrorInDetails : classes.labelInDetails }}
+                  label={fldt(data.due_date)}
+                  classes={{ root: data.due_date < isoDate ? classes.labelErrorInDetails : classes.labelInDetails }}
                 />
               )}
             </FieldOrEmpty>

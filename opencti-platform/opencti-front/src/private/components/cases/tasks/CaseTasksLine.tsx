@@ -42,7 +42,7 @@ const CaseTaskFragment = graphql`
   fragment CaseTasksLine_data on Task {
     id
     name
-    dueDate
+    due_date
     description
     workflowEnabled
     objectMarking {

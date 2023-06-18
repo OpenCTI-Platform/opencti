@@ -41,7 +41,7 @@ const caseTaskAddMutation = graphql`
 
 interface FormikCaseTaskAddInput {
   name: string
-  dueDate?: Date | null
+  due_date?: Date | null
   description?: string
   objectAssignee?: Option[]
   objectLabel?: Option[]
@@ -67,7 +67,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
-    dueDate: Yup.date().nullable(),
+    due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
     objectMarking: Yup.array(),
     objectAssignee: Yup.array(),
@@ -115,7 +115,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
         initialValues={{
           name: '',
           description: '',
-          dueDate: null,
+          due_date: null,
           objectAssignee: [],
           objectMarking: defaultMarkings ?? [],
         }}
@@ -135,7 +135,7 @@ const CaseTaskCreation: FunctionComponent<CaseTaskCreationProps> = ({
             />
             <Field
               component={DateTimePickerField}
-              name="dueDate"
+              name="due_date"
               TextFieldProps={{
                 label: t('Due Date'),
                 variant: 'standard',

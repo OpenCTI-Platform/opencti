@@ -50,7 +50,7 @@ const TaskFragment = graphql`
   fragment TasksLine_node on Task {
     id
     name
-    dueDate
+    due_date
     description
     workflowEnabled
     entity_type
@@ -97,7 +97,7 @@ export const tasksDataColumns: DataColumns = {
     isSortable: true,
     render: (task: TasksLine_node$data) => task.name,
   },
-  dueDate: {
+  due_date: {
     label: 'Due Date',
     width: '15%',
     isSortable: true,
@@ -106,9 +106,9 @@ export const tasksDataColumns: DataColumns = {
       return (
         <Chip
           variant="outlined"
-          label={fldt(task.dueDate)}
+          label={fldt(task.due_date)}
           classes={{ root: classes.labelInList }}
-          color={task.dueDate < isoDate ? 'error' : undefined}
+          color={task.due_date < isoDate ? 'error' : undefined}
         />
       );
     },

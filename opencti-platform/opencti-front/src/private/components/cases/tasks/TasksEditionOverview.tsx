@@ -58,7 +58,7 @@ const tasksEditionOverviewFragment = graphql`
     name
     description
     created
-    dueDate
+    due_date
     creators {
       id
       name
@@ -146,7 +146,7 @@ interface TasksEditionOverviewProps {
 interface TasksEditionFormValues {
   name: string;
   description: string | null;
-  dueDate: Date | null;
+  due_date: Date | null;
   message?: string;
   createdBy?: Option;
   objectMarking?: Option[];
@@ -192,7 +192,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
     const inputValues = Object.entries({
       ...otherValues,
       createdBy: values.createdBy?.value,
-      dueDate: formatDate(values.dueDate),
+      due_date: formatDate(values.due_date),
       x_opencti_workflow_id: values.x_opencti_workflow_id?.value,
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
@@ -214,7 +214,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
   const initialValues: TasksEditionFormValues = {
     name: taskData.name,
     description: taskData.description,
-    dueDate: buildDate(taskData.dueDate),
+    due_date: buildDate(taskData.due_date),
     createdBy: convertCreatedBy(taskData) as Option,
     objectMarking: convertMarkings(taskData),
     objectAssignee: convertAssignees(taskData),
@@ -244,7 +244,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
           />
           <Field
             component={DateTimePickerField}
-            name="dueDate"
+            name="due_date"
             onFocus={editor.changeFocus}
             onSubmit={editor.changeField}
             TextFieldProps={{
@@ -252,7 +252,7 @@ const TasksEditionOverview: FunctionComponent<TasksEditionOverviewProps> = ({
               variant: 'standard',
               fullWidth: true,
               helperText: (
-                <SubscriptionFocus context={context} fieldName="dueDate" />
+                <SubscriptionFocus context={context} fieldName="due_date" />
               ),
             }}
             containerStyle={fieldSpacingContainerStyle}

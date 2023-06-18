@@ -88,7 +88,7 @@ const taskAddMutation = graphql`
 
 interface FormikTaskAddInput {
   name: string
-  dueDate?: Date | null
+  due_date?: Date | null
   description?: string
   objectAssignee?: Option[]
   objectLabel?: Option[]
@@ -115,7 +115,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const basicShape = {
     name: Yup.string().min(2).required(t('This field is required')),
     description: Yup.string().nullable().max(5000, t('The value is too long')),
-    dueDate: Yup.date().nullable(),
+    due_date: Yup.date().nullable(),
     objectLabel: Yup.array(),
     objectMarking: Yup.array(),
     objectAssignee: Yup.array(),
@@ -128,7 +128,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
   const initialValues: FormikTaskAddInput = {
     name: '',
     description: '',
-    dueDate: null,
+    due_date: null,
     objectAssignee: [],
     objectMarking: defaultMarkings ?? [],
   };
@@ -140,7 +140,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
     const input: TaskCreationMutation$variables['input'] = {
       name: values.name,
       description: values.description,
-      dueDate: values.dueDate,
+      due_date: values.due_date,
       objectAssignee: (values.objectAssignee ?? []).map(({ value }) => value),
       objectLabel: (values.objectLabel ?? []).map(({ value }) => value),
       objectMarking: (values.objectMarking ?? []).map(({ value }) => value),
@@ -183,7 +183,7 @@ const TaskCreationForm: FunctionComponent<TaskCreationProps> = ({
           />
           <Field
             component={DateTimePickerField}
-            name="dueDate"
+            name="due_date"
             TextFieldProps={{
               label: t('Due Date'),
               variant: 'standard',

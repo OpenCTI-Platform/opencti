@@ -26,7 +26,7 @@ export const taskFragment = graphql`
   fragment Tasks_tasks on Task {
     id
     name
-    dueDate
+    due_date
     description
     workflowEnabled
     revoked

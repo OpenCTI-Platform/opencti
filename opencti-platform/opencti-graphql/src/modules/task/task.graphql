@@ -128,7 +128,7 @@ type Task implements Container & StixDomainObject & StixCoreObject & StixObject 
   # Task
   name: String!
   description: String
-  dueDate: DateTime
+  due_date: DateTime
 }
 
 # Ordering
@@ -144,7 +144,7 @@ enum TasksOrdering {
   createdBy
   x_opencti_workflow_id
   confidence
-  dueDate
+  due_date
   assigneeTo
 }
 # Filtering
@@ -162,7 +162,7 @@ enum TasksFilter {
   assigneeTo
   objectContains
   x_opencti_workflow_id
-  dueDate
+  due_date
 }
 
 type TaskEdge {
@@ -203,10 +203,12 @@ input TaskAddInput {
   name: String! @constraint(minLength: 2)
   description: String
   created: DateTime
-  dueDate: DateTime
+  due_date: DateTime
   objectAssignee: [String]
   objectLabel: [String]
   objectMarking: [String]
+  objectOrganization: [String]
+  createdBy: String
   objects: [String]
   update: Boolean
 }
