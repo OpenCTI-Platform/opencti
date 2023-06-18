@@ -87,7 +87,7 @@ interface CaseTasksLineProps {
 
 const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
   const classes = useStyles();
-  const { fldt } = useFormatter();
+  const { fld } = useFormatter();
   const task = useFragment(CaseTaskFragment, node);
   return (
     <ListItem
@@ -109,7 +109,7 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({ node }) => {
                 className={classes.bodyItem}
                 style={{ width: value.width }}
               >
-                {value.render?.(task, { fldt, classes })}
+                {value.render?.(task, { fld, classes })}
               </div>
             ))}
           </div>

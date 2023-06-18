@@ -7,7 +7,10 @@ import makeStyles from '@mui/styles/makeStyles';
 import Chip from '@mui/material/Chip';
 import ExpandableMarkdown from '../../../../components/ExpandableMarkdown';
 import { useFormatter } from '../../../../components/i18n';
-import { TaskDetails_task$data, TaskDetails_task$key } from './__generated__/TaskDetails_task.graphql';
+import {
+  TaskDetails_task$data,
+  TaskDetails_task$key,
+} from './__generated__/TaskDetails_task.graphql';
 import { Theme } from '../../../../components/Theme';
 import FieldOrEmpty from '../../../../components/FieldOrEmpty';
 
@@ -99,9 +102,7 @@ interface TasksDetailsProps {
   tasksData: TaskDetails_task$key;
 }
 
-const TaskDetails: FunctionComponent<TasksDetailsProps> = ({
-  tasksData,
-}) => {
+const TaskDetails: FunctionComponent<TasksDetailsProps> = ({ tasksData }) => {
   const { t, fldt } = useFormatter();
   const classes = styles();
   const data: TaskDetails_task$data = useFragment(
@@ -137,7 +138,12 @@ const TaskDetails: FunctionComponent<TasksDetailsProps> = ({
               {data.due_date && (
                 <Chip
                   label={fldt(data.due_date)}
-                  classes={{ root: data.due_date < isoDate ? classes.labelErrorInDetails : classes.labelInDetails }}
+                  classes={{
+                    root:
+                      data.due_date < isoDate
+                        ? classes.labelErrorInDetails
+                        : classes.labelInDetails,
+                  }}
                 />
               )}
             </FieldOrEmpty>
