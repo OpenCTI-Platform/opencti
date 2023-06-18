@@ -3,7 +3,7 @@ import { STIX_EXT_OCTI } from '../../types/stix-extensions';
 import type { StixContainer } from '../../types/stix-sdo';
 import type { BasicStoreEntity, StoreEntity } from '../../types/store';
 
-export const ENTITY_TYPE_TASK = 'Task';
+export const ENTITY_TYPE_CONTAINER_TASK = 'Task';
 
 export interface BasicStoreEntityTask extends BasicStoreEntity {
   name: string

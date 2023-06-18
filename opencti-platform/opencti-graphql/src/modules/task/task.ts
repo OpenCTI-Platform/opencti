@@ -6,13 +6,13 @@ import { objectAssignee, objectOrganization } from '../../schema/stixRefRelation
 import convertCaseTaskToStix from './task-converter';
 import taskResolvers from './task-resolvers';
 import type { StixTask, StoreEntityTask } from './task-types';
-import { ENTITY_TYPE_TASK } from './task-types';
+import { ENTITY_TYPE_CONTAINER_TASK } from './task-types';
 import taskTypeDefs from './task.graphql';
 
 const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   type: {
     id: 'task',
-    name: ENTITY_TYPE_TASK,
+    name: ENTITY_TYPE_CONTAINER_TASK,
     category: ENTITY_TYPE_CONTAINER
   },
   graphql: {
@@ -21,7 +21,7 @@ const CASE_TASK_DEFINITION: ModuleDefinition<StoreEntityTask, StixTask> = {
   },
   identifier: {
     definition: {
-      [ENTITY_TYPE_TASK]: () => uuid(),
+      [ENTITY_TYPE_CONTAINER_TASK]: () => uuid(),
     },
     resolvers: {
       name(data: object) {
