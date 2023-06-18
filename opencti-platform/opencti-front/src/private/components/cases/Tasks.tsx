@@ -7,16 +7,16 @@ import { Filters } from '../../../components/list_lines';
 import useEntityToggle from '../../../utils/hooks/useEntityToggle';
 import ToolBar from '../data/ToolBar';
 import ExportContextProvider from '../../../utils/ExportContextProvider';
-import TasksLines, { tasksLinesQuery } from './case_task/TasksLines';
-import { tasksDataColumns, TasksLineDummy } from './case_task/TasksLine';
+import TasksLines, { tasksLinesQuery } from './tasks/TasksLines';
+import { tasksDataColumns, TasksLineDummy } from './tasks/TasksLine';
 import { KNOWLEDGE_KNUPDATE } from '../../../utils/hooks/useGranted';
 import Security from '../../../utils/Security';
-import TaskCreation from './case_task/TaskCreation';
+import TaskCreation from './tasks/TaskCreation';
 import {
   TasksLinesPaginationQuery,
   TasksLinesPaginationQuery$variables,
-} from './case_task/__generated__/TasksLinesPaginationQuery.graphql';
-import { TasksLine_node$data } from './case_task/__generated__/TasksLine_node.graphql';
+} from './tasks/__generated__/TasksLinesPaginationQuery.graphql';
+import { TasksLine_node$data } from './tasks/__generated__/TasksLine_node.graphql';
 
 const useStyles = makeStyles(() => ({
   container: {

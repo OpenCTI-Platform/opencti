@@ -96,7 +96,9 @@ const TopMenuCases = () => {
           component={Link}
           to="/dashboard/cases/tasks"
           variant={
-            location.pathname === '/dashboard/cases/tasks' ? 'contained' : 'text'
+            location.pathname === '/dashboard/cases/tasks'
+              ? 'contained'
+              : 'text'
           }
           size="small"
           color={
@@ -107,7 +109,7 @@ const TopMenuCases = () => {
           classes={{ root: classes.button }}
         >
           <TaskAltOutlined className={classes.icon} fontSize="small" />
-          {t('Case Tasks')}
+          {t('Tasks')}
         </Button>
       )}
       {!useIsHiddenEntity('Feedback') && (

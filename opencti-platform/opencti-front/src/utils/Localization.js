@@ -413,8 +413,6 @@ const i18n = {
         '¿Desea eliminar este incidente de caso?',
       'Do you want to delete this feedback ?':
         '¿Quieres eliminar este comentario?',
-      'Do you want to delete this case task ?':
-        '¿Desea eliminar esta tarea de caso?',
       'Do you want to delete this request for information case ?':
         '¿Desea eliminar este caso de solicitud de información?',
       'Do you want to delete this request for takedown case ?':
@@ -434,7 +432,6 @@ const i18n = {
       'Incident response': 'Respuesta al incidente',
       'Requests for information': 'Solicitudes de información',
       'Requests for takedown': 'Solicitudes de eliminación',
-      'Case Tasks': 'Tareas',
       Feedbacks: 'Comentarios',
       Tasks: 'Tareas',
       takedown_types: 'tipos derribados',
@@ -1212,7 +1209,6 @@ const i18n = {
       References: 'Referencias',
       'Case priority': 'Prioridad',
       'Case severity': 'Gravedad',
-      'Case Task': 'Tarea de caso',
       'No tasks has been found.': 'No se han encontrado tareas.',
       'Due Date': 'Fecha de vencimiento',
       'Apply case templates': 'Aplicar plantillas de casos',
@@ -2376,8 +2372,6 @@ const i18n = {
         "Voulez-vous supprimer ce cas d'incident ?",
       'Do you want to delete this feedback ?':
         'Voulez-vous supprimer ce commentaire ?',
-      'Do you want to delete this case task ?':
-        'Voulez-vous supprimer cette tâche ?',
       'Do you want to delete this request for information case ?':
         "Voulez-vous supprimer ce dossier de demande d'information ?",
       'Do you want to delete this request for takedown case ?':
@@ -2398,7 +2392,6 @@ const i18n = {
       'Requests for information': 'Demandes d\'informations',
       'Requests for takedown': 'Demandes de retrait',
       Feedbacks: 'Commentaires',
-      Tasks: 'Tâches',
       takedown_types: 'types de retraits',
       information_types: "types d'informations",
       Takedown_types: 'Types de retraits',
@@ -3166,13 +3159,14 @@ const i18n = {
       References: 'Références',
       'Case priority': 'Priorité',
       'Case severity': 'Sévérité',
-      'Case Task': 'Tâche',
+      'Task': 'Tâche',
       'Due Date': "Date d'échéance",
-      'Apply case templates': 'Appliquer des modèles de cas',
-      'Create a case template': 'Créer un nouveau modèle de cas',
-      'Apply a new case template': 'Appliquer un nouveau modèle de cas',
+      'Apply case templates': 'Appliquer des modèles de case',
+      'Case templates': 'Template de case',
+      'Create a case template': 'Créer un nouveau modèle de case',
+      'Apply a new case template': 'Appliquer un nouveau modèle de case',
       'Default case templates': 'Modèles de cas par défaut',
-      'Update the case template': 'Modifier le modèle de cas',
+      'Update the case template': 'Modifier le modèle de case',
       Apply: 'Appliquer',
       Unlink: 'Dissocier',
       'Do you want to unlink this task ?':
@@ -3216,7 +3210,7 @@ const i18n = {
       'Request For Takedown Date': 'Date de la demande de Retrait',
       'Information type': "Type d'informations",
       'Takedown type': 'Type de retrait',
-      'Case Tasks': 'Tâches',
+      'Tasks': 'Tâches',
       Ticks: 'Marqueurs',
       Likelihood: 'Probabilité',
       'Relation type': 'Type de relation',
@@ -4300,8 +4294,6 @@ const i18n = {
         'このケース インシデントを削除しますか?',
       'Do you want to delete this feedback ?':
         'このフィードバックを削除しますか?',
-      'Do you want to delete this case task ?':
-        'このケースタスクを削除しますか?',
       'Do you want to delete this request for information case ?':
         'この情報要求のケースを削除しますか?',
       'Do you want to delete this request for takedown case ?':
@@ -4319,7 +4311,6 @@ const i18n = {
       'Incident response': 'インシデント対応',
       'Requests for information': '情報提供のリクエスト',
       'Requests for takedown': '削除のリクエスト',
-      'Case Tasks': 'ケースタスク',
       Feedbacks: 'フィードバック',
       Tasks: 'タスク',
       takedown_types: 'テイクダウンの種類',
@@ -5082,7 +5073,6 @@ const i18n = {
       References: '参考文献',
       'Case priority': '优先事项',
       'Case severity': '严重程度',
-      'Case Task': 'ケース タスク',
       'Due Date': '期日',
       'Apply case templates': 'ケーステンプレートを適用する',
       'Create a case template': '新しいケーステンプレートを作成する',
@@ -6128,8 +6118,6 @@ const i18n = {
       'Submit a feedback': '提交反馈',
       'Do you want to delete this case incident ?': '是否要删除此案例事件？',
       'Do you want to delete this feedback ?': '要删除此反馈吗？',
-      'Do you want to delete this case task ?':
-        '您要删除此案例任务吗？',
       'Do you want to delete this request for information case ?':
         '是否要删除此信息案例请求？',
       'Do you want to delete this request for takedown case ?':
@@ -6147,7 +6135,6 @@ const i18n = {
       'Incident response': '事件响应',
       'Requests for information': '索取资料',
       'Requests for takedown': '删除请求',
-      'Case Tasks': '个案任务',
       Feedbacks: '反馈',
       Tasks: '任务',
       takedown_types: '删除类型',
@@ -6875,7 +6862,6 @@ const i18n = {
       References: '引用',
       'Case priority': '優先順位',
       'Case severity': '重大度',
-      'Case Task': '个案任务',
       'Due Date': '到期日',
       'Apply case templates': '应用案例模板',
       'Create a case template': '創建新案例模板',

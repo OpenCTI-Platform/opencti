@@ -14,7 +14,7 @@ import ContainerStixObjectsOrStixRelationships from '../../common/containers/Con
 import StixCoreObjectLatestHistory from '../../common/stix_core_objects/StixCoreObjectLatestHistory';
 import StixDomainObjectOverview from '../../common/stix_domain_objects/StixDomainObjectOverview';
 import { CaseUtils_case$key } from '../__generated__/CaseUtils_case.graphql';
-import CaseTasksLines, { caseTasksLinesQuery } from '../case_task/CaseTasksLines';
+import CaseTasksLines, { caseTasksLinesQuery } from '../tasks/CaseTasksLines';
 import { caseFragment } from '../CaseUtils';
 import CaseRfiDetails from './CaseRfiDetails';
 import CaseRfiEdition from './CaseRfiEdition';
@@ -25,7 +25,7 @@ import {
   TasksFilter,
   CaseTasksLinesQuery,
   CaseTasksLinesQuery$variables,
-} from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
+} from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 
 const useStyles = makeStyles(() => ({
   gridContainer: {

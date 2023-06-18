@@ -6,16 +6,16 @@ import React from 'react';
 import { Redirect, Switch } from 'react-router-dom';
 import { useIsHiddenEntity } from '../../../utils/hooks/useEntitySettings';
 import { BoundaryRoute } from '../Error';
-import RootCaseRfi from './case_rfi/Root';
-import RootCaseRft from './case_rft/Root';
+import RootCaseRfi from './case_rfis/Root';
+import RootCaseRft from './case_rfts/Root';
 import CaseIncidents from './CaseIncidents';
 import CaseRfis from './CaseRfis';
 import CaseRfts from './CaseRfts';
 import Feedbacks from './Feedbacks';
 import RootFeedback from './feedbacks/Root';
-import RootIncident from './case_incident/Root';
+import RootIncident from './case_incidents/Root';
 import Tasks from './Tasks';
-import RootTask from './case_task/Root';
+import RootTask from './tasks/Root';
 
 const Root = () => {
   let redirect: string | null = null;

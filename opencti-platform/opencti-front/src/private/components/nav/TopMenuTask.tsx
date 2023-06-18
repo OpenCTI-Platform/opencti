@@ -29,7 +29,7 @@ const styles = makeStyles<Theme>((theme) => ({
   },
 }));
 
-const TopMenuCaseTask: FunctionComponent = () => {
+const TopMenuTask: FunctionComponent = () => {
   const location = useLocation();
   const { t } = useFormatter();
   const classes = styles();
@@ -45,7 +45,7 @@ const TopMenuCaseTask: FunctionComponent = () => {
         classes={{ root: classes.buttonHome }}
       >
         <TaskAltOutlined className={classes.icon} fontSize="small" />
-        {t('Case Tasks')}
+        {t('Tasks')}
       </Button>
       <ArrowForwardIosOutlined
         color="primary"
@@ -109,4 +109,4 @@ const TopMenuCaseTask: FunctionComponent = () => {
   );
 };
 
-export default TopMenuCaseTask;
+export default TopMenuTask;

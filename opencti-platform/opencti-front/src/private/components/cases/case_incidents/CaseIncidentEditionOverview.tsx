@@ -23,7 +23,7 @@ import OpenVocabField from '../../common/form/OpenVocabField';
 import { Option } from '../../common/form/ReferenceField';
 import StatusField from '../../common/form/StatusField';
 import { CaseIncidentEditionOverview_case$key } from './__generated__/CaseIncidentEditionOverview_case.graphql';
-import { TasksFiltering } from '../case_task/__generated__/CaseTasksLinesQuery.graphql';
+import { TasksFiltering } from '../tasks/__generated__/CaseTasksLinesQuery.graphql';
 
 export const caseIncidentMutationFieldPatch = graphql`
   mutation CaseIncidentEditionOverviewCaseFieldPatchMutation(
