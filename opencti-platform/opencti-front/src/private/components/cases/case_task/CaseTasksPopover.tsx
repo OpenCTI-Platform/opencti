@@ -9,10 +9,10 @@ import IconButton from '@mui/material/IconButton';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
 import Typography from '@mui/material/Typography';
-import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
+import { useTheme, makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
@@ -60,7 +60,7 @@ const caseTasksPopoverDeletionMutation = graphql`
 
 const caseTasksPopoverUnlinkMutation = graphql`
   mutation CaseTasksPopoverUnlinkMutation($id: ID!, $toId: StixRef!) {
-    stixDomainObjectEdit(id: $id){
+    stixDomainObjectEdit(id: $id) {
       relationDelete(toId: $toId, relationship_type: "object") {
         id
       }
@@ -69,9 +69,9 @@ const caseTasksPopoverUnlinkMutation = graphql`
 `;
 
 interface CaseTasksPopoverProps {
-  task: CaseTasksLine_data$data,
-  paginationOptions: CaseTasksLinesQuery$variables
-  caseId: string
+  task: CaseTasksLine_data$data;
+  paginationOptions: CaseTasksLinesQuery$variables;
+  caseId: string;
 }
 
 const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
@@ -80,6 +80,7 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
   caseId,
 }) => {
   const classes = useStyles();
+  const theme = useTheme();
   const { t } = useFormatter();
 
   const [commit] = useMutation(caseTasksPopoverDeletionMutation);
@@ -142,12 +143,7 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
         id: task.id,
         toId: caseId,
       },
-      updater: (store: RecordSourceSelectorProxy) => deleteNode(
-        store,
-        'Pagination_caseTasks',
-        paginationOptions,
-        task.id,
-      ),
+      updater: (store: RecordSourceSelectorProxy) => deleteNode(store, 'Pagination_caseTasks', paginationOptions, task.id),
       onCompleted: () => {
         setUnlinking(false);
         handleCloseUnlink();
@@ -157,18 +153,18 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
 
   return (
     <span className={classes.container}>
-      <IconButton
-        onClick={handleOpen}
-        aria-haspopup="true"
-        style={{ marginTop: 3 }}
-        size="large"
-      >
+      <IconButton onClick={handleOpen} aria-haspopup="true" size="large">
         <MoreVertOutlined />
       </IconButton>
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
-        <MenuItem onClick={handleOpenUnlink}>{t('Unlink')}</MenuItem>
-        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
+        <MenuItem onClick={handleOpenUnlink}>{t('Remove')}</MenuItem>
+        <MenuItem
+          onClick={handleOpenDelete}
+          style={{ color: theme.palette.warning.main }}
+        >
+          {t('Delete')}
+        </MenuItem>
       </Menu>
       <Drawer
         open={update}
@@ -188,9 +184,7 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
           >
             <Close fontSize="small" color="primary" />
           </IconButton>
-          <Typography variant="h6">
-            {t('Update a task')}
-          </Typography>
+          <Typography variant="h6">{t('Update a task')}</Typography>
         </div>
         <div className={classes.formContainer}>
           <CaseTaskEdition task={task} />

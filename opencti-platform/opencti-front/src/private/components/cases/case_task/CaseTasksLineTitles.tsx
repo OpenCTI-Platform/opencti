@@ -3,6 +3,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../../components/i18n';
 import { DataColumns } from '../../../../components/list_lines';
 
@@ -50,8 +51,8 @@ const CaseTasksLineTitles = () => {
   const classes = useStyles();
   const { t } = useFormatter();
   return (
-    <ListItem classes={{ root: classes.item }} divider={false} button={false}>
-      <ListItemIcon></ListItemIcon>
+    <ListItem classes={{ root: classes.item }} divider={false}>
+      <ListItemIcon> &nbsp; </ListItemIcon>
       <ListItemText
         primary={
           <div>
@@ -88,6 +89,7 @@ const CaseTasksLineTitles = () => {
           </div>
         }
       />
+      <ListItemSecondaryAction> &nbsp; </ListItemSecondaryAction>
     </ListItem>
   );
 };

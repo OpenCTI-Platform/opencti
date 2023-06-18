@@ -33,7 +33,7 @@ const styles = (theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingRight: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],

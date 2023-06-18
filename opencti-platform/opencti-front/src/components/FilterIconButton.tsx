@@ -22,7 +22,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingRight: 10,
   },
   filters4: {
     margin: '0 0 20px 0',

@@ -296,21 +296,19 @@ const CaseTasksLines: FunctionComponent<CaseTasksLinesProps> = ({
       <div className="clearfix" />
       <Paper classes={{ root: classes.paper }} variant="outlined">
         {data.caseTasks && data.caseTasks.edges.length > 0 ? (
-          <div>
+          <List style={{ paddingTop: 0 }}>
             <CaseTasksLineTitles />
-            <List style={{ paddingTop: 0 }}>
-              {data.caseTasks.edges.map(({ node }) => {
-                return (
-                  <CaseTasksLine
-                    key={JSON.stringify(node)}
-                    data={node}
-                    paginationOptions={paginationOptions}
-                    caseId={caseId}
-                  />
-                );
-              })}
-            </List>
-          </div>
+            {data.caseTasks.edges.map(({ node }) => {
+              return (
+                <CaseTasksLine
+                  key={JSON.stringify(node)}
+                  data={node}
+                  paginationOptions={paginationOptions}
+                  caseId={caseId}
+                />
+              );
+            })}
+          </List>
         ) : (
           <div className={classes.emptyContainer}>
             <span className={classes.emptySpan}>

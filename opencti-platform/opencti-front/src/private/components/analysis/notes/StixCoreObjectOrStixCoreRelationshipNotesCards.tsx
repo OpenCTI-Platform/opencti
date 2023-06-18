@@ -5,7 +5,12 @@ import { FormikConfig } from 'formik/dist/types';
 import makeStyles from '@mui/styles/makeStyles';
 import * as Yup from 'yup';
 import IconButton from '@mui/material/IconButton';
-import { EditOutlined, ExpandMoreOutlined, RateReviewOutlined } from '@mui/icons-material';
+import {
+  EditOutlined,
+  ExpandMoreOutlined,
+  ExpandLessOutlined,
+  RateReviewOutlined,
+} from '@mui/icons-material';
 import Accordion from '@mui/material/Accordion';
 import AccordionSummary from '@mui/material/AccordionSummary';
 import AccordionDetails from '@mui/material/AccordionDetails';
@@ -32,9 +37,7 @@ import {
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery,
   StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables,
 } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCardsQuery.graphql';
-import {
-  StixCoreObjectOrStixCoreRelationshipNotesCards_data$key,
-} from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
+import { StixCoreObjectOrStixCoreRelationshipNotesCards_data$key } from './__generated__/StixCoreObjectOrStixCoreRelationshipNotesCards_data.graphql';
 import SliderField from '../../../../components/SliderField';
 import { useSchemaCreationValidation } from '../../../../utils/hooks/useEntitySettings';
 import useDefaultValues from '../../../../utils/hooks/useDefaultValues';
@@ -130,13 +133,13 @@ const toOptions = (
 ) => (objectMarkings ?? []).map(convertMarking);
 
 export interface NoteAddInput {
-  attribute_abstract: string
-  content: string
-  confidence: number | undefined
-  note_types: string[]
-  likelihood?: number
-  objectMarking: Option[]
-  objectLabel: Option[]
+  attribute_abstract: string;
+  content: string;
+  confidence: number | undefined;
+  note_types: string[];
+  likelihood?: number;
+  objectMarking: Option[];
+  objectLabel: Option[];
 }
 
 interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
@@ -144,7 +147,11 @@ interface StixCoreObjectOrStixCoreRelationshipNotesCardsProps {
   marginTop?: number;
   queryRef: PreloadedQuery<StixCoreObjectOrStixCoreRelationshipNotesCardsQuery>;
   paginationOptions: StixCoreObjectOrStixCoreRelationshipNotesCardsQuery$variables;
-  defaultMarkings?: { id: string; definition: string | null, x_opencti_color: string | null }[];
+  defaultMarkings?: {
+    id: string;
+    definition: string | null;
+    x_opencti_color: string | null;
+  }[];
   title: string;
 }
 
@@ -185,18 +192,15 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
   const [open, setOpen] = useState<boolean>(false);
 
   const [more, setMore] = useState<boolean>(false);
-  const initialValues = useDefaultValues<NoteAddInput>(
-    NOTE_TYPE,
-    {
-      attribute_abstract: '',
-      content: '',
-      likelihood: 50,
-      confidence: undefined,
-      note_types: [],
-      objectMarking: toOptions(defaultMarkings),
-      objectLabel: [],
-    },
-  );
+  const initialValues = useDefaultValues<NoteAddInput>(NOTE_TYPE, {
+    attribute_abstract: '',
+    content: '',
+    likelihood: 50,
+    confidence: undefined,
+    note_types: [],
+    objectMarking: toOptions(defaultMarkings),
+    objectLabel: [],
+  });
   const scrollToBottom = () => {
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -366,8 +370,11 @@ StixCoreObjectOrStixCoreRelationshipNotesCardsProps
                       disabled={isSubmitting}
                       classes={{ root: classes.buttonMore }}
                       size="small"
+                      endIcon={
+                        more ? <ExpandLessOutlined /> : <ExpandMoreOutlined />
+                      }
                     >
-                      {t('More fields')}
+                      {more ? t('Less fields') : t('More fields')}
                     </Button>
                     <Button
                       variant="contained"

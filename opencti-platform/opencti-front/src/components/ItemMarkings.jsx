@@ -15,7 +15,7 @@ const useStyles = makeStyles(() => ({
     height: 25,
     margin: '0 7px 7px 0',
     borderRadius: 5,
-    width: 90,
+    width: 120,
   },
   chipInList: {
     fontSize: 12,

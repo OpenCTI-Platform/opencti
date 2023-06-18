@@ -34,7 +34,7 @@ const useStyles = makeStyles((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
+    paddingRight: 10,
   },
   itemIconDisabled: {
     color: theme.palette.grey[700],
@@ -97,7 +97,7 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
           <div>
             <div
               className={classes.bodyItem}
-              style={{ width: dataColumns.entity_type.width, marginRight: 10 }}
+              style={{ width: dataColumns.entity_type.width }}
             >
               <Chip
                 classes={{ root: classes.chipInList }}
@@ -120,12 +120,6 @@ const ContainerStixObjectOrStixRelationshipLineComponent = ({
               style={{ width: dataColumns.createdBy.width }}
             >
               {R.pathOr('', ['createdBy', 'name'], node)}
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
-            >
-              {(node.creators ?? []).map((c) => c?.name).join(', ')}
             </div>
             <div
               className={classes.bodyItem}
@@ -768,17 +762,6 @@ export const ContainerStixObjectOrStixRelationshipLineDummy = ({
             <div
               className={classes.bodyItem}
               style={{ width: dataColumns.createdBy.width }}
-            >
-              <Skeleton
-                animation="wave"
-                variant="rectangular"
-                width="90%"
-                height="100%"
-              />
-            </div>
-            <div
-              className={classes.bodyItem}
-              style={{ width: dataColumns.creator.width }}
             >
               <Skeleton
                 animation="wave"

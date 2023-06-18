@@ -4,6 +4,7 @@ import ListItemText from '@mui/material/ListItemText';
 import makeStyles from '@mui/styles/makeStyles';
 import React, { FunctionComponent } from 'react';
 import { graphql, useFragment } from 'react-relay';
+import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
 import { useFormatter } from '../../../components/i18n';
 import ItemIcon from '../../../components/ItemIcon';
 import ItemStatus from '../../../components/ItemStatus';
@@ -32,11 +33,7 @@ const useStyles = makeStyles<Theme>((theme) => ({
     whiteSpace: 'nowrap',
     overflow: 'hidden',
     textOverflow: 'ellipsis',
-    paddingRight: 5,
-  },
-  goIcon: {
-    position: 'absolute',
-    right: -10,
+    paddingRight: 10,
   },
 }));
 
@@ -137,17 +134,15 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
 }) => {
   const classes = useStyles();
   const { fldt } = useFormatter();
-
   const task = useFragment(CaseTaskFragment, data);
-
   return (
     <ListItem classes={{ root: classes.item }} divider={true}>
       <ListItemIcon classes={{ root: classes.itemIcon }}>
-        <ItemIcon type='Case-Task'></ItemIcon>
+        <ItemIcon type="Case-Task"></ItemIcon>
       </ListItemIcon>
       <ListItemText
         primary={
-          <div>
+          <>
             {Object.values(dataColumns).map((value) => (
               <div
                 key={value.label}
@@ -157,16 +152,16 @@ const CaseTasksLine: FunctionComponent<CaseTasksLineProps> = ({
                 {value.render?.(task, { fldt })}
               </div>
             ))}
-          </div>
+          </>
         }
       />
-      <ListItemIcon classes={{ root: classes.goIcon }}>
+      <ListItemSecondaryAction>
         <CaseTasksPopover
           caseId={caseId}
           task={task}
           paginationOptions={paginationOptions}
         />
-      </ListItemIcon>
+      </ListItemSecondaryAction>
     </ListItem>
   );
 };
