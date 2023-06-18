@@ -12,7 +12,7 @@ import Typography from '@mui/material/Typography';
 import React, { FunctionComponent, useState } from 'react';
 import { graphql, useMutation } from 'react-relay';
 import { RecordSourceSelectorProxy } from 'relay-runtime';
-import { useTheme, makeStyles } from '@mui/styles';
+import { makeStyles } from '@mui/styles';
 import { useFormatter } from '../../../../components/i18n';
 import { Theme } from '../../../../components/Theme';
 import Transition from '../../../../components/Transition';
@@ -80,7 +80,6 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
   caseId,
 }) => {
   const classes = useStyles();
-  const theme = useTheme();
   const { t } = useFormatter();
 
   const [commit] = useMutation(caseTasksPopoverDeletionMutation);
@@ -159,12 +158,7 @@ const CaseTasksPopover: FunctionComponent<CaseTasksPopoverProps> = ({
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleClose}>
         <MenuItem onClick={handleOpenUpdate}>{t('Update')}</MenuItem>
         <MenuItem onClick={handleOpenUnlink}>{t('Remove')}</MenuItem>
-        <MenuItem
-          onClick={handleOpenDelete}
-          style={{ color: theme.palette.warning.main }}
-        >
-          {t('Delete')}
-        </MenuItem>
+        <MenuItem onClick={handleOpenDelete}>{t('Delete')}</MenuItem>
       </Menu>
       <Drawer
         open={update}
