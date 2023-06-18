@@ -55,7 +55,6 @@ class Stream extends Component {
   }
 
   renderLines(paginationOptions) {
-    const { t, theme } = this.props;
     const { sortBy, orderAsc, searchTerm } = this.state;
     const dataColumns = {
       name: {
