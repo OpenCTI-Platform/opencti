@@ -20,7 +20,6 @@ from pycti.entities.opencti_campaign import Campaign
 from pycti.entities.opencti_case_incident import CaseIncident
 from pycti.entities.opencti_case_rfi import CaseRfi
 from pycti.entities.opencti_case_rft import CaseRft
-from pycti.entities.opencti_case_task import CaseTask
 from pycti.entities.opencti_channel import Channel
 from pycti.entities.opencti_course_of_action import CourseOfAction
 from pycti.entities.opencti_data_component import DataComponent
@@ -58,6 +57,7 @@ from pycti.entities.opencti_stix_object_or_stix_relationship import (
     StixObjectOrStixRelationship,
 )
 from pycti.entities.opencti_stix_sighting_relationship import StixSightingRelationship
+from pycti.entities.opencti_task import Task
 from pycti.entities.opencti_threat_actor import ThreatActor
 from pycti.entities.opencti_tool import Tool
 from pycti.entities.opencti_vocabulary import Vocabulary
@@ -188,7 +188,7 @@ class OpenCTIApiClient:
         self.feedback = Feedback(self)
         self.case_rfi = CaseRfi(self)
         self.case_rft = CaseRft(self)
-        self.case_task = CaseTask(self)
+        self.task = Task(self)
         self.incident = Incident(self)
         self.malware = Malware(self)
         self.malware_analysis = MalwareAnalysis(self)

@@ -14,7 +14,6 @@ from .entities.opencti_campaign import Campaign
 from .entities.opencti_case_incident import CaseIncident
 from .entities.opencti_case_rfi import CaseRfi
 from .entities.opencti_case_rft import CaseRft
-from .entities.opencti_case_task import CaseTask
 from .entities.opencti_course_of_action import CourseOfAction
 from .entities.opencti_data_component import DataComponent
 from .entities.opencti_data_source import DataSource
@@ -44,6 +43,7 @@ from .entities.opencti_stix_object_or_stix_relationship import (
     StixObjectOrStixRelationship,
 )
 from .entities.opencti_stix_sighting_relationship import StixSightingRelationship
+from .entities.opencti_task import Task
 from .entities.opencti_threat_actor import ThreatActor
 from .entities.opencti_tool import Tool
 from .entities.opencti_vulnerability import Vulnerability
@@ -63,7 +63,7 @@ __all__ = [
     "CaseIncident",
     "CaseRfi",
     "CaseRft",
-    "CaseTask",
+    "Task",
     "ConnectorType",
     "CourseOfAction",
     "DataComponent",
