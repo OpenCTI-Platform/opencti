@@ -1331,10 +1331,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#contextual-search" class="md-nav__link">
+  <a href="#bulk-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Contextual search
+        Bulk search
       
     </span>
   </a>
@@ -1342,10 +1342,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#bulk-search" class="md-nav__link">
+  <a href="#contextual-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bulk search
+        Contextual search
       
     </span>
   </a>
@@ -3192,10 +3192,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#contextual-search" class="md-nav__link">
+  <a href="#bulk-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Contextual search
+        Bulk search
       
     </span>
   </a>
@@ -3203,10 +3203,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#bulk-search" class="md-nav__link">
+  <a href="#contextual-search" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Bulk search
+        Contextual search
       
     </span>
   </a>
@@ -3320,10 +3320,49 @@
 
 
 <h1 id="search-for-knowledge">Search for knowledge</h1>
+<p>In OpenCTI, you have access to different capabilities to be able to search for knowledge in the platform. In most cases, a search by keyword can be refined with additional filters for instance on the type of object, the author etc.</p>
 <h2 id="global-search">Global search</h2>
-<h2 id="contextual-search">Contextual search</h2>
+<p>The global search is always available in the top bar of the platform.</p>
+<figure>
+<p><a class="glightbox" href="../assets/search-bar.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search bar" src="../assets/search-bar.png" /></a></p>
+</figure>
+<p>This search covers all <a href="../data-model/">STIX Domain Objects (SDOs)</a> and <a href="../data-model/">STIX Cyber Observables (SCOs)</a> in the platform. The search results are sorted according to the following behaviour:</p>
+<ul>
+<li>Priority 1 for exact matching of the keyword in one attribute of the objects.</li>
+<li>Priority 2 for partial matching of the keyword in the <code>name</code>, the <code>aliases</code> and the <code>description</code> attributes (full text search).</li>
+<li>Priority 3 for partial matching of the keyword in all other attributes (full text search).</li>
+</ul>
+<p>If you get unexpected result, it is always possible to add some filters after the initial search:</p>
+<p><a class="glightbox" href="../assets/search-filters.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search filters" src="../assets/search-filters.png" /></a></p>
+<p>Also, using the <code>Advanced search</code> button, it is possible to directly put filters in a global search:</p>
+<p><a class="glightbox" href="../assets/advanced-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Advanced search" src="../assets/advanced-search.png" /></a></p>
 <h2 id="bulk-search">Bulk search</h2>
+<p>The bulk search capabilities in available in the top bar of the platform and allow you to copy paste a list of keyword or objects (ie. list of domains, list of IP addresses, list of vulnerabilities, etc.) to search in the platform:</p>
+<p><a class="glightbox" href="../assets/bulk-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Bulk search" src="../assets/bulk-search.png" /></a></p>
+<p>When searching in bulk, OpenCTI is only looking for an exact match in some properties:</p>
+<ul>
+<li><code>name</code></li>
+<li><code>aliases</code></li>
+<li><code>x_opencti_aliases</code></li>
+<li><code>x_mitre_id</code></li>
+<li><code>value</code></li>
+<li><code>subject</code></li>
+<li><code>abstract</code></li>
+<li><code>hashes_MD5</code></li>
+<li><code>hashes_SHA1</code></li>
+<li><code>hashes_SHA256</code></li>
+<li><code>hashes_SHA512</code></li>
+<li><code>x_opencti_additional_names</code></li>
+</ul>
+<p>When something is not found, it appears in the list as <code>Unknown</code> and will be excluded if you choose to export your search result in a JSON STIX bundle or in a CSV file.</p>
+<p><a class="glightbox" href="../assets/bulk-result.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Bulk search results" src="../assets/bulk-result.png" /></a></p>
+<h2 id="contextual-search">Contextual search</h2>
+<p>In most of the screens of knowledge, you always have a contextual search bar allowing you to filter the list you are on:</p>
+<p><a class="glightbox" href="../assets/contextual-search.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Contextual search" src="../assets/contextual-search.png" /></a></p>
+<p>The search keyword used here is taken into account if you decide to export the current view in a file such as a JSON STIX bundle or a CSV file.</p>
 <h2 id="other-search-bars">Other search bars</h2>
+<p>Some other screens can contain search bars for specific purposes. For instance, in the graph views to filter the nodes displayed on the graph:</p>
+<p><a class="glightbox" href="../assets/search-graph.png" data-type="image" data-width="100%" data-height="auto" data-desc-position="bottom"><img alt="Search in graph" src="../assets/search-graph.png" /></a></p>
 
   
     
@@ -3339,7 +3378,7 @@
         <span class="md-icon" title="Last update">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M21 13.1c-.1 0-.3.1-.4.2l-1 1 2.1 2.1 1-1c.2-.2.2-.6 0-.8l-1.3-1.3c-.1-.1-.2-.2-.4-.2m-1.9 1.8-6.1 6V23h2.1l6.1-6.1-2.1-2M12.5 7v5.2l4 2.4-1 1L11 13V7h1.5M11 21.9c-5.1-.5-9-4.8-9-9.9C2 6.5 6.5 2 12 2c5.3 0 9.6 4.1 10 9.3-.3-.1-.6-.2-1-.2s-.7.1-1 .2C19.6 7.2 16.2 4 12 4c-4.4 0-8 3.6-8 8 0 4.1 3.1 7.5 7.1 7.9l-.1.2v1.8Z"/></svg>
         </span>
-        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-05-31T19:54:46+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-05-31</span>
+        <span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-timeago"><span class="timeago" datetime="2023-06-19T10:31:53+00:00" locale="en"></span></span><span class="git-revision-date-localized-plugin git-revision-date-localized-plugin-iso_date">2023-06-19</span>
       </span>
     
     
