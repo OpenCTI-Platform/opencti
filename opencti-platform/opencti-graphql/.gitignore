@@ -1,11 +1,19 @@
+# environment
 .idea
-.eslintcache
 .env
 .clinic
+
+
+
+# build
+.eslintcache
 build
 dist
 node_modules
+__pycache__
 public
+
+# config
 config/ssl
 config/demo.json
 config/development.json
@@ -19,10 +27,18 @@ config/sync.json
 config/prod-*.json
 coverage
 test-results
+
+# logs
 logs
 yarn-error.log
+
+# generated
 graphql.schema.json
-__pycache__
+src/generated/graphql.ts
+
+# testing
+coverage
+test-results
 
 # Yarn
 .yarn/*

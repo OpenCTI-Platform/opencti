@@ -26,6 +26,7 @@ yarn-error.log*
 
 # relay
 __generated__
+relay.schema.graphql
 
 # Yarn
 .yarn/*
