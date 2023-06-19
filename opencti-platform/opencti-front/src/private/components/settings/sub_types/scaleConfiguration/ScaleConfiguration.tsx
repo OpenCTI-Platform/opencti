@@ -33,12 +33,19 @@ const useStyles = makeStyles<Theme>(() => ({
   },
 }));
 
-const minMaxValidation = (t: (value: string) => string, min: number, max: number) => {
+const minMaxValidation = (
+  t: (value: string) => string,
+  min: number,
+  max: number,
+) => {
   return Yup.object().shape({
     label: Yup.string().required(t('This field is required')),
     color: Yup.string()
       .required(t('This field is required'))
-      .matches(/^#[a-zA-Z0-9]{6}$/, t('The color must be written in hexadecimal. Example: #ff9800')),
+      .matches(
+        /^#[a-zA-Z0-9]{6}$/,
+        t('The color must be written in hexadecimal. Example: #ff9800'),
+      ),
     value: Yup.number()
       .required(t('This field is required'))
       .min(0, t('The value must be greater than or equal to 0'))
@@ -51,12 +58,19 @@ const minMaxValidation = (t: (value: string) => string, min: number, max: number
   });
 };
 
-const tickValidation = (t: (value: string) => string, min: number, max: number) => {
+const tickValidation = (
+  t: (value: string) => string,
+  min: number,
+  max: number,
+) => {
   return Yup.object().shape({
     label: Yup.string().required(t('This field is required')),
     color: Yup.string()
       .required(t('This field is required'))
-      .matches(/^#[a-zA-Z0-9]{6}$/, t('The color must be written in hexadecimal. Example: #ff9800')),
+      .matches(
+        /^#[a-zA-Z0-9]{6}$/,
+        t('The color must be written in hexadecimal. Example: #ff9800'),
+      ),
     value: Yup.number()
       .required(t('This field is required'))
       .test(
@@ -67,15 +81,28 @@ const tickValidation = (t: (value: string) => string, min: number, max: number) 
   });
 };
 
-const isTickDefinitionValid = (tickDefinition: ScaleConfig, setErrors: (errors: FormikErrors<FormikValues>) => void, fieldName: string) => {
+const isTickDefinitionValid = (
+  tickDefinition: ScaleConfig,
+  setErrors: (errors: FormikErrors<FormikValues>) => void,
+  fieldName: string,
+) => {
   let isValid = true;
   if (tickDefinition.min.value > tickDefinition.max.value) {
-    setErrors({ [fieldName]: 'The minimum value cannot be greater than max value' });
+    setErrors({
+      [fieldName]: 'The minimum value cannot be greater than max value',
+    });
     return false;
   }
   tickDefinition.ticks.forEach((tick) => {
-    if (!tick.value || (tick.value < tickDefinition.min.value || tick.value > tickDefinition.max.value)) {
-      setErrors({ [fieldName]: 'Each tick value must be between minimum and maximum value' });
+    if (
+      !tick.value
+      || tick.value < tickDefinition.min.value
+      || tick.value > tickDefinition.max.value
+    ) {
+      setErrors({
+        [fieldName]:
+          'Each tick value must be between minimum and maximum value',
+      });
       isValid = false;
     }
   });
@@ -83,11 +110,15 @@ const isTickDefinitionValid = (tickDefinition: ScaleConfig, setErrors: (errors: 
 };
 
 interface EntitySettingScaleProps {
-  initialValues: ScaleConfig
-  fieldName: string
-  setFieldValue: (field: string, value: ScaleConfig, shouldValidate?: boolean) => void
-  setErrors: (errors: FormikErrors<FormikValues>) => void
-  style?: Record<string, string | number>
+  initialValues: ScaleConfig;
+  fieldName: string;
+  setFieldValue: (
+    field: string,
+    value: ScaleConfig,
+    shouldValidate?: boolean
+  ) => void;
+  setErrors: (errors: FormikErrors<FormikValues>) => void;
+  style?: Record<string, string | number>;
 }
 
 const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
@@ -100,7 +131,9 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   const { t } = useFormatter();
   const classes = useStyles();
 
-  const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(clone(initialValues));
+  const [tickDefinition, setTickDefinition] = useState<ScaleConfig>(
+    clone(initialValues),
+  );
 
   const sortTick = (a: Tick | UndefinedTick, b: Tick | UndefinedTick) => {
     if (typeof a.value === 'string') return -1;
@@ -133,25 +166,26 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
   };
 
   const handleUpdateValueOfTick = (
-    validateForm: (values?: Tick | UndefinedTick) => Promise<FormikErrors<Tick | UndefinedTick>>,
+    validateForm: (
+      values?: Tick | UndefinedTick
+    ) => Promise<FormikErrors<Tick | UndefinedTick>>,
     tickIndex: number | 'min' | 'max',
     property: keyof Tick,
     newValue: number | string,
   ) => {
-    validateForm()
-      .then((errors) => {
-        setErrors(errors);
-        const newState = { ...tickDefinition };
-        if (tickIndex === 'min') {
-          newState.min[property] = newValue as never;
-        } else if (tickIndex === 'max') {
-          newState.max[property] = newValue as never;
-        } else {
-          const tick = newState.ticks[tickIndex as number];
-          tick[property] = newValue as never;
-        }
-        update(newState);
-      });
+    validateForm().then((errors) => {
+      setErrors(errors);
+      const newState = { ...tickDefinition };
+      if (tickIndex === 'min') {
+        newState.min[property] = newValue as never;
+      } else if (tickIndex === 'max') {
+        newState.max[property] = newValue as never;
+      } else {
+        const tick = newState.ticks[tickIndex as number];
+        tick[property] = newValue as never;
+      }
+      update(newState);
+    });
   };
 
   return (
@@ -168,14 +202,32 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
           <ScaleConfigurationLine
             tick={tickDefinition.min}
             tickLabel={t('Minimum')}
-            validation={() => minMaxValidation(t, tickDefinition.min.value, tickDefinition.max.value)}
-            handleUpdate={(validateForm, name: keyof Tick, value: string | number) => handleUpdateValueOfTick(validateForm, 'min', name, value)}
+            validation={() => minMaxValidation(
+              t,
+              tickDefinition.min.value,
+              tickDefinition.max.value,
+            )
+            }
+            handleUpdate={(
+              validateForm,
+              name: keyof Tick,
+              value: string | number,
+            ) => handleUpdateValueOfTick(validateForm, 'min', name, value)}
           />
           <ScaleConfigurationLine
             tick={tickDefinition.max}
             tickLabel={t('Maximum')}
-            validation={() => minMaxValidation(t, tickDefinition.min.value, tickDefinition.max.value)}
-            handleUpdate={(validateForm, name: keyof Tick, value: string | number) => handleUpdateValueOfTick(validateForm, 'max', name, value)}
+            validation={() => minMaxValidation(
+              t,
+              tickDefinition.min.value,
+              tickDefinition.max.value,
+            )
+            }
+            handleUpdate={(
+              validateForm,
+              name: keyof Tick,
+              value: string | number,
+            ) => handleUpdateValueOfTick(validateForm, 'max', name, value)}
           />
           <div style={{ marginTop: 30, float: 'left' }}>
             <Typography
@@ -201,8 +253,17 @@ const ScaleConfiguration: FunctionComponent<EntitySettingScaleProps> = ({
               tick={tick}
               tickLabel={t('Value')}
               deleteEnabled={true}
-              validation={() => tickValidation(t, tickDefinition.min.value, tickDefinition.max.value)}
-              handleUpdate={(validateForm, name: keyof Tick, value: string | number) => handleUpdateValueOfTick(validateForm, index, name, value)}
+              validation={() => tickValidation(
+                t,
+                tickDefinition.min.value,
+                tickDefinition.max.value,
+              )
+              }
+              handleUpdate={(
+                validateForm,
+                name: keyof Tick,
+                value: string | number,
+              ) => handleUpdateValueOfTick(validateForm, index, name, value)}
               handleDelete={() => handleDeleteTickRow(index)}
               noMargin={index === 0}
             />

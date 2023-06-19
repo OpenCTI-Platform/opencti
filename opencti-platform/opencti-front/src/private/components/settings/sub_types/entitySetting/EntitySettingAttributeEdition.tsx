@@ -9,18 +9,15 @@ import * as Yup from 'yup';
 import makeStyles from '@mui/styles/makeStyles';
 import { FormikConfig } from 'formik/dist/types';
 import { head } from 'ramda';
+import Alert from '@mui/lab/Alert/Alert';
 import { useFormatter } from '../../../../../components/i18n';
 import { Theme } from '../../../../../components/Theme';
 import SwitchField from '../../../../../components/SwitchField';
 import TextField from '../../../../../components/TextField';
 import { Scale, ScaleConfig } from '../scaleConfiguration/scale';
 import { AttributeConfiguration } from './entitySetting';
-import {
-  EntitySettingAttributeLine_attribute$data,
-} from './__generated__/EntitySettingAttributeLine_attribute.graphql';
-import {
-  EntitySettingAttributes_entitySetting$data,
-} from './__generated__/EntitySettingAttributes_entitySetting.graphql';
+import { EntitySettingAttributeLine_attribute$data } from './__generated__/EntitySettingAttributeLine_attribute.graphql';
+import { EntitySettingAttributes_entitySetting$data } from './__generated__/EntitySettingAttributes_entitySetting.graphql';
 import ScaleConfiguration from '../scaleConfiguration/ScaleConfiguration';
 import OpenVocabField from '../../../common/form/OpenVocabField';
 import { fieldSpacingContainerStyle } from '../../../../../utils/field';
@@ -66,7 +63,10 @@ const useStyles = makeStyles<Theme>((theme) => ({
 }));
 
 const entitySettingAttributeEditionPatch = graphql`
-  mutation EntitySettingAttributeEditionPatchMutation($ids: [ID!]!, $input: [EditInput!]!) {
+  mutation EntitySettingAttributeEditionPatchMutation(
+    $ids: [ID!]!
+    $input: [EditInput!]!
+  ) {
     entitySettingsFieldPatch(ids: $ids, input: $input) {
       ...EntitySettingAttributes_entitySetting
     }
@@ -79,15 +79,15 @@ const attributeValidation = () => Yup.object().shape({
 });
 
 interface AttributeFormikValues {
-  mandatory: boolean
-  default_values: string | string[] | Option | Option[] | boolean | null
-  scale: ScaleConfig
+  mandatory: boolean;
+  default_values: string | string[] | Option | Option[] | boolean | null;
+  scale: ScaleConfig;
 }
 
 interface AttributeSubmitValues {
-  mandatory?: boolean
-  default_values: string[] | null
-  scale?: { local_config: ScaleConfig }
+  mandatory?: boolean;
+  default_values: string[] | null;
+  scale?: { local_config: ScaleConfig };
 }
 
 const EntitySettingAttributeEdition = ({
@@ -95,9 +95,9 @@ const EntitySettingAttributeEdition = ({
   handleClose,
   entitySetting,
 }: {
-  attribute: EntitySettingAttributeLine_attribute$data
-  handleClose: () => void
-  entitySetting: EntitySettingAttributes_entitySetting$data
+  attribute: EntitySettingAttributeLine_attribute$data;
+  handleClose: () => void;
+  entitySetting: EntitySettingAttributes_entitySetting$data;
 }) => {
   const { t } = useFormatter();
   const classes = useStyles();
@@ -111,7 +111,9 @@ const EntitySettingAttributeEdition = ({
     const scale = JSON.parse(attributeScale) as Scale;
     return scale.local_config;
   };
-  const [scaleErrors, setScaleErrors] = useState<FormikErrors<FormikValues>>({});
+  const [scaleErrors, setScaleErrors] = useState<FormikErrors<FormikValues>>(
+    {},
+  );
 
   const [commit] = useMutation(entitySettingAttributeEditionPatch);
 
@@ -120,7 +122,10 @@ const EntitySettingAttributeEdition = ({
   };
 
   const isSingleOption = (defaultValues: string | boolean | Option) => {
-    return typeof defaultValues === 'object' && 'value' in (defaultValues as unknown as Option);
+    return (
+      typeof defaultValues === 'object'
+      && 'value' in (defaultValues as unknown as Option)
+    );
   };
 
   const isMultipleOption = (defaultValues: string[] | Option[]) => {
@@ -132,13 +137,19 @@ const EntitySettingAttributeEdition = ({
     { setSubmitting },
   ) => {
     const saveConfiguration = [...attributesConfiguration];
-    const defaultValues: string | boolean | Option | string[] | Option[] | null = values.default_values;
+    const defaultValues:
+    | string
+    | boolean
+    | Option
+    | string[]
+    | Option[]
+    | null = values.default_values;
     let default_values: string[] | null = null;
     if (defaultValues) {
       if (Array.isArray(defaultValues)) {
         // Handle multiple options
         if (isMultipleOption(defaultValues)) {
-          default_values = defaultValues.map((v) => ((v as Option).value));
+          default_values = defaultValues.map((v) => (v as Option).value);
         }
         // Handle single option
       } else if (isSingleOption(defaultValues)) {
@@ -146,7 +157,8 @@ const EntitySettingAttributeEdition = ({
         // Handle single value
       } else if (isBoolean(defaultValues)) {
         default_values = [defaultValues.toString()];
-      } else { // Default case -> string
+      } else {
+        // Default case -> string
         default_values = [defaultValues as string];
       }
     }
@@ -160,7 +172,9 @@ const EntitySettingAttributeEdition = ({
       newValues.scale = { local_config: values.scale };
     }
 
-    const currentKeyIdx = saveConfiguration.findIndex((a) => a.name === attribute.name);
+    const currentKeyIdx = saveConfiguration.findIndex(
+      (a) => a.name === attribute.name,
+    );
     if (currentKeyIdx > -1) {
       saveConfiguration[currentKeyIdx] = {
         ...saveConfiguration[currentKeyIdx],
@@ -186,10 +200,7 @@ const EntitySettingAttributeEdition = ({
   };
 
   const field = () => {
-    const text = attribute.label ?? attribute.name;
-    const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
-    const label = t('Default value of : ') + attributeName;
-
+    const label = t('Default value');
     // Handle object marking specific case : activate or deactivate default values (handle in access)
     if (attribute.name === 'objectMarking') {
       return (
@@ -202,8 +213,15 @@ const EntitySettingAttributeEdition = ({
             fullWidth={true}
             containerstyle={{ marginTop: 20 }}
           />
-          {t('To manage default values for object marking, you need to specify it in ')}
-          <a href="/dashboard/settings/accesses/groups" target="_blank">{t('groups')}</a>
+          <Alert
+            severity="info"
+            variant="outlined"
+            style={{ margin: '20px 0 10px 0' }}
+          >
+            {t(
+              'When enabling a default value for marking definitions, it will put the group default markings ot the user which created the entity if nothing is provided.',
+            )}
+          </Alert>
         </>
       );
     }
@@ -337,15 +355,24 @@ const EntitySettingAttributeEdition = ({
     if (attribute.name === 'objectMarking') {
       return head(values)?.id ?? false;
     }
-    return useComputeDefaultValues(entitySetting.target_type, attribute.name, attribute.multiple ?? false, attribute.type, values);
+    return useComputeDefaultValues(
+      entitySetting.target_type,
+      attribute.name,
+      attribute.multiple ?? false,
+      attribute.type,
+      values,
+    );
   };
 
   const values: AttributeFormikValues = {
     mandatory: attribute.mandatory,
     default_values: defaultValues(),
-    scale: attribute.scale ? getScaleConfig(attribute.scale) : {} as ScaleConfig,
+    scale: attribute.scale
+      ? getScaleConfig(attribute.scale)
+      : ({} as ScaleConfig),
   };
-
+  const text = attribute.label ?? attribute.name;
+  const attributeName = t(text.charAt(0).toUpperCase() + text.slice(1));
   return (
     <div>
       <div className={classes.header}>
@@ -359,7 +386,7 @@ const EntitySettingAttributeEdition = ({
           <Close fontSize="small" color="primary" />
         </IconButton>
         <Typography variant="h6" classes={{ root: classes.title }}>
-          {t('Update an attribute')}
+          {`${t('Update the attribute')} "${attributeName}"`}
         </Typography>
         <div className="clearfix" />
       </div>
@@ -370,7 +397,13 @@ const EntitySettingAttributeEdition = ({
           validationSchema={attributeValidation()}
           onSubmit={onSubmit}
         >
-          {({ submitForm, isSubmitting, setFieldValue, initialValues, isValid }) => (
+          {({
+            submitForm,
+            isSubmitting,
+            setFieldValue,
+            initialValues,
+            isValid,
+          }) => (
             <Form style={{ margin: '20px 0 20px 0' }}>
               <Field
                 component={SwitchField}
@@ -380,22 +413,25 @@ const EntitySettingAttributeEdition = ({
                 disabled={attribute.mandatoryType !== 'customizable'}
               />
               {field()}
-              {
-                attribute.scale
-                && <ScaleConfiguration
+              {attribute.scale && (
+                <ScaleConfiguration
                   initialValues={initialValues.scale}
                   fieldName="scale"
                   setFieldValue={setFieldValue}
                   setErrors={setScaleErrors}
                   style={{ marginTop: 20 }}
                 />
-              }
+              )}
               <div className={classes.buttons}>
                 <Button
                   variant="contained"
                   color="primary"
                   onClick={submitForm}
-                  disabled={isSubmitting || !isValid || Object.keys(scaleErrors).length > 0}
+                  disabled={
+                    isSubmitting
+                    || !isValid
+                    || Object.keys(scaleErrors).length > 0
+                  }
                   classes={{ root: classes.button }}
                 >
                   {t('Update')}
