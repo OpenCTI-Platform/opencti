@@ -77,7 +77,6 @@ const notificationsToolBarListTaskAddMutation = graphql`
   mutation NotificationsToolBarListTaskAddMutation($input: ListTaskAddInput!) {
     listNotificationTaskAdd(input: $input) {
       id
-      type
     }
   }
 `;
@@ -86,7 +85,6 @@ const notificationsToolBarQueryTaskAddMutation = graphql`
   mutation NotificationsToolBarQueryTaskAddMutation($input: QueryTaskAddInput!) {
     queryNotificationTaskAdd(input: $input) {
       id
-      type
     }
   }
 `;
