@@ -1,6 +1,6 @@
 {
   "name": "opencti-front",
-  "version": "5.8.1",
+  "version": "5.8.2",
   "private": true,
   "main": "src/index.tsx",
   "dependencies": {
@@ -34,7 +34,7 @@
     "moment": "2.29.4",
     "moment-timezone": "0.5.43",
     "pdfmake": "0.2.7",
-    "prop-types": "15.8.1",
+    "prop-types": "15.8.2",
     "qrcode": "1.5.3",
     "ramda": "0.29.0",
     "react": "18.2.0",
