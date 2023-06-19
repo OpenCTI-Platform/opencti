@@ -55,6 +55,13 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     All tutorials are published directly on the [Medium blog](https://blog.filigran.io), this section provides a comprehensive list of the most important ones.
 
 <div class="grid cards" markdown>
+-   __Progressive rollout of the OpenCTI Enterprise Edition: why, what and how?__<br />
+    <sub><sup>June 10, 2023</sup></sub>
+
+    We are thrilled to announce that, from OpenCTI 5.8, Filigran is now providing some customers with an Enterprise Edition of the platform, whether on-premise...
+
+    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/progressive-rollout-of-the-opencti-enterprise-edition-why-what-and-how-1189e9d5603c)**
+
 -   __How OpenCTI helps to fight disinformation and foreign interferences__<br />
     <sub><sup>May 21, 2023</sup></sub>
 
@@ -68,13 +75,6 @@ OpenCTI is an open source platform allowing organizations to manage their cyber 
     OpenCTI has multiple ways of sharing data with other platform and third-party systems: TAXII collections, CSV feeds, custom connectors and live streams...
 
     **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-public-streams-297dfdb88784)**
-
--   __OCTI notifications and digests: a new powerful engine for the knowledge graph__<br />
-    <sub><sup>Feb 7, 2023</sup></sub>
-
-    For more and more organizations, OpenCTI is (or starts to be) the nervous system of cyber intelligence knowledge (for both threats and operational data)...
-
-    **[:octicons-link-external-24:{ .middle } Read](https://blog.filigran.io/opencti-notifications-and-digests-a-new-powerful-engine-for-the-knowledge-graph-5bb9f04586d9)**
 </div>
 
 ## Additional resources
