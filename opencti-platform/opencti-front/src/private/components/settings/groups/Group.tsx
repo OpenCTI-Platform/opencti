@@ -29,6 +29,8 @@ import UserLineTitles from '../users/UserLineTitles';
 import GroupEdition from './GroupEdition';
 import { Theme } from '../../../../components/Theme';
 import { truncate } from '../../../../utils/String';
+import Triggers from '../Triggers';
+import { TriggerFilter } from '../../profile/triggers/__generated__/TriggersLinesPaginationQuery.graphql';
 
 const useStyles = makeStyles<Theme>((theme) => ({
   container: {
@@ -123,6 +125,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
   const { t } = useFormatter();
   const [displayUpdate, setDisplayUpdate] = useState(false);
   const group = useFragment<Group_group$key>(groupFragment, groupData);
+  const filter: TriggerFilter = 'group_ids';
   const handleOpenUpdate = () => {
     setDisplayUpdate(true);
   };
@@ -173,6 +176,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
     (group.default_marking ?? []).find((d) => d.entity_type === 'GLOBAL')
       ?.values ?? [],
   );
+
   return (
     <div className={classes.container}>
       <AccessesMenu />
@@ -323,6 +327,7 @@ const Group = ({ groupData }: { groupData: Group_group$key }) => {
           classes={{ container: classes.gridContainer }}
           style={{ marginTop: 20, marginLeft: 0 }}
         >
+          <Triggers recipientId={group.id} filter={filter}/>
           <Grid item={true} xs={12}>
             <Typography variant="h4" gutterBottom={true}>
               {t('Members')}

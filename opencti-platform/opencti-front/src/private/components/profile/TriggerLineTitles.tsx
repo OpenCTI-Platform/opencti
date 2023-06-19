@@ -33,36 +33,15 @@ const TriggerLineTitles: FunctionComponent<TriggerLineTitlesProps> = ({
       <ListItemText
         primary={
           <div>
-            <div
-              className={classes.headerItem}
-              style={{ width: dataColumns.trigger_type.width }}
-            >
-              {t(dataColumns.trigger_type.label)}
-            </div>
-            <div
-              className={classes.headerItem}
-              style={{ width: dataColumns.name.width }}
-            >
-              {t(dataColumns.name.label)}
-            </div>
-            <div
-              className={classes.headerItem}
-              style={{ width: dataColumns.outcomes.width }}
-            >
-              {t(dataColumns.outcomes.label)}
-            </div>
-            <div
-              className={classes.headerItem}
-              style={{ width: dataColumns.event_types.width }}
-            >
-              {t(dataColumns.event_types.label)}
-            </div>
-            <div
-              className={classes.headerItem}
-              style={{ width: dataColumns.filters.width }}
-            >
-              {t(dataColumns.filters.label)}
-            </div>
+            {Object.values(dataColumns).map((value) => (
+              <div
+                key={value.label}
+                className={classes.headerItem}
+                style={{ width: value.width }}
+              >
+                {t(value.label)}
+              </div>
+            ))}
           </div>
         }
       />

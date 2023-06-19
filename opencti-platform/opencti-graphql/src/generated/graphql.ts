@@ -23893,6 +23893,7 @@ export enum ToolsOrdering {
 export type Trigger = BasicObject & InternalObject & {
   __typename?: 'Trigger';
   created?: Maybe<Scalars['DateTime']>;
+  currentUserAccessRight?: Maybe<Scalars['String']>;
   description?: Maybe<Scalars['String']>;
   entity_type: Scalars['String'];
   event_types?: Maybe<Array<TriggerEventType>>;
@@ -23908,7 +23909,6 @@ export type Trigger = BasicObject & InternalObject & {
   trigger_time?: Maybe<Scalars['String']>;
   trigger_type: TriggerType;
   triggers?: Maybe<Array<Maybe<Trigger>>>;
-  user_ids: Array<Scalars['StixRef']>;
 };
 
 export type TriggerConnection = {
@@ -23942,6 +23942,7 @@ export enum TriggerEventType {
 export enum TriggerFilter {
   Created = 'created',
   EventTypes = 'event_types',
+  GroupIds = 'group_ids',
   TriggerType = 'trigger_type',
   UserIds = 'user_ids'
 }
@@ -33796,6 +33797,7 @@ export type ToolEditMutationsResolvers<ContextType = any, ParentType extends Res
 
 export type TriggerResolvers<ContextType = any, ParentType extends ResolversParentTypes['Trigger'] = ResolversParentTypes['Trigger']> = ResolversObject<{
   created?: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  currentUserAccessRight?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   description?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   entity_type?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   event_types?: Resolver<Maybe<Array<ResolversTypes['TriggerEventType']>>, ParentType, ContextType>;
@@ -33811,7 +33813,6 @@ export type TriggerResolvers<ContextType = any, ParentType extends ResolversPare
   trigger_time?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   trigger_type?: Resolver<ResolversTypes['TriggerType'], ParentType, ContextType>;
   triggers?: Resolver<Maybe<Array<Maybe<ResolversTypes['Trigger']>>>, ParentType, ContextType>;
-  user_ids?: Resolver<Array<ResolversTypes['StixRef']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

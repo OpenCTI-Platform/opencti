@@ -18,6 +18,7 @@ import {
 import { pubSubAsyncIterator } from '../../database/redis';
 import { BUS_TOPICS } from '../../config/conf';
 import { ENTITY_TYPE_NOTIFICATION, NOTIFICATION_NUMBER } from './notification-types';
+import { getUserAccessRight } from '../../utils/access';
 
 const notificationResolvers: Resolvers = {
   Query: {
@@ -32,6 +33,11 @@ const notificationResolvers: Resolvers = {
   },
   Trigger: {
     triggers: (trigger, _, context) => triggersGet(context, context.user, trigger.trigger_ids),
+    currentUserAccessRight: (trigger, _, context) => getUserAccessRight(context.user, trigger),
+  },
+  TriggerFilter: {
+    user_ids: 'authorized_members.id',
+    group_ids: 'authorized_members.id',
   },
   Mutation: {
     triggerFieldPatch: (_, { id, input }, context) => triggerEdit(context, context.user, id, input),

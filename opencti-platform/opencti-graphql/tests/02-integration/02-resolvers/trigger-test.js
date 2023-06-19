@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import gql from 'graphql-tag';
-import { ADMIN_USER, queryAsAdmin, securityQuery } from '../../utils/testQuery';
+import { ADMIN_USER, AMBER_GROUP, editorQuery, queryAsAdmin, securityQuery } from '../../utils/testQuery';
+import { EVENT_TYPE_CREATE } from '../../../src/database/utils';
 
 const LIST_QUERY = gql`
     query triggers(
@@ -71,13 +72,14 @@ describe('Trigger resolver standard behavior', () => {
   let triggerInternalId;
   let digestInternalId;
   let triggerUserInternalId;
+  let triggerGroupInternalId;
   it('should live trigger created', async () => {
     // Create the trigger
     const TRIGGER_TO_CREATE = {
       input: {
         name: 'live trigger',
         description: '',
-        event_types: 'create',
+        event_types: EVENT_TYPE_CREATE,
         outcomes: [],
         filters: '',
       },
@@ -118,17 +120,60 @@ describe('Trigger resolver standard behavior', () => {
     expect(queryResult.data.trigger).not.toBeNull();
     expect(queryResult.data.trigger.id).toEqual(triggerInternalId);
   });
-  it('should list triggers', async () => {
-    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
-    expect(queryResult.data.triggers.edges.length).toEqual(2);
+  // Group trigger start
+  it('security user should create group trigger', async () => {
+    // Create the trigger
+    const GROUP_TRIGGER_TO_CREATE = {
+      input: {
+        name: 'group trigger',
+        description: '',
+        event_types: EVENT_TYPE_CREATE,
+        outcomes: [],
+        filters: '',
+        recipients: [AMBER_GROUP.id],
+      },
+    };
+    const trigger = await securityQuery({
+      query: CREATE_LIVE_QUERY,
+      variables: GROUP_TRIGGER_TO_CREATE,
+    });
+    expect(trigger).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd).not.toBeNull();
+    expect(trigger.data.triggerLiveAdd.name).toEqual('group trigger');
+    triggerGroupInternalId = trigger.data.triggerLiveAdd.id;
   });
-  it('user with SETTINGS_SETACCESSES capability should create trigger for Admin user', async () => {
+  it('editor user should list group trigger', async () => {
+    const queryResult = await editorQuery({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.triggers.edges.length).toEqual(1);
+  });
+  it('editor user should not update group trigger', async () => {
+    const queryResult = await editorQuery({
+      query: UPDATE_QUERY,
+      variables: { id: triggerGroupInternalId, input: { key: 'name', value: ['group trigger - updated'] } },
+    });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.errors.length).toEqual(1);
+    expect(queryResult.errors.at(0).name).toEqual('ForbiddenAccess');
+  });
+  it('security user should group trigger deleted', async () => {
+    // Delete the trigger
+    await securityQuery({
+      query: DELETE_QUERY,
+      variables: { id: triggerGroupInternalId },
+    });
+    // Verify is no longer found
+    const queryResult = await securityQuery({ query: READ_QUERY, variables: { id: triggerGroupInternalId } });
+    expect(queryResult).not.toBeNull();
+    expect(queryResult.data.trigger).toBeNull();
+  });
+  // Group trigger end
+  it('security user should create trigger for Admin user', async () => {
     // Create the trigger
     const TRIGGER_TO_CREATE_FOR_USER = {
       input: {
         name: 'trigger',
         description: '',
-        event_types: 'create',
+        event_types: EVENT_TYPE_CREATE,
         outcomes: [],
         filters: '',
         recipients: [ADMIN_USER.id],
@@ -142,6 +187,10 @@ describe('Trigger resolver standard behavior', () => {
     expect(trigger.data.triggerLiveAdd).not.toBeNull();
     expect(trigger.data.triggerLiveAdd.name).toEqual('trigger');
     triggerUserInternalId = trigger.data.triggerLiveAdd.id;
+  });
+  it('should list triggers', async () => {
+    const queryResult = await queryAsAdmin({ query: LIST_QUERY, variables: { first: 10 } });
+    expect(queryResult.data.triggers.edges.length).toEqual(3);
   });
   it('security user should list Admin triggers', async () => {
     const queryResult = await securityQuery({ query: LIST_QUERY, variables: { filters: [{ key: 'user_ids', values: [ADMIN_USER.id] }] } });
