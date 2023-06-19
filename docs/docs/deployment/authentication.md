@@ -188,6 +188,7 @@ Here is an example of Auth0 configuration using environment variables:
 - PROVIDERS__AUTHZERO__CONFIG__CLIENT_SECRET=${AUTH0_CLIENT_SECRET}
 - PROVIDERS__AUTHZERO__CONFIG__CALLBACK_URL=${AUTH0_CALLBACK_URL}
 - PROVIDERS__AUTHZERO__CONFIG__DOMAIN=${AUTH0_DOMAIN}
+- PROVIDERS__AUTHZERO__CONFIG__SCOPE="openid email profile"
 ```
 
 ### OpenID Connect (button)
