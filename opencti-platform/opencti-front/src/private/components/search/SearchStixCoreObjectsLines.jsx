@@ -38,10 +38,10 @@ class SearchStixCoreObjectsLines extends Component {
         loadMore={relay.loadMore.bind(this)}
         hasMore={relay.hasMore.bind(this)}
         isLoading={relay.isLoading.bind(this)}
-        dataList={pathOr([], ['stixCoreObjects', 'edges'], this.props.data)}
+        dataList={pathOr([], ['globalSearch', 'edges'], this.props.data)}
         globalCount={pathOr(
           nbOfRowsToLoad,
-          ['stixCoreObjects', 'pageInfo', 'globalCount'],
+          ['globalSearch', 'pageInfo', 'globalCount'],
           this.props.data,
         )}
         LineComponent={<SearchStixCoreObjectLine />}
