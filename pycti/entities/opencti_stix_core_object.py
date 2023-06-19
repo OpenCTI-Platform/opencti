@@ -326,9 +326,6 @@ class StixCoreObject:
             ... on MalwareAnalysis {
                 product
                 version
-                hostVm
-                operatingSystem
-                installedSoftware
                 configuration_version
                 modules
                 analysis_engine_version
@@ -338,8 +335,6 @@ class StixCoreObject:
                 analysis_ended
                 result_name
                 result
-                analysisSco
-                sample
             }
             ... on ThreatActor {
                 name
