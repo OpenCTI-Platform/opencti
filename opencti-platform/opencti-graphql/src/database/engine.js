@@ -879,6 +879,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
   const { indices = READ_DATA_INDICES, baseData = false, baseFields = BASE_FIELDS } = opts;
   const { withoutRels = false, toMap = false, type = null, forceAliases = false } = opts;
   const idsArray = Array.isArray(ids) ? ids : [ids];
+  const types = (Array.isArray(type) || !type) ? type : [type];
   const processIds = R.filter((id) => isNotEmptyField(id), idsArray);
   if (processIds.length === 0) {
     return toMap ? {} : [];
@@ -890,7 +891,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
     const workingIds = groupIds[index];
     const idsTermsPerType = [];
     const elementTypes = [ID_INTERNAL, ID_STANDARD, IDS_STIX];
-    if (isStixObjectAliased(type) || forceAliases) {
+    if ((types || []).some((typeElement) => isStixObjectAliased(typeElement)) || forceAliases) {
       elementTypes.push(INTERNAL_IDS_ALIASES);
     }
     for (let indexType = 0; indexType < elementTypes.length; indexType += 1) {
@@ -905,13 +906,16 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       },
     };
     mustTerms.push(should);
-    if (type) {
+    if (types && types.length > 0) {
+      const typesShould = types.map((typeShould) => (
+        [
+          { match_phrase: { 'entity_type.keyword': typeShould } },
+          { match_phrase: { 'parent_types.keyword': typeShould } }
+        ]
+      )).flat();
       const shouldType = {
         bool: {
-          should: [
-            { match_phrase: { 'entity_type.keyword': type } },
-            { match_phrase: { 'parent_types.keyword': type } },
-          ],
+          should: typesShould,
           minimum_should_match: 1,
         },
       };
@@ -941,7 +945,7 @@ export const elFindByIds = async (context, user, ids, opts = {}) => {
       body,
     };
     logApp.debug('[SEARCH] elInternalLoadById', { query });
-    const searchType = `${ids} (${type !== null ? type : 'Any'})`;
+    const searchType = `${ids} (${types ? types.join(', ') : 'Any'})`;
     const data = await elRawSearch(context, user, searchType, query).catch((err) => {
       throw DatabaseError('[SEARCH] Error loading ids', { error: err, query });
     });
